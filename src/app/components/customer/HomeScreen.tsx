@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal, Star, MapPin, Award } from 'lucide-react';
+import { Search, SlidersHorizontal, Bell, MapPin, Award, Star } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -15,28 +15,57 @@ export function HomeScreen() {
 
   return (
     <div className="pb-20 bg-gray-50 min-h-screen">
-      {/* Header with Search */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 pb-8">
-        <h1 className="text-white text-2xl font-semibold mb-4">ค้นหาโรงงานของคุณ</h1>
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              placeholder="ค้นหาโรงงาน, ประเภทสินค้า..."
-              className="pl-10 bg-white"
-            />
+      {/* --- Premium Header Section --- */}
+      <div className="relative pt-12 pb-12 px-6 overflow-hidden">
+        {/* Premium Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900"></div>
+        
+        {/* Decorative Blur Spheres (ลูกเล่นวงกลมฟุ้งๆ) */}
+        <div className="absolute top-[-10%] left-[-10%] w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-64 h-64 bg-blue-400/20 rounded-full blur-3xl"></div>
+
+        <div className="relative z-10">
+          {/* Top Row: Title & Notification */}
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex flex-col">
+              <span className="text-blue-100/70 text-xs font-bold uppercase tracking-[0.2em] mb-1">
+                Premium Sourcing
+              </span>
+              <h1 className="text-3xl font-bold text-white leading-tight">
+                Discover Your<br />
+                Next <span className="text-blue-300">Partner</span>
+              </h1>
+            </div>
+            
+            {/* Notification Button */}
+            <button className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300">
+              <Bell className="w-6 h-6" />
+            </button>
           </div>
-          <Button variant="outline" size="icon" className="bg-white">
-            <SlidersHorizontal className="w-5 h-5" />
-          </Button>
+
+          {/* Search Bar Group */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="ค้นหาโรงงาน, ประเภทสินค้า..."
+              className="w-full h-14 bg-white/95 backdrop-blur-sm border-none rounded-2xl pl-12 pr-14 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-400 shadow-2xl shadow-blue-900/20 transition-all"
+            />
+            {/* Filter Button inside Search Bar */}
+            <button className="absolute inset-y-2 right-2 px-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-white transition-colors flex items-center justify-center shadow-lg shadow-blue-600/30">
+              <SlidersHorizontal className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Categories */}
-      <div className="px-6 -mt-4 mb-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-4 gap-4">
+      {/* Categories (ปรับ -mt ให้ลอยขึ้นมาทับ Header เล็กน้อย) */}
+      <div className="px-6 -mt-6 mb-8 relative z-20">
+        <Card className="border-none shadow-xl shadow-slate-200/60 rounded-3xl">
+          <CardContent className="p-5">
+            <div className="grid grid-cols-4 gap-2">
               {categories.map((cat) => (
                 <button
                   key={cat.id}

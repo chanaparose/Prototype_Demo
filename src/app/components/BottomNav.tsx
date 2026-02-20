@@ -1,4 +1,4 @@
-import { Home, ShoppingBag, FileText, Receipt, User, LayoutDashboard, Briefcase, FileStack, Wallet } from 'lucide-react';
+import { Home, ShoppingBag, FileText, Receipt, User, LayoutDashboard, Briefcase, FileStack, Wallet, Plus } from 'lucide-react';
 
 interface BottomNavProps {
   userType: 'customer' | 'factory';
@@ -7,48 +7,96 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ userType, activeTab, onTabChange }: BottomNavProps) {
-  const customerTabs = [
+  // แยก Tab ออกเป็น 2 ฝั่งเพื่อเว้นที่ให้ปุ่มตรงกลาง (Floating Button)
+  const customerTabsLeft = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'order', icon: ShoppingBag, label: 'Order' },
-    { id: 'req-his', icon: FileText, label: 'Req His' },
-    { id: 'transaction', icon: Receipt, label: 'Transaction' },
+  ];
+  const customerTabsRight = [
+    { id: 'transaction', icon: Receipt, label: 'Wallet' },
     { id: 'profile', icon: User, label: 'Profile' }
   ];
 
-  const factoryTabs = [
+  const factoryTabsLeft = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'my-jobs', icon: Briefcase, label: 'My Jobs' },
-    { id: 'quotes', icon: FileStack, label: 'Quotes' },
+    { id: 'my-jobs', icon: Briefcase, label: 'Jobs' },
+  ];
+  const factoryTabsRight = [
     { id: 'wallet', icon: Wallet, label: 'Wallet' },
     { id: 'profile', icon: User, label: 'Profile' }
   ];
 
-  const tabs = userType === 'customer' ? customerTabs : factoryTabs;
+  const leftTabs = userType === 'customer' ? customerTabsLeft : factoryTabsLeft;
+  const rightTabs = userType === 'customer' ? customerTabsRight : factoryTabsRight;
+  
+  // กำหนด ID สำหรับปุ่มกลางตาม UserType
+  const centerTabId = userType === 'customer' ? 'req-his' : 'quotes';
+  const CenterIcon = userType === 'customer' ? FileText : FileStack;
+  const centerLabel = userType === 'customer' ? 'Request' : 'Quotes';
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-      <div className="max-w-screen-xl mx-auto">
-        <div className="grid grid-cols-5">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={`flex flex-col items-center justify-center py-3 px-2 transition-colors ${
-                  isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <Icon className="w-6 h-6 mb-1" />
-                <span className="text-xs">{tab.label}</span>
-              </button>
-            );
-          })}
+    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200 px-6 py-3 z-50">
+      <div className="flex items-center justify-between max-w-md mx-auto relative">
+        
+        {/* Left Tabs */}
+        {leftTabs.map((tab) => (
+          <NavItem 
+            key={tab.id}
+            icon={<tab.icon size={24} />} 
+            label={tab.label} 
+            active={activeTab === tab.id}
+            onClick={() => onTabChange(tab.id)}
+          />
+        ))}
+
+        {/* Floating Center Button */}
+        <div className="relative -top-7">
+          <button 
+            onClick={() => onTabChange(centerTabId)}
+            className={`w-14 h-14 rounded-full flex flex-col items-center justify-center shadow-lg transition-all active:scale-90 border-4 border-white
+              ${activeTab === centerTabId 
+                ? 'bg-blue-600 text-white shadow-blue-600/40' 
+                : 'bg-slate-800 text-white shadow-slate-800/30'}`}
+          >
+            <CenterIcon size={24} />
+          </button>
+          <span className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-tighter whitespace-nowrap
+            ${activeTab === centerTabId ? 'text-blue-600' : 'text-slate-400'}`}>
+            {centerLabel}
+          </span>
         </div>
+
+        {/* Right Tabs */}
+        {rightTabs.map((tab) => (
+          <NavItem 
+            key={tab.id}
+            icon={<tab.icon size={24} />} 
+            label={tab.label} 
+            active={activeTab === tab.id}
+            onClick={() => onTabChange(tab.id)}
+          />
+        ))}
+
       </div>
     </div>
+  );
+}
+
+// Sub-component สำหรับ Navigation Item
+function NavItem({ icon, label, active, onClick }: { 
+  icon: React.ReactNode, 
+  label: string, 
+  active?: boolean, 
+  onClick: () => void 
+}) {
+  return (
+    <button onClick={onClick} className="flex flex-col items-center gap-1 group min-w-[64px]">
+      <div className={`transition-colors ${active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+        {icon}
+      </div>
+      <span className={`text-[10px] font-bold uppercase tracking-tighter ${active ? 'text-blue-600' : 'text-slate-400'}`}>
+        {label}
+      </span>
+    </button>
   );
 }
