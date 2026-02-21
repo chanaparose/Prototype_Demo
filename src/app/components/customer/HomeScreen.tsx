@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import {
   Search,
   SlidersHorizontal,
-  Bell,
+  MessageCircle,
   MapPin,
   Star,
   ChevronRight,
@@ -20,6 +20,7 @@ import {
   mockFactories,
   mockOrders,
   mockPromotions,
+  mockChatConversations,
   type Factory,
 } from '../../data/mockData';
 
@@ -48,8 +49,13 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   completed: 'เสร็จสิ้น',
 };
 
-export function HomeScreen() {
+interface HomeScreenProps {
+  onOpenChat?: () => void;
+}
+
+export function HomeScreen({ onOpenChat }: HomeScreenProps) {
   const [filterDiscount, setFilterDiscount] = useState(false);
+  const hasUnreadChat = mockChatConversations.some((c) => c.unreadCount > 0);
   const [filterPrice, setFilterPrice] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState('recommended');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -111,9 +117,14 @@ export function HomeScreen() {
             </div>
             <button
               type="button"
-              className="w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all"
+              onClick={onOpenChat}
+              className="relative w-11 h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all"
+              aria-label="กล่องข้อความ"
             >
-              <Bell className="w-5 h-5" />
+              <MessageCircle className="w-5 h-5" />
+              {hasUnreadChat && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#2D2E5F]" />
+              )}
             </button>
           </div>
 

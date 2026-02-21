@@ -332,3 +332,110 @@ export const mockNewRFQs: RFQ[] = [
     status: 'pending'
   }
 ];
+
+// --- Chat (สอดคล้องกับโรงงาน + คำสั่งซื้อ) ---
+export interface ChatMessage {
+  id: string;
+  sender: 'customer' | 'factory';
+  text: string;
+  at: string;
+}
+
+export interface ChatQuotationItem {
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  total: number;
+  note?: string;
+}
+
+export interface ChatQuotation {
+  id: string;
+  items: ChatQuotationItem[];
+  subtotal: number;
+  depositPercent: number;
+  depositAmount: number;
+}
+
+export interface ChatConversation {
+  id: string;
+  factoryId: string;
+  lastMessage: string;
+  lastAt: string;
+  unreadCount: number;
+  messages: ChatMessage[];
+  quotation?: ChatQuotation;
+}
+
+export const mockChatConversations: ChatConversation[] = [
+  {
+    id: 'c1',
+    factoryId: '1',
+    lastMessage: 'ขอบคุณครับ ยืนยันรายการได้เลย',
+    lastAt: '2026-02-21 14:30',
+    unreadCount: 2,
+    messages: [
+      { id: 'm1', sender: 'factory', text: 'สวัสดีครับคุณลูกค้า ทางโรงงานได้รับคำขอผลิตสินค้าของท่านแล้วครับ', at: '2026-02-21 10:00' },
+      { id: 'm2', sender: 'customer', text: 'สวัสดีครับ ผมสนใจผลิตขนมแมวเลีย 500 ซอง ใช้เวลานานไหมครับ', at: '2026-02-21 10:32' },
+      { id: 'm3', sender: 'factory', text: 'ใช้เวลาประมาณ 15 วันครับ ผมส่งใบเสนอราคาให้พิจารณานะครับ', at: '2026-02-21 10:35' },
+      { id: 'm4', sender: 'customer', text: 'โอเค สั่ง 500 ซอง พร้อมแพ็กเกจจิ้งแบบซิปครับ', at: '2026-02-21 14:00' },
+      { id: 'm4b', sender: 'factory', text: 'ขอบคุณครับ ยืนยันรายการได้เลย', at: '2026-02-21 14:30' }
+    ],
+    quotation: {
+      id: 'QT-2026-001',
+      items: [
+        { name: 'ค่าผลิตขนมแมวเลีย (500 ชิ้น)', unitPrice: 30, quantity: 500, total: 15000 },
+        { name: 'ค่าแม่พิมพ์ (Mold Cost)', unitPrice: 5000, quantity: 1, total: 5000, note: 'จ่ายครั้งเดียว' },
+        { name: 'ค่าจัดส่ง', unitPrice: 500, quantity: 1, total: 500 }
+      ],
+      subtotal: 20500,
+      depositPercent: 50,
+      depositAmount: 10250
+    }
+  },
+  {
+    id: 'c2',
+    factoryId: '2',
+    lastMessage: 'ส่งตัวอย่างสีให้ดูภายในพรุ่งนี้ครับ',
+    lastAt: '2026-02-21 09:45',
+    unreadCount: 1,
+    messages: [
+      { id: 'm5', sender: 'customer', text: 'อยากสั่งเสื้อสุนัขขนาดกลาง 100 ตัว มีสีอื่นนอกจากดำไหมครับ', at: '2026-02-20 16:00' },
+      { id: 'm6', sender: 'factory', text: 'มีครับ มี 4 สี น้ำเงิน แดง น้ำตาล ดำ ส่งตัวอย่างสีให้ดูภายในพรุ่งนี้ครับ', at: '2026-02-21 09:45' }
+    ]
+  },
+  {
+    id: 'c3',
+    factoryId: '3',
+    lastMessage: 'ใบเสนอราคาส่งในแชทแล้วครับ',
+    lastAt: '2026-02-20 11:20',
+    unreadCount: 0,
+    messages: [
+      { id: 'm7', sender: 'customer', text: 'สอบถามผลิตอาหารเสริมแมว แบบเม็ด อย. รับไหมครับ', at: '2026-02-19 14:00' },
+      { id: 'm8', sender: 'factory', text: 'รับครับ เรามี GMP และ อย. ครับ', at: '2026-02-19 15:30' },
+      { id: 'm9', sender: 'customer', text: 'ขอใบเสนอราคา 300 กระปุกครับ', at: '2026-02-20 10:00' },
+      { id: 'm10', sender: 'factory', text: 'ใบเสนอราคาส่งในแชทแล้วครับ', at: '2026-02-20 11:20' }
+    ],
+    quotation: {
+      id: 'QT-2026-002',
+      items: [
+        { name: 'อาหารเสริมแมวแบบเม็ด อย. (300 กระปุก)', unitPrice: 85, quantity: 300, total: 25500 },
+        { name: 'ค่าจัดส่ง', unitPrice: 800, quantity: 1, total: 800 }
+      ],
+      subtotal: 26300,
+      depositPercent: 50,
+      depositAmount: 13150
+    }
+  },
+  {
+    id: 'c4',
+    factoryId: '4',
+    lastMessage: 'ได้ครับ รบกวนส่งไฟล์ Artwork มาได้เลย',
+    lastAt: '2026-02-18 16:00',
+    unreadCount: 0,
+    messages: [
+      { id: 'm11', sender: 'customer', text: 'ต้องการทำกล่องแพ็กเกจจิ้งขนม 500 กล่อง พร้อมพิมพ์ลายได้ไหมครับ', at: '2026-02-18 09:00' },
+      { id: 'm12', sender: 'factory', text: 'ได้ครับ รบกวนส่งไฟล์ Artwork มาได้เลย', at: '2026-02-18 16:00' }
+    ]
+  }
+];

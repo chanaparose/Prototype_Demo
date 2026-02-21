@@ -1,4 +1,4 @@
-import { ChevronRight, Bookmark, MapPin, Users, HelpCircle, LogOut, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Bookmark, MapPin, Users, HelpCircle, LogOut, ShieldCheck, Heart } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -10,6 +10,12 @@ interface ProfileScreenProps {
 
 export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
   const menuItems = [
+    {
+      icon: Heart,
+      title: 'รายการโปรด',
+      subtitle: 'โรงงานและรายการที่คุณชอบ',
+      onClick: () => {}
+    },
     {
       icon: Bookmark,
       title: 'โรงงานที่บันทึกไว้',
@@ -59,6 +65,7 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
       <div className="px-6 -mt-4 space-y-3">
         {menuItems.map((item, index) => {
           const Icon = item.icon;
+          const isFavorites = item.icon === Heart;
           return (
             <Card
               key={index}
@@ -67,8 +74,8 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-blue-600" />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isFavorites ? 'bg-rose-50' : 'bg-blue-50'}`}>
+                    <Icon className={`w-5 h-5 ${isFavorites ? 'text-rose-600' : 'text-blue-600'}`} />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium">{item.title}</h3>

@@ -4,6 +4,7 @@ import { BottomNav } from './components/BottomNav';
 
 // Customer Screens
 import { HomeScreen } from './components/customer/HomeScreen';
+import { ChatInboxScreen } from './components/customer/ChatInboxScreen';
 import { OrderScreen } from './components/customer/OrderScreen';
 import { ReqHisScreen } from './components/customer/ReqHisScreen';
 import { TransactionScreen } from './components/customer/TransactionScreen';
@@ -20,6 +21,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<'customer' | 'factory'>('customer');
   const [activeTab, setActiveTab] = useState<string>('home');
+  const [showChatInbox, setShowChatInbox] = useState(false);
 
   const handleLogin = (type: 'customer' | 'factory') => {
     setUserType(type);
@@ -44,9 +46,12 @@ export default function App() {
   }
 
   const renderCustomerScreen = () => {
+    if (showChatInbox) {
+      return <ChatInboxScreen onBack={() => setShowChatInbox(false)} />;
+    }
     switch (activeTab) {
       case 'home':
-        return <HomeScreen />;
+        return <HomeScreen onOpenChat={() => setShowChatInbox(true)} />;
       case 'order':
         return <OrderScreen />;
       case 'req-his':
@@ -80,11 +85,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {userType === 'customer' ? renderCustomerScreen() : renderFactoryScreen()}
-      <BottomNav
-        userType={userType}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      {userType === 'customer' && !showChatInbox && (
+        <BottomNav
+          userType={userType}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      )}
     </div>
   );
 }
