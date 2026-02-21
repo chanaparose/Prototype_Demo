@@ -78,13 +78,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {userType === 'customer' ? renderCustomerScreen() : renderFactoryScreen()}
-      <BottomNav
-        userType={userType}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]">
+      <div className="min-h-screen bg-white/95 backdrop-blur-sm rounded-t-3xl pt-4">
+        {userType === 'customer' ? renderCustomerScreen() : renderFactoryScreen()}
+        <BottomNav
+          userType={userType}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
     </div>
   );
 }

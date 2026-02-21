@@ -10,6 +10,18 @@ export interface Factory {
   category: string;
   province: string;
   certifications: string[];
+  hasDiscount?: boolean;
+  priceTier?: 'low' | 'mid' | 'high';
+  promotionText?: string;
+}
+
+export interface Promotion {
+  id: string;
+  title: string;
+  subtitle: string;
+  code?: string;
+  validUntil?: string;
+  image?: string;
 }
 
 export interface Order {
@@ -80,7 +92,10 @@ export const mockFactories: Factory[] = [
     lowMOQ: true,
     category: 'อาหารสัตว์',
     province: 'ปทุมธานี',
-    certifications: ['GMP', 'HACCP', 'อย.']
+    certifications: ['GMP', 'HACCP', 'อย.'],
+    hasDiscount: true,
+    priceTier: 'mid',
+    promotionText: '฿500 off Min. spend ฿5,000'
   },
   {
     id: '2',
@@ -91,7 +106,10 @@ export const mockFactories: Factory[] = [
     lowMOQ: true,
     category: 'เสื้อผ้าสัตว์เลี้ยง',
     province: 'นนทบุรี',
-    certifications: ['ISO 9001']
+    certifications: ['ISO 9001'],
+    hasDiscount: true,
+    priceTier: 'low',
+    promotionText: '40% off Min. spend ฿3,000'
   },
   {
     id: '3',
@@ -102,7 +120,9 @@ export const mockFactories: Factory[] = [
     lowMOQ: false,
     category: 'อาหารเสริม',
     province: 'สมุทรปราการ',
-    certifications: ['GMP', 'อย.']
+    certifications: ['GMP', 'อย.'],
+    hasDiscount: false,
+    priceTier: 'high'
   },
   {
     id: '4',
@@ -113,7 +133,27 @@ export const mockFactories: Factory[] = [
     lowMOQ: true,
     category: 'แพ็กเกจจิ้ง',
     province: 'ปทุมธานี',
-    certifications: ['ISO 9001', 'FSC']
+    certifications: ['ISO 9001', 'FSC'],
+    hasDiscount: true,
+    priceTier: 'mid',
+    promotionText: '20% off ครั้งแรก'
+  }
+];
+
+export const mockPromotions: Promotion[] = [
+  {
+    id: '1',
+    title: 'ครึ่งเดือนนี้! ลดสูงสุด 50%',
+    subtitle: "ใส่โค้ด 'LMMID' สั่งเลย",
+    code: 'LMMID',
+    validUntil: '31 มี.ค. 69'
+  },
+  {
+    id: '2',
+    title: '1 ฟรี 1! สินค้าแนะนำ',
+    subtitle: 'เพียง 209.- ตั้งแต่วันนี้',
+    code: 'BOGO209',
+    validUntil: '31 มี.ค. 69'
   }
 ];
 

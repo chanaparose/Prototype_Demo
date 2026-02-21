@@ -1,3 +1,4 @@
+import React from 'react';
 import { Home, ShoppingBag, FileText, Receipt, User, LayoutDashboard, Briefcase, FileStack, Wallet, Plus } from 'lucide-react';
 
 interface BottomNavProps {
@@ -35,66 +36,69 @@ export function BottomNav({ userType, activeTab, onTabChange }: BottomNavProps) 
   const centerLabel = userType === 'customer' ? 'Request' : 'Quotes';
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200 px-6 py-3 z-50">
-      <div className="flex items-center justify-between max-w-md mx-auto relative">
-        
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+      <div className="bg-gradient-to-r from-[#3A3B6F] to-[#4A4B8F] backdrop-blur-lg rounded-full px-6 py-3 flex items-center gap-2 shadow-xl border border-white/20 max-w-md">
         {/* Left Tabs */}
         {leftTabs.map((tab) => (
-          <NavItem 
+          <NavItem
             key={tab.id}
-            icon={<tab.icon size={24} />} 
-            label={tab.label} 
+            icon={<tab.icon size={22} />}
+            label={tab.label}
             active={activeTab === tab.id}
             onClick={() => onTabChange(tab.id)}
           />
         ))}
 
-        {/* Floating Center Button */}
-        <div className="relative -top-7">
-          <button 
+        {/* Center Button - ref style gradient */}
+        <div className="relative -top-6 mx-1">
+          <button
             onClick={() => onTabChange(centerTabId)}
-            className={`w-14 h-14 rounded-full flex flex-col items-center justify-center shadow-lg transition-all active:scale-90 border-4 border-white
-              ${activeTab === centerTabId 
-                ? 'bg-blue-600 text-white shadow-blue-600/40' 
-                : 'bg-slate-800 text-white shadow-slate-800/30'}`}
+            className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 border-2 border-white/30
+              ${activeTab === centerTabId
+                ? 'bg-gradient-to-r from-purple-400 via-purple-500 to-indigo-500 text-white shadow-purple-500/40'
+                : 'bg-[#3A3B6F] text-white/90 shadow-[#2D2E5F]/40'}`}
           >
-            <CenterIcon size={24} />
+            <CenterIcon size={22} />
           </button>
-          <span className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-tighter whitespace-nowrap
-            ${activeTab === centerTabId ? 'text-blue-600' : 'text-slate-400'}`}>
+          <span className={`absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-tighter whitespace-nowrap
+            ${activeTab === centerTabId ? 'text-purple-300' : 'text-white/50'}`}>
             {centerLabel}
           </span>
         </div>
 
         {/* Right Tabs */}
         {rightTabs.map((tab) => (
-          <NavItem 
+          <NavItem
             key={tab.id}
-            icon={<tab.icon size={24} />} 
-            label={tab.label} 
+            icon={<tab.icon size={22} />}
+            label={tab.label}
             active={activeTab === tab.id}
             onClick={() => onTabChange(tab.id)}
           />
         ))}
-
       </div>
     </div>
   );
 }
 
 // Sub-component สำหรับ Navigation Item
-function NavItem({ icon, label, active, onClick }: { 
-  icon: React.ReactNode, 
-  label: string, 
-  active?: boolean, 
-  onClick: () => void 
+function NavItem({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  onClick: () => void;
 }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1 group min-w-[64px]">
-      <div className={`transition-colors ${active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
+    <button onClick={onClick} className="flex flex-col items-center gap-0.5 group min-w-[52px]">
+      <div className={`transition-colors ${active ? 'text-white' : 'text-white/60 group-hover:text-white/80'}`}>
         {icon}
       </div>
-      <span className={`text-[10px] font-bold uppercase tracking-tighter ${active ? 'text-blue-600' : 'text-slate-400'}`}>
+      <span className={`text-[9px] font-bold uppercase tracking-tighter ${active ? 'text-white' : 'text-white/60'}`}>
         {label}
       </span>
     </button>
