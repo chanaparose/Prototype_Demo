@@ -12,6 +12,7 @@ import {
   Clock,
   Sparkles,
   Heart,
+  Check,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
@@ -34,6 +35,10 @@ const filterOptions = [
   { id: 'rating', label: 'เรตติ้ง', icon: Star },
   { id: 'location', label: 'ระยะทาง', icon: MapPin },
 ];
+
+/** ปุ่มแถวฟิลเตอร์ตามภาพ: ฟิลเตอร์ | รับโค้ดลดเพิ่ม | ราคา ▾ | รับที่โรงงาน | ประเภท ▾ */
+const hasAnyFilter = (discount: boolean, price: string | null, category: string) =>
+  discount || !!price || category !== 'all';
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
   deposit: 'มัดจำ',
@@ -87,7 +92,6 @@ export function HomeScreen() {
 
   return (
     <div className="pb-24 bg-gray-50 min-h-screen">
-      {/* --- Premium Header Section: สูงเต็มสุดขอบบน --- */}
       <div className="relative pt-0 pb-10 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
         <div className="absolute top-[-10%] left-[-10%] w-48 h-48 bg-white/10 rounded-full blur-3xl" />
@@ -281,49 +285,88 @@ export function HomeScreen() {
               ดูทั้งหมด
             </button>
           </div>
-          <div className="flex items-center gap-1 text-gray-500 text-sm">
-            <Tag className="w-4 h-4" />
-            <span>โปรโมชั่นสุดคุ้ม</span>
-          </div>
         </div>
 
-        {/* Filter Bar แบบ Explore */}
+        {/* Filter Bar + รับโค้ดลดเพิ่ม แถวเดียวตามภาพ */}
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-3">
-          {filterOptions.map((filter) => {
-            const Icon = filter.icon;
-            const active =
-              filter.id === 'price' ? selectedFilter === 'price' : selectedFilter === filter.id;
-            return (
-              <motion.button
-                key={filter.id}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setSelectedFilter(filter.id);
-                  if (filter.id !== 'price') setFilterPrice(null);
-                }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap border transition-all ${
-                  active ? 'bg-[#2D2E5F] text-white border-[#2D2E5F]' : 'bg-white text-gray-700 border-gray-300'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {filter.id === 'price' && filterPrice
-                  ? PRICE_TIER_LABELS[filterPrice]
-                  : filter.label}
-                {filter.id !== 'recommended' && (
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                )}
-              </motion.button>
-            );
-          })}
+          {/* 1. ฟิลเตอร์ (เขียวเมื่อมีตัวกรอง) */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            onClick={() => {
+              if (hasAnyFilter(filterDiscount, filterPrice, selectedCategory)) {
+                setFilterDiscount(false);
+                setFilterPrice(null);
+                setSelectedCategory('all');
+              }
+            }}
+            className={`flex flex-col items-center justify-center gap-0.5 shrink-0 w-12 h-12 rounded-xl border-2 transition-all ${
+              hasAnyFilter(filterDiscount, filterPrice, selectedCategory)
+                ? 'bg-emerald-100 border-emerald-400 text-emerald-700'
+                : 'bg-white border-gray-200 text-gray-500'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {hasAnyFilter(filterDiscount, filterPrice, selectedCategory) && (
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+            )}
+          </motion.button>
+
+          {/* 2. รับโค้ดลดเพิ่ม (โรงงานใช้ส่วนลดได้) */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            onClick={() => setFilterDiscount(!filterDiscount)}
+            className={`shrink-0 px-3 py-2.5 rounded-xl border text-sm whitespace-nowrap transition-all ${
+              filterDiscount
+                ? 'bg-emerald-50 border-emerald-400 text-emerald-800'
+                : 'bg-white border-gray-200 text-gray-700'
+            }`}
+          >
+            ใช้โค้ดส่วนลด
+          </motion.button>
+
+          {/* 5. ประเภท ▾ (Category) */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            onClick={() => setSelectedFilter(selectedFilter === 'category' ? 'recommended' : 'category')}
+            className={`flex items-center gap-1 shrink-0 px-3 py-2.5 rounded-xl border text-sm whitespace-nowrap transition-all ${
+              selectedCategory !== 'all' ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-gray-200 text-gray-700'
+            }`}
+          >
+            {selectedCategory === 'all' ? 'ประเภท' : categoryList.find((c) => c.id === selectedCategory)?.label ?? 'ประเภท'}
+            <svg className="w-3 h-3 text-current" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </motion.button>
+
+          {/* 3. ราคา ▾ */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            onClick={() => setSelectedFilter(selectedFilter === 'price' ? 'recommended' : 'price')}
+            className={`flex items-center gap-1 shrink-0 px-3 py-2.5 rounded-xl border text-sm whitespace-nowrap transition-all ${
+              !!filterPrice ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-gray-200 text-gray-700'
+            }`}
+          >
+            {filterPrice ? PRICE_TIER_LABELS[filterPrice] : 'ราคา'}
+            <svg className="w-3 h-3 text-current" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </motion.button>
+
+          {/* 4. รับที่โรงงาน (Pickup) */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            className="shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm whitespace-nowrap"
+          >
+            รับที่โรงงาน
+          </motion.button>
         </div>
 
-        {/* หมวดราคา (เมื่อเลือกฟิลเตอร์ราคา) */}
+        {/* แถวเลือกหมวดราคา (เมื่อกด ราคา) */}
         {selectedFilter === 'price' && (
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-3">
             {(Object.entries(PRICE_TIER_LABELS) as [string, string][]).map(([value, label]) => (
@@ -341,39 +384,23 @@ export function HomeScreen() {
           </div>
         )}
 
-        {/* Category Tags แบบ Explore */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-4">
-          {categoryList.map((category) => (
-            <motion.button
-              key={category.id}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm transition-all ${
-                selectedCategory === category.id
-                  ? 'bg-[#4F4F9F] text-white'
-                  : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              {category.label}
-            </motion.button>
-          ))}
-        </div>
-
-        {/* โรงงานใช้ส่วนลดได้ (toggle แยก) */}
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={() => setFilterDiscount(!filterDiscount)}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm border transition-all ${
-              filterDiscount
-                ? 'bg-[#2D2E5F] text-white border-[#2D2E5F]'
-                : 'bg-white text-gray-700 border-gray-300'
-            }`}
-          >
-            <Tag className="w-4 h-4" />
-            โรงงานใช้ส่วนลดได้
-          </button>
-        </div>
+        {/* แถวเลือกประเภท (เมื่อกด ประเภท) */}
+        {selectedFilter === 'category' && (
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-4">
+            {categoryList.map((category) => (
+              <motion.button
+                key={category.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`px-4 py-2 rounded-full whitespace-nowrap text-sm transition-all ${
+                  selectedCategory === category.id ? 'bg-[#4F4F9F] text-white' : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                {category.label}
+              </motion.button>
+            ))}
+          </div>
+        )}
 
         {/* Places List แบบ Explore */}
         <div className="space-y-4">
