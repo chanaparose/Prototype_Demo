@@ -36,8 +36,11 @@ export function BottomNav({ userType, activeTab, onTabChange }: BottomNavProps) 
   const centerLabel = userType === 'customer' ? 'Request' : 'Quotes';
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="bg-gradient-to-r from-[#3A3B6F] to-[#4A4B8F] backdrop-blur-lg rounded-full px-6 py-3 flex items-center gap-2 shadow-xl border border-white/20 max-w-md">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-[#3A3B6F] to-[#4A4B8F] pt-px">
+      <div
+        className="bg-gradient-to-r from-[#3A3B6F] to-[#4A4B8F] backdrop-blur-lg px-2 py-2 flex items-center justify-around border-t border-white/20 w-full min-h-[56px]"
+        style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+      >
         {/* Left Tabs */}
         {leftTabs.map((tab) => (
           <NavItem
@@ -50,17 +53,17 @@ export function BottomNav({ userType, activeTab, onTabChange }: BottomNavProps) 
         ))}
 
         {/* Center Button - ref style gradient */}
-        <div className="relative -top-6 mx-1">
+        <div className="relative -top-4 mx-1">
           <button
             onClick={() => onTabChange(centerTabId)}
-            className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 border-2 border-white/30
+            className={`w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 border-2 border-white/30
               ${activeTab === centerTabId
                 ? 'bg-gradient-to-r from-purple-400 via-purple-500 to-indigo-500 text-white shadow-purple-500/40'
                 : 'bg-[#3A3B6F] text-white/90 shadow-[#2D2E5F]/40'}`}
           >
             <CenterIcon size={22} />
           </button>
-          <span className={`absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-tighter whitespace-nowrap
+          <span className={`absolute -bottom-4 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-tighter whitespace-nowrap
             ${activeTab === centerTabId ? 'text-purple-300' : 'text-white/50'}`}>
             {centerLabel}
           </span>
