@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import {
   Search,
@@ -61,6 +61,62 @@ export function HomeScreen({ onOpenChat }: HomeScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [promoIndex, setPromoIndex] = useState(0);
+  const adScrollRef = useRef<HTMLDivElement>(null);
+  const adScrollRaf = useRef<number | null>(null);
+  const isProgrammaticScroll = useRef(false);
+  const AUTO_PLAY_MS = 4500;
+
+  // Auto-play
+  useEffect(() => {
+    if (mockPromotions.length <= 1) return;
+    const t = setInterval(() => {
+      setPromoIndex((i) => (i + 1) % mockPromotions.length);
+    }, AUTO_PLAY_MS);
+    return () => clearInterval(t);
+  }, []);
+
+  // เลื่อนเมื่อเปลี่ยน Index (Auto-play หรือ กดจุด)
+  useEffect(() => {
+    const el = adScrollRef.current;
+    if (!el || mockPromotions.length <= 1) return;
+
+    // คำนวณระยะที่ต้องเลื่อน: (กว้าง 85vw + gap 12px) * index
+    const cardWidth = el.clientWidth * 0.85;
+    const gap = 12; // อ้างอิงจาก gap-3
+    const step = cardWidth + gap;
+    const targetLeft = promoIndex * step;
+
+    const currentLeft = el.scrollLeft;
+    if (Math.abs(currentLeft - targetLeft) < 2) return;
+
+    isProgrammaticScroll.current = true;
+    el.scrollTo({ left: targetLeft, behavior: 'smooth' });
+    
+    const teardown = setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, 500);
+    return () => clearTimeout(teardown);
+  }, [promoIndex]);
+
+  // อัปเดต Index เมื่อผู้ใช้ปัดเลื่อนเอง
+  const handleAdScroll = () => {
+    if (isProgrammaticScroll.current) return;
+    if (adScrollRaf.current != null) cancelAnimationFrame(adScrollRaf.current);
+    
+    adScrollRaf.current = requestAnimationFrame(() => {
+      adScrollRaf.current = null;
+      const el = adScrollRef.current;
+      if (!el || mockPromotions.length <= 1) return;
+
+      const cardWidth = el.clientWidth * 0.85;
+      const gap = 12; // gap-3
+      const step = cardWidth + gap;
+
+      // เนื่องจากเราใช้ padding px-[7.5vw] ตำแหน่ง scrollLeft ที่ 0 จะอยู่ตรงกลางพอดี
+      const index = Math.round(el.scrollLeft / step);
+      setPromoIndex(Math.max(0, Math.min(index, mockPromotions.length - 1)));
+    });
+  };
 
   const categories = [
     { id: '1', name: 'อาหารสัตว์', icon: '🐾' },
@@ -247,42 +303,56 @@ export function HomeScreen({ onOpenChat }: HomeScreenProps) {
       </div>
 
       {/* --- Section Ad และโปรโมชั่น --- */}
-      <div className="px-4 mb-5">
-        <div className="rounded-2xl overflow-hidden bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 p-5 relative min-h-[120px]">
-          <div className="relative z-10">
-            <h3 className="text-lg font-bold text-white mb-1">
-              {mockPromotions[promoIndex]?.title}
-            </h3>
-            <p className="text-white/90 text-sm mb-3">
-              {mockPromotions[promoIndex]?.subtitle}
-            </p>
-            {mockPromotions[promoIndex]?.code && (
-              <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
-                <span className="text-white text-sm font-medium">
-                  โค้ด {mockPromotions[promoIndex].code}
-                </span>
-                <Button
-                  size="sm"
-                  className="bg-white text-emerald-700 hover:bg-white/90 rounded-full h-7 text-xs"
-                >
-                  สั่งเลย &gt;
-                </Button>
+      <div className="mb-5 w-full overflow-hidden">
+        <div
+          ref={adScrollRef}
+          onScroll={handleAdScroll}
+          // เพิ่ม px-[7.5vw] เพื่อให้จุดเริ่มต้นและจุดสิ้นสุดอยู่ตรงกลางพอดี
+          className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory px-[7.5vw]"
+          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+        >
+          {/* ไม่ต้องใช้ div เปล่าหัวท้ายแล้ว */}
+          {mockPromotions.map((promo) => (
+            <div
+              key={promo.id}
+              data-ad-slide
+              // เปลี่ยนเป็น snap-center และกำหนด w-[85vw] คงที่
+              className="flex-shrink-0 w-[85vw] snap-center rounded-2xl overflow-hidden relative min-h-[120px]"
+            >
+              <div className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 p-5 relative min-h-[120px] h-full">
+                <div className="relative z-10">
+                  <h3 className="text-lg font-bold text-white mb-1">{promo.title}</h3>
+                  <p className="text-white/90 text-sm mb-3">{promo.subtitle}</p>
+                  {promo.code && (
+                    <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
+                      <span className="text-white text-sm font-medium">โค้ด {promo.code}</span>
+                      <Button
+                        size="sm"
+                        className="bg-white text-emerald-700 hover:bg-white/90 rounded-full h-7 text-xs"
+                      >
+                        สั่งเลย &gt;
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {mockPromotions.map((_, i) => (
-              <button
-                key={_.id}
-                type="button"
-                onClick={() => setPromoIndex(i)}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  i === promoIndex ? 'bg-white' : 'bg-white/40'
-                }`}
-                aria-label={`โปรโมชั่น ${i + 1}`}
-              />
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Pagination Dots (โค้ดเดิม) */}
+        <div className="flex justify-center gap-1.5 mt-2 px-4">
+          {mockPromotions.map((_, i) => (
+            <button
+              key={mockPromotions[i].id}
+              type="button"
+              onClick={() => setPromoIndex(i)}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                i === promoIndex ? 'bg-slate-700' : 'bg-slate-300'
+              }`}
+              aria-label={`โปรโมชั่น ${i + 1}`}
+            />
+          ))}
         </div>
       </div>
 

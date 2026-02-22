@@ -154,6 +154,13 @@ export const mockPromotions: Promotion[] = [
     subtitle: 'เพียง 209.- ตั้งแต่วันนี้',
     code: 'BOGO209',
     validUntil: '31 มี.ค. 69'
+  },
+  {
+    id: '3',
+    title: 'สั่งร้านใหม่ ลด 50.-',
+    subtitle: "ใส่โค้ด 'EATNEW' รับส่วนลด",
+    code: 'EATNEW',
+    validUntil: '31 มี.ค. 69'
   }
 ];
 
