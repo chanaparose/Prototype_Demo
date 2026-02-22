@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import { LoginScreen } from './components/LoginScreen';
 import { BottomNav } from './components/BottomNav';
 
@@ -82,9 +83,22 @@ export default function App() {
     }
   };
 
+  const screenKey = userType === 'customer' && showChatInbox ? 'chat-inbox' : activeTab;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {userType === 'customer' ? renderCustomerScreen() : renderFactoryScreen()}
+      <motion.div key={screenKey} className="relative min-h-screen">
+        {/* ชั้นสีเต็มขอบก่อน (แบบ Line Man) - แสดงทันทีตอนเปลี่ยนหน้า */}
+        <div className="absolute inset-0 bg-gray-50" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="relative z-10 min-h-screen origin-top"
+        >
+          {userType === 'customer' ? renderCustomerScreen() : renderFactoryScreen()}
+        </motion.div>
+      </motion.div>
       {userType === 'customer' && !showChatInbox && (
         <BottomNav
           userType={userType}

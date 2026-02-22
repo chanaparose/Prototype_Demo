@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { MessageCircle, ChevronRight, Check } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
@@ -64,6 +65,7 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
 export function OrderScreen() {
   const [selectedView, setSelectedView] = useState<'list' | 'chat' | 'update'>('list');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orderTab, setOrderTab] = useState<'active' | 'completed'>('active');
 
   const getStatusText = (status: string) => ORDER_STATUS_LABELS[status] || status;
 
@@ -120,7 +122,7 @@ export function OrderScreen() {
         </div>
       </div>
 
-      <Tabs defaultValue="active" className="px-4 pt-4 pb-6">
+      <Tabs value={orderTab} onValueChange={(v) => setOrderTab(v as 'active' | 'completed')} className="px-4 pt-4 pb-6">
         <TabsList className="grid h-12 w-full grid-cols-2 mb-2 rounded-xl bg-white border border-slate-200 p-1.5">
           <TabsTrigger
             value="active"
@@ -136,7 +138,15 @@ export function OrderScreen() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="active" className="space-y-4">
+        <div className="overflow-hidden">
+          {orderTab === 'active' && (
+            <motion.div
+              key="active"
+              initial={{ x: -24, opacity: 0.95 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.2, ease: [0.33, 1, 0.68, 1] }}
+              className="space-y-4"
+            >
           {mockOrders.filter((order) => order.status !== 'completed' && order.status !== 'pending_completed').map((order) => (
             <Card key={order.id} className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
               <CardContent className="p-0">
@@ -200,9 +210,16 @@ export function OrderScreen() {
               </CardContent>
             </Card>
           ))}
-        </TabsContent>
-
-        <TabsContent value="completed" className="space-y-4">
+              </motion.div>
+            )}
+          {orderTab === 'completed' && (
+            <motion.div
+              key="completed"
+              initial={{ x: 24, opacity: 0.95 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.2, ease: [0.33, 1, 0.68, 1] }}
+              className="space-y-4"
+            >
           {(() => {
             const completedOrders = mockOrders.filter((order) => order.status === 'completed' || order.status === 'pending_completed');
             return completedOrders.length === 0 ? (
@@ -277,7 +294,9 @@ export function OrderScreen() {
             ))
             );
           })()}
-        </TabsContent>
+            </motion.div>
+          )}
+        </div>
       </Tabs>
     </div>
   );
