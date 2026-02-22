@@ -29,7 +29,7 @@ export interface Order {
   orderId: string;
   productName: string;
   productImage: string;
-  status: 'deposit' | 'production' | 'qc' | 'shipping' | 'completed';
+  status: 'deposit' | 'production' | 'qc' | 'shipping' | 'completed' | 'pending_completed';
   currentStep: number;
   factoryName: string;
   dueDate: string;
@@ -177,6 +177,26 @@ export const mockOrders: Order[] = [
     currentStep: 3,
     factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
     dueDate: '2026-03-10'
+  },
+  {
+    id: '3',
+    orderId: 'ORD-2026-003',
+    productName: 'ขนมแมวเลีย รสแซลมอน',
+    productImage: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=400',
+    status: 'completed',
+    currentStep: 4,
+    factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
+    dueDate: '2026-02-20'
+  },
+  {
+    id: '4',
+    orderId: 'ORD-2026-004',
+    productName: 'ขนมแมวเลีย รสชีส',
+    productImage: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=400',
+    status: 'pending_completed',
+    currentStep: 4,
+    factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
+    dueDate: '2026-02-20'
   }
 ];
 
