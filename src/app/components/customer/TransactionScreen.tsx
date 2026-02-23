@@ -16,15 +16,23 @@ export function TransactionScreen() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
         <div className="absolute top-[-20%] left-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute bottom-[-10%] right-[-10%] w-32 h-32 bg-[#4F4F9F]/50 rounded-full blur-2xl" />
+        
         <div className="relative z-10 pt-6 pb-2 flex items-center justify-between">
           <div>
             <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest block mb-1">
               My Wallet
             </span>
-            <h1 className="text-2xl font-bold text-white tracking-tight">ประวัติธุรกรรม</h1>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
-            <Wallet className="w-5 h-5 text-white" />
+            
+            {/* เพิ่ม Flex Container ครอบไอคอนและข้อความให้อยู่บรรทัดเดียวกัน */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm shrink-0">
+                <Wallet className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-white tracking-tight mb-0">
+                ประวัติธุรกรรม
+              </h1>
+            </div>
+
           </div>
         </div>
       </div>

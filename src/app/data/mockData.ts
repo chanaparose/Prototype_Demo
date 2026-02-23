@@ -164,6 +164,7 @@ export const mockPromotions: Promotion[] = [
   }
 ];
 
+/** Order id สอดคล้องกับ ChatConversation id: Order 1 <-> Chat 1, Order 2 <-> Chat 2, ... */
 export const mockOrders: Order[] = [
   {
     id: '1',
@@ -182,7 +183,7 @@ export const mockOrders: Order[] = [
     productImage: 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=400',
     status: 'qc',
     currentStep: 3,
-    factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
+    factoryName: 'เสื้อผ้าสัตว์เลี้ยง สยาม',
     dueDate: '2026-03-10'
   },
   {
@@ -192,7 +193,7 @@ export const mockOrders: Order[] = [
     productImage: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=400',
     status: 'completed',
     currentStep: 4,
-    factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
+    factoryName: 'อาหารเสริม เฮลท์ตี้ แพ็ค',
     dueDate: '2026-02-20'
   },
   {
@@ -202,7 +203,7 @@ export const mockOrders: Order[] = [
     productImage: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=400',
     status: 'pending_completed',
     currentStep: 4,
-    factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
+    factoryName: 'โรงงานแพ็กเกจจิ้งครบวงจร',
     dueDate: '2026-02-20'
   }
 ];
@@ -502,9 +503,10 @@ export interface ChatConversation {
   quotation?: ChatQuotation;
 }
 
+/** ChatConversation id สอดคล้องกับ Order id: Chat 1 <-> Order 1, Chat 2 <-> Order 2, ... */
 export const mockChatConversations: ChatConversation[] = [
   {
-    id: 'c1',
+    id: '1',
     factoryId: '1',
     lastMessage: 'ขอบคุณครับ ยืนยันรายการได้เลย',
     lastAt: '2026-02-21 14:30',
@@ -529,7 +531,7 @@ export const mockChatConversations: ChatConversation[] = [
     }
   },
   {
-    id: 'c2',
+    id: '2',
     factoryId: '2',
     lastMessage: 'ส่งตัวอย่างสีให้ดูภายในพรุ่งนี้ครับ',
     lastAt: '2026-02-21 09:45',
@@ -540,7 +542,7 @@ export const mockChatConversations: ChatConversation[] = [
     ]
   },
   {
-    id: 'c3',
+    id: '3',
     factoryId: '3',
     lastMessage: 'ใบเสนอราคาส่งในแชทแล้วครับ',
     lastAt: '2026-02-20 11:20',
@@ -563,7 +565,7 @@ export const mockChatConversations: ChatConversation[] = [
     }
   },
   {
-    id: 'c4',
+    id: '4',
     factoryId: '4',
     lastMessage: 'ได้ครับ รบกวนส่งไฟล์ Artwork มาได้เลย',
     lastAt: '2026-02-18 16:00',

@@ -23,6 +23,7 @@ export default function App() {
   const [userType, setUserType] = useState<'customer' | 'factory'>('customer');
   const [activeTab, setActiveTab] = useState<string>('home');
   const [showChatInbox, setShowChatInbox] = useState(false);
+  const [initialChatId, setInitialChatId] = useState<string | null>(null);
 
   const handleLogin = (type: 'customer' | 'factory') => {
     setUserType(type);
@@ -48,13 +49,29 @@ export default function App() {
 
   const renderCustomerScreen = () => {
     if (showChatInbox) {
-      return <ChatInboxScreen onBack={() => setShowChatInbox(false)} />;
+      return (
+        <ChatInboxScreen
+          key={initialChatId ?? 'inbox'}
+          initialConversationId={initialChatId}
+          onBack={() => {
+            setShowChatInbox(false);
+            setInitialChatId(null);
+          }}
+        />
+      );
     }
     switch (activeTab) {
       case 'home':
-        return <HomeScreen onOpenChat={() => setShowChatInbox(true)} />;
+        return <HomeScreen onOpenChat={() => { setInitialChatId(null); setShowChatInbox(true); }} />;
       case 'order':
-        return <OrderScreen />;
+        return (
+          <OrderScreen
+            onOpenChat={(conversationId) => {
+              setInitialChatId(conversationId ?? null);
+              setShowChatInbox(true);
+            }}
+          />
+        );
       case 'req-his':
         return <ReqHisScreen />;
       case 'transaction':

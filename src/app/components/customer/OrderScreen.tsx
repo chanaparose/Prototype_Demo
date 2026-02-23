@@ -5,9 +5,14 @@ import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { mockOrders } from '../../data/mockData';
-import { ChatBOQScreen } from './ChatBOQScreen';
+import { mockOrders, mockChatConversations } from '../../data/mockData';
 import { ProductionUpdateScreen } from './ProductionUpdateScreen';
+
+/** Order id สอดคล้องกับ ChatConversation id โดยตรง */
+function getConversationIdByOrderId(orderId: string): string | null {
+  const conv = mockChatConversations.find((c) => c.id === orderId);
+  return conv?.id ?? null;
+}
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
   deposit: 'มัดจำ',
@@ -62,7 +67,12 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
   );
 }
 
-export function OrderScreen() {
+interface OrderScreenProps {
+  /** เปิดกล่องแชทและเลือกการสนทนาตามโรงงานของออเดอร์ (จาก mock data) */
+  onOpenChat?: (conversationId: string | null) => void;
+}
+
+export function OrderScreen({ onOpenChat }: OrderScreenProps) {
   const [selectedView, setSelectedView] = useState<'list' | 'chat' | 'update'>('list');
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderTab, setOrderTab] = useState<'active' | 'completed'>('active');
@@ -88,16 +98,6 @@ export function OrderScreen() {
         return `${base} bg-slate-100 text-slate-700`;
     }
   };
-
-  if (selectedView === 'chat' && selectedOrder) {
-    return (
-      <ChatBOQScreen
-        onBack={() => setSelectedView('list')}
-        orderId={selectedOrder.orderId}
-        factoryName={selectedOrder.factoryName}
-      />
-    );
-  }
 
   if (selectedView === 'update' && selectedOrder) {
     return (
@@ -198,10 +198,7 @@ export function OrderScreen() {
                     </Button>
                     <Button
                       className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:opacity-95 text-white shadow-sm"
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setSelectedView('chat');
-                      }}
+                      onClick={() => onOpenChat?.(getConversationIdByOrderId(order.id))}
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       แชทกับโรงงาน
@@ -280,10 +277,7 @@ export function OrderScreen() {
                       </Button>
                       <Button
                         className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:opacity-95 text-white shadow-sm"
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setSelectedView('chat');
-                        }}
+                        onClick={() => onOpenChat?.(getConversationIdByOrderId(order.id))}
                       >
                         <MessageCircle className="w-4 h-4 mr-2" />
                         แชทกับโรงงาน

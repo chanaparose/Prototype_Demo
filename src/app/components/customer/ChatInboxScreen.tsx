@@ -5,22 +5,25 @@ import { ChatRoomScreen } from './ChatRoomScreen';
 
 interface ChatInboxScreenProps {
   onBack: () => void;
+  /** เปิดห้องแชทนี้ทันที (จาก OrderScreen กด "แชทกับโรงงาน") */
+  initialConversationId?: string | null;
 }
 
 function getFactory(factoryId: string) {
   return mockFactories.find((f) => f.id === factoryId);
 }
 
-export function ChatInboxScreen({ onBack }: ChatInboxScreenProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export function ChatInboxScreen({ onBack, initialConversationId = null }: ChatInboxScreenProps) {
+  const [selectedId, setSelectedId] = useState<string | null>(initialConversationId ?? null);
 
   const selected = selectedId ? mockChatConversations.find((c) => c.id === selectedId) : null;
   const factory = selected ? getFactory(selected.factoryId) : null;
 
   if (selected && factory) {
+    const cameFromOrder = selectedId === initialConversationId;
     return (
       <ChatRoomScreen
-        onBack={() => setSelectedId(null)}
+        onBack={cameFromOrder ? onBack : () => setSelectedId(null)}
         conversation={selected}
         factory={factory}
       />
