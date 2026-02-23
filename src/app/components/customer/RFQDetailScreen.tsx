@@ -159,47 +159,54 @@ export function RFQDetailScreen({ onBack, rfqId }: RFQDetailScreenProps) {
           </CardContent>
         </Card>
 
-        {/* Status Section */}
-        <Card className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm border-l-4 border-l-[#4F4F9F]">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-[#4F4F9F]/10">
-                <FileText className="w-4 h-4 text-[#4F4F9F]" />
+        {/* Status Section - UI เหมือน order card ตอน orderStatus: 'production' */}
+        <Card className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+          <CardContent className="p-0">
+            {/* Header ธีมม่วงอ่อน เหมือน OrderScreen production */}
+            <div className="bg-gradient-to-r from-purple-50 via-indigo-50/80 to-slate-50 p-4 border-b border-slate-100">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-medium text-sm text-slate-800">สถานะการตอบรับ</span>
+                <Badge className="font-medium whitespace-nowrap shrink-0 bg-purple-100 text-[#4F4F9F] border border-purple-200">
+                  กำลังรอใบเสนอราคา
+                </Badge>
               </div>
-              สถานะการตอบรับ
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Eye className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-700">โรงงานที่เห็นโพสต์</span>
-                  </div>
-                  <span className="font-semibold text-[#4F4F9F]">{rfqDetail.seenCount} โรงงาน</span>
-                </div>
-                <Progress value={(rfqDetail.seenCount / 20) * 100} className="h-2" />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <FileText className="w-4 h-4 text-slate-500" />
-                    <span className="text-slate-700">โรงงานที่เสนอราคา</span>
-                  </div>
-                  <span className="font-semibold text-amber-600">{rfqDetail.quotedCount} โรงงาน</span>
-                </div>
-                <Progress value={0} className="h-2" />
-              </div>
+              <p className="text-xs text-slate-600">{rfqDetail.id}</p>
             </div>
 
-            {rfqDetail.quotedCount === 0 && (
-              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                <p className="text-sm text-amber-800">
-                  💡 ยังไม่มีโรงงานเสนอราคา โปรดรอสักครู่
-                </p>
+            {/* Content */}
+            <div className="p-4">
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Eye className="w-4 h-4 text-slate-500" />
+                      <span className="text-slate-700">โรงงานที่เห็นโพสต์</span>
+                    </div>
+                    <span className="font-semibold text-[#4F4F9F]">{rfqDetail.seenCount} โรงงาน</span>
+                  </div>
+                  <Progress value={(rfqDetail.seenCount / 20) * 100} className="h-2" />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <FileText className="w-4 h-4 text-slate-500" />
+                      <span className="text-slate-700">โรงงานที่เสนอราคา</span>
+                    </div>
+                    <span className="font-semibold text-amber-600">{rfqDetail.quotedCount} โรงงาน</span>
+                  </div>
+                  <Progress value={rfqDetail.quotedCount > 0 ? (rfqDetail.quotedCount / 10) * 100 : 0} className="h-2" />
+                </div>
               </div>
-            )}
+
+              {rfqDetail.quotedCount === 0 && (
+                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  <p className="text-sm text-amber-800">
+                    💡 ยังไม่มีโรงงานเสนอราคา โปรดรอสักครู่
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
