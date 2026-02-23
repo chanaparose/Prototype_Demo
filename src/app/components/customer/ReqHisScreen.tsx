@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, DollarSign, TrendingUp, FileText, ChevronRight } from 'lucide-react';
+import { Calendar, DollarSign, TrendingUp, FileText, ChevronRight, PenLine } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
@@ -8,11 +8,24 @@ import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { mockRFQs } from '../../data/mockData';
 import { PriceComparisonScreen } from './PriceComparisonScreen';
 import { RFQDetailScreen } from './RFQDetailScreen';
+import { CreateRFQScreen } from './CreateRFQScreen';
 
 export function ReqHisScreen() {
-  const [selectedView, setSelectedView] = useState<'list' | 'comparison' | 'detail'>('list');
+  const [selectedView, setSelectedView] = useState<'list' | 'comparison' | 'detail' | 'create'>('list');
   const [selectedRFQ, setSelectedRFQ] = useState<any>(null);
   const [rfqTab, setRfqTab] = useState<'received' | 'pending'>('received');
+
+  if (selectedView === 'create') {
+    return (
+      <CreateRFQScreen
+        onBack={() => setSelectedView('list')}
+        onSubmit={() => {
+          setSelectedView('list');
+          setRfqTab('pending');
+        }}
+      />
+    );
+  }
 
   if (selectedView === 'comparison' && selectedRFQ) {
     return (
@@ -34,15 +47,26 @@ export function ReqHisScreen() {
 
   return (
     <div className="pb-20 bg-gray-50 min-h-screen">
-      {/* Header ธีมเดียวกับ OrderScreen */}
+      {/* Header ธีมเดียวกับ OrderScreen + ปุ่มเขียนใบเสนอราคา */}
       <div className="relative border-b border-white/10 sticky top-0 z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
         <div className="absolute top-[-10%] left-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl" />
         <div className="relative z-10 px-6 py-5">
-          <span className="text-white/70 text-xs font-bold uppercase tracking-[0.15em] block mb-0.5">
-            RFQ History
-          </span>
-          <h1 className="text-xl font-bold text-white">ประวัติการขอใบเสนอราคา</h1>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <span className="text-white/70 text-xs font-bold uppercase tracking-[0.15em] block mb-0.5">
+                RFQ History
+              </span>
+              <h1 className="text-xl font-bold text-white">ประวัติการขอใบเสนอราคา</h1>
+            </div>
+            <Button
+              onClick={() => setSelectedView('create')}
+              className="shrink-0 rounded-xl bg-white/95 text-[#4F4F9F] hover:bg-white font-semibold shadow-md h-10 px-4 gap-2"
+            >
+              <PenLine className="w-4 h-4" />
+              <span className="hidden sm:inline">เขียนใบเสนอราคา</span>
+            </Button>
+          </div>
         </div>
       </div>
 
