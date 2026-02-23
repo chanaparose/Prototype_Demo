@@ -1,7 +1,9 @@
+import React from 'react';
 import { ArrowLeft, MessageCircle, Trophy } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
+import { mockRFQQuotesByRfqId } from '../../data/mockData';
 
 interface PriceComparisonScreenProps {
   onBack: () => void;
@@ -9,41 +11,7 @@ interface PriceComparisonScreenProps {
 }
 
 export function PriceComparisonScreen({ onBack, rfqId }: PriceComparisonScreenProps) {
-  const quotes = [
-    {
-      id: '1',
-      factoryName: 'โรงงาน A - Pathum Pet Food',
-      pricePerUnit: 30,
-      moldCost: 5000,
-      productionTime: '15 วัน',
-      details: 'รวมแพ็กเกจจิ้ง, มาตรฐาน GMP',
-      rating: 4.8,
-      isWinner: true,
-      totalPrice: 20500
-    },
-    {
-      id: '2',
-      factoryName: 'โรงงาน B - Bangkok Pet Treats',
-      pricePerUnit: 28,
-      moldCost: 8000,
-      productionTime: '30 วัน',
-      details: 'ไม่รวมแพ็กเกจจิ้ง',
-      rating: 4.2,
-      isWinner: false,
-      totalPrice: 22000
-    },
-    {
-      id: '3',
-      factoryName: 'โรงงาน C - Samut Food Factory',
-      pricePerUnit: 32,
-      moldCost: 4000,
-      productionTime: '20 วัน',
-      details: 'รวมแพ็กเกจจิ้ง พรีเมี่ยม',
-      rating: 4.5,
-      isWinner: false,
-      totalPrice: 20000
-    }
-  ];
+  const quotes = mockRFQQuotesByRfqId[rfqId] ?? mockRFQQuotesByRfqId['1'];
 
   const comparisonRows = [
     { label: 'ราคา/ชิ้น', key: 'pricePerUnit', suffix: ' บาท' },
@@ -111,7 +79,7 @@ export function PriceComparisonScreen({ onBack, rfqId }: PriceComparisonScreenPr
                     <Card key={quote.id} className="flex-1 min-w-[200px]">
                       <CardContent className="p-3 flex items-center justify-center">
                         <p className="text-sm font-medium text-center">
-                          {quote[row.key as keyof typeof quote]}{row.suffix}
+                          {(quote as Record<string, string | number>)[row.key]}{row.suffix}
                         </p>
                       </CardContent>
                     </Card>

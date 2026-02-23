@@ -360,6 +360,114 @@ export const mockNewRFQs: RFQ[] = [
   }
 ];
 
+// --- Customer Profile & Wallet (สำหรับ ProfileScreen, TransactionScreen) ---
+export interface CustomerProfile {
+  displayName: string;
+  email: string;
+  initial: string;
+  projectCount: number;
+  successCount: number;
+  inProgressCount: number;
+  savedFactoriesCount: number;
+  addressCount: number;
+  appVersion: string;
+  buildNumber: string;
+}
+
+export const mockCustomerProfile: CustomerProfile = {
+  displayName: 'คุณสมชาย',
+  email: 'somchai@email.com',
+  initial: 'สม',
+  projectCount: 12,
+  successCount: 8,
+  inProgressCount: 4,
+  savedFactoriesCount: 5,
+  addressCount: 2,
+  appVersion: '1.0.0',
+  buildNumber: '12',
+};
+
+export const mockCustomerWalletBalance = 5000;
+
+// --- RFQ Price Comparison (สำหรับ PriceComparisonScreen) ---
+export interface RFQComparisonQuote {
+  id: string;
+  factoryName: string;
+  factoryId?: string;
+  pricePerUnit: number;
+  moldCost: number;
+  productionTime: string;
+  details: string;
+  rating: number;
+  isWinner: boolean;
+  totalPrice: number;
+}
+
+export const mockRFQQuotesByRfqId: Record<string, RFQComparisonQuote[]> = {
+  '1': [
+    { id: '1', factoryName: 'โรงงาน A - Pathum Pet Food', factoryId: '1', pricePerUnit: 30, moldCost: 5000, productionTime: '15 วัน', details: 'รวมแพ็กเกจจิ้ง, มาตรฐาน GMP', rating: 4.8, isWinner: true, totalPrice: 20500 },
+    { id: '2', factoryName: 'โรงงาน B - Bangkok Pet Treats', factoryId: '2', pricePerUnit: 28, moldCost: 8000, productionTime: '30 วัน', details: 'ไม่รวมแพ็กเกจจิ้ง', rating: 4.2, isWinner: false, totalPrice: 22000 },
+    { id: '3', factoryName: 'โรงงาน C - Samut Food Factory', factoryId: '3', pricePerUnit: 32, moldCost: 4000, productionTime: '20 วัน', details: 'รวมแพ็กเกจจิ้ง พรีเมี่ยม', rating: 4.5, isWinner: false, totalPrice: 20000 },
+  ],
+  '2': [
+    { id: '1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', factoryId: '1', pricePerUnit: 46, moldCost: 3000, productionTime: '14 วัน', details: 'รวมแพ็กเกจจิ้ง Freeze Dried', rating: 4.9, isWinner: true, totalPrice: 23300 },
+    { id: '2', factoryName: 'โรงงานอาหารเสริม เฮลท์ตี้ แพ็ค', factoryId: '3', pricePerUnit: 48, moldCost: 5000, productionTime: '21 วัน', details: 'มาตรฐาน GMP, อย.', rating: 4.7, isWinner: false, totalPrice: 25100 },
+  ],
+};
+
+// --- RFQ Detail Extended (สำหรับ RFQDetailScreen) ---
+export interface RFQDetailExtended {
+  productName: string;
+  imageUrl: string;
+  description: string;
+  requirements: string[];
+  location: string;
+  targetFactory: string;
+  budgetPerUnit?: number;
+  totalBudget?: number;
+  seenCount: number;
+  quotedCount: number;
+}
+
+export const mockRFQDetailsByRfqId: Record<string, RFQDetailExtended> = {
+  '1': {
+    productName: 'อกไก่อบแห้ง',
+    imageUrl: 'https://images.unsplash.com/photo-1645623383208-84926ba8aa21?w=800',
+    description: 'ต้องการผลิตอกไก่อบแห้งสำหรับสัตว์เลี้ยง บรรจุถุง 50g',
+    requirements: ['ต้องมีใบรับรอง อย.', 'โรงงานมีมาตรฐาน GMP', 'ส่งตัวอย่างก่อนผลิตจริง'],
+    location: 'กรุงเทพมหานคร',
+    targetFactory: 'โรงงานมาตรฐาน GMP, เขตปทุมธานี',
+    budgetPerUnit: 75,
+    totalBudget: 15000,
+    seenCount: 12,
+    quotedCount: 3,
+  },
+  '2': {
+    productName: 'ขนมสุนัข Freeze Dried',
+    imageUrl: 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=800',
+    description: 'ต้องการขนมสุนัขฟรีซดราย สูตรตับไก่แท้ ไม่เค็ม ไม่มีสารกันเสีย บรรจุถุงซิปล็อค ขนาด 50g/ถุง',
+    requirements: ['ต้องมีใบรับรอง อย.', 'โรงงานมีมาตรฐาน GMP', 'ส่งตัวอย่างก่อนผลิตจริง', 'รับประกันคุณภาพ'],
+    location: 'กรุงเทพมหานคร',
+    targetFactory: 'โรงงานมาตรฐาน GMP, เขตปทุมธานี',
+    budgetPerUnit: 50,
+    totalBudget: 25000,
+    seenCount: 15,
+    quotedCount: 2,
+  },
+  '3': {
+    productName: 'เสื้อสุนัขขนาดกลาง',
+    imageUrl: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=800',
+    description: 'ต้องการผลิตเสื้อสุนัขขนาดกลาง 100 ตัว หลายสี',
+    requirements: ['ผ้าคุณภาพดี', 'มี 4 สีขึ้นไป', 'รับ sample ก่อนผลิต'],
+    location: 'นนทบุรี',
+    targetFactory: 'โรงงานเสื้อผ้าสัตว์เลี้ยง',
+    budgetPerUnit: 80,
+    totalBudget: 8000,
+    seenCount: 8,
+    quotedCount: 0,
+  },
+};
+
 // --- Chat (สอดคล้องกับโรงงาน + คำสั่งซื้อ) ---
 export interface ChatMessage {
   id: string;

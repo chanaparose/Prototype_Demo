@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronRight, Bookmark, MapPin, Users, HelpCircle, LogOut, ShieldCheck, Heart } from 'lucide-react';
-// ลบ Card, CardContent เดิมออกได้เลยในหน้านี้ เพราะเราจะสร้าง Container แบบ Custom ที่ดูคลีนกว่า
 import { Badge } from '../ui/badge';
+import { mockCustomerProfile } from '../../data/mockData';
 
 interface ProfileScreenProps {
   onSwitchMode: () => void;
@@ -13,19 +13,13 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
     {
       icon: Heart,
       title: 'รายการโปรด',
-      subtitle: 'โรงงานและรายการที่คุณชอบ',
-      onClick: () => {}
-    },
-    {
-      icon: Bookmark,
-      title: 'โรงงานที่บันทึกไว้',
-      subtitle: '5 โรงงาน',
+      subtitle: `${mockCustomerProfile.savedFactoriesCount} โรงงาน`,
       onClick: () => {}
     },
     {
       icon: MapPin,
       title: 'ที่อยู่สำหรับจัดส่ง',
-      subtitle: '2 ที่อยู่',
+      subtitle: `${mockCustomerProfile.addressCount} ที่อยู่`,
       onClick: () => {}
     },
     {
@@ -57,11 +51,11 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
           </span>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
-              <span className="text-2xl font-bold text-white">สม</span>
+              <span className="text-2xl font-bold text-white">{mockCustomerProfile.initial}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-white tracking-tight mb-0.5">คุณสมชาย</h1>
-              <p className="text-sm text-white/70 truncate mb-2">somchai@email.com</p>
+              <h1 className="text-2xl font-bold text-white tracking-tight mb-0.5">{mockCustomerProfile.displayName}</h1>
+              <p className="text-sm text-white/70 truncate mb-2">{mockCustomerProfile.email}</p>
               <Badge className="bg-white/10 backdrop-blur-md text-emerald-300 border border-emerald-400/30 font-medium px-2.5 py-0.5 h-6 rounded-full shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5 mr-1" />
                 ยืนยันตัวตนแล้ว
@@ -75,15 +69,15 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
       <div className="px-4 -mt-2 mb-4 relative z-20">
         <div className="bg-white rounded-[24px] p-5 shadow-xl shadow-slate-200/40 border border-slate-100 flex justify-between divide-x divide-slate-100">
           <div className="flex-1 text-center px-2">
-            <p className="text-2xl font-bold text-slate-800">12</p>
+            <p className="text-2xl font-bold text-slate-800">{mockCustomerProfile.projectCount}</p>
             <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">โครงการ</p>
           </div>
           <div className="flex-1 text-center px-2">
-            <p className="text-2xl font-bold text-emerald-600">8</p>
+            <p className="text-2xl font-bold text-emerald-600">{mockCustomerProfile.successCount}</p>
             <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">สำเร็จ</p>
           </div>
           <div className="flex-1 text-center px-2">
-            <p className="text-2xl font-bold text-amber-500">4</p>
+            <p className="text-2xl font-bold text-amber-500">{mockCustomerProfile.inProgressCount}</p>
             <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">ดำเนินการ</p>
           </div>
         </div>
@@ -152,7 +146,7 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
         
         {/* App Version (Optional: นิยมใส่ไว้ล่างสุดของหน้า Profile) */}
         <div className="text-center pt-2">
-          <p className="text-xs text-slate-400">เวอร์ชัน 1.0.0 (Build 12)</p>
+          <p className="text-xs text-slate-400">เวอร์ชัน {mockCustomerProfile.appVersion} (Build {mockCustomerProfile.buildNumber})</p>
         </div>
 
       </div>

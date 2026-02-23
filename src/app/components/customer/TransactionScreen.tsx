@@ -4,10 +4,10 @@ import { motion } from 'framer-motion'; // แก้จาก 'motion/react' เ
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { mockTransactions } from '../../data/mockData';
+import { mockTransactions, mockCustomerWalletBalance } from '../../data/mockData';
 
 export function TransactionScreen() {
-  const totalBalance = 5000;
+  const totalBalance = mockCustomerWalletBalance;
 
   return (
     <div className="pb-20 bg-slate-50 min-h-screen">

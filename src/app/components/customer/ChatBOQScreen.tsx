@@ -1,9 +1,17 @@
+import React from 'react';
 import { ArrowLeft, Send, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
+import { mockChatConversations, mockFactories } from '../../data/mockData';
+
+/** แปลง "2026-02-21 10:32" -> "10:32" */
+function formatTime(at: string) {
+  const parts = at.split(' ');
+  return parts.length >= 2 ? parts[1].slice(0, 5) : at;
+}
 
 interface ChatBOQScreenProps {
   onBack: () => void;
@@ -14,38 +22,17 @@ interface ChatBOQScreenProps {
 export function ChatBOQScreen({ onBack, orderId, factoryName }: ChatBOQScreenProps) {
   const [message, setMessage] = useState('');
 
-  const chatMessages = [
-    {
-      id: '1',
-      sender: 'factory',
-      text: 'สวัสดีครับคุณลูกค้า ทางโรงงานได้รับคำขอผลิตสินค้าของท่านแล้วครับ',
-      time: '10:30'
-    },
-    {
-      id: '2',
-      sender: 'customer',
-      text: 'สวัสดีครับ ผมสนใจผลิตขนมแมวเลีย 500 ซอง ใช้เวลานานไหมครับ',
-      time: '10:32'
-    },
-    {
-      id: '3',
-      sender: 'factory',
-      text: 'ใช้เวลาประมาณ 15 วันครับ ผมส่งใบเสนอราคาให้พิจารณานะครับ',
-      time: '10:35'
-    }
-  ];
+  const { conversation, quotation } = useMemo(() => {
+    const factory = mockFactories.find((f) => f.name === factoryName);
+    const factoryId = factory?.id ?? '1';
+    const conv = mockChatConversations.find((c) => c.factoryId === factoryId);
+    return {
+      conversation: conv ?? mockChatConversations[0],
+      quotation: conv?.quotation,
+    };
+  }, [factoryName]);
 
-  const quotation = {
-    id: 'QT-2026-001',
-    items: [
-      { name: 'ค่าผลิตขนมแมวเลีย (500 ชิ้น)', unitPrice: 30, quantity: 500, total: 15000 },
-      { name: 'ค่าแม่พิมพ์ (Mold Cost)', unitPrice: 5000, quantity: 1, total: 5000, note: 'จ่ายครั้งเดียว' },
-      { name: 'ค่าจัดส่ง', unitPrice: 500, quantity: 1, total: 500 }
-    ],
-    subtotal: 20500,
-    depositPercent: 50,
-    depositAmount: 10250
-  };
+  const chatMessages = conversation.messages;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -82,73 +69,77 @@ export function ChatBOQScreen({ onBack, orderId, factoryName }: ChatBOQScreenPro
                   msg.sender === 'customer' ? 'text-blue-100' : 'text-gray-500'
                 }`}
               >
-                {msg.time}
+                {formatTime(msg.at)}
               </p>
             </div>
           </div>
         ))}
 
-        {/* Quotation Bubble */}
-        <div className="flex justify-start">
-          <Card className="w-full max-w-md border-2 border-green-200 shadow-lg">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <FileText className="w-5 h-5 text-green-600" />
-                <h3 className="font-semibold text-green-700">ใบเสนอราคา #{quotation.id}</h3>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                {quotation.items.map((item, index) => (
-                  <div key={index} className="text-sm">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <p className="font-medium">{index + 1}. {item.name}</p>
-                        {item.note && (
-                          <Badge variant="secondary" className="text-xs mt-1">
-                            {item.note}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="font-medium">฿{item.total.toLocaleString()}</p>
-                    </div>
-                    {item.quantity > 1 && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        {item.quantity} ชิ้น × ฿{item.unitPrice.toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t pt-3 mb-4">
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>ยอดสุทธิ:</span>
-                  <span className="text-green-600">฿{quotation.subtotal.toLocaleString()}</span>
+        {/* Quotation Bubble - แสดงเมื่อมี quotation จาก mockData */}
+        {quotation && (
+          <div className="flex justify-start">
+            <Card className="w-full max-w-md border-2 border-green-200 shadow-lg">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-700">ใบเสนอราคา #{quotation.id}</h3>
                 </div>
-              </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                <p className="text-sm font-medium text-blue-900">เงื่อนไข</p>
-                <p className="text-sm text-blue-700">
-                  มัดจำ {quotation.depositPercent}% (฿{quotation.depositAmount.toLocaleString()}) ก่อนเริ่มผลิต
-                </p>
-              </div>
+                <div className="space-y-2 mb-4">
+                  {quotation.items.map((item, index) => (
+                    <div key={index} className="text-sm">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-medium">{index + 1}. {item.name}</p>
+                          {item.note && (
+                            <Badge variant="secondary" className="text-xs mt-1">
+                              {item.note}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="font-medium">฿{item.total.toLocaleString()}</p>
+                      </div>
+                      {item.quantity > 1 && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          {item.quantity} ชิ้น × ฿{item.unitPrice.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
 
-              <Button className="w-full bg-green-600 hover:bg-green-700">
-                ชำระมัดจำ {quotation.depositPercent}% (฿{quotation.depositAmount.toLocaleString()})
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+                <div className="border-t pt-3 mb-4">
+                  <div className="flex justify-between font-semibold text-lg">
+                    <span>ยอดสุทธิ:</span>
+                    <span className="text-green-600">฿{quotation.subtotal.toLocaleString()}</span>
+                  </div>
+                </div>
 
-        <div className="flex justify-start">
-          <div className="max-w-[75%] rounded-2xl px-4 py-2 bg-white border border-gray-200">
-            <p className="text-sm">
-              ราคานี้รวมแพ็กเกจจิ้งแล้วนะครับ ถ้ามีข้อสงสัยเพิ่มเติมสอบถามได้เลยครับ
-            </p>
-            <p className="text-xs text-gray-500 mt-1">10:38</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm font-medium text-blue-900">เงื่อนไข</p>
+                  <p className="text-sm text-blue-700">
+                    มัดจำ {quotation.depositPercent}% (฿{quotation.depositAmount.toLocaleString()}) ก่อนเริ่มผลิต
+                  </p>
+                </div>
+
+                <Button className="w-full bg-green-600 hover:bg-green-700">
+                  ชำระมัดจำ {quotation.depositPercent}% (฿{quotation.depositAmount.toLocaleString()})
+                </Button>
+              </CardContent>
+            </Card>
           </div>
-        </div>
+        )}
+
+        {quotation && (
+          <div className="flex justify-start">
+            <div className="max-w-[75%] rounded-2xl px-4 py-2 bg-white border border-gray-200">
+              <p className="text-sm">
+                ราคานี้รวมแพ็กเกจจิ้งแล้วนะครับ ถ้ามีข้อสงสัยเพิ่มเติมสอบถามได้เลยครับ
+              </p>
+              <p className="text-xs text-gray-500 mt-1">{formatTime(conversation.lastAt)}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input Area */}

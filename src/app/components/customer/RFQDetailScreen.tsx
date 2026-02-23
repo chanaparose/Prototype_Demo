@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ArrowLeft, Eye, FileText, MapPin, Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
+import { mockRFQs, mockRFQDetailsByRfqId } from '../../data/mockData';
 
 interface RFQDetailScreenProps {
   onBack: () => void;
@@ -11,27 +12,44 @@ interface RFQDetailScreenProps {
 }
 
 export function RFQDetailScreen({ onBack, rfqId }: RFQDetailScreenProps) {
-  const rfqDetail = {
-    id: 'RFQ-2026-003',
-    productName: 'ขนมสุนัข Freeze Dried สูตรตับไก่',
-    imageUrl: 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=800',
-    quantity: 200,
-    budgetPerUnit: 100,
-    totalBudget: 20000,
-    targetFactory: 'โรงงานมาตรฐาน GMP, เขตปทุมธานี',
-    description: 'ต้องการขนมสุนัขฟรีซดราย สูตรตับไก่แท้ ไม่เค็ม ไม่มีสารกันเสีย บรรจุถุงซิปล็อค ขนาด 50g/ถุง',
-    requirements: [
-      'ต้องมีใบรับรอง อย.',
-      'โรงงานมีมาตรฐาน GMP',
-      'ส่งตัวอย่างก่อนผลิตจริง',
-      'รับประกันคุณภาพ'
-    ],
-    location: 'กรุงเทพมหานคร',
-    postedDate: '2026-02-15',
-    status: 'pending',
-    seenCount: 15,
-    quotedCount: 0
-  };
+  const rfqDetail = useMemo(() => {
+    const rfq = mockRFQs.find((r) => r.id === rfqId);
+    const ext = mockRFQDetailsByRfqId[rfqId];
+    if (!rfq) {
+      return {
+        id: `RFQ-${rfqId}`,
+        productName: 'คำขอใบเสนอราคา',
+        imageUrl: 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=800',
+        quantity: 0,
+        budgetPerUnit: 0,
+        totalBudget: 0,
+        targetFactory: '',
+        description: '',
+        requirements: [] as string[],
+        location: '',
+        postedDate: '',
+        status: 'pending' as const,
+        seenCount: 0,
+        quotedCount: 0,
+      };
+    }
+    return {
+      id: `RFQ-2026-${rfq.id.padStart(3, '0')}`,
+      productName: ext?.productName ?? rfq.title,
+      imageUrl: ext?.imageUrl ?? 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=800',
+      quantity: rfq.quantity,
+      budgetPerUnit: ext?.budgetPerUnit ?? Math.round(rfq.budget / rfq.quantity),
+      totalBudget: ext?.totalBudget ?? rfq.budget,
+      targetFactory: ext?.targetFactory ?? 'โรงงานมาตรฐาน GMP',
+      description: ext?.description ?? `ต้องการผลิต: ${rfq.title}`,
+      requirements: ext?.requirements ?? [],
+      location: ext?.location ?? 'กรุงเทพมหานคร',
+      postedDate: rfq.datePosted,
+      status: rfq.status,
+      seenCount: ext?.seenCount ?? 0,
+      quotedCount: ext?.quotedCount ?? rfq.bidCount,
+    };
+  }, [rfqId]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -51,7 +69,7 @@ export function RFQDetailScreen({ onBack, rfqId }: RFQDetailScreenProps) {
             </button>
             <div className="flex-1" />
             <Badge className="bg-amber-500/90 text-white border-0">
-              กำลังรอใบเสนอราคา
+              {rfqDetail.status === 'pending' ? 'กำลังรอใบเสนอราคา' : 'ได้รับข้อเสนอแล้ว'}
             </Badge>
           </div>
           <div className="mt-2">
@@ -167,7 +185,7 @@ export function RFQDetailScreen({ onBack, rfqId }: RFQDetailScreenProps) {
               <div className="flex items-center justify-between mb-1">
                 <span className="font-medium text-sm text-slate-800">สถานะการตอบรับ</span>
                 <Badge className="font-medium whitespace-nowrap shrink-0 bg-purple-100 text-[#4F4F9F] border border-purple-200">
-                  กำลังรอใบเสนอราคา
+                  {rfqDetail.status === 'pending' ? 'กำลังรอใบเสนอราคา' : 'ได้รับข้อเสนอแล้ว'}
                 </Badge>
               </div>
               <p className="text-xs text-slate-600">{rfqDetail.id}</p>
