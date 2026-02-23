@@ -11,61 +11,63 @@ export function TransactionScreen() {
 
   return (
     <div className="pb-20 bg-slate-50 min-h-screen">
-      {/* 1. Header (ปรับให้สูงขึ้นเพื่อรองรับการ์ดทับซ้อน) */}
-      <div className="relative border-b border-white/10 sticky top-0 z-10 overflow-hidden pb-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
-        <div className="absolute top-[-20%] left-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-32 h-32 bg-[#4F4F9F]/50 rounded-full blur-2xl" />
-        
-        <div className="relative z-10 px-6 pt-6 pb-4 flex items-center justify-between">
-          <div>
-            <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest block mb-1">
-              My Wallet
-            </span>
-            <h1 className="text-2xl font-bold text-white tracking-tight">ประวัติธุรกรรม</h1>
+      {/* 1. Sticky block: Header + ยอดเงินคงเหลือ อยู่กับที่ ไม่เลื่อนทับแบนเนอร์ */}
+      <div className="sticky top-0 z-10 pb-6 bg-slate-50">
+        {/* Header (Banner) */}
+        <div className="relative border-b border-white/10 overflow-hidden pb-12">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
+          <div className="absolute top-[-20%] left-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-32 h-32 bg-[#4F4F9F]/50 rounded-full blur-2xl" />
+          
+          <div className="relative z-10 px-6 pt-6 pb-4 flex items-center justify-between">
+            <div>
+              <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest block mb-1">
+                My Wallet
+              </span>
+              <h1 className="text-2xl font-bold text-white tracking-tight">ประวัติธุรกรรม</h1>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
+              <Wallet className="w-5 h-5 text-white" />
+            </div>
           </div>
-          {/* เพิ่มปุ่มประวัติหรือตั้งค่า (Optional) ให้ Header ดูสมดุล */}
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
-             <Wallet className="w-5 h-5 text-white" />
-          </div>
+        </div>
+
+        {/* 2. Wallet Balance Card (อยู่กับที่เมื่อเลื่อน) */}
+        <div className="px-4 relative z-20 -mt-8 mb-0">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="bg-white rounded-[24px] p-5 shadow-xl shadow-slate-200/40 border border-slate-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-slate-500">ยอดเงินคงเหลือ</p>
+                </div>
+              </div>
+              
+              <div className="flex items-end justify-between">
+                <div>
+                  <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                    ฿{totalBalance.toLocaleString()}
+                  </span>
+                  <span className="text-slate-400 font-medium ml-1">.00</span>
+                </div>
+                
+                <Button
+                  className="rounded-full bg-slate-900 hover:bg-slate-800 text-white shadow-md shadow-slate-900/20 px-5 h-11 gap-2 transition-transform active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="font-semibold">เติมเงิน</span>
+                </Button>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
 
-      {/* 2. Wallet Balance Card (Overlapping Effect) */}
-      <div className="px-4 relative z-20 -mt-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <div className="bg-white rounded-[24px] p-5 shadow-xl shadow-slate-200/40 border border-slate-100">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-slate-500">ยอดเงินคงเหลือ</p>
-              </div>
-            </div>
-            
-            <div className="flex items-end justify-between">
-              <div>
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                  ฿{totalBalance.toLocaleString()}
-                </span>
-                <span className="text-slate-400 font-medium ml-1">.00</span>
-              </div>
-              
-              <Button
-                className="rounded-full bg-slate-900 hover:bg-slate-800 text-white shadow-md shadow-slate-900/20 px-5 h-11 gap-2 transition-transform active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="font-semibold">เติมเงิน</span>
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* 3. Transaction List (Clean / Grouped Style) */}
-      <div className="px-4 pt-8">
+      {/* 3. Transaction List (เลื่อนตามจอ) */}
+      <div className="px-4 pt-1">
         <div className="flex items-center justify-between mb-4 px-1">
           <h2 className="text-sm font-bold text-slate-800">รายการล่าสุด</h2>
           <button className="text-xs font-semibold text-[#4F4F9F] hover:text-[#3E3F7F]">
