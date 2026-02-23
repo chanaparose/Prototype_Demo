@@ -45,56 +45,51 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
 
   return (
     <div className="pb-20 bg-slate-50 min-h-screen">
-      {/* 1. Sticky block: Header + Stats อยู่กับที่ตอนเลื่อน จอ (fig อยู่กับที่เหมือน Menu Items) */}
-      <div className="sticky top-0 z-10 pb-6 bg-slate-50">
-        {/* Header */}
-        <div className="relative border-b border-white/10 overflow-hidden pb-14">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
-          <div className="absolute top-[-10%] left-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-32 h-32 bg-[#4F4F9F]/50 rounded-full blur-2xl" />
-          
-          <div className="relative z-10 px-6 pt-6 pb-2">
-            <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest block mb-4">
-              My Profile
-            </span>
-            
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
-                <span className="text-2xl font-bold text-white">สม</span>
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-bold text-white tracking-tight mb-0.5">คุณสมชาย</h1>
-                <p className="text-sm text-white/70 truncate mb-2">somchai@email.com</p>
-                <Badge className="bg-white/10 backdrop-blur-md text-emerald-300 border border-emerald-400/30 font-medium px-2.5 py-0.5 h-6 rounded-full shadow-sm">
-                  <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-                  ยืนยันตัวตนแล้ว
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* 1. Header (เลื่อนไปกับหน้าจอได้ เหมือน HomeScreen - ไม่ sticky) */}
+      <div className="relative pt-0 pb-10 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
+        <div className="absolute top-[-10%] left-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-32 h-32 bg-[#4F4F9F]/50 rounded-full blur-2xl" />
 
-        {/* 2. Stats (อยู่กับที่เมื่อเลื่อน - ไม่เลื่อนตามจอ) */}
-        <div className="px-4 relative z-20 -mt-10 mb-0">
-          <div className="bg-white rounded-[24px] p-5 shadow-xl shadow-slate-200/40 border border-slate-100 flex justify-between divide-x divide-slate-100">
-            <div className="flex-1 text-center px-2">
-              <p className="text-2xl font-bold text-slate-800">12</p>
-              <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">โครงการ</p>
+        <div className="relative z-10 pt-6 pb-2">
+          <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest block mb-4">
+            My Profile
+          </span>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-tr from-white/20 to-white/5 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-inner">
+              <span className="text-2xl font-bold text-white">สม</span>
             </div>
-            <div className="flex-1 text-center px-2">
-              <p className="text-2xl font-bold text-emerald-600">8</p>
-              <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">สำเร็จ</p>
-            </div>
-            <div className="flex-1 text-center px-2">
-              <p className="text-2xl font-bold text-amber-500">4</p>
-              <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">ดำเนินการ</p>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold text-white tracking-tight mb-0.5">คุณสมชาย</h1>
+              <p className="text-sm text-white/70 truncate mb-2">somchai@email.com</p>
+              <Badge className="bg-white/10 backdrop-blur-md text-emerald-300 border border-emerald-400/30 font-medium px-2.5 py-0.5 h-6 rounded-full shadow-sm">
+                <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                ยืนยันตัวตนแล้ว
+              </Badge>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Menu Items (Grouped List) - เลื่อนตามจอ */}
+      {/* 2. Stats (เลื่อนตามจอ เหมือนเนื้อหาหน้า HomeScreen) */}
+      <div className="px-4 -mt-2 mb-4 relative z-20">
+        <div className="bg-white rounded-[24px] p-5 shadow-xl shadow-slate-200/40 border border-slate-100 flex justify-between divide-x divide-slate-100">
+          <div className="flex-1 text-center px-2">
+            <p className="text-2xl font-bold text-slate-800">12</p>
+            <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">โครงการ</p>
+          </div>
+          <div className="flex-1 text-center px-2">
+            <p className="text-2xl font-bold text-emerald-600">8</p>
+            <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">สำเร็จ</p>
+          </div>
+          <div className="flex-1 text-center px-2">
+            <p className="text-2xl font-bold text-amber-500">4</p>
+            <p className="text-[11px] font-medium text-slate-500 mt-1 uppercase tracking-wider">ดำเนินการ</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Menu Items (Grouped List) */}
       <div className="px-4 space-y-5">
         
         {/* กลุ่มเมนูหลัก */}

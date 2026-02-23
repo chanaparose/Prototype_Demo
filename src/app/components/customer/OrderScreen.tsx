@@ -110,11 +110,12 @@ export function OrderScreen() {
 
   return (
     <div className="pb-20 bg-gray-50 min-h-screen">
-      {/* Header ธีมเดียวกับ HomeScreen */}
-      <div className="relative border-b border-white/10 sticky top-0 z-10 overflow-hidden">
+      {/* Header เลื่อนไปกับหน้าจอได้เหมือน HomeScreen */}
+      <div className="relative pt-0 pb-10 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
         <div className="absolute top-[-10%] left-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-        <div className="relative z-10 px-6 py-5">
+        <div className="absolute bottom-[-20%] right-[-10%] w-32 h-32 bg-[#4F4F9F]/50 rounded-full blur-2xl" />
+        <div className="relative z-10 pt-6 pb-2">
           <span className="text-white/70 text-xs font-bold uppercase tracking-[0.15em] block mb-0.5">
             Orders
           </span>
@@ -122,7 +123,7 @@ export function OrderScreen() {
         </div>
       </div>
 
-      <Tabs value={orderTab} onValueChange={(v) => setOrderTab(v as 'active' | 'completed')} className="px-4 pt-4 pb-6">
+      <Tabs value={orderTab} onValueChange={(v) => setOrderTab(v as 'active' | 'completed')} className="px-4 -mt-2 pt-4 pb-6">
         <TabsList className="grid h-12 w-full grid-cols-2 mb-2 rounded-xl bg-white border border-slate-200 p-1.5">
           <TabsTrigger
             value="active"
