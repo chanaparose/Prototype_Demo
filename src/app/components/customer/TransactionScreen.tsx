@@ -1,4 +1,6 @@
-import { ArrowUpRight, ArrowDownLeft, Download, Wallet } from 'lucide-react';
+import React from 'react';
+import { ArrowUpRight, ArrowDownLeft, Download, Wallet, Plus } from 'lucide-react';
+import { motion } from 'framer-motion'; // แก้จาก 'motion/react' เป็น 'framer-motion'
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -8,116 +10,154 @@ export function TransactionScreen() {
   const totalBalance = 5000;
 
   return (
-    <div className="pb-20 bg-gray-50 min-h-screen">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 pb-8">
-        <h1 className="text-white text-xl font-semibold mb-4">ประวัติธุรกรรม</h1>
+    <div className="pb-20 bg-slate-50 min-h-screen">
+      {/* 1. Header (ปรับให้สูงขึ้นเพื่อรองรับการ์ดทับซ้อน) */}
+      <div className="relative border-b border-white/10 sticky top-0 z-10 overflow-hidden pb-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2D2E5F] via-[#3E3F7F] to-[#4F4F9F]" />
+        <div className="absolute top-[-20%] left-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-32 h-32 bg-[#4F4F9F]/50 rounded-full blur-2xl" />
         
-        {/* Wallet Balance */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Wallet className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">ยอดเงินคงเหลือ</p>
-                  <p className="text-2xl font-semibold">
-                    ฿{totalBalance.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              <Button size="sm">
-                เติมเงิน
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="relative z-10 px-6 pt-6 pb-4 flex items-center justify-between">
+          <div>
+            <span className="text-white/70 text-[10px] font-bold uppercase tracking-widest block mb-1">
+              My Wallet
+            </span>
+            <h1 className="text-2xl font-bold text-white tracking-tight">ประวัติธุรกรรม</h1>
+          </div>
+          {/* เพิ่มปุ่มประวัติหรือตั้งค่า (Optional) ให้ Header ดูสมดุล */}
+          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm">
+             <Wallet className="w-5 h-5 text-white" />
+          </div>
+        </div>
       </div>
 
-      {/* Transaction List */}
-      <div className="px-6 -mt-4">
-        <div className="mb-4">
-          <h2 className="text-sm font-medium text-gray-600 mb-3">รายการทั้งหมด</h2>
+      {/* 2. Wallet Balance Card (Overlapping Effect) */}
+      <div className="px-4 relative z-20 -mt-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div className="bg-white rounded-[24px] p-5 shadow-xl shadow-slate-200/40 border border-slate-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-slate-500">ยอดเงินคงเหลือ</p>
+              </div>
+            </div>
+            
+            <div className="flex items-end justify-between">
+              <div>
+                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
+                  ฿{totalBalance.toLocaleString()}
+                </span>
+                <span className="text-slate-400 font-medium ml-1">.00</span>
+              </div>
+              
+              <Button
+                className="rounded-full bg-slate-900 hover:bg-slate-800 text-white shadow-md shadow-slate-900/20 px-5 h-11 gap-2 transition-transform active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="font-semibold">เติมเงิน</span>
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* 3. Transaction List (Clean / Grouped Style) */}
+      <div className="px-4 pt-8">
+        <div className="flex items-center justify-between mb-4 px-1">
+          <h2 className="text-sm font-bold text-slate-800">รายการล่าสุด</h2>
+          <button className="text-xs font-semibold text-[#4F4F9F] hover:text-[#3E3F7F]">
+            ดูทั้งหมด
+          </button>
         </div>
 
-        <div className="space-y-3">
-          {mockTransactions.map((transaction) => {
+        <motion.div
+          initial={{ opacity: 0.95, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: [0.33, 1, 0.68, 1] }}
+          className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden"
+        >
+          {mockTransactions.map((transaction, index) => {
             const isNegative = transaction.amount < 0;
             const Icon = isNegative ? ArrowUpRight : ArrowDownLeft;
-            
+            const isLast = index === mockTransactions.length - 1;
+
             return (
-              <Card key={transaction.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
+              <motion.div
+                key={transaction.id}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.03, ease: [0.33, 1, 0.68, 1] }}
+              >
+                {/* เปลี่ยนจาก Card แยกแต่ละอัน เป็น Row ที่มี Border ขั้นตรงกลาง */}
+                <div className={`p-4 hover:bg-slate-50/80 transition-colors ${!isLast ? 'border-b border-slate-100' : ''}`}>
+                  <div className="flex items-center gap-4">
+                    
+                    {/* Icon */}
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        isNegative ? 'bg-red-100' : 'bg-green-100'
+                      className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
+                        isNegative
+                          ? 'bg-rose-50 text-rose-500'
+                          : 'bg-emerald-50 text-emerald-500'
                       }`}
                     >
-                      <Icon
-                        className={`w-5 h-5 ${
-                          isNegative ? 'text-red-600' : 'text-green-600'
-                        }`}
-                      />
+                      <Icon className="w-5 h-5 stroke-[2.5]" />
                     </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-1">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-sm">
-                            {transaction.description}
-                          </h3>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {transaction.date}
-                          </p>
-                        </div>
-                        <div className="text-right ml-2">
-                          <p
-                            className={`font-semibold ${
-                              isNegative ? 'text-red-600' : 'text-green-600'
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-0.5">
+                        <h3 className="font-semibold text-slate-800 truncate pr-4">
+                          {transaction.description}
+                        </h3>
+                        <p
+                          className={`font-bold shrink-0 ${
+                            isNegative ? 'text-slate-800' : 'text-emerald-600'
+                          }`}
+                        >
+                          {isNegative ? '' : '+'}{transaction.amount.toLocaleString()} ฿
+                        </p>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs text-slate-500">{transaction.date}</p>
+                        
+                        {/* Status / Receipt */}
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0 h-5 ${
+                              transaction.status === 'success'
+                                ? 'text-emerald-600 border-emerald-200 bg-emerald-50/50'
+                                : transaction.status === 'pending'
+                                ? 'text-amber-600 border-amber-200 bg-amber-50/50'
+                                : 'text-rose-600 border-rose-200 bg-rose-50/50'
                             }`}
                           >
-                            {isNegative ? '' : '+'}
-                            {transaction.amount.toLocaleString()} THB
-                          </p>
-                        </div>
-                      </div>
+                            {transaction.status === 'success' && 'สำเร็จ'}
+                            {transaction.status === 'pending' && 'รอดำเนินการ'}
+                            {transaction.status === 'failed' && 'ล้มเหลว'}
+                          </Badge>
 
-                      <div className="flex items-center justify-between mt-2">
-                        <Badge
-                          variant={
-                            transaction.status === 'success'
-                              ? 'default'
-                              : transaction.status === 'pending'
-                              ? 'secondary'
-                              : 'destructive'
-                          }
-                          className="text-xs"
-                        >
-                          {transaction.status === 'success' && 'สำเร็จ'}
-                          {transaction.status === 'pending' && 'รอดำเนินการ'}
-                          {transaction.status === 'failed' && 'ล้มเหลว'}
-                        </Badge>
-                        
-                        {transaction.status === 'success' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 text-blue-600"
-                          >
-                            <Download className="w-4 h-4 mr-1" />
-                            <span className="text-xs">ใบเสร็จ</span>
-                          </Button>
-                        )}
+                          {transaction.status === 'success' && (
+                            <button
+                              className="p-1.5 text-slate-400 hover:text-[#4F4F9F] hover:bg-slate-100 rounded-full transition-colors"
+                              title="ดาวน์โหลดใบเสร็จ"
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
