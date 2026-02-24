@@ -1,578 +1,359 @@
-// Mock data for the application
-
-export interface Factory {
-  id: string;
-  name: string;
-  image: string;
-  verified: boolean;
-  rating: number;
-  lowMOQ: boolean;
-  category: string;
-  province: string;
-  certifications: string[];
-  hasDiscount?: boolean;
-  priceTier?: 'low' | 'mid' | 'high';
-  promotionText?: string;
-}
-
-export interface Promotion {
-  id: string;
-  title: string;
-  subtitle: string;
-  code?: string;
-  validUntil?: string;
-  image?: string;
-}
-
-export interface Order {
-  id: string;
-  orderId: string;
-  productName: string;
-  productImage: string;
-  status: 'deposit' | 'production' | 'qc' | 'shipping' | 'completed' | 'pending_completed';
-  currentStep: number;
-  factoryName: string;
-  dueDate: string;
-}
-
-export interface RFQ {
-  id: string;
-  title: string;
-  quantity: number;
-  budget: number;
-  datePosted: string;
-  bidCount: number;
-  status: 'pending' | 'received';
-}
-
-export interface Transaction {
-  id: string;
-  type: 'payment' | 'refund' | 'withdrawal';
-  description: string;
-  amount: number;
-  status: 'success' | 'pending' | 'failed';
-  date: string;
-}
-
-export interface Review {
-  id: string;
-  customerName: string;
-  brandName: string;
-  review: string;
-  rating: number;
-}
-
-export interface Job {
-  id: string;
-  productName: string;
-  customerName: string;
-  dueDate: string;
-  status: 'molding' | 'packaging' | 'qc' | 'shipping';
-  progress: number;
-  imageUrl?: string;
-}
-
-export interface Quote {
-  id: string;
-  productName: string;
-  quantity: number;
-  quotedPrice: number;
-  dateSent: string;
-  status: 'pending' | 'accepted' | 'rejected';
-  customerName: string;
-}
-
-export const mockFactories: Factory[] = [
-  {
-    id: '1',
-    name: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
-    image: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=400',
-    verified: true,
-    rating: 4.9,
-    lowMOQ: true,
-    category: 'อาหารสัตว์',
-    province: 'ปทุมธานี',
-    certifications: ['GMP', 'HACCP', 'อย.'],
-    hasDiscount: true,
-    priceTier: 'mid',
-    promotionText: '฿500 off Min. spend ฿5,000'
-  },
-  {
-    id: '2',
-    name: 'เสื้อผ้าสัตว์เลี้ยง สยาม',
-    image: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=400',
-    verified: true,
-    rating: 4.8,
-    lowMOQ: true,
-    category: 'เสื้อผ้าสัตว์เลี้ยง',
-    province: 'นนทบุรี',
-    certifications: ['ISO 9001'],
-    hasDiscount: true,
-    priceTier: 'low',
-    promotionText: '40% off Min. spend ฿3,000'
-  },
-  {
-    id: '3',
-    name: 'อาหารเสริม เฮลท์ตี้ แพ็ค',
-    image: 'https://images.unsplash.com/photo-1688267224124-aa10a75ec732?w=400',
-    verified: true,
-    rating: 4.7,
-    lowMOQ: false,
-    category: 'อาหารเสริม',
-    province: 'สมุทรปราการ',
-    certifications: ['GMP', 'อย.'],
-    hasDiscount: false,
-    priceTier: 'high'
-  },
-  {
-    id: '4',
-    name: 'โรงงานแพ็กเกจจิ้งครบวงจร',
-    image: 'https://images.unsplash.com/photo-1762529483684-04d6e86cdd46?w=400',
-    verified: true,
-    rating: 4.9,
-    lowMOQ: true,
-    category: 'แพ็กเกจจิ้ง',
-    province: 'ปทุมธานี',
-    certifications: ['ISO 9001', 'FSC'],
-    hasDiscount: true,
-    priceTier: 'mid',
-    promotionText: '20% off ครั้งแรก'
-  }
-];
-
-export const mockPromotions: Promotion[] = [
-  {
-    id: '1',
-    title: 'ครึ่งเดือนนี้! ลดสูงสุด 50%',
-    subtitle: "ใส่โค้ด 'LMMID' สั่งเลย",
-    code: 'LMMID',
-    validUntil: '31 มี.ค. 69'
-  },
-  {
-    id: '2',
-    title: '1 ฟรี 1! สินค้าแนะนำ',
-    subtitle: 'เพียง 209.- ตั้งแต่วันนี้',
-    code: 'BOGO209',
-    validUntil: '31 มี.ค. 69'
-  },
-  {
-    id: '3',
-    title: 'สั่งร้านใหม่ ลด 50.-',
-    subtitle: "ใส่โค้ด 'EATNEW' รับส่วนลด",
-    code: 'EATNEW',
-    validUntil: '31 มี.ค. 69'
-  }
-];
-
-/** Order id สอดคล้องกับ ChatConversation id: Order 1 <-> Chat 1, Order 2 <-> Chat 2, ... */
-export const mockOrders: Order[] = [
-  {
-    id: '1',
-    orderId: 'ORD-2026-001',
-    productName: 'ขนมแมวเลีย รสปลาทูน่า',
-    productImage: 'https://images.unsplash.com/photo-1645623383208-84926ba8aa21?w=400',
-    status: 'production',
-    currentStep: 2,
-    factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
-    dueDate: '2026-03-15'
-  },
-  {
-    id: '2',
-    orderId: 'ORD-2026-002',
-    productName: 'ขนมสุนัข Freeze Dried',
-    productImage: 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=400',
-    status: 'qc',
-    currentStep: 3,
-    factoryName: 'เสื้อผ้าสัตว์เลี้ยง สยาม',
-    dueDate: '2026-03-10'
-  },
-  {
-    id: '3',
-    orderId: 'ORD-2026-003',
-    productName: 'ขนมแมวเลีย รสแซลมอน',
-    productImage: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=400',
-    status: 'completed',
-    currentStep: 4,
-    factoryName: 'อาหารเสริม เฮลท์ตี้ แพ็ค',
-    dueDate: '2026-02-20'
-  },
-  {
-    id: '4',
-    orderId: 'ORD-2026-004',
-    productName: 'ขนมแมวเลีย รสชีส',
-    productImage: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=400',
-    status: 'pending_completed',
-    currentStep: 4,
-    factoryName: 'โรงงานแพ็กเกจจิ้งครบวงจร',
-    dueDate: '2026-02-20'
-  }
-];
-
-export const mockRFQs: RFQ[] = [
-  {
-    id: '1',
-    title: 'ต้องการผลิตอกไก่อบแห้ง',
-    quantity: 200,
-    budget: 15000,
-    datePosted: '2026-02-14',
-    bidCount: 3,
-    status: 'received'
-  },
-  {
-    id: '2',
-    title: 'ขนมสุนัข Freeze Dried',
-    quantity: 500,
-    budget: 25000,
-    datePosted: '2026-02-13',
-    bidCount: 2,
-    status: 'received'
-  },
-  {
-    id: '3',
-    title: 'เสื้อสุนัขขนาดกลาง',
-    quantity: 100,
-    budget: 8000,
-    datePosted: '2026-02-15',
-    bidCount: 0,
-    status: 'pending'
-  }
-];
-
-export const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'payment',
-    description: 'ชำระมัดจำงวดที่ 1 (50%) - ขนมแมวเลีย',
-    amount: -15000,
-    status: 'success',
-    date: '2026-02-10 14:30'
-  },
-  {
-    id: '2',
-    type: 'payment',
-    description: 'ชำระมัดจำงวดที่ 1 (50%) - ขนมสุนัข',
-    amount: -12500,
-    status: 'success',
-    date: '2026-02-08 10:15'
-  },
-  {
-    id: '3',
-    type: 'refund',
-    description: 'คืนเงินค่ามัดจำ - ยกเลิกคำสั่งซื้อ',
-    amount: 5000,
-    status: 'success',
-    date: '2026-02-05 16:20'
-  }
-];
-
-export const mockReviews: Review[] = [
-  {
-    id: '1',
-    customerName: 'คุณสมชาย',
-    brandName: 'Pawsome Treats',
-    review: 'สั่งทำขนมแมวเลีย 500 ซอง งานดี ส่งไวมาก คุณภาพเกินคาด',
-    rating: 5
-  },
-  {
-    id: '2',
-    customerName: 'คุณนภา',
-    brandName: 'Happy Paws',
-    review: 'โรงงานดูแลดีมาก มีรูปอัปเดตความคืบหน้าทุกขั้นตอน',
-    rating: 5
-  },
-  {
-    id: '3',
-    customerName: 'คุณวิชัย',
-    brandName: 'Pet Nutrition Pro',
-    review: 'ราคาดี MOQ ต่ำ เหมาะกับแบรนด์เริ่มต้น',
-    rating: 4.5
-  }
-];
-
-export const mockJobs: Job[] = [
-  {
-    id: '1',
-    productName: 'ขนมแมวเลีย รสปลาทูน่า 500 ซอง',
-    customerName: 'คุณสมชาย (Pawsome Treats)',
-    dueDate: '2026-03-15',
-    status: 'molding',
-    progress: 45,
-    imageUrl: 'https://images.unsplash.com/photo-1645623383208-84926ba8aa21?w=400'
-  },
-  {
-    id: '2',
-    productName: 'ขนมสุนัข Freeze Dried 300 แพ็ค',
-    customerName: 'คุณนภา (Happy Paws)',
-    dueDate: '2026-03-20',
-    status: 'packaging',
-    progress: 70,
-    imageUrl: 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=400'
-  }
-];
-
-export const mockQuotes: Quote[] = [
-  {
-    id: '1',
-    productName: 'อกไก่อบแห้ง 200 ถุง',
-    quantity: 200,
-    quotedPrice: 14500,
-    dateSent: '2026-02-14',
-    status: 'pending',
-    customerName: 'คุณวิชัย'
-  },
-  {
-    id: '2',
-    productName: 'ขนมสุนัข Freeze Dried 500 แพ็ค',
-    quantity: 500,
-    quotedPrice: 23000,
-    dateSent: '2026-02-13',
-    status: 'accepted',
-    customerName: 'คุณนภา'
-  },
-  {
-    id: '3',
-    productName: 'เสื้อผ้าสัตว์เลี้ยง 100 ตัว',
-    quantity: 100,
-    quotedPrice: 7800,
-    dateSent: '2026-02-12',
-    status: 'rejected',
-    customerName: 'คุณสุดา'
-  }
-];
-
-export const mockNewRFQs: RFQ[] = [
-  {
-    id: '4',
-    title: 'ต้องการผลิตขนมสุนัข Freeze Dried',
-    quantity: 200,
-    budget: 20000,
-    datePosted: '2026-02-16',
-    bidCount: 0,
-    status: 'pending'
-  },
-  {
-    id: '5',
-    title: 'ขนมแมว รสแซลมอน 300 ซอง',
-    quantity: 300,
-    budget: 18000,
-    datePosted: '2026-02-16',
-    bidCount: 1,
-    status: 'pending'
-  }
-];
-
-// --- Customer Profile & Wallet (สำหรับ ProfileScreen, TransactionScreen) ---
-export interface CustomerProfile {
-  displayName: string;
-  email: string;
-  initial: string;
-  projectCount: number;
-  successCount: number;
-  inProgressCount: number;
-  savedFactoriesCount: number;
-  addressCount: number;
-  appVersion: string;
-  buildNumber: string;
-}
-
-export const mockCustomerProfile: CustomerProfile = {
-  displayName: 'คุณสมชาย',
-  email: 'somchai@email.com',
-  initial: 'สม',
-  projectCount: 12,
-  successCount: 8,
-  inProgressCount: 4,
-  savedFactoriesCount: 5,
-  addressCount: 2,
-  appVersion: '1.0.0',
-  buildNumber: '12',
+export const currentUser = {
+  id: 'u1',
+  name: 'สมชาย วงศ์ใหญ่',
+  nameEn: 'Somchai Wongyai',
+  avatar: 'https://images.unsplash.com/photo-1559212399-fdaed1e74923?w=200&h=200&fit=crop',
+  company: 'TechParts Co., Ltd.',
+  email: 'somchai@techparts.co.th',
+  phone: '081-234-5678',
+  walletBalance: 48500,
+  pendingBalance: 12000,
+  memberSince: '2023',
 };
 
-export const mockCustomerWalletBalance = 5000;
-
-// --- RFQ Price Comparison (สำหรับ PriceComparisonScreen) ---
-export interface RFQComparisonQuote {
-  id: string;
-  factoryName: string;
-  factoryId?: string;
-  pricePerUnit: number;
-  moldCost: number;
-  productionTime: string;
-  details: string;
-  rating: number;
-  isWinner: boolean;
-  totalPrice: number;
-}
-
-export const mockRFQQuotesByRfqId: Record<string, RFQComparisonQuote[]> = {
-  '1': [
-    { id: '1', factoryName: 'โรงงาน A - Pathum Pet Food', factoryId: '1', pricePerUnit: 30, moldCost: 5000, productionTime: '15 วัน', details: 'รวมแพ็กเกจจิ้ง, มาตรฐาน GMP', rating: 4.8, isWinner: true, totalPrice: 20500 },
-    { id: '2', factoryName: 'โรงงาน B - Bangkok Pet Treats', factoryId: '2', pricePerUnit: 28, moldCost: 8000, productionTime: '30 วัน', details: 'ไม่รวมแพ็กเกจจิ้ง', rating: 4.2, isWinner: false, totalPrice: 22000 },
-    { id: '3', factoryName: 'โรงงาน C - Samut Food Factory', factoryId: '3', pricePerUnit: 32, moldCost: 4000, productionTime: '20 วัน', details: 'รวมแพ็กเกจจิ้ง พรีเมี่ยม', rating: 4.5, isWinner: false, totalPrice: 20000 },
-  ],
-  '2': [
-    { id: '1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', factoryId: '1', pricePerUnit: 46, moldCost: 3000, productionTime: '14 วัน', details: 'รวมแพ็กเกจจิ้ง Freeze Dried', rating: 4.9, isWinner: true, totalPrice: 23300 },
-    { id: '2', factoryName: 'โรงงานอาหารเสริม เฮลท์ตี้ แพ็ค', factoryId: '3', pricePerUnit: 48, moldCost: 5000, productionTime: '21 วัน', details: 'มาตรฐาน GMP, อย.', rating: 4.7, isWinner: false, totalPrice: 25100 },
-  ],
-};
-
-// --- RFQ Detail Extended (สำหรับ RFQDetailScreen) ---
-export interface RFQDetailExtended {
-  productName: string;
-  imageUrl: string;
-  description: string;
-  requirements: string[];
-  location: string;
-  targetFactory: string;
-  budgetPerUnit?: number;
-  totalBudget?: number;
-  seenCount: number;
-  quotedCount: number;
-}
-
-export const mockRFQDetailsByRfqId: Record<string, RFQDetailExtended> = {
-  '1': {
-    productName: 'อกไก่อบแห้ง',
-    imageUrl: 'https://images.unsplash.com/photo-1645623383208-84926ba8aa21?w=800',
-    description: 'ต้องการผลิตอกไก่อบแห้งสำหรับสัตว์เลี้ยง บรรจุถุง 50g',
-    requirements: ['ต้องมีใบรับรอง อย.', 'โรงงานมีมาตรฐาน GMP', 'ส่งตัวอย่างก่อนผลิตจริง'],
-    location: 'กรุงเทพมหานคร',
-    targetFactory: 'โรงงานมาตรฐาน GMP, เขตปทุมธานี',
-    budgetPerUnit: 75,
-    totalBudget: 15000,
-    seenCount: 12,
-    quotedCount: 3,
+export const factories = [
+  {
+    id: 'f1',
+    name: 'Thai Precision Metal',
+    location: 'สมุทรปราการ',
+    rating: 4.9,
+    reviews: 128,
+    specialization: 'Metal Stamping & CNC',
+    tags: ['Metal', 'CNC', 'ISO 9001'],
+    minOrder: 500,
+    leadTime: '7-10 วัน',
+    image: 'https://images.unsplash.com/photo-1695603414685-af28aff0f9d2?w=400&h=250&fit=crop',
+    verified: true,
+    completedOrders: 342,
+    priceRange: '฿฿',
   },
-  '2': {
-    productName: 'ขนมสุนัข Freeze Dried',
-    imageUrl: 'https://images.unsplash.com/photo-1598134493179-51332e56807f?w=800',
-    description: 'ต้องการขนมสุนัขฟรีซดราย สูตรตับไก่แท้ ไม่เค็ม ไม่มีสารกันเสีย บรรจุถุงซิปล็อค ขนาด 50g/ถุง',
-    requirements: ['ต้องมีใบรับรอง อย.', 'โรงงานมีมาตรฐาน GMP', 'ส่งตัวอย่างก่อนผลิตจริง', 'รับประกันคุณภาพ'],
-    location: 'กรุงเทพมหานคร',
-    targetFactory: 'โรงงานมาตรฐาน GMP, เขตปทุมธานี',
-    budgetPerUnit: 50,
-    totalBudget: 25000,
-    seenCount: 15,
-    quotedCount: 2,
-  },
-  '3': {
-    productName: 'เสื้อสุนัขขนาดกลาง',
-    imageUrl: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=800',
-    description: 'ต้องการผลิตเสื้อสุนัขขนาดกลาง 100 ตัว หลายสี',
-    requirements: ['ผ้าคุณภาพดี', 'มี 4 สีขึ้นไป', 'รับ sample ก่อนผลิต'],
+  {
+    id: 'f2',
+    name: 'SiamPlastics Pro',
     location: 'นนทบุรี',
-    targetFactory: 'โรงงานเสื้อผ้าสัตว์เลี้ยง',
-    budgetPerUnit: 80,
-    totalBudget: 8000,
-    seenCount: 8,
-    quotedCount: 0,
+    rating: 4.7,
+    reviews: 89,
+    specialization: 'Plastic Injection Molding',
+    tags: ['Plastic', 'Injection', 'QC Certified'],
+    minOrder: 1000,
+    leadTime: '5-7 วัน',
+    image: 'https://images.unsplash.com/photo-1657186593846-8d3e67155468?w=400&h=250&fit=crop',
+    verified: true,
+    completedOrders: 215,
+    priceRange: '฿',
   },
-};
-
-// --- Chat (สอดคล้องกับโรงงาน + คำสั่งซื้อ) ---
-export interface ChatMessage {
-  id: string;
-  sender: 'customer' | 'factory';
-  text: string;
-  at: string;
-}
-
-export interface ChatQuotationItem {
-  name: string;
-  unitPrice: number;
-  quantity: number;
-  total: number;
-  note?: string;
-}
-
-export interface ChatQuotation {
-  id: string;
-  items: ChatQuotationItem[];
-  subtotal: number;
-  depositPercent: number;
-  depositAmount: number;
-}
-
-export interface ChatConversation {
-  id: string;
-  factoryId: string;
-  lastMessage: string;
-  lastAt: string;
-  unreadCount: number;
-  messages: ChatMessage[];
-  quotation?: ChatQuotation;
-}
-
-/** ChatConversation id สอดคล้องกับ Order id: Chat 1 <-> Order 1, Chat 2 <-> Order 2, ... */
-export const mockChatConversations: ChatConversation[] = [
   {
-    id: '1',
-    factoryId: '1',
-    lastMessage: 'ขอบคุณครับ ยืนยันรายการได้เลย',
-    lastAt: '2026-02-21 14:30',
-    unreadCount: 2,
-    messages: [
-      { id: 'm1', sender: 'factory', text: 'สวัสดีครับคุณลูกค้า ทางโรงงานได้รับคำขอผลิตสินค้าของท่านแล้วครับ', at: '2026-02-21 10:00' },
-      { id: 'm2', sender: 'customer', text: 'สวัสดีครับ ผมสนใจผลิตขนมแมวเลีย 500 ซอง ใช้เวลานานไหมครับ', at: '2026-02-21 10:32' },
-      { id: 'm3', sender: 'factory', text: 'ใช้เวลาประมาณ 15 วันครับ ผมส่งใบเสนอราคาให้พิจารณานะครับ', at: '2026-02-21 10:35' },
-      { id: 'm4', sender: 'customer', text: 'โอเค สั่ง 500 ซอง พร้อมแพ็กเกจจิ้งแบบซิปครับ', at: '2026-02-21 14:00' },
-      { id: 'm4b', sender: 'factory', text: 'ขอบคุณครับ ยืนยันรายการได้เลย', at: '2026-02-21 14:30' }
+    id: 'f3',
+    name: 'Bangkok Electronics MFG',
+    location: 'กรุงเทพฯ',
+    rating: 4.8,
+    reviews: 203,
+    specialization: 'PCB Assembly & Electronics',
+    tags: ['Electronics', 'PCB', 'SMT'],
+    minOrder: 200,
+    leadTime: '10-14 วัน',
+    image: 'https://images.unsplash.com/photo-1740478871010-124bae18a362?w=400&h=250&fit=crop',
+    verified: true,
+    completedOrders: 589,
+    priceRange: '฿฿฿',
+  },
+  {
+    id: 'f4',
+    name: 'EastMetal Works',
+    location: 'ชลบุรี',
+    rating: 4.6,
+    reviews: 74,
+    specialization: 'Sheet Metal Fabrication',
+    tags: ['Sheet Metal', 'Welding', 'Powder Coat'],
+    minOrder: 300,
+    leadTime: '8-12 วัน',
+    image: 'https://images.unsplash.com/photo-1697281679290-ad7be1b10682?w=400&h=250&fit=crop',
+    verified: false,
+    completedOrders: 167,
+    priceRange: '฿฿',
+  },
+];
+
+export const rfqs = [
+  {
+    id: 'rfq1',
+    projectName: 'ชิ้นส่วนโลหะ Bracket',
+    category: 'Metal Stamping',
+    categoryIcon: '🔩',
+    status: 'offers_received',
+    offerCount: 5,
+    budget: 50000,
+    quantity: 1000,
+    material: 'Steel SS304',
+    deadline: '2026-03-15',
+    createdAt: '2026-02-20',
+    description: 'ต้องการผลิต bracket เหล็กสำหรับโครงสร้างเครื่องจักร จำนวน 1,000 ชิ้น วัสดุ SS304',
+    offers: [
+      {
+        id: 'off1',
+        factoryId: 'f1',
+        factoryName: 'Thai Precision Metal',
+        price: 42000,
+        leadTime: 8,
+        rating: 4.9,
+        verified: true,
+        recommended: true,
+        aiReason: 'ราคาคุ้มค่าที่สุด + งานไวสุด',
+        completedOrders: 342,
+        responseTime: '2 ชั่วโมง',
+      },
+      {
+        id: 'off2',
+        factoryId: 'f4',
+        factoryName: 'EastMetal Works',
+        price: 38500,
+        leadTime: 12,
+        rating: 4.6,
+        verified: false,
+        recommended: false,
+        aiReason: 'ราคาถูกที่สุด แต่ lead time นานกว่า',
+        completedOrders: 167,
+        responseTime: '5 ชั่วโมง',
+      },
+      {
+        id: 'off3',
+        factoryId: 'f3',
+        factoryName: 'Bangkok Electronics MFG',
+        price: 48000,
+        leadTime: 7,
+        rating: 4.8,
+        verified: true,
+        recommended: false,
+        aiReason: 'ส่งเร็วที่สุด แต่ราคาสูงกว่า',
+        completedOrders: 589,
+        responseTime: '1 ชั่วโมง',
+      },
     ],
-    quotation: {
-      id: 'QT-2026-001',
-      items: [
-        { name: 'ค่าผลิตขนมแมวเลีย (500 ชิ้น)', unitPrice: 30, quantity: 500, total: 15000 },
-        { name: 'ค่าแม่พิมพ์ (Mold Cost)', unitPrice: 5000, quantity: 1, total: 5000, note: 'จ่ายครั้งเดียว' },
-        { name: 'ค่าจัดส่ง', unitPrice: 500, quantity: 1, total: 500 }
-      ],
-      subtotal: 20500,
-      depositPercent: 50,
-      depositAmount: 10250
-    }
   },
   {
-    id: '2',
-    factoryId: '2',
-    lastMessage: 'ส่งตัวอย่างสีให้ดูภายในพรุ่งนี้ครับ',
-    lastAt: '2026-02-21 09:45',
-    unreadCount: 1,
-    messages: [
-      { id: 'm5', sender: 'customer', text: 'อยากสั่งเสื้อสุนัขขนาดกลาง 100 ตัว มีสีอื่นนอกจากดำไหมครับ', at: '2026-02-20 16:00' },
-      { id: 'm6', sender: 'factory', text: 'มีครับ มี 4 สี น้ำเงิน แดง น้ำตาล ดำ ส่งตัวอย่างสีให้ดูภายในพรุ่งนี้ครับ', at: '2026-02-21 09:45' }
-    ]
-  },
-  {
-    id: '3',
-    factoryId: '3',
-    lastMessage: 'ใบเสนอราคาส่งในแชทแล้วครับ',
-    lastAt: '2026-02-20 11:20',
-    unreadCount: 0,
-    messages: [
-      { id: 'm7', sender: 'customer', text: 'สอบถามผลิตอาหารเสริมแมว แบบเม็ด อย. รับไหมครับ', at: '2026-02-19 14:00' },
-      { id: 'm8', sender: 'factory', text: 'รับครับ เรามี GMP และ อย. ครับ', at: '2026-02-19 15:30' },
-      { id: 'm9', sender: 'customer', text: 'ขอใบเสนอราคา 300 กระปุกครับ', at: '2026-02-20 10:00' },
-      { id: 'm10', sender: 'factory', text: 'ใบเสนอราคาส่งในแชทแล้วครับ', at: '2026-02-20 11:20' }
+    id: 'rfq2',
+    projectName: 'เคส Plastic Housing A-Series',
+    category: 'Plastic Injection',
+    categoryIcon: '🧴',
+    status: 'reviewing',
+    offerCount: 2,
+    budget: 30000,
+    quantity: 2000,
+    material: 'ABS Plastic',
+    deadline: '2026-03-20',
+    createdAt: '2026-02-22',
+    description: 'ผลิตเคสพลาสติกสำหรับอุปกรณ์อิเล็กทรอนิกส์ ขนาด 15x10x5 cm วัสดุ ABS',
+    offers: [
+      {
+        id: 'off4',
+        factoryId: 'f2',
+        factoryName: 'SiamPlastics Pro',
+        price: 26000,
+        leadTime: 6,
+        rating: 4.7,
+        verified: true,
+        recommended: true,
+        aiReason: 'ราคาดี + งานไว',
+        completedOrders: 215,
+        responseTime: '3 ชั่วโมง',
+      },
     ],
-    quotation: {
-      id: 'QT-2026-002',
-      items: [
-        { name: 'อาหารเสริมแมวแบบเม็ด อย. (300 กระปุก)', unitPrice: 85, quantity: 300, total: 25500 },
-        { name: 'ค่าจัดส่ง', unitPrice: 800, quantity: 1, total: 800 }
-      ],
-      subtotal: 26300,
-      depositPercent: 50,
-      depositAmount: 13150
-    }
   },
   {
-    id: '4',
-    factoryId: '4',
-    lastMessage: 'ได้ครับ รบกวนส่งไฟล์ Artwork มาได้เลย',
-    lastAt: '2026-02-18 16:00',
-    unreadCount: 0,
+    id: 'rfq3',
+    projectName: 'PCB Assembly Batch 3',
+    category: 'Electronics',
+    categoryIcon: '⚡',
+    status: 'pending',
+    offerCount: 0,
+    budget: 80000,
+    quantity: 500,
+    material: 'FR4 PCB',
+    deadline: '2026-04-01',
+    createdAt: '2026-02-23',
+    description: 'ต้องการผลิต PCB assembly สำหรับระบบควบคุม จำนวน 500 ชิ้น',
+    offers: [],
+  },
+  {
+    id: 'rfq4',
+    projectName: 'Sheet Metal Cabinet',
+    category: 'Sheet Metal',
+    categoryIcon: '🗄️',
+    status: 'completed',
+    offerCount: 4,
+    budget: 120000,
+    quantity: 50,
+    material: 'SPCC Steel',
+    deadline: '2026-01-30',
+    createdAt: '2026-01-05',
+    description: 'ตู้ควบคุมไฟฟ้า sheet metal พร้อม powder coat สีเทา',
+    offers: [],
+  },
+];
+
+export const orders = [
+  {
+    id: 'ord1',
+    rfqId: 'rfq4',
+    factoryId: 'f1',
+    factoryName: 'Thai Precision Metal',
+    projectName: 'Sheet Metal Cabinet',
+    category: 'Sheet Metal',
+    status: 'in_production',
+    progress: 65,
+    totalAmount: 115000,
+    depositPaid: 57500,
+    quantity: 50,
+    createdAt: '2026-01-15',
+    estimatedDelivery: '2026-03-01',
+    timeline: [
+      {
+        id: 't1',
+        title: 'ยืนยันคำสั่งซื้อ',
+        date: '2026-01-15',
+        status: 'completed',
+        photo: null,
+        description: 'คำสั่งซื้อได้รับการยืนยันและชำระมัดจำแล้ว',
+      },
+      {
+        id: 't2',
+        title: 'จัดซื้อวัตถุดิบ',
+        date: '2026-01-18',
+        status: 'completed',
+        photo: null,
+        description: 'วัตถุดิบ SPCC Steel 2mm พร้อมแล้ว',
+      },
+      {
+        id: 't3',
+        title: 'เริ่มกระบวนการผลิต',
+        date: '2026-01-22',
+        status: 'completed',
+        photo: 'https://images.unsplash.com/photo-1695603414685-af28aff0f9d2?w=400&h=300&fit=crop',
+        description: 'ตัดและขึ้นรูป sheet metal ตามแบบ',
+      },
+      {
+        id: 't4',
+        title: 'Quality Check ครั้งที่ 1',
+        date: '2026-02-05',
+        status: 'current',
+        photo: 'https://images.unsplash.com/photo-1697281679290-ad7be1b10682?w=400&h=300&fit=crop',
+        description: 'ตรวจสอบขนาดและความเรียบร้อยของชิ้นงาน',
+      },
+      {
+        id: 't5',
+        title: 'Powder Coat',
+        date: '',
+        status: 'pending',
+        photo: null,
+        description: 'เคลือบผิวด้วย powder coat สีเทา RAL 7035',
+      },
+      {
+        id: 't6',
+        title: 'QC ขั้นสุดท้ายและจัดส่ง',
+        date: '',
+        status: 'pending',
+        photo: null,
+        description: 'ตรวจสอบขั้นสุดท้ายก่อนบรรจุและจัดส่ง',
+      },
+    ],
+  },
+  {
+    id: 'ord2',
+    rfqId: 'rfq2',
+    factoryId: 'f2',
+    factoryName: 'SiamPlastics Pro',
+    projectName: 'Plastic Housing A-Series',
+    category: 'Plastic Injection',
+    status: 'shipped',
+    progress: 90,
+    totalAmount: 26000,
+    depositPaid: 13000,
+    quantity: 2000,
+    createdAt: '2026-01-20',
+    estimatedDelivery: '2026-02-28',
+    timeline: [
+      { id: 't1', title: 'ยืนยันคำสั่งซื้อ', date: '2026-01-20', status: 'completed', photo: null, description: '' },
+      { id: 't2', title: 'ผลิตเสร็จสิ้น', date: '2026-02-10', status: 'completed', photo: 'https://images.unsplash.com/photo-1657186593846-8d3e67155468?w=400&h=300&fit=crop', description: '' },
+      { id: 't3', title: 'จัดส่งแล้ว', date: '2026-02-22', status: 'current', photo: null, description: 'Tracking: TH1234567890' },
+      { id: 't4', title: 'รับของ', date: '', status: 'pending', photo: null, description: '' },
+    ],
+  },
+  {
+    id: 'ord3',
+    rfqId: 'rfq3',
+    factoryId: 'f3',
+    factoryName: 'Bangkok Electronics MFG',
+    projectName: 'PCB Assembly Batch 2',
+    category: 'Electronics',
+    status: 'completed',
+    progress: 100,
+    totalAmount: 72000,
+    depositPaid: 72000,
+    quantity: 300,
+    createdAt: '2025-12-01',
+    estimatedDelivery: '2025-12-28',
+    timeline: [],
+  },
+];
+
+export const conversations = [
+  {
+    id: 'conv1',
+    factoryId: 'f1',
+    factoryName: 'Thai Precision Metal',
+    factoryAvatar: 'https://images.unsplash.com/photo-1695603414685-af28aff0f9d2?w=80&h=80&fit=crop',
+    rfqName: 'ชิ้นส่วนโลหะ Bracket',
+    lastMessage: 'เราได้ส่งใบเสนอราคาให้แล้ว กรุณาตรวจสอบด้วยครับ',
+    time: '10 นาทีที่แล้ว',
+    unread: 2,
+    hasQuote: true,
     messages: [
-      { id: 'm11', sender: 'customer', text: 'ต้องการทำกล่องแพ็กเกจจิ้งขนม 500 กล่อง พร้อมพิมพ์ลายได้ไหมครับ', at: '2026-02-18 09:00' },
-      { id: 'm12', sender: 'factory', text: 'ได้ครับ รบกวนส่งไฟล์ Artwork มาได้เลย', at: '2026-02-18 16:00' }
-    ]
-  }
+      { id: 'm1', sender: 'factory', text: 'สวัสดีครับ ขอบคุณที่ส่ง RFQ มาให้เราครับ', time: '09:00', type: 'text' },
+      { id: 'm2', sender: 'user', text: 'สวัสดีครับ รอดูใบเสนอราคาอยู่ครับ', time: '09:15', type: 'text' },
+      { id: 'm3', sender: 'factory', text: 'ทางเราได้วิเคราะห์ requirement แล้วครับ สามารถผลิตได้ตามสเปคที่กำหนด', time: '09:30', type: 'text' },
+      { id: 'm4', sender: 'factory', text: 'เราได้ส่งใบเสนอราคาให้แล้ว กรุณาตรวจสอบด้วยครับ', time: '10:00', type: 'text' },
+      { id: 'm5', sender: 'factory', text: '', time: '10:05', type: 'quote', quoteData: { price: 42000, leadTime: 8, validUntil: '2026-03-01' } },
+    ],
+  },
+  {
+    id: 'conv2',
+    factoryId: 'f2',
+    factoryName: 'SiamPlastics Pro',
+    factoryAvatar: 'https://images.unsplash.com/photo-1657186593846-8d3e67155468?w=80&h=80&fit=crop',
+    rfqName: 'Plastic Housing A-Series',
+    lastMessage: 'ชิ้นงานอยู่ระหว่างการจัดส่งครับ',
+    time: '2 ชั่วโมงที่แล้ว',
+    unread: 0,
+    hasQuote: false,
+    messages: [
+      { id: 'm1', sender: 'factory', text: 'ชิ้นงานผลิตเสร็จแล้วครับ กำลังทำ QC อยู่', time: '08:00', type: 'text' },
+      { id: 'm2', sender: 'user', text: 'เยี่ยมเลยครับ มีรูปส่งให้ดูได้ไหมครับ', time: '08:30', type: 'text' },
+      { id: 'm3', sender: 'factory', text: 'ชิ้นงานอยู่ระหว่างการจัดส่งครับ', time: '10:00', type: 'text' },
+    ],
+  },
+  {
+    id: 'conv3',
+    factoryId: 'f3',
+    factoryName: 'Bangkok Electronics MFG',
+    factoryAvatar: 'https://images.unsplash.com/photo-1740478871010-124bae18a362?w=80&h=80&fit=crop',
+    rfqName: 'PCB Assembly Batch 2',
+    lastMessage: 'ขอบคุณมากครับ ยินดีรับงานครั้งหน้าด้วยครับ',
+    time: 'เมื่อวาน',
+    unread: 0,
+    hasQuote: false,
+    messages: [
+      { id: 'm1', sender: 'factory', text: 'งานส่งเสร็จแล้วครับ ขอบคุณที่ไว้วางใจเรา', time: 'เมื่อวาน', type: 'text' },
+      { id: 'm2', sender: 'user', text: 'ขอบคุณครับ งานออกมาดีมาก', time: 'เมื่อวาน', type: 'text' },
+      { id: 'm3', sender: 'factory', text: 'ขอบคุณมากครับ ยินดีรับงานครั้งหน้าด้วยครับ', time: 'เมื่อวาน', type: 'text' },
+    ],
+  },
+];
+
+export const categories = [
+  { id: 'metal', name: 'Metal', icon: '🔩', color: '#3B82F6' },
+  { id: 'plastic', name: 'Plastic', icon: '🧴', color: '#8B5CF6' },
+  { id: 'electronics', name: 'Electronics', icon: '⚡', color: '#F59E0B' },
+  { id: 'wood', name: 'Wood', icon: '🪵', color: '#92400E' },
+  { id: 'textile', name: 'Textile', icon: '🧵', color: '#EC4899' },
+  { id: 'rubber', name: 'Rubber', icon: '⚙️', color: '#6B7280' },
 ];

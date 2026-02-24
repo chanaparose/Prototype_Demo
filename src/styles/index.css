@@ -1,13 +1,3 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
-
-/* Custom styles for smooth scrolling */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
