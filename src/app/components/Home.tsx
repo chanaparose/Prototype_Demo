@@ -1,46 +1,31 @@
-import React from "react";
-import { Search, MapPin, Tag, Star, Clock, Zap } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Tag, Star, Clock, Zap, PawPrint, Pill, Gamepad2, Bone, Shirt, Package, Droplets, Box } from "lucide-react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
-
-const RECOMMENDED_FACTORIES = [
-  {
-    id: 1,
-    name: "Apex Manufacturing Ltd.",
-    type: "Metal Fabrication",
-    rating: 4.8,
-    img: "https://images.unsplash.com/photo-1768796371809-95b49943a48b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBmYWN0b3J5JTIwbWFudWZhY3R1cmluZyUyMG1hY2hpbmVyeXxlbnwxfHx8fDE3NzE4Njc4MTl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-  },
-  {
-    id: 2,
-    name: "Global Textiles Co.",
-    type: "Apparel & Garment",
-    rating: 4.9,
-    img: "https://images.unsplash.com/photo-1760328715293-6410199deca5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZXh0aWxlJTIwZmFjdG9yeSUyMHNld2luZyUyMHByb2R1Y3Rpb258ZW58MXx8fHwxNzcxODY3ODIzfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-  },
-];
-
-const FILTERS = ["All", "Near Me", "Top Rated", "Low MOQ"];
+import { currentUser, factories } from "../data/mockData";
 
 export function Home() {
+  const [activeChip, setActiveChip] = useState("ทั้งหมด");
+  const recommendedFactories = factories.slice(0, 3);
+
   return (
     <div className="flex flex-col min-h-full">
       {/* Soft gradient background */}
       <div className="fixed inset-0 pointer-events-none -z-10 bg-gradient-to-br from-[#EBF4FF] via-[#F8F9FE] to-[#F1EEFF] opacity-80" />
 
       {/* Header & Search */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="px-6 pt-12 pb-6"
       >
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-sm font-semibold text-slate-500">Good Morning!</h1>
-            <p className="text-2xl font-bold text-slate-800">Livia Vaccaro</p>
+            <h1 className="text-sm font-semibold text-slate-500">สวัสดี!</h1>
+            <p className="text-2xl font-bold text-slate-800">{currentUser.name}</p>
           </div>
           <div className="relative">
-            <img src="https://i.pravatar.cc/150?u=livia" alt="Profile" className="w-12 h-12 rounded-full border-2 border-white shadow-sm" />
+            <img src={currentUser.avatar} alt="Profile" className="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover" />
             <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white" />
           </div>
         </div>
@@ -52,28 +37,14 @@ export function Home() {
           <input
             type="text"
             className="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-100 rounded-2xl text-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-[#6842FF] focus:border-transparent transition-all"
-            placeholder="Search factories, materials, RFQs..."
+            placeholder="ค้นหาโรงงาน หรือ ประเภทงาน..."
           />
         </div>
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-          {FILTERS.map((f, i) => (
-            <button
-              key={f}
-              className={`whitespace-nowrap px-5 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm ${
-                i === 0
-                  ? "bg-[#6842FF] text-white shadow-[0_4px_12px_rgba(104,66,255,0.3)]"
-                  : "bg-white text-slate-600 border border-slate-100 hover:bg-slate-50"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
       </motion.div>
 
       {/* Quick RFQ Banner */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
@@ -81,55 +52,81 @@ export function Home() {
       >
         <div className="bg-gradient-to-r from-[#6842FF] to-[#8C6BFF] rounded-3xl p-6 text-white shadow-[0_12px_30px_rgba(104,66,255,0.3)] relative overflow-hidden">
           <div className="relative z-10 w-2/3">
-            <h2 className="text-xl font-bold mb-2">Have a new project?</h2>
+            <h2 className="text-xl font-bold mb-2">มีโปรเจกต์ใหม่?</h2>
             <p className="text-white/80 text-sm mb-4 leading-relaxed">
-              Create a Quick RFQ to get estimates from top factories instantly.
+              สร้าง RFQ ด่วน เพื่อรับใบเสนอราคาจากโรงงานชั้นนำได้ทันที
             </p>
             <Link
               to="/create-rfq"
               className="inline-flex items-center gap-2 bg-white text-[#6842FF] px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:scale-105 transition-transform"
             >
               <Zap size={16} fill="currentColor" />
-              Start Quick RFQ
+              สร้าง RFQ ด่วน
             </Link>
           </div>
-          {/* Decorative circles */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+ 
           <div className="absolute -bottom-10 right-10 w-32 h-32 bg-indigo-900/20 rounded-full blur-xl" />
         </div>
       </motion.div>
 
+      {/* Categories - data & icons like ref/HomeScreen */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="px-6 mb-8"
+      >
+        <h2 className="text-base font-bold text-slate-800 mb-3">หมวดหมู่</h2>
+        <div className="grid grid-cols-4 gap-3">
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center gap-2"
+              >
+                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                  <Icon size={24} />
+                </div>
+                <span className="text-sm font-medium text-slate-800">{cat.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
       {/* Recommended Factories */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         className="mb-8"
       >
         <div className="flex justify-between items-end px-6 mb-4">
-          <h3 className="text-lg font-bold text-slate-800">Recommended for You</h3>
-          <button className="text-sm font-semibold text-[#6842FF]">See All</button>
+          <h3 className="text-lg font-bold text-slate-800">โรงงานแนะนำ</h3>
+          <button type="button" className="text-sm font-semibold text-[#6842FF]">ดูทั้งหมด</button>
         </div>
         <div className="flex gap-4 overflow-x-auto px-6 pb-4 no-scrollbar">
-          {RECOMMENDED_FACTORIES.map((factory) => (
+          {recommendedFactories.map((factory) => (
             <div
               key={factory.id}
               className="min-w-[240px] bg-white rounded-[24px] p-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-50"
             >
               <img
-                src={factory.img}
+                src={factory.image}
                 alt={factory.name}
                 className="w-full h-32 object-cover rounded-[16px] mb-3"
               />
               <div className="px-1">
                 <h4 className="font-bold text-slate-800 truncate">{factory.name}</h4>
-                <p className="text-sm text-slate-500 mb-2">{factory.type}</p>
+                <p className="text-sm text-slate-500 mb-2">{factory.specialization}</p>
                 <div className="flex items-center justify-between mt-auto">
                   <div className="flex items-center gap-1 text-sm font-semibold text-amber-500">
                     <Star size={16} fill="currentColor" />
                     {factory.rating}
                   </div>
-                  <button className="text-[#6842FF] bg-[#F1EEFF] p-2 rounded-xl">
+                  <button type="button" className="text-[#6842FF] bg-[#F1EEFF] p-2 rounded-xl">
                     <Tag size={16} />
                   </button>
                 </div>
@@ -139,27 +136,65 @@ export function Home() {
         </div>
       </motion.div>
 
+      {/* --- Section Ad และโปรโมชั่น --- */}
+      <div className="mb-5 w-full overflow-hidden">
+        <div
+          ref={adScrollRef}
+          onScroll={handleAdScroll}
+          // เพิ่ม px-[7.5vw] เพื่อให้จุดเริ่มต้นและจุดสิ้นสุดอยู่ตรงกลางพอดี
+          className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory px-[7.5vw]"
+          style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
+        >
+          {/* ไม่ต้องใช้ div เปล่าหัวท้ายแล้ว */}
+          {mockPromotions.map((promo) => (
+            <div
+              key={promo.id}
+              data-ad-slide
+              // เปลี่ยนเป็น snap-center และกำหนด w-[85vw] คงที่
+              className="flex-shrink-0 w-[85vw] snap-center rounded-2xl overflow-hidden relative min-h-[120px]"
+            >
+              <div className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 p-5 relative min-h-[120px] h-full">
+                <div className="relative z-10">
+                  <h3 className="text-lg font-bold text-white mb-1">{promo.title}</h3>
+                  <p className="text-white/90 text-sm mb-3">{promo.subtitle}</p>
+                  {promo.code && (
+                    <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
+                      <span className="text-white text-sm font-medium">โค้ด {promo.code}</span>
+                      <Button
+                        size="sm"
+                        className="bg-white text-emerald-700 hover:bg-white/90 rounded-full h-7 text-xs"
+                      >
+                        สั่งเลย &gt;
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
       {/* Recent Activity Mini-Card */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="px-6 mb-8"
       >
-        <h3 className="text-lg font-bold text-slate-800 mb-4">Recent Activity</h3>
-        <Link to="/order/1" className="block">
+        <h3 className="text-lg font-bold text-slate-800 mb-4">กิจกรรมล่าสุด</h3>
+        <Link to="/orders/ord1" className="block">
           <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-50 flex items-center gap-4 active:scale-95 transition-transform">
             <div className="bg-orange-50 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
               <Clock className="text-orange-500" size={24} />
             </div>
             <div className="flex-1">
               <div className="flex justify-between items-start">
-                <h4 className="font-bold text-slate-800">Grocery Bag Production</h4>
+                <h4 className="font-bold text-slate-800">ตู้ควบคุมไฟฟ้า Sheet Metal</h4>
                 <span className="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">
-                  In Progress
+                  กำลังผลิต
                 </span>
               </div>
-              <p className="text-sm text-slate-500 mt-1">Samples are being reviewed</p>
+              <p className="text-sm text-slate-500 mt-1">กำลังตรวจสอบคุณภาพชิ้นงาน</p>
             </div>
           </div>
         </Link>

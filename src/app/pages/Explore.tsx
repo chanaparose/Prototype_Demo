@@ -12,11 +12,8 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   completed: { label: 'เสร็จสิ้น', color: '#22C55E', bg: '#DCFCE7' },
 };
 
-const filterChips = ['ทั้งหมด', 'ใกล้ฉัน', 'ราคาต่ำ', 'ISO', 'รีวิวดี'];
-
 export function Explore() {
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState('ทั้งหมด');
   const [searchText, setSearchText] = useState('');
 
   const activeRFQs = rfqs.filter((r) => r.status !== 'completed');
@@ -61,24 +58,6 @@ export function Explore() {
         <button className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center shrink-0">
           <SlidersHorizontal size={18} style={{ color: '#6C47FF' }} />
         </button>
-      </div>
-
-      {/* Filter Chips */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        {filterChips.map((chip) => (
-          <button
-            key={chip}
-            onClick={() => setActiveFilter(chip)}
-            className="shrink-0 px-4 py-1.5 rounded-full text-sm transition-all duration-200"
-            style={{
-              background: activeFilter === chip ? '#6C47FF' : '#F3F4F6',
-              color: activeFilter === chip ? '#fff' : '#6B7280',
-              fontWeight: activeFilter === chip ? 600 : 400,
-            }}
-          >
-            {chip}
-          </button>
-        ))}
       </div>
 
       {/* Purple Banner */}
