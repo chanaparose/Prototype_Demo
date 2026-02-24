@@ -78,25 +78,25 @@ export function RFQs() {
   };
 
   return (
-    <div className="flex flex-col min-h-full pb-20">
-      {/* Background */}
-      <div className="fixed inset-0 pointer-events-none -z-10 bg-gradient-to-br from-[#F4F1FF] via-[#F8F9FE] to-[#FEF1F5] opacity-70" />
-
+    <div className="px-4 pt-5 pb-4 flex flex-col min-h-full pb-20">
       {/* Header */}
-      <div className="px-6 pt-12 pb-6 flex items-center justify-between sticky top-0 bg-white/50 backdrop-blur-xl z-40 border-b border-slate-100/50">
-        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">RFQ ของฉัน</h1>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wider">คำขอ</p>
+          <h1 className="text-gray-900" style={{ fontWeight: 700 }}>RFQ ของฉัน</h1>
+        </div>
         <div className="flex gap-2">
-          <button className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-100 text-slate-600 hover:text-[#6842FF]">
-            <Search size={20} />
+          <button className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+            <Search size={20} style={{ color: '#6C47FF' }} />
           </button>
-          <button className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-100 text-slate-600 hover:text-[#6842FF]">
-            <Filter size={20} />
+          <button className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+            <Filter size={20} style={{ color: '#6C47FF' }} />
           </button>
         </div>
       </div>
 
       {/* Segment Control */}
-      <div className="px-6 my-6">
+      <div className="my-4">
         <div className="bg-white p-1 rounded-2xl flex shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-50">
           <button
             onClick={() => setTab("active")}
@@ -122,7 +122,7 @@ export function RFQs() {
       </div>
 
       {/* Content */}
-      <div className="px-6 flex-1">
+      <div className="flex-1">
         <AnimatePresence mode="wait">
           {tab === "active" ? (
             <motion.div

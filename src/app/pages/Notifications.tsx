@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Search, Bell, ArrowLeft } from "lucide-react";
+import { Search, Bell, ChevronLeft } from "lucide-react";
 import { motion } from "motion/react";
 import { notifications as notificationsData } from "../data/mockData";
 
@@ -17,29 +17,38 @@ export function Notifications() {
   const unreadCount = notificationsData.filter((n) => !n.read).length;
 
   return (
-    <div className="flex flex-col min-h-full pb-20 bg-[#F8F9FE]">
-      {/* Header - ref จาก Messages.tsx */}
-      <div className="px-6 pt-12 pb-6 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-xl z-40 border-b border-slate-100/50">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-100 text-slate-700 hover:bg-slate-50 transition"
-          >
-            <ArrowLeft size={20} />
-          </button>
+    <div
+      className="max-w-[430px] mx-auto min-h-screen flex flex-col pb-20"
+      style={{
+        background: 'linear-gradient(145deg, rgba(236,253,245,0.5) 0%, #fff 30%, #fff 65%, rgba(237,233,254,0.4) 100%)',
+      }}
+    >
+      {/* Header - ตาม RFQDetail */}
+      <div className="flex items-center justify-between px-4 pt-5 pb-4">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
+        >
+          <ChevronLeft size={22} className="text-gray-700" />
+        </button>
+        <div className="flex flex-col items-center">
+          <p className="text-[10px] text-gray-400">แจ้งเตือน</p>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">การแจ้งเตือน</h1>
+            <h1 className="text-sm text-gray-900 truncate" style={{ fontWeight: 700 }}>
+              การแจ้งเตือน
+            </h1>
             {unreadCount > 0 && (
-              <span className="w-6 h-6 rounded-full bg-[#6842FF] text-white flex items-center justify-center text-xs font-bold">
+              <span className="w-5 h-5 rounded-full bg-[#6C47FF] text-white flex items-center justify-center text-[10px] font-bold">
                 {unreadCount}
               </span>
             )}
           </div>
         </div>
+        <div className="w-10 h-10" aria-hidden />
       </div>
 
-      <div className="px-6 py-4">
+      <div className="px-4 py-4 flex-1">
         <div className="relative mb-6">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-slate-400" />
