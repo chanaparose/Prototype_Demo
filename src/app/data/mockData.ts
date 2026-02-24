@@ -1,3 +1,14 @@
+/**
+ * Mock data - ความสัมพันธ์ระหว่าง entities
+ *
+ * categories     → ใช้ใน rfqs (rfq.category = categories[].name)
+ * factories      → ถูกอ้างใน rfqs.offers[].factoryId, orders.factoryId, conversations.factoryId
+ * rfqs           → orders.rfqId (เฉพาะ rfq ที่มี order จะมีคำสั่งซื้อ), offers[].factoryId ∈ factories
+ * orders         → order.rfqId ∈ rfqs, order.factoryId ∈ rfqs[rfq].offers[].factoryId
+ * conversations  → factoryId ∈ factories, rfqId อ้างถึง rfq ที่คุยกัน (หรือ order)
+ * notifications  → linkTo อ้างถึง /rfqs/:id, /orders/:id, /messages/:id ที่มีอยู่จริง
+ */
+
 export const currentUser = {
   id: 'u1',
   name: 'สมชาย วงศ์ใหญ่',
@@ -11,6 +22,18 @@ export const currentUser = {
   memberSince: '2023',
 };
 
+// ─── Master: หมวดหมู่ (ใช้ชื่อใน rfq.category ให้ตรงกับ name ด้านล่าง) ───
+export const categories = [
+  { id: 'pet_food', name: 'อาหารสัตว์', icon: '🐾', color: '#3B82F6' },
+  { id: 'supplements', name: 'อาหารเสริม', icon: '💊', color: '#8B5CF6' },
+  { id: 'pet_toys', name: 'ของเล่นสัตว์เลี้ยง', icon: '🎾', color: '#22C55E' },
+  { id: 'leash_equipment', name: 'สายจูง อุปกรณ์', icon: '🦮', color: '#F59E0B' },
+  { id: 'pet_clothes', name: 'เสื้อผ้าสัตว์เลี้ยง', icon: '👕', color: '#EC4899' },
+  { id: 'packaging', name: 'แพ็กเกจจิ้ง', icon: '📦', color: '#0EA5E9' },
+  { id: 'other', name: 'อื่นๆ', icon: '📦', color: '#6B7280' },
+];
+
+// ─── โรงงาน (ถูกอ้างใน rfqs.offers, orders, conversations) ───
 export const factories = [
   {
     id: 'f1',
@@ -74,6 +97,8 @@ export const factories = [
   },
 ];
 
+// ─── RFQs (category ตรงกับ categories[].name; offers[].factoryId ตรงกับ factories) ───
+// มี order เมื่อ status = completed และมีคำสั่งซื้อใน orders (rfq1, rfq2, rfq4)
 export const rfqs = [
   {
     id: 'rfq1',
@@ -81,7 +106,7 @@ export const rfqs = [
     category: 'อาหารสัตว์',
     categoryIcon: '🐾',
     status: 'offers_received',
-    offerCount: 5,
+    offerCount: 3,
     budget: 50000,
     quantity: 1000,
     material: 'เนื้อไก่, ข้าว, วิตามิน',
@@ -89,45 +114,9 @@ export const rfqs = [
     createdAt: '2026-02-20',
     description: 'ต้องการผลิตอาหารสัตว์แห้งสูตรลูกสุนัข จำนวน 1,000 กระสอบ ขนาด 2 กก./ถุง',
     offers: [
-      {
-        id: 'off1',
-        factoryId: 'f1',
-        factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
-        price: 42000,
-        leadTime: 8,
-        rating: 4.9,
-        verified: true,
-        recommended: true,
-        aiReason: 'ราคาคุ้มค่าที่สุด + งานไวสุด',
-        completedOrders: 342,
-        responseTime: '2 ชั่วโมง',
-      },
-      {
-        id: 'off2',
-        factoryId: 'f4',
-        factoryName: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร',
-        price: 38500,
-        leadTime: 12,
-        rating: 4.6,
-        verified: false,
-        recommended: false,
-        aiReason: 'ราคาถูกที่สุด แต่ lead time นานกว่า',
-        completedOrders: 167,
-        responseTime: '5 ชั่วโมง',
-      },
-      {
-        id: 'off3',
-        factoryId: 'f3',
-        factoryName: 'ของเล่นสัตว์เลี้ยง แฮปปี้',
-        price: 48000,
-        leadTime: 7,
-        rating: 4.8,
-        verified: true,
-        recommended: false,
-        aiReason: 'ส่งเร็วที่สุด แต่ราคาสูงกว่า',
-        completedOrders: 589,
-        responseTime: '1 ชั่วโมง',
-      },
+      { id: 'off1a', factoryId: 'f1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', price: 42000, leadTime: 8, rating: 4.9, verified: true, recommended: true, aiReason: 'ราคาคุ้มค่าที่สุด + งานไวสุด', completedOrders: 342, responseTime: '2 ชั่วโมง' },
+      { id: 'off1b', factoryId: 'f4', factoryName: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร', price: 38500, leadTime: 12, rating: 4.6, verified: false, recommended: false, aiReason: 'ราคาถูกที่สุด แต่ lead time นานกว่า', completedOrders: 167, responseTime: '5 ชั่วโมง' },
+      { id: 'off1c', factoryId: 'f3', factoryName: 'ของเล่นสัตว์เลี้ยง แฮปปี้', price: 48000, leadTime: 7, rating: 4.8, verified: true, recommended: false, aiReason: 'ส่งเร็วที่สุด แต่ราคาสูงกว่า', completedOrders: 589, responseTime: '1 ชั่วโมง' },
     ],
   },
   {
@@ -144,19 +133,8 @@ export const rfqs = [
     createdAt: '2026-02-22',
     description: 'ผลิตเสื้อผ้าสัตว์เลี้ยงขนาด S–L จำนวน 2,000 ชิ้น สำหรับฤดูร้อน',
     offers: [
-      {
-        id: 'off4',
-        factoryId: 'f2',
-        factoryName: 'เสื้อผ้าสัตว์เลี้ยง สยาม',
-        price: 26000,
-        leadTime: 6,
-        rating: 4.7,
-        verified: true,
-        recommended: true,
-        aiReason: 'ราคาดี + งานไว',
-        completedOrders: 215,
-        responseTime: '3 ชั่วโมง',
-      },
+      { id: 'off2a', factoryId: 'f2', factoryName: 'เสื้อผ้าสัตว์เลี้ยง สยาม', price: 26000, leadTime: 6, rating: 4.7, verified: true, recommended: true, aiReason: 'ราคาดี + งานไว', completedOrders: 215, responseTime: '3 ชั่วโมง' },
+      { id: 'off2b', factoryId: 'f3', factoryName: 'ของเล่นสัตว์เลี้ยง แฮปปี้', price: 28500, leadTime: 9, rating: 4.8, verified: true, recommended: false, aiReason: 'รับผลิตหลากหลาย', completedOrders: 589, responseTime: '4 ชั่วโมง' },
     ],
   },
   {
@@ -223,7 +201,7 @@ export const rfqs = [
     material: 'วัตถุดิบออร์แกนิก',
     deadline: '2026-01-15',
     createdAt: '2025-12-01',
-    description: 'RFQ หมดอายุ ไม่มีโรงงานส่งใบเสนอราคา',
+    description: 'RFQ หมดอายุ ไม่มีการส่งคำสั่งซื้อในเวลาที่กำหนด',
     offers: [
       { id: 'off6a', factoryId: 'f1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', price: 32000, leadTime: 12, rating: 4.9, verified: true, recommended: false, aiReason: 'วัตถุดิบออร์แกนิก', completedOrders: 342, responseTime: '4 ชั่วโมง' },
       { id: 'off6b', factoryId: 'f4', factoryName: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร', price: 30500, leadTime: 15, rating: 4.6, verified: false, recommended: false, aiReason: 'ราคาต่ำกว่า', completedOrders: 167, responseTime: '8 ชั่วโมง' },
@@ -231,6 +209,8 @@ export const rfqs = [
   },
 ];
 
+// ─── คำสั่งซื้อ (rfqId ตรงกับ rfqs; factoryId ต้องเป็นหนึ่งใน rfqs[rfqId].offers[].factoryId) ───
+// ord1 ← rfq4 + f3, ord2 ← rfq2 + f2, ord3 ← rfq1 + f1
 export const orders = [
   {
     id: 'ord1',
@@ -247,54 +227,12 @@ export const orders = [
     createdAt: '2026-01-15',
     estimatedDelivery: '2026-03-01',
     timeline: [
-      {
-        id: 't1',
-        title: 'ยืนยันคำสั่งซื้อ',
-        date: '2026-01-15',
-        status: 'completed',
-        photo: null,
-        description: 'คำสั่งซื้อได้รับการยืนยันและชำระมัดจำแล้ว',
-      },
-      {
-        id: 't2',
-        title: 'จัดซื้อวัตถุดิบ',
-        date: '2026-01-18',
-        status: 'completed',
-        photo: null,
-        description: 'วัตถุดิบไนลอนและหนังสังเคราะห์พร้อมแล้ว',
-      },
-      {
-        id: 't3',
-        title: 'เริ่มกระบวนการผลิต',
-        date: '2026-01-22',
-        status: 'completed',
-        photo: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop',
-        description: 'ตัดเย็บและประกอบสายจูงและปลอกคอตามแบบ',
-      },
-      {
-        id: 't4',
-        title: 'Quality Check ครั้งที่ 1',
-        date: '2026-02-05',
-        status: 'current',
-        photo: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=400&h=300&fit=crop',
-        description: 'ตรวจสอบความแข็งแรงและความเรียบร้อยของชิ้นงาน',
-      },
-      {
-        id: 't5',
-        title: 'บรรจุและติดฉลาก',
-        date: '',
-        status: 'pending',
-        photo: null,
-        description: 'บรรจุภัณฑ์และติดฉลากก่อนจัดส่ง',
-      },
-      {
-        id: 't6',
-        title: 'QC ขั้นสุดท้ายและจัดส่ง',
-        date: '',
-        status: 'pending',
-        photo: null,
-        description: 'ตรวจสอบขั้นสุดท้ายก่อนบรรจุและจัดส่ง',
-      },
+      { id: 't1', title: 'ยืนยันคำสั่งซื้อ', date: '2026-01-15', status: 'completed', photo: null, description: 'คำสั่งซื้อได้รับการยืนยันและชำระมัดจำแล้ว' },
+      { id: 't2', title: 'จัดซื้อวัตถุดิบ', date: '2026-01-18', status: 'completed', photo: null, description: 'วัตถุดิบไนลอนและหนังสังเคราะห์พร้อมแล้ว' },
+      { id: 't3', title: 'เริ่มกระบวนการผลิต', date: '2026-01-22', status: 'completed', photo: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop', description: 'ตัดเย็บและประกอบสายจูงและปลอกคอตามแบบ' },
+      { id: 't4', title: 'Quality Check ครั้งที่ 1', date: '2026-02-05', status: 'current', photo: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=400&h=300&fit=crop', description: 'ตรวจสอบความแข็งแรงและความเรียบร้อยของชิ้นงาน' },
+      { id: 't5', title: 'บรรจุและติดฉลาก', date: '', status: 'pending', photo: null, description: 'บรรจุภัณฑ์และติดฉลากก่อนจัดส่ง' },
+      { id: 't6', title: 'QC ขั้นสุดท้ายและจัดส่ง', date: '', status: 'pending', photo: null, description: 'ตรวจสอบขั้นสุดท้ายก่อนบรรจุและจัดส่ง' },
     ],
   },
   {
@@ -336,10 +274,13 @@ export const orders = [
   },
 ];
 
+// ─── แชท (factoryId ตรงกับ factories; rfqId อ้างถึง rfq ที่คุยกัน; rfqName = rfqs[rfqId].projectName) ───
+// conv1: f1 + rfq1, conv2: f2 + rfq2 (order ord2), conv3: f3 + rfq4 (order ord1)
 export const conversations = [
   {
     id: 'conv1',
     factoryId: 'f1',
+    rfqId: 'rfq1',
     factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
     factoryAvatar: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=80&h=80&fit=crop',
     rfqName: 'อาหารสัตว์แห้งสูตรลูกสุนัข',
@@ -358,6 +299,7 @@ export const conversations = [
   {
     id: 'conv2',
     factoryId: 'f2',
+    rfqId: 'rfq2',
     factoryName: 'เสื้อผ้าสัตว์เลี้ยง สยาม',
     factoryAvatar: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=80&h=80&fit=crop',
     rfqName: 'เสื้อผ้าสัตว์เลี้ยงชุดฤดูร้อน',
@@ -374,6 +316,7 @@ export const conversations = [
   {
     id: 'conv3',
     factoryId: 'f3',
+    rfqId: 'rfq4',
     factoryName: 'ของเล่นสัตว์เลี้ยง แฮปปี้',
     factoryAvatar: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=80&h=80&fit=crop',
     rfqName: 'สายจูงและปลอกคอสัตว์เลี้ยง',
@@ -389,6 +332,7 @@ export const conversations = [
   },
 ];
 
+// ─── การแจ้งเตือน (linkTo อ้างถึง rfq/order/conversation ที่มีอยู่จริง; ข้อความสอดคล้อง) ───
 export const notifications = [
   {
     id: 'n1',
@@ -398,6 +342,7 @@ export const notifications = [
     time: '10 นาทีที่แล้ว',
     read: false,
     linkTo: '/rfqs/rfq1',
+    rfqId: 'rfq1',
     avatar: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=80&h=80&fit=crop',
   },
   {
@@ -408,6 +353,7 @@ export const notifications = [
     time: '1 ชั่วโมงที่แล้ว',
     read: false,
     linkTo: '/orders/ord1',
+    orderId: 'ord1',
     avatar: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=80&h=80&fit=crop',
   },
   {
@@ -418,6 +364,7 @@ export const notifications = [
     time: '2 ชั่วโมงที่แล้ว',
     read: false,
     linkTo: '/messages/conv2',
+    conversationId: 'conv2',
     avatar: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=80&h=80&fit=crop',
   },
   {
@@ -428,6 +375,7 @@ export const notifications = [
     time: 'เมื่อวาน',
     read: true,
     linkTo: '/rfqs/rfq2',
+    rfqId: 'rfq2',
     avatar: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=80&h=80&fit=crop',
   },
   {
@@ -440,13 +388,4 @@ export const notifications = [
     linkTo: '',
     avatar: '',
   },
-];
-
-export const categories = [
-  { id: 'pet_food', name: 'อาหารสัตว์', icon: '🐾', color: '#3B82F6' },
-  { id: 'supplements', name: 'อาหารเสริม', icon: '💊', color: '#8B5CF6' },
-  { id: 'pet_toys', name: 'ของเล่นสัตว์เลี้ยง', icon: '🎾', color: '#22C55E' },
-  { id: 'leash_equipment', name: 'สายจูง อุปกรณ์', icon: '🦮', color: '#F59E0B' },
-  { id: 'pet_clothes', name: 'เสื้อผ้าสัตว์เลี้ยง', icon: '👕', color: '#EC4899' },
-  { id: 'other', name: 'อื่นๆ', icon: '📦', color: '#6B7280' },
 ];
