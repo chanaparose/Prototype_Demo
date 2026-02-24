@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Search, Tag, Star, Clock, Zap, PawPrint, Pill, Gamepad2, Bone, Shirt, Package, Droplets, Box } from "lucide-react";
+import { Search, Tag, Star, Clock, Zap, PawPrint, Pill, Gamepad2, Bone, Shirt, Package, Droplets, Box, ChevronRight } from "lucide-react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { currentUser, factories } from "../data/mockData";
@@ -124,7 +124,9 @@ export function Home() {
       >
         <div className="flex justify-between items-end px-6 mb-4">
           <h3 className="text-lg font-bold text-slate-800">โรงงานแนะนำ</h3>
-          <button type="button" className="text-sm font-semibold text-[#6842FF]">ดูทั้งหมด</button>
+          <button type="button" className="inline-flex items-center gap-1 text-sm font-semibold text-[#6842FF]">
+            ดูทั้งหมด <ChevronRight size={16} strokeWidth={2.5} />
+          </button>
         </div>
         <div className="flex gap-4 overflow-x-auto px-6 pb-4 no-scrollbar">
           {recommendedFactories.map((factory) => (

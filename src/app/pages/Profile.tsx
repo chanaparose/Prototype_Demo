@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router';
+import React from 'react';
+import { useNavigate, Link } from 'react-router';
 import {
   ChevronRight, Bell, Wallet, Shield, HelpCircle, LogOut, Star, Package,
   FileText, Settings, User, TrendingUp, ArrowUpRight, ArrowDownLeft
@@ -7,7 +8,6 @@ import { currentUser, orders } from '../data/mockData';
 
 const menuSections = [
   {
-    title: 'บัญชี',
     items: [
       { icon: User, label: 'ข้อมูลส่วนตัว', sub: 'แก้ไขโปรไฟล์', color: '#6C47FF', bg: '#EDE9FF' },
       { icon: Star, label: 'รีวิวของฉัน', sub: 'รีวิวที่ให้กับโรงงาน', color: '#F59E0B', bg: '#FEF3C7' },
@@ -52,7 +52,7 @@ export function Profile() {
             <p className="text-[10px] text-gray-400 uppercase tracking-wider">บัญชี</p>
             <h1 className="text-gray-900" style={{ fontWeight: 700 }}>โปรไฟล์</h1>
           </div>
-          <button className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+          <Link to="/notifications" className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
             <Bell size={20} style={{ color: '#6C47FF' }} />
             <span
               className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-white flex items-center justify-center text-[9px]"
@@ -60,7 +60,7 @@ export function Profile() {
             >
               3
             </span>
-          </button>
+          </Link>
         </div>
 
         {/* User Card */}
@@ -122,9 +122,7 @@ export function Profile() {
               </div>
               <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>กระเป๋าเงิน</p>
             </div>
-            <button className="text-xs" style={{ color: '#6C47FF', fontWeight: 600 }}>
-              เติมเงิน +
-            </button>
+            
           </div>
 
           <div className="mb-4">
@@ -145,19 +143,29 @@ export function Profile() {
               className="flex-1 py-2.5 rounded-xl text-xs text-white"
               style={{ background: '#6C47FF', fontWeight: 600 }}
             >
-              โอนเงิน
+              + เติมเงิน
             </button>
             <button
               className="flex-1 py-2.5 rounded-xl text-xs border"
               style={{ borderColor: '#6C47FF', color: '#6C47FF', fontWeight: 600 }}
             >
-              ประวัติ
+              ถอนเงิน
             </button>
           </div>
 
           {/* Transactions */}
           <div className="space-y-2.5">
-            <p className="text-xs text-gray-500" style={{ fontWeight: 600 }}>รายการล่าสุด</p>
+            <div className="flex justify-between items-end mb-4">
+              {/* ปรับจาก text-lg เป็น text-base (หรือ text-sm ถ้าต้องการให้เล็กไปอีก) */}
+              <h3 className="text-base font-bold text-slate-800">
+                รายการล่าสุด
+              </h3>
+              
+              {/* ปรับจาก text-sm เป็น text-xs เพื่อให้เล็กลงรับกับหัวข้อ */}
+              <button type="button" className="inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]">
+                ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} /> {/* ปรับ size ไอคอนลงจาก 16 เป็น 14 ด้วย */}
+              </button>
+            </div>
             {walletTransactions.map((tx) => (
               <div key={tx.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
