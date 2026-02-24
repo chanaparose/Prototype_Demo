@@ -1,39 +1,23 @@
 import React from 'react';
-import { Home, ShoppingBag, FileText, Receipt, User, LayoutDashboard, Briefcase, FileStack, Wallet, Plus } from 'lucide-react';
+import { Home, ShoppingBag, FileText, Receipt, User } from 'lucide-react';
 
 interface BottomNavProps {
-  userType: 'customer' | 'factory';
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-export function BottomNav({ userType, activeTab, onTabChange }: BottomNavProps) {
-  // แยก Tab ออกเป็น 2 ฝั่งเพื่อเว้นที่ให้ปุ่มตรงกลาง (Floating Button)
-  const customerTabsLeft = [
+export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
+  const leftTabs = [
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'order', icon: ShoppingBag, label: 'Order' },
   ];
-  const customerTabsRight = [
+  const rightTabs = [
     { id: 'transaction', icon: Receipt, label: 'Wallet' },
     { id: 'profile', icon: User, label: 'Profile' }
   ];
-
-  const factoryTabsLeft = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'my-jobs', icon: Briefcase, label: 'Jobs' },
-  ];
-  const factoryTabsRight = [
-    { id: 'wallet', icon: Wallet, label: 'Wallet' },
-    { id: 'profile', icon: User, label: 'Profile' }
-  ];
-
-  const leftTabs = userType === 'customer' ? customerTabsLeft : factoryTabsLeft;
-  const rightTabs = userType === 'customer' ? customerTabsRight : factoryTabsRight;
-  
-  // กำหนด ID สำหรับปุ่มกลางตาม UserType
-  const centerTabId = userType === 'customer' ? 'req-his' : 'quotes';
-  const CenterIcon = userType === 'customer' ? FileText : FileStack;
-  const centerLabel = userType === 'customer' ? 'Request' : 'Quotes';
+  const centerTabId = 'req-his';
+  const CenterIcon = FileText;
+  const centerLabel = 'Request';
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-[#3A3B6F] to-[#4A4B8F] pt-px">

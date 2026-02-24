@@ -1,14 +1,13 @@
 import React from 'react';
-import { ChevronRight, Bookmark, MapPin, Users, HelpCircle, LogOut, ShieldCheck, Heart } from 'lucide-react';
+import { ChevronRight, MapPin, HelpCircle, LogOut, ShieldCheck, Heart } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { mockCustomerProfile } from '../../data/mockData';
 
 interface ProfileScreenProps {
-  onSwitchMode: () => void;
   onLogout: () => void;
 }
 
-export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
+export function ProfileScreen({ onLogout }: ProfileScreenProps) {
   const menuItems = [
     {
       icon: Heart,
@@ -21,13 +20,6 @@ export function ProfileScreen({ onSwitchMode, onLogout }: ProfileScreenProps) {
       title: 'ที่อยู่สำหรับจัดส่ง',
       subtitle: `${mockCustomerProfile.addressCount} ที่อยู่`,
       onClick: () => {}
-    },
-    {
-      icon: Users,
-      title: 'สลับไปใช้โหมดผู้ขาย/โรงงาน',
-      subtitle: 'เปลี่ยนเป็นโหมดโรงงาน',
-      onClick: onSwitchMode,
-      highlight: true // เพิ่ม flag สำหรับไฮไลต์เมนูสำคัญ
     },
     {
       icon: HelpCircle,
