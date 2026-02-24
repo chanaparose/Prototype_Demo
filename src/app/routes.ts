@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router';
 import { Layout } from './components/Layout';
 import { Explore } from './pages/Explore';
-import MyRfqs from './pages/MyRfqs';
+import { RFQs } from './components/RFQs';
 import { Orders } from './pages/Orders';
 import { Messages } from './pages/Messages';
 import { Profile } from './pages/Profile';
@@ -17,7 +17,7 @@ export const router = createBrowserRouter([
     Component: Layout,
     children: [
       { index: true, Component: Explore },
-      { path: 'rfqs', Component: MyRfqs },
+      { path: 'rfqs', Component: RFQs },
       { path: 'orders', Component: Orders },
       { path: 'messages', Component: Messages },
       { path: 'profile', Component: Profile },
