@@ -1,12 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Search, Tag, Star, Clock, Zap, PawPrint, Pill, Gamepad2, Bone, Shirt, Package, Droplets, Box } from "lucide-react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { currentUser, factories } from "../data/mockData";
+import { Button } from "./ui/button";
+
+const CATEGORIES = [
+  { id: "pet_food", label: "อาหารสัตว์", icon: PawPrint },
+  { id: "supplements", label: "อาหารเสริม", icon: Pill },
+  { id: "pet_toys", label: "ของเล่นสัตว์เลี้ยง", icon: Gamepad2 },
+  { id: "leash_equipment", label: "สายจูง อุปกรณ์", icon: Bone },
+  { id: "pet_clothes", label: "เสื้อผ้าสัตว์เลี้ยง", icon: Shirt },
+  { id: "packaging", label: "แพ็กเกจจิ้ง", icon: Package },
+  { id: "bathing", label: "อุปกรณ์อาบน้ำ", icon: Droplets },
+  { id: "other", label: "อื่นๆ", icon: Box },
+];
+
+const mockPromotions = [
+  { id: "1", title: "ส่วนลด 500 บาท", subtitle: "เมื่อสั่งซื้อขั้นต่ำ 5,000 บาท", code: "PET500" },
+  { id: "2", title: "ฟรีค่าจัดส่ง", subtitle: "ออเดอร์แรกเท่านั้น", code: "FREESHIP" },
+];
 
 export function Home() {
   const [activeChip, setActiveChip] = useState("ทั้งหมด");
   const recommendedFactories = factories.slice(0, 3);
+  const adScrollRef = useRef<HTMLDivElement>(null);
+  const handleAdScroll = () => {};
 
   return (
     <div className="flex flex-col min-h-full">
@@ -173,6 +192,7 @@ export function Home() {
             </div>
           ))}
         </div>
+      </div>
 
       {/* Recent Activity Mini-Card */}
       <motion.div
