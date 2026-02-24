@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
 import { Search, Bell, SlidersHorizontal, MapPin, Star, Plus, ChevronRight, Zap, TrendingUp, Clock } from 'lucide-react';
 import { currentUser, factories, rfqs, orders, categories } from '../data/mockData';
 
@@ -36,11 +36,11 @@ export function Explore() {
             </p>
           </div>
         </div>
-        <button className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+        <Link to="/notifications" className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
           <Bell size={20} style={{ color: '#6C47FF' }} />
           <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-white flex items-center justify-center text-[9px]"
             style={{ background: '#6C47FF', fontWeight: 700 }}>3</span>
-        </button>
+        </Link>
       </div>
 
       {/* Search Bar */}

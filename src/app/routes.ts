@@ -9,6 +9,7 @@ import { CreateRfq } from './pages/CreateRfq';
 import { RFQDetail } from './pages/RFQDetail';
 import { OrderDetail } from './pages/OrderDetail';
 import { ChatRoom } from './pages/ChatRoom';
+import { Notifications } from './pages/Notifications';
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '/create-rfq', Component: CreateRfq },
+  { path: '/notifications', Component: Notifications },
   { path: '/rfqs/:id', Component: RFQDetail },
   { path: '/orders/:id', Component: OrderDetail },
   { path: '/messages/:id', Component: ChatRoom },

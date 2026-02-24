@@ -349,6 +349,59 @@ export const conversations = [
   },
 ];
 
+export const notifications = [
+  {
+    id: 'n1',
+    type: 'rfq',
+    title: 'มีใบเสนอราคาใหม่',
+    message: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม ส่งใบเสนอราคาให้โครงการ "อาหารสัตว์แห้งสูตรลูกสุนัข" แล้ว',
+    time: '10 นาทีที่แล้ว',
+    read: false,
+    linkTo: '/rfqs/rfq1',
+    avatar: 'https://images.unsplash.com/photo-1579784340946-55a7bbd51d57?w=80&h=80&fit=crop',
+  },
+  {
+    id: 'n2',
+    type: 'order',
+    title: 'อัปเดตคำสั่งซื้อ',
+    message: 'คำสั่งซื้อ "สายจูงและปลอกคอสัตว์เลี้ยง" กำลังผลิต — ตรวจสอบคุณภาพชิ้นงาน',
+    time: '1 ชั่วโมงที่แล้ว',
+    read: false,
+    linkTo: '/orders/ord1',
+    avatar: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=80&h=80&fit=crop',
+  },
+  {
+    id: 'n3',
+    type: 'message',
+    title: 'ข้อความใหม่',
+    message: 'เสื้อผ้าสัตว์เลี้ยง สยาม: ชิ้นงานอยู่ระหว่างการจัดส่งครับ',
+    time: '2 ชั่วโมงที่แล้ว',
+    read: false,
+    linkTo: '/messages/conv2',
+    avatar: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=80&h=80&fit=crop',
+  },
+  {
+    id: 'n4',
+    type: 'rfq',
+    title: 'มีใบเสนอราคา',
+    message: 'โครงการ "เสื้อผ้าสัตว์เลี้ยงชุดฤดูร้อน" ได้รับใบเสนอราคา 2 รายการ',
+    time: 'เมื่อวาน',
+    read: true,
+    linkTo: '/rfqs/rfq2',
+    avatar: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=80&h=80&fit=crop',
+  },
+  {
+    id: 'n5',
+    type: 'system',
+    title: 'โปรโมชั่น',
+    message: 'ใช้โค้ด PET500 ลด 500 บาท เมื่อสั่งซื้อขั้นต่ำ 5,000 บาท',
+    time: '2 วันที่แล้ว',
+    read: true,
+    linkTo: '',
+    avatar: '',
+  },
+];
+
 export const categories = [
   { id: 'pet_food', name: 'อาหารสัตว์', icon: '🐾', color: '#3B82F6' },
   { id: 'supplements', name: 'อาหารเสริม', icon: '💊', color: '#8B5CF6' },
