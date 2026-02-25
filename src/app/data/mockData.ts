@@ -29,7 +29,6 @@ export const categories = [
   { id: 'pet_toys', name: 'ของเล่นสัตว์เลี้ยง', icon: '🎾', color: '#22C55E' },
   { id: 'leash_equipment', name: 'สายจูง อุปกรณ์', icon: '🦮', color: '#F59E0B' },
   { id: 'pet_clothes', name: 'เสื้อผ้าสัตว์เลี้ยง', icon: '👕', color: '#EC4899' },
-  { id: 'packaging', name: 'แพ็กเกจจิ้ง', icon: '📦', color: '#0EA5E9' },
   { id: 'other', name: 'อื่นๆ', icon: '📦', color: '#6B7280' },
 ];
 

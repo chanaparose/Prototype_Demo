@@ -11,7 +11,6 @@ const CATEGORIES = [
   { id: "pet_toys", label: "ของเล่นสัตว์เลี้ยง", icon: Gamepad2 },
   { id: "leash_equipment", label: "สายจูง อุปกรณ์", icon: Bone },
   { id: "pet_clothes", label: "เสื้อผ้าสัตว์เลี้ยง", icon: Shirt },
-  { id: "packaging", label: "แพ็กเกจจิ้ง", icon: Package },
   { id: "bathing", label: "อุปกรณ์อาบน้ำ", icon: Droplets },
   { id: "other", label: "อื่นๆ", icon: Box },
 ];
