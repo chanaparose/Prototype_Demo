@@ -1,8 +1,12 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, redirect } from 'react-router';
 import { Layout } from './components/Layout';
 import { Explore } from './pages/Explore';
-import { RFQs } from './components/RFQs';
-import { Orders } from './pages/Orders';
+import { FactoryIdeas } from './pages/FactoryIdeas';
+import { FactoryProfile } from './pages/FactoryProfile';
+import { ProductDetail } from './pages/ProductDetail';
+import { PromotionDetail } from './pages/PromotionDetail';
+import { IdeaDetail } from './pages/IdeaDetail';
+import { RfqAndOrders } from './pages/RfqAndOrders';
 import { Messages } from './pages/Messages';
 import { Profile } from './pages/Profile';
 import { CreateRfq } from './pages/CreateRfq';
@@ -17,8 +21,13 @@ export const router = createBrowserRouter([
     Component: Layout,
     children: [
       { index: true, Component: Explore },
-      { path: 'rfqs', Component: RFQs },
-      { path: 'orders', Component: Orders },
+      { path: 'factory-ideas', Component: FactoryIdeas },
+      { path: 'factories/:id', Component: FactoryProfile },
+      { path: 'factory-ideas/products/:id', Component: ProductDetail },
+      { path: 'factory-ideas/promotions/:id', Component: PromotionDetail },
+      { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
+      { path: 'rfqs', loader: () => redirect('/orders'), Component: () => null },
+      { path: 'orders', Component: RfqAndOrders },
       { path: 'messages', Component: Messages },
       { path: 'profile', Component: Profile },
     ],

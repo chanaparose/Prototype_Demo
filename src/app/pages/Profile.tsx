@@ -203,11 +203,13 @@ export function Profile() {
         </div>
 
         {/* Menu Sections */}
-        {menuSections.map((section) => (
-          <div key={section.title} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
-              {section.title}
-            </p>
+        {menuSections.map((section, sectionIndex) => (
+          <div key={section.title ?? `section-${sectionIndex}`} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            {section.title ? (
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
+                {section.title}
+              </p>
+            ) : null}
             {section.items.map((item, idx) => (
               <button
                 key={item.label}

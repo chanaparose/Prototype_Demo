@@ -1,12 +1,12 @@
 import { Outlet, useNavigate, useLocation } from 'react-router';
-import { Home, FileText, Package, MessageCircle, User } from 'lucide-react';
+import { Home, ClipboardList, MessageCircle, User, Lightbulb } from 'lucide-react';
 
 const tabs = [
-  { path: '/', icon: Home, label: 'Explore' },
-  { path: '/rfqs', icon: FileText, label: 'My RFQs' },
-  { path: '/orders', icon: Package, label: 'Orders' },
-  { path: '/messages', icon: MessageCircle, label: 'Messages' },
-  { path: '/profile', icon: User, label: 'Profile' },
+  { path: '/', icon: Home, label: 'หน้าแรก' },
+  { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำโรงงาน' },
+  { path: '/orders', icon: ClipboardList, label: 'คำสั่งงาน' },
+  { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
+  { path: '/profile', icon: User, label: 'โปรไฟล์' },
 ];
 
 export function Layout() {
