@@ -146,88 +146,79 @@ export function FactoryIdeas() {
         <p className="text-xs text-gray-500">ผลลัพธ์ {visibleItems.length} รายการ</p>
       </div>
 
-      <div className="space-y-3 pb-20">
+      <div className="pb-20">
         {visibleItems.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-sm text-gray-500 shadow-sm">
             ไม่พบรายการที่ตรงกับเงื่อนไข ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่
           </div>
         ) : (
-          visibleItems.map((item) => {
-            const factory = factories.find((f) => f.id === item.factoryId);
-            const style = contentTypeStyle[item.contentType];
-            return (
-              <article
-                key={item.id}
-                className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
-                onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-              >
-                <div className="relative h-40">
-                  <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[10px]"
-                      style={{ background: style.bg, color: style.color, fontWeight: 700 }}
-                    >
-                      {contentTypeLabel[item.contentType]}
-                    </span>
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[10px] text-white"
-                      style={{ background: 'rgba(17, 24, 39, 0.72)' }}
-                    >
-                      {item.category}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-3.5">
-                  <h3 className="text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-1.5 line-clamp-2">{item.excerpt}</p>
-
-                  <div className="mt-3 flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/factories/${item.factoryId}`);
-                          }}
-                          className="text-xs text-gray-700 truncate hover:text-purple-600"
-                          style={{ fontWeight: 600 }}
-                        >
-                          {item.factoryName}
-                        </button>
-                        {factory?.verified && <BadgeCheck className="w-3.5 h-3.5 text-purple-600 shrink-0" />}
-                      </div>
-                      <div className="flex items-center gap-1 text-[11px] text-gray-500 mt-1">
-                        <MapPin className="w-3 h-3 shrink-0" />
-                        <span>{factory?.location ?? '-'}</span>
-                        <span>•</span>
-                        <span>MOQ {item.minOrder}</span>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="flex items-center justify-end gap-1 text-[11px] text-gray-500">
-                        <Heart className="w-3 h-3" />
-                        <span>{item.likes}</span>
-                      </div>
-                      <p className="text-[10px] text-gray-400 mt-1">{formatThaiDate(item.postedAt)}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    {item.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[10px]">
-                        #{tag}
+          <div className="grid grid-cols-2 gap-3">
+            {visibleItems.map((item) => {
+              const factory = factories.find((f) => f.id === item.factoryId);
+              const style = contentTypeStyle[item.contentType];
+              return (
+                <article
+                  key={item.id}
+                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
+                  onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                >
+                  <div className="relative h-32">
+                    <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                    <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+                      <span
+                        className="px-1.5 py-0.5 rounded-full text-[9px]"
+                        style={{ background: style.bg, color: style.color, fontWeight: 700 }}
+                      >
+                        {contentTypeLabel[item.contentType]}
                       </span>
-                    ))}
+                      <span
+                        className="px-1.5 py-0.5 rounded-full text-[9px] text-white w-fit"
+                        style={{ background: 'rgba(17, 24, 39, 0.72)' }}
+                      >
+                        {item.category}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            );
-          })
+
+                  <div className="p-2.5">
+                    <h3 className="text-xs text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
+                      {item.title}
+                    </h3>
+                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
+
+                    <div className="mt-2 flex items-center gap-1 min-w-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/factories/${item.factoryId}`);
+                        }}
+                        className="text-[10px] text-gray-700 truncate hover:text-purple-600"
+                        style={{ fontWeight: 600 }}
+                      >
+                        {item.factoryName}
+                      </button>
+                      {factory?.verified && <BadgeCheck className="w-3 h-3 text-purple-600 shrink-0" />}
+                    </div>
+                    <div className="mt-1.5 flex items-center justify-between text-[10px] text-gray-400">
+                      <span>MOQ {item.minOrder}</span>
+                      <span className="flex items-center gap-0.5">
+                        <Heart className="w-2.5 h-2.5" />
+                        {item.likes}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {item.tags.slice(0, 2).map((tag) => (
+                        <span key={tag} className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[9px]">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
