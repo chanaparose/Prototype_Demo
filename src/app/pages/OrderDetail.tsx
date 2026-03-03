@@ -16,6 +16,7 @@ export function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<'overview' | 'timeline'>('overview');
 
   const order = id ? orders.find((o) => o.id === id) : undefined;
   const relatedRfq = order ? rfqs.find((r) => r.id === order.rfqId) : undefined;
@@ -47,6 +48,7 @@ export function OrderDetail() {
   const showFloatingAction = order.status === 'shipped' || order.status === 'completed';
   const timeline = order.timeline ?? [];
   const hasTimeline = timeline.length > 0;
+  const rfqOffers = relatedRfq?.offers ?? [];
 
   return (
     <div
@@ -144,184 +146,341 @@ export function OrderDetail() {
           </div>
         </div>
 
-        {/* Payment Status */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>สถานะการชำระเงิน</p>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500">ชำระมัดจำ 50%</span>
-            <span className="text-xs" style={{ color: '#22C55E', fontWeight: 600 }}>
-              ✓ ชำระแล้ว ฿{order.depositPaid.toLocaleString('th-TH')}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">ยอดคงเหลือ</span>
-            <span className="text-xs text-gray-900" style={{ fontWeight: 600 }}>
-              ฿{(order.totalAmount - order.depositPaid).toLocaleString('th-TH')}
-            </span>
-          </div>
-          <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${(order.depositPaid / order.totalAmount) * 100}%`,
-                background: '#22C55E',
-              }}
-            />
-          </div>
+        {/* Section Tabs */}
+        <div className="flex border-b border-gray-100 bg-white">
+          <button
+            onClick={() => setActiveSection('overview')}
+            className={`flex-1 py-3 border-b-2 transition-colors ${
+              activeSection === 'overview'
+                ? 'border-[#6C47FF] text-[#6C47FF]'
+                : 'border-transparent text-gray-400'
+            }`}
+            style={{ fontSize: 14 }}
+          >
+            ภาพรวม
+          </button>
+          <button
+            onClick={() => setActiveSection('timeline')}
+            className={`flex-1 py-3 border-b-2 transition-colors ${
+              activeSection === 'timeline'
+                ? 'border-[#6C47FF] text-[#6C47FF]'
+                : 'border-transparent text-gray-400'
+            }`}
+            style={{ fontSize: 14 }}
+          >
+            ความคืบหน้า
+          </button>
         </div>
 
-        {/* RFQ ที่เกี่ยวข้อง - จาก mockData */}
-        {relatedRfq && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <p className="text-sm text-gray-900 mb-2" style={{ fontWeight: 600 }}>
-              RFQ ที่เกี่ยวข้อง
-            </p>
-            <Link
-              to={`/rfqs/${order.rfqId}`}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-[#6C47FF]/30 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-[#F3F0FF]">
-                {relatedRfq.categoryIcon ?? '📋'}
+        {activeSection === 'overview' && (
+          <div className="space-y-4">
+            {/* Payment Status */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>สถานะการชำระเงิน</p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-500">ชำระมัดจำ 50%</span>
+                <span className="text-xs" style={{ color: '#22C55E', fontWeight: 600 }}>
+                  ✓ ชำระแล้ว ฿{order.depositPaid.toLocaleString('th-TH')}
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500">{relatedRfq.category}</p>
-                <p className="text-sm text-gray-900 truncate" style={{ fontWeight: 600 }}>
-                  {relatedRfq.projectName}
-                </p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">ยอดคงเหลือ</span>
+                <span className="text-xs text-gray-900" style={{ fontWeight: 600 }}>
+                  ฿{(order.totalAmount - order.depositPaid).toLocaleString('th-TH')}
+                </span>
               </div>
-              <FileText size={18} className="text-gray-400 shrink-0" />
-            </Link>
-          </div>
-        )}
+              <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${(order.depositPaid / order.totalAmount) * 100}%`,
+                    background: '#22C55E',
+                  }}
+                />
+              </div>
+            </div>
 
-        {/* Timeline */}
-        <div>
-          <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 700 }}>
-            ติดตามความคืบหน้า
-          </p>
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            {!hasTimeline ? (
-              <div className="py-6 text-center">
-                <CheckCircle size={32} className="text-green-500 mx-auto mb-2" />
-                <p className="text-sm text-gray-600" style={{ fontWeight: 500 }}>
-                  {order.status === 'completed' ? 'คำสั่งซื้อเสร็จสิ้นแล้ว' : 'ยังไม่มีรายการติดตามความคืบหน้า'}
+            {/* RFQ ที่เกี่ยวข้อง - จาก mockData */}
+            {relatedRfq && (
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>
+                  RFQ ที่เกี่ยวข้อง
                 </p>
-              </div>
-            ) : (
-            <div className="space-y-0">
-              {timeline.map((milestone, index) => {
-                const isLast = index === order.timeline.length - 1;
-                return (
-                  <div key={milestone.id} className="flex gap-3">
-                    {/* Timeline indicator */}
-                    <div className="flex flex-col items-center">
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10"
-                        style={{
-                          background:
-                            milestone.status === 'completed'
-                              ? '#6C47FF'
-                              : milestone.status === 'current'
-                              ? '#EDE9FF'
-                              : '#F3F4F6',
-                          border:
-                            milestone.status === 'current'
-                              ? '2px solid #6C47FF'
-                              : 'none',
-                        }}
-                      >
-                        {milestone.status === 'completed' ? (
-                          <CheckCircle size={16} className="text-white" />
-                        ) : milestone.status === 'current' ? (
-                          <div
-                            className="w-3 h-3 rounded-full animate-pulse"
-                            style={{ background: '#6C47FF' }}
-                          />
-                        ) : (
-                          <Circle size={16} className="text-gray-300" />
-                        )}
-                      </div>
-                      {!isLast && (
-                        <div
-                          className="w-0.5 flex-1 my-1"
-                          style={{
-                            background:
-                              milestone.status === 'completed' ? '#6C47FF' : '#E5E7EB',
-                            minHeight: milestone.photo ? 120 : 32,
-                          }}
-                        />
-                      )}
+                <div className="rounded-xl border border-gray-100 p-3 bg-[#FCFBFF]">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-[#F3F0FF]">
+                      {relatedRfq.categoryIcon ?? '📋'}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-500">{relatedRfq.category}</p>
+                      <p className="text-sm text-gray-900 truncate" style={{ fontWeight: 600 }}>
+                        {relatedRfq.projectName}
+                      </p>
+                    </div>
+                    <FileText size={18} className="text-[#6C47FF] shrink-0" />
+                  </div>
 
-                    {/* Content */}
-                    <div className={`flex-1 ${isLast ? '' : 'pb-4'}`}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p
-                            className="text-sm"
-                            style={{
-                              fontWeight: 600,
-                              color:
-                                milestone.status === 'current'
-                                  ? '#6C47FF'
-                                  : milestone.status === 'completed'
-                                  ? '#1F2937'
-                                  : '#9CA3AF',
-                            }}
+                  <p className="text-xs text-gray-600 mb-3">{relatedRfq.description}</p>
+
+                  <div className="mb-3 rounded-lg bg-white border border-gray-100 px-2.5 py-2">
+                    <p className="text-[10px] text-gray-500 mb-0.5">โรงงานที่เลือก</p>
+                    <Link
+                      to={`/factories/${order.factoryId}`}
+                      className="text-xs text-[#6C47FF] hover:underline"
+                      style={{ fontWeight: 600 }}
+                    >
+                      {order.factoryName}
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-white border border-gray-100 px-2.5 py-2">
+                      <p className="text-[10px] text-gray-500">งบประมาณ RFQ</p>
+                      <p className="text-xs text-gray-900" style={{ fontWeight: 600 }}>
+                        ฿{relatedRfq.budget.toLocaleString('th-TH')}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-white border border-gray-100 px-2.5 py-2">
+                      <p className="text-[10px] text-gray-500">จำนวน</p>
+                      <p className="text-xs text-gray-900" style={{ fontWeight: 600 }}>
+                        {relatedRfq.quantity.toLocaleString('th-TH')} ชิ้น
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-white border border-gray-100 px-2.5 py-2">
+                      <p className="text-[10px] text-gray-500">วัสดุ</p>
+                      <p className="text-xs text-gray-900 truncate" style={{ fontWeight: 600 }}>
+                        {relatedRfq.material}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-white border border-gray-100 px-2.5 py-2">
+                      <p className="text-[10px] text-gray-500">กำหนดส่ง RFQ</p>
+                      <p className="text-xs text-gray-900" style={{ fontWeight: 600 }}>
+                        {formatDateTh(relatedRfq.deadline)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {relatedRfq && rfqOffers.length > 0 && (
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                    โรงงานที่เคยเสนอราคา
+                  </p>
+                  <span className="text-xs text-gray-500">{rfqOffers.length} โรงงาน</span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {rfqOffers.map((offer) => (
+                    <div
+                      key={offer.id}
+                      className="rounded-xl border border-gray-100 bg-[#FCFBFF] px-3 py-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <Link
+                            to={`/factories/${offer.factoryId}`}
+                            className="text-sm text-[#6C47FF] hover:underline truncate block"
+                            style={{ fontWeight: 600 }}
                           >
-                            {milestone.title}
+                            {offer.factoryName}
+                          </Link>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            เรตติ้ง {offer.rating} • ตอบกลับ {offer.responseTime}
                           </p>
-                          {milestone.date && (
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <Clock size={10} className="text-gray-400" />
-                              <span className="text-[10px] text-gray-400">{milestone.date}</span>
-                            </div>
-                          )}
-                          {milestone.description && (
-                            <p className="text-[11px] text-gray-500 mt-1">{milestone.description}</p>
-                          )}
                         </div>
-                        {milestone.status === 'current' && (
+                        <div className="text-right shrink-0">
+                          <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                            ฿{offer.price.toLocaleString('th-TH')}
+                          </p>
+                          <p className="text-[11px] text-gray-500">Lead time {offer.leadTime} วัน</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        {offer.factoryId === order.factoryId && (
                           <span
-                            className="px-2 py-0.5 rounded-full text-[9px] ml-2"
+                            className="px-2 py-0.5 rounded-full text-[10px]"
                             style={{ background: '#EDE9FF', color: '#6C47FF', fontWeight: 600 }}
                           >
-                            ปัจจุบัน
+                            โรงงานที่เลือก
+                          </span>
+                        )}
+                        {offer.recommended && (
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px]"
+                            style={{ background: '#ECFDF5', color: '#059669', fontWeight: 600 }}
+                          >
+                            แนะนำโดย AI
+                          </span>
+                        )}
+                        {offer.verified && (
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px]"
+                            style={{ background: '#EEF2FF', color: '#4F46E5', fontWeight: 600 }}
+                          >
+                            Verified
                           </span>
                         )}
                       </div>
-
-                      {/* Milestone Photo */}
-                      {milestone.photo && (
-                        <button
-                          onClick={() => setSelectedPhoto(milestone.photo!)}
-                          className="mt-2 relative overflow-hidden rounded-xl"
-                          style={{ width: '100%', height: 100 }}
-                        >
-                          <img
-                            src={milestone.photo}
-                            alt={milestone.title}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/10 flex items-end p-2">
-                            <div
-                              className="flex items-center gap-1 px-2 py-1 rounded-lg"
-                              style={{ background: 'rgba(0,0,0,0.5)' }}
-                            >
-                              <Camera size={10} className="text-white" />
-                              <span className="text-[10px] text-white">ดูรูป</span>
-                            </div>
-                          </div>
-                        </button>
-                      )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-        </div>
+        )}
+
+        {activeSection === 'timeline' && (
+          <div className="space-y-4">
+            {/* Timeline */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              {!hasTimeline ? (
+                <div className="py-6 text-center">
+                  <CheckCircle size={32} className="text-green-500 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600" style={{ fontWeight: 500 }}>
+                    {order.status === 'completed' ? 'คำสั่งซื้อเสร็จสิ้นแล้ว' : 'ยังไม่มีรายการติดตามความคืบหน้า'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-0">
+                  {timeline.map((milestone, index) => {
+                    const isLast = index === order.timeline.length - 1;
+                    return (
+                      <div key={milestone.id} className="flex gap-3">
+                        {/* Timeline indicator */}
+                        <div className="flex flex-col items-center">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10"
+                            style={{
+                              background:
+                                milestone.status === 'completed'
+                                  ? '#6C47FF'
+                                  : milestone.status === 'current'
+                                  ? '#EDE9FF'
+                                  : '#F3F4F6',
+                              border:
+                                milestone.status === 'current'
+                                  ? '2px solid #6C47FF'
+                                  : 'none',
+                            }}
+                          >
+                            {milestone.status === 'completed' ? (
+                              <CheckCircle size={16} className="text-white" />
+                            ) : milestone.status === 'current' ? (
+                              <div
+                                className="w-3 h-3 rounded-full animate-pulse"
+                                style={{ background: '#6C47FF' }}
+                              />
+                            ) : (
+                              <Circle size={16} className="text-gray-300" />
+                            )}
+                          </div>
+                          {!isLast && (
+                            <div
+                              className="w-0.5 flex-1 my-1"
+                              style={{
+                                background:
+                                  milestone.status === 'completed' ? '#6C47FF' : '#E5E7EB',
+                                minHeight: milestone.photo ? 120 : 32,
+                              }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className={`flex-1 ${isLast ? '' : 'pb-4'}`}>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p
+                                className="text-sm"
+                                style={{
+                                  fontWeight: 600,
+                                  color:
+                                    milestone.status === 'current'
+                                      ? '#6C47FF'
+                                      : milestone.status === 'completed'
+                                      ? '#1F2937'
+                                      : '#9CA3AF',
+                                }}
+                              >
+                                {milestone.title}
+                              </p>
+                              {milestone.date && (
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <Clock size={10} className="text-gray-400" />
+                                  <span className="text-[10px] text-gray-400">{milestone.date}</span>
+                                </div>
+                              )}
+                              {milestone.description && (
+                                <p className="text-[11px] text-gray-500 mt-1">{milestone.description}</p>
+                              )}
+                            </div>
+                            {milestone.status === 'current' && (
+                              <span
+                                className="px-2 py-0.5 rounded-full text-[9px] ml-2"
+                                style={{ background: '#EDE9FF', color: '#6C47FF', fontWeight: 600 }}
+                              >
+                                ปัจจุบัน
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Milestone Photo */}
+                          {milestone.photo && (
+                            <button
+                              onClick={() => setSelectedPhoto(milestone.photo!)}
+                              className="mt-2 relative overflow-hidden rounded-xl"
+                              style={{ width: '100%', height: 100 }}
+                            >
+                              <img
+                                src={milestone.photo}
+                                alt={milestone.title}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/10 flex items-end p-2">
+                                <div
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg"
+                                  style={{ background: 'rgba(0,0,0,0.5)' }}
+                                >
+                                  <Camera size={10} className="text-white" />
+                                  <span className="text-[10px] text-white">ดูรูป</span>
+                                </div>
+                              </div>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-gradient-to-br from-[#F6F1FF] to-[#F3EFFF] border border-[#E9DEFF] rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-700 text-sm">ความคืบหน้าโดยรวม</span>
+                <span className="text-[#6C47FF] text-base" style={{ fontWeight: 700 }}>
+                  {order.progress}%
+                </span>
+              </div>
+              <div className="h-3 bg-white rounded-full overflow-hidden border border-[#E9DEFF]">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${order.progress}%`,
+                    background: 'linear-gradient(90deg, #6C47FF, #8B5CF6)',
+                  }}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                กำหนดส่งมอบ: {formatDateTh(order.estimatedDelivery)}
+              </p>
+            </div>
+          </div>
+        )}
         </div>
 
         {/* ปุ่มอยู่ล่าง Timeline (ไม่ลอยทับ) */}

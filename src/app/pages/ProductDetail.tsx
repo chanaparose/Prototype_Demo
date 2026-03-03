@@ -50,9 +50,17 @@ export function ProductDetail() {
         <button
           type="button"
           onClick={() => navigate('/factory-ideas')}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center"
+          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 text-gray-700" />
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')}
+          className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
+          aria-label="แชทกับโรงงาน"
+        >
+          <MessageCircle className="w-5 h-5" style={{ color: '#6C47FF' }} />
         </button>
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 mb-2">
@@ -156,18 +164,6 @@ export function ProductDetail() {
             <li>เอกสารที่ต้องใช้ เช่น อย., HALAL, หรือมาตรฐานเฉพาะแบรนด์</li>
           </ul>
         </div>
-      </div>
-
-      <div className="px-4 pt-2 pb-24">
-        <button
-          type="button"
-          onClick={() => navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')}
-          className="w-full py-3.5 rounded-2xl text-white shadow-lg flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)', fontWeight: 700 }}
-        >
-          <MessageCircle className="w-4 h-4" />
-          แชทกับโรงงาน
-        </button>
       </div>
     </div>
   );
