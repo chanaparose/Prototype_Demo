@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, SlidersHorizontal, MapPin, BadgeCheck, Heart, Sparkles } from 'lucide-react';
 import { categories, factories, factoryShowcases } from '../data/mockData';
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { ImageWithFallback } from '../components/shared';
 
 type ContentType = 'all' | 'product' | 'promotion' | 'idea';
 

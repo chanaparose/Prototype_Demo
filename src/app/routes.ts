@@ -1,5 +1,5 @@
 import { createBrowserRouter, redirect } from 'react-router';
-import { Layout } from './components/Layout';
+import { Layout } from './components/layout';
 import { Explore } from './pages/Explore';
 import { FactoryIdeas } from './pages/FactoryIdeas';
 import { FactoryProfile } from './pages/FactoryProfile';

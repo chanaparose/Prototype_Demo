@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ArrowLeft, BadgeCheck, CalendarClock, CirclePercent, MapPin, MessageCircle, Tag, TicketPercent } from 'lucide-react';
 import { conversations, factories, factoryShowcases } from '../data/mockData';
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { ImageWithFallback } from '../components/shared';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
