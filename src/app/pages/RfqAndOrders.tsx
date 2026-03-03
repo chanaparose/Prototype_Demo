@@ -1,13 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
-  Filter,
   Package,
   ChevronRight,
   Calendar,
   FileText,
   Plus,
   Layers,
+  Clock3,
+  FileCheck2,
+  OctagonX,
+  Truck,
+  CheckCircle2,
 } from 'lucide-react';
 import { rfqs, orders } from '../data/mockData';
 
@@ -20,7 +24,6 @@ const RFQ_STATUS_DISPLAY: Record<string, { label: string; color: string; bg: str
   pending: { label: 'รอดำเนินการ', color: '#EA580C', bg: '#FFEDD5' },
   offers_received: { label: 'มีใบเสนอราคา', color: '#0284C7', bg: '#E0F2FE' },
   reviewing: { label: 'มีใบเสนอราคา', color: '#0284C7', bg: '#E0F2FE' },
-  completed: { label: 'ตอบรับแล้ว', color: '#16A34A', bg: '#DCFCE7' },
   cancelled: { label: 'ยกเลิก', color: '#6B7280', bg: '#F3F4F6' },
   expired: { label: 'หมดอายุ', color: '#B45309', bg: '#FEF3C7' },
 };
@@ -32,14 +35,8 @@ const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string; bg: st
   pending: { label: 'รอดำเนินการ', color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
 };
 
-const ORDER_FILTER_TABS = [
-  { id: 'all', label: 'ทั้งหมด' },
-  { id: 'in_production', label: 'กำลังผลิต' },
-  { id: 'shipped', label: 'จัดส่งแล้ว' },
-  { id: 'completed', label: 'เสร็จสิ้น' },
-];
-
-type RfqFilterId = 'all' | 'pending' | 'has_quote' | 'accepted';
+type RfqFilterId = 'pending' | 'has_quote' | 'cancelled_expired';
+type OrderFilterId = 'in_production' | 'shipped' | 'completed';
 
 function formatBudget(n: number): string {
   return '฿' + n.toLocaleString('th-TH');
@@ -58,37 +55,36 @@ function formatDate(dateStr: string): string {
 function getRfqFilterId(status: string): RfqFilterId | null {
   if (status === 'pending') return 'pending';
   if (status === 'offers_received' || status === 'reviewing') return 'has_quote';
-  if (status === 'completed') return 'accepted';
-  return null; // cancelled, expired — show in "all" only
+  if (status === 'cancelled' || status === 'expired') return 'cancelled_expired';
+  return null; // completed ไม่แสดงในหน้านี้
 }
 
 export function RfqAndOrders() {
   const navigate = useNavigate();
   const [primaryTab, setPrimaryTab] = useState<'rfq' | 'orders'>('rfq');
-  const [rfqFilter, setRfqFilter] = useState<RfqFilterId>('all');
-  const [orderFilter, setOrderFilter] = useState('all');
+  const [rfqFilter, setRfqFilter] = useState<RfqFilterId>('pending');
+  const [orderFilter, setOrderFilter] = useState<OrderFilterId>('in_production');
 
   const filteredRfqs = useMemo(() => {
     return rfqs.filter((r) => {
-      if (rfqFilter === 'all') return true;
+      if (r.status === 'completed') return false; // ไม่แสดง RFQ ที่ตอบรับแล้ว
+      if (rfqFilter === 'cancelled_expired') return r.status === 'cancelled' || r.status === 'expired';
       const fid = getRfqFilterId(r.status);
       return fid === rfqFilter;
     });
   }, [rfqFilter]);
 
-  const filteredOrders =
-    orderFilter === 'all'
-      ? orders
-      : orders.filter((o) => o.status === orderFilter);
+  const filteredOrders = orders.filter((o) => o.status === orderFilter);
 
-  const rfqSummary = useMemo(() => {
-    const total = rfqs.length;
-    const pending = rfqs.filter((r) => r.status === 'pending').length;
-    const totalBudget = rfqs.reduce((sum, r) => sum + (r.budget ?? 0), 0);
-    return { total, pending, totalBudget };
+  const rfqTagCounts = useMemo(() => {
+    return {
+      pending: rfqs.filter((r) => r.status === 'pending').length,
+      has_quote: rfqs.filter((r) => r.status === 'offers_received' || r.status === 'reviewing').length,
+      cancelled_expired: rfqs.filter((r) => r.status === 'cancelled' || r.status === 'expired').length,
+    };
   }, []);
 
-  const orderSummary = useMemo(() => {
+  const orderTagCounts = useMemo(() => {
     return {
       inProduction: orders.filter((o) => o.status === 'in_production').length,
       shipped: orders.filter((o) => o.status === 'shipped').length,
@@ -143,59 +139,55 @@ export function RfqAndOrders() {
       {primaryTab === 'rfq' ? (
         <>
           {/* สร้าง RFQ ใหม่ */}
-          <Link
-            to="/create-rfq"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl mb-4 text-white font-bold text-sm"
-            style={{ background: PRIMARY_COLOR }}
+          <button
+            onClick={() => navigate('/create-rfq')}
+            className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
+            style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
           >
-            <Plus size={20} />
-            สร้าง RFQ ใหม่
-          </Link>
+            <Plus size={24} className="text-white" />
+          </button>
 
-          {/* Summary */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-white rounded-2xl p-3 shadow-sm text-center">
-              <p className="text-lg" style={{ fontWeight: 700, color: PRIMARY_COLOR }}>
-                {rfqSummary.total}
-              </p>
-              <p className="text-[10px] text-gray-500 mt-0.5">ทั้งหมด</p>
-            </div>
-            <div className="bg-white rounded-2xl p-3 shadow-sm text-center">
-              <p className="text-lg" style={{ fontWeight: 700, color: '#EA580C' }}>
-                {rfqSummary.pending}
-              </p>
-              <p className="text-[10px] text-gray-500 mt-0.5">รอดำเนินการ</p>
-            </div>
-            <div className="bg-white rounded-2xl p-3 shadow-sm text-center">
-              <p className="text-lg" style={{ fontWeight: 700, color: '#16A34A' }}>
-                {formatBudget(rfqSummary.totalBudget)}
-              </p>
-              <p className="text-[10px] text-gray-500 mt-0.5">งบรวม</p>
-            </div>
-          </div>
-
-          {/* Secondary filter chips */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide mb-4">
+          {/* Tag labels */}
+          <div className="grid grid-cols-3 mb-3 bg-white rounded-xl px-1.5 py-2">
             {[
-              { id: 'all' as const, label: 'ทั้งหมด' },
-              { id: 'pending' as const, label: 'รอดำเนินการ' },
-              { id: 'has_quote' as const, label: 'มีใบเสนอราคา' },
-              { id: 'accepted' as const, label: 'ตอบรับแล้ว' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setRfqFilter(tab.id)}
-                className="shrink-0 px-4 py-1.5 rounded-full text-sm transition-all"
-                style={{
-                  background: rfqFilter === tab.id ? PRIMARY_COLOR : '#fff',
-                  color: rfqFilter === tab.id ? '#fff' : '#6B7280',
-                  fontWeight: rfqFilter === tab.id ? 600 : 400,
-                  border: rfqFilter === tab.id ? 'none' : '1px solid #E5E7EB',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+              { id: 'pending' as const, label: 'รอดำเนินการ', icon: Clock3, count: rfqTagCounts.pending },
+              { id: 'has_quote' as const, label: 'มีใบเสนอราคา', icon: FileCheck2, count: rfqTagCounts.has_quote },
+              { id: 'cancelled_expired' as const, label: 'ยกเลิก/หมดอายุ', icon: OctagonX, count: rfqTagCounts.cancelled_expired },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = rfqFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setRfqFilter(tab.id)}
+                  className="relative flex flex-col items-center gap-1 py-1"
+                >
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ background: isActive ? PRIMARY_BG : '#F8FAFC' }}
+                  >
+                    <Icon
+                      size={16}
+                      style={{ color: isActive ? PRIMARY_COLOR : '#1F2937' }}
+                    />
+                  </div>
+                  {tab.count > 0 && (
+                    <span
+                      className="absolute top-0 right-[20%] min-w-4 h-4 px-1 rounded-full text-white text-[9px] flex items-center justify-center"
+                      style={{ background: '#F04F2E', fontWeight: 700 }}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                  <span
+                    className="text-[11px] text-center leading-tight px-1"
+                    style={{ color: isActive ? PRIMARY_COLOR : '#374151', fontWeight: isActive ? 600 : 500 }}
+                  >
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* RFQ List */}
@@ -289,38 +281,47 @@ export function RfqAndOrders() {
         </>
       ) : (
         <>
-          {/* Summary คำสั่งซื้อ */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          {/* Tag labels คำสั่งซื้อ */}
+          <div className="grid grid-cols-3 mb-3 bg-white rounded-xl px-1.5 py-2">
             {[
-              { label: 'กำลังผลิต', value: orderSummary.inProduction, color: '#3B82F6', bg: '#DBEAFE' },
-              { label: 'จัดส่งแล้ว', value: orderSummary.shipped, color: '#F59E0B', bg: '#FEF3C7' },
-              { label: 'เสร็จสิ้น', value: orderSummary.completed, color: '#22C55E', bg: '#DCFCE7' },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-white rounded-2xl p-3 shadow-sm text-center">
-                <p className="text-xl" style={{ fontWeight: 700, color: stat.color }}>
-                  {stat.value}
-                </p>
-                <p className="text-[10px] text-gray-500 mt-0.5">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Filter Tabs Orders */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide mb-4">
-            {ORDER_FILTER_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setOrderFilter(tab.id)}
-                className="shrink-0 px-4 py-1.5 rounded-full text-sm transition-all"
-                style={{
-                  background: orderFilter === tab.id ? PRIMARY_COLOR : '#F3F4F6',
-                  color: orderFilter === tab.id ? '#fff' : '#6B7280',
-                  fontWeight: orderFilter === tab.id ? 600 : 400,
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+              { id: 'in_production' as const, label: 'กำลังผลิต', icon: Package, count: orderTagCounts.inProduction },
+              { id: 'shipped' as const, label: 'จัดส่งแล้ว', icon: Truck, count: orderTagCounts.shipped },
+              { id: 'completed' as const, label: 'เสร็จสิ้น', icon: CheckCircle2, count: orderTagCounts.completed },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = orderFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setOrderFilter(tab.id)}
+                  className="relative flex flex-col items-center gap-1 py-1"
+                >
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ background: isActive ? PRIMARY_BG : '#F8FAFC' }}
+                  >
+                    <Icon
+                      size={16}
+                      style={{ color: isActive ? PRIMARY_COLOR : '#1F2937' }}
+                    />
+                  </div>
+                  {tab.count > 0 && (
+                    <span
+                      className="absolute top-0 right-[15%] min-w-4 h-4 px-1 rounded-full text-white text-[9px] flex items-center justify-center"
+                      style={{ background: '#F04F2E', fontWeight: 700 }}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                  <span
+                    className="text-[11px] text-center leading-tight px-1"
+                    style={{ color: isActive ? PRIMARY_COLOR : '#374151', fontWeight: isActive ? 600 : 500 }}
+                  >
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Order List */}
