@@ -17,12 +17,7 @@ export function Notifications() {
   const unreadCount = notificationsData.filter((n) => !n.read).length;
 
   return (
-    <div
-      className="max-w-[430px] mx-auto min-h-screen flex flex-col pb-20"
-      style={{
-        background: 'linear-gradient(145deg, rgba(236,253,245,0.5) 0%, #fff 30%, #fff 65%, rgba(237,233,254,0.4) 100%)',
-      }}
-    >
+    <div className="min-h-screen flex flex-col pb-20 bg-white">
       {/* Header - ตาม RFQDetail */}
       <div className="flex items-center justify-between px-4 pt-5 pb-4">
         <button

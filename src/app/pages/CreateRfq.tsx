@@ -48,7 +48,7 @@ export function CreateRfq() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50 relative overflow-hidden">
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-slate-50 relative overflow-hidden">
       <header className="px-6 pt-12 pb-4 flex items-center justify-between z-10 sticky top-0 bg-slate-50/80 backdrop-blur-md">
         <button
           onClick={handleBack}

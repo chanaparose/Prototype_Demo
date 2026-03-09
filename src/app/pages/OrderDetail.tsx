@@ -24,7 +24,7 @@ export function OrderDetail() {
 
   if (!order) {
     return (
-      <div className="max-w-[430px] mx-auto min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4">
         <p className="text-gray-500 mb-4">ไม่พบคำสั่งซื้อ</p>
         <button
           onClick={() => navigate('/orders')}
@@ -41,13 +41,7 @@ export function OrderDetail() {
   const rfqOffers = relatedRfq?.offers ?? [];
 
   return (
-    <div
-      className="max-w-[430px] mx-auto min-h-screen flex flex-col"
-      style={{
-        background:
-          'linear-gradient(145deg, rgba(236,253,245,0.5) 0%, #fff 30%, #fff 65%, rgba(237,233,254,0.4) 100%)',
-      }}
-    >
+    <div className="min-h-screen flex flex-col bg-white">
       <div className="flex items-center justify-between px-4 pt-5 pb-4">
         <button
           onClick={() => navigate(-1)}

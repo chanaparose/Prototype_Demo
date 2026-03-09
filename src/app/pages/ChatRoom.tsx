@@ -58,12 +58,7 @@ export function ChatRoom() {
   const latestQuote = conv.messages.find((m) => m.type === 'quote');
 
   return (
-    <div
-      className="max-w-[430px] mx-auto h-screen flex flex-col"
-      style={{
-        background: 'linear-gradient(145deg, rgba(236,253,245,0.5) 0%, #fff 30%, #fff 65%, rgba(237,233,254,0.4) 100%)',
-      }}
-    >
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-white">
       {/* Header */}
       <div className="px-4 pt-5 pb-3 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-3">

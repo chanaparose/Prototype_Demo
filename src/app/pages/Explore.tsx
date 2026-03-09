@@ -19,33 +19,7 @@ export function Explore() {
 
   return (
     <div className="px-4 pt-5 pb-4 space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img
-            src={currentUser.avatar}
-            alt="avatar"
-            className="w-11 h-11 rounded-full object-cover border-2 border-white shadow"
-          />
-          <div>
-            <p className="text-xs text-gray-500">สวัสดี! 👋</p>
-            <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
-              {currentUser.name}
-            </p>
-          </div>
-        </div>
-        <Link
-          to="/notifications"
-          className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
-        >
-          <Bell size={20} style={{ color: '#6C47FF' }} />
-          <span
-            className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-white flex items-center justify-center text-[9px]"
-            style={{ background: '#6C47FF', fontWeight: 700 }}
-          >
-            3
-          </span>
-        </Link>
-      </div>
+       
 
       <div className="flex gap-2">
         <div className="flex-1 flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
@@ -88,7 +62,7 @@ export function Explore() {
       <button
         type="button"
         onClick={() => navigate('/create-rfq')}
-        className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
+        className="fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
         style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
       >
         <Plus size={24} className="text-white" />

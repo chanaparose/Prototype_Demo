@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, Bell, MessageCircle } from 'lucide-react';
 import { conversations } from '../data/mockData';
@@ -33,9 +33,7 @@ export function Messages() {
             )}
           </div>
         </div>
-        <button className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
-          <Bell size={20} style={{ color: '#6C47FF' }} />
-        </button>
+         
       </div>
 
       {/* Search */}

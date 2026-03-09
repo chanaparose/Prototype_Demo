@@ -52,15 +52,7 @@ export function Profile() {
             <p className="text-[10px] text-gray-400 uppercase tracking-wider">บัญชี</p>
             <h1 className="text-gray-900" style={{ fontWeight: 700 }}>โปรไฟล์</h1>
           </div>
-          <Link to="/notifications" className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
-            <Bell size={20} style={{ color: '#6C47FF' }} />
-            <span
-              className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-white flex items-center justify-center text-[9px]"
-              style={{ background: '#6C47FF', fontWeight: 700 }}
-            >
-              3
-            </span>
-          </Link>
+           
         </div>
 
         {/* User Card */}
