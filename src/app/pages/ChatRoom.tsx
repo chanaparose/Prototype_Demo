@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft, Phone, MoreVertical, Send, Paperclip, ChevronDown, ChevronUp,
@@ -18,18 +18,39 @@ type Message = {
 export function ChatRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
   const conv = conversations.find((c) => c.id === id) || conversations[0];
-  
+
+  return (
+    <ChatRoomBody
+      conv={conv}
+      onBack={() => navigate(-1)}
+      variant="full"
+    />
+  );
+}
+
+type ChatRoomBodyProps = {
+  conv: (typeof conversations)[0];
+  onBack?: () => void;
+  variant: 'full' | 'embedded';
+};
+
+export function ChatRoomEmbedded({ conversationId }: { conversationId: string }) {
+  const conv = conversations.find((c) => c.id === conversationId) || conversations[0];
+  return <ChatRoomBody conv={conv} variant="embedded" />;
+}
+
+function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
   const [message, setMessage] = useState('');
   const [miniDashOpen, setMiniDashOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>(conv.messages as Message[]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const c = conversations.find((c) => c.id === id) || conversations[0];
+    // reset messages when conversation changes
+    const c = conversations.find((c) => c.id === conv.id) || conversations[0];
     setMessages(c.messages as Message[]);
-  }, [id]);
+  }, [conv.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,16 +79,26 @@ export function ChatRoom() {
   const latestQuote = conv.messages.find((m) => m.type === 'quote');
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-white">
+    <div
+      className={
+        variant === 'full'
+          ? 'h-[calc(100vh-4rem)] flex flex-col bg-white'
+          : 'h-full flex flex-col bg-white rounded-l-3xl overflow-hidden shadow-sm'
+      }
+    >
       {/* Header */}
       <div className="px-4 pt-5 pb-3 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center"
-          >
-            <ChevronLeft size={22} className="text-gray-700" />
-          </button>
+          {variant === 'full' ? (
+            <button
+              onClick={onBack}
+              className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center"
+            >
+              <ChevronLeft size={22} className="text-gray-700" />
+            </button>
+          ) : (
+            <div />
+          )}
           <div className="flex items-center gap-2.5">
             <img
               src={conv.factoryAvatar}
