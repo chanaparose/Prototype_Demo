@@ -52,9 +52,7 @@ export function RFQDetailMobile() {
             {rfq.projectName}
           </h1>
         </div>
-        <button className="relative w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
-          <Bell size={20} style={{ color: '#6C47FF' }} />
-        </button>
+        <div className="w-10 h-10" aria-hidden />
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-4">

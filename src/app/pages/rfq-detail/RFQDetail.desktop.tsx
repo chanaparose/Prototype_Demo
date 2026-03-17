@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Bell, ChevronLeft, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { orders, rfqs } from '../../data/mockData';
 import {
   HISTORY_STATUSES,
@@ -42,13 +42,6 @@ export function RFQDetailDesktop() {
         <div className="flex items-start justify-between gap-6 mb-6">
           <div className="min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
-              >
-                <ChevronLeft size={22} className="text-gray-700" />
-              </button>
               <div className="min-w-0">
                 <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
                   RFQ Detail
@@ -58,7 +51,7 @@ export function RFQDetailDesktop() {
                 </h1>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 pl-[52px]">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
               <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={statusBadgeStyle}>
                 {statusLabel}
               </span>
@@ -79,12 +72,6 @@ export function RFQDetailDesktop() {
                 <MessageCircle size={16} className="text-[#6C47FF]" />
                 แชทกับโรงงาน
               </span>
-            </button>
-            <button
-              type="button"
-              className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
-            >
-              <Bell size={18} style={{ color: '#6C47FF' }} />
             </button>
           </div>
         </div>
