@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
-import { orders, rfqs, factories, conversations } from '../data/mockData';
+import { orders, rfqs, factories, conversations } from '../../data/mockData';
 import {
   OrderSummaryCard,
   OrderOverviewSection,
   OrderTimelineSection,
   OrderPhotoGallery,
-} from '../components/features/order-detail';
+} from '../../components/features/order-detail';
 
-export function OrderDetail() {
+export function OrderDetailMobile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'overview' | 'timeline'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'timeline'>(
+    'overview',
+  );
 
   const order = id ? orders.find((o) => o.id === id) : undefined;
   const relatedRfq = order ? rfqs.find((r) => r.id === order.rfqId) : undefined;
-  const relatedFactory = order ? factories.find((f) => f.id === order.factoryId) : undefined;
+  const relatedFactory = order
+    ? factories.find((f) => f.id === order.factoryId)
+    : undefined;
   const conversation = order
     ? conversations.find((c) => c.factoryId === order.factoryId)
     : undefined;
@@ -37,7 +41,8 @@ export function OrderDetail() {
     );
   }
 
-  const showFloatingAction = order.status === 'shipped' || order.status === 'completed';
+  const showFloatingAction =
+    order.status === 'shipped' || order.status === 'completed';
   const rfqOffers = relatedRfq?.offers ?? [];
 
   return (
@@ -141,7 +146,11 @@ export function OrderDetail() {
         )}
       </div>
 
-      <OrderPhotoGallery photoUrl={selectedPhoto} onClose={() => setSelectedPhoto(null)} />
+      <OrderPhotoGallery
+        photoUrl={selectedPhoto}
+        onClose={() => setSelectedPhoto(null)}
+      />
     </div>
   );
 }
+

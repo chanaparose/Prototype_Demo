@@ -1,5 +1,6 @@
 export type CreateRfqForm = {
   categoryId: string;
+  factoryType: string;
   projectName: string;
   description: string;
   quantity: string;
@@ -10,6 +11,7 @@ export type CreateRfqForm = {
 
 export const INITIAL_FORM: CreateRfqForm = {
   categoryId: '',
+  factoryType: '',
   projectName: '',
   description: '',
   quantity: '',

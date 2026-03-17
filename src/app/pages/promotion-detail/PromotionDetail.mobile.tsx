@@ -1,8 +1,17 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, BadgeCheck, CalendarClock, CirclePercent, MapPin, MessageCircle, Tag, TicketPercent } from 'lucide-react';
-import { conversations, factories, factoryShowcases } from '../data/mockData';
-import { ImageWithFallback } from '../components/shared';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  CalendarClock,
+  CirclePercent,
+  MapPin,
+  MessageCircle,
+  Tag,
+  TicketPercent,
+} from 'lucide-react';
+import { conversations, factories, factoryShowcases } from '../../data/mockData';
+import { ImageWithFallback } from '../../components/shared';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -14,11 +23,13 @@ function formatThaiDate(date: string): string {
   }).format(d);
 }
 
-export function PromotionDetail() {
+export function PromotionDetailMobile() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const item = factoryShowcases.find((entry) => entry.id === id && entry.contentType === 'promotion');
+  const item = factoryShowcases.find(
+    (entry) => entry.id === id && entry.contentType === 'promotion',
+  );
   const factory = item ? factories.find((f) => f.id === item.factoryId) : null;
   const factoryConversation = item
     ? conversations.find((conversation) => conversation.factoryId === item.factoryId)
@@ -56,7 +67,9 @@ export function PromotionDetail() {
         </button>
         <button
           type="button"
-          onClick={() => navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')}
+          onClick={() =>
+            navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')
+          }
           className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
           aria-label="แชทกับโรงงาน"
         >
@@ -106,9 +119,18 @@ export function PromotionDetail() {
             เงื่อนไขโปรโมชัน
           </p>
           <div className="space-y-2 text-sm text-gray-600">
-            <p className="flex items-start gap-2"><CirclePercent className="w-4 h-4 mt-0.5 text-amber-600" />สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญ</p>
-            <p className="flex items-start gap-2"><CalendarClock className="w-4 h-4 mt-0.5 text-amber-600" />ระยะเวลาผลิตโดยเฉลี่ย {item.leadTime} (ขึ้นอยู่กับสเปกจริง)</p>
-            <p className="flex items-start gap-2"><TicketPercent className="w-4 h-4 mt-0.5 text-amber-600" />ขั้นต่ำการสั่งผลิตที่ MOQ {item.minOrder}</p>
+            <p className="flex items-start gap-2">
+              <CirclePercent className="w-4 h-4 mt-0.5 text-amber-600" />
+              สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญ
+            </p>
+            <p className="flex items-start gap-2">
+              <CalendarClock className="w-4 h-4 mt-0.5 text-amber-600" />
+              ระยะเวลาผลิตโดยเฉลี่ย {item.leadTime} (ขึ้นอยู่กับสเปกจริง)
+            </p>
+            <p className="flex items-start gap-2">
+              <TicketPercent className="w-4 h-4 mt-0.5 text-amber-600" />
+              ขั้นต่ำการสั่งผลิตที่ MOQ {item.minOrder}
+            </p>
           </div>
         </div>
 
@@ -119,7 +141,10 @@ export function PromotionDetail() {
           <p className="text-xs text-gray-500 mb-2">หมวดหมู่: {item.category}</p>
           <div className="flex flex-wrap gap-2">
             {item.tags.map((tag) => (
-              <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs">
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs"
+              >
                 <Tag className="w-3 h-3" />
                 {tag}
               </span>
@@ -142,3 +167,4 @@ export function PromotionDetail() {
     </div>
   );
 }
+

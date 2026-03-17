@@ -1,19 +1,20 @@
 import { createBrowserRouter, redirect } from 'react-router';
 import { Layout } from './components/layout';
-import { Explore } from './pages/Explore';
-import { FactoryIdeas } from './pages/FactoryIdeas';
-import { FactoryProfile } from './pages/FactoryProfile';
-import { ProductDetail } from './pages/ProductDetail';
-import { PromotionDetail } from './pages/PromotionDetail';
-import { IdeaDetail } from './pages/IdeaDetail';
-import { RfqAndOrders } from './pages/RfqAndOrders';
-import { Messages } from './pages/Messages';
-import { Profile } from './pages/Profile';
-import { CreateRfq } from './pages/CreateRfq';
-import { RFQDetail } from './pages/RFQDetail';
-import { OrderDetail } from './pages/OrderDetail';
-import { ChatRoom } from './pages/ChatRoom';
-import { Notifications } from './pages/Notifications';
+import { Explore } from './pages/explore';
+import { FactoryIdeas } from './pages/factory-ideas';
+import { FactoryProfile } from './pages/factory-profile';
+import { ProductDetail } from './pages/product-detail';
+import { PromotionDetail } from './pages/promotion-detail';
+import { IdeaDetail } from './pages/idea-detail';
+import { RfqAndOrders } from './pages/rfq-and-orders';
+import { Messages } from './pages/messages';
+import { Profile } from './pages/profile';
+import { CreateRfq } from './pages/create-rfq';
+import { RFQDetail } from './pages/rfq-detail';
+import { OrderDetail } from './pages/order-detail';
+import { ChatRoom } from './pages/chat-room';
+import { Notifications } from './pages/notifications';
+import { FactoriesList } from './pages/factories/FactoriesList';
 
 export const router = createBrowserRouter([
   {
@@ -23,10 +24,11 @@ export const router = createBrowserRouter([
       { index: true, Component: Explore },
       { path: 'factory-ideas', Component: FactoryIdeas },
       { path: 'factories/:id', Component: FactoryProfile },
+      { path: 'factories', Component: FactoriesList },
       { path: 'factory-ideas/products/:id', Component: ProductDetail },
       { path: 'factory-ideas/promotions/:id', Component: PromotionDetail },
       { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
-      { path: 'rfqs', loader: () => redirect('/orders'), Component: () => null },
+      { path: 'rfqs', loader: () => redirect('/rfqs/rfq1'), Component: () => null },
       { path: 'orders', Component: RfqAndOrders },
       { path: 'messages', Component: Messages },
       { path: 'profile', Component: Profile },

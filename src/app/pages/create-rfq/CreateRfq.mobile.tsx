@@ -1,51 +1,36 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { useNavigate } from 'react-router';
-import { cn } from '../../lib/utils';
-import { categories } from '../data/mockData';
+import { cn } from '../../../lib/utils';
 import {
   CreateRfqStep1,
   CreateRfqStep2,
   CreateRfqStep3Summary,
-  INITIAL_FORM,
-  STEPS,
-} from '../components/features/create-rfq';
-import type { CreateRfqForm } from '../components/features/create-rfq';
+} from '../../components/features/create-rfq';
+import type { CreateRfqForm } from '../../components/features/create-rfq';
+import type { CategoryItem } from '../../data/mockData';
+import type { useCreateRfqState } from '../../hooks/useCreateRfqState';
 
-const MOCK_FORM_STEP3: CreateRfqForm = {
-  categoryId: 'pet_food',
-  projectName: 'อาหารสัตว์แห้งสูตรลูกสุนัข',
-  description:
-    'ต้องการผลิตอาหารสัตว์แห้งสูตรลูกสุนัข จำนวน 1,000 กระสอบ ขนาด 2 กก./ถุง มาตรฐาน GMP และ อย. ต้องมีวันผลิตและวันหมดอายุบนบรรจุภัณฑ์',
-  quantity: '1000',
-  budget: '50000',
-  material: 'เนื้อไก่, ข้าว, วิตามิน, โปรตีนจากพืช',
-  deadline: '2026-03-15',
+type CreateRfqState = ReturnType<typeof useCreateRfqState>;
+
+type CreateRfqMobileProps = {
+  state: CreateRfqState;
 };
 
-export function CreateRfq() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [form, setForm] = useState<CreateRfqForm>(INITIAL_FORM);
-  const navigate = useNavigate();
-
-  const displayForm = currentStep === 3 && !form.projectName ? MOCK_FORM_STEP3 : form;
-  const displayCategoryName =
-    categories.find((c) => c.id === displayForm.categoryId)?.name ?? '-';
-
-  const updateForm = (key: keyof CreateRfqForm, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleNext = () => {
-    if (currentStep < 3) setCurrentStep((prev) => prev + 1);
-    else navigate('/orders');
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) setCurrentStep((prev) => prev - 1);
-    else navigate(-1);
-  };
+export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
+  const {
+    STEPS,
+    currentStep,
+    form,
+    displayForm,
+    displayCategoryName,
+    categories,
+    factoryTypes,
+    matchedFactories,
+    updateForm,
+    handleNext,
+    handleBack,
+  } = state;
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-slate-50 relative overflow-hidden">
@@ -81,7 +66,7 @@ export function CreateRfq() {
                     'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors',
                     isActive
                       ? 'bg-[#6C47FF] border-[#6C47FF] text-white'
-                      : 'bg-white border-slate-300 text-slate-400'
+                      : 'bg-white border-slate-300 text-slate-400',
                   )}
                   animate={isCurrent ? { scale: 1.1 } : { scale: 1 }}
                 >
@@ -94,7 +79,7 @@ export function CreateRfq() {
                 <span
                   className={cn(
                     'text-[10px] font-semibold absolute -bottom-5 whitespace-nowrap text-center max-w-[72px]',
-                    isActive ? 'text-slate-800' : 'text-slate-400'
+                    isActive ? 'text-slate-800' : 'text-slate-400',
                   )}
                 >
                   {label}
@@ -116,7 +101,12 @@ export function CreateRfq() {
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-6"
             >
-              <CreateRfqStep1 form={form} categories={categories} onUpdate={updateForm} />
+              <CreateRfqStep1
+                form={form as CreateRfqForm}
+                categories={categories as CategoryItem[]}
+                factoryTypes={factoryTypes}
+                onUpdate={updateForm}
+              />
             </motion.div>
           )}
           {currentStep === 2 && (
@@ -128,7 +118,7 @@ export function CreateRfq() {
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-6"
             >
-              <CreateRfqStep2 form={form} onUpdate={updateForm} />
+              <CreateRfqStep2 form={form as CreateRfqForm} onUpdate={updateForm} />
             </motion.div>
           )}
           {currentStep === 3 && (
@@ -140,7 +130,11 @@ export function CreateRfq() {
               transition={{ duration: 0.2 }}
               className="flex flex-col gap-6"
             >
-              <CreateRfqStep3Summary form={displayForm} categoryName={displayCategoryName} />
+              <CreateRfqStep3Summary
+                form={displayForm as CreateRfqForm}
+                categoryName={displayCategoryName}
+                matchedFactories={matchedFactories}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -160,3 +154,4 @@ export function CreateRfq() {
     </div>
   );
 }
+

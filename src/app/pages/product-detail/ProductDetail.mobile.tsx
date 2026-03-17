@@ -1,8 +1,18 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, BadgeCheck, Building2, Clock3, Heart, MapPin, MessageCircle, PackageCheck, Tag } from 'lucide-react';
-import { conversations, factories, factoryShowcases } from '../data/mockData';
-import { ImageWithFallback } from '../components/shared';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Building2,
+  Clock3,
+  Heart,
+  MapPin,
+  MessageCircle,
+  PackageCheck,
+  Tag,
+} from 'lucide-react';
+import { conversations, factories, factoryShowcases } from '../../data/mockData';
+import { ImageWithFallback } from '../../components/shared';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -14,11 +24,13 @@ function formatThaiDate(date: string): string {
   }).format(d);
 }
 
-export function ProductDetail() {
+export function ProductDetailMobile() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const item = factoryShowcases.find((entry) => entry.id === id && entry.contentType === 'product');
+  const item = factoryShowcases.find(
+    (entry) => entry.id === id && entry.contentType === 'product',
+  );
   const factory = item ? factories.find((f) => f.id === item.factoryId) : null;
   const factoryConversation = item
     ? conversations.find((conversation) => conversation.factoryId === item.factoryId)
@@ -56,7 +68,9 @@ export function ProductDetail() {
         </button>
         <button
           type="button"
-          onClick={() => navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')}
+          onClick={() =>
+            navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')
+          }
           className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
           aria-label="แชทกับโรงงาน"
         >
@@ -133,9 +147,18 @@ export function ProductDetail() {
             จุดเด่นที่เหมาะกับแบรนด์
           </p>
           <div className="space-y-2 text-sm text-gray-600">
-            <p className="flex items-start gap-2"><PackageCheck className="w-4 h-4 mt-0.5 text-purple-600" />รองรับ OEM/Private Label สำหรับผู้เริ่มต้นและแบรนด์ที่ต้องการขยายไลน์</p>
-            <p className="flex items-start gap-2"><Clock3 className="w-4 h-4 mt-0.5 text-purple-600" />กำหนด timeline ผลิตชัดเจน ช่วยวางแผนเปิดตัวสินค้าได้ง่าย</p>
-            <p className="flex items-start gap-2"><Building2 className="w-4 h-4 mt-0.5 text-purple-600" />มีโรงงานที่เชี่ยวชาญเฉพาะด้าน พร้อมทีมให้คำแนะนำก่อนเริ่มผลิต</p>
+            <p className="flex items-start gap-2">
+              <PackageCheck className="w-4 h-4 mt-0.5 text-purple-600" />
+              รองรับ OEM/Private Label สำหรับผู้เริ่มต้นและแบรนด์ที่ต้องการขยายไลน์
+            </p>
+            <p className="flex items-start gap-2">
+              <Clock3 className="w-4 h-4 mt-0.5 text-purple-600" />
+              กำหนด timeline ผลิตชัดเจน ช่วยวางแผนเปิดตัวสินค้าได้ง่าย
+            </p>
+            <p className="flex items-start gap-2">
+              <Building2 className="w-4 h-4 mt-0.5 text-purple-600" />
+              มีโรงงานที่เชี่ยวชาญเฉพาะด้าน พร้อมทีมให้คำแนะนำก่อนเริ่มผลิต
+            </p>
           </div>
         </div>
 
@@ -145,7 +168,10 @@ export function ProductDetail() {
           </p>
           <div className="flex flex-wrap gap-2">
             {item.tags.map((tag) => (
-              <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs">
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs"
+              >
                 <Tag className="w-3 h-3" />
                 {tag}
               </span>
@@ -168,3 +194,4 @@ export function ProductDetail() {
     </div>
   );
 }
+

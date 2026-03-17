@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, Bell } from 'lucide-react';
-import { rfqs, orders } from '../data/mockData';
+import { rfqs, orders } from '../../data/mockData';
 import {
   RfqDetailStatusCard,
   RfqDetailSpecs,
   RfqDetailOffersSection,
   HISTORY_STATUSES,
   STATUS_LABEL,
-} from '../components/features/rfq-detail';
+} from '../../components/features/rfq-detail';
 
-export function RFQDetail() {
+export function RFQDetailMobile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [specsOpen, setSpecsOpen] = useState(false);
@@ -18,7 +18,7 @@ export function RFQDetail() {
 
   const rfq = rfqs.find((r) => r.id === id) || rfqs[0];
   const isHistoryView = HISTORY_STATUSES.includes(
-    rfq.status as (typeof HISTORY_STATUSES)[number]
+    rfq.status as (typeof HISTORY_STATUSES)[number],
   );
   const orderForRfq = orders.find((o) => o.rfqId === rfq.id);
 
@@ -84,3 +84,4 @@ export function RFQDetail() {
     </div>
   );
 }
+

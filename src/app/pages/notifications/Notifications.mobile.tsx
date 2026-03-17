@@ -1,24 +1,23 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { Search, Bell, ChevronLeft } from "lucide-react";
-import { motion } from "motion/react";
-import { notifications as notificationsData } from "../data/mockData";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { Search, Bell, ChevronLeft } from 'lucide-react';
+import { motion } from 'motion/react';
+import { notifications as notificationsData } from '../../data/mockData';
 
-export function Notifications() {
+export function NotificationsMobile() {
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
 
   const filtered = notificationsData.filter(
     (n) =>
       n.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      n.message.toLowerCase().includes(searchText.toLowerCase())
+      n.message.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   const unreadCount = notificationsData.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen flex flex-col pb-20 bg-white">
-      {/* Header - ตาม RFQDetail */}
       <div className="flex items-center justify-between px-4 pt-5 pb-4">
         <button
           type="button"
@@ -30,7 +29,10 @@ export function Notifications() {
         <div className="flex flex-col items-center">
           <p className="text-[10px] text-gray-400">แจ้งเตือน</p>
           <div className="flex items-center gap-2">
-            <h1 className="text-sm text-gray-900 truncate" style={{ fontWeight: 700 }}>
+            <h1
+              className="text-sm text-gray-900 truncate"
+              style={{ fontWeight: 700 }}
+            >
               การแจ้งเตือน
             </h1>
             {unreadCount > 0 && (
@@ -59,7 +61,9 @@ export function Notifications() {
 
         <div className="space-y-3">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-slate-500 text-sm">ไม่พบการแจ้งเตือน</div>
+            <div className="text-center py-12 text-slate-500 text-sm">
+              ไม่พบการแจ้งเตือน
+            </div>
           ) : (
             filtered.map((notif, i) => (
               <motion.div
@@ -89,12 +93,12 @@ export function Notifications() {
 function NotificationCard({
   notif,
 }: {
-  notif: (typeof import("../data/mockData").notifications)[0];
+  notif: (typeof import('../../data/mockData').notifications)[0];
 }) {
   return (
     <div
       className={`bg-white p-4 rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.02)] border transition-all flex items-center gap-4 ${
-        notif.read ? "border-slate-50" : "border-[#6842FF]/20 bg-violet-50/30"
+        notif.read ? 'border-slate-50' : 'border-[#6842FF]/20 bg-violet-50/30'
       }`}
     >
       <div className="relative w-14 h-14 shrink-0">
@@ -116,18 +120,26 @@ function NotificationCard({
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline mb-1">
           <h3
-            className={`truncate text-base ${notif.read ? "font-semibold text-slate-700" : "font-bold text-slate-800"}`}
+            className={`truncate text-base ${
+              notif.read
+                ? 'font-semibold text-slate-700'
+                : 'font-bold text-slate-800'
+            }`}
           >
             {notif.title}
           </h3>
           <span
-            className={`text-xs font-semibold shrink-0 ml-2 ${!notif.read ? "text-[#6842FF]" : "text-slate-400"}`}
+            className={`text-xs font-semibold shrink-0 ml-2 ${
+              !notif.read ? 'text-[#6842FF]' : 'text-slate-400'
+            }`}
           >
             {notif.time}
           </span>
         </div>
         <p
-          className={`text-sm truncate ${notif.read ? "font-medium text-slate-500" : "font-medium text-slate-600"}`}
+          className={`text-sm truncate ${
+            notif.read ? 'font-medium text-slate-500' : 'font-medium text-slate-600'
+          }`}
         >
           {notif.message}
         </p>
@@ -135,3 +147,4 @@ function NotificationCard({
     </div>
   );
 }
+

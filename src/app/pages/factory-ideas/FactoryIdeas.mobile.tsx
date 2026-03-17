@@ -1,8 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, SlidersHorizontal, MapPin, BadgeCheck, Heart, Sparkles } from 'lucide-react';
-import { categories, factories, factoryShowcases } from '../data/mockData';
-import { ImageWithFallback } from '../components/shared';
+import {
+  Search,
+  SlidersHorizontal,
+  BadgeCheck,
+  Heart,
+  Sparkles,
+} from 'lucide-react';
+import { categories, factories, factoryShowcases } from '../../data/mockData';
+import { ImageWithFallback } from '../../components/shared';
 
 type ContentType = 'all' | 'product' | 'promotion' | 'idea';
 
@@ -19,31 +25,27 @@ const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
   idea: 'ไอเดีย',
 };
 
-const contentTypeStyle: Record<Exclude<ContentType, 'all'>, { color: string; bg: string }> = {
+const contentTypeStyle: Record<
+  Exclude<ContentType, 'all'>,
+  { color: string; bg: string }
+> = {
   product: { color: '#1D4ED8', bg: '#DBEAFE' },
   promotion: { color: '#B45309', bg: '#FEF3C7' },
   idea: { color: '#7C3AED', bg: '#EDE9FE' },
 };
 
-function formatThaiDate(date: string): string {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return '-';
-  return new Intl.DateTimeFormat('th-TH', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(d);
-}
-
-export function FactoryIdeas() {
+export function FactoryIdeasMobile() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const categoryFilters = useMemo(
-    () => [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...categories.map((c) => ({ id: c.name, name: c.name }))],
-    []
+    () => [
+      { id: 'all', name: 'ทุกหมวดหมู่' },
+      ...categories.map((c) => ({ id: c.name, name: c.name })),
+    ],
+    [],
   );
 
   const visibleItems = useMemo(() => {
@@ -51,15 +53,25 @@ export function FactoryIdeas() {
     return factoryShowcases
       .filter((item) => {
         const byType = selectedType === 'all' || item.contentType === selectedType;
-        const byCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        const byCategory =
+          selectedCategory === 'all' || item.category === selectedCategory;
         if (!q) return byType && byCategory;
 
-        const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
+        const haystack = [
+          item.title,
+          item.excerpt,
+          item.factoryName,
+          item.category,
+          ...(item.tags ?? []),
+        ]
           .join(' ')
           .toLowerCase();
         return byType && byCategory && haystack.includes(q);
       })
-      .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
+      );
   }, [searchText, selectedType, selectedCategory]);
 
   const getDetailPath = (type: string, id: string) => {
@@ -71,11 +83,12 @@ export function FactoryIdeas() {
   return (
     <div className="px-4 pt-5 pb-6 space-y-4">
       <div>
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider">Discover</p>
+        <p className="text-[10px] text-gray-400 uppercase tracking-wider">
+          Discover
+        </p>
         <h1 className="text-gray-900" style={{ fontWeight: 700 }}>
           แนะนำโรงงาน
         </h1>
-        
       </div>
 
       <div className="bg-gradient-to-r from-violet-500 to-indigo-500 rounded-2xl p-4 text-white shadow-md">
@@ -114,7 +127,8 @@ export function FactoryIdeas() {
             style={{
               background: selectedType === type.id ? '#6C47FF' : '#FFFFFF',
               color: selectedType === type.id ? '#FFFFFF' : '#6B7280',
-              border: selectedType === type.id ? 'none' : '1px solid #E5E7EB',
+              border:
+                selectedType === type.id ? 'none' : '1px solid #E5E7EB',
               fontWeight: selectedType === type.id ? 600 : 400,
             }}
           >
@@ -131,9 +145,13 @@ export function FactoryIdeas() {
             onClick={() => setSelectedCategory(category.id)}
             className="shrink-0 px-3.5 py-1.5 rounded-full text-xs transition-all"
             style={{
-              background: selectedCategory === category.id ? '#EDE9FF' : '#F9FAFB',
+              background:
+                selectedCategory === category.id ? '#EDE9FF' : '#F9FAFB',
               color: selectedCategory === category.id ? '#6C47FF' : '#6B7280',
-              border: selectedCategory === category.id ? '1px solid #D9CCFF' : '1px solid #F3F4F6',
+              border:
+                selectedCategory === category.id
+                  ? '1px solid #D9CCFF'
+                  : '1px solid #F3F4F6',
               fontWeight: selectedCategory === category.id ? 600 : 500,
             }}
           >
@@ -163,11 +181,19 @@ export function FactoryIdeas() {
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   <div className="relative h-32">
-                    <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
                     <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
                       <span
                         className="px-1.5 py-0.5 rounded-full text-[9px]"
-                        style={{ background: style.bg, color: style.color, fontWeight: 700 }}
+                        style={{
+                          background: style.bg,
+                          color: style.color,
+                          fontWeight: 700,
+                        }}
                       >
                         {contentTypeLabel[item.contentType]}
                       </span>
@@ -181,10 +207,15 @@ export function FactoryIdeas() {
                   </div>
 
                   <div className="p-2.5">
-                    <h3 className="text-xs text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
+                    <h3
+                      className="text-xs text-gray-900 line-clamp-2"
+                      style={{ fontWeight: 700 }}
+                    >
                       {item.title}
                     </h3>
-                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
+                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">
+                      {item.excerpt}
+                    </p>
 
                     <div className="mt-2 flex items-center gap-1 min-w-0">
                       <button
@@ -198,7 +229,9 @@ export function FactoryIdeas() {
                       >
                         {item.factoryName}
                       </button>
-                      {factory?.verified && <BadgeCheck className="w-3 h-3 text-purple-600 shrink-0" />}
+                      {factory?.verified && (
+                        <BadgeCheck className="w-3 h-3 text-purple-600 shrink-0" />
+                      )}
                     </div>
                     <div className="mt-1.5 flex items-center justify-between text-[10px] text-gray-400">
                       <span>MOQ {item.minOrder}</span>
@@ -209,7 +242,10 @@ export function FactoryIdeas() {
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-1">
                       {item.tags.slice(0, 2).map((tag) => (
-                        <span key={tag} className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[9px]">
+                        <span
+                          key={tag}
+                          className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[9px]"
+                        >
                           #{tag}
                         </span>
                       ))}
@@ -224,3 +260,4 @@ export function FactoryIdeas() {
     </div>
   );
 }
+

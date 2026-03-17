@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
-  ChevronLeft, Phone, MoreVertical, Send, Paperclip, ChevronDown, ChevronUp,
-  CreditCard
+  ChevronLeft,
+  Phone,
+  MoreVertical,
+  Send,
+  Paperclip,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
 } from 'lucide-react';
-import { conversations } from '../data/mockData';
+import { conversations } from '../../data/mockData';
 
 type Message = {
   id: string;
@@ -21,11 +27,7 @@ export function ChatRoom() {
   const conv = conversations.find((c) => c.id === id) || conversations[0];
 
   return (
-    <ChatRoomBody
-      conv={conv}
-      onBack={() => navigate(-1)}
-      variant="full"
-    />
+    <ChatRoomBody conv={conv} onBack={() => navigate(-1)} variant="full" />
   );
 }
 
@@ -36,18 +38,20 @@ type ChatRoomBodyProps = {
 };
 
 export function ChatRoomEmbedded({ conversationId }: { conversationId: string }) {
-  const conv = conversations.find((c) => c.id === conversationId) || conversations[0];
+  const conv =
+    conversations.find((c) => c.id === conversationId) || conversations[0];
   return <ChatRoomBody conv={conv} variant="embedded" />;
 }
 
 function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
   const [message, setMessage] = useState('');
   const [miniDashOpen, setMiniDashOpen] = useState(true);
-  const [messages, setMessages] = useState<Message[]>(conv.messages as Message[]);
+  const [messages, setMessages] = useState<Message[]>(
+    conv.messages as Message[],
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // reset messages when conversation changes
     const c = conversations.find((c) => c.id === conv.id) || conversations[0];
     setMessages(c.messages as Message[]);
   }, [conv.id]);
@@ -62,7 +66,10 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
       id: `m${Date.now()}`,
       sender: 'user' as const,
       text: message,
-      time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString('th-TH', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
       type: 'text' as const,
     };
     setMessages((prev) => [...prev, newMsg]);
@@ -106,7 +113,9 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
               className="w-8 h-8 rounded-xl object-cover"
             />
             <div className="text-center">
-              <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>{conv.factoryName}</p>
+              <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                {conv.factoryName}
+              </p>
               <div className="flex items-center gap-1 justify-center">
                 <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
                 <p className="text-[10px] text-green-500">Online</p>
@@ -134,14 +143,21 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
           >
             <div className="flex items-center gap-2">
               <span className="text-sm">📋</span>
-              <span className="text-xs text-gray-700" style={{ fontWeight: 600 }}>
+              <span
+                className="text-xs text-gray-700"
+                style={{ fontWeight: 600 }}
+              >
                 {conv.rfqName}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span
                 className="px-2 py-0.5 rounded-full text-[9px]"
-                style={{ background: '#EDE9FF', color: '#6C47FF', fontWeight: 600 }}
+                style={{
+                  background: '#EDE9FF',
+                  color: '#6C47FF',
+                  fontWeight: 600,
+                }}
               >
                 RFQ Active
               </span>
@@ -157,7 +173,10 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
             <div className="px-3 pb-3 border-t border-purple-100">
               <div className="flex gap-3 mt-2.5">
                 <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                  <p className="text-sm" style={{ fontWeight: 700, color: '#6C47FF' }}>
+                  <p
+                    className="text-sm"
+                    style={{ fontWeight: 700, color: '#6C47FF' }}
+                  >
                     ฿{latestQuote.quoteData.price.toLocaleString()}
                   </p>
                   <p className="text-[9px] text-gray-500">ราคา</p>
@@ -215,7 +234,11 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
                     </div>
                     <button
                       className="w-full py-3 rounded-xl text-sm"
-                      style={{ background: 'rgba(255,255,255,0.95)', color: '#6C47FF', fontWeight: 700 }}
+                      style={{
+                        background: 'rgba(255,255,255,0.95)',
+                        color: '#6C47FF',
+                        fontWeight: 700,
+                      }}
                     >
                       💳 ชำระมัดจำ 50%
                     </button>
@@ -256,7 +279,10 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
                 </p>
                 <p
                   className="text-[10px] mt-0.5"
-                  style={{ color: isUser ? 'rgba(255,255,255,0.6)' : '#9CA3AF', textAlign: isUser ? 'right' : 'left' }}
+                  style={{
+                    color: isUser ? 'rgba(255,255,255,0.6)' : '#9CA3AF',
+                    textAlign: isUser ? 'right' : 'left',
+                  }}
                 >
                   {msg.time}
                   {isUser && <span className="ml-1">✓✓</span>}
@@ -292,10 +318,14 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
               background: message.trim() ? '#6C47FF' : '#E5E7EB',
             }}
           >
-            <Send size={17} style={{ color: message.trim() ? '#fff' : '#9CA3AF' }} />
+            <Send
+              size={17}
+              style={{ color: message.trim() ? '#fff' : '#9CA3AF' }}
+            />
           </button>
         </div>
       </div>
     </div>
   );
 }
+

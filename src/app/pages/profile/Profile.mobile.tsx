@@ -1,64 +1,146 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import {
-  ChevronRight, Bell, Wallet, Shield, HelpCircle, LogOut, Star, Package,
-  FileText, Settings, User, TrendingUp, ArrowUpRight, ArrowDownLeft
+  ChevronRight,
+  Bell,
+  Wallet,
+  Shield,
+  HelpCircle,
+  LogOut,
+  Star,
+  Package,
+  FileText,
+  Settings,
+  User,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownLeft,
 } from 'lucide-react';
-import { currentUser, orders } from '../data/mockData';
+import { currentUser, orders } from '../../data/mockData';
 
 const menuSections = [
   {
     items: [
-      { icon: User, label: 'ข้อมูลส่วนตัว', sub: 'แก้ไขโปรไฟล์', color: '#6C47FF', bg: '#EDE9FF' },
-      { icon: Star, label: 'รีวิวของฉัน', sub: 'รีวิวที่ให้กับโรงงาน', color: '#F59E0B', bg: '#FEF3C7' },
-      { icon: Bell, label: 'การแจ้งเตือน', sub: 'จัดการการแจ้งเตือน', color: '#3B82F6', bg: '#DBEAFE' },
+      {
+        icon: User,
+        label: 'ข้อมูลส่วนตัว',
+        sub: 'แก้ไขโปรไฟล์',
+        color: '#6C47FF',
+        bg: '#EDE9FF',
+      },
+      {
+        icon: Star,
+        label: 'รีวิวของฉัน',
+        sub: 'รีวิวที่ให้กับโรงงาน',
+        color: '#F59E0B',
+        bg: '#FEF3C7',
+      },
+      {
+        icon: Bell,
+        label: 'การแจ้งเตือน',
+        sub: 'จัดการการแจ้งเตือน',
+        color: '#3B82F6',
+        bg: '#DBEAFE',
+      },
     ],
   },
   {
     title: 'ธุรกิจ',
     items: [
-      { icon: FileText, label: 'RFQ ทั้งหมด', sub: 'ดูประวัติการขอใบเสนอราคา', color: '#8B5CF6', bg: '#EDE9FF' },
-      { icon: Package, label: 'คำสั่งซื้อ', sub: 'ประวัติการสั่งซื้อทั้งหมด', color: '#22C55E', bg: '#DCFCE7' },
-      { icon: TrendingUp, label: 'รายงาน', sub: 'สรุปการใช้จ่าย', color: '#F97316', bg: '#FEF3C7' },
+      {
+        icon: FileText,
+        label: 'RFQ ทั้งหมด',
+        sub: 'ดูประวัติการขอใบเสนอราคา',
+        color: '#8B5CF6',
+        bg: '#EDE9FF',
+      },
+      {
+        icon: Package,
+        label: 'คำสั่งซื้อ',
+        sub: 'ประวัติการสั่งซื้อทั้งหมด',
+        color: '#22C55E',
+        bg: '#DCFCE7',
+      },
+      {
+        icon: TrendingUp,
+        label: 'รายงาน',
+        sub: 'สรุปการใช้จ่าย',
+        color: '#F97316',
+        bg: '#FEF3C7',
+      },
     ],
   },
   {
     title: 'อื่นๆ',
     items: [
-      { icon: Shield, label: 'ความปลอดภัย', sub: 'รหัสผ่านและความเป็นส่วนตัว', color: '#6B7280', bg: '#F3F4F6' },
-      { icon: HelpCircle, label: 'ช่วยเหลือ', sub: 'FAQ และติดต่อ Support', color: '#6B7280', bg: '#F3F4F6' },
-      { icon: Settings, label: 'ตั้งค่า', sub: 'ภาษา, การแสดงผล', color: '#6B7280', bg: '#F3F4F6' },
+      {
+        icon: Shield,
+        label: 'ความปลอดภัย',
+        sub: 'รหัสผ่านและความเป็นส่วนตัว',
+        color: '#6B7280',
+        bg: '#F3F4F6',
+      },
+      {
+        icon: HelpCircle,
+        label: 'ช่วยเหลือ',
+        sub: 'FAQ และติดต่อ Support',
+        color: '#6B7280',
+        bg: '#F3F4F6',
+      },
+      {
+        icon: Settings,
+        label: 'ตั้งค่า',
+        sub: 'ภาษา, การแสดงผล',
+        color: '#6B7280',
+        bg: '#F3F4F6',
+      },
     ],
   },
 ];
 
 const walletTransactions = [
-  { id: 't1', label: 'ชำระมัดจำ - Sheet Metal Cabinet', amount: -57500, date: '15 ม.ค. 2026', type: 'debit' },
-  { id: 't2', label: 'คืนเงินจาก RFQ ยกเลิก', amount: 5000, date: '10 ม.ค. 2026', type: 'credit' },
+  {
+    id: 't1',
+    label: 'ชำระมัดจำ - Sheet Metal Cabinet',
+    amount: -57500,
+    date: '15 ม.ค. 2026',
+    type: 'debit',
+  },
+  {
+    id: 't2',
+    label: 'คืนเงินจาก RFQ ยกเลิก',
+    amount: 5000,
+    date: '10 ม.ค. 2026',
+    type: 'credit',
+  },
   { id: 't3', label: 'เติมเงิน', amount: 100000, date: '5 ม.ค. 2026', type: 'credit' },
 ];
 
-export function Profile() {
+export function ProfileMobile() {
   const navigate = useNavigate();
   const completedOrders = orders.filter((o) => o.status === 'completed').length;
   const totalSpent = orders.reduce((s, o) => s + o.depositPaid, 0);
 
   return (
     <div className="pb-4">
-      {/* Header */}
       <div className="px-4 pt-5 mb-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">บัญชี</p>
-            <h1 className="text-gray-900" style={{ fontWeight: 700 }}>โปรไฟล์</h1>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">
+              บัญชี
+            </p>
+            <h1 className="text-gray-900" style={{ fontWeight: 700 }}>
+              โปรไฟล์
+            </h1>
           </div>
-           
         </div>
 
-        {/* User Card */}
         <div
           className="rounded-3xl p-5 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 60%, #A78BFA 100%)' }}
+          style={{
+            background:
+              'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 60%, #A78BFA 100%)',
+          }}
         >
           <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20 bg-white" />
           <div className="absolute right-4 bottom-0 w-16 h-16 rounded-full opacity-15 bg-white" />
@@ -70,7 +152,9 @@ export function Profile() {
                 className="w-14 h-14 rounded-2xl object-cover border-2 border-white/30"
               />
               <div>
-                <p className="text-white" style={{ fontWeight: 700 }}>{currentUser.name}</p>
+                <p className="text-white" style={{ fontWeight: 700 }}>
+                  {currentUser.name}
+                </p>
                 <p className="text-white/70 text-xs">{currentUser.company}</p>
                 <div
                   className="flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full w-fit"
@@ -83,17 +167,23 @@ export function Profile() {
             </div>
             <div className="flex gap-4">
               <div className="text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>{completedOrders}</p>
+                <p className="text-white" style={{ fontWeight: 700 }}>
+                  {completedOrders}
+                </p>
                 <p className="text-white/70 text-[10px]">คำสั่งซื้อ</p>
               </div>
               <div className="w-px bg-white/30" />
               <div className="text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>4.8</p>
+                <p className="text-white" style={{ fontWeight: 700 }}>
+                  4.8
+                </p>
                 <p className="text-white/70 text-[10px]">คะแนน</p>
               </div>
               <div className="w-px bg-white/30" />
               <div className="text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>฿{(totalSpent / 1000).toFixed(0)}K</p>
+                <p className="text-white" style={{ fontWeight: 700 }}>
+                  ฿{(totalSpent / 1000).toFixed(0)}K
+                </p>
                 <p className="text-white/70 text-[10px]">ใช้จ่ายรวม</p>
               </div>
             </div>
@@ -102,7 +192,6 @@ export function Profile() {
       </div>
 
       <div className="px-4 space-y-4">
-        {/* Wallet Card */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -112,9 +201,10 @@ export function Profile() {
               >
                 <Wallet size={18} style={{ color: '#6C47FF' }} />
               </div>
-              <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>กระเป๋าเงิน</p>
+              <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                กระเป๋าเงิน
+              </p>
             </div>
-            
           </div>
 
           <div className="mb-4">
@@ -129,7 +219,6 @@ export function Profile() {
             </div>
           </div>
 
-          {/* Quick actions */}
           <div className="flex gap-2 mb-4">
             <button
               className="flex-1 py-2.5 rounded-xl text-xs text-white"
@@ -145,17 +234,14 @@ export function Profile() {
             </button>
           </div>
 
-          {/* Transactions */}
           <div className="space-y-2.5">
             <div className="flex justify-between items-end mb-4">
-              {/* ปรับจาก text-lg เป็น text-base (หรือ text-sm ถ้าต้องการให้เล็กไปอีก) */}
-              <h3 className="text-base font-bold text-slate-800">
-                รายการล่าสุด
-              </h3>
-              
-              {/* ปรับจาก text-sm เป็น text-xs เพื่อให้เล็กลงรับกับหัวข้อ */}
-              <button type="button" className="inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]">
-                ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} /> {/* ปรับ size ไอคอนลงจาก 16 เป็น 14 ด้วย */}
+              <h3 className="text-base font-bold text-slate-800">รายการล่าสุด</h3>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]"
+              >
+                ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
               </button>
             </div>
             {walletTransactions.map((tx) => (
@@ -174,7 +260,10 @@ export function Profile() {
                     )}
                   </div>
                   <div>
-                    <p className="text-xs text-gray-700 truncate max-w-[160px]" style={{ fontWeight: 500 }}>
+                    <p
+                      className="text-xs text-gray-700 truncate max-w-[160px]"
+                      style={{ fontWeight: 500 }}
+                    >
                       {tx.label}
                     </p>
                     <p className="text-[10px] text-gray-400">{tx.date}</p>
@@ -194,9 +283,11 @@ export function Profile() {
           </div>
         </div>
 
-        {/* Menu Sections */}
         {menuSections.map((section, sectionIndex) => (
-          <div key={section.title ?? `section-${sectionIndex}`} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div
+            key={section.title ?? `section-${sectionIndex}`}
+            className="bg-white rounded-2xl shadow-sm overflow-hidden"
+          >
             {section.title ? (
               <p className="text-[10px] text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
                 {section.title}
@@ -207,6 +298,11 @@ export function Profile() {
                 key={item.label}
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
                 style={{ borderTop: idx > 0 ? '1px solid #F9FAFB' : 'none' }}
+                onClick={() => {
+                  if (item.label === 'การแจ้งเตือน') navigate('/notifications');
+                  if (item.label === 'คำสั่งซื้อ') navigate('/orders');
+                  if (item.label === 'RFQ ทั้งหมด') navigate('/orders');
+                }}
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -228,14 +324,14 @@ export function Profile() {
           </div>
         ))}
 
-        {/* Logout */}
-        <button className="w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]"
-          style={{ color: '#EF4444', fontWeight: 600 }}>
+        <button
+          className="w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]"
+          style={{ color: '#EF4444', fontWeight: 600 }}
+        >
           <LogOut size={18} />
           ออกจากระบบ
         </button>
 
-        {/* Version */}
         <p className="text-center text-[10px] text-gray-400 pb-2">
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}
         </p>
@@ -243,3 +339,4 @@ export function Profile() {
     </div>
   );
 }
+
