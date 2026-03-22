@@ -37,15 +37,15 @@ export function ExploreRecentActivity({
   onViewAllClick,
 }: ExploreRecentActivityProps) {
   return (
-    <div>
+    <div className="px-4">
       <div className="flex justify-between items-center mb-3">
-        <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+        <p className="text-sm text-[#352A55]" style={{ fontWeight: 700 }}>
           กิจกรรมล่าสุด
         </p>
         <button
           onClick={onViewAllClick}
           className="flex items-center gap-0.5 text-xs"
-          style={{ color: '#6C47FF', fontWeight: 600 }}
+          style={{ color: '#A020C8', fontWeight: 600 }}
         >
           ดูทั้งหมด <ChevronRight size={14} />
         </button>
@@ -62,7 +62,7 @@ export function ExploreRecentActivity({
             <div
               key={rfq.id}
               onClick={() => onRfqClick(rfq.id)}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98]"
+              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98] hover:shadow-md hover:border-[#A020C8]/20"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -97,8 +97,8 @@ export function ExploreRecentActivity({
                     <span
                       className="px-2.5 py-1 rounded-full text-[10px]"
                       style={{
-                        background: '#EDE9FF',
-                        color: '#6C47FF',
+                        background: '#F3E5FF',
+                        color: '#A020C8',
                         fontWeight: 700,
                       }}
                     >
@@ -121,7 +121,7 @@ export function ExploreRecentActivity({
             <div
               key={order.id}
               onClick={() => onOrderClick(order.id)}
-              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98]"
+              className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98] hover:shadow-md hover:border-[#A020C8]/20"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
@@ -141,14 +141,14 @@ export function ExploreRecentActivity({
               <div className="space-y-1">
                 <div className="flex justify-between text-[10px] text-gray-500">
                   <span>ความคืบหน้า</span>
-                  <span style={{ fontWeight: 600, color: '#6C47FF' }}>{order.progress}%</span>
+                  <span style={{ fontWeight: 600, color: '#A020C8' }}>{order.progress}%</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${order.progress}%`,
-                      background: 'linear-gradient(90deg, #6C47FF, #A78BFA)',
+                      background: 'linear-gradient(90deg, #A020C8, #FF9A00)',
                     }}
                   />
                 </div>

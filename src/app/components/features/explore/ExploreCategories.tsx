@@ -17,7 +17,7 @@ export function ExploreCategories({ categories }: ExploreCategoriesProps) {
         <h3 className="text-gray-800" style={{ fontWeight: 700 }}>
           หมวดหมู่
         </h3>
-        <button type="button" className="text-purple-600" style={{ fontSize: 13 }}>
+        <button type="button" className="text-[#A020C8]" style={{ fontSize: 13 }}>
           ดูทั้งหมด
         </button>
       </div>
@@ -30,7 +30,7 @@ export function ExploreCategories({ categories }: ExploreCategoriesProps) {
             key={cat.id}
             className="flex flex-col items-center gap-1.5 min-w-[64px] cursor-pointer group"
           >
-            <div className="w-14 h-14 rounded-2xl bg-white border border-gray-50 shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="w-14 h-14 rounded-full bg-[#A020C8]/10 border border-[#A020C8]/10 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
               <span className="text-xl leading-none">{cat.icon}</span>
             </div>
             <span className="text-gray-600 whitespace-nowrap" style={{ fontSize: 11 }}>

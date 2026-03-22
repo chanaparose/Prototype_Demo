@@ -41,7 +41,7 @@ export function DesktopSidebar() {
         <Link to="/" className="flex items-center gap-2.5 w-full">
           <div
             className="h-8 px-2.5 rounded-xl flex items-center gap-1.5 shrink-0"
-            style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+            style={{ background: 'linear-gradient(135deg, #A020C8, #7B10A8)' }}
           >
             <Factory className="text-white shrink-0" size={15} strokeWidth={2.5} />
             <span className="text-white text-xs font-bold leading-none whitespace-nowrap">
@@ -62,8 +62,8 @@ export function DesktopSidebar() {
               onClick={() => navigate(path)}
               className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150"
               style={{
-                color: active ? '#6C47FF' : '#6B7280',
-                background: active ? 'rgba(108,71,255,0.08)' : 'transparent',
+                color: active ? '#A020C8' : '#6B7280',
+                background: active ? 'rgba(160,32,200,0.08)' : 'transparent',
                 fontWeight: active ? 600 : 500,
               }}
             >
@@ -85,9 +85,9 @@ export function DesktopSidebar() {
       </nav>
 
       {/* Wallet Summary */}
-      <div className="mx-3 mb-3 p-3.5 rounded-xl" style={{ background: 'rgba(108,71,255,0.06)' }}>
+      <div className="mx-3 mb-3 p-3.5 rounded-xl" style={{ background: 'rgba(160,32,200,0.06)' }}>
         <div className="flex items-center gap-1.5 mb-1.5">
-          <Wallet size={13} style={{ color: '#6C47FF' }} />
+          <Wallet size={13} style={{ color: '#A020C8' }} />
           <span className="text-[11px] text-gray-500 font-medium">กระเป๋าเงิน</span>
         </div>
         <p className="text-base font-bold text-gray-900">
@@ -103,7 +103,7 @@ export function DesktopSidebar() {
         <button
           onClick={() => navigate('/create-rfq')}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+          style={{ background: 'linear-gradient(135deg, #A020C8, #7B10A8)' }}
         >
           <Plus size={18} />
           สร้าง RFQ ใหม่
@@ -131,7 +131,7 @@ export function DesktopSidebar() {
             to="/notifications"
             className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0"
           >
-            <Bell size={17} style={{ color: '#6C47FF' }} />
+            <Bell size={17} style={{ color: '#A020C8' }} />
             <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] flex items-center justify-center font-bold">
               3
             </span>

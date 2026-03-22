@@ -44,7 +44,7 @@ export function ExplorePromoCarousel({
             key={promo.id}
             className="flex-shrink-0 w-[85vw] max-w-[340px] rounded-2xl overflow-hidden shadow-lg"
           >
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 p-4 text-white">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#A020C8] via-[#7B10A8] to-[#FF9A00] p-4 text-white">
               <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/10" />
               <div className="relative z-10">
@@ -67,7 +67,7 @@ export function ExplorePromoCarousel({
                   <button
                     type="button"
                     onClick={() => handleCopy(promo.code, promo.id)}
-                    className="flex items-center gap-1.5 bg-white text-purple-600 rounded-lg px-3 py-1.5 hover:bg-purple-50 transition-colors"
+                    className="flex items-center gap-1.5 bg-white text-[#A020C8] rounded-lg px-3 py-1.5 hover:bg-purple-50 transition-colors"
                     style={{ fontSize: 13 }}
                   >
                     <Copy className="w-3.5 h-3.5" />
@@ -88,7 +88,7 @@ export function ExplorePromoCarousel({
             aria-label={`สไลด์ ${i + 1}`}
             onClick={() => setPromoIndex(i)}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === promoIndex ? 'w-5 bg-[#6C47FF]' : 'w-1.5 bg-gray-300'
+              i === promoIndex ? 'w-5 bg-[#A020C8]' : 'w-1.5 bg-gray-300'
             }`}
           />
         ))}
