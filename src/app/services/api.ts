@@ -3,7 +3,7 @@
  * Base path ตาม docs/API_SPEC.md: .../api/v1
  */
 
-const DEFAULT_API_BASE = 'https://wemake-server.onrender.com/api/v1';
+const DEFAULT_API_BASE = '/api/v1';
 
 const BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ||
@@ -262,6 +262,6 @@ export const masterApi = {
 
 // ─── Health Check (different base) ──────────────────────────────
 export async function healthCheck(): Promise<{ status: string }> {
-  const res = await fetch('https://wemake-server.onrender.com/health');
+  const res = await fetch('/health');
   return res.json();
 }
