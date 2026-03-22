@@ -1,25 +1,19 @@
 import React from 'react';
-import {
-  currentUser,
-  factories,
-  rfqs,
-  orders,
-  categories,
-  ideaArticles,
-} from '../data/mockData';
+import { useData } from '../contexts/DataContext';
 
 export function useExploreData() {
+  const data = useData();
   const [searchText, setSearchText] = React.useState('');
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
 
   const activeRFQs = React.useMemo(
-    () => rfqs.filter((r) => r.status !== 'completed'),
-    [],
+    () => data.rfqs.filter((r) => r.status !== 'completed'),
+    [data.rfqs],
   );
 
   const recentOrders = React.useMemo(
-    () => orders.filter((o) => o.status !== 'completed').slice(0, 2),
-    [],
+    () => data.orders.filter((o) => o.status !== 'completed').slice(0, 2),
+    [data.orders],
   );
 
   return {
@@ -34,12 +28,15 @@ export function useExploreData() {
     recentOrders,
 
     // raw data
-    currentUser,
-    factories,
-    rfqs,
-    orders,
-    categories,
-    ideaArticles,
+    currentUser: data.currentUser,
+    factories: data.factories,
+    rfqs: data.rfqs,
+    orders: data.orders,
+    categories: data.categories,
+    ideaArticles: data.ideaArticles,
+
+    // loading state
+    isLoading: data.isLoading,
   };
 }
 

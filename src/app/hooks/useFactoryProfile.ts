@@ -1,50 +1,44 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import {
-  conversations,
-  factories,
-  factoryProfiles,
-  factoryReviews,
-  factoryShowcases,
-  ideaArticles,
-} from '../data/mockData';
+import { useData } from '../contexts/DataContext';
 import type { TabId } from '../components/features/factory-profile';
 
 export function useFactoryProfile() {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = React.useState<TabId>('products');
+  const data = useData();
 
-  const factory = factories.find((f) => f.id === id);
-  const profile = factoryProfiles.find((p) => p.factoryId === id);
-  const conversation = conversations.find((c) => c.factoryId === id);
+  const factory = data.factories.find((f) => f.id === id);
+  const profile = data.factoryProfiles.find((p) => p.factoryId === id);
+  const conversation = data.conversations.find((c) => c.factoryId === id);
 
   const productItems = React.useMemo(
     () =>
-      factoryShowcases.filter(
+      data.factoryShowcases.filter(
         (item) => item.factoryId === id && item.contentType === 'product',
       ),
-    [id],
+    [id, data.factoryShowcases],
   );
 
   const promotionItems = React.useMemo(
     () =>
-      factoryShowcases.filter(
+      data.factoryShowcases.filter(
         (item) => item.factoryId === id && item.contentType === 'promotion',
       ),
-    [id],
+    [id, data.factoryShowcases],
   );
 
   const articleItems = React.useMemo(() => {
-    const showcaseIdeas = factoryShowcases.filter(
+    const showcaseIdeas = data.factoryShowcases.filter(
       (item) => item.factoryId === id && item.contentType === 'idea',
     );
-    const ideas = ideaArticles.filter((item) => item.factoryId === id);
+    const ideas = data.ideaArticles.filter((item) => item.factoryId === id);
     return { showcaseIdeas, ideas };
-  }, [id]);
+  }, [id, data.factoryShowcases, data.ideaArticles]);
 
   const reviews = React.useMemo(
-    () => factoryReviews.filter((r) => r.factoryId === id),
-    [id],
+    () => data.factoryReviews.filter((r) => r.factoryId === id),
+    [id, data.factoryReviews],
   );
 
   return {

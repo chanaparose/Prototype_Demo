@@ -9,8 +9,9 @@ import {
 } from '../../components/features/create-rfq';
 import type { CreateRfqForm } from '../../components/features/create-rfq';
 import type { useCreateRfqState } from '../../hooks/useCreateRfqState';
+import type { Category } from '../../contexts/DataContext';
 
-type CategoryItem = (typeof import('../../data/mockData').categories)[number];
+type CategoryItem = Category;
 
 type CreateRfqState = ReturnType<typeof useCreateRfqState>;
 type CreateRfqMobileProps = { state: CreateRfqState };

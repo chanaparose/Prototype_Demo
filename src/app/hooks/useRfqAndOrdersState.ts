@@ -1,5 +1,5 @@
 import React from 'react';
-import { rfqs, orders } from '../data/mockData';
+import { useData } from '../contexts/DataContext';
 import {
   getRfqFilterId,
 } from '../components/features/rfq-and-orders';
@@ -17,6 +17,10 @@ type InitialState = {
 };
 
 export function useRfqAndOrdersState(initial?: InitialState) {
+  const data = useData();
+  const rfqs = data.rfqs;
+  const orders = data.orders;
+
   const [primaryTab, setPrimaryTab] = React.useState<PrimaryTab>(
     initial?.primaryTab ?? 'rfq',
   );
@@ -38,11 +42,11 @@ export function useRfqAndOrdersState(initial?: InitialState) {
       const fid = getRfqFilterId(r.status);
       return fid === rfqFilter;
     });
-  }, [rfqFilter]);
+  }, [rfqFilter, rfqs]);
 
   const filteredOrders = React.useMemo(
     () => orders.filter((o) => o.status === orderFilter),
-    [orderFilter],
+    [orderFilter, orders],
   );
 
   const rfqTagCounts = React.useMemo(
@@ -55,7 +59,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
         (r) => r.status === 'cancelled' || r.status === 'expired',
       ).length,
     }),
-    [],
+    [rfqs],
   );
 
   const orderTagCounts = React.useMemo(
@@ -64,7 +68,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
       shipped: orders.filter((o) => o.status === 'shipped').length,
       completed: orders.filter((o) => o.status === 'completed').length,
     }),
-    [],
+    [orders],
   );
 
   return {

@@ -11,7 +11,7 @@ import {
   X,
   ChevronDown,
 } from 'lucide-react';
-import { categories, factories, factoryShowcases } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
 
 type ContentType = 'all' | 'product' | 'promotion' | 'idea';
@@ -42,18 +42,19 @@ export function FactoryIdeasDesktop() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const data = useData();
 
   const categoryFilters = useMemo(
     () => [
       { id: 'all', name: 'ทุกหมวดหมู่' },
-      ...categories.map((c) => ({ id: c.name, name: c.name })),
+      ...data.categories.map((c) => ({ id: c.name, name: c.name })),
     ],
-    [],
+    [data.categories],
   );
 
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();
-    return factoryShowcases
+    return data.factoryShowcases
       .filter((item) => {
         const byType = selectedType === 'all' || item.contentType === selectedType;
         const byCategory = selectedCategory === 'all' || item.category === selectedCategory;
@@ -200,7 +201,7 @@ export function FactoryIdeasDesktop() {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
             {visibleItems.map((item) => {
-              const factory = factories.find((f) => f.id === item.factoryId);
+              const factory = data.factories.find((f) => f.id === item.factoryId);
               const style = contentTypeStyle[item.contentType];
               return (
                 <article
@@ -251,7 +252,7 @@ export function FactoryIdeasDesktop() {
         ) : (
           <div className="space-y-2">
             {visibleItems.map((item) => {
-              const factory = factories.find((f) => f.id === item.factoryId);
+              const factory = data.factories.find((f) => f.id === item.factoryId);
               const style = contentTypeStyle[item.contentType];
               return (
                 <article

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { MessageCircle } from 'lucide-react';
-import { orders, rfqs } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import {
   HISTORY_STATUSES,
   RfqDetailOffersSection,
@@ -13,15 +13,16 @@ import {
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const data = useData();
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
 
-  const rfq = rfqs.find((r) => r.id === id) || rfqs[0];
+  const rfq = data.rfqs.find((r) => r.id === id) || data.rfqs[0];
   const isHistoryView = HISTORY_STATUSES.includes(
     rfq.status as (typeof HISTORY_STATUSES)[number],
   );
-  const orderForRfq = orders.find((o) => o.rfqId === rfq.id);
+  const orderForRfq = data.orders.find((o) => o.rfqId === rfq.id);
 
   const statusBadgeStyle = isHistoryView
     ? rfq.status === 'completed'

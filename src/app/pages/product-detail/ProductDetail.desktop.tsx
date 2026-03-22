@@ -17,7 +17,7 @@ import {
   ArrowUpRight,
   CheckCircle2,
 } from 'lucide-react';
-import { conversations, factories, factoryShowcases } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
 
 function formatThaiDate(date: string): string {
@@ -29,10 +29,11 @@ function formatThaiDate(date: string): string {
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const data = useData();
 
-  const item = factoryShowcases.find((e) => e.id === id && e.contentType === 'product');
-  const factory = item ? factories.find((f) => f.id === item.factoryId) : null;
-  const factoryConversation = item ? conversations.find((c) => c.factoryId === item.factoryId) : null;
+  const item = data.factoryShowcases.find((e) => e.id === id && e.contentType === 'product');
+  const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
+  const factoryConversation = item ? data.conversations.find((c) => c.factoryId === item.factoryId) : null;
 
   if (!item) {
     return (

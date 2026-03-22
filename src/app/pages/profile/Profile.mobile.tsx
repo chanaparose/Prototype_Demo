@@ -16,7 +16,8 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
 } from 'lucide-react';
-import { currentUser, orders } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const menuSections = [
   {
@@ -118,8 +119,15 @@ const walletTransactions = [
 
 export function ProfileMobile() {
   const navigate = useNavigate();
-  const completedOrders = orders.filter((o) => o.status === 'completed').length;
-  const totalSpent = orders.reduce((s, o) => s + o.depositPaid, 0);
+  const data = useData();
+  const { logout } = useAuth();
+  const currentUser = data.currentUser;
+  const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
+  const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
+
+  if (!currentUser) {
+    return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-400 text-sm">กำลังโหลด...</p></div>;
+  }
 
   return (
     <div className="pb-4">
@@ -325,6 +333,7 @@ export function ProfileMobile() {
         ))}
 
         <button
+          onClick={() => { logout(); navigate('/login', { replace: true }); }}
           className="w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]"
           style={{ color: '#EF4444', fontWeight: 600 }}
         >

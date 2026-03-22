@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { categories, factories } from '../data/mockData';
+import { useData } from '../contexts/DataContext';
 import {
   INITIAL_FORM,
   STEPS,
@@ -23,6 +23,9 @@ export function useCreateRfqState() {
   const [currentStep, setCurrentStep] = React.useState(1);
   const [form, setForm] = React.useState<CreateRfqForm>(INITIAL_FORM);
   const navigate = useNavigate();
+  const data = useData();
+  const categories = data.categories;
+  const factories = data.factories;
 
   const displayForm =
     currentStep === 3 && !form.projectName ? MOCK_FORM_STEP3 : form;
@@ -33,7 +36,7 @@ export function useCreateRfqState() {
   const factoryTypes = React.useMemo(() => {
     const tags = factories.flatMap((f) => f.tags ?? []);
     return Array.from(new Set(tags)).sort((a, b) => a.localeCompare(b, 'th'));
-  }, []);
+  }, [factories]);
 
   const matchedFactories = React.useMemo(() => {
     const t = displayForm.factoryType?.trim();
@@ -44,7 +47,7 @@ export function useCreateRfqState() {
       const matchSpec = f.specialization?.toLowerCase().includes(q);
       return matchTag || matchSpec;
     });
-  }, [displayForm.factoryType]);
+  }, [displayForm.factoryType, factories]);
 
   const updateForm = (key: keyof CreateRfqForm, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));

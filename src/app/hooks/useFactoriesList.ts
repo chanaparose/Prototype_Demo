@@ -1,5 +1,5 @@
 import React from 'react';
-import { factories as allFactories } from '../data/mockData';
+import { useData } from '../contexts/DataContext';
 
 export type FactoryFilterState = {
   searchText: string;
@@ -7,16 +7,20 @@ export type FactoryFilterState = {
   verifiedOnly: boolean;
 };
 
-const uniqueLocations = Array.from(
-  new Set(allFactories.map((f) => f.location)),
-).sort();
-
 export function useFactoriesList() {
+  const data = useData();
+  const allFactories = data.factories;
+
   const [filters, setFilters] = React.useState<FactoryFilterState>({
     searchText: '',
     location: '',
     verifiedOnly: false,
   });
+
+  const uniqueLocations = React.useMemo(
+    () => Array.from(new Set(allFactories.map((f) => f.location))).sort(),
+    [allFactories],
+  );
 
   const setSearchText = (value: string) =>
     setFilters((prev) => ({ ...prev, searchText: value }));
@@ -42,7 +46,7 @@ export function useFactoriesList() {
       }
       return true;
     });
-  }, [filters]);
+  }, [filters, allFactories]);
 
   return {
     factories: filteredFactories,

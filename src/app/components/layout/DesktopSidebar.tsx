@@ -10,7 +10,7 @@ import {
   Bell,
   Wallet,
 } from 'lucide-react';
-import { currentUser, rfqs, conversations } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 
 const navLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
@@ -22,13 +22,15 @@ const navLinks = [
 export function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const data = useData();
+  const currentUser = data.currentUser;
 
   const isActive = (path: string) =>
     location.pathname === path ||
     (path !== '/' && location.pathname.startsWith(path));
 
-  const unreadMessages = conversations.reduce((s, c) => s + c.unread, 0);
-  const activeRfqCount = rfqs.filter(
+  const unreadMessages = data.conversations.reduce((s, c) => s + c.unread, 0);
+  const activeRfqCount = data.rfqs.filter(
     (r) => r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired'
   ).length;
 
@@ -89,10 +91,10 @@ export function DesktopSidebar() {
           <span className="text-[11px] text-gray-500 font-medium">กระเป๋าเงิน</span>
         </div>
         <p className="text-base font-bold text-gray-900">
-          ฿{currentUser.walletBalance.toLocaleString()}
+          ฿{currentUser?.walletBalance.toLocaleString()}
         </p>
         <p className="text-[10px] mt-0.5" style={{ color: '#F59E0B' }}>
-          รอดำเนินการ ฿{currentUser.pendingBalance.toLocaleString()}
+          รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
         </p>
       </div>
 
@@ -116,13 +118,13 @@ export function DesktopSidebar() {
             className="flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
+              src={currentUser?.avatar}
+              alt={currentUser?.name}
               className="w-8 h-8 rounded-xl object-cover shrink-0"
             />
             <div className="flex-1 text-left min-w-0">
-              <p className="text-xs text-gray-900 font-semibold truncate">{currentUser.name}</p>
-              <p className="text-[10px] text-gray-400 truncate">{currentUser.company}</p>
+              <p className="text-xs text-gray-900 font-semibold truncate">{currentUser?.name}</p>
+              <p className="text-[10px] text-gray-400 truncate">{currentUser?.company}</p>
             </div>
           </button>
           <Link

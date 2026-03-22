@@ -2,19 +2,20 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Search, Bell, ChevronLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { notifications as notificationsData } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 
 export function NotificationsMobile() {
   const navigate = useNavigate();
+  const data = useData();
   const [searchText, setSearchText] = useState('');
 
-  const filtered = notificationsData.filter(
+  const filtered = data.notifications.filter(
     (n) =>
       n.title.toLowerCase().includes(searchText.toLowerCase()) ||
       n.message.toLowerCase().includes(searchText.toLowerCase()),
   );
 
-  const unreadCount = notificationsData.filter((n) => !n.read).length;
+  const unreadCount = data.notifications.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen flex flex-col pb-20 bg-white">
@@ -93,7 +94,7 @@ export function NotificationsMobile() {
 function NotificationCard({
   notif,
 }: {
-  notif: (typeof import('../../data/mockData').notifications)[0];
+  notif: any;
 }) {
   return (
     <div

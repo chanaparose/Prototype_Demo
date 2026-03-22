@@ -15,28 +15,39 @@ import { OrderDetail } from './pages/order-detail';
 import { ChatRoom } from './pages/chat-room';
 import { Notifications } from './pages/notifications';
 import { FactoriesList } from './pages/factories/FactoriesList';
+import { Login } from './pages/login';
+import { AuthGuard } from './components/AuthGuard';
 
 export const router = createBrowserRouter([
   {
+    path: '/login',
+    Component: Login,
+  },
+  {
     path: '/',
-    Component: Layout,
+    Component: AuthGuard,
     children: [
-      { index: true, Component: Explore },
-      { path: 'factory-ideas', Component: FactoryIdeas },
-      { path: 'factories/:id', Component: FactoryProfile },
-      { path: 'factories', Component: FactoriesList },
-      { path: 'factory-ideas/products/:id', Component: ProductDetail },
-      { path: 'factory-ideas/promotions/:id', Component: PromotionDetail },
-      { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
-      { path: 'rfqs', loader: () => redirect('/rfqs/rfq1'), Component: () => null },
-      { path: 'orders', Component: RfqAndOrders },
-      { path: 'messages', Component: Messages },
-      { path: 'profile', Component: Profile },
-      { path: 'create-rfq', Component: CreateRfq },
-      { path: 'notifications', Component: Notifications },
-      { path: 'rfqs/:id', Component: RFQDetail },
-      { path: 'orders/:id', Component: OrderDetail },
-      { path: 'messages/:id', Component: ChatRoom },
+      {
+        Component: Layout,
+        children: [
+          { index: true, Component: Explore },
+          { path: 'factory-ideas', Component: FactoryIdeas },
+          { path: 'factories/:id', Component: FactoryProfile },
+          { path: 'factories', Component: FactoriesList },
+          { path: 'factory-ideas/products/:id', Component: ProductDetail },
+          { path: 'factory-ideas/promotions/:id', Component: PromotionDetail },
+          { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
+          { path: 'rfqs', loader: () => redirect('/rfqs/rfq1'), Component: () => null },
+          { path: 'orders', Component: RfqAndOrders },
+          { path: 'messages', Component: Messages },
+          { path: 'profile', Component: Profile },
+          { path: 'create-rfq', Component: CreateRfq },
+          { path: 'notifications', Component: Notifications },
+          { path: 'rfqs/:id', Component: RFQDetail },
+          { path: 'orders/:id', Component: OrderDetail },
+          { path: 'messages/:id', Component: ChatRoom },
+        ],
+      },
     ],
   },
 ]);

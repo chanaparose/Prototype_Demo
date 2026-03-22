@@ -15,7 +15,7 @@ import {
   Star,
   ArrowUpRight,
 } from 'lucide-react';
-import { factories, factoryShowcases } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
 
 function formatThaiDate(date: string): string {
@@ -27,9 +27,10 @@ function formatThaiDate(date: string): string {
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const data = useData();
 
-  const item = factoryShowcases.find((e) => e.id === id && e.contentType === 'idea');
-  const factory = item ? factories.find((f) => f.id === item.factoryId) : null;
+  const item = data.factoryShowcases.find((e) => e.id === id && e.contentType === 'idea');
+  const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
 
   if (!item) {
     return (

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, BadgeCheck, Heart, Sparkles, X } from 'lucide-react';
-import { categories, factories, factoryShowcases } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
 
 type ContentType = 'all' | 'product' | 'promotion' | 'idea';
@@ -30,15 +30,16 @@ export function FactoryIdeasMobile() {
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const data = useData();
 
   const categoryFilters = useMemo(
-    () => [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...categories.map((c) => ({ id: c.name, name: c.name }))],
-    [],
+    () => [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...data.categories.map((c) => ({ id: c.name, name: c.name }))],
+    [data.categories],
   );
 
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();
-    return factoryShowcases
+    return data.factoryShowcases
       .filter((item) => {
         const byType     = selectedType === 'all' || item.contentType === selectedType;
         const byCategory = selectedCategory === 'all' || item.category === selectedCategory;
@@ -154,7 +155,7 @@ export function FactoryIdeasMobile() {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {visibleItems.map((item) => {
-              const factory = factories.find((f) => f.id === item.factoryId);
+              const factory = data.factories.find((f) => f.id === item.factoryId);
               const style = contentTypeStyle[item.contentType];
               return (
                 <article

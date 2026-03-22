@@ -1,12 +1,11 @@
 import React from 'react';
 import { Search, MessageCircle, MessageSquareDot } from 'lucide-react';
-import { conversations } from '../../data/mockData';
 import { ChatRoomEmbedded } from '../chat-room';
 
 type MessagesDesktopProps = {
   searchText: string;
   setSearchText: (v: string) => void;
-  filtered: typeof conversations;
+  filtered: any[];
   totalUnread: number;
   selectedId: string | null;
   setSelectedId: (v: string) => void;

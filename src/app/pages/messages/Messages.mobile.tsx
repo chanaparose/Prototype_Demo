@@ -1,12 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Search } from 'lucide-react';
-import { conversations } from '../../data/mockData';
-
 type MessagesMobileProps = {
   searchText: string;
   setSearchText: (v: string) => void;
-  filtered: typeof conversations;
+  filtered: any[];
   totalUnread: number;
 };
 
@@ -74,7 +72,7 @@ function ConversationCard({
   conv,
   onClick,
 }: {
-  conv: (typeof conversations)[0];
+  conv: any;
   onClick: () => void;
 }) {
   return (

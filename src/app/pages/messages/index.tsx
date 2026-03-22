@@ -1,28 +1,29 @@
 import React from 'react';
-import { conversations } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { MessagesMobile } from './Messages.mobile';
 import { MessagesDesktop } from './Messages.desktop';
 
 export function Messages() {
+  const data = useData();
   const isDesktop = useIsDesktop();
   const [searchText, setSearchText] = React.useState('');
   const [selectedId, setSelectedId] = React.useState<string | null>(
-    conversations[0]?.id ?? null,
+    data.conversations[0]?.id ?? null,
   );
 
   const filtered = React.useMemo(() => {
     const q = searchText.toLowerCase();
-    return conversations.filter(
+    return data.conversations.filter(
       (c) =>
         c.factoryName.toLowerCase().includes(q) ||
         c.rfqName.toLowerCase().includes(q),
     );
-  }, [searchText]);
+  }, [searchText, data.conversations]);
 
   const totalUnread = React.useMemo(
-    () => conversations.reduce((s, c) => s + c.unread, 0),
-    [],
+    () => data.conversations.reduce((s, c) => s + c.unread, 0),
+    [data.conversations],
   );
 
   if (isDesktop) {

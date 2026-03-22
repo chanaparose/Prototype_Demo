@@ -10,7 +10,7 @@ import {
   ChevronUp,
   CreditCard,
 } from 'lucide-react';
-import { conversations } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 
 type Message = {
   id: string;
@@ -24,7 +24,8 @@ type Message = {
 export function ChatRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const conv = conversations.find((c) => c.id === id) || conversations[0];
+  const data = useData();
+  const conv = data.conversations.find((c) => c.id === id) || data.conversations[0];
 
   return (
     <ChatRoomBody conv={conv} onBack={() => navigate(-1)} variant="full" />
@@ -32,14 +33,15 @@ export function ChatRoom() {
 }
 
 type ChatRoomBodyProps = {
-  conv: (typeof conversations)[0];
+  conv: any;
   onBack?: () => void;
   variant: 'full' | 'embedded';
 };
 
 export function ChatRoomEmbedded({ conversationId }: { conversationId: string }) {
+  const data = useData();
   const conv =
-    conversations.find((c) => c.id === conversationId) || conversations[0];
+    data.conversations.find((c) => c.id === conversationId) || data.conversations[0];
   return <ChatRoomBody conv={conv} variant="embedded" />;
 }
 
@@ -52,8 +54,7 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const c = conversations.find((c) => c.id === conv.id) || conversations[0];
-    setMessages(c.messages as Message[]);
+    setMessages(conv.messages as Message[]);
   }, [conv.id]);
 
   useEffect(() => {

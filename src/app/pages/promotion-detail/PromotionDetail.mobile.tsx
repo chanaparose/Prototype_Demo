@@ -10,7 +10,7 @@ import {
   Tag,
   TicketPercent,
 } from 'lucide-react';
-import { conversations, factories, factoryShowcases } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
 
 function formatThaiDate(date: string): string {
@@ -26,13 +26,14 @@ function formatThaiDate(date: string): string {
 export function PromotionDetailMobile() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const data = useData();
 
-  const item = factoryShowcases.find(
+  const item = data.factoryShowcases.find(
     (entry) => entry.id === id && entry.contentType === 'promotion',
   );
-  const factory = item ? factories.find((f) => f.id === item.factoryId) : null;
+  const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
   const factoryConversation = item
-    ? conversations.find((conversation) => conversation.factoryId === item.factoryId)
+    ? data.conversations.find((conversation) => conversation.factoryId === item.factoryId)
     : null;
 
   if (!item) {

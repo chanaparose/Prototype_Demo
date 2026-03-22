@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, Bell } from 'lucide-react';
-import { rfqs, orders } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import {
   RfqDetailStatusCard,
   RfqDetailSpecs,
@@ -13,14 +13,15 @@ import {
 export function RFQDetailMobile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const data = useData();
   const [specsOpen, setSpecsOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
 
-  const rfq = rfqs.find((r) => r.id === id) || rfqs[0];
+  const rfq = data.rfqs.find((r) => r.id === id) || data.rfqs[0];
   const isHistoryView = HISTORY_STATUSES.includes(
     rfq.status as (typeof HISTORY_STATUSES)[number],
   );
-  const orderForRfq = orders.find((o) => o.rfqId === rfq.id);
+  const orderForRfq = data.orders.find((o) => o.rfqId === rfq.id);
 
   const statusBadgeStyle = isHistoryView
     ? rfq.status === 'completed'

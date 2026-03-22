@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, MessageCircle } from 'lucide-react';
-import { orders, rfqs, factories, conversations } from '../../data/mockData';
+import { useData } from '../../contexts/DataContext';
 import {
   OrderSummaryCard,
   OrderOverviewSection,
@@ -12,18 +12,19 @@ import {
 export function OrderDetailMobile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const data = useData();
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'overview' | 'timeline'>(
     'overview',
   );
 
-  const order = id ? orders.find((o) => o.id === id) : undefined;
-  const relatedRfq = order ? rfqs.find((r) => r.id === order.rfqId) : undefined;
+  const order = id ? data.orders.find((o) => o.id === id) : undefined;
+  const relatedRfq = order ? data.rfqs.find((r) => r.id === order.rfqId) : undefined;
   const relatedFactory = order
-    ? factories.find((f) => f.id === order.factoryId)
+    ? data.factories.find((f) => f.id === order.factoryId)
     : undefined;
   const conversation = order
-    ? conversations.find((c) => c.factoryId === order.factoryId)
+    ? data.conversations.find((c) => c.factoryId === order.factoryId)
     : undefined;
 
   if (!order) {
