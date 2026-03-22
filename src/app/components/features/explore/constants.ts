@@ -23,8 +23,8 @@ export const EXPLORE_STATUS_CONFIG: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  offers_received: { label: 'มีใบเสนอราคา', color: '#A020C8', bg: '#F3E5FF' },
-  reviewing: { label: 'กำลังพิจารณา', color: '#FF9A00', bg: '#FFF4E8' },
+  offers_received: { label: 'มีใบเสนอราคา', color: '#A656A0', bg: '#F2F2F2' },
+  reviewing: { label: 'กำลังพิจารณา', color: '#F28A2E', bg: '#FFF4E8' },
   pending: { label: 'รอใบเสนอราคา', color: '#6B7280', bg: '#F3F4F6' },
   in_production: { label: 'กำลังผลิต', color: '#3B82F6', bg: '#DBEAFE' },
   shipped: { label: 'จัดส่งแล้ว', color: '#22C55E', bg: '#DCFCE7' },

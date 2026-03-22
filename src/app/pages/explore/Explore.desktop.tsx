@@ -96,11 +96,11 @@ function ProductCarouselSection({
     >
       {/* Section header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-[#352A55] flex items-center gap-2">
-          <ShoppingBag className="text-[#FF9A00]" size={20} />
+        <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
+          <ShoppingBag className="text-[#F28A2E]" size={20} />
           {title}
         </h2>
-        <button className="text-[#A020C8] text-sm font-medium hover:underline flex items-center gap-0.5 transition-colors">
+        <button className="text-[#A656A0] text-sm font-medium hover:underline flex items-center gap-0.5 transition-colors">
           ดูเพิ่มเติม <ChevronRight size={16} />
         </button>
       </div>
@@ -114,11 +114,11 @@ function ProductCarouselSection({
             alt={title}
             className="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-105"
           />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#2D1060]/90 via-[#A020C8]/40 to-transparent" />
+          {/* Gradient overlay — orange theme (soft / faded) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#F27830]/45 via-[#F28A2E]/22 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-between p-4">
             {/* Top badge */}
-            <span className="self-start bg-[#FF9A00] text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow">
+            <span className="self-start bg-[#F28A2E]/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow backdrop-blur-[2px]">
               🐾 PET SHOP
             </span>
             {/* Bottom text */}
@@ -163,7 +163,7 @@ function ProductCarouselSection({
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {product.discount && (
-                    <span className="absolute top-2 right-2 bg-[#FF9A00] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                    <span className="absolute top-2 right-2 bg-[#F28A2E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
                       {product.discount}
                     </span>
                   )}
@@ -174,10 +174,10 @@ function ProductCarouselSection({
                 </div>
                 {/* Card body */}
                 <div className="p-3 pb-4">
-                  <p className="text-gray-700 text-xs mb-2 line-clamp-2 leading-snug group-hover:text-[#A020C8] transition-colors min-h-[32px]">
+                  <p className="text-gray-700 text-xs mb-2 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[32px]">
                     {product.title}
                   </p>
-                  <p className="font-bold text-[#FF9A00] text-base">{product.price}</p>
+                  <p className="font-bold text-[#F28A2E] text-base">{product.price}</p>
                 </div>
               </div>
             ))}
@@ -199,7 +199,7 @@ function ProductCarouselSection({
                 key={i}
                 onClick={() => goTo(i)}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === idx ? 'w-6 bg-[#FF9A00]' : 'w-1.5 bg-gray-300 hover:bg-gray-400'
+                  i === idx ? 'w-6 bg-[#F28A2E]' : 'w-1.5 bg-gray-300 hover:bg-[#F28A2E]/50'
                 }`}
               />
             ))}
@@ -244,24 +244,28 @@ export function ExploreDesktop({
       <div className="lg:px-8 lg:py-7 space-y-12 pb-0 w-full mx-auto">
 
         {/* ═══ 1. Hero Banner ═══ */}
-        <section className="relative rounded-3xl overflow-hidden bg-[#2D1060] h-[280px] shadow-lg flex items-center">
-          <div className="absolute top-0 right-0 w-[600px] h-full bg-[#A020C8] rounded-l-[100px] opacity-90 transform translate-x-32 skew-x-[-15deg]"></div>
-          <div className="absolute -bottom-20 right-20 w-[400px] h-[300px] bg-[#FF9A00] rounded-full opacity-70 blur-3xl mix-blend-screen"></div>
-          <div className="absolute top-10 left-1/3 w-64 h-64 bg-[#FFD740] rounded-full opacity-20 blur-2xl"></div>
+        <section className="relative rounded-3xl overflow-hidden h-[280px] shadow-lg flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
+          {/* Bright violet diagonal shape */}
+          <div className="absolute top-0 right-0 w-[600px] h-full rounded-l-[100px] opacity-70 transform translate-x-32 skew-x-[-15deg]" style={{ background: '#A238FF' }}></div>
+          {/* Orange warm glow bottom-right */}
+          <div className="absolute -bottom-20 right-20 w-[400px] h-[300px] rounded-full opacity-40 blur-3xl mix-blend-screen" style={{ background: '#FF7A00' }}></div>
+          {/* Purple glow accent */}
+          <div className="absolute top-10 left-1/3 w-64 h-64 rounded-full opacity-30 blur-3xl" style={{ background: '#A238FF' }}></div>
 
           <div className="relative z-10 px-10 py-6 text-white max-w-2xl">
-            <span className="inline-block px-2.5 py-0.5 mb-2 rounded-full bg-[#FF9A00]/20 text-[#FFD740] text-[11px] font-semibold tracking-wide border border-[#FF9A00]/30">
-              PET MANUFACTURING PLATFORM
+            <span className="inline-block px-2.5 py-0.5 mb-2 rounded-full text-[11px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
+              AMERICA'S FIRST HOLISTIC
             </span>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2 leading-snug drop-shadow-md">
-              ค้นหาโรงงาน <br /> <span className="text-[#FFD740]">สำหรับแบรนด์คุณ</span>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 leading-snug drop-shadow-md" style={{ fontFamily: 'serif' }}>
+              Solid Gold <br /> <span style={{ color: '#FFB870' }}>Manufacturing</span>
             </h1>
-            <p className="text-[#E2DCE6] text-sm mb-4 max-w-md font-medium leading-relaxed">
+            <p className="text-sm mb-4 max-w-md font-medium leading-relaxed" style={{ color: '#E2DCE6' }}>
               ค้นหาโรงงานผลิตสินค้าสัตว์เลี้ยงระดับพรีเมียม ตอบโจทย์ทุกแบรนด์
             </p>
             <button
               onClick={() => navigate('/create-rfq')}
-              className="bg-[#FF9A00] hover:bg-[#E08800] text-white text-sm px-6 py-2.5 rounded-full font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-1.5"
+              className="text-white text-sm px-6 py-2.5 rounded-full font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-1.5 shadow-lg"
+              style={{ background: '#A238FF', boxShadow: '0 8px 24px rgba(162,56,255,0.40)' }}
             >
               เริ่มสร้าง RFQ <ChevronRight size={16} />
             </button>
@@ -282,7 +286,7 @@ export function ExploreDesktop({
           </div>
           <button
             type="button"
-            className="px-5 py-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-2 text-sm font-medium shrink-0 text-[#A020C8] hover:border-[#A020C8]/30 transition-colors"
+            className="px-5 py-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-2 text-sm font-medium shrink-0 text-[#A656A0] hover:border-[#A656A0]/30 transition-colors"
           >
             <SlidersHorizontal size={16} />
             ตัวกรอง
@@ -292,8 +296,8 @@ export function ExploreDesktop({
         {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) ═══ */}
         <section>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-[#352A55] flex items-center gap-2">
-              <Sparkles className="text-[#FF9A00]" size={20} />
+            <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
+              <Sparkles className="text-[#F28A2E]" size={20} />
               โค้ดส่วนลดพิเศษ
             </h2>
           </div>
@@ -304,24 +308,29 @@ export function ExploreDesktop({
                 key={promo.id}
                 className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all"
               >
-                <div className="relative overflow-hidden bg-gradient-to-br from-[#A020C8] via-[#7B10A8] to-[#FF9A00] p-5 text-white">
-                  <div className="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-white/10" />
-                  <div className="absolute -bottom-3 -left-3 w-12 h-12 rounded-full bg-white/10" />
+                <div className="relative overflow-hidden p-5 text-white" style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}>
+                  {/* Purple ribbon circle top-right */}
+                  <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30" style={{ background: '#A238FF' }} />
+                  <div className="absolute top-0 right-0 w-14 h-14 rounded-full opacity-20 blur-xl" style={{ background: '#A238FF' }} />
+                  {/* Cream circle bottom-left */}
+                  <div className="absolute -bottom-3 -left-3 w-12 h-12 rounded-full opacity-20" style={{ background: '#FAEBD7' }} />
                   <div className="relative z-10">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <Gift className="w-4 h-4 opacity-90" />
-                      <span className="text-[11px] opacity-80">โปรโมชั่นพิเศษ</span>
+                    {/* Purple ribbon badge */}
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-2" style={{ background: '#A238FF' }}>
+                      <Gift className="w-3 h-3 text-white" />
+                      <span className="text-[10px] text-white font-semibold tracking-wide">โปรโมชั่นพิเศษ</span>
                     </div>
-                    <p className="text-base font-bold mb-1 leading-tight">{promo.title}</p>
-                    <p className="text-[11px] opacity-75 mb-3 leading-snug">{promo.subtitle}</p>
+                    <p className="text-base font-bold mb-1 leading-tight text-white drop-shadow-sm">{promo.title}</p>
+                    <p className="text-[11px] mb-3 leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>{promo.subtitle}</p>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-lg px-2.5 py-1 border border-white/30">
-                        <span className="text-sm font-mono tracking-widest">{promo.code}</span>
+                      <div className="flex items-center rounded-lg px-2.5 py-1 border" style={{ background: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.40)' }}>
+                        <span className="text-sm font-mono tracking-widest font-bold text-white">{promo.code}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleCopy(promo.code, promo.id)}
-                        className="flex items-center gap-1 bg-white text-[#A020C8] rounded-lg px-2.5 py-1 hover:bg-purple-50 transition-colors text-[12px] font-semibold"
+                        className="flex items-center gap-1 rounded-lg px-2.5 py-1 transition-colors text-[12px] font-semibold text-white"
+                        style={{ background: '#2D1B4E' }}
                       >
                         <Copy className="w-3 h-3" />
                         {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
@@ -337,34 +346,63 @@ export function ExploreDesktop({
         {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
         <section>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {categories.map((cat) => (
-              <div
-                key={cat.id}
-                className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md hover:border-[#A020C8]/30 transition-all cursor-pointer group"
-              >
-                <div className="w-14 h-14 rounded-full flex items-center justify-center bg-[#A020C8]/10 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl leading-none">{cat.icon}</span>
+            {categories.map((cat, i) => {
+              const catBgs = ['bg-[#A656A0]/10','bg-[#292259]/8','bg-[#F28A2E]/10','bg-[#F27830]/10','bg-[#A656A0]/8','bg-[#292259]/10'];
+              const catBorders = ['border-[#A656A0]/20','border-[#292259]/15','border-[#F28A2E]/20','border-[#F27830]/20','border-[#A656A0]/15','border-[#292259]/20'];
+              return (
+                <div
+                  key={cat.id}
+                  className={`bg-white border ${catBorders[i % 6]} rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md transition-all cursor-pointer group`}
+                >
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${catBgs[i % 6]} border ${catBorders[i % 6]} group-hover:scale-110 transition-transform`}>
+                    <span className="text-2xl leading-none">{cat.icon}</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 text-center">{cat.name}</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700 text-center">{cat.name}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
         {/* ═══ 5. สินค้าแนะนำ — Maaboom-style layout ═══ */}
         <ProductCarouselSection title="สินค้าแนะนำ" items={RECOMMENDED_PRODUCTS} bannerImg="https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700" bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง" />
 
-        {/* ═══ 6. โรงงานแนะนำ (Purple Header Style) ═══ */}
+        {/* ═══ 6. โรงงานแนะนำ ═══ */}
         <section className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
-          <div className="bg-[#7B10A8] px-6 py-5 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-            <div className="absolute -bottom-10 left-10 w-24 h-24 bg-black/10 rounded-full blur-xl"></div>
-            <h2 className="text-2xl font-bold text-white relative z-10 drop-shadow-sm flex items-center justify-center gap-2">
-              โรงงานแนะนำ <Plus size={20} className="font-bold" />
-            </h2>
-            <p className="text-white/90 text-sm mt-1 relative z-10 font-medium">
-              โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าสัตว์เลี้ยงคุณภาพสูง
-            </p>
+          <div className="relative px-6 py-7 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
+
+            {/* ── Color-block shapes (cat illustration style) ── */}
+            {/* Bright purple diagonal block — right side */}
+            <div className="absolute top-0 right-0 h-full w-[45%] opacity-80 pointer-events-none"
+              style={{ background: 'linear-gradient(135deg, transparent 30%, #A238FF 100%)', clipPath: 'polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)' }} />
+            {/* Orange warm zone — far right */}
+            <div className="absolute top-0 right-0 h-full w-[22%] opacity-60 pointer-events-none"
+              style={{ background: 'linear-gradient(180deg, #F28A2E 0%, #F27830 100%)', clipPath: 'polygon(40% 0%, 100% 0%, 100% 100%, 0% 100%)' }} />
+            {/* Peach soft glow blob — upper right */}
+            <div className="absolute -top-6 right-16 w-28 h-28 rounded-full blur-2xl opacity-30 pointer-events-none"
+              style={{ background: '#F5C8A0' }} />
+            {/* Bright purple glow — left side accent */}
+            <div className="absolute -bottom-8 left-12 w-36 h-36 rounded-full blur-3xl opacity-25 pointer-events-none"
+              style={{ background: '#A238FF' }} />
+            {/* Small orange circle top-left */}
+            <div className="absolute top-3 left-8 w-5 h-5 rounded-full opacity-50 pointer-events-none"
+              style={{ background: '#F28A2E' }} />
+            {/* Small cream dot */}
+            <div className="absolute bottom-4 left-24 w-3 h-3 rounded-full opacity-40 pointer-events-none"
+              style={{ background: '#FAEBD7' }} />
+
+            {/* Content */}
+            <div className="relative z-10">
+              <h2 className="text-2xl font-bold text-white drop-shadow-md flex items-center justify-center gap-2">
+                โรงงานแนะนำ
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm" style={{ background: '#F28A2E' }}>
+                  <Plus size={14} />
+                </span>
+              </h2>
+              <p className="text-sm mt-1.5 font-medium" style={{ color: 'rgba(235,211,255,0.90)' }}>
+                โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าสัตว์เลี้ยงคุณภาพสูง
+              </p>
+            </div>
           </div>
 
           <div className="p-6 bg-gradient-to-b from-purple-50/20 to-white">
@@ -383,17 +421,17 @@ export function ExploreDesktop({
                     />
                     {factory.verified && (
                       <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-0.5">
-                        <BadgeCheck className="w-3.5 h-3.5 text-[#A020C8]" />
-                        <span className="text-[#A020C8] text-[10px] font-medium">ยืนยันแล้ว</span>
+                        <BadgeCheck className="w-3.5 h-3.5 text-[#A238FF]" />
+                        <span className="text-[10px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
                       </div>
                     )}
-                    <div className="absolute top-2 right-2 bg-[#2D1060]/90 text-white rounded-full px-2 py-0.5 text-[10px]">
+                    <div className="absolute top-2 right-2 bg-[#292259]/90 text-white rounded-full px-2 py-0.5 text-[10px]">
                       {factory.priceRange}
                     </div>
                   </div>
                   <div className="p-3 flex flex-col flex-1 justify-between">
                     <div>
-                      <h3 className="font-medium text-sm text-gray-700 mb-1.5 truncate group-hover:text-[#A020C8] transition-colors">{factory.name}</h3>
+                      <h3 className="font-medium text-sm text-gray-700 mb-1.5 truncate group-hover:text-[#A238FF] transition-colors">{factory.name}</h3>
                       <div className="flex items-center gap-1 mb-1.5">
                         <MapPin className="w-3 h-3 text-gray-400" />
                         <span className="text-gray-500 text-xs">{factory.location}</span>
@@ -419,46 +457,46 @@ export function ExploreDesktop({
           </div>
         </section>
 
-        {/* ═══ 2. โปรโมชันแนะนำ (NEW: Image Left + Scrollable Right) ═══ */}
+        {/* ═══ 2. โปรโมชันแนะนำ — ORANGE THEME ═══ */}
         <section>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-[#352A55] flex items-center gap-2">
-              <Tag className="text-[#FF9A00]" size={20} />
+            <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
+              <Tag className="text-[#F27830]" size={20} />
               โปรโมชันแนะนำ
             </h2>
-            <button className="text-[#A020C8] text-sm font-medium hover:underline flex items-center">
+            <button className="text-[#F28A2E] text-sm font-medium hover:text-[#F27830] flex items-center transition-colors">
               ดูเพิ่มเติม <ChevronRight size={16} />
             </button>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Left Banner */}
+            {/* Left Banner — Orange gradient */}
             <div className="lg:w-[40%] rounded-2xl overflow-hidden relative min-h-[260px] flex-shrink-0 group cursor-pointer shadow-md">
               <img
                 src="https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600"
                 alt="Banner"
                 className="w-full h-full object-cover absolute transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#A020C8]/80 to-transparent flex flex-col justify-end p-8">
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#F27830]/48 via-[#F28A2E]/24 to-transparent flex flex-col justify-end p-8">
                 <h3 className="text-3xl font-black text-white drop-shadow-md mb-2">บริการ</h3>
-                <p className="text-white font-medium text-lg drop-shadow-md mb-4 bg-[#FF9A00] self-start px-4 py-1.5 rounded-full">สำหรับสัตว์เลี้ยงแสนรัก</p>
+                <p className="text-white font-medium text-lg drop-shadow-md mb-4 bg-[#F27830]/65 backdrop-blur-sm self-start px-4 py-1.5 rounded-full border border-white/25">สำหรับสัตว์เลี้ยงแสนรัก</p>
               </div>
             </div>
 
-            {/* Right Scrollable Cards */}
+            {/* Right Scrollable Cards — Orange accents */}
             <div className="lg:w-[60%] flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
               {RECOMMENDED_PROMOS.map((item) => (
-                <div key={item.id} className="min-w-[240px] bg-white border border-gray-100 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer">
+                <div key={item.id} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
                   <div className="h-36 relative overflow-hidden bg-gray-100">
                     <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-bold text-[#A020C8] uppercase">
+                    <div className="absolute top-2 left-2 bg-[#F28A2E] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
                       {item.tag}
                     </div>
                   </div>
                   <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-bold text-sm text-[#352A55] mb-1 line-clamp-2 leading-snug group-hover:text-[#A020C8] transition-colors">{item.title}</h3>
+                    <h3 className="font-bold text-sm text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h3>
                     <p className="text-xs text-gray-500 mb-3 line-clamp-2">{item.desc}</p>
-                    <div className="mt-auto pt-3 border-t border-gray-50 font-bold text-[#FF9A00]">
+                    <div className="mt-auto pt-3 border-t border-[#F28A2E]/10 font-bold text-[#F27830]">
                       {item.price}
                     </div>
                   </div>
@@ -468,11 +506,11 @@ export function ExploreDesktop({
           </div>
         </section>
 
-        {/* ═══ 7. บทความ Idea ═══ */}
-        <section>
+        {/* ═══ 7. บทความ Idea — GRAY/LIGHT THEME ═══ */}
+        <section className="bg-[#F2F2F2] -mx-8 px-8 py-8 rounded-xl">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-[#352A55]">บทความ Idea</h2>
-            <button className="text-[#A020C8] text-sm font-medium hover:underline flex items-center">
+            <h2 className="text-xl font-bold text-[#292259]">บทความ Idea</h2>
+            <button className="text-[#A656A0] text-sm font-medium hover:underline flex items-center">
               ดูทั้งหมด <ChevronRight size={16} />
             </button>
           </div>
@@ -487,15 +525,15 @@ export function ExploreDesktop({
                     alt={ideaArticles[0].title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-white text-[10px] font-medium bg-[#2D1060]/90">
+                  <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-xs font-bold text-[#A656A0] uppercase tracking-wide bg-white/95 backdrop-blur-sm border border-white/80 shadow-sm">
                     {ideaArticles[0].tag}
                   </span>
                 </div>
                 <div className="p-6">
-                  <span className="text-xs font-bold text-[#A020C8] mb-2 uppercase tracking-wide">
+                  <span className="text-xs font-bold text-[#A656A0] mb-2 uppercase tracking-wide">
                     {ideaArticles[0].tag}
                   </span>
-                  <h3 className="text-lg font-bold text-[#352A55] mb-2 group-hover:text-[#A020C8] transition-colors line-clamp-2">
+                  <h3 className="text-lg font-bold text-[#292259] mb-2 group-hover:text-[#A656A0] transition-colors line-clamp-2">
                     {ideaArticles[0].title}
                   </h3>
                   <p className="text-sm text-gray-500 line-clamp-2 mb-4">
@@ -521,12 +559,12 @@ export function ExploreDesktop({
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-white text-[10px] font-medium bg-[#2D1060]/90">
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#FFF0D6]/90 backdrop-blur-sm text-[#D96B00]">
                       {article.tag}
                     </span>
                   </div>
                   <div className="w-2/3 p-4 flex flex-col justify-center">
-                    <h3 className="font-bold text-sm text-[#352A55] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#FF9A00] transition-colors">{article.title}</h3>
+                    <h3 className="font-bold text-sm text-[#292259] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#F28A2E] transition-colors">{article.title}</h3>
                     <p className="text-xs text-gray-500 line-clamp-1 mb-2">{article.excerpt}</p>
                     <div className="mt-auto flex items-center gap-2 text-[10px] text-gray-400">
                       <span className="font-medium text-gray-600">{article.factoryName}</span>
@@ -539,20 +577,31 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ 8. Registration CTA ═══ */}
-        <section className="bg-gradient-to-r from-[#F3E5FF] to-[#FAFAFA] rounded-2xl overflow-hidden border border-[#A020C8]/20 shadow-sm relative flex flex-col md:flex-row items-center py-8 px-6 md:px-12">
+        <section className="bg-gradient-to-r from-[#F8F5FF] to-[#FAFAFA] rounded-2xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-8 px-6 md:px-12">
+          {/* Background Decoration */}
+          <div
+            className="absolute inset-y-0 right-0 w-2/3 opacity-40 pointer-events-none"
+            style={{ maskImage: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)', WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)' }}
+          >
+            <img
+              src="https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700"
+              className="w-full h-full object-cover mix-blend-multiply"
+              alt=""
+            />
+          </div>
           <div className="relative z-10 flex-1 text-center md:text-left mb-6 md:mb-0">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#352A55] mb-2 flex items-center justify-center md:justify-start gap-2">
-              ลงทะเบียนข้อมูลธุรกิจกับ <span className="text-[#A020C8]">WeMake</span>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2D1B4E] mb-2 flex items-center justify-center md:justify-start gap-2">
+              ลงทะเบียนข้อมูลธุรกิจกับ <span className="text-[#A238FF]">WeMake</span>
             </h2>
             <p className="text-gray-600 font-medium md:text-lg">
               สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!
             </p>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-            <button className="w-full sm:w-auto bg-[#A020C8] hover:bg-[#7B10A8] text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-md text-sm md:text-base whitespace-nowrap">
+            <button className="w-full sm:w-auto bg-[#A238FF] hover:bg-[#8B2BE2] text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-md text-sm md:text-base whitespace-nowrap">
               สมัครเลย
             </button>
-            <button className="w-full sm:w-auto bg-white border border-[#A020C8] text-[#A020C8] hover:bg-[#F3E5FF] px-8 py-3 rounded-lg font-bold transition-colors text-sm md:text-base whitespace-nowrap">
+            <button className="w-full sm:w-auto bg-white border border-[#A238FF] text-[#A238FF] hover:bg-[#F8F5FF] px-8 py-3 rounded-lg font-bold transition-colors text-sm md:text-base whitespace-nowrap">
               สิทธิประโยชน์มากมาย
             </button>
           </div>

@@ -40,15 +40,15 @@ export function DesktopSidebar() {
       <div className="flex items-center h-16 px-5 border-b border-gray-100 shrink-0">
         <Link to="/" className="flex items-center gap-2.5 w-full">
           <div
-            className="h-8 px-2.5 rounded-xl flex items-center gap-1.5 shrink-0"
-            style={{ background: 'linear-gradient(135deg, #A020C8, #7B10A8)' }}
+            className="h-8 px-2.5 rounded-xl flex items-center gap-1.5 shrink-0 shadow-md"
+            style={{ background: '#A238FF', boxShadow: '0 4px 12px rgba(162,56,255,0.30)' }}
           >
             <Factory className="text-white shrink-0" size={15} strokeWidth={2.5} />
             <span className="text-white text-xs font-bold leading-none whitespace-nowrap">
               WeMake
             </span>
           </div>
-          <span className="text-sm font-semibold text-gray-700">Manufacturing</span>
+          <span className="text-sm font-semibold text-[#2D1B4E]">Manufacturing</span>
         </Link>
       </div>
 
@@ -62,20 +62,30 @@ export function DesktopSidebar() {
               onClick={() => navigate(path)}
               className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150"
               style={{
-                color: active ? '#A020C8' : '#6B7280',
-                background: active ? 'rgba(160,32,200,0.08)' : 'transparent',
+                color: active ? '#A238FF' : '#6B7280',
+                background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
                 fontWeight: active ? 600 : 500,
               }}
             >
               <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
               <span className="flex-1 text-left">{label}</span>
               {path === '/messages' && unreadMessages > 0 && (
-                <span className="w-5 h-5 rounded-full bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center">
+                <span
+                  className="w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                  style={{ background: '#FF7A00' }}
+                >
                   {unreadMessages}
                 </span>
               )}
-              {path === '/orders' && activeRfqCount > 0 && !active && (
-                <span className="w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-bold flex items-center justify-center">
+              {path === '/orders' && activeRfqCount > 0 && (
+                <span
+                  className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
+                  style={
+                    active
+                      ? { background: '#A238FF', color: 'white' }
+                      : { background: '#F3F4F6', color: '#6B7280' }
+                  }
+                >
                   {activeRfqCount}
                 </span>
               )}
@@ -85,15 +95,16 @@ export function DesktopSidebar() {
       </nav>
 
       {/* Wallet Summary */}
-      <div className="mx-3 mb-3 p-3.5 rounded-xl" style={{ background: 'rgba(160,32,200,0.06)' }}>
+      <div className="mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden" style={{ background: '#F8F5FF', borderColor: 'rgba(162,56,255,0.20)' }}>
+        <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl" style={{ background: 'rgba(162,56,255,0.10)' }}></div>
         <div className="flex items-center gap-1.5 mb-1.5">
-          <Wallet size={13} style={{ color: '#A020C8' }} />
-          <span className="text-[11px] text-gray-500 font-medium">กระเป๋าเงิน</span>
+          <Wallet size={13} style={{ color: '#FF7A00' }} />
+          <span className="text-[11px] font-medium text-gray-500">กระเป๋าเงิน</span>
         </div>
-        <p className="text-base font-bold text-gray-900">
+        <p className="text-base font-bold" style={{ color: '#2D1B4E' }}>
           ฿{currentUser?.walletBalance.toLocaleString()}
         </p>
-        <p className="text-[10px] mt-0.5" style={{ color: '#F59E0B' }}>
+        <p className="text-[10px] mt-0.5 font-medium" style={{ color: '#A238FF' }}>
           รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
         </p>
       </div>
@@ -103,7 +114,7 @@ export function DesktopSidebar() {
         <button
           onClick={() => navigate('/create-rfq')}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, #A020C8, #7B10A8)' }}
+          style={{ background: '#A238FF', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
         >
           <Plus size={18} />
           สร้าง RFQ ใหม่
@@ -123,7 +134,7 @@ export function DesktopSidebar() {
               className="w-8 h-8 rounded-xl object-cover shrink-0"
             />
             <div className="flex-1 text-left min-w-0">
-              <p className="text-xs text-gray-900 font-semibold truncate">{currentUser?.name}</p>
+              <p className="text-xs font-semibold truncate" style={{ color: '#2D1B4E' }}>{currentUser?.name}</p>
               <p className="text-[10px] text-gray-400 truncate">{currentUser?.company}</p>
             </div>
           </button>
@@ -131,8 +142,11 @@ export function DesktopSidebar() {
             to="/notifications"
             className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0"
           >
-            <Bell size={17} style={{ color: '#A020C8' }} />
-            <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] flex items-center justify-center font-bold">
+            <Bell size={17} style={{ color: '#A238FF' }} />
+            <span
+              className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full text-white text-[8px] flex items-center justify-center font-bold border-2 border-white"
+              style={{ background: '#FF7A00' }}
+            >
               3
             </span>
           </Link>

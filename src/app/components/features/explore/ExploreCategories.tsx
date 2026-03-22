@@ -17,7 +17,7 @@ export function ExploreCategories({ categories }: ExploreCategoriesProps) {
         <h3 className="text-gray-800" style={{ fontWeight: 700 }}>
           หมวดหมู่
         </h3>
-        <button type="button" className="text-[#A020C8]" style={{ fontSize: 13 }}>
+        <button type="button" className="text-[#A656A0]" style={{ fontSize: 13 }}>
           ดูทั้งหมด
         </button>
       </div>
@@ -25,19 +25,28 @@ export function ExploreCategories({ categories }: ExploreCategoriesProps) {
         className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {categories.map((cat) => (
-          <div
-            key={cat.id}
-            className="flex flex-col items-center gap-1.5 min-w-[64px] cursor-pointer group"
-          >
-            <div className="w-14 h-14 rounded-full bg-[#A020C8]/10 border border-[#A020C8]/10 shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="text-xl leading-none">{cat.icon}</span>
+        {categories.map((cat, i) => {
+          const paletteBg = [
+            'bg-[#A656A0]/10 border-[#A656A0]/20',
+            'bg-[#292259]/8 border-[#292259]/15',
+            'bg-[#F28A2E]/10 border-[#F28A2E]/20',
+            'bg-[#F27830]/8 border-[#F27830]/15',
+            'bg-[#A656A0]/8 border-[#A656A0]/15',
+          ];
+          return (
+            <div
+              key={cat.id}
+              className="flex flex-col items-center gap-1.5 min-w-[64px] cursor-pointer group"
+            >
+              <div className={`w-14 h-14 rounded-full ${paletteBg[i % 5]} border shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                <span className="text-xl leading-none">{cat.icon}</span>
+              </div>
+              <span className="text-gray-600 whitespace-nowrap" style={{ fontSize: 11 }}>
+                {cat.name}
+              </span>
             </div>
-            <span className="text-gray-600 whitespace-nowrap" style={{ fontSize: 11 }}>
-              {cat.name}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

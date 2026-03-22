@@ -44,31 +44,35 @@ export function ExplorePromoCarousel({
             key={promo.id}
             className="flex-shrink-0 w-[85vw] max-w-[340px] rounded-2xl overflow-hidden shadow-lg"
           >
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#A020C8] via-[#7B10A8] to-[#FF9A00] p-4 text-white">
-              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10" />
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/10" />
+            <div className="relative overflow-hidden rounded-2xl p-4 text-white" style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}>
+              {/* Purple ribbon accent (top-right) */}
+              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-30" style={{ background: '#A238FF' }} />
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-20 blur-xl" style={{ background: '#A238FF' }} />
+              {/* Cream/light circle (bottom-left) */}
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20" style={{ background: '#FAEBD7' }} />
               <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-1">
-                  <Gift className="w-5 h-5" />
-                  <span style={{ fontSize: 13 }} className="opacity-90">
+                {/* Purple ribbon badge */}
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-2" style={{ background: '#A238FF' }}>
+                  <Gift className="w-3.5 h-3.5 text-white" />
+                  <span style={{ fontSize: 11 }} className="text-white font-semibold tracking-wide">
                     โปรโมชั่นพิเศษ!
                   </span>
                 </div>
-                <p style={{ fontSize: 18 }} className="mb-1 font-bold">
+                <p style={{ fontSize: 18 }} className="mb-1 font-bold text-white drop-shadow-sm">
                   {promo.title}
                 </p>
-                <p style={{ fontSize: 12 }} className="opacity-80 mb-3">
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }} className="mb-3 leading-snug">
                   {promo.subtitle}
                 </p>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/30">
-                    <span style={{ fontSize: 15, letterSpacing: 2 }}>{promo.code}</span>
+                  <div className="flex items-center gap-2 backdrop-blur-sm rounded-lg px-3 py-1.5 border" style={{ background: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.40)' }}>
+                    <span style={{ fontSize: 15, letterSpacing: 2 }} className="font-mono font-bold text-white">{promo.code}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleCopy(promo.code, promo.id)}
-                    className="flex items-center gap-1.5 bg-white text-[#A020C8] rounded-lg px-3 py-1.5 hover:bg-purple-50 transition-colors"
-                    style={{ fontSize: 13 }}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors font-semibold"
+                    style={{ background: '#2D1B4E', color: 'white', fontSize: 13 }}
                   >
                     <Copy className="w-3.5 h-3.5" />
                     {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
@@ -87,9 +91,8 @@ export function ExplorePromoCarousel({
             type="button"
             aria-label={`สไลด์ ${i + 1}`}
             onClick={() => setPromoIndex(i)}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === promoIndex ? 'w-5 bg-[#A020C8]' : 'w-1.5 bg-gray-300'
-            }`}
+            className="h-1.5 rounded-full transition-all duration-300"
+            style={i === promoIndex ? { width: '20px', background: '#F28A2E' } : { width: '6px', background: '#D1D5DB' }}
           />
         ))}
       </div>

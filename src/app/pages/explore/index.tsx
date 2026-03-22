@@ -40,8 +40,6 @@ export function Explore() {
       setSearchText={setSearchText}
       categories={categories as any}
       factories={factories as any}
-      activeRFQs={activeRFQs as any}
-      recentOrders={recentOrders as any}
       ideaArticles={ideaArticles as any}
     />
   );
