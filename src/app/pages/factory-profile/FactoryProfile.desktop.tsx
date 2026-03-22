@@ -1,9 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { MapPin, Mail, Phone, ArrowLeft } from 'lucide-react';
+import {
+  MapPin,
+  Mail,
+  Phone,
+  ArrowLeft,
+  Star,
+  Package,
+  Clock,
+  CheckCircle2,
+  ShieldCheck,
+} from 'lucide-react';
 import {
   FactoryProfileHero,
-  FactoryProfileStats,
   FactoryProfileTabContent,
   type TabId,
 } from '../../components/features/factory-profile';
@@ -11,10 +20,7 @@ import { ImageWithFallback } from '../../components/shared';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
 
 type FactoryProfileState = ReturnType<typeof useFactoryProfile>;
-
-type FactoryProfileDesktopProps = {
-  state: FactoryProfileState;
-};
+type FactoryProfileDesktopProps = { state: FactoryProfileState };
 
 export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
   const navigate = useNavigate();
@@ -32,102 +38,140 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
 
   if (!factory) {
     return (
-      <div className="hidden lg:block px-10 pt-10 pb-20">
+      <div className="hidden lg:block px-8 pt-8 pb-20 bg-gray-50 min-h-[calc(100vh-4rem)]">
         <button
           type="button"
           onClick={() => navigate('/factory-ideas')}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-purple-600"
+          className="mb-6 inline-flex items-center gap-1.5 text-[13px] text-purple-600 hover:text-purple-800 transition-colors font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
           กลับหน้าแนะนำโรงงาน
         </button>
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center text-sm text-gray-500 shadow-sm">
-          ไม่พบข้อมูลโรงงาน
+        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
+          <p className="text-4xl mb-3">🏭</p>
+          <p className="text-[14px] text-gray-500 font-medium">ไม่พบข้อมูลโรงงาน</p>
         </div>
       </div>
     );
   }
 
+  const statItems = [
+    { icon: <Package size={14} className="text-purple-500" />, label: 'MOQ', value: factory.minOrder },
+    { icon: <Clock size={14} className="text-purple-500" />, label: 'Lead Time', value: factory.leadTime },
+    { icon: <CheckCircle2 size={14} className="text-purple-500" />, label: 'งานสำเร็จ', value: `${factory.completedOrders} ออเดอร์` },
+    { icon: <Star size={14} className="text-amber-400 fill-amber-400" />, label: 'เรทติ้ง', value: `${factory.rating} (${factory.reviews})` },
+  ];
+
   return (
-    <div className="hidden lg:flex flex-col min-h-[calc(100vh-4rem)] bg-slate-50">
-      {/* Hero section full width */}
-      <div className="shadow-sm">
+    <div className="hidden lg:flex flex-col min-h-[calc(100vh-4rem)] bg-gray-50">
+
+      {/* ── Hero ── */}
+      <div className="bg-white shadow-sm">
         <FactoryProfileHero
           factory={factory}
           onBack={() => navigate('/factory-ideas')}
-          onChat={() =>
-            navigate(conversation ? `/messages/${conversation.id}` : '/messages')
-          }
+          onChat={() => navigate(conversation ? `/messages/${conversation.id}` : '/messages')}
         />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex px-10 py-6 gap-6">
-        {/* Left: profile summary & contact */}
-        <aside className="w-80 flex-shrink-0 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-100">
-                <ImageWithFallback
-                  src={factory.image}
-                  alt={factory.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900 truncate">
-                  {factory.name}
-                </p>
-                <p className="text-[11px] text-slate-500 truncate">
-                  {factory.specialization}
-                </p>
-              </div>
+      {/* ── Info strip ── */}
+      <div className="bg-white border-b border-gray-100 px-8 py-4">
+        <div className="flex items-center gap-6 flex-wrap">
+
+          {/* Factory thumb + name */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+              <ImageWithFallback
+                src={factory.image}
+                alt={factory.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="space-y-1.5 text-[11px] text-slate-600">
+            <div>
               <div className="flex items-center gap-1.5">
-                <MapPin size={11} className="text-slate-400" />
-                <span>{factory.location}</span>
+                <p className="text-[13px] font-bold text-gray-900">{factory.name}</p>
+                {factory.verified && <ShieldCheck size={13} className="text-purple-500" />}
               </div>
-              {profile && (
-                <>
-                  <div className="flex items-center gap-1.5">
-                    <Mail size={11} className="text-slate-400" />
-                    <span className="truncate">{profile.contactEmail}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Phone size={11} className="text-slate-400" />
-                    <span>{profile.contactPhone}</span>
-                  </div>
-                </>
-              )}
+              <p className="text-[11px] text-gray-400">{factory.specialization}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-            <FactoryProfileStats
-              minOrder={factory.minOrder}
-              leadTime={factory.leadTime}
-              completedOrders={factory.completedOrders}
-            />
+          <div className="w-px h-8 bg-gray-100 shrink-0" />
+
+          {/* Contact */}
+          <div className="flex items-center gap-4 text-[12px] text-gray-500">
+            <span className="flex items-center gap-1.5">
+              <MapPin size={12} className="text-gray-400" />
+              {factory.location}
+            </span>
+            {profile && (
+              <>
+                <span className="flex items-center gap-1.5">
+                  <Mail size={12} className="text-gray-400" />
+                  ติดต่อผ่านแชท
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Phone size={12} className="text-gray-400" />
+                  -
+                </span>
+              </>
+            )}
           </div>
 
-          {profile && (
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 text-[11px] text-slate-600 space-y-1.5">
-              <p className="text-xs font-semibold text-slate-800 mb-1.5">
-                ใบรับรองและมาตรฐาน
-              </p>
-              {(profile.certifications ?? []).map((c) => (
-                <div key={c} className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                  <span>{c}</span>
+          <div className="w-px h-8 bg-gray-100 shrink-0" />
+
+          {/* Stats inline */}
+          <div className="flex items-center gap-5">
+            {statItems.map((s) => (
+              <div key={s.label} className="flex items-center gap-1.5">
+                {s.icon}
+                <div>
+                  <p className="text-[9px] text-gray-400 uppercase tracking-wide leading-none mb-0.5">{s.label}</p>
+                  <p className="text-[12px] font-bold text-gray-800 leading-none">{s.value}</p>
                 </div>
-              ))}
-            </div>
-          )}
-        </aside>
+              </div>
+            ))}
+          </div>
 
-        {/* Right: Tab content */}
-        <main className="flex-1 min-w-0">
+          {/* Certifications */}
+          {profile && (profile.certificates ?? []).length > 0 && (
+            <>
+              <div className="w-px h-8 bg-gray-100 shrink-0" />
+              <div className="flex items-center gap-2 flex-wrap">
+                {(profile.certificates ?? []).map((c) => (
+                  <span
+                    key={c}
+                    className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 text-[11px] font-semibold border border-purple-100"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Tags */}
+          {factory.tags && factory.tags.length > 0 && (
+            <>
+              <div className="w-px h-8 bg-gray-100 shrink-0" />
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {factory.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-medium"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Tab content (full width) ── */}
+      <div className="flex-1 px-8 py-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <FactoryProfileTabContent
             activeTab={activeTab}
             onTabChange={setActiveTab as (tab: TabId) => void}
@@ -148,14 +192,11 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
             profile={profile}
             reviews={reviews}
             onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
-            onPromotionClick={(itemId) =>
-              navigate(`/factory-ideas/promotions/${itemId}`)
-            }
+            onPromotionClick={(itemId) => navigate(`/factory-ideas/promotions/${itemId}`)}
             onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}
           />
-        </main>
+        </div>
       </div>
     </div>
   );
 }
-

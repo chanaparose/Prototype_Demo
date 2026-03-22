@@ -152,7 +152,7 @@ export function RfqAndOrders() {
         <div className="grid grid-cols-2 gap-6">
             {/* Left: RFQ Panel */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center px-5 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <div
                     className="w-8 h-8 rounded-xl flex items-center justify-center"
@@ -168,13 +168,6 @@ export function RfqAndOrders() {
                     {rfqs.filter((r) => r.status !== 'completed').length}
                   </span>
                 </div>
-                <Link
-                  to="/rfqs"
-                  className="flex items-center gap-1 text-xs font-semibold"
-                  style={{ color: PRIMARY_COLOR }}
-                >
-                  ไปหน้า RFQ <ChevronRight size={14} />
-                </Link>
               </div>
 
               <div className="flex gap-1 px-4 pt-3 pb-2">

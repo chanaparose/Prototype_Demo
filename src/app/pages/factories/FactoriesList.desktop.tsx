@@ -1,159 +1,227 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, SlidersHorizontal, MapPin, ShieldCheck } from 'lucide-react';
+import {
+  Search,
+  MapPin,
+  ShieldCheck,
+  Star,
+  Package,
+  ArrowUpRight,
+  ChevronDown,
+  X,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { ImageWithFallback } from '../../components/shared';
 import type { useFactoriesList } from '../../hooks/useFactoriesList';
 
 type FactoriesListState = ReturnType<typeof useFactoriesList>;
-
-type FactoriesListDesktopProps = {
-  state: FactoriesListState;
-};
+type FactoriesListDesktopProps = { state: FactoriesListState };
 
 export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
-  const {
-    factories,
-    locations,
-    filters,
-    setSearchText,
-    setLocation,
-    setVerifiedOnly,
-  } = state;
+  const { factories, locations, filters, setSearchText, setLocation, setVerifiedOnly } = state;
   const navigate = useNavigate();
+  const [locationOpen, setLocationOpen] = useState(false);
+
+  const hasActiveFilters = filters.searchText || filters.location || filters.verifiedOnly;
+  const clearAll = () => {
+    setSearchText('');
+    setLocation('');
+    setVerifiedOnly(false);
+  };
 
   return (
-    <div className="hidden lg:flex px-10 py-8 gap-8 min-h-[calc(100vh-4rem)] bg-slate-50">
-      {/* Sidebar filters */}
-      <aside className="w-72 flex-shrink-0 space-y-5">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-          <p className="text-xs text-slate-400 uppercase tracking-wide font-semibold mb-3">
-            ตัวกรอง
-          </p>
-          <div className="space-y-3 text-sm">
+    <div className="hidden lg:block min-h-[calc(100vh-4rem)] bg-gray-50">
+
+      {/* ── Sticky top filter bar ── */}
+      <div className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10">
+        <div className="px-8 py-4">
+
+          {/* Title + count */}
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-xs text-slate-500 mb-1">ค้นหา</p>
-              <div className="flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
-                <Search size={16} className="text-slate-400" />
-                <input
-                  type="text"
-                  value={filters.searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="ชื่อโรงงาน, ประเภทงาน, tag..."
-                  className="flex-1 bg-transparent text-xs outline-none text-slate-800 placeholder-slate-400"
-                />
-              </div>
+              <p className="text-[10px] font-semibold tracking-[0.14em] text-purple-400 uppercase mb-0.5">
+                ไดเรกทอรี
+              </p>
+              <h1 className="text-[22px] font-bold text-gray-900 leading-tight">
+                เลือกโรงงานคู่ค้า
+              </h1>
+            </div>
+            <div className="flex items-center gap-2 text-[12px] text-gray-500 bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2">
+              <SlidersHorizontal size={13} className="text-purple-500" />
+              <span>
+                <span className="font-bold text-gray-800">{factories.length}</span> โรงงาน
+              </span>
+            </div>
+          </div>
+
+          {/* Filter pills row */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+
+            {/* Search */}
+            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-200 focus-within:border-purple-400 focus-within:bg-white transition-all w-72">
+              <Search size={14} className="text-gray-400 shrink-0" />
+              <input
+                type="text"
+                value={filters.searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="ชื่อโรงงาน, ประเภทงาน, tag…"
+                className="flex-1 bg-transparent text-[13px] outline-none text-gray-800 placeholder-gray-400"
+              />
+              {filters.searchText && (
+                <button type="button" onClick={() => setSearchText('')} className="text-gray-400 hover:text-gray-600">
+                  <X size={12} />
+                </button>
+              )}
             </div>
 
-            <div>
-              <p className="text-xs text-slate-500 mb-1">พื้นที่ผลิต</p>
-              <select
-                value={filters.location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-violet-500"
+            {/* Location dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setLocationOpen(!locationOpen)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all ${
+                  filters.location
+                    ? 'border-purple-400 bg-purple-50 text-purple-700 font-semibold'
+                    : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300 hover:bg-white'
+                }`}
               >
-                <option value="">ทุกพื้นที่</option>
-                {locations.map((loc) => (
-                  <option key={loc} value={loc}>
-                    {loc}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center justify-between mt-1">
-              <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.verifiedOnly}
-                  onChange={(e) => setVerifiedOnly(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                <MapPin size={13} className={filters.location ? 'text-purple-500' : 'text-gray-400'} />
+                {filters.location || 'ทุกพื้นที่'}
+                <ChevronDown
+                  size={12}
+                  className={`transition-transform duration-200 ${locationOpen ? 'rotate-180' : ''} ${filters.location ? 'text-purple-400' : 'text-gray-400'}`}
                 />
-                <span className="flex items-center gap-1">
-                  <ShieldCheck size={13} className="text-violet-500" />
-                  เฉพาะโรงงานยืนยันแล้ว
-                </span>
-              </label>
+              </button>
+              {locationOpen && (
+                <div className="absolute top-full mt-1.5 left-0 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-20 min-w-[180px]">
+                  <button
+                    type="button"
+                    onClick={() => { setLocation(''); setLocationOpen(false); }}
+                    className={`w-full px-4 py-2 text-left text-[13px] hover:bg-purple-50 transition-colors ${!filters.location ? 'text-purple-600 font-semibold bg-purple-50/50' : 'text-gray-700'}`}
+                  >
+                    ทุกพื้นที่
+                  </button>
+                  <div className="mx-3 my-1 border-t border-gray-100" />
+                  {locations.map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => { setLocation(loc); setLocationOpen(false); }}
+                      className={`w-full px-4 py-2 text-left text-[13px] hover:bg-purple-50 transition-colors ${filters.location === loc ? 'text-purple-600 font-semibold' : 'text-gray-700'}`}
+                    >
+                      {loc}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </div>
 
-        <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-4 text-xs text-slate-600">
-          <p className="font-semibold text-slate-800 mb-1">
-            เคล็ดลับการเลือกโรงงาน
-          </p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>ดู specialization ให้ตรงกับสินค้าที่ต้องการ</li>
-            <li>ตรวจสอบขั้นต่ำการสั่งผลิต และ lead time</li>
-            <li>พิจารณารีวิวและจำนวนงานที่เคยทำสำเร็จ</li>
-          </ul>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 min-w-0 flex flex-col gap-4">
-        {/* Header + search (desktop-level) */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide font-semibold">
-              โรงงานทั้งหมด
-            </p>
-            <h1 className="text-2xl font-bold text-slate-900">
-              เลือกโรงงานคู่ค้าของคุณ
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <SlidersHorizontal size={14} className="text-violet-500" />
-            <span>{factories.length} โรงงานที่ตรงกับเงื่อนไข</span>
-          </div>
-        </div>
-
-        {/* Grid of factories */}
-        <div className="mt-2 grid grid-cols-3 gap-4">
-          {factories.map((factory) => (
+            {/* Verified toggle pill */}
             <button
-              key={factory.id}
               type="button"
-              onClick={() => navigate(`/factories/${factory.id}`)}
-              className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden text-left hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              onClick={() => setVerifiedOnly(!filters.verifiedOnly)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all ${
+                filters.verifiedOnly
+                  ? 'border-purple-400 bg-purple-50 text-purple-700 font-semibold'
+                  : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300 hover:bg-white'
+              }`}
             >
-              <div className="relative h-40">
-                <ImageWithFallback
-                  src={factory.image}
-                  alt={factory.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-black/40 backdrop-blur-sm px-2 py-0.5">
-                  <span className="text-[10px] text-white">
-                    {factory.priceRange}
-                  </span>
-                </div>
-              </div>
-              <div className="p-3.5 space-y-1.5">
-                <p className="text-sm font-semibold text-slate-900 truncate">
-                  {factory.name}
-                </p>
-                <p className="text-[11px] text-slate-500 truncate">
-                  {factory.specialization}
-                </p>
-                <div className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span className="inline-flex items-center gap-1 truncate">
-                    <MapPin size={11} className="text-slate-400" />
-                    {factory.location}
-                  </span>
-                  <span>
-                    ★ {factory.rating} ({factory.reviews})
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-400 truncate">
-                  ขั้นต่ำ {factory.minOrder} ·{' '}
-                  {factory.tags.slice(0, 2).join(' · ')}
-                </p>
-              </div>
+              <ShieldCheck size={13} className={filters.verifiedOnly ? 'text-purple-500' : 'text-gray-400'} />
+              ยืนยันแล้วเท่านั้น
             </button>
-          ))}
+
+            {/* Clear all */}
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[12px] text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all"
+              >
+                <X size={12} />
+                ล้างทั้งหมด
+              </button>
+            )}
+          </div>
         </div>
-      </main>
+      </div>
+
+      {/* ── Factory grid ── */}
+      <div className="px-8 py-6">
+        {factories.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <p className="text-4xl mb-3">🏭</p>
+            <p className="text-[14px] text-gray-500 font-medium">ไม่พบโรงงานที่ตรงกับเงื่อนไข</p>
+            <p className="text-[12px] text-gray-400 mt-1">ลองเปลี่ยนคีย์เวิร์ดหรือตัวกรอง</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 xl:grid-cols-4 gap-4">
+            {factories.map((factory) => (
+              <button
+                key={factory.id}
+                type="button"
+                onClick={() => navigate(`/factories/${factory.id}`)}
+                className="group bg-white rounded-2xl border border-gray-100 overflow-hidden text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400/30"
+              >
+                {/* Image */}
+                <div className="relative h-44 overflow-hidden bg-gray-100">
+                  <ImageWithFallback
+                    src={factory.image}
+                    alt={factory.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+                  <div className="absolute top-2.5 left-2.5">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm text-[10px] font-semibold text-white">
+                      {factory.priceRange}
+                    </span>
+                  </div>
+
+                  {factory.verified && (
+                    <div className="absolute top-2.5 right-2.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-600/90 backdrop-blur-sm text-[9px] font-semibold text-white">
+                        <ShieldCheck size={9} />
+                        ยืนยันแล้ว
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200">
+                    <ArrowUpRight size={13} className="text-white" />
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-4 space-y-2.5">
+                  <div>
+                    <p className="text-[13px] font-bold text-gray-900 truncate">{factory.name}</p>
+                    <p className="text-[11px] text-gray-400 truncate mt-0.5">{factory.specialization}</p>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="inline-flex items-center gap-1 text-gray-500">
+                      <MapPin size={10} className="text-gray-400" />
+                      {factory.location}
+                    </span>
+                    <span className="inline-flex items-center gap-1 font-semibold text-gray-700">
+                      <Star size={10} className="text-amber-400 fill-amber-400" />
+                      {factory.rating}
+                      <span className="text-gray-400 font-normal">({factory.reviews})</span>
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-[11px] text-gray-500 pt-2.5 border-t border-gray-100">
+                    <Package size={10} className="text-gray-400" />
+                    ขั้นต่ำ <span className="font-semibold text-gray-700">{factory.minOrder}</span>
+                    <span className="mx-1 text-gray-200">·</span>
+                    <span className="truncate text-gray-400">{factory.tags.slice(0, 2).join(' · ')}</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-

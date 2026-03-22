@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileText, Lightbulb } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import {
   CreateRfqStep1,
@@ -8,14 +8,12 @@ import {
   CreateRfqStep3Summary,
 } from '../../components/features/create-rfq';
 import type { CreateRfqForm } from '../../components/features/create-rfq';
-import type { CategoryItem } from '../../data/mockData';
 import type { useCreateRfqState } from '../../hooks/useCreateRfqState';
 
-type CreateRfqState = ReturnType<typeof useCreateRfqState>;
+type CategoryItem = (typeof import('../../data/mockData').categories)[number];
 
-type CreateRfqDesktopProps = {
-  state: CreateRfqState;
-};
+type CreateRfqState = ReturnType<typeof useCreateRfqState>;
+type CreateRfqDesktopProps = { state: CreateRfqState };
 
 export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
   const {
@@ -34,89 +32,68 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
 
   return (
     <div className="hidden lg:flex min-h-[calc(100vh-4rem)] flex-col bg-slate-50">
-      {/* Header */}
-      <header className="px-10 pt-10 pb-4 flex items-center justify-between bg-slate-50 border-b border-slate-100">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleBack}
-            className="p-2 rounded-full hover:bg-slate-200/60 transition-colors"
-            type="button"
-          >
-            <ArrowLeft size={22} className="text-slate-800" />
-          </button>
-          <div>
-            <p className="text-xs text-slate-400 uppercase tracking-wide">สร้างคำขอใบเสนอราคา</p>
-            <h1 className="text-2xl font-bold text-slate-900">สร้าง RFQ ใหม่</h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <span>
-            ขั้นตอนที่ {currentStep} จาก {STEPS.length}
-          </span>
-        </div>
-      </header>
 
-      {/* Content */}
-      <div className="flex-1 flex px-10 py-8 gap-6">
-        {/* Left: Form + Stepper */}
-        <div className="flex-1 flex flex-col gap-6 max-w-3xl">
-          {/* Stepper */}
-          <div className="bg-white rounded-2xl px-6 py-4 shadow-sm border border-slate-100">
-            <div className="flex items-center justify-between relative z-0">
-              <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full" />
-              <motion.div
-                className="absolute top-1/2 left-0 h-1 bg-[#6C47FF] -z-10 -translate-y-1/2 rounded-full origin-left"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: (currentStep - 1) / 2 }}
-                transition={{ duration: 0.3 }}
-              />
-              {STEPS.map((label, idx) => {
-                const stepNum = idx + 1;
-                const isActive = currentStep >= stepNum;
-                const isCurrent = currentStep === stepNum;
-                return (
-                  <div key={label} className="flex flex-col items-center gap-2">
-                    <motion.div
-                      className={cn(
-                        'w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors',
-                        isActive
-                          ? 'bg-[#6C47FF] border-[#6C47FF] text-white'
-                          : 'bg-white border-slate-300 text-slate-400',
-                      )}
-                      animate={isCurrent ? { scale: 1.05 } : { scale: 1 }}
-                    >
-                      {isActive && stepNum < currentStep ? (
-                        <CheckCircle2 size={18} />
-                      ) : (
-                        stepNum
-                      )}
-                    </motion.div>
-                    <span
-                      className={cn(
-                        'text-[11px] font-semibold text-center max-w-[120px]',
-                        isActive ? 'text-slate-800' : 'text-slate-400',
-                      )}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                );
-              })}
+      {/* ── Top bar ── */}
+      <div className="bg-white border-b border-slate-100 shadow-sm px-8 py-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={handleBack}
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-colors">
+              <ArrowLeft size={18} className="text-slate-600" />
+            </button>
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.12em] text-slate-400 uppercase mb-0.5">
+                คำขอใบเสนอราคา
+              </p>
+              <h1 className="text-[20px] font-bold text-slate-900">สร้าง RFQ ใหม่</h1>
             </div>
           </div>
 
-          {/* Form Steps */}
-          <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 px-8 py-6 overflow-hidden">
+          {/* Step indicator pills */}
+          <div className="flex items-center gap-1.5">
+            {STEPS.map((label, idx) => {
+              const stepNum = idx + 1;
+              const isDone    = currentStep > stepNum;
+              const isCurrent = currentStep === stepNum;
+              return (
+                <div key={label} className="flex items-center gap-1.5">
+                  <div className={cn(
+                    'flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-semibold transition-all',
+                    isDone    ? 'bg-violet-100 text-violet-600' :
+                    isCurrent ? 'bg-violet-600 text-white shadow-md shadow-violet-200' :
+                                'bg-slate-100 text-slate-400'
+                  )}>
+                    {isDone
+                      ? <CheckCircle2 size={13} />
+                      : <span className="w-4 h-4 rounded-full border-2 flex items-center justify-center text-[10px]"
+                          style={{ borderColor: isCurrent ? 'rgba(255,255,255,0.6)' : '#CBD5E1' }}>
+                          {stepNum}
+                        </span>
+                    }
+                    {label}
+                  </div>
+                  {idx < STEPS.length - 1 && (
+                    <div className={cn('w-6 h-0.5 rounded-full', currentStep > stepNum ? 'bg-violet-400' : 'bg-slate-200')} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Body ── */}
+      <div className="flex-1 flex px-8 py-7 gap-6">
+
+        {/* ── Left: form ── */}
+        <div className="flex-1 min-w-0 flex flex-col gap-5 max-w-2xl">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-7 flex-1 overflow-hidden">
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 32 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -32 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex flex-col gap-6"
-                >
+                <motion.div key="step1"
+                  initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.2 }}
+                  className="flex flex-col gap-6">
                   <CreateRfqStep1
                     form={form as CreateRfqForm}
                     categories={categories as CategoryItem[]}
@@ -126,26 +103,18 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
                 </motion.div>
               )}
               {currentStep === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 32 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -32 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex flex-col gap-6"
-                >
+                <motion.div key="step2"
+                  initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.2 }}
+                  className="flex flex-col gap-6">
                   <CreateRfqStep2 form={form as CreateRfqForm} onUpdate={updateForm} />
                 </motion.div>
               )}
               {currentStep === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 32 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -32 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex flex-col gap-6"
-                >
+                <motion.div key="step3"
+                  initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.2 }}
+                  className="flex flex-col gap-6">
                   <CreateRfqStep3Summary
                     form={displayForm as CreateRfqForm}
                     categoryName={displayCategoryName}
@@ -156,68 +125,113 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
             </AnimatePresence>
           </div>
 
-          {/* Bottom actions (desktop) */}
-          <div className="flex justify-between items-center mt-2">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="text-sm text-slate-500 hover:text-slate-700"
-            >
-              ย้อนกลับ
+          {/* Navigation row */}
+          <div className="flex justify-between items-center">
+            <button type="button" onClick={handleBack}
+              className="inline-flex items-center gap-1.5 text-[13px] text-slate-500 hover:text-slate-800 transition-colors font-medium px-4 py-2.5 rounded-xl hover:bg-slate-100">
+              <ArrowLeft size={15} /> ย้อนกลับ
             </button>
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <motion.button type="button"
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
               onClick={handleNext}
-              className="px-8 py-3 rounded-full bg-[#6C47FF] text-white font-semibold text-sm shadow-md shadow-violet-200/60 flex items-center gap-2"
-            >
-              {currentStep === 3 ? 'ส่งคำขอใบเสนอราคา' : 'ถัดไป'}
+              className="px-8 py-3 rounded-2xl text-white font-bold text-[14px] shadow-lg shadow-violet-200/60 flex items-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #5B21B6, #6C47FF)' }}>
+              {currentStep === 3 ? (
+                <><FileText size={16} /> ส่งคำขอใบเสนอราคา</>
+              ) : (
+                <>ถัดไป →</>
+              )}
             </motion.button>
           </div>
         </div>
 
-        {/* Right: Summary / Preview */}
-        <aside className="w-80 xl:w-96 flex flex-col gap-4">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+        {/* ── Right: summary sidebar ── */}
+        <aside className="w-72 flex-shrink-0 space-y-4">
+
+          {/* Summary card */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <p className="text-[10px] font-semibold tracking-[0.1em] text-slate-400 uppercase mb-3">
               สรุปคำขอ
             </p>
-            <h2 className="text-base font-bold text-slate-900 mb-3">
-              {displayForm.projectName || 'ยังไม่ได้ระบุชื่อโปรเจกต์'}
+            <h2 className="text-[14px] font-bold text-slate-900 mb-4 leading-snug">
+              {displayForm.projectName || (
+                <span className="text-slate-400 font-normal">ยังไม่ได้ระบุชื่อโปรเจกต์</span>
+              )}
             </h2>
-            <div className="space-y-2.5 text-xs text-slate-600">
-              <div className="flex justify-between gap-2">
-                <span className="text-slate-400">หมวดหมู่</span>
-                <span className="font-medium">{displayCategoryName}</span>
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-slate-400">ปริมาณโดยประมาณ</span>
-                <span className="font-medium">
-                  {displayForm.quantity ? `${displayForm.quantity} หน่วย` : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-slate-400">งบประมาณ</span>
-                <span className="font-medium">
-                  {displayForm.budget ? `฿${Number(displayForm.budget).toLocaleString()}` : '-'}
-                </span>
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-slate-400">กำหนดส่ง</span>
-                <span className="font-medium">{displayForm.deadline || '-'}</span>
-              </div>
+            <div className="space-y-2.5">
+              {[
+                { label: 'หมวดหมู่',           value: displayCategoryName },
+                { label: 'ปริมาณโดยประมาณ',   value: displayForm.quantity ? `${displayForm.quantity} หน่วย` : '-' },
+                { label: 'งบประมาณ',            value: displayForm.budget ? `฿${Number(displayForm.budget).toLocaleString()}` : '-' },
+                { label: 'กำหนดส่ง',            value: displayForm.deadline || '-' },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                  <span className="text-[11px] text-slate-400">{row.label}</span>
+                  <span className={cn('text-[12px] font-semibold', row.value === '-' ? 'text-slate-300' : 'text-slate-800')}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-4 text-xs text-slate-600">
-            <p className="font-semibold text-slate-800 mb-1">
-              Tips การกรอก RFQ ให้ได้ข้อเสนอที่ดีขึ้น
+          {/* Progress indicator */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <p className="text-[10px] font-semibold tracking-[0.1em] text-slate-400 uppercase mb-3">
+              ความคืบหน้า
             </p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>ระบุปริมาณและสเปกให้ชัดเจน</li>
-              <li>แนบรายละเอียดวัสดุ หรือมาตรฐานที่ต้องการ</li>
-              <li>ระบุ timeline และข้อจำกัดด้านงบประมาณ</li>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: 'linear-gradient(90deg, #7C3AED, #6C47FF)' }}
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                />
+              </div>
+              <span className="text-[11px] font-bold text-violet-600 shrink-0">
+                {currentStep}/{STEPS.length}
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {STEPS.map((label, idx) => {
+                const stepNum = idx + 1;
+                const isDone = currentStep > stepNum;
+                const isCurrent = currentStep === stepNum;
+                return (
+                  <div key={label} className={cn(
+                    'flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12px] transition-all',
+                    isCurrent ? 'bg-violet-50 text-violet-700 font-semibold' :
+                    isDone    ? 'text-slate-500' : 'text-slate-300'
+                  )}>
+                    <div className={cn(
+                      'w-5 h-5 rounded-full flex items-center justify-center shrink-0',
+                      isDone    ? 'bg-violet-500' :
+                      isCurrent ? 'bg-violet-100 border-2 border-violet-400' : 'bg-slate-100'
+                    )}>
+                      {isDone
+                        ? <CheckCircle2 size={12} className="text-white" />
+                        : <span className={cn('text-[9px] font-bold', isCurrent ? 'text-violet-600' : 'text-slate-400')}>{stepNum}</span>
+                      }
+                    </div>
+                    {label}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Tips */}
+          <div className="rounded-2xl border border-violet-100 p-4" style={{ background: 'linear-gradient(135deg, #F5F3FF, #EEF2FF)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Lightbulb className="w-4 h-4 text-violet-500" />
+              <p className="text-[12px] font-bold text-violet-700">Tips</p>
+            </div>
+            <ul className="space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
+              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> ระบุปริมาณและสเปกให้ชัดเจน</li>
+              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> แนบรายละเอียดวัสดุหรือมาตรฐานที่ต้องการ</li>
+              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> ระบุ timeline และข้อจำกัดด้านงบประมาณ</li>
             </ul>
           </div>
         </aside>
@@ -225,4 +239,3 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
     </div>
   );
 }
-

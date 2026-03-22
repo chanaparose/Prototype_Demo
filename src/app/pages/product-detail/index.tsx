@@ -1,6 +1,6 @@
 import React from 'react';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
-import { ProductDetailMobile } from './ProductDetail.mobile.tsx';
+import { ProductDetailMobile } from './ProductDetail.mobile.fixed.tsx';
 import { ProductDetailDesktop } from './ProductDetail.desktop.tsx';
 
 export function ProductDetail() {
