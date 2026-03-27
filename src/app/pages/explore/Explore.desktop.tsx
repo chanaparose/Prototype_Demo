@@ -14,7 +14,16 @@ import {
   Sparkles,
   ShoppingBag,
   Tag,
+  Cat,
+  Pill,
+  Bone,
+  Scissors,
+  Package,
+  Volleyball,
+  ShowerHead,
+  Wrench,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { PROMO_SLIDES } from '../../components/features/explore/constants';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
 import { ImageWithFallback } from '../../components/shared';
@@ -210,6 +219,88 @@ function ProductCarouselSection({
   );
 }
 
+/* ── Desktop Categories ─────────────────────────────────── */
+type IconConfig = { icon: LucideIcon; color: string };
+
+/* ── Mapping จาก lbi_product_categories DB ──────────────────
+   id | parent | name                  → icon         color
+    1 | NULL   | ของเล่น               → Volleyball    orange
+    2 | NULL   | อาหารสัตว์เลี้ยง      → Cat          purple
+    3 | NULL   | ขนมสัตว์เลี้ยง        → Bone         amber
+    4 | NULL   | อาหารเสริม            → Pill         emerald
+    5 | NULL   | เสื้อผ้า              → Scissors     pink
+    6 | NULL   | แพ็คเกจจิ้ง           → Package      purple-light
+    7 | NULL   | ผลิตภัณฑ์ดูแลต่างๆ   → ShowerHead   sky
+    8 | NULL   | อุปกรณ์ของใช้         → Wrench       gray-blue
+   (9 | 1      | ของเล่นแมว — subcategory, ไม่แสดง)
+──────────────────────────────────────────────────────────── */
+const DESKTOP_ICON_MAP: Record<string, IconConfig> = {
+  '1': { icon: Volleyball,  color: 'bg-[#FF7A00]/10 text-[#FF7A00]' },
+  '2': { icon: Cat,        color: 'bg-[#A238FF]/10 text-[#A238FF]' },
+  '3': { icon: Bone,       color: 'bg-amber-50 text-amber-500' },
+  '4': { icon: Pill,       color: 'bg-emerald-50 text-emerald-600' },
+  '5': { icon: Scissors,   color: 'bg-pink-50 text-pink-600' },
+  '6': { icon: Package,    color: 'bg-purple-50 text-purple-600' },
+  '7': { icon: ShowerHead, color: 'bg-sky-50 text-sky-500' },
+  '8': { icon: Wrench,     color: 'bg-slate-50 text-slate-500' },
+};
+
+function resolveDesktopCatIcon(id: string, name: string): IconConfig {
+  if (DESKTOP_ICON_MAP[id]) return DESKTOP_ICON_MAP[id];
+  const n = name.toLowerCase();
+  if (n.includes('อาหาร') && !n.includes('เสริม')) return DESKTOP_ICON_MAP['2'];
+  if (n.includes('เสริม'))   return DESKTOP_ICON_MAP['4'];
+  if (n.includes('ของเล่น')) return DESKTOP_ICON_MAP['1'];
+  if (n.includes('ขนม'))     return DESKTOP_ICON_MAP['3'];
+  if (n.includes('เสื้อ') || n.includes('ผ้า')) return DESKTOP_ICON_MAP['5'];
+  if (n.includes('แพ็ค') || n.includes('บรรจุ')) return DESKTOP_ICON_MAP['6'];
+  if (n.includes('ดูแล') || n.includes('อาบ'))   return DESKTOP_ICON_MAP['7'];
+  if (n.includes('อุปกรณ์')) return DESKTOP_ICON_MAP['8'];
+  return { icon: Tag, color: 'bg-gray-50 text-gray-500' };
+}
+
+const MAX_DESKTOP_CATS = 6;
+
+function DesktopCategories({ categories }: { categories: CategoryItem[] }) {
+  const [showAll, setShowAll] = useState(false);
+  // แสดงเฉพาะหมวดหมู่หลัก (parentId = null หรือ undefined)
+  const topLevel = categories.filter((c) => !(c as any).parentId);
+  const visible = showAll ? topLevel : topLevel.slice(0, MAX_DESKTOP_CATS);
+  const hasMore = topLevel.length > MAX_DESKTOP_CATS;
+
+  return (
+    <section>
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+        {visible.map((cat) => {
+          const { icon: Icon, color } = resolveDesktopCatIcon(cat.id, cat.name);
+          return (
+            <div
+              key={cat.id}
+              className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
+            >
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
+                <Icon size={24} />
+              </div>
+              <span className="text-sm font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]">{cat.name}</span>
+            </div>
+          );
+        })}
+      </div>
+      {hasMore && (
+        <div className="flex justify-center mt-4">
+          <button
+            type="button"
+            onClick={() => setShowAll((v) => !v)}
+            className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-10 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+          >
+            {showAll ? 'ย่อลง' : 'ดูเพิ่มเติม'} <ChevronRight size={15} className={showAll ? 'rotate-90' : ''} />
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 type ExploreDesktopProps = {
   searchText: string;
   setSearchText: (v: string) => void;
@@ -344,25 +435,7 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
-        <section>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {categories.map((cat, i) => {
-              const catBgs = ['bg-[#A656A0]/10','bg-[#292259]/8','bg-[#F28A2E]/10','bg-[#F27830]/10','bg-[#A656A0]/8','bg-[#292259]/10'];
-              const catBorders = ['border-[#A656A0]/20','border-[#292259]/15','border-[#F28A2E]/20','border-[#F27830]/20','border-[#A656A0]/15','border-[#292259]/20'];
-              return (
-                <div
-                  key={cat.id}
-                  className={`bg-white border ${catBorders[i % 6]} rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md transition-all cursor-pointer group`}
-                >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${catBgs[i % 6]} border ${catBorders[i % 6]} group-hover:scale-110 transition-transform`}>
-                    <span className="text-2xl leading-none">{cat.icon}</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 text-center">{cat.name}</span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        <DesktopCategories categories={categories} />
 
         {/* ═══ 5. สินค้าแนะนำ — Maaboom-style layout ═══ */}
         <ProductCarouselSection title="สินค้าแนะนำ" items={RECOMMENDED_PRODUCTS} bannerImg="https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700" bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง" />

@@ -43,8 +43,8 @@ export function Layout() {
               {/* Logo */}
               <Link to="/" className="flex items-center gap-2 shrink-0">
                 <div
-                  className="h-7 pl-1.5 pr-2 sm:h-8 sm:pl-2 sm:pr-2.5 rounded-lg flex items-center gap-1.5 shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #A656A0, #A656A0)' }}
+                  className="h-7 pl-1.5 pr-2 sm:h-8 sm:pl-2 sm:pr-2.5 rounded-lg flex items-center gap-1.5 shrink-0 shadow-sm"
+                  style={{ background: '#A238FF', boxShadow: '0 4px 12px rgba(162,56,255,0.25)' }}
                 >
                   <Factory className="text-white shrink-0" size={14} strokeWidth={2.5} />
                   <span className="text-white text-[10px] sm:text-xs font-bold leading-none whitespace-nowrap">
@@ -63,8 +63,8 @@ export function Layout() {
                       onClick={() => navigate(path)}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors duration-150"
                       style={{
-                        color: active ? '#A656A0' : '#6B7280',
-                        background: active ? 'rgba(166,86,160,0.08)' : 'transparent',
+                        color: active ? '#A238FF' : '#6B7280',
+                        background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
                         fontWeight: active ? 600 : 500,
                       }}
                     >
@@ -81,7 +81,7 @@ export function Layout() {
                   to="/notifications"
                   className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
                 >
-                  <Bell size={20} style={{ color: '#A656A0' }} />
+                  <Bell size={20} style={{ color: '#A238FF' }} />
                   <span
                     className="absolute top-1 right-1 w-4 h-4 rounded-full text-white flex items-center justify-center text-[9px]"
                     style={{ background: '#EF4444', fontWeight: 700 }}
@@ -107,9 +107,9 @@ export function Layout() {
                   aria-label="Toggle menu"
                 >
                   {mobileMenuOpen ? (
-                    <X size={22} style={{ color: '#374151' }} />
+                    <X size={22} style={{ color: '#2D1B4E' }} />
                   ) : (
-                    <Menu size={22} style={{ color: '#374151' }} />
+                    <Menu size={22} style={{ color: '#2D1B4E' }} />
                   )}
                 </button>
               </div>
@@ -131,8 +131,8 @@ export function Layout() {
                       }}
                       className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm transition-colors duration-150"
                       style={{
-                        color: active ? '#A656A0' : '#374151',
-                        background: active ? 'rgba(166,86,160,0.08)' : 'transparent',
+                        color: active ? '#A238FF' : '#374151',
+                        background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
                         fontWeight: active ? 600 : 500,
                       }}
                     >
@@ -148,8 +148,8 @@ export function Layout() {
                   }}
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm sm:hidden transition-colors duration-150"
                   style={{
-                    color: isActive('/profile') ? '#A656A0' : '#374151',
-                    background: isActive('/profile') ? 'rgba(166,86,160,0.08)' : 'transparent',
+                    color: isActive('/profile') ? '#A238FF' : '#374151',
+                    background: isActive('/profile') ? 'rgba(162,56,255,0.08)' : 'transparent',
                     fontWeight: isActive('/profile') ? 600 : 500,
                   }}
                 >
@@ -162,7 +162,7 @@ export function Layout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 overflow-x-hidden">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>

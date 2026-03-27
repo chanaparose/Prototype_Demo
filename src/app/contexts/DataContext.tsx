@@ -6,14 +6,13 @@
  */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { frontendApi, categoriesApi } from '../services/api';
+import { frontendApi, categoriesApi, masterApi } from '../services/api';
 
 // ─── Types (matching mockData shapes) ───────────────────────────
 export type Category = {
   id: string;
   name: string;
-  icon: string;
-  color: string;
+  parentId?: string | null;
 };
 
 export type Factory = {
@@ -244,13 +243,34 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Use the mock-data endpoint first for a complete dataset,
-      // then we can also call granular endpoints for fresh data on specific pages
-      const data = await frontendApi.getMockData();
+      // Fetch mock-data and product categories in parallel
+      const [data, rawCats] = await Promise.all([
+        frontendApi.getMockData(),
+        masterApi.productCategories().catch(() => [] as unknown[]),
+      ]);
+
+      // Debug: log raw response to inspect field names
+      console.log('[DataContext] rawCats sample:', (rawCats as any[])?.[0]);
+
+      // Map lbi_product_categories rows → Category
+      // Try multiple possible field name conventions from the API
+      const categories: Category[] = (rawCats as any[])
+        .filter((c) => {
+          const active = c.is_active ?? c.isActive ?? c.active ?? c.status ?? 1;
+          return active !== 0 && active !== false && active !== 'inactive';
+        })
+        .map((c) => ({
+          id: String(c.id ?? c.category_id ?? c.categoryId ?? ''),
+          name: c.name ?? c.name_th ?? c.category_name ?? c.categoryName ?? c.label ?? '',
+          parentId: (c.parent_id ?? c.parentId ?? c.parent_category_id ?? null) != null
+            ? String(c.parent_id ?? c.parentId ?? c.parent_category_id)
+            : null,
+        }))
+        .filter((c) => c.id && c.name);
 
       setState({
         currentUser: (data.currentUser as CurrentUser) ?? null,
-        categories: (data.categories as Category[]) ?? [],
+        categories: categories.length > 0 ? categories : ((data.categories as Category[]) ?? []),
         factories: (data.factories as Factory[]) ?? [],
         factoryProfiles: (data.factoryProfiles as FactoryProfile[]) ?? [],
         factoryReviews: (data.factoryReviews as FactoryReview[]) ?? [],

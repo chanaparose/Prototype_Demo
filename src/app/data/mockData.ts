@@ -22,14 +22,18 @@ export const currentUser = {
   memberSince: '2023',
 };
 
-// ─── Master: หมวดหมู่ (ใช้ชื่อใน rfq.category ให้ตรงกับ name ด้านล่าง) ───
+// ─── Master: หมวดหมู่ (ตรงกับ lbi_product_categories ใน DB) ───
+// parentId: null = หมวดหมู่หลัก, มีค่า = หมวดย่อย (ไม่แสดงใน Explore)
 export const categories = [
-  { id: 'pet_food', name: 'อาหารสัตว์', icon: '🐾', color: '#3B82F6' },
-  { id: 'supplements', name: 'อาหารเสริม', icon: '💊', color: '#8B5CF6' },
-  { id: 'pet_toys', name: 'ของเล่นสัตว์เลี้ยง', icon: '🎾', color: '#22C55E' },
-  { id: 'leash_equipment', name: 'สายจูง อุปกรณ์', icon: '🦮', color: '#F59E0B' },
-  { id: 'pet_clothes', name: 'เสื้อผ้าสัตว์เลี้ยง', icon: '👕', color: '#EC4899' },
-  { id: 'other', name: 'อื่นๆ', icon: '📦', color: '#6B7280' },
+  { id: '1', name: 'ของเล่น',             parentId: null },
+  { id: '2', name: 'อาหารสัตว์เลี้ยง',    parentId: null },
+  { id: '3', name: 'ขนมสัตว์เลี้ยง',      parentId: null },
+  { id: '4', name: 'อาหารเสริม',          parentId: null },
+  { id: '5', name: 'เสื้อผ้า',            parentId: null },
+  { id: '6', name: 'แพ็คเกจจิ้ง',         parentId: null },
+  { id: '7', name: 'ผลิตภัณฑ์ดูแลต่างๆ', parentId: null },
+  { id: '8', name: 'อุปกรณ์ของใช้',       parentId: null },
+  { id: '9', name: 'ของเล่นแมว',          parentId: '1'  },
 ];
 
 // ─── โรงงาน (ถูกอ้างใน rfqs.offers, orders, conversations) ───
