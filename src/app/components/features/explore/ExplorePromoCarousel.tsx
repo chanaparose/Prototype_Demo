@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Copy, Gift } from 'lucide-react';
 import { PROMO_SLIDES } from './constants';
 
@@ -13,13 +13,72 @@ export function ExplorePromoCarousel({
 }: ExplorePromoCarouselProps) {
   const [promoIndex, setPromoIndex] = useState(initialIndex);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [slideWidth, setSlideWidth] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef(0);
+  const touchCurrentX = useRef(0);
+  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const GAP = 12;
+  const PADDING = 16;
+
+  const updateSlideWidth = useCallback(() => {
+    if (containerRef.current) {
+      const containerW = containerRef.current.offsetWidth;
+      setSlideWidth(Math.min(containerW - PADDING * 2, 340));
+    }
+  }, []);
 
   useEffect(() => {
-    const t = setInterval(() => {
+    updateSlideWidth();
+    window.addEventListener('resize', updateSlideWidth);
+    return () => window.removeEventListener('resize', updateSlideWidth);
+  }, [updateSlideWidth]);
+
+  const startAutoPlay = useCallback(() => {
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    autoPlayRef.current = setInterval(() => {
       setPromoIndex((i) => (i + 1) % PROMO_SLIDES.length);
     }, 4000);
-    return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    startAutoPlay();
+    return () => {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    };
+  }, [startAutoPlay]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchCurrentX.current = e.touches[0].clientX;
+    setIsDragging(true);
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    touchCurrentX.current = e.touches[0].clientX;
+    setDragOffset(touchCurrentX.current - touchStartX.current);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    const diff = touchCurrentX.current - touchStartX.current;
+    const threshold = 50;
+
+    if (diff < -threshold && promoIndex < PROMO_SLIDES.length - 1) {
+      setPromoIndex((i) => i + 1);
+    } else if (diff > threshold && promoIndex > 0) {
+      setPromoIndex((i) => i - 1);
+    }
+
+    setIsDragging(false);
+    setDragOffset(0);
+    startAutoPlay();
+  };
 
   const handleCopy = (code: string, id: string) => {
     navigator.clipboard?.writeText(code);
@@ -28,21 +87,29 @@ export function ExplorePromoCarousel({
     onCopyCode?.(code, id);
   };
 
+  const translateX = -(promoIndex * (slideWidth + GAP)) + (isDragging ? dragOffset : 0);
+
   return (
-    <div className="relative mb-6 overflow-hidden -mx-4">
+    <div ref={containerRef} className="relative mb-6 w-full overflow-hidden">
       <div
-        className="flex transition-transform duration-500 ease-out"
+        className="flex"
         style={{
-          paddingLeft: 'calc(50% - (min(85vw, 340px) / 2))',
-          paddingRight: 'calc(50% - (min(85vw, 340px) / 2))',
-          gap: '12px',
-          transform: `translateX(calc(-${promoIndex} * (min(85vw, 340px) + 12px)))`,
+          paddingLeft: `${PADDING}px`,
+          paddingRight: `${PADDING}px`,
+          gap: `${GAP}px`,
+          transform: `translateX(${translateX}px)`,
+          transition: isDragging ? 'none' : 'transform 500ms ease-out',
+          touchAction: 'pan-y',
         }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {PROMO_SLIDES.map((promo) => (
           <div
             key={promo.id}
-            className="flex-shrink-0 w-[85vw] max-w-[340px] rounded-2xl overflow-hidden shadow-lg"
+            className="flex-shrink-0 rounded-2xl overflow-hidden shadow-lg"
+            style={{ width: slideWidth || 'auto' }}
           >
             <div className="relative overflow-hidden rounded-2xl p-4 text-white" style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}>
               {/* Purple ribbon accent (top-right) */}
@@ -90,7 +157,10 @@ export function ExplorePromoCarousel({
             key={i}
             type="button"
             aria-label={`สไลด์ ${i + 1}`}
-            onClick={() => setPromoIndex(i)}
+            onClick={() => {
+              setPromoIndex(i);
+              startAutoPlay();
+            }}
             className="h-1.5 rounded-full transition-all duration-300"
             style={i === promoIndex ? { width: '20px', background: '#F28A2E' } : { width: '6px', background: '#D1D5DB' }}
           />
