@@ -14,7 +14,14 @@ import {
   Sparkles,
   ShoppingBag,
   Tag,
+  Cat,
+  Pill,
+  Bone,
+  Scissors,
+  Package,
+  Volleyball,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { PROMO_SLIDES } from '../../components/features/explore/constants';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
 import { ImageWithFallback } from '../../components/shared';
@@ -210,6 +217,51 @@ function ProductCarouselSection({
   );
 }
 
+/* ── Desktop Categories (fixed 6 items) ──────────────────── */
+const DESKTOP_FIXED_CATEGORIES: { name: string; icon: LucideIcon; color: string }[] = [
+  { name: 'ของเล่น', icon: Volleyball, color: 'bg-[#FF7A00]/10 text-[#FF7A00]' },
+  { name: 'อาหารสัตว์เลี้ยง', icon: Cat, color: 'bg-[#A238FF]/10 text-[#A238FF]' },
+  { name: 'ขนมสัตว์เลี้ยง', icon: Bone, color: 'bg-amber-50 text-amber-500' },
+  { name: 'อาหารเสริม', icon: Pill, color: 'bg-emerald-50 text-emerald-600' },
+  { name: 'เสื้อผ้า', icon: Scissors, color: 'bg-pink-50 text-pink-600' },
+  { name: 'แพ็คเกจจิ้ง', icon: Package, color: 'bg-purple-50 text-purple-600' },
+];
+
+function DesktopCategories() {
+  const navigate = useNavigate();
+
+  return (
+    <section>
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+        {DESKTOP_FIXED_CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          return (
+            <div
+              key={cat.name}
+              onClick={() => navigate('/factory-ideas')}
+              className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
+            >
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${cat.color} group-hover:scale-110 transition-transform`}>
+                <Icon size={24} />
+              </div>
+              <span className="text-sm font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]">{cat.name}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-center mt-4">
+        <button
+          type="button"
+          onClick={() => navigate('/factory-ideas')}
+          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-10 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+        >
+          ดูเพิ่มเติม <ChevronRight size={15} />
+        </button>
+      </div>
+    </section>
+  );
+}
+
 type ExploreDesktopProps = {
   searchText: string;
   setSearchText: (v: string) => void;
@@ -344,25 +396,7 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
-        <section>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-            {categories.map((cat, i) => {
-              const catBgs = ['bg-[#A656A0]/10','bg-[#292259]/8','bg-[#F28A2E]/10','bg-[#F27830]/10','bg-[#A656A0]/8','bg-[#292259]/10'];
-              const catBorders = ['border-[#A656A0]/20','border-[#292259]/15','border-[#F28A2E]/20','border-[#F27830]/20','border-[#A656A0]/15','border-[#292259]/20'];
-              return (
-                <div
-                  key={cat.id}
-                  className={`bg-white border ${catBorders[i % 6]} rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md transition-all cursor-pointer group`}
-                >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${catBgs[i % 6]} border ${catBorders[i % 6]} group-hover:scale-110 transition-transform`}>
-                    <span className="text-2xl leading-none">{cat.icon}</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 text-center">{cat.name}</span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        <DesktopCategories />
 
         {/* ═══ 5. สินค้าแนะนำ — Maaboom-style layout ═══ */}
         <ProductCarouselSection title="สินค้าแนะนำ" items={RECOMMENDED_PRODUCTS} bannerImg="https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700" bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง" />

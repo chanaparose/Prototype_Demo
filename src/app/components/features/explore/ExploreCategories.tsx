@@ -1,10 +1,32 @@
 import React from 'react';
+import { Link } from 'react-router';
+import {
+  Cat,
+  Pill,
+  Bone,
+  Scissors,
+  Package,
+  Volleyball,
+  ChevronRight,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 export type CategoryItem = {
   id: string;
   name: string;
-  icon: string;
+  parentId?: string | null;
 };
+
+type IconConfig = { icon: LucideIcon; color: string };
+
+const FIXED_CATEGORIES: { name: string; icon: LucideIcon; color: string }[] = [
+  { name: 'ของเล่น', icon: Volleyball, color: 'bg-[#FF7A00]/10 text-[#FF7A00]' },
+  { name: 'อาหารสัตว์เลี้ยง', icon: Cat, color: 'bg-[#A238FF]/10 text-[#A238FF]' },
+  { name: 'ขนมสัตว์เลี้ยง', icon: Bone, color: 'bg-amber-50 text-amber-500' },
+  { name: 'อาหารเสริม', icon: Pill, color: 'bg-emerald-50 text-emerald-600' },
+  { name: 'เสื้อผ้า', icon: Scissors, color: 'bg-pink-50 text-pink-600' },
+  { name: 'แพ็คเกจจิ้ง', icon: Package, color: 'bg-purple-50 text-purple-600' },
+];
 
 type ExploreCategoriesProps = {
   categories: CategoryItem[];
@@ -14,37 +36,31 @@ export function ExploreCategories({ categories }: ExploreCategoriesProps) {
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between px-4 mb-3">
-        <h3 className="text-gray-800" style={{ fontWeight: 700 }}>
-          หมวดหมู่
-        </h3>
-        <button type="button" className="text-[#A656A0]" style={{ fontSize: 13 }}>
-          ดูทั้งหมด
-        </button>
+        <h3 className="text-gray-800 font-bold">หมวดหมู่</h3>
+        <Link
+          to="/factory-ideas"
+          className="text-[#A238FF] text-[13px] flex items-center gap-0.5 hover:underline"
+        >
+          ดูทั้งหมด <ChevronRight size={14} />
+        </Link>
       </div>
-      <div
-        className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {categories.map((cat, i) => {
-          const paletteBg = [
-            'bg-[#A656A0]/10 border-[#A656A0]/20',
-            'bg-[#292259]/8 border-[#292259]/15',
-            'bg-[#F28A2E]/10 border-[#F28A2E]/20',
-            'bg-[#F27830]/8 border-[#F27830]/15',
-            'bg-[#A656A0]/8 border-[#A656A0]/15',
-          ];
+
+      <div className="grid grid-cols-3 gap-3 px-4">
+        {FIXED_CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
           return (
-            <div
-              key={cat.id}
-              className="flex flex-col items-center gap-1.5 min-w-[64px] cursor-pointer group"
+            <Link
+              key={cat.name}
+              to="/factory-ideas"
+              className="bg-white border border-gray-100 rounded-2xl p-3 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
             >
-              <div className={`w-14 h-14 rounded-full ${paletteBg[i % 5]} border shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                <span className="text-xl leading-none">{cat.icon}</span>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${cat.color} group-hover:scale-110 transition-transform`}>
+                <Icon size={22} />
               </div>
-              <span className="text-gray-600 whitespace-nowrap" style={{ fontSize: 11 }}>
+              <span className="text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-[#2D1B4E]">
                 {cat.name}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>
