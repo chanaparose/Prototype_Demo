@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ChevronLeft, Bell } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import {
   RfqDetailStatusCard,
@@ -9,6 +9,13 @@ import {
   HISTORY_STATUSES,
   STATUS_LABEL,
 } from '../../components/features/rfq-detail';
+
+const COLORS = {
+  purple: '#7A4B94',
+  orange: '#E38844',
+  blue: '#2E2252',
+  lightPurpleBg: '#F8F6FA',
+};
 
 export function RFQDetailMobile() {
   const { id } = useParams<{ id: string }>();
@@ -29,26 +36,27 @@ export function RFQDetailMobile() {
       : rfq.status === 'cancelled'
         ? { background: '#F1F5F9', color: '#64748B' }
         : { background: '#FEF3C7', color: '#B45309' }
-    : { background: '#EDE9FF', color: '#6C47FF' };
+    : { background: COLORS.lightPurpleBg, color: COLORS.purple };
 
   const statusLabel = isHistoryView
     ? STATUS_LABEL[rfq.status] ?? rfq.status
     : `${rfq.offerCount} ใบเสนอราคา`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <div className="flex items-center justify-between px-4 pt-5 pb-4">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.lightPurpleBg }}>
+      <div className="flex items-center justify-between px-4 pt-5 pb-4 bg-white border-b border-gray-100">
         <button
-          onClick={() => navigate(-1)}
-          className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
+          onClick={() => navigate('/orders')}
+          className="w-10 h-10 rounded-xl shadow-sm flex items-center justify-center"
+          style={{ backgroundColor: COLORS.lightPurpleBg }}
         >
-          <ChevronLeft size={22} className="text-gray-700" />
+          <ChevronLeft size={22} style={{ color: COLORS.blue }} />
         </button>
         <div className="text-center">
-          <p className="text-[10px] text-gray-400">RFQ Detail</p>
+          <p className="text-[10px]" style={{ color: COLORS.orange }}>RFQ Detail</p>
           <h1
-            className="text-sm text-gray-900 max-w-[200px] truncate"
-            style={{ fontWeight: 700 }}
+            className="text-sm max-w-[200px] truncate"
+            style={{ fontWeight: 700, color: COLORS.blue }}
           >
             {rfq.projectName}
           </h1>
@@ -56,7 +64,7 @@ export function RFQDetailMobile() {
         <div className="w-10 h-10" aria-hidden />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4">
         <RfqDetailStatusCard
           rfq={rfq}
           isHistoryView={isHistoryView}
@@ -83,4 +91,3 @@ export function RFQDetailMobile() {
     </div>
   );
 }
-

@@ -40,15 +40,15 @@ export function DesktopSidebar() {
       <div className="flex items-center h-16 px-5 border-b border-gray-100 shrink-0">
         <Link to="/" className="flex items-center gap-2.5 w-full">
           <div
-            className="h-8 px-2.5 rounded-xl flex items-center gap-1.5 shrink-0 shadow-md"
-            style={{ background: '#A238FF', boxShadow: '0 4px 12px rgba(162,56,255,0.30)' }}
+            className="h-8 px-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm"
+            style={{ background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
           >
-            <Factory className="text-white shrink-0" size={15} strokeWidth={2.5} />
-            <span className="text-white text-xs font-bold leading-none whitespace-nowrap">
+            <Factory className="shrink-0" size={15} strokeWidth={2.5} style={{ color: '#A238FF' }} />
+            <span className="text-xs font-bold leading-none whitespace-nowrap" style={{ color: '#A238FF' }}>
               WeMake
             </span>
           </div>
-          <span className="text-sm font-semibold text-[#2D1B4E]">Manufacturing</span>
+          <span className="text-sm font-semibold" style={{ color: '#2D1B4E' }}>Manufacturing</span>
         </Link>
       </div>
 
@@ -72,7 +72,7 @@ export function DesktopSidebar() {
               {path === '/messages' && unreadMessages > 0 && (
                 <span
                   className="w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
-                  style={{ background: '#FF7A00' }}
+                  style={{ background: '#F28A2E' }}
                 >
                   {unreadMessages}
                 </span>
@@ -98,7 +98,7 @@ export function DesktopSidebar() {
       <div className="mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden" style={{ background: '#F8F5FF', borderColor: 'rgba(162,56,255,0.20)' }}>
         <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl" style={{ background: 'rgba(162,56,255,0.10)' }}></div>
         <div className="flex items-center gap-1.5 mb-1.5">
-          <Wallet size={13} style={{ color: '#FF7A00' }} />
+          <Wallet size={13} style={{ color: '#F28A2E' }} />
           <span className="text-[11px] font-medium text-gray-500">กระเป๋าเงิน</span>
         </div>
         <p className="text-base font-bold" style={{ color: '#2D1B4E' }}>
@@ -114,7 +114,7 @@ export function DesktopSidebar() {
         <button
           onClick={() => navigate('/create-rfq')}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: '#A238FF', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
+          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
         >
           <Plus size={18} />
           สร้าง RFQ ใหม่
@@ -145,7 +145,7 @@ export function DesktopSidebar() {
             <Bell size={17} style={{ color: '#A238FF' }} />
             <span
               className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full text-white text-[8px] flex items-center justify-center font-bold border-2 border-white"
-              style={{ background: '#FF7A00' }}
+              style={{ background: '#F28A2E' }}
             >
               3
             </span>
