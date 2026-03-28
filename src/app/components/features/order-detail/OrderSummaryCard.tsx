@@ -33,7 +33,7 @@ export function OrderSummaryCard({ order, relatedFactory }: OrderSummaryCardProp
   return (
     <div
       className="rounded-2xl p-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+      style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
     >
       <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white" />
       <div className="relative z-10">

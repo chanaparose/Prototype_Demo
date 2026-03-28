@@ -43,7 +43,8 @@ export function ProductDetailMobile() {
         <button
           type="button"
           onClick={() => navigate('/factory-ideas')}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-purple-600"
+          className="mb-4 inline-flex items-center gap-1 text-sm"
+          style={{ color: '#7A4B94' }}
         >
           <ArrowLeft className="w-4 h-4" />
           กลับหน้าแนะนำโรงงาน
@@ -79,10 +80,13 @@ export function ProductDetailMobile() {
           className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
           aria-label="แชทกับโรงงาน"
         >
-          <MessageCircle className="w-5 h-5" style={{ color: '#6C47FF' }} />
+          <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
         </button>
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 mb-2">
+          <span
+            className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2"
+            style={{ background: 'rgba(227,136,68,0.90)' }}
+          >
             สินค้า
           </span>
           <h1 className="text-lg leading-snug" style={{ fontWeight: 700 }}>
@@ -92,6 +96,7 @@ export function ProductDetailMobile() {
       </div>
 
       <div className="px-4 pt-4 space-y-3">
+        {/* Factory row */}
         <div
           onClick={() => navigate(`/factories/${item.factoryId}`)}
           className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
@@ -99,11 +104,11 @@ export function ProductDetailMobile() {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="text-sm text-gray-900 truncate" style={{ fontWeight: 700 }}>
+                <p className="text-sm truncate" style={{ fontWeight: 700, color: '#2E2252' }}>
                   {item.factoryName}
                 </p>
                 {factory?.verified && (
-                  <BadgeCheck className="w-4 h-4 text-purple-600 shrink-0" />
+                  <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: '#7A4B94' }} />
                 )}
               </div>
               <div className="mt-1 text-xs text-gray-500 flex items-center gap-2">
@@ -122,62 +127,70 @@ export function ProductDetailMobile() {
           </div>
         </div>
 
+        {/* Product detail */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
-          <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+          <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
             รายละเอียดสินค้า
           </p>
           <p className="text-sm text-gray-600">{item.excerpt}</p>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-xl bg-gray-50 p-2.5">
+            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">หมวดหมู่</p>
-              <p className="text-gray-700 mt-0.5">{item.category}</p>
+              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.category}</p>
             </div>
-            <div className="rounded-xl bg-gray-50 p-2.5">
+            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">ขั้นต่ำการผลิต</p>
-              <p className="text-gray-700 mt-0.5">MOQ {item.minOrder}</p>
+              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>MOQ {item.minOrder}</p>
             </div>
-            <div className="rounded-xl bg-gray-50 p-2.5">
+            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">ระยะเวลาผลิต</p>
-              <p className="text-gray-700 mt-0.5">{item.leadTime}</p>
+              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.leadTime}</p>
             </div>
-            <div className="rounded-xl bg-gray-50 p-2.5">
+            <div className="rounded-xl p-2.5" style={{ background: '#FFF4E8' }}>
               <p className="text-gray-400">ความสนใจ</p>
-              <p className="text-gray-700 mt-0.5 inline-flex items-center gap-1">
+              <p className="mt-0.5 inline-flex items-center gap-1" style={{ color: '#E38844', fontWeight: 600 }}>
                 <Heart className="w-3 h-3" /> {item.likes}
               </p>
             </div>
           </div>
         </div>
 
+        {/* Highlights */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-900 mb-2.5" style={{ fontWeight: 700 }}>
+          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
             จุดเด่นที่เหมาะกับแบรนด์
           </p>
           <div className="space-y-2 text-sm text-gray-600">
             <p className="flex items-start gap-2">
-              <PackageCheck className="w-4 h-4 mt-0.5 text-purple-600" />
+              <PackageCheck className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
               รองรับ OEM/Private Label สำหรับผู้เริ่มต้นและแบรนด์ที่ต้องการขยายไลน์
             </p>
             <p className="flex items-start gap-2">
-              <Clock3 className="w-4 h-4 mt-0.5 text-purple-600" />
+              <Clock3 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />
               กำหนด timeline ผลิตชัดเจน ช่วยวางแผนเปิดตัวสินค้าได้ง่าย
             </p>
             <p className="flex items-start gap-2">
-              <Building2 className="w-4 h-4 mt-0.5 text-purple-600" />
+              <Building2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
               มีโรงงานที่เชี่ยวชาญเฉพาะด้าน พร้อมทีมให้คำแนะนำก่อนเริ่มผลิต
             </p>
           </div>
         </div>
 
+        {/* Tags */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-900 mb-2" style={{ fontWeight: 700 }}>
+          <p className="text-sm mb-2" style={{ fontWeight: 700, color: '#2E2252' }}>
             แท็กสินค้า
           </p>
           <div className="flex flex-wrap gap-2">
             {item.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs"
+                style={{
+                  background: 'rgba(122,75,148,0.10)',
+                  color: '#7A4B94',
+                  border: '1px solid rgba(122,75,148,0.20)',
+                }}
               >
                 <Tag className="w-3 h-3" />
                 {tag}
@@ -186,8 +199,9 @@ export function ProductDetailMobile() {
           </div>
         </div>
 
+        {/* Info before factory */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-900 mb-2.5" style={{ fontWeight: 700 }}>
+          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
             ข้อมูลที่ควรแจ้งโรงงานก่อนเริ่มผลิต
           </p>
           <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">

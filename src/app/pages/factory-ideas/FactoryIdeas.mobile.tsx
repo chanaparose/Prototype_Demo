@@ -1,8 +1,26 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, BadgeCheck, Heart, Sparkles, X } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
+import { masterApi } from '../../services/api';
+
+/** แปลงผล GET /master/product-categories → ชื่อหมวดที่ใช้กรอง (ให้ตรงกับ showcase.category) */
+function parseProductCategoryNames(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  const names: string[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    const nameRaw = o.name ?? o.name_th ?? o.category_name ?? o.label;
+    const name = typeof nameRaw === 'string' ? nameRaw.trim() : String(nameRaw ?? '').trim();
+    if (!name || seen.has(name)) continue;
+    seen.add(name);
+    names.push(name);
+  }
+  return names.sort((a, b) => a.localeCompare(b, 'th'));
+}
 
 const COLORS = {
   purple: '#7A4B94',
@@ -40,12 +58,30 @@ export function FactoryIdeasMobile() {
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [dbCategoryNames, setDbCategoryNames] = useState<string[]>([]);
   const data = useData();
 
-  const categoryFilters = useMemo(
-    () => [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...data.categories.map((c) => ({ id: c.name, name: c.name }))],
-    [data.categories],
-  );
+  useEffect(() => {
+    let cancelled = false;
+    masterApi
+      .productCategories()
+      .then((raw) => {
+        if (!cancelled) setDbCategoryNames(parseProductCategoryNames(raw));
+      })
+      .catch(() => {
+        if (!cancelled) setDbCategoryNames([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const categoryFilters = useMemo(() => {
+    const fromDb = dbCategoryNames.map((name) => ({ id: name, name }));
+    const fromContext = data.categories.map((c) => ({ id: c.name, name: c.name }));
+    const source = fromDb.length > 0 ? fromDb : fromContext;
+    return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...source];
+  }, [dbCategoryNames, data.categories]);
 
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();

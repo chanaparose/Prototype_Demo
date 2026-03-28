@@ -51,12 +51,12 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                       style={{
                         background:
                           milestone.status === 'completed'
-                            ? '#6C47FF'
+                            ? '#A238FF'
                             : milestone.status === 'current'
-                              ? '#EDE9FF'
+                              ? 'rgba(162,56,255,0.12)'
                               : '#F3F4F6',
                         border:
-                          milestone.status === 'current' ? '2px solid #6C47FF' : 'none',
+                          milestone.status === 'current' ? '2px solid #A238FF' : 'none',
                       }}
                     >
                       {milestone.status === 'completed' ? (
@@ -64,7 +64,7 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                       ) : milestone.status === 'current' ? (
                         <div
                           className="w-3 h-3 rounded-full animate-pulse"
-                          style={{ background: '#6C47FF' }}
+                          style={{ background: '#A238FF' }}
                         />
                       ) : (
                         <Circle size={16} className="text-gray-300" />
@@ -75,7 +75,7 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                         className="w-0.5 flex-1 my-1"
                         style={{
                           background:
-                            milestone.status === 'completed' ? '#6C47FF' : '#E5E7EB',
+                            milestone.status === 'completed' ? '#A238FF' : '#E5E7EB',
                           minHeight: milestone.photo ? 120 : 32,
                         }}
                       />
@@ -91,7 +91,7 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                             fontWeight: 600,
                             color:
                               milestone.status === 'current'
-                                ? '#6C47FF'
+                                ? '#A238FF'
                                 : milestone.status === 'completed'
                                   ? '#1F2937'
                                   : '#9CA3AF',
@@ -117,8 +117,8 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                         <span
                           className="px-2 py-0.5 rounded-full text-[9px] ml-2"
                           style={{
-                            background: '#EDE9FF',
-                            color: '#6C47FF',
+                            background: 'rgba(162,56,255,0.12)',
+                            color: '#A238FF',
                             fontWeight: 600,
                           }}
                         >
@@ -157,19 +157,19 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
         )}
       </div>
 
-      <div className="bg-gradient-to-br from-[#F6F1FF] to-[#F3EFFF] border border-[#E9DEFF] rounded-2xl p-4">
+      <div className="bg-gradient-to-br from-[#F8F6FA] to-[#F3EFF8] border border-[rgba(162,56,255,0.20)] rounded-2xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-gray-700 text-sm">ความคืบหน้าโดยรวม</span>
-          <span className="text-[#6C47FF] text-base" style={{ fontWeight: 700 }}>
+          <span className="text-[#A238FF] text-base" style={{ fontWeight: 700 }}>
             {order.progress}%
           </span>
         </div>
-        <div className="h-3 bg-white rounded-full overflow-hidden border border-[#E9DEFF]">
+        <div className="h-3 bg-white rounded-full overflow-hidden border border-[rgba(162,56,255,0.20)]">
           <div
             className="h-full rounded-full"
             style={{
               width: `${order.progress}%`,
-              background: 'linear-gradient(90deg, #6C47FF, #8B5CF6)',
+              background: 'linear-gradient(90deg, #A238FF, #4A267D)',
             }}
           />
         </div>

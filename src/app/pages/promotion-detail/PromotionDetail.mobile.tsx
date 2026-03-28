@@ -9,6 +9,8 @@ import {
   MessageCircle,
   Tag,
   TicketPercent,
+  Star,
+  Heart,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
@@ -42,7 +44,8 @@ export function PromotionDetailMobile() {
         <button
           type="button"
           onClick={() => navigate('/factory-ideas')}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-purple-600"
+          className="mb-4 inline-flex items-center gap-1 text-sm"
+          style={{ color: '#7A4B94' }}
         >
           <ArrowLeft className="w-4 h-4" />
           กลับหน้าแนะนำโรงงาน
@@ -56,8 +59,13 @@ export function PromotionDetailMobile() {
 
   return (
     <div>
+      {/* Hero */}
       <div className="relative h-56">
-        <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
+        <ImageWithFallback
+          src={item.image}
+          alt={item.title}
+          className="w-full h-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <button
           type="button"
@@ -74,10 +82,13 @@ export function PromotionDetailMobile() {
           className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
           aria-label="แชทกับโรงงาน"
         >
-          <MessageCircle className="w-5 h-5" style={{ color: '#6C47FF' }} />
+          <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
         </button>
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/90 mb-2">
+          <span
+            className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2"
+            style={{ background: 'rgba(227,136,68,0.90)' }}
+          >
             โปรโมชัน
           </span>
           <h1 className="text-lg leading-snug" style={{ fontWeight: 700 }}>
@@ -87,6 +98,7 @@ export function PromotionDetailMobile() {
       </div>
 
       <div className="px-4 pt-4 space-y-3">
+        {/* Factory row */}
         <div
           onClick={() => navigate(`/factories/${item.factoryId}`)}
           className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
@@ -94,57 +106,105 @@ export function PromotionDetailMobile() {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="text-sm text-gray-900 truncate" style={{ fontWeight: 700 }}>
+                <p className="text-sm truncate" style={{ fontWeight: 700, color: '#2E2252' }}>
                   {item.factoryName}
                 </p>
-                {factory?.verified && <BadgeCheck className="w-4 h-4 text-purple-600 shrink-0" />}
+                {factory?.verified && (
+                  <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: '#7A4B94' }} />
+                )}
               </div>
-              <p className="mt-1 text-xs text-gray-500 inline-flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                {factory?.location ?? '-'}
-              </p>
+              <div className="mt-1 text-xs text-gray-500 flex items-center gap-2">
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  {factory?.location ?? '-'}
+                </span>
+                <span>•</span>
+                <span>เรต {factory?.rating ?? '-'}</span>
+              </div>
             </div>
-            <p className="text-xs text-gray-500">{formatThaiDate(item.postedAt)}</p>
+            <div className="text-right text-xs text-gray-500">
+              <p>เผยแพร่</p>
+              <p style={{ fontWeight: 600 }}>{formatThaiDate(item.postedAt)}</p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100 shadow-sm">
-          <p className="text-xs text-amber-700 mb-1">ดีลพิเศษจากโรงงาน</p>
+        {/* Deal highlight */}
+        <div
+          className="rounded-2xl p-4 shadow-sm"
+          style={{ background: '#FFF4E8', border: '1px solid rgba(227,136,68,0.25)' }}
+        >
+          <p className="text-xs mb-1 font-semibold" style={{ color: '#E38844' }}>
+            ดีลพิเศษจากโรงงาน
+          </p>
           <p className="text-sm text-gray-800" style={{ fontWeight: 700 }}>
             {item.excerpt}
           </p>
         </div>
 
+        {/* Stats */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
+          <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
+            รายละเอียดโปรโมชัน
+          </p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
+              <p className="text-gray-400">หมวดหมู่</p>
+              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.category}</p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
+              <p className="text-gray-400">ขั้นต่ำการผลิต</p>
+              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>MOQ {item.minOrder}</p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
+              <p className="text-gray-400">ระยะเวลาผลิต</p>
+              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.leadTime}</p>
+            </div>
+            <div className="rounded-xl p-2.5" style={{ background: '#FFF4E8' }}>
+              <p className="text-gray-400">ความสนใจ</p>
+              <p className="mt-0.5 inline-flex items-center gap-1" style={{ color: '#E38844', fontWeight: 600 }}>
+                <Heart className="w-3 h-3" /> {item.likes}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Conditions */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 700 }}>
+          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
             เงื่อนไขโปรโมชัน
           </p>
           <div className="space-y-2 text-sm text-gray-600">
             <p className="flex items-start gap-2">
-              <CirclePercent className="w-4 h-4 mt-0.5 text-amber-600" />
+              <CirclePercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
               สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญ
             </p>
             <p className="flex items-start gap-2">
-              <CalendarClock className="w-4 h-4 mt-0.5 text-amber-600" />
+              <CalendarClock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />
               ระยะเวลาผลิตโดยเฉลี่ย {item.leadTime} (ขึ้นอยู่กับสเปกจริง)
             </p>
             <p className="flex items-start gap-2">
-              <TicketPercent className="w-4 h-4 mt-0.5 text-amber-600" />
+              <TicketPercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
               ขั้นต่ำการสั่งผลิตที่ MOQ {item.minOrder}
             </p>
           </div>
         </div>
 
+        {/* Tags */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-900 mb-2" style={{ fontWeight: 700 }}>
+          <p className="text-sm mb-2" style={{ fontWeight: 700, color: '#2E2252' }}>
             หมวดและแท็ก
           </p>
-          <p className="text-xs text-gray-500 mb-2">หมวดหมู่: {item.category}</p>
           <div className="flex flex-wrap gap-2">
             {item.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs"
+                style={{
+                  background: 'rgba(122,75,148,0.10)',
+                  color: '#7A4B94',
+                  border: '1px solid rgba(122,75,148,0.20)',
+                }}
               >
                 <Tag className="w-3 h-3" />
                 {tag}
@@ -153,8 +213,9 @@ export function PromotionDetailMobile() {
           </div>
         </div>
 
+        {/* Before claiming */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-900 mb-2.5" style={{ fontWeight: 700 }}>
+          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
             รายละเอียดที่จำเป็นก่อนรับโปรโมชัน
           </p>
           <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
@@ -168,4 +229,3 @@ export function PromotionDetailMobile() {
     </div>
   );
 }
-

@@ -26,11 +26,11 @@ export function MessagesDesktop({
         {/* Header */}
         <div className="px-5 pt-6 pb-4 border-b border-gray-100">
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-bold text-gray-900">ข้อความ</h2>
+            <h2 className="text-lg font-bold" style={{ color: '#2E2252' }}>ข้อความ</h2>
             {totalUnread > 0 && (
               <span
                 className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-bold"
-                style={{ background: '#6C47FF' }}
+                style={{ background: '#E38844' }}
               >
                 {totalUnread}
               </span>
@@ -55,11 +55,11 @@ export function MessagesDesktop({
             <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
-                style={{ background: '#EDE9FF' }}
+                style={{ background: 'rgba(122,75,148,0.10)' }}
               >
-                <MessageCircle size={26} style={{ color: '#6C47FF' }} />
+                <MessageCircle size={26} style={{ color: '#7A4B94' }} />
               </div>
-              <p className="text-gray-700 font-semibold text-sm mb-1">ยังไม่มีข้อความ</p>
+              <p className="font-semibold text-sm mb-1" style={{ color: '#2E2252' }}>ยังไม่มีข้อความ</p>
               <p className="text-xs text-gray-400">ข้อความจะปรากฏหลังจากส่ง RFQ</p>
             </div>
           ) : (
@@ -72,7 +72,8 @@ export function MessagesDesktop({
                     onClick={() => setSelectedId(conv.id)}
                     className="w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors"
                     style={{
-                      backgroundColor: isActive ? '#EEF2FF' : 'transparent',
+                      backgroundColor: isActive ? '#F8F6FA' : 'transparent',
+                      borderLeft: isActive ? '3px solid #7A4B94' : '3px solid transparent',
                     }}
                   >
                     <div className="relative shrink-0">
@@ -82,7 +83,10 @@ export function MessagesDesktop({
                         className="w-11 h-11 rounded-xl object-cover"
                       />
                       {conv.hasQuote && (
-                        <span className="absolute -bottom-1 -right-1 rounded-full bg-green-500 text-white text-[9px] font-bold flex items-center justify-center w-[18px] h-[18px]">
+                        <span
+                          className="absolute -bottom-1 -right-1 rounded-full text-white text-[9px] font-bold flex items-center justify-center w-[18px] h-[18px]"
+                          style={{ background: '#E38844' }}
+                        >
                           ฿
                         </span>
                       )}
@@ -90,8 +94,8 @@ export function MessagesDesktop({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-0.5">
                         <p
-                          className="text-sm text-gray-900 truncate"
-                          style={{ fontWeight: conv.unread > 0 ? 700 : 600 }}
+                          className="text-sm truncate"
+                          style={{ fontWeight: conv.unread > 0 ? 700 : 600, color: '#2E2252' }}
                         >
                           {conv.factoryName}
                         </p>
@@ -99,7 +103,7 @@ export function MessagesDesktop({
                           {conv.time}
                         </span>
                       </div>
-                      <p className="text-[10px] text-gray-400 mb-0.5 truncate">{conv.rfqName}</p>
+                      <p className="text-[10px] mb-0.5 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>
                       <div className="flex items-center justify-between">
                         <p
                           className="text-xs truncate"
@@ -113,7 +117,7 @@ export function MessagesDesktop({
                         {conv.unread > 0 && (
                           <span
                             className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2 font-bold"
-                            style={{ background: '#6C47FF' }}
+                            style={{ background: '#E38844' }}
                           >
                             {conv.unread}
                           </span>
@@ -138,11 +142,11 @@ export function MessagesDesktop({
           <div className="flex flex-col items-center justify-center flex-1">
             <div
               className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5"
-              style={{ background: 'linear-gradient(135deg, #EDE9FF, #DDD6FE)' }}
+              style={{ background: 'linear-gradient(135deg, #2D1B4E, #4A267D)' }}
             >
-              <MessageSquareDot size={36} style={{ color: '#6C47FF' }} />
+              <MessageSquareDot size={36} style={{ color: '#EBD3FF' }} />
             </div>
-            <h3 className="text-gray-900 font-bold text-lg mb-2">เลือกการสนทนา</h3>
+            <h3 className="font-bold text-lg mb-2" style={{ color: '#2E2252' }}>เลือกการสนทนา</h3>
             <p className="text-gray-500 text-sm leading-relaxed mb-2">
               เลือกการสนทนาจากรายการทางซ้ายเพื่อเริ่มแชทกับโรงงาน
             </p>
@@ -152,4 +156,3 @@ export function MessagesDesktop({
     </div>
   );
 }
-
