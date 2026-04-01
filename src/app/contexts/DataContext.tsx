@@ -7,6 +7,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { frontendApi, categoriesApi } from '../services/api';
+import * as fallbackData from '../data/mockData';
 
 // ─── Types (matching mockData shapes) ───────────────────────────
 export type Category = {
@@ -248,28 +249,45 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       // then we can also call granular endpoints for fresh data on specific pages
       const data = await frontendApi.getMockData();
 
+      // Helper: use API data if non-empty array, otherwise fallback to local mockData
+      const arr = <T,>(apiVal: unknown, fb: T[]): T[] => {
+        const a = apiVal as T[] | undefined;
+        return Array.isArray(a) && a.length > 0 ? a : fb;
+      };
+
       setState({
-        currentUser: (data.currentUser as CurrentUser) ?? null,
-        categories: (data.categories as Category[]) ?? [],
-        factories: (data.factories as Factory[]) ?? [],
-        factoryProfiles: (data.factoryProfiles as FactoryProfile[]) ?? [],
-        factoryReviews: (data.factoryReviews as FactoryReview[]) ?? [],
-        ideaArticles: (data.ideaArticles as IdeaArticle[]) ?? [],
-        factoryShowcases: (data.factoryShowcases as FactoryShowcase[]) ?? [],
-        rfqs: (data.rfqs as Rfq[]) ?? [],
-        orders: (data.orders as Order[]) ?? [],
-        conversations: (data.conversations as Conversation[]) ?? [],
-        notifications: (data.notifications as Notification[]) ?? [],
+        currentUser: (data.currentUser as CurrentUser) ?? (fallbackData.currentUser as CurrentUser),
+        categories: arr<Category>(data.categories, fallbackData.categories as Category[]),
+        factories: arr<Factory>(data.factories, fallbackData.factories as Factory[]),
+        factoryProfiles: arr<FactoryProfile>(data.factoryProfiles, fallbackData.factoryProfiles as FactoryProfile[]),
+        factoryReviews: arr<FactoryReview>(data.factoryReviews, fallbackData.factoryReviews as FactoryReview[]),
+        ideaArticles: arr<IdeaArticle>(data.ideaArticles, fallbackData.ideaArticles as IdeaArticle[]),
+        factoryShowcases: arr<FactoryShowcase>(data.factoryShowcases, fallbackData.factoryShowcases as FactoryShowcase[]),
+        rfqs: arr<Rfq>(data.rfqs, fallbackData.rfqs as Rfq[]),
+        orders: arr<Order>(data.orders, fallbackData.orders as Order[]),
+        conversations: arr<Conversation>(data.conversations, fallbackData.conversations as Conversation[]),
+        notifications: arr<Notification>(data.notifications, fallbackData.notifications as Notification[]),
         isLoading: false,
         error: null,
       });
     } catch (err) {
-      console.error('Failed to fetch data:', err);
-      setState((prev) => ({
-        ...prev,
+      console.error('Failed to fetch data, using fallback:', err);
+      // ถ้า API ล้มเหลวทั้งหมด ใช้ mockData แทน
+      setState({
+        currentUser: fallbackData.currentUser as CurrentUser,
+        categories: fallbackData.categories as Category[],
+        factories: fallbackData.factories as Factory[],
+        factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
+        factoryReviews: fallbackData.factoryReviews as FactoryReview[],
+        ideaArticles: fallbackData.ideaArticles as IdeaArticle[],
+        factoryShowcases: fallbackData.factoryShowcases as FactoryShowcase[],
+        rfqs: fallbackData.rfqs as Rfq[],
+        orders: fallbackData.orders as Order[],
+        conversations: fallbackData.conversations as Conversation[],
+        notifications: fallbackData.notifications as Notification[],
         isLoading: false,
-        error: err instanceof Error ? err.message : 'Failed to load data',
-      }));
+        error: null,
+      });
     }
   }, [isAuthenticated]);
 

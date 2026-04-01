@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Search,
@@ -13,6 +13,15 @@ import {
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
+import { masterApi } from '../../services/api';
+import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
+import {
+  factoryIdeasCategoryOptionSelected,
+  factoryIdeasSelectedCategoryLabel,
+  parseMasterProductCategories,
+  showcaseMatchesSelectedCategoryId,
+} from '../../utils/exploreToFactoryIdeasCategory';
+import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -49,17 +58,54 @@ export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryOpen, setCategoryOpen] = useState(false);
+  /** หมวดทั้งหมดจาก GET /categories + GET /master/product-categories (Explore ยังคงแสดงแค่ 6 การ์ด) */
+  const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
   const data = useData();
 
-  const categoryFilters = useMemo(
-    () => [
-      { id: 'all', name: 'ทุกหมวดหมู่' },
-      ...data.categories.map((c) => ({ id: c.name, name: c.name })),
-    ],
-    [data.categories],
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetchExploreCategoriesMerged();
+        if (cancelled) return;
+        let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
+        if (rows.length === 0) {
+          try {
+            const raw = await masterApi.productCategories();
+            if (!cancelled) rows = parseMasterProductCategories(raw);
+          } catch {
+            /* keep [] */
+          }
+        }
+        if (!cancelled) setApiCategoriesAll(rows);
+      } catch {
+        if (!cancelled) setApiCategoriesAll([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /** dropdown: รายการจาก API ก่อน แล้วต่อด้วยหมวดจาก bundle ที่ยังไม่มี id ซ้ำ */
+  const categoryFilters = useMemo(() => {
+    const byId = new Map<string, string>();
+    for (const c of apiCategoriesAll) byId.set(String(c.id), c.name);
+    for (const c of data.categories) {
+      const id = String(c.id);
+      if (!byId.has(id)) byId.set(id, c.name);
+    }
+    const rest = [...byId.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+    return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
+  }, [apiCategoriesAll, data.categories]);
+
+  const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
+    data.categories,
+    apiCategoriesAll,
   );
 
   const visibleItems = useMemo(() => {
@@ -67,7 +113,12 @@ export function FactoryIdeasDesktop() {
     return data.factoryShowcases
       .filter((item) => {
         const byType = selectedType === 'all' || item.contentType === selectedType;
-        const byCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        const byCategory = showcaseMatchesSelectedCategoryId(
+          item.category,
+          effectiveCategoryId,
+          apiCategoriesAll,
+          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+        );
         if (!q) return byType && byCategory;
         const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
           .join(' ')
@@ -75,7 +126,7 @@ export function FactoryIdeasDesktop() {
         return byType && byCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, selectedCategory]);
+  }, [searchText, selectedType, effectiveCategoryId, data.factoryShowcases, apiCategoriesAll, data.categories]);
 
   const getDetailPath = (type: string, id: string) => {
     if (type === 'product') return `/factory-ideas/products/${id}`;
@@ -83,7 +134,10 @@ export function FactoryIdeasDesktop() {
     return `/factory-ideas/ideas/${id}`;
   };
 
-  const selectedCategoryName = categoryFilters.find((c) => c.id === selectedCategory)?.name ?? 'ทุกหมวดหมู่';
+  const selectedCategoryName = factoryIdeasSelectedCategoryLabel(
+    effectiveCategoryId,
+    categoryFilters,
+  );
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ backgroundColor: COLORS.lightPurpleBg }}>
@@ -152,10 +206,10 @@ export function FactoryIdeasDesktop() {
                 onClick={() => setCategoryOpen(!categoryOpen)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all"
                 style={{
-                  borderColor: selectedCategory !== 'all' ? COLORS.purple : '#E5E7EB',
-                  backgroundColor: selectedCategory !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
-                  color: selectedCategory !== 'all' ? COLORS.purple : '#4B5563',
-                  fontWeight: selectedCategory !== 'all' ? 600 : 400,
+                  borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : '#E5E7EB',
+                  backgroundColor: effectiveCategoryId !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
+                  color: effectiveCategoryId !== 'all' ? COLORS.purple : '#4B5563',
+                  fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
                 }}
               >
                 {selectedCategoryName}
@@ -167,15 +221,23 @@ export function FactoryIdeasDesktop() {
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => { setSelectedCategory(cat.id); setCategoryOpen(false); }}
+                      onClick={() => { applyCategory(cat.id); setCategoryOpen(false); }}
                       className="w-full px-4 py-2 text-left text-[13px] transition-colors"
                       style={{
-                        color: selectedCategory === cat.id ? COLORS.purple : '#374151',
-                        fontWeight: selectedCategory === cat.id ? 600 : 400,
-                        backgroundColor: selectedCategory === cat.id ? COLORS.lightPurpleBg : 'transparent',
+                        color: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? COLORS.purple : '#374151',
+                        fontWeight: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? 600 : 400,
+                        backgroundColor: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                          ? COLORS.lightPurpleBg
+                          : 'transparent',
                       }}
-                      onMouseEnter={(e) => { if (selectedCategory !== cat.id) e.currentTarget.style.backgroundColor = COLORS.lightPurpleBg; }}
-                      onMouseLeave={(e) => { if (selectedCategory !== cat.id) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      onMouseEnter={(e) => {
+                        if (!factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id))
+                          e.currentTarget.style.backgroundColor = COLORS.lightPurpleBg;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id))
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
                     >
                       {cat.name}
                     </button>

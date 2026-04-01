@@ -189,6 +189,23 @@ export const frontendApi = {
   getRfq: (id: string | number) => api.get<Record<string, unknown>>(`/frontend/rfqs/${id}`),
   getOrder: (id: string | number) => api.get<Record<string, unknown>>(`/frontend/orders/${id}`),
   getMessageThreads: () => api.get<unknown[]>('/frontend/messages/threads'),
+  /** Aggregated explore data — products + promotions + promo_codes + factories + categories + idea_articles */
+  getExplore: () =>
+    api.get<{
+      products: unknown[];
+      promotions: unknown[];
+      promo_codes: unknown[];
+      factories: unknown[];
+      idea_articles: unknown[];
+      categories: unknown[];
+    }>('/frontend/explore'),
+  getProducts: (limit = 8, categoryId?: string) => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (categoryId) params.set('category_id', categoryId);
+    return api.get<unknown[]>(`/frontend/products?${params}`);
+  },
+  getPromotions: (limit = 4) => api.get<unknown[]>(`/frontend/promotions?limit=${limit}`),
+  getPromoCodes: () => api.get<unknown[]>('/frontend/promo-codes'),
 };
 
 // ─── CRUD endpoints ─────────────────────────────────────────────
@@ -238,9 +255,14 @@ export const messagesApi = {
     receiver_id: number;
     content: string;
     attachment_url?: string;
+    conv_id?: number;
+    message_type?: string; // TX (text), QT (quote), IM (image)
+    quote_data?: string | null; // JSON string for QT type
   }) => api.post('/messages/', data),
   list: (referenceType: string, referenceId: string) =>
     api.get<unknown[]>(`/messages/?reference_type=${referenceType}&reference_id=${referenceId}`),
+  listByConversation: (convId: number | string) =>
+    api.get<unknown[]>(`/messages/?conv_id=${convId}`),
   threads: () => api.get<unknown[]>('/messages/threads'),
 };
 
@@ -258,6 +280,127 @@ export const masterApi = {
   productionSteps: () => api.get<unknown[]>('/master/production-steps'),
   units: () => api.get<unknown[]>('/master/units'),
   shippingMethods: () => api.get<unknown[]>('/master/shipping-methods'),
+};
+
+// ─── Showcases API ─────────────────────────────────────────────
+export const showcasesApi = {
+  list: (type?: string) => api.get<unknown[]>(`/showcases${type ? `?type=${type}` : ''}`),
+  create: (data: {
+    content_type: string;
+    title: string;
+    excerpt?: string;
+    image_url?: string;
+    category_id?: number;
+    min_order?: number;
+    lead_time_days?: number;
+  }) => api.post<Record<string, unknown>>('/showcases', data),
+};
+
+// ─── Promo Slides API ──────────────────────────────────────────
+export const promoSlidesApi = {
+  list: () => api.get<unknown[]>('/promo-slides'),
+};
+
+// ─── Conversations API ─────────────────────────────────────────
+export const conversationsApi = {
+  list: () => api.get<unknown[]>('/conversations'),
+  get: (convId: number | string) => api.get<Record<string, unknown>>(`/conversations/${convId}`),
+  create: (data: { customer_id: number; factory_id: number }) =>
+    api.post<Record<string, unknown>>('/conversations', data),
+};
+
+// ─── Notifications API ─────────────────────────────────────────
+export const notificationsApi = {
+  list: () => api.get<unknown[]>('/notifications'),
+  markAsRead: (notiId: number | string) =>
+    api.patch<Record<string, unknown>>(`/notifications/${notiId}/read`),
+};
+
+// ─── Favorites API ─────────────────────────────────────────────
+export const favoritesApi = {
+  list: () => api.get<unknown[]>('/favorites'),
+  add: (showcaseId: number) => api.post<Record<string, unknown>>('/favorites', { showcase_id: showcaseId }),
+  remove: (showcaseId: number | string) => api.delete(`/favorites/${showcaseId}`),
+};
+
+// ─── Reviews API ───────────────────────────────────────────────
+export const reviewsApi = {
+  listByFactory: (factoryId: number | string) =>
+    api.get<unknown[]>(`/factories/${factoryId}/reviews`),
+  create: (factoryId: number | string, data: { rating: number; comment: string }) =>
+    api.post<Record<string, unknown>>(`/factories/${factoryId}/reviews`, data),
+};
+
+// ─── Certificates API ──────────────────────────────────────────
+export const certificatesApi = {
+  listByFactory: (factoryId: number | string) =>
+    api.get<unknown[]>(`/factories/${factoryId}/certificates`),
+  create: (
+    factoryId: number | string,
+    data: { cert_id: number; document_url: string; expire_date?: string; cert_number?: string },
+  ) => api.post<Record<string, unknown>>(`/factories/${factoryId}/certificates`, data),
+};
+
+// ─── Quotations API ────────────────────────────────────────────
+export const quotationsApi = {
+  get: (quotationId: number | string) =>
+    api.get<Record<string, unknown>>(`/quotations/${quotationId}`),
+  updateStatus: (quotationId: number | string, status: string) =>
+    api.patch<Record<string, unknown>>(`/quotations/${quotationId}/status`, { status }),
+};
+
+// ─── Addresses API ─────────────────────────────────────────────
+export const addressesApi = {
+  list: () => api.get<unknown[]>('/addresses'),
+  create: (data: {
+    address_type: string;
+    address_detail: string;
+    sub_district_id: number;
+    district_id: number;
+    province_id: number;
+    zip_code: string;
+    is_default?: boolean;
+  }) => api.post<Record<string, unknown>>('/addresses', data),
+  update: (addressId: number | string, data: Record<string, unknown>) =>
+    api.patch<Record<string, unknown>>(`/addresses/${addressId}`, data),
+};
+
+// ─── Transactions API ──────────────────────────────────────────
+export const transactionsApi = {
+  list: () => api.get<unknown[]>('/transactions'),
+  create: (data: { wallet_id: number; order_id?: number; type: string; amount: number }) =>
+    api.post<Record<string, unknown>>('/transactions', data),
+  updateStatus: (txId: string, status: string) =>
+    api.patch<Record<string, unknown>>(`/transactions/${txId}/status`, { status }),
+};
+
+// ─── Production Updates API ────────────────────────────────────
+export const productionUpdatesApi = {
+  patch: (updateId: number | string, data: Record<string, unknown>) =>
+    api.patch<Record<string, unknown>>(`/production-updates/${updateId}`, data),
+};
+
+// ─── Media Upload API ──────────────────────────────────────────
+export const mediaApi = {
+  upload: async (file: File): Promise<{ url: string; file_name: string; size: number }> => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${BASE_URL}/media/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(
+        extractErrorMessage(errorData, `Upload failed: ${res.status}`),
+      );
+    }
+    return res.json();
+  },
 };
 
 // ─── Health Check (different base) ──────────────────────────────

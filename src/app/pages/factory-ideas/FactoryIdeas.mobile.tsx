@@ -4,23 +4,13 @@ import { Search, BadgeCheck, Heart, Sparkles, X } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
 import { masterApi } from '../../services/api';
-
-/** แปลงผล GET /master/product-categories → ชื่อหมวดที่ใช้กรอง (ให้ตรงกับ showcase.category) */
-function parseProductCategoryNames(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  const seen = new Set<string>();
-  const names: string[] = [];
-  for (const item of raw) {
-    if (!item || typeof item !== 'object') continue;
-    const o = item as Record<string, unknown>;
-    const nameRaw = o.name ?? o.name_th ?? o.category_name ?? o.label;
-    const name = typeof nameRaw === 'string' ? nameRaw.trim() : String(nameRaw ?? '').trim();
-    if (!name || seen.has(name)) continue;
-    seen.add(name);
-    names.push(name);
-  }
-  return names.sort((a, b) => a.localeCompare(b, 'th'));
-}
+import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
+import {
+  factoryIdeasCategoryOptionSelected,
+  parseMasterProductCategories,
+  showcaseMatchesSelectedCategoryId,
+} from '../../utils/exploreToFactoryIdeasCategory';
+import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -57,45 +47,70 @@ export function FactoryIdeasMobile() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [dbCategoryNames, setDbCategoryNames] = useState<string[]>([]);
+  const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
   const data = useData();
 
   useEffect(() => {
     let cancelled = false;
-    masterApi
-      .productCategories()
-      .then((raw) => {
-        if (!cancelled) setDbCategoryNames(parseProductCategoryNames(raw));
-      })
-      .catch(() => {
-        if (!cancelled) setDbCategoryNames([]);
-      });
+    (async () => {
+      try {
+        const res = await fetchExploreCategoriesMerged();
+        if (cancelled) return;
+        let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
+        if (rows.length === 0) {
+          try {
+            const raw = await masterApi.productCategories();
+            if (!cancelled) rows = parseMasterProductCategories(raw);
+          } catch {
+            /* keep [] */
+          }
+        }
+        if (!cancelled) setApiCategoriesAll(rows);
+      } catch {
+        if (!cancelled) setApiCategoriesAll([]);
+      }
+    })();
     return () => {
       cancelled = true;
     };
   }, []);
 
   const categoryFilters = useMemo(() => {
-    const fromDb = dbCategoryNames.map((name) => ({ id: name, name }));
-    const fromContext = data.categories.map((c) => ({ id: c.name, name: c.name }));
-    const source = fromDb.length > 0 ? fromDb : fromContext;
-    return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...source];
-  }, [dbCategoryNames, data.categories]);
+    const byId = new Map<string, string>();
+    for (const c of apiCategoriesAll) byId.set(String(c.id), c.name);
+    for (const c of data.categories) {
+      const id = String(c.id);
+      if (!byId.has(id)) byId.set(id, c.name);
+    }
+    const rest = [...byId.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+    return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
+  }, [apiCategoriesAll, data.categories]);
+
+  const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
+    data.categories,
+    apiCategoriesAll,
+  );
 
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     return data.factoryShowcases
       .filter((item) => {
         const byType     = selectedType === 'all' || item.contentType === selectedType;
-        const byCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        const byCategory = showcaseMatchesSelectedCategoryId(
+          item.category,
+          effectiveCategoryId,
+          apiCategoriesAll,
+          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+        );
         if (!q) return byType && byCategory;
         const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
           .join(' ').toLowerCase();
         return byType && byCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, selectedCategory]);
+  }, [searchText, selectedType, effectiveCategoryId, data.factoryShowcases, apiCategoriesAll, data.categories]);
 
   const getDetailPath = (type: string, id: string) => {
     if (type === 'product')   return `/factory-ideas/products/${id}`;
@@ -181,15 +196,21 @@ export function FactoryIdeasMobile() {
         <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
           {categoryFilters.map((cat) => (
             <button
-              key={cat.id}
+              key={cat.id === 'all' ? 'all' : `cat-${cat.id}`}
               type="button"
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => applyCategory(cat.id)}
               className="shrink-0 px-3.5 py-1 rounded-full text-[11px] transition-all"
               style={{
-                background: selectedCategory === cat.id ? COLORS.blue : 'rgba(46,34,82,0.05)',
-                color:      selectedCategory === cat.id ? COLORS.white : COLORS.blue,
-                border:     selectedCategory === cat.id ? `1px solid ${COLORS.blue}` : '1px solid rgba(46,34,82,0.12)',
-                fontWeight: selectedCategory === cat.id ? 600 : 400,
+                background: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                  ? COLORS.blue
+                  : 'rgba(46,34,82,0.05)',
+                color: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                  ? COLORS.white
+                  : COLORS.blue,
+                border: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                  ? `1px solid ${COLORS.blue}`
+                  : '1px solid rgba(46,34,82,0.12)',
+                fontWeight: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? 600 : 400,
               }}
             >
               {cat.name}

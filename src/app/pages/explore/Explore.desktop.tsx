@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Search,
@@ -14,41 +14,16 @@ import {
   Sparkles,
   ShoppingBag,
   Tag,
-  Cat,
-  Pill,
-  Bone,
-  Scissors,
-  Package,
-  Volleyball,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { PROMO_SLIDES } from '../../components/features/explore/constants';
+import { PROMO_SLIDES as FALLBACK_PROMO_SLIDES } from '../../components/features/explore/constants';
+import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/exploreCategoryTilesConfig';
+import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
 import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '../../components/features/explore/ExploreIdeaArticles';
-
-/* ── Mock data for สินค้าแนะนำ ─────────────────────────── */
-const RECOMMENDED_PRODUCTS = [
-  { id: 'p1', title: 'อาหารแมว Holistic สูตรไก่-แอปเปิล', price: '฿1,200.00', img: 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=400' },
-  { id: 'p2', title: 'ขนมสุนัขออร์แกนิค ไม่มีสารกันบูด', price: '฿350.00', img: 'https://images.unsplash.com/photo-1589924749359-9697080c3577?w=400' },
-  { id: 'p3', title: 'เสื้อสเวตเตอร์สัตว์เลี้ยง Size M', price: '฿250.00', img: 'https://images.unsplash.com/photo-1768745888568-b3ef7c7ba366?w=400' },
-  { id: 'p4', title: 'แชมพูอาบน้ำสุนัข สูตรอ่อนโยน', price: '฿180.00', img: 'https://images.unsplash.com/photo-1625279138836-e7311d5c863a?w=400' },
-  { id: 'p5', title: 'ของเล่นยางกัดสุนัข กลิ่นมิ้นท์', price: '฿120.00', img: 'https://images.unsplash.com/photo-1589924749359-9697080c3577?w=400' },
-  { id: 'p6', title: 'อาหารเสริมบำรุงขน Omega 3', price: '฿450.00', img: 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=400' },
-  { id: 'p7', title: 'บ้านแมวไม้ยางพารา Size L', price: '฿2,500.00', img: 'https://images.unsplash.com/photo-1768745888568-b3ef7c7ba366?w=400' },
-  { id: 'p8', title: 'สายจูงสุนัข Retractable 5m', price: '฿890.00', img: 'https://images.unsplash.com/photo-1625279138836-e7311d5c863a?w=400' },
-];
-
-/* ── Mock data for โปรโมชันแนะนำ ────────────────────────── */
-const RECOMMENDED_PROMOS = [
-  { id: 'rp1', title: 'แพ็กเกจอาบน้ำ-ตัดขน VIP', desc: 'บริการดูแลความสะอาดแบบพรีเมียม', price: '฿850.00', img: 'https://images.unsplash.com/photo-1625279138836-e7311d5c863a?w=400', tag: 'บริการ' },
-  { id: 'rp2', title: 'ลด 15% ค่าผลิตครั้งแรก', desc: 'ใช้โค้ด FIRST15 เมื่อสร้าง RFQ ใหม่', price: 'ลดสูงสุด ฿2,000', img: 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=400', tag: 'ส่วนลด' },
-  { id: 'rp3', title: 'บริการสระว่ายน้ำสุนัข', desc: 'ออกกำลังกายเสริมสุขภาพที่ดี', price: '฿500.00 - ฿3,500.00', img: 'https://images.unsplash.com/photo-1589924749359-9697080c3577?w=400', tag: 'บริการ' },
-  { id: 'rp4', title: 'ส่วนลด 500 บาท', desc: 'เมื่อสั่งซื้อขั้นต่ำ 5,000 บาท', price: 'โค้ด: PET500', img: 'https://images.unsplash.com/photo-1768745888568-b3ef7c7ba366?w=400', tag: 'ส่วนลด' },
-];
-
+import type { FactoryShowcase } from '../../contexts/DataContext';
 /* ── ProductCarouselSection: maaboom.com-style left banner + auto-scrolling card carousel ── */
 type ProductItem = { id: string; title: string; price: string; img: string; discount?: string };
 
@@ -217,34 +192,68 @@ function ProductCarouselSection({
   );
 }
 
-/* ── Desktop Categories (fixed 6 items) ──────────────────── */
-const DESKTOP_FIXED_CATEGORIES: { name: string; icon: LucideIcon; color: string }[] = [
-  { name: 'ของเล่น', icon: Volleyball, color: 'bg-[#FF7A00]/10 text-[#FF7A00]' },
-  { name: 'อาหารสัตว์เลี้ยง', icon: Cat, color: 'bg-[#A238FF]/10 text-[#A238FF]' },
-  { name: 'ขนมสัตว์เลี้ยง', icon: Bone, color: 'bg-amber-50 text-amber-500' },
-  { name: 'อาหารเสริม', icon: Pill, color: 'bg-emerald-50 text-emerald-600' },
-  { name: 'เสื้อผ้า', icon: Scissors, color: 'bg-pink-50 text-pink-600' },
-  { name: 'แพ็คเกจจิ้ง', icon: Package, color: 'bg-purple-50 text-purple-600' },
-];
-
-function DesktopCategories() {
+function DesktopCategories({
+  categories,
+  mergedFromApi,
+  apiLoading,
+  apiError,
+  onRetryCategoriesApi,
+}: {
+  categories: CategoryItem[];
+  mergedFromApi: CategoryItem[];
+  apiLoading: boolean;
+  apiError: string | null;
+  onRetryCategoriesApi: () => void;
+}) {
   const navigate = useNavigate();
 
   return (
     <section>
+      {apiLoading && (
+        <p className="text-sm text-gray-400 mb-3" aria-live="polite">
+          กำลังโหลดชื่อหมวดจากฐานข้อมูล…
+        </p>
+      )}
+      {apiError && !apiLoading && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-sm text-amber-900" role="alert">
+          <span>{apiError}</span>
+          <button
+            type="button"
+            onClick={() => void onRetryCategoriesApi()}
+            className="ml-2 font-semibold text-[#A238FF] underline hover:no-underline"
+          >
+            ลองอีกครั้ง
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-        {DESKTOP_FIXED_CATEGORIES.map((cat) => {
-          const Icon = cat.icon;
+        {EXPLORE_CATEGORY_TILES.map((cfg) => {
+          const Icon = cfg.icon;
+          const displayName = exploreDisplayNameForTile(
+            cfg.categoryId,
+            cfg.fallbackName,
+            mergedFromApi,
+            categories,
+          );
+          const href = `/factory-ideas?category_id=${encodeURIComponent(cfg.categoryId)}`;
           return (
             <div
-              key={cat.name}
-              onClick={() => navigate('/factory-ideas')}
+              key={cfg.categoryId}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(href)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(href);
+                }
+              }}
               className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
             >
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${cat.color} group-hover:scale-110 transition-transform`}>
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${cfg.color} group-hover:scale-110 transition-transform`}>
                 <Icon size={24} />
               </div>
-              <span className="text-sm font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]">{cat.name}</span>
+              <span className="text-sm font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]">{displayName}</span>
             </div>
           );
         })}
@@ -268,10 +277,19 @@ type ExploreDesktopProps = {
   copiedId: string | null;
   setCopiedId: (v: string | null) => void;
   categories: CategoryItem[];
+  exploreCategoriesMerged: CategoryItem[];
+  exploreCategoriesLoading: boolean;
+  exploreCategoriesError: string | null;
+  reloadExploreCategories: () => void;
   factories: FactoryItem[];
   activeRFQs: any[];
   recentOrders: any[];
   ideaArticles: IdeaArticleItem[];
+  factoryShowcases: FactoryShowcase[];
+  exploreProducts: unknown[];
+  explorePromotions: unknown[];
+  explorePromoCodes: unknown[];
+  promoSlides: unknown[];
 };
 
 export function ExploreDesktop({
@@ -280,10 +298,44 @@ export function ExploreDesktop({
   copiedId,
   setCopiedId,
   categories,
+  exploreCategoriesMerged,
+  exploreCategoriesLoading,
+  exploreCategoriesError,
+  reloadExploreCategories,
   factories,
   ideaArticles,
+  factoryShowcases,
+  exploreProducts,
+  explorePromotions,
+  explorePromoCodes,
+  promoSlides,
 }: ExploreDesktopProps) {
   const navigate = useNavigate();
+
+  const productShowcases = useMemo(
+    () => factoryShowcases.filter((s) => s.contentType === 'product').slice(0, 8).map((s) => ({
+      id: s.id, title: s.title, price: `MOQ ${s.minOrder}`, img: s.image,
+    })),
+    [factoryShowcases],
+  );
+
+  const promoShowcases = useMemo(
+    () => factoryShowcases.filter((s) => s.contentType === 'promotion').slice(0, 4),
+    [factoryShowcases],
+  );
+
+  // Merge API promo slides/codes into display slides, fallback to constant
+  const desktopPromoSlides = useMemo(() => {
+    const fromApi = [...(promoSlides as any[]), ...(explorePromoCodes as any[])]
+      .map((r: any) => ({
+        id: String(r.slide_id ?? r.id ?? ''),
+        title: String(r.title ?? ''),
+        subtitle: String(r.subtitle ?? ''),
+        code: String(r.code ?? ''),
+      }))
+      .filter((s) => s.id && s.title);
+    return fromApi.length > 0 ? fromApi : FALLBACK_PROMO_SLIDES;
+  }, [promoSlides, explorePromoCodes]);
 
   const handleCopy = (code: string, id: string) => {
     navigator.clipboard?.writeText(code);
@@ -355,7 +407,7 @@ export function ExploreDesktop({
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            {PROMO_SLIDES.map((promo) => (
+            {desktopPromoSlides.map((promo) => (
               <div
                 key={promo.id}
                 className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all"
@@ -396,10 +448,18 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
-        <DesktopCategories />
+        <DesktopCategories
+          categories={categories}
+          mergedFromApi={exploreCategoriesMerged}
+          apiLoading={exploreCategoriesLoading}
+          apiError={exploreCategoriesError}
+          onRetryCategoriesApi={reloadExploreCategories}
+        />
 
-        {/* ═══ 5. สินค้าแนะนำ — Maaboom-style layout ═══ */}
-        <ProductCarouselSection title="สินค้าแนะนำ" items={RECOMMENDED_PRODUCTS} bannerImg="https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700" bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง" />
+        {/* ═══ 5. สินค้าแนะนำ — from factoryShowcases ═══ */}
+        {productShowcases.length > 0 && (
+          <ProductCarouselSection title="สินค้าแนะนำ" items={productShowcases} bannerImg={productShowcases[0]?.img ?? 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'} bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง" />
+        )}
 
         {/* ═══ 6. โรงงานแนะนำ ═══ */}
         <section className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
@@ -517,21 +577,21 @@ export function ExploreDesktop({
               </div>
             </div>
 
-            {/* Right Scrollable Cards — Orange accents */}
+            {/* Right Scrollable Cards — from factoryShowcases */}
             <div className="lg:w-[60%] flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
-              {RECOMMENDED_PROMOS.map((item) => (
-                <div key={item.id} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
+              {promoShowcases.map((item) => (
+                <div key={item.id} onClick={() => navigate(`/promotion/${item.id}`)} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
                   <div className="h-36 relative overflow-hidden bg-gray-100">
-                    <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute top-2 left-2 bg-[#F28A2E] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
-                      {item.tag}
+                      โปรโมชัน
                     </div>
                   </div>
                   <div className="p-4 flex flex-col flex-1">
                     <h3 className="font-bold text-sm text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h3>
-                    <p className="text-xs text-gray-500 mb-3 line-clamp-2">{item.desc}</p>
-                    <div className="mt-auto pt-3 border-t border-[#F28A2E]/10 font-bold text-[#F27830]">
-                      {item.price}
+                    <p className="text-xs text-gray-500 mb-3 line-clamp-2">{item.excerpt}</p>
+                    <div className="mt-auto pt-3 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-sm">
+                      {item.factoryName}
                     </div>
                   </div>
                 </div>
