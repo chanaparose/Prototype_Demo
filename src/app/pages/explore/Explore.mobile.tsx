@@ -49,14 +49,22 @@ export function ExploreMobile({
   const navigate = useNavigate();
 
   const productShowcases = useMemo(
-    () => factoryShowcases.filter((s) => s.contentType === 'product').slice(0, 4),
+    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'product').slice(0, 4),
     [factoryShowcases],
   );
 
   const promoShowcases = useMemo(
-    () => factoryShowcases.filter((s) => s.contentType === 'promotion').slice(0, 4),
+    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'promotion').slice(0, 4),
     [factoryShowcases],
   );
+
+  const productBannerImg =
+    productShowcases[0]?.image ??
+    'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700';
+  const hasProductShowcases = productShowcases.length > 0;
+  const hasPromoShowcases = promoShowcases.length > 0;
+  const PROMO_BANNER_IMG =
+    'https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600';
 
   return (
     <div className="lg:hidden pt-5 pb-4 space-y-5">
@@ -109,93 +117,189 @@ export function ExploreMobile({
         onRetryCategoriesApi={reloadExploreCategories}
       />
 
-      {/* สินค้าแนะนำ (Mobile) — from factoryShowcases */}
-      {productShowcases.length > 0 && (
-        <div className="mb-5">
-          <div className="flex items-center justify-between px-4 mb-3">
-            <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-              <ShoppingBag size={16} className="text-[#F28A2E]" /> สินค้าแนะนำ
-            </h3>
-            <button onClick={() => navigate('/factory-ideas?type=product')} className="text-[#A656A0] text-xs font-medium flex items-center gap-0.5">
-              ดูเพิ่มเติม <ChevronRight size={14} />
-            </button>
+      {/* สินค้าแนะนำ (Mobile) — แบนเนอร์ PET SHOP แสดงเสมอ; grid เมื่อมีข้อมูล */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between px-4 mb-3">
+          <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
+            <ShoppingBag size={16} className="text-[#F28A2E]" /> สินค้าแนะนำ
+          </h3>
+          <button
+            type="button"
+            onClick={() => navigate('/factory-ideas?type=product')}
+            className="text-[#A656A0] text-xs font-medium flex items-center gap-0.5"
+          >
+            ดูเพิ่มเติม <ChevronRight size={14} />
+          </button>
+        </div>
+        <div className="px-4 space-y-3">
+          {/* แบนเนอร์เดียวกับ desktop (ซ้าย maaboom-style) — full width บนมือถือ */}
+          <div
+            className="relative overflow-hidden rounded-2xl shadow-md min-h-[140px]"
+          >
+            <img
+              src={productBannerImg}
+              alt="สินค้าแนะนำ"
+              className="absolute inset-0 z-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#F27830]/45 via-[#F28A2E]/22 to-transparent" />
+            <div className="relative z-10 flex min-h-[140px] flex-col justify-between p-4">
+              <span className="self-start bg-[#F28A2E]/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow backdrop-blur-[2px]">
+                🐾 PET SHOP
+              </span>
+              <div>
+                <p className="text-white text-base font-black leading-tight drop-shadow-lg mb-1.5">
+                  คุ้มค่า ถูกใจสัตว์เลี้ยง
+                </p>
+                <span className="inline-block bg-white/20 border border-white/40 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">
+                  สำหรับสัตว์เลี้ยงแสนรัก
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="px-4">
-            <div className="grid grid-cols-2 gap-3">
-              {productShowcases.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => navigate(`/product/${item.id}`)}
-                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer"
-                >
-                  <div className="relative h-32 overflow-hidden bg-gray-50">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-2 left-2 w-5 h-5 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[9px]">
-                      🐾
+
+          {hasProductShowcases ? (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                {productShowcases.map((item) => (
+                  <div
+                    key={item.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => navigate(`/product/${item.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(`/product/${item.id}`);
+                      }
+                    }}
+                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer"
+                  >
+                    <div className="relative h-32 overflow-hidden bg-gray-50">
+                      <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="absolute top-2 left-2 w-5 h-5 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[9px]">
+                        🐾
+                      </div>
+                    </div>
+                    <div className="p-2.5">
+                      <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
+                      <p className="text-[11px] text-gray-500 truncate">{item.factoryName}</p>
                     </div>
                   </div>
-                  <div className="p-2.5">
-                    <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
-                    <p className="text-[11px] text-gray-500 truncate">{item.factoryName}</p>
+                ))}
+              </div>
+              <div className="flex justify-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => navigate('/factory-ideas?type=product')}
+                  className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-2 rounded-lg text-xs font-medium transition-colors"
+                >
+                  ดูเพิ่มเติม
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-6 text-center">
+              <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
+              <p className="mt-1 text-xs text-gray-400">ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง</p>
+              <button
+                type="button"
+                onClick={() => navigate('/factory-ideas?type=product')}
+                className="mt-3 w-full rounded-full border border-[#A656A0]/40 bg-white py-2.5 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
+              >
+                ดูไอเดียสินค้า
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ExploreFactoryGrid
+        factories={factories ?? []}
+        onFactoryClick={(id) => navigate(`/factories/${id}`)}
+      />
+
+      <ExploreIdeaArticles articles={ideaArticles ?? []} />
+
+      {/* โปรโมชันแนะนำ — แบนเนอร์ส้ม (เดียวกับ desktop) แสดงเสมอ; การ์ดเมื่อมีข้อมูล */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between px-4 mb-3">
+          <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
+            <Tag size={16} className="text-[#F27830]" /> โปรโมชันแนะนำ
+          </h3>
+          <button
+            type="button"
+            onClick={() => navigate('/factory-ideas?type=promotion')}
+            className="text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center gap-0.5 transition-colors"
+          >
+            ดูเพิ่มเติม <ChevronRight size={14} />
+          </button>
+        </div>
+        <div className="px-4 space-y-3">
+          {/* แบนเนอร์ซ้าย desktop — โหมดเต็มความกว้างบนมือถือ */}
+          <div className="relative min-h-[260px] overflow-hidden rounded-2xl shadow-md group">
+            <img
+              src={PROMO_BANNER_IMG}
+              alt="โปรโมชันแนะนำ"
+              className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 z-10 bg-gradient-to-tr from-[#F27830]/48 via-[#F28A2E]/24 to-transparent flex flex-col justify-end p-8">
+              <h3 className="mb-2 text-2xl font-black text-white drop-shadow-md sm:text-3xl">บริการ</h3>
+              <p className="mb-4 max-w-[90%] self-start rounded-full border border-white/25 bg-[#F27830]/65 px-4 py-1.5 text-sm font-medium text-white drop-shadow-md backdrop-blur-sm sm:text-lg">
+                สำหรับสัตว์เลี้ยงแสนรัก
+              </p>
+            </div>
+          </div>
+
+          {hasPromoShowcases ? (
+            <div
+              className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {promoShowcases.map((item) => (
+                <div
+                  key={item.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/promotion/${item.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/promotion/${item.id}`);
+                    }
+                  }}
+                  className="flex-shrink-0 w-[200px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer"
+                >
+                  <div className="h-28 relative overflow-hidden bg-gray-100">
+                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-2 left-2 bg-[#F28A2E] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
+                      โปรโมชัน
+                    </div>
+                  </div>
+                  <div className="p-3 flex flex-col flex-1">
+                    <h4 className="font-bold text-xs text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h4>
+                    <p className="text-[11px] text-gray-500 mb-2 line-clamp-2">{item.excerpt}</p>
+                    <div className="mt-auto pt-2 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-xs">
+                      {item.factoryName}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-3 flex justify-center">
-              <button onClick={() => navigate('/factory-ideas?type=product')} className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-2 rounded-lg text-xs font-medium transition-colors">
-                ดูเพิ่มเติม
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[#F28A2E]/25 bg-gradient-to-br from-orange-50/50 to-white px-4 py-6 text-center">
+              <p className="text-sm font-medium text-gray-600">ยังไม่มีโปรโมชันแนะนำในขณะนี้</p>
+              <p className="mt-1 text-xs text-gray-400">ดูไอเดียโปรโมชันได้จากปุ่มด้านล่าง</p>
+              <button
+                type="button"
+                onClick={() => navigate('/factory-ideas?type=promotion')}
+                className="mt-3 w-full rounded-full border border-[#F28A2E]/40 bg-white py-2.5 text-sm font-medium text-[#F27830] hover:bg-orange-50/80 transition-colors"
+              >
+                ดูไอเดียโปรโมชัน
               </button>
             </div>
-          </div>
+          )}
         </div>
-      )}
-
-      <ExploreFactoryGrid
-        factories={factories}
-        onFactoryClick={(id) => navigate(`/factories/${id}`)}
-      />
-
-      <ExploreIdeaArticles articles={ideaArticles} />
-
-      {/* โปรโมชันแนะนำ — from factoryShowcases */}
-      {promoShowcases.length > 0 && (
-        <div className="mb-5">
-          <div className="flex items-center justify-between px-4 mb-3">
-            <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-              <Tag size={16} className="text-[#F27830]" /> โปรโมชันแนะนำ
-            </h3>
-            <button onClick={() => navigate('/factory-ideas?type=promotion')} className="text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center gap-0.5 transition-colors">
-              ดูเพิ่มเติม <ChevronRight size={14} />
-            </button>
-          </div>
-          <div
-            className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {promoShowcases.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => navigate(`/promotion/${item.id}`)}
-                className="flex-shrink-0 w-[200px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer"
-              >
-                <div className="h-28 relative overflow-hidden bg-gray-100">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-2 left-2 bg-[#F28A2E] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
-                    โปรโมชัน
-                  </div>
-                </div>
-                <div className="p-3 flex flex-col flex-1">
-                  <h4 className="font-bold text-xs text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h4>
-                  <p className="text-[11px] text-gray-500 mb-2 line-clamp-2">{item.excerpt}</p>
-                  <div className="mt-auto pt-2 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-xs">
-                    {item.factoryName}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Registration CTA (Mobile) — matches desktop purple theme */}
       <div className="mx-4 rounded-2xl overflow-hidden shadow-sm border border-[#A238FF]/30 relative" style={{ background: 'linear-gradient(135deg, #F8F5FF 0%, #FAFAFA 100%)' }}>

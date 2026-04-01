@@ -42,21 +42,25 @@ function ProductCarouselSection({
   bannerImg: string;
   bannerText: string;
 }) {
+  const navigate = useNavigate();
+  const hasItems = items.length > 0;
   const [idx, setIdx] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isHovered = useRef(false);
-  const totalDots = Math.max(1, items.length - VISIBLE_CARDS + 1);
+  const totalDots = hasItems ? Math.max(1, items.length - VISIBLE_CARDS + 1) : 0;
 
   const goTo = useCallback((next: number) => {
+    if (!hasItems || totalDots <= 0) return;
     const clamped = Math.max(0, Math.min(next, totalDots - 1));
     setIdx(clamped);
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ left: clamped * CARD_W, behavior: 'smooth' });
     }
-  }, [totalDots]);
+  }, [hasItems, totalDots]);
 
-  /* Auto-scroll */
+  /* Auto-scroll — เฉพาะเมื่อมีการ์ดให้เลื่อน */
   useEffect(() => {
+    if (!hasItems || totalDots <= 1) return;
     const timer = setInterval(() => {
       if (!isHovered.current) {
         setIdx((prev) => {
@@ -69,7 +73,7 @@ function ProductCarouselSection({
       }
     }, AUTO_SCROLL_INTERVAL);
     return () => clearInterval(timer);
-  }, [totalDots]);
+  }, [hasItems, totalDots]);
 
   return (
     <section
@@ -82,7 +86,11 @@ function ProductCarouselSection({
           <ShoppingBag className="text-[#F28A2E]" size={20} />
           {title}
         </h2>
-        <button className="text-[#A656A0] text-sm font-medium hover:underline flex items-center gap-0.5 transition-colors">
+        <button
+          type="button"
+          onClick={() => navigate('/factory-ideas?type=product')}
+          className="text-[#A656A0] text-sm font-medium hover:underline flex items-center gap-0.5 transition-colors"
+        >
           ดูเพิ่มเติม <ChevronRight size={16} />
         </button>
       </div>
@@ -94,11 +102,11 @@ function ProductCarouselSection({
           <img
             src={bannerImg}
             alt={title}
-            className="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-105"
+            className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           {/* Gradient overlay — orange theme (soft / faded) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#F27830]/45 via-[#F28A2E]/22 to-transparent" />
-          <div className="absolute inset-0 flex flex-col justify-between p-4">
+          <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#F27830]/45 via-[#F28A2E]/22 to-transparent" />
+          <div className="absolute inset-0 z-10 flex flex-col justify-between p-4">
             {/* Top badge */}
             <span className="self-start bg-[#F28A2E]/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow backdrop-blur-[2px]">
               🐾 PET SHOP
@@ -115,77 +123,101 @@ function ProductCarouselSection({
           </div>
         </div>
 
-        {/* Right: card carousel + arrows + dots */}
+        {/* Right: card carousel + arrows + dots — หรือ empty state */}
         <div className="flex-1 relative min-w-0">
-          {/* Prev arrow — overlaps left edge of card area */}
-          <button
-            onClick={() => goTo(idx - 1)}
-            disabled={idx === 0}
-            className="absolute left-0 top-[calc(50%-20px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft size={18} className="text-gray-600" />
-          </button>
-
-          {/* Cards scroll area */}
-          <div
-            ref={scrollRef}
-            className="flex gap-3 overflow-x-hidden pb-1"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {items.map((product) => (
-              <div
-                key={product.id}
-                className="flex-shrink-0 w-[192px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
-              >
-                {/* Image — taller for product visibility */}
-                <div className="h-[180px] relative overflow-hidden bg-gray-50">
-                  <img
-                    src={product.img}
-                    alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {product.discount && (
-                    <span className="absolute top-2 right-2 bg-[#F28A2E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-                      {product.discount}
-                    </span>
-                  )}
-                  {/* Subtle paw badge */}
-                  <div className="absolute top-2 left-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[11px]">
-                    🐾
-                  </div>
-                </div>
-                {/* Card body */}
-                <div className="p-3 pb-4">
-                  <p className="text-gray-700 text-xs mb-2 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[32px]">
-                    {product.title}
-                  </p>
-                  <p className="font-bold text-[#F28A2E] text-base">{product.price}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Next arrow — overlaps right edge */}
-          <button
-            onClick={() => goTo(idx + 1)}
-            disabled={idx >= totalDots - 1}
-            className="absolute right-0 top-[calc(50%-20px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronRight size={18} className="text-gray-600" />
-          </button>
-
-          {/* Dot indicators */}
-          <div className="flex justify-center gap-1.5 mt-4">
-            {Array.from({ length: totalDots }).map((_, i) => (
+          {!hasItems ? (
+            <div
+              className="flex min-h-[290px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-6 text-center"
+            >
+              <ShoppingBag className="text-[#F28A2E]/50" size={40} />
+              <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
+              <p className="text-xs text-gray-400 max-w-sm">ลองดูไอเดียสินค้าและโรงงานได้จากลิงก์ด้านล่าง</p>
               <button
-                key={i}
-                onClick={() => goTo(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === idx ? 'w-6 bg-[#F28A2E]' : 'w-1.5 bg-gray-300 hover:bg-[#F28A2E]/50'
-                }`}
-              />
-            ))}
-          </div>
+                type="button"
+                onClick={() => navigate('/factory-ideas?type=product')}
+                className="mt-1 rounded-full border border-[#A656A0]/40 bg-white px-4 py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
+              >
+                ดูไอเดียสินค้า
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Prev arrow — overlaps left edge of card area */}
+              <button
+                type="button"
+                onClick={() => goTo(idx - 1)}
+                disabled={idx === 0}
+                className="absolute left-0 top-[calc(50%-20px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={18} className="text-gray-600" />
+              </button>
+
+              {/* Cards scroll area */}
+              <div
+                ref={scrollRef}
+                className="flex gap-3 overflow-x-hidden pb-1"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {items.map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex-shrink-0 w-[192px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
+                  >
+                    {/* Image — taller for product visibility */}
+                    <div className="h-[180px] relative overflow-hidden bg-gray-50">
+                      <img
+                        src={product.img}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {product.discount && (
+                        <span className="absolute top-2 right-2 bg-[#F28A2E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                          {product.discount}
+                        </span>
+                      )}
+                      {/* Subtle paw badge */}
+                      <div className="absolute top-2 left-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[11px]">
+                        🐾
+                      </div>
+                    </div>
+                    {/* Card body */}
+                    <div className="p-3 pb-4">
+                      <p className="text-gray-700 text-xs mb-2 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[32px]">
+                        {product.title}
+                      </p>
+                      <p className="font-bold text-[#F28A2E] text-base">{product.price}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Next arrow — overlaps right edge */}
+              <button
+                type="button"
+                onClick={() => goTo(idx + 1)}
+                disabled={idx >= totalDots - 1}
+                className="absolute right-0 top-[calc(50%-20px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={18} className="text-gray-600" />
+              </button>
+
+              {/* Dot indicators */}
+              {totalDots > 1 && (
+                <div className="flex justify-center gap-1.5 mt-4">
+                  {Array.from({ length: totalDots }).map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => goTo(i)}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        i === idx ? 'w-6 bg-[#F28A2E]' : 'w-1.5 bg-gray-300 hover:bg-[#F28A2E]/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </section>
@@ -311,22 +343,25 @@ export function ExploreDesktop({
   promoSlides,
 }: ExploreDesktopProps) {
   const navigate = useNavigate();
+  const ideaArticlesList = ideaArticles ?? [];
 
   const productShowcases = useMemo(
-    () => factoryShowcases.filter((s) => s.contentType === 'product').slice(0, 8).map((s) => ({
+    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'product').slice(0, 8).map((s) => ({
       id: s.id, title: s.title, price: `MOQ ${s.minOrder}`, img: s.image,
     })),
     [factoryShowcases],
   );
 
   const promoShowcases = useMemo(
-    () => factoryShowcases.filter((s) => s.contentType === 'promotion').slice(0, 4),
+    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'promotion').slice(0, 4),
     [factoryShowcases],
   );
 
   // Merge API promo slides/codes into display slides, fallback to constant
   const desktopPromoSlides = useMemo(() => {
-    const fromApi = [...(promoSlides as any[]), ...(explorePromoCodes as any[])]
+    const slides = Array.isArray(promoSlides) ? promoSlides : [];
+    const codes = Array.isArray(explorePromoCodes) ? explorePromoCodes : [];
+    const fromApi = [...slides, ...codes]
       .map((r: any) => ({
         id: String(r.slide_id ?? r.id ?? ''),
         title: String(r.title ?? ''),
@@ -456,10 +491,13 @@ export function ExploreDesktop({
           onRetryCategoriesApi={reloadExploreCategories}
         />
 
-        {/* ═══ 5. สินค้าแนะนำ — from factoryShowcases ═══ */}
-        {productShowcases.length > 0 && (
-          <ProductCarouselSection title="สินค้าแนะนำ" items={productShowcases} bannerImg={productShowcases[0]?.img ?? 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'} bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง" />
-        )}
+        {/* ═══ 5. สินค้าแนะนำ — from factoryShowcases (แบนเนอร์ซ้ายแสดงเสมอ) ═══ */}
+        <ProductCarouselSection
+          title="สินค้าแนะนำ"
+          items={productShowcases}
+          bannerImg={productShowcases[0]?.img ?? 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'}
+          bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง"
+        />
 
         {/* ═══ 6. โรงงานแนะนำ ═══ */}
         <section className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
@@ -501,7 +539,7 @@ export function ExploreDesktop({
 
           <div className="p-6 bg-gradient-to-b from-purple-50/20 to-white">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {factories.map((factory) => (
+              {(factories ?? []).map((factory) => (
                 <div
                   key={factory.id}
                   onClick={() => navigate(`/factories/${factory.id}`)}
@@ -611,30 +649,30 @@ export function ExploreDesktop({
 
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Left Large Article */}
-            {ideaArticles.length > 0 && (
+            {ideaArticlesList.length > 0 && (
               <div className="lg:w-[35%] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex-shrink-0 cursor-pointer group">
                 <div className="h-48 relative overflow-hidden">
                   <ImageWithFallback
-                    src={ideaArticles[0].image}
-                    alt={ideaArticles[0].title}
+                    src={ideaArticlesList[0].image}
+                    alt={ideaArticlesList[0].title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-xs font-bold text-[#A656A0] uppercase tracking-wide bg-white/95 backdrop-blur-sm border border-white/80 shadow-sm">
-                    {ideaArticles[0].tag}
+                    {ideaArticlesList[0].tag}
                   </span>
                 </div>
                 <div className="p-6">
                   <span className="text-xs font-bold text-[#A656A0] mb-2 uppercase tracking-wide">
-                    {ideaArticles[0].tag}
+                    {ideaArticlesList[0].tag}
                   </span>
                   <h3 className="text-lg font-bold text-[#292259] mb-2 group-hover:text-[#A656A0] transition-colors line-clamp-2">
-                    {ideaArticles[0].title}
+                    {ideaArticlesList[0].title}
                   </h3>
                   <p className="text-sm text-gray-500 line-clamp-2 mb-4">
-                    {ideaArticles[0].excerpt}
+                    {ideaArticlesList[0].excerpt}
                   </p>
                   <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <span className="font-medium text-gray-600">{ideaArticles[0].factoryName}</span>
+                    <span className="font-medium text-gray-600">{ideaArticlesList[0].factoryName}</span>
                   </div>
                 </div>
               </div>
@@ -642,7 +680,7 @@ export function ExploreDesktop({
 
             {/* Right Stacked Articles */}
             <div className="lg:w-[65%] flex flex-col gap-4 h-full justify-between">
-              {ideaArticles.slice(1).map((article) => (
+              {ideaArticlesList.slice(1).map((article) => (
                 <div
                   key={article.id}
                   className="flex bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group h-full max-h-[140px] flex-shrink-0 min-w-[300px]"
