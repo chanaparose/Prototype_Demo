@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Building2,
   Factory,
@@ -8,9 +8,11 @@ import {
   Newspaper,
   ShieldCheck,
   Star,
+  Send,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
 import { formatThaiDate } from './utils';
+import { reviewsApi } from '../../../services/api';
 
 export type TabId = 'products' | 'promotions' | 'articles' | 'about';
 
@@ -72,6 +74,7 @@ type FactoryProfileTabContentProps = {
   articleIdeas: IdeaArticle[];
   articleShowcases: ShowcaseItem[];
   factory: FactoryAbout;
+  factoryId?: string;
   profile: FactoryProfileExtra | null | undefined;
   reviews: ReviewItem[];
   onProductClick: (id: string) => void;
@@ -87,12 +90,32 @@ export function FactoryProfileTabContent({
   articleIdeas,
   articleShowcases,
   factory,
+  factoryId,
   profile,
   reviews,
   onProductClick,
   onPromotionClick,
   onIdeaClick,
 }: FactoryProfileTabContentProps) {
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewDone, setReviewDone] = useState(false);
+
+  const submitReview = async () => {
+    if (!factoryId || reviewSubmitting || reviewDone) return;
+    setReviewSubmitting(true);
+    try {
+      await reviewsApi.create(factoryId, { rating: reviewRating, comment: reviewComment });
+      setReviewDone(true);
+      setReviewComment('');
+    } catch {
+      // silently fail; user can retry
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
   return (
     <div className="px-4 pt-4 space-y-3">
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -307,6 +330,52 @@ export function FactoryProfileTabContent({
                 ))
               )}
             </div>
+
+            {/* Write a review */}
+            {factoryId && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs font-bold text-gray-700 mb-2">เขียนรีวิว</p>
+                {reviewDone ? (
+                  <p className="text-xs text-green-600 font-semibold">✓ ขอบคุณสำหรับรีวิว!</p>
+                ) : (
+                  <>
+                    <div className="flex gap-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          className="text-lg"
+                          aria-label={`${star} ดาว`}
+                        >
+                          <Star
+                            size={20}
+                            className={star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      placeholder="แบ่งปันประสบการณ์ของคุณ..."
+                      rows={3}
+                      className="w-full text-xs border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={submitReview}
+                      disabled={reviewSubmitting || !reviewComment.trim()}
+                      className="mt-2 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
+                      style={{ background: '#6C47FF', fontWeight: 600 }}
+                    >
+                      <Send size={13} />
+                      {reviewSubmitting ? 'กำลังส่ง...' : 'ส่งรีวิว'}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

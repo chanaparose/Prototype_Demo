@@ -45,55 +45,58 @@ export function ExploreFactoryGrid({ factories, onFactoryClick }: ExploreFactory
         </div>
       </div>
 
-      {/* Factory Cards */}
-      <div className="p-3 bg-gradient-to-b from-purple-50/20 to-white">
-        <div className="grid grid-cols-2 gap-3">
+      {/* Factory Cards — Body Section: ลดความสูงการ์ด */}
+      <div className="p-2.5 bg-gradient-to-b from-purple-50/20 to-white">
+        <div className="grid grid-cols-2 gap-2">
           {factories.map((factory) => (
             <div
               key={factory.id}
               onClick={() => onFactoryClick(factory.id)}
-              className="bg-white rounded-xl overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col"
+              className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col"
             >
-              <div className="relative h-28 overflow-hidden bg-gray-100">
+              <div className="relative h-20 overflow-hidden bg-gray-100">
                 <ImageWithFallback
                   src={factory.image}
                   alt={factory.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 {factory.verified && (
-                  <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-0.5">
-                    <BadgeCheck className="w-3.5 h-3.5" style={{ color: '#A238FF' }} />
-                    <span className="font-medium" style={{ fontSize: 10, color: '#A238FF' }}>ยืนยันแล้ว</span>
+                  <div className="absolute top-1 left-1 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                    <BadgeCheck className="w-2.5 h-2.5 shrink-0" style={{ color: '#A238FF' }} />
+                    <span className="font-medium text-[8px]" style={{ color: '#A238FF' }}>ยืนยัน</span>
                   </div>
                 )}
-                <div className="absolute top-2 right-2 bg-[#292259]/90 text-white rounded-full px-2 py-0.5" style={{ fontSize: 10 }}>
+                <div className="absolute top-1 right-1 bg-[#292259]/90 text-white rounded-full px-1.5 py-0.5 text-[8px] leading-none">
                   {factory.priceRange}
                 </div>
               </div>
-              <div className="p-3 flex flex-col flex-1 justify-between">
+              <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
                 <div>
-                  <p className="text-gray-700 truncate mb-1 text-sm font-medium group-hover:text-[#A238FF] transition-colors">
+                  <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
                     {factory.name}
                   </p>
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <MapPin className="w-3 h-3 text-gray-400" />
-                    <span className="text-gray-500 text-xs">{factory.location}</span>
+                  <div className="flex items-center gap-0.5">
+                    <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                    <span className="text-gray-500 text-[10px] truncate">{factory.location}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-1.5 border-t border-gray-50">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                    <span className="text-gray-700 text-xs font-semibold">{factory.rating}</span>
-                    <span className="text-gray-400 text-[11px]">({factory.reviews})</span>
+                <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                  <div className="flex items-center gap-0.5 min-w-0">
+                    <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                    <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
+                    <span className="text-gray-400 text-[9px] truncate">({factory.reviews})</span>
                   </div>
-                  <span className="text-gray-400 text-[10px]">ขั้นต่ำ {factory.minOrder}</span>
+                  <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {factory.minOrder}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <div className="mt-4 flex justify-center">
-          <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-2 rounded-lg text-xs font-medium transition-colors">
+        <div className="mt-3 flex justify-center">
+          <button
+            type="button"
+            className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-1.5 rounded-md text-[11px] font-medium transition-colors"
+          >
             ดูเพิ่มเติม
           </button>
         </div>

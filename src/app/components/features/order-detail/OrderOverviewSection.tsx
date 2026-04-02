@@ -78,9 +78,9 @@ export function OrderOverviewSection({
           <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>
             RFQ ที่เกี่ยวข้อง
           </p>
-          <div className="rounded-xl border border-gray-100 p-3 bg-[#FCFBFF]">
+          <div className="rounded-xl border border-gray-100 p-3 bg-[#F8F6FA]">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-[#F3F0FF]">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-[#F8F6FA]">
                 {relatedRfq.categoryIcon ?? '📋'}
               </div>
               <div className="flex-1 min-w-0">
@@ -89,7 +89,7 @@ export function OrderOverviewSection({
                   {relatedRfq.projectName}
                 </p>
               </div>
-              <FileText size={18} className="text-[#6C47FF] shrink-0" />
+              <FileText size={18} className="text-[#A238FF] shrink-0" />
             </div>
 
             <p className="text-xs text-gray-600 mb-3">{relatedRfq.description}</p>
@@ -98,7 +98,7 @@ export function OrderOverviewSection({
               <p className="text-[10px] text-gray-500 mb-0.5">โรงงานที่เลือก</p>
               <Link
                 to={`/factories/${order.factoryId}`}
-                className="text-xs text-[#6C47FF] hover:underline"
+                className="text-xs text-[#A238FF] hover:underline"
                 style={{ fontWeight: 600 }}
               >
                 {order.factoryName}
@@ -148,13 +148,13 @@ export function OrderOverviewSection({
             {rfqOffers.map((offer) => (
               <div
                 key={offer.id}
-                className="rounded-xl border border-gray-100 bg-[#FCFBFF] px-3 py-2.5"
+                className="rounded-xl border border-gray-100 bg-[#F8F6FA] px-3 py-2.5"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <Link
                       to={`/factories/${offer.factoryId}`}
-                      className="text-sm text-[#6C47FF] hover:underline truncate block"
+                      className="text-sm text-[#A238FF] hover:underline truncate block"
                       style={{ fontWeight: 600 }}
                     >
                       {offer.factoryName}
@@ -175,7 +175,7 @@ export function OrderOverviewSection({
                   {offer.factoryId === order.factoryId && (
                     <span
                       className="px-2 py-0.5 rounded-full text-[10px]"
-                      style={{ background: '#EDE9FF', color: '#6C47FF', fontWeight: 600 }}
+                      style={{ background: 'rgba(162,56,255,0.12)', color: '#A238FF', fontWeight: 600 }}
                     >
                       โรงงานที่เลือก
                     </span>

@@ -3,7 +3,24 @@ import { Link, useNavigate } from 'react-router';
 import { RfqSection, OrderSection } from '../../components/features/rfq-and-orders';
 import {
   PRIMARY_BG,
+  PRIMARY_BG_LIGHT,
   PRIMARY_COLOR,
+  PLUM,
+  PLUM_SOFT_BG,
+  DEEP_PURPLE,
+  ACCENT_ORANGE_BG,
+  ACCENT_ORANGE_DEEP,
+  ACCENT_ORANGE,
+  PEACH_MIST,
+  ORCHID,
+  TAN_MUTED,
+  BORDER_WARM,
+  MOBILE_PRIMARY_TAB_BAR,
+  BADGE_ALERT_BG,
+  CTA_GRADIENT,
+  PROGRESS_GRADIENT_ACTIVE,
+  PROGRESS_COMPLETED,
+  RFQ_FILTER_THEME,
   RFQ_STATUS_DISPLAY,
   ORDER_STATUS_CONFIG,
   type RfqFilterId,
@@ -58,10 +75,13 @@ export function RfqAndOrders() {
         <div className="px-4 pt-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider">
+              <p
+                className="text-[10px] uppercase tracking-wider font-semibold"
+                style={{ color: TAN_MUTED }}
+              >
                 คำขอ
               </p>
-              <h1 className="text-gray-900" style={{ fontWeight: 700 }}>
+              <h1 className="text-[#2D1B4E]" style={{ fontWeight: 700 }}>
                 RFQ & คำสั่งซื้อ
               </h1>
             </div>
@@ -71,17 +91,22 @@ export function RfqAndOrders() {
         <div className="px-4 flex-1 flex flex-col">
           {/* Primary Tabs */}
           <div
-            className="flex p-1 rounded-2xl mb-4"
-            style={{ background: PRIMARY_BG }}
+            className="flex p-1 rounded-2xl mb-4 border"
+            style={{
+              background: MOBILE_PRIMARY_TAB_BAR,
+              borderColor: BORDER_WARM,
+            }}
           >
             <button
               onClick={() => setPrimaryTab('rfq')}
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
               style={{
-                background: primaryTab === 'rfq' ? '#fff' : 'transparent',
-                color: primaryTab === 'rfq' ? '#6C47FF' : '#6B7280',
+                background: primaryTab === 'rfq' ? 'rgba(255,255,255,0.95)' : 'transparent',
+                color: primaryTab === 'rfq' ? PLUM : '#6B7280',
                 boxShadow:
-                  primaryTab === 'rfq' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                  primaryTab === 'rfq'
+                    ? '0 2px 14px rgba(109, 40, 217, 0.18)'
+                    : 'none',
               }}
             >
               RFQ ของฉัน
@@ -90,11 +115,11 @@ export function RfqAndOrders() {
               onClick={() => setPrimaryTab('orders')}
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
               style={{
-                background: primaryTab === 'orders' ? '#fff' : 'transparent',
-                color: primaryTab === 'orders' ? '#6C47FF' : '#6B7280',
+                background: primaryTab === 'orders' ? 'rgba(255,255,255,0.95)' : 'transparent',
+                color: primaryTab === 'orders' ? ACCENT_ORANGE_DEEP : '#6B7280',
                 boxShadow:
                   primaryTab === 'orders'
-                    ? '0 2px 8px rgba(0,0,0,0.06)'
+                    ? '0 2px 14px rgba(242, 120, 48, 0.22)'
                     : 'none',
               }}
             >
@@ -125,24 +150,31 @@ export function RfqAndOrders() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+            <p
+              className="text-xs uppercase tracking-wider font-semibold mb-0.5"
+              style={{ color: TAN_MUTED }}
+            >
               คำขอและคำสั่งซื้อ
             </p>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-[#2D1B4E]">
               RFQ & คำสั่งซื้อ
             </h1>
           </div>
           <div className="flex items-center gap-2">
             <Link
               to="/rfqs"
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 bg-white hover:bg-gray-50"
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-white/95 backdrop-blur-sm transition-colors hover:bg-white"
+              style={{
+                border: `1px solid ${BORDER_WARM}`,
+                color: DEEP_PURPLE,
+              }}
             >
               ไปหน้า RFQ
             </Link>
             <Link
               to="/create-rfq"
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 shadow-md"
-              style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+              style={{ background: CTA_GRADIENT, boxShadow: '0 6px 20px rgba(162,56,255,0.35)' }}
             >
               <Plus size={16} />
               สร้าง RFQ ใหม่
@@ -151,8 +183,14 @@ export function RfqAndOrders() {
         </div>
         <div className="grid grid-cols-2 gap-6">
             {/* Left: RFQ Panel */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center px-5 py-4 border-b border-gray-100">
+            <div
+              className="bg-white rounded-2xl shadow-sm overflow-hidden border"
+              style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${PRIMARY_COLOR}` }}
+            >
+              <div
+                className="flex items-center px-5 py-4 border-b"
+                style={{ borderColor: BORDER_WARM, background: PRIMARY_BG_LIGHT }}
+              >
                 <div className="flex items-center gap-2">
                   <div
                     className="w-8 h-8 rounded-xl flex items-center justify-center"
@@ -160,7 +198,9 @@ export function RfqAndOrders() {
                   >
                     <FileText size={15} style={{ color: PRIMARY_COLOR }} />
                   </div>
-                  <h2 className="font-bold text-gray-900">RFQ ของฉัน</h2>
+                  <h2 className="font-bold" style={{ color: DEEP_PURPLE }}>
+                    RFQ ของฉัน
+                  </h2>
                   <span
                     className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
                     style={{ background: PRIMARY_BG, color: PRIMARY_COLOR }}
@@ -190,31 +230,36 @@ export function RfqAndOrders() {
                     icon: OctagonX,
                     count: rfqTagCounts.cancelled_expired,
                   },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setRfqFilter(tab.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all"
-                    style={{
-                      background: desktopRfqFilter === tab.id ? PRIMARY_BG : '#F9FAFB',
-                      color: desktopRfqFilter === tab.id ? PRIMARY_COLOR : '#6B7280',
-                      fontWeight: desktopRfqFilter === tab.id ? 700 : 500,
-                    }}
-                  >
-                    <tab.icon size={12} />
-                    {tab.label}
-                    {tab.count > 0 && (
-                      <span
-                        className="w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center font-bold"
-                        style={{
-                          background: desktopRfqFilter === tab.id ? PRIMARY_COLOR : '#F04F2E',
-                        }}
-                      >
-                        {tab.count}
-                      </span>
-                    )}
-                  </button>
-                ))}
+                ].map((tab) => {
+                  const th = RFQ_FILTER_THEME[tab.id];
+                  const active = desktopRfqFilter === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setRfqFilter(tab.id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all"
+                      style={{
+                        background: active ? th.activeBg : '#F9FAFB',
+                        color: active ? th.activeColor : '#6B7280',
+                        fontWeight: active ? 700 : 500,
+                        border: active ? `1px solid ${BORDER_WARM}` : '1px solid transparent',
+                      }}
+                    >
+                      <tab.icon size={12} />
+                      {tab.label}
+                      {tab.count > 0 && (
+                        <span
+                          className="w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center font-bold"
+                          style={{
+                            background: active ? th.activeColor : th.badgeInactive,
+                          }}
+                        >
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="overflow-y-auto px-4 pb-4 space-y-3" style={{ maxHeight: '520px' }}>
@@ -237,27 +282,35 @@ export function RfqAndOrders() {
                     </Link>
                   </div>
                 ) : (
-                  desktopFilteredRfqs.map((rfq) => {
+                  desktopFilteredRfqs.map((rfq, idx) => {
                     const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
                       label: rfq.status,
                       color: '#6B7280',
                       bg: '#F3F4F6',
                     };
+                    const iconBgs = [PRIMARY_BG, PEACH_MIST, PLUM_SOFT_BG] as const;
+                    const iconColors = [PRIMARY_COLOR, ACCENT_ORANGE_DEEP, PLUM] as const;
+                    const ib = iconBgs[idx % 3];
+                    const ic = iconColors[idx % 3];
+                    const catColor = idx % 2 === 0 ? PLUM : PRIMARY_COLOR;
                     return (
-                      <Link key={rfq.id} to={`/rfqs/${rfq.id}`} className="block">
-                        <div className="p-4 rounded-xl border border-gray-100 hover:border-purple-100 hover:bg-purple-50/30 transition-all cursor-pointer">
+                      <Link key={rfq.id} to={`/rfqs/${rfq.id}`} className="block group">
+                        <div
+                          className="p-4 rounded-xl border transition-all cursor-pointer bg-white/90 backdrop-blur-sm hover:shadow-sm hover:bg-white/95 group-hover:border-[rgba(162,56,255,0.35)]"
+                          style={{ borderColor: BORDER_WARM }}
+                        >
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <div className="flex gap-2.5 min-w-0 flex-1">
                               <div
                                 className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-base"
-                                style={{ background: PRIMARY_BG }}
+                                style={{ background: ib }}
                               >
                                 {rfq.categoryIcon ?? (
-                                  <Layers size={18} style={{ color: PRIMARY_COLOR }} />
+                                  <Layers size={18} style={{ color: ic }} />
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-[10px] mb-0.5" style={{ color: PRIMARY_COLOR }}>
+                                <p className="text-[10px] mb-0.5 font-semibold" style={{ color: catColor }}>
                                   {rfq.category}
                                 </p>
                                 <h3 className="text-gray-900 font-bold text-sm leading-tight truncate">
@@ -283,7 +336,7 @@ export function RfqAndOrders() {
                                 {formatDate(rfq.createdAt)}
                               </span>
                             </div>
-                            <span className="font-semibold" style={{ color: PRIMARY_COLOR }}>
+                            <span className="font-semibold" style={{ color: ic }}>
                               {rfq.offerCount} โรงงานตอบ →
                             </span>
                           </div>
@@ -296,22 +349,33 @@ export function RfqAndOrders() {
             </div>
 
             {/* Right: Orders Panel */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div
+              className="bg-white rounded-2xl shadow-sm overflow-hidden border"
+              style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${ACCENT_ORANGE}` }}
+            >
+              <div
+                className="flex items-center justify-between px-5 py-4 border-b"
+                style={{ borderColor: BORDER_WARM, background: ACCENT_ORANGE_BG }}
+              >
                 <div className="flex items-center gap-2">
                   <div
                     className="w-8 h-8 rounded-xl flex items-center justify-center"
-                    style={{ background: '#DBEAFE' }}
+                    style={{ background: ACCENT_ORANGE_BG }}
                   >
-                    <Package size={15} style={{ color: '#3B82F6' }} />
+                    <Package size={15} style={{ color: ACCENT_ORANGE_DEEP }} />
                   </div>
-                  <h2 className="font-bold text-gray-900">คำสั่งซื้อ</h2>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-50 text-blue-600">
+                  <h2 className="font-bold" style={{ color: DEEP_PURPLE }}>
+                    คำสั่งซื้อ
+                  </h2>
+                  <span
+                    className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
+                    style={{ background: ACCENT_ORANGE_BG, color: ACCENT_ORANGE_DEEP }}
+                  >
                     {orders.filter((o) => o.status !== 'completed').length}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <CheckCircle2 size={12} className="text-green-500" />
+                  <CheckCircle2 size={12} style={{ color: ORCHID }} />
                   {orderTagCounts.completed} เสร็จสิ้น
                 </div>
               </div>
@@ -323,24 +387,24 @@ export function RfqAndOrders() {
                     label: 'กำลังผลิต',
                     icon: Package,
                     count: orderTagCounts.inProduction,
-                    color: '#3B82F6',
-                    bg: '#DBEAFE',
+                    color: ORDER_STATUS_CONFIG.in_production.color,
+                    bg: ORDER_STATUS_CONFIG.in_production.bg,
                   },
                   {
                     id: 'shipped' as OrderFilterId,
                     label: 'จัดส่งแล้ว',
                     icon: Truck,
                     count: orderTagCounts.shipped,
-                    color: '#F59E0B',
-                    bg: '#FEF3C7',
+                    color: ORDER_STATUS_CONFIG.shipped.color,
+                    bg: ORDER_STATUS_CONFIG.shipped.bg,
                   },
                   {
                     id: 'completed' as OrderFilterId,
                     label: 'เสร็จสิ้น',
                     icon: CheckCircle2,
                     count: orderTagCounts.completed,
-                    color: '#22C55E',
-                    bg: '#DCFCE7',
+                    color: ORDER_STATUS_CONFIG.completed.color,
+                    bg: ORDER_STATUS_CONFIG.completed.bg,
                   },
                 ].map((tab) => {
                   const isActive = desktopOrderFilter === tab.id;
@@ -353,6 +417,7 @@ export function RfqAndOrders() {
                         background: isActive ? tab.bg : '#F9FAFB',
                         color: isActive ? tab.color : '#6B7280',
                         fontWeight: isActive ? 700 : 500,
+                        border: isActive ? `1px solid ${BORDER_WARM}` : '1px solid transparent',
                       }}
                     >
                       <tab.icon size={12} />
@@ -373,8 +438,11 @@ export function RfqAndOrders() {
               <div className="overflow-y-auto px-4 pb-4 space-y-3" style={{ maxHeight: '520px' }}>
                 {desktopFilteredOrders.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3 bg-blue-50">
-                      <Package size={28} className="text-blue-500" />
+                    <div
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
+                      style={{ background: ACCENT_ORANGE_BG }}
+                    >
+                      <Package size={28} style={{ color: ACCENT_ORANGE_DEEP }} />
                     </div>
                     <p className="text-gray-700 font-semibold text-sm mb-1">ยังไม่มีคำสั่งซื้อ</p>
                     <p className="text-xs text-gray-400">
@@ -388,12 +456,16 @@ export function RfqAndOrders() {
                       <div
                         key={order.id}
                         onClick={() => navigate(`/orders/${order.id}`)}
-                        className="p-4 rounded-xl border border-gray-100 hover:border-blue-100 hover:bg-blue-50/20 transition-all cursor-pointer"
+                        className="p-4 rounded-xl border transition-all cursor-pointer hover:shadow-sm hover:border-[rgba(242,138,46,0.45)] bg-white/90 backdrop-blur-sm hover:bg-white/95"
+                        style={{ borderColor: BORDER_WARM }}
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-blue-50">
-                              <Package size={16} className="text-blue-500" />
+                            <div
+                              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                              style={{ background: cfg.bg }}
+                            >
+                              <Package size={16} style={{ color: cfg.color }} />
                             </div>
                             <div className="min-w-0">
                               <p className="text-[10px] text-gray-400 mb-0.5">#{order.id}</p>
@@ -426,10 +498,10 @@ export function RfqAndOrders() {
                                 width: `${order.progress}%`,
                                 background:
                                   order.status === 'completed'
-                                    ? '#22C55E'
+                                    ? PROGRESS_COMPLETED
                                     : order.status === 'shipped'
-                                      ? '#F59E0B'
-                                      : 'linear-gradient(90deg, #6C47FF, #A78BFA)',
+                                      ? ACCENT_ORANGE
+                                      : PROGRESS_GRADIENT_ACTIVE,
                               }}
                             />
                           </div>
@@ -445,7 +517,7 @@ export function RfqAndOrders() {
                               ฿{order.totalAmount.toLocaleString()}
                             </span>
                           </div>
-                          <span className="flex items-center gap-0.5 font-semibold" style={{ color: '#3B82F6' }}>
+                          <span className="flex items-center gap-0.5 font-semibold" style={{ color: cfg.color }}>
                             รายละเอียด <ChevronRight size={13} />
                           </span>
                         </div>

@@ -1,8 +1,27 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, BadgeCheck, Heart, Sparkles, X } from 'lucide-react';
+import { Search, BadgeCheck, Heart, Sparkles, X, Loader2 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
+import { masterApi, favoritesApi, showcasesApi } from '../../services/api';
+import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
+import {
+  factoryIdeasCategoryOptionSelected,
+  parseMasterProductCategories,
+  showcaseMatchesSelectedCategoryId,
+} from '../../utils/exploreToFactoryIdeasCategory';
+import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
+import type { FactoryShowcase } from '../../contexts/DataContext';
+
+const COLORS = {
+  purple: '#7A4B94',
+  purpleLight: '#9D77B2',
+  orange: '#E38844',
+  blue: '#2E2252',
+  white: '#FFFFFF',
+  gray: '#F5F5F5',
+  lightPurpleBg: '#F8F6FA',
+};
 
 type ContentType = 'all' | 'product' | 'promotion' | 'idea';
 
@@ -19,37 +38,150 @@ const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
   idea: 'ไอเดีย',
 };
 
-const contentTypeStyle: Record<Exclude<ContentType, 'all'>, { color: string; bg: string }> = {
-  product:   { color: '#1D4ED8', bg: '#DBEAFE' },
-  promotion: { color: '#B45309', bg: '#FEF3C7' },
-  idea:      { color: '#7C3AED', bg: '#EDE9FE' },
+const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
+  product: COLORS.orange,
+  promotion: COLORS.purple,
+  idea: COLORS.blue,
 };
+
+// ─── Normaliser (snake_case API → camelCase) ──────────────────
+const CT_MAP: Record<string, 'product' | 'promotion' | 'idea'> = {
+  PR: 'product', PM: 'promotion', ID: 'idea',
+  product: 'product', promotion: 'promotion', idea: 'idea',
+};
+
+function normShowcase(r: Record<string, unknown>): FactoryShowcase {
+  return {
+    id: String(r.showcase_id ?? r.id ?? ''),
+    factoryId: String(r.factory_id ?? ''),
+    factoryName: String(r.factory_name ?? r.factoryName ?? ''),
+    title: String(r.title ?? ''),
+    excerpt: String(r.excerpt ?? ''),
+    image: String(r.image_url ?? r.image ?? ''),
+    contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
+    category: String(r.category_name ?? r.category ?? ''),
+    postedAt: String(r.created_at ?? r.postedAt ?? ''),
+    likes: Number(r.likes_count ?? r.likes ?? 0),
+    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
+    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
+    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+  };
+}
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
+  // Optimistic favorites: Set of showcase IDs that this session has liked
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const data = useData();
 
-  const categoryFilters = useMemo(
-    () => [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...data.categories.map((c) => ({ id: c.name, name: c.name }))],
-    [data.categories],
+  // ─── Load showcases from API (page-level, not from DataContext) ──
+  const [pageShowcases, setPageShowcases] = useState<FactoryShowcase[]>([]);
+  const [showcasesLoading, setShowcasesLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setShowcasesLoading(true);
+    showcasesApi.list()
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        setPageShowcases(arr.map(normShowcase).filter((s) => s.id && s.title));
+      })
+      .catch(() => {
+        if (!cancelled) setPageShowcases([]);
+      })
+      .finally(() => {
+        if (!cancelled) setShowcasesLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const toggleFavorite = useCallback(async (showcaseId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const numId = Number(showcaseId);
+    const wasLiked = likedIds.has(showcaseId);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (wasLiked) next.delete(showcaseId); else next.add(showcaseId);
+      return next;
+    });
+    try {
+      if (wasLiked) await favoritesApi.remove(numId);
+      else await favoritesApi.add(numId);
+    } catch {
+      // revert
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (wasLiked) next.add(showcaseId); else next.delete(showcaseId);
+        return next;
+      });
+    }
+  }, [likedIds]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetchExploreCategoriesMerged();
+        if (cancelled) return;
+        let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
+        if (rows.length === 0) {
+          try {
+            const raw = await masterApi.productCategories();
+            if (!cancelled) rows = parseMasterProductCategories(raw);
+          } catch {
+            /* keep [] */
+          }
+        }
+        if (!cancelled) setApiCategoriesAll(rows);
+      } catch {
+        if (!cancelled) setApiCategoriesAll([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const categoryFilters = useMemo(() => {
+    const byId = new Map<string, string>();
+    for (const c of apiCategoriesAll) byId.set(String(c.id), c.name);
+    for (const c of data.categories) {
+      const id = String(c.id);
+      if (!byId.has(id)) byId.set(id, c.name);
+    }
+    const rest = [...byId.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+    return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
+  }, [apiCategoriesAll, data.categories]);
+
+  const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
+    data.categories,
+    apiCategoriesAll,
   );
 
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();
-    return data.factoryShowcases
+    return pageShowcases
       .filter((item) => {
         const byType     = selectedType === 'all' || item.contentType === selectedType;
-        const byCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        const byCategory = showcaseMatchesSelectedCategoryId(
+          item.category,
+          effectiveCategoryId,
+          apiCategoriesAll,
+          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+        );
         if (!q) return byType && byCategory;
         const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
           .join(' ').toLowerCase();
         return byType && byCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, selectedCategory]);
+  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
 
   const getDetailPath = (type: string, id: string) => {
     if (type === 'product')   return `/factory-ideas/products/${id}`;
@@ -58,37 +190,48 @@ export function FactoryIdeasMobile() {
   };
 
   return (
-    <div className="pb-24 bg-gray-50 min-h-screen">
+    <div className="pb-24 min-h-screen" style={{ backgroundColor: COLORS.lightPurpleBg }}>
       {/* ── Header ── */}
       <div className="bg-white px-4 pt-5 pb-4 border-b border-gray-100">
         <div className="mb-4">
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Discover</p>
-          <h1 className="text-xl font-bold text-gray-900">แนะนำโรงงาน</h1>
+          <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: COLORS.orange }}>Discover</p>
+          <h1 className="text-xl font-bold" style={{ color: COLORS.blue }}>แนะนำโรงงาน</h1>
         </div>
 
         {/* Hero banner */}
         <div
-          className="rounded-2xl p-4 mb-4"
-          style={{ background: 'linear-gradient(135deg, #3B1FA8, #6C47FF)' }}
+          className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md mb-4"
+          style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
         >
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-violet-300" />
-            <p className="text-[11px] text-violet-300 font-medium">พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์</p>
+          <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-40 blur-2xl mix-blend-screen" style={{ backgroundColor: '#FF7A00' }} />
+          <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-60 transform translate-x-8 skew-x-[-15deg]" style={{ backgroundColor: '#A238FF' }} />
+          <div className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full opacity-30 blur-xl mix-blend-screen" style={{ backgroundColor: '#A238FF' }} />
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="p-2.5 rounded-full shrink-0" style={{ backgroundColor: 'rgba(162,56,255,0.30)', border: '1px solid rgba(162,56,255,0.50)' }}>
+              <Sparkles size={20} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium mb-0.5" style={{ color: '#EBD3FF' }}>พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์</p>
+              <h2 className="text-base font-bold leading-tight">
+                ค้นหาไอเดียสินค้าใหม่ พร้อมโรงงานที่ทำได้จริงในที่เดียว
+              </h2>
+            </div>
+            <span className="shrink-0 text-sm font-semibold" style={{ color: '#EBD3FF' }}>
+              {visibleItems.length} รายการ
+            </span>
           </div>
-          <p className="text-[13px] font-bold text-white leading-snug">
-            ค้นหาไอเดียสินค้าใหม่ พร้อมโรงงานที่ทำได้จริงในที่เดียว
-          </p>
         </div>
 
         {/* Search */}
-        <div className="flex items-center gap-2.5 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-200 focus-within:border-violet-400 focus-within:bg-white transition-all">
+        <div className="flex items-center gap-2.5 rounded-2xl px-4 py-3 border transition-all" style={{ backgroundColor: COLORS.gray, borderColor: '#E5E7EB' }}>
           <Search size={16} className="text-gray-400 shrink-0" />
           <input
             type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…"
-            className="flex-1 text-sm bg-transparent outline-none text-gray-800 placeholder-gray-400"
+            className="flex-1 text-sm bg-transparent outline-none placeholder-gray-400"
+            style={{ color: COLORS.blue }}
           />
           {searchText && (
             <button type="button" onClick={() => setSearchText('')}>
@@ -109,9 +252,10 @@ export function FactoryIdeasMobile() {
               onClick={() => setSelectedType(type.id)}
               className="shrink-0 px-4 py-1.5 rounded-full text-[13px] transition-all"
               style={{
-                background: selectedType === type.id ? '#6C47FF' : '#F3F4F6',
-                color:      selectedType === type.id ? '#FFFFFF' : '#6B7280',
-                fontWeight: selectedType === type.id ? 600 : 400,
+                background: selectedType === type.id ? COLORS.orange : 'rgba(46,34,82,0.07)',
+                color:      selectedType === type.id ? COLORS.white : COLORS.blue,
+                fontWeight: selectedType === type.id ? 700 : 500,
+                boxShadow:  selectedType === type.id ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
               }}
             >
               {type.label}
@@ -123,15 +267,21 @@ export function FactoryIdeasMobile() {
         <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
           {categoryFilters.map((cat) => (
             <button
-              key={cat.id}
+              key={cat.id === 'all' ? 'all' : `cat-${cat.id}`}
               type="button"
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => applyCategory(cat.id)}
               className="shrink-0 px-3.5 py-1 rounded-full text-[11px] transition-all"
               style={{
-                background: selectedCategory === cat.id ? '#EDE9FE' : '#F9FAFB',
-                color:      selectedCategory === cat.id ? '#6C47FF' : '#6B7280',
-                border:     selectedCategory === cat.id ? '1px solid #C4B5FD' : '1px solid #F3F4F6',
-                fontWeight: selectedCategory === cat.id ? 600 : 400,
+                background: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                  ? COLORS.blue
+                  : 'rgba(46,34,82,0.05)',
+                color: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                  ? COLORS.white
+                  : COLORS.blue,
+                border: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                  ? `1px solid ${COLORS.blue}`
+                  : '1px solid rgba(46,34,82,0.12)',
+                fontWeight: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? 600 : 400,
               }}
             >
               {cat.name}
@@ -139,24 +289,29 @@ export function FactoryIdeasMobile() {
           ))}
         </div>
 
-        <p className="text-[11px] text-gray-400 pt-0.5">
-          พบ <span className="font-semibold text-gray-600">{visibleItems.length}</span> รายการ
+        <p className="text-[11px] pt-0.5" style={{ color: COLORS.blue }}>
+          พบ <span className="font-semibold">{visibleItems.length}</span> รายการ
         </p>
       </div>
 
       {/* ── Content grid ── */}
       <div className="px-4 pt-4">
-        {visibleItems.length === 0 ? (
+        {showcasesLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: COLORS.purple }} />
+            <span className="ml-2 text-sm text-gray-500">กำลังโหลด...</span>
+          </div>
+        ) : visibleItems.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
             <p className="text-3xl mb-2">🔍</p>
-            <p className="text-sm font-medium text-gray-500">ไม่พบรายการที่ตรงกับเงื่อนไข</p>
+            <p className="text-sm font-medium" style={{ color: COLORS.blue }}>ไม่พบรายการที่ตรงกับเงื่อนไข</p>
             <p className="text-xs text-gray-400 mt-1">ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
-              const style = contentTypeStyle[item.contentType];
+              const badgeColor = contentTypeBadge[item.contentType];
               return (
                 <article
                   key={item.id}
@@ -173,8 +328,8 @@ export function FactoryIdeasMobile() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
                     <div className="absolute top-2 left-2">
                       <span
-                        className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
-                        style={{ background: style.bg, color: style.color }}
+                        className="px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white"
+                        style={{ backgroundColor: badgeColor }}
                       >
                         {contentTypeLabel[item.contentType]}
                       </span>
@@ -183,7 +338,7 @@ export function FactoryIdeasMobile() {
 
                   {/* Body */}
                   <div className="p-2.5 space-y-1.5">
-                    <h3 className="text-[12px] font-bold text-gray-900 line-clamp-2 leading-snug">
+                    <h3 className="text-[12px] font-bold line-clamp-2 leading-snug" style={{ color: COLORS.blue }}>
                       {item.title}
                     </h3>
                     <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">
@@ -195,25 +350,34 @@ export function FactoryIdeasMobile() {
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                        className="flex items-center gap-1 text-[10px] font-semibold text-gray-700 hover:text-violet-600 transition-colors truncate w-full"
+                        className="flex items-center gap-1 text-[10px] font-semibold transition-colors truncate w-full"
+                        style={{ color: COLORS.blue }}
                       >
                         <span className="truncate">{item.factoryName}</span>
-                        {factory?.verified && <BadgeCheck className="w-3 h-3 text-violet-500 shrink-0" />}
+                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
                       </button>
 
                       <div className="flex items-center justify-between mt-1 text-[10px] text-gray-400">
-                        <span>MOQ <span className="font-medium text-gray-500">{item.minOrder}</span></span>
-                        <span className="flex items-center gap-0.5">
-                          <Heart className="w-2.5 h-2.5" />
-                          {item.likes}
-                        </span>
+                        <span>MOQ <span className="font-medium" style={{ color: COLORS.blue }}>{item.minOrder}</span></span>
+                        <button
+                          type="button"
+                          onClick={(e) => toggleFavorite(item.id, e)}
+                          className="flex items-center gap-0.5 transition-colors"
+                          aria-label="ถูกใจ"
+                        >
+                          <Heart
+                            className="w-2.5 h-2.5"
+                            style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          />
+                          {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                        </button>
                       </div>
                     </div>
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1">
                       {item.tags.slice(0, 2).map((tag) => (
-                        <span key={tag} className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[9px]">
+                        <span key={tag} className="px-1.5 py-0.5 rounded-full text-[9px]" style={{ backgroundColor: COLORS.gray, color: COLORS.blue }}>
                           #{tag}
                         </span>
                       ))}

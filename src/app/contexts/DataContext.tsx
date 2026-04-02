@@ -4,15 +4,17 @@
  * This replaces the static mockData.ts imports.
  * Data is loaded after authentication from various /frontend/* endpoints.
  */
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { frontendApi, categoriesApi, masterApi } from '../services/api';
+import { frontendApi, categoriesApi, showcasesApi, notificationsApi, conversationsApi } from '../services/api';
+import * as fallbackData from '../data/mockData';
 
 // ─── Types (matching mockData shapes) ───────────────────────────
 export type Category = {
   id: string;
   name: string;
-  parentId?: string | null;
+  icon: string;
+  color: string;
 };
 
 export type Factory = {
@@ -242,70 +244,134 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
+    // Helper: use API data if non-empty array, otherwise fallback to local mockData
+    const arr = <T,>(apiVal: unknown, fb: T[]): T[] => {
+      const a = apiVal as T[] | undefined;
+      return Array.isArray(a) && a.length > 0 ? a : fb;
+    };
+
     try {
-      // Fetch mock-data and product categories in parallel
-      const [data, rawCats] = await Promise.all([
-        frontendApi.getMockData(),
-        masterApi.productCategories().catch(() => [] as unknown[]),
+      // ── เรียกเฉพาะ core data (ไม่รวม showcases — แต่ละหน้าโหลดเอง) ──
+      const [bootstrapRes, notifRes, convsRes] = await Promise.allSettled([
+        frontendApi.getBootstrap(),   // user, categories, factories, rfqs, orders
+        notificationsApi.list(),      // notifications
+        conversationsApi.list(),      // conversations
       ]);
 
-      // Debug: log raw response to inspect field names
-      console.log('[DataContext] rawCats sample:', (rawCats as any[])?.[0]);
+      const boot = bootstrapRes.status === 'fulfilled' ? bootstrapRes.value : null;
+      const rawNotifs = notifRes.status === 'fulfilled'
+        ? (Array.isArray(notifRes.value) ? notifRes.value : []) as Record<string, unknown>[]
+        : [];
+      const rawConvs = convsRes.status === 'fulfilled'
+        ? (Array.isArray(convsRes.value) ? convsRes.value : []) as Record<string, unknown>[]
+        : [];
 
-      // Map lbi_product_categories rows → Category
-      // Try multiple possible field name conventions from the API
-      const categories: Category[] = (rawCats as any[])
-        .filter((c) => {
-          const active = c.is_active ?? c.isActive ?? c.active ?? c.status ?? 1;
-          return active !== 0 && active !== false && active !== 'inactive';
-        })
-        .map((c) => ({
-          id: String(c.id ?? c.category_id ?? c.categoryId ?? ''),
-          name: c.name ?? c.name_th ?? c.category_name ?? c.categoryName ?? c.label ?? '',
-          parentId: (c.parent_id ?? c.parentId ?? c.parent_category_id ?? null) != null
-            ? String(c.parent_id ?? c.parentId ?? c.parent_category_id)
-            : null,
-        }))
-        .filter((c) => c.id && c.name);
+      // ── แปลง notifications ────────────────────────────────────────────
+      const mappedNotifs: Notification[] = rawNotifs.map((r) => ({
+        id: String(r.notification_id ?? r.id ?? ''),
+        type: String(r.type ?? ''),
+        title: String(r.title ?? ''),
+        message: String(r.message ?? r.body ?? ''),
+        time: String(r.created_at ?? r.time ?? ''),
+        read: Boolean(r.is_read ?? r.read ?? false),
+        linkTo: String(r.link_to ?? r.linkTo ?? ''),
+        avatar: String(r.avatar ?? ''),
+        rfqId: r.rfq_id ? String(r.rfq_id) : undefined,
+        orderId: r.order_id ? String(r.order_id) : undefined,
+        conversationId: r.conversation_id ? String(r.conversation_id) : undefined,
+      })).filter((n) => n.id);
+
+      // ── แปลง conversations ────────────────────────────────────────────
+      const mappedConvs: Conversation[] = rawConvs.map((r) => ({
+        id: String(r.conversation_id ?? r.id ?? ''),
+        factoryId: String(r.factory_id ?? r.factoryId ?? ''),
+        rfqId: String(r.rfq_id ?? r.rfqId ?? ''),
+        factoryName: String(r.factory_name ?? r.factoryName ?? ''),
+        factoryAvatar: String(r.factory_avatar ?? r.factoryAvatar ?? ''),
+        rfqName: String(r.rfq_name ?? r.rfqName ?? ''),
+        lastMessage: String(r.last_message ?? r.lastMessage ?? ''),
+        time: String(r.updated_at ?? r.time ?? ''),
+        unread: Number(r.unread_count ?? r.unread ?? 0),
+        hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? false),
+        messages: [],
+      })).filter((c) => c.id);
+
+      console.info('[DataContext] bootstrap:', bootstrapRes.status, '| notifs:', rawNotifs.length, '| convs:', rawConvs.length);
 
       setState({
-        currentUser: (data.currentUser as CurrentUser) ?? null,
-        categories: categories.length > 0 ? categories : ((data.categories as Category[]) ?? []),
-        factories: (data.factories as Factory[]) ?? [],
-        factoryProfiles: (data.factoryProfiles as FactoryProfile[]) ?? [],
-        factoryReviews: (data.factoryReviews as FactoryReview[]) ?? [],
-        ideaArticles: (data.ideaArticles as IdeaArticle[]) ?? [],
-        factoryShowcases: (data.factoryShowcases as FactoryShowcase[]) ?? [],
-        rfqs: (data.rfqs as Rfq[]) ?? [],
-        orders: (data.orders as Order[]) ?? [],
-        conversations: (data.conversations as Conversation[]) ?? [],
-        notifications: (data.notifications as Notification[]) ?? [],
+        currentUser: (boot?.currentUser as CurrentUser) ?? (fallbackData.currentUser as CurrentUser),
+        categories: arr<Category>(boot?.categories, fallbackData.categories as Category[]),
+        factories: arr<Factory>(boot?.factories, fallbackData.factories as Factory[]),
+        factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
+        factoryReviews: fallbackData.factoryReviews as FactoryReview[],
+        // showcases/ideas → ไม่โหลดที่นี่ แต่ละหน้าโหลดเอง (explore, factory-ideas)
+        ideaArticles: [],
+        factoryShowcases: [],
+        rfqs: arr<Rfq>(boot?.rfqs, fallbackData.rfqs as Rfq[]),
+        orders: arr<Order>(boot?.orders, fallbackData.orders as Order[]),
+        conversations: mappedConvs.length > 0 ? mappedConvs : (fallbackData.conversations as Conversation[]),
+        notifications: mappedNotifs.length > 0 ? mappedNotifs : (fallbackData.notifications as Notification[]),
         isLoading: false,
         error: null,
       });
     } catch (err) {
-      console.error('Failed to fetch data:', err);
-      setState((prev) => ({
-        ...prev,
+      console.error('DataContext fetchAll failed:', err);
+      setState({
+        currentUser: fallbackData.currentUser as CurrentUser,
+        categories: fallbackData.categories as Category[],
+        factories: fallbackData.factories as Factory[],
+        factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
+        factoryReviews: fallbackData.factoryReviews as FactoryReview[],
+        // ❌ ไม่ใช้ mock data สำหรับ showcases/ideas — แสดงว่างเปล่าถ้า API fail
+        ideaArticles: [],
+        factoryShowcases: [],
+        rfqs: fallbackData.rfqs as Rfq[],
+        orders: fallbackData.orders as Order[],
+        conversations: fallbackData.conversations as Conversation[],
+        notifications: fallbackData.notifications as Notification[],
         isLoading: false,
-        error: err instanceof Error ? err.message : 'Failed to load data',
-      }));
+        error: String(err),
+      });
     }
   }, [isAuthenticated]);
 
+  // Initial fetch หลัง auth พร้อม
   useEffect(() => {
     if (!authLoading) {
       fetchAll();
     }
   }, [authLoading, fetchAll]);
 
+  // Refetch เมื่อ user กลับมาที่ tab (visibility change) — หยุด stale data
+  const lastFetchRef = useRef<number>(0);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const STALE_MS = 60_000; // refetch ถ้าข้อมูลเก่ากว่า 1 นาที
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now();
+        if (now - lastFetchRef.current > STALE_MS) {
+          lastFetchRef.current = now;
+          fetchAll();
+        }
+      }
+    };
+    const onOnline = () => fetchAll();
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('online', onOnline);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('online', onOnline);
+    };
+  }, [isAuthenticated, fetchAll]);
+
   // Granular refetch methods for updating specific slices
   const refetchRfqs = async () => {
     try {
-      const data = await frontendApi.getMockData();
+      const data = await frontendApi.getBootstrap();
       setState((prev) => ({
         ...prev,
-        rfqs: (data.rfqs as Rfq[]) ?? prev.rfqs,
+        rfqs: (Array.isArray(data.rfqs) && data.rfqs.length > 0 ? data.rfqs : prev.rfqs) as Rfq[],
       }));
     } catch (err) {
       console.error('Failed to refetch RFQs:', err);
@@ -314,10 +380,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const refetchOrders = async () => {
     try {
-      const data = await frontendApi.getMockData();
+      const data = await frontendApi.getBootstrap();
       setState((prev) => ({
         ...prev,
-        orders: (data.orders as Order[]) ?? prev.orders,
+        orders: (Array.isArray(data.orders) && data.orders.length > 0 ? data.orders : prev.orders) as Order[],
       }));
     } catch (err) {
       console.error('Failed to refetch orders:', err);

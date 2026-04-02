@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ArrowLeft } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import {
   HISTORY_STATUSES,
@@ -9,6 +9,16 @@ import {
   RfqDetailStatusCard,
   STATUS_LABEL,
 } from '../../components/features/rfq-detail';
+
+const COLORS = {
+  purple: '#7A4B94',
+  purpleLight: '#9D77B2',
+  orange: '#E38844',
+  blue: '#2E2252',
+  white: '#FFFFFF',
+  gray: '#F5F5F5',
+  lightPurpleBg: '#F8F6FA',
+};
 
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
@@ -30,29 +40,38 @@ export function RFQDetailDesktop() {
       : rfq.status === 'cancelled'
         ? { background: '#F1F5F9', color: '#64748B' }
         : { background: '#FEF3C7', color: '#B45309' }
-    : { background: '#EDE9FF', color: '#6C47FF' };
+    : { background: COLORS.lightPurpleBg, color: COLORS.purple };
 
   const statusLabel = isHistoryView
     ? STATUS_LABEL[rfq.status] ?? rfq.status
     : `${rfq.offerCount} ใบเสนอราคา`;
 
   return (
-    <div className="hidden lg:block bg-white">
+    <div className="hidden lg:block" style={{ backgroundColor: COLORS.lightPurpleBg }}>
       <div className="max-w-6xl mx-auto px-8 py-7">
         {/* Header */}
         <div className="flex items-start justify-between gap-6 mb-6">
           <div className="min-w-0">
             <div className="flex items-center gap-3 mb-2">
+              {/* Back button */}
+              <button
+                type="button"
+                onClick={() => navigate('/orders')}
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-gray-200 hover:border-gray-300 transition-colors"
+                style={{ backgroundColor: COLORS.white }}
+              >
+                <ArrowLeft size={18} style={{ color: COLORS.blue }} />
+              </button>
               <div className="min-w-0">
-                <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+                <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: COLORS.orange }}>
                   RFQ Detail
                 </p>
-                <h1 className="text-2xl font-bold text-gray-900 truncate">
+                <h1 className="text-2xl font-bold truncate" style={{ color: COLORS.blue }}>
                   {rfq.projectName}
                 </h1>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm ml-[52px]" style={{ color: COLORS.blue }}>
               <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={statusBadgeStyle}>
                 {statusLabel}
               </span>
@@ -70,8 +89,8 @@ export function RFQDetailDesktop() {
               onClick={() => navigate('/messages/conv1')}
             >
               <span className="inline-flex items-center gap-2">
-                <MessageCircle size={16} className="text-[#6C47FF]" />
-                แชทกับโรงงาน
+                <MessageCircle size={16} style={{ color: COLORS.purple }} />
+                <span style={{ color: COLORS.blue }}>แชทกับโรงงาน</span>
               </span>
             </button>
           </div>
@@ -83,7 +102,7 @@ export function RFQDetailDesktop() {
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <div className="px-5 py-4 border-b border-gray-100">
-                <p className="text-sm font-bold text-gray-900">สรุปสถานะ</p>
+                <p className="text-sm font-bold" style={{ color: COLORS.blue }}>สรุปสถานะ</p>
                 <p className="text-xs text-gray-500 mt-1">
                   ดูความคืบหน้าและข้อเสนอจากโรงงานในที่เดียว
                 </p>
@@ -101,7 +120,7 @@ export function RFQDetailDesktop() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold text-gray-900">ใบเสนอราคา</p>
+                  <p className="text-sm font-bold" style={{ color: COLORS.blue }}>ใบเสนอราคา</p>
                   <p className="text-xs text-gray-500 mt-1">
                     เลือกข้อเสนอเพื่อเปรียบเทียบราคาและ lead time
                   </p>
@@ -124,23 +143,23 @@ export function RFQDetailDesktop() {
           {/* Sidebar */}
           <div className="space-y-4 sticky top-6">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <p className="text-sm font-bold text-gray-900 mb-3">ข้อมูล RFQ</p>
+              <p className="text-sm font-bold mb-3" style={{ color: COLORS.blue }}>ข้อมูล RFQ</p>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-xl bg-gray-50 p-3">
+                <div className="rounded-xl p-3" style={{ backgroundColor: COLORS.lightPurpleBg }}>
                   <p className="text-[11px] text-gray-400">จำนวน</p>
-                  <p className="font-semibold text-gray-800 mt-0.5">
+                  <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
                     {rfq.quantity.toLocaleString()}
                   </p>
                 </div>
-                <div className="rounded-xl bg-gray-50 p-3">
+                <div className="rounded-xl p-3" style={{ backgroundColor: COLORS.lightPurpleBg }}>
                   <p className="text-[11px] text-gray-400">Deadline</p>
-                  <p className="font-semibold text-gray-800 mt-0.5">
+                  <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
                     {rfq.deadline}
                   </p>
                 </div>
-                <div className="rounded-xl bg-gray-50 p-3 col-span-2">
+                <div className="rounded-xl p-3 col-span-2" style={{ backgroundColor: COLORS.lightPurpleBg }}>
                   <p className="text-[11px] text-gray-400">วัตถุดิบ/วัสดุ</p>
-                  <p className="font-semibold text-gray-800 mt-0.5 line-clamp-2">
+                  <p className="font-semibold mt-0.5 line-clamp-2" style={{ color: COLORS.blue }}>
                     {rfq.material}
                   </p>
                 </div>
@@ -150,14 +169,15 @@ export function RFQDetailDesktop() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold text-gray-900">สเปกงาน</p>
+                  <p className="text-sm font-bold" style={{ color: COLORS.blue }}>สเปกงาน</p>
                   <p className="text-xs text-gray-500 mt-1">
                     เปิด/ปิดเพื่อดูรายละเอียดสเปก
                   </p>
                 </div>
                 <button
                   type="button"
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 border border-gray-100 hover:bg-gray-100"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-100 hover:bg-gray-100"
+                  style={{ backgroundColor: COLORS.lightPurpleBg, color: COLORS.blue }}
                   onClick={() => setSpecsOpen((v) => !v)}
                 >
                   {specsOpen ? 'ซ่อน' : 'แสดง'}
@@ -172,19 +192,26 @@ export function RFQDetailDesktop() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-violet-500 to-indigo-500 rounded-2xl p-5 text-white shadow-sm">
-              <p className="text-sm font-bold">ต้องการ RFQ ใหม่?</p>
-              <p className="text-xs opacity-90 mt-1">
-                สร้างคำขอใหม่เพื่อรับใบเสนอราคาจากโรงงานได้ทันที
-              </p>
-              <button
-                type="button"
-                className="mt-4 w-full py-3 rounded-xl bg-white/95 text-sm font-bold"
-                style={{ color: '#6C47FF' }}
-                onClick={() => navigate('/create-rfq')}
-              >
-                + สร้าง RFQ ใหม่
-              </button>
+            <div
+              className="rounded-2xl p-5 text-white shadow-sm relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
+            >
+              <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-40 blur-2xl mix-blend-screen" style={{ backgroundColor: '#FF7A00' }} />
+              <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full opacity-30 blur-xl mix-blend-screen" style={{ backgroundColor: '#A238FF' }} />
+              <div className="relative z-10">
+                <p className="text-sm font-bold">ต้องการ RFQ ใหม่?</p>
+                <p className="text-xs mt-1" style={{ color: '#EBD3FF' }}>
+                  สร้างคำขอใหม่เพื่อรับใบเสนอราคาจากโรงงานได้ทันที
+                </p>
+                <button
+                  type="button"
+                  className="mt-4 w-full py-3 rounded-xl bg-white/95 text-sm font-bold"
+                  style={{ color: COLORS.purple }}
+                  onClick={() => navigate('/create-rfq')}
+                >
+                  + สร้าง RFQ ใหม่
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -192,4 +219,3 @@ export function RFQDetailDesktop() {
     </div>
   );
 }
-

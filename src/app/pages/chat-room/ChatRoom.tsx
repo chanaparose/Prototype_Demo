@@ -114,7 +114,7 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
               className="w-8 h-8 rounded-xl object-cover"
             />
             <div className="text-center">
-              <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+              <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
                 {conv.factoryName}
               </p>
               <div className="flex items-center gap-1 justify-center">
@@ -136,7 +136,7 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
         {/* Mini Dashboard */}
         <div
           className="rounded-2xl overflow-hidden transition-all duration-300"
-          style={{ background: '#F8F5FF' }}
+          style={{ background: '#F8F6FA' }}
         >
           <button
             onClick={() => setMiniDashOpen(!miniDashOpen)}
@@ -145,8 +145,8 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
             <div className="flex items-center gap-2">
               <span className="text-sm">📋</span>
               <span
-                className="text-xs text-gray-700"
-                style={{ fontWeight: 600 }}
+                className="text-xs"
+                style={{ fontWeight: 600, color: '#2E2252' }}
               >
                 {conv.rfqName}
               </span>
@@ -155,8 +155,8 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
               <span
                 className="px-2 py-0.5 rounded-full text-[9px]"
                 style={{
-                  background: '#EDE9FF',
-                  color: '#6C47FF',
+                  background: 'rgba(46,34,82,0.08)',
+                  color: '#2E2252',
                   fontWeight: 600,
                 }}
               >
@@ -171,25 +171,25 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
           </button>
 
           {miniDashOpen && latestQuote && latestQuote.quoteData && (
-            <div className="px-3 pb-3 border-t border-purple-100">
+            <div className="px-3 pb-3 border-t" style={{ borderColor: 'rgba(122,75,148,0.15)' }}>
               <div className="flex gap-3 mt-2.5">
                 <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
                   <p
                     className="text-sm"
-                    style={{ fontWeight: 700, color: '#6C47FF' }}
+                    style={{ fontWeight: 700, color: '#E38844' }}
                   >
                     ฿{latestQuote.quoteData.price.toLocaleString()}
                   </p>
                   <p className="text-[9px] text-gray-500">ราคา</p>
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                  <p className="text-sm" style={{ fontWeight: 700 }}>
+                  <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
                     {latestQuote.quoteData.leadTime} วัน
                   </p>
                   <p className="text-[9px] text-gray-500">lead time</p>
                 </div>
                 <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                  <p className="text-sm" style={{ fontWeight: 700 }}>
+                  <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
                     {latestQuote.quoteData.validUntil}
                   </p>
                   <p className="text-[9px] text-gray-500">ใช้ได้ถึง</p>
@@ -269,7 +269,7 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
                   isUser ? 'rounded-br-md' : 'rounded-bl-md'
                 }`}
                 style={{
-                  background: isUser ? '#6C47FF' : '#F3F4F6',
+                  background: isUser ? '#7A4B94' : '#F3F4F6',
                 }}
               >
                 <p
@@ -281,7 +281,7 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
                 <p
                   className="text-[10px] mt-0.5"
                   style={{
-                    color: isUser ? 'rgba(255,255,255,0.6)' : '#9CA3AF',
+                    color: isUser ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
                     textAlign: isUser ? 'right' : 'left',
                   }}
                 >
@@ -316,7 +316,7 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
             disabled={!message.trim()}
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all"
             style={{
-              background: message.trim() ? '#6C47FF' : '#E5E7EB',
+              background: message.trim() ? '#E38844' : '#E5E7EB',
             }}
           >
             <Send
@@ -329,4 +329,3 @@ function ChatRoomBody({ conv, onBack, variant }: ChatRoomBodyProps) {
     </div>
   );
 }
-

@@ -21,15 +21,15 @@ export function MessagesMobile({
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider">สื่อสาร</p>
+          <p className="text-[10px] uppercase tracking-wider" style={{ color: '#7A4B94' }}>สื่อสาร</p>
           <div className="flex items-center gap-2">
-            <h1 className="text-gray-900" style={{ fontWeight: 700 }}>
+            <h1 style={{ fontWeight: 700, color: '#2E2252' }}>
               ข้อความ
             </h1>
             {totalUnread > 0 && (
               <span
                 className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px]"
-                style={{ background: '#6C47FF', fontWeight: 700 }}
+                style={{ background: '#E38844', fontWeight: 700 }}
               >
                 {totalUnread}
               </span>
@@ -90,7 +90,7 @@ function ConversationCard({
           {conv.hasQuote && (
             <span
               className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white"
-              style={{ background: '#22C55E', fontWeight: 700 }}
+              style={{ background: '#E38844', fontWeight: 700 }}
             >
               ฿
             </span>
@@ -99,8 +99,8 @@ function ConversationCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-0.5">
             <p
-              className="text-sm text-gray-900 truncate"
-              style={{ fontWeight: conv.unread > 0 ? 700 : 600 }}
+              className="text-sm truncate"
+              style={{ fontWeight: conv.unread > 0 ? 700 : 600, color: '#2E2252' }}
             >
               {conv.factoryName}
             </p>
@@ -108,7 +108,7 @@ function ConversationCard({
               {conv.time}
             </span>
           </div>
-          <p className="text-[10px] text-gray-400 mb-1 truncate">{conv.rfqName}</p>
+          <p className="text-[10px] mb-1 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>
           <div className="flex items-center justify-between">
             <p
               className="text-xs truncate max-w-[180px]"
@@ -122,7 +122,7 @@ function ConversationCard({
             {conv.unread > 0 && (
               <span
                 className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2"
-                style={{ background: '#6C47FF', fontWeight: 700 }}
+                style={{ background: '#E38844', fontWeight: 700 }}
               >
                 {conv.unread}
               </span>
@@ -133,10 +133,10 @@ function ConversationCard({
       {conv.hasQuote && (
         <div
           className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl"
-          style={{ background: '#F0FDF4' }}
+          style={{ background: '#FFF4E8' }}
         >
           <span className="text-sm">💰</span>
-          <span className="text-xs" style={{ color: '#16A34A', fontWeight: 600 }}>
+          <span className="text-xs" style={{ color: '#E38844', fontWeight: 600 }}>
             มีใบเสนอราคาใหม่ — กดเพื่อดู
           </span>
         </div>
@@ -150,14 +150,13 @@ function MobileEmptyState() {
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div
         className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4"
-        style={{ background: '#EDE9FF' }}
+        style={{ background: 'linear-gradient(135deg, #F8F6FA, rgba(122,75,148,0.12))' }}
       >
-        {/* icon is handled by parent before split; keep simple */}
-        <span className="text-3xl" style={{ color: '#6C47FF' }}>
+        <span className="text-3xl" style={{ color: '#7A4B94' }}>
           💬
         </span>
       </div>
-      <p className="text-gray-900 mb-1" style={{ fontWeight: 600 }}>
+      <p className="mb-1" style={{ fontWeight: 600, color: '#2E2252' }}>
         ยังไม่มีข้อความ
       </p>
       <p className="text-sm text-gray-500 max-w-[200px]">
@@ -166,4 +165,3 @@ function MobileEmptyState() {
     </div>
   );
 }
-

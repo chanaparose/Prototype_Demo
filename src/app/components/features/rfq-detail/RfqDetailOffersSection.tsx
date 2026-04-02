@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router';
 import {
   CheckCircle,
@@ -10,6 +10,7 @@ import {
   XCircle,
   AlertCircle,
 } from 'lucide-react';
+import { quotationsApi } from '../../../services/api';
 
 export type OfferItem = {
   id: string;
@@ -40,6 +41,7 @@ type RfqDetailOffersSectionProps = {
   selectedOfferId: string | null;
   onSelectOffer: (id: string | null) => void;
   onNavigateToMessages: () => void;
+  onOfferAccepted?: (offerId: string) => void;
 };
 
 export function RfqDetailOffersSection({
@@ -50,12 +52,28 @@ export function RfqDetailOffersSection({
   selectedOfferId,
   onSelectOffer,
   onNavigateToMessages,
+  onOfferAccepted,
 }: RfqDetailOffersSectionProps) {
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
+
+  const handleAcceptOffer = async (offerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (acceptingId) return;
+    setAcceptingId(offerId);
+    try {
+      await quotationsApi.updateStatus(offerId, 'AC');
+      onOfferAccepted?.(offerId);
+    } catch {
+      // silently fail; user can retry
+    } finally {
+      setAcceptingId(null);
+    }
+  };
   if (isHistoryView && offers.length > 0) {
     return (
       <>
         <div>
-          <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 700 }}>
+          <p className="text-sm text-[#2E2252] mb-3" style={{ fontWeight: 700 }}>
             ประวัติโรงงานที่เคยเสนอราคา
           </p>
           <div className="space-y-3">
@@ -71,11 +89,11 @@ export function RfqDetailOffersSection({
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <p className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                        <p className="text-sm text-[#2E2252]" style={{ fontWeight: 600 }}>
                           {offer.factoryName}
                         </p>
                         {offer.verified && (
-                          <CheckCircle size={13} style={{ color: '#6C47FF' }} />
+                          <CheckCircle size={13} style={{ color: '#7A4B94' }} />
                         )}
                       </div>
                       <div className="flex items-center gap-1">
@@ -90,19 +108,19 @@ export function RfqDetailOffersSection({
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-gray-50 rounded-xl p-2.5">
-                    <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
                       ฿{(offer.price / 1000).toFixed(0)}K
                     </p>
                     <p className="text-[9px] text-gray-500">ราคารวม</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5">
-                    <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
                       {offer.leadTime} วัน
                     </p>
                     <p className="text-[9px] text-gray-500">lead time</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5">
-                    <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
                       {offer.responseTime}
                     </p>
                     <p className="text-[9px] text-gray-500">ตอบกลับ</p>
@@ -121,7 +139,7 @@ export function RfqDetailOffersSection({
                 🏭
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900">{orderForRfq.factoryName}</p>
+                <p className="text-sm font-bold text-[#2E2252]">{orderForRfq.factoryName}</p>
                 <p className="text-xs text-gray-500">
                   ฿{orderForRfq.totalAmount.toLocaleString('th-TH')} •{' '}
                   {orderForRfq.quantity.toLocaleString('th-TH')} ชิ้น
@@ -209,7 +227,7 @@ export function RfqDetailOffersSection({
       <>
         <div
           className="rounded-2xl p-4 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
         >
           <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 bg-white" />
           <div className="relative z-10">
@@ -252,7 +270,7 @@ export function RfqDetailOffersSection({
           </div>
         </div>
         <div>
-          <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 700 }}>
+          <p className="text-sm text-[#2E2252] mb-3" style={{ fontWeight: 700 }}>
             เปรียบเทียบใบเสนอราคา
           </p>
           <div className="space-y-3">
@@ -263,9 +281,9 @@ export function RfqDetailOffersSection({
                 className="bg-white rounded-2xl p-4 shadow-sm border-2 cursor-pointer transition-all"
                 style={{
                   borderColor: offer.recommended
-                    ? '#6C47FF'
+                    ? '#7A4B94'
                     : selectedOfferId === offer.id
-                      ? '#C4B5FD'
+                      ? '#9D77B2'
                       : 'transparent',
                 }}
               >
@@ -273,17 +291,17 @@ export function RfqDetailOffersSection({
                   <div className="flex items-center gap-2">
                     <div
                       className="w-9 h-9 rounded-xl flex items-center justify-center text-sm"
-                      style={{ background: '#F3F0FF' }}
+                      style={{ background: '#F8F6FA' }}
                     >
                       🏭
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <p className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                        <p className="text-sm text-[#2E2252]" style={{ fontWeight: 600 }}>
                           {offer.factoryName}
                         </p>
                         {offer.verified && (
-                          <CheckCircle size={13} style={{ color: '#6C47FF' }} />
+                          <CheckCircle size={13} style={{ color: '#7A4B94' }} />
                         )}
                       </div>
                       <div className="flex items-center gap-1">
@@ -299,8 +317,8 @@ export function RfqDetailOffersSection({
                     <span
                       className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px]"
                       style={{
-                        background: '#EDE9FF',
-                        color: '#6C47FF',
+                        background: '#F8F6FA',
+                        color: '#7A4B94',
                         fontWeight: 600,
                       }}
                     >
@@ -311,21 +329,21 @@ export function RfqDetailOffersSection({
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
                     <p
-                      className="text-sm text-gray-900"
-                      style={{ fontWeight: 700, color: '#6C47FF' }}
+                      className="text-sm text-[#2E2252]"
+                      style={{ fontWeight: 700, color: '#7A4B94' }}
                     >
                       ฿{(offer.price / 1000).toFixed(0)}K
                     </p>
                     <p className="text-[9px] text-gray-500">ราคารวม</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
-                    <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
                       {offer.leadTime}
                     </p>
                     <p className="text-[9px] text-gray-500">วัน</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
-                    <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
                       {offer.responseTime}
                     </p>
                     <p className="text-[9px] text-gray-500">ตอบกลับ</p>
@@ -341,8 +359,8 @@ export function RfqDetailOffersSection({
                     }}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs border"
                     style={{
-                      borderColor: '#6C47FF',
-                      color: '#6C47FF',
+                      borderColor: '#7A4B94',
+                      color: '#7A4B94',
                       fontWeight: 600,
                     }}
                   >
@@ -350,11 +368,12 @@ export function RfqDetailOffersSection({
                   </button>
                   <button
                     type="button"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-1 py-2.5 rounded-xl text-xs text-white"
-                    style={{ background: '#6C47FF', fontWeight: 600 }}
+                    onClick={(e) => handleAcceptOffer(offer.id, e)}
+                    disabled={!!acceptingId}
+                    className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
+                    style={{ background: '#7A4B94', fontWeight: 600 }}
                   >
-                    เลือกโรงงานนี้
+                    {acceptingId === offer.id ? 'กำลังส่ง...' : 'เลือกโรงงานนี้'}
                   </button>
                 </div>
               </div>

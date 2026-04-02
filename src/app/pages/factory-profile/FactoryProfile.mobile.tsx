@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ArrowLeft, Package, Clock, CheckCircle2, Star, ShieldCheck, Mail, Phone, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
@@ -7,13 +7,26 @@ import {
   type TabId,
 } from '../../components/features/factory-profile';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
+import { useData } from '../../contexts/DataContext';
 
 type FactoryProfileState = ReturnType<typeof useFactoryProfile>;
 type FactoryProfileMobileProps = { state: FactoryProfileState };
 
 export function FactoryProfileMobile({ state }: FactoryProfileMobileProps) {
   const navigate = useNavigate();
-  const { factory, profile, conversation, activeTab, setActiveTab, productItems, promotionItems, articleItems, reviews } = state;
+  const data = useData();
+  const { factory, profile, conversation, activeTab, setActiveTab, productItems, promotionItems, articleItems, reviews, startConversation, startingConversation } = state;
+
+  const handleChat = useCallback(async () => {
+    if (conversation) {
+      navigate(`/messages/${conversation.id}`);
+      return;
+    }
+    const customerId = data.currentUser?.id;
+    if (!customerId) { navigate('/messages'); return; }
+    const convId = await startConversation(customerId);
+    navigate(convId ? `/messages/${convId}` : '/messages');
+  }, [conversation, navigate, startConversation, data.currentUser]);
 
   if (!factory) {
     return (
@@ -47,7 +60,8 @@ export function FactoryProfileMobile({ state }: FactoryProfileMobileProps) {
       <FactoryProfileHero
         factory={factory}
         onBack={() => navigate('/factory-ideas')}
-        onChat={() => navigate(conversation ? `/messages/${conversation.id}` : '/messages')}
+        onChat={handleChat}
+        chatLoading={startingConversation}
       />
 
       <div className="px-4 pt-4 space-y-3">
@@ -122,6 +136,7 @@ export function FactoryProfileMobile({ state }: FactoryProfileMobileProps) {
         <FactoryProfileTabContent
           activeTab={activeTab}
           onTabChange={setActiveTab as (tab: TabId) => void}
+          factoryId={factory.id}
           productItems={productItems}
           promotionItems={promotionItems}
           articleIdeas={articleItems.ideas}

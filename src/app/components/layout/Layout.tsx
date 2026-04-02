@@ -30,7 +30,7 @@ export function Layout() {
     (path !== '/' && location.pathname.startsWith(path));
 
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="min-h-screen flex bg-white w-full max-w-full overflow-x-hidden">
       {/* Desktop Sidebar */}
       <DesktopSidebar />
 
@@ -43,11 +43,11 @@ export function Layout() {
               {/* Logo */}
               <Link to="/" className="flex items-center gap-2 shrink-0">
                 <div
-                  className="h-7 pl-1.5 pr-2 sm:h-8 sm:pl-2 sm:pr-2.5 rounded-lg flex items-center gap-1.5 shrink-0 shadow-sm"
-                  style={{ background: '#A238FF', boxShadow: '0 4px 12px rgba(162,56,255,0.25)' }}
+                  className="h-7 pl-1.5 pr-2 sm:h-8 sm:pl-2 sm:pr-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm"
+                  style={{ background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
                 >
-                  <Factory className="text-white shrink-0" size={14} strokeWidth={2.5} />
-                  <span className="text-white text-[10px] sm:text-xs font-bold leading-none whitespace-nowrap">
+                  <Factory className="shrink-0" size={14} strokeWidth={2.5} style={{ color: '#A238FF' }} />
+                  <span className="text-[10px] sm:text-xs font-bold leading-none whitespace-nowrap" style={{ color: '#A238FF' }}>
                     WeMake
                   </span>
                 </div>
@@ -84,7 +84,7 @@ export function Layout() {
                   <Bell size={20} style={{ color: '#A238FF' }} />
                   <span
                     className="absolute top-1 right-1 w-4 h-4 rounded-full text-white flex items-center justify-center text-[9px]"
-                    style={{ background: '#EF4444', fontWeight: 700 }}
+                    style={{ background: '#F28A2E', fontWeight: 700 }}
                   >
                     3
                   </span>
@@ -107,9 +107,9 @@ export function Layout() {
                   aria-label="Toggle menu"
                 >
                   {mobileMenuOpen ? (
-                    <X size={22} style={{ color: '#2D1B4E' }} />
+                    <X size={22} style={{ color: '#374151' }} />
                   ) : (
-                    <Menu size={22} style={{ color: '#2D1B4E' }} />
+                    <Menu size={22} style={{ color: '#374151' }} />
                   )}
                 </button>
               </div>

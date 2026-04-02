@@ -1,6 +1,7 @@
-import React from 'react';
-import { CheckCircle, Clock, Circle, Camera } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle, Clock, Circle, Camera, Pencil, X, Check } from 'lucide-react';
 import { formatDateTh } from './utils';
+import { productionUpdatesApi } from '../../../services/api';
 
 export type TimelineMilestone = {
   id: string;
@@ -26,6 +27,27 @@ type OrderTimelineSectionProps = {
 export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSectionProps) {
   const timeline = order.timeline ?? [];
   const hasTimeline = timeline.length > 0;
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editNote, setEditNote] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const startEdit = (milestone: TimelineMilestone) => {
+    setEditingId(milestone.id);
+    setEditNote(milestone.description ?? '');
+  };
+
+  const saveEdit = async (milestoneId: string) => {
+    if (savingId) return;
+    setSavingId(milestoneId);
+    try {
+      await productionUpdatesApi.patch(milestoneId, { description: editNote });
+      setEditingId(null);
+    } catch {
+      // keep editing open on failure
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -51,12 +73,12 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                       style={{
                         background:
                           milestone.status === 'completed'
-                            ? '#6C47FF'
+                            ? '#A238FF'
                             : milestone.status === 'current'
-                              ? '#EDE9FF'
+                              ? 'rgba(162,56,255,0.12)'
                               : '#F3F4F6',
                         border:
-                          milestone.status === 'current' ? '2px solid #6C47FF' : 'none',
+                          milestone.status === 'current' ? '2px solid #A238FF' : 'none',
                       }}
                     >
                       {milestone.status === 'completed' ? (
@@ -64,7 +86,7 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                       ) : milestone.status === 'current' ? (
                         <div
                           className="w-3 h-3 rounded-full animate-pulse"
-                          style={{ background: '#6C47FF' }}
+                          style={{ background: '#A238FF' }}
                         />
                       ) : (
                         <Circle size={16} className="text-gray-300" />
@@ -75,7 +97,7 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                         className="w-0.5 flex-1 my-1"
                         style={{
                           background:
-                            milestone.status === 'completed' ? '#6C47FF' : '#E5E7EB',
+                            milestone.status === 'completed' ? '#A238FF' : '#E5E7EB',
                           minHeight: milestone.photo ? 120 : 32,
                         }}
                       />
@@ -91,7 +113,7 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                             fontWeight: 600,
                             color:
                               milestone.status === 'current'
-                                ? '#6C47FF'
+                                ? '#A238FF'
                                 : milestone.status === 'completed'
                                   ? '#1F2937'
                                   : '#9CA3AF',
@@ -113,19 +135,61 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                           </p>
                         )}
                       </div>
-                      {milestone.status === 'current' && (
-                        <span
-                          className="px-2 py-0.5 rounded-full text-[9px] ml-2"
-                          style={{
-                            background: '#EDE9FF',
-                            color: '#6C47FF',
-                            fontWeight: 600,
-                          }}
-                        >
-                          ปัจจุบัน
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1 ml-2 shrink-0">
+                        {milestone.status === 'current' && (
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[9px]"
+                            style={{
+                              background: 'rgba(162,56,255,0.12)',
+                              color: '#A238FF',
+                              fontWeight: 600,
+                            }}
+                          >
+                            ปัจจุบัน
+                          </span>
+                        )}
+                        {editingId === milestone.id ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => saveEdit(milestone.id)}
+                              disabled={!!savingId}
+                              className="p-1 rounded-full bg-green-100 text-green-600 disabled:opacity-50"
+                              aria-label="บันทึก"
+                            >
+                              <Check size={11} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingId(null)}
+                              className="p-1 rounded-full bg-gray-100 text-gray-500"
+                              aria-label="ยกเลิก"
+                            >
+                              <X size={11} />
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEdit(milestone)}
+                            className="p-1 rounded-full bg-gray-100 text-gray-400 hover:bg-violet-50 hover:text-[#A238FF] transition-colors"
+                            aria-label="แก้ไขบันทึก"
+                          >
+                            <Pencil size={11} />
+                          </button>
+                        )}
+                      </div>
                     </div>
+
+                    {editingId === milestone.id && (
+                      <textarea
+                        value={editNote}
+                        onChange={(e) => setEditNote(e.target.value)}
+                        placeholder="เพิ่มบันทึก..."
+                        rows={2}
+                        className="w-full mt-1.5 text-[11px] border border-[#A238FF]/30 rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#A238FF] resize-none"
+                      />
+                    )}
 
                     {milestone.photo && (
                       <button
@@ -157,19 +221,19 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
         )}
       </div>
 
-      <div className="bg-gradient-to-br from-[#F6F1FF] to-[#F3EFFF] border border-[#E9DEFF] rounded-2xl p-4">
+      <div className="bg-gradient-to-br from-[#F8F6FA] to-[#F3EFF8] border border-[rgba(162,56,255,0.20)] rounded-2xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-gray-700 text-sm">ความคืบหน้าโดยรวม</span>
-          <span className="text-[#6C47FF] text-base" style={{ fontWeight: 700 }}>
+          <span className="text-[#A238FF] text-base" style={{ fontWeight: 700 }}>
             {order.progress}%
           </span>
         </div>
-        <div className="h-3 bg-white rounded-full overflow-hidden border border-[#E9DEFF]">
+        <div className="h-3 bg-white rounded-full overflow-hidden border border-[rgba(162,56,255,0.20)]">
           <div
             className="h-full rounded-full"
             style={{
               width: `${order.progress}%`,
-              background: 'linear-gradient(90deg, #6C47FF, #8B5CF6)',
+              background: 'linear-gradient(90deg, #A238FF, #4A267D)',
             }}
           />
         </div>

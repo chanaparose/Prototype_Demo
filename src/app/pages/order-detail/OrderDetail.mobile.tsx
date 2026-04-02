@@ -34,7 +34,7 @@ export function OrderDetailMobile() {
         <button
           onClick={() => navigate('/orders')}
           className="px-6 py-3 rounded-xl text-white font-semibold"
-          style={{ background: '#6C47FF' }}
+          style={{ background: '#A238FF' }}
         >
           กลับไปรายการคำสั่งซื้อ
         </button>
@@ -70,7 +70,7 @@ export function OrderDetailMobile() {
           }
           className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
         >
-          <MessageCircle size={20} style={{ color: '#6C47FF' }} />
+          <MessageCircle size={20} style={{ color: '#A238FF' }} />
         </button>
       </div>
 
@@ -83,7 +83,7 @@ export function OrderDetailMobile() {
               onClick={() => setActiveSection('overview')}
               className={`flex-1 py-3 border-b-2 transition-colors ${
                 activeSection === 'overview'
-                  ? 'border-[#6C47FF] text-[#6C47FF]'
+                  ? 'border-[#A238FF] text-[#A238FF]'
                   : 'border-transparent text-gray-400'
               }`}
               style={{ fontSize: 14 }}
@@ -94,7 +94,7 @@ export function OrderDetailMobile() {
               onClick={() => setActiveSection('timeline')}
               className={`flex-1 py-3 border-b-2 transition-colors ${
                 activeSection === 'timeline'
-                  ? 'border-[#6C47FF] text-[#6C47FF]'
+                  ? 'border-[#A238FF] text-[#A238FF]'
                   : 'border-transparent text-gray-400'
               }`}
               style={{ fontSize: 14 }}
@@ -135,7 +135,7 @@ export function OrderDetailMobile() {
               type="button"
               className="w-full py-4 rounded-2xl text-white text-sm shadow-xl"
               style={{
-                background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)',
+                background: 'linear-gradient(135deg, #2D1B4E, #4A267D)',
                 fontWeight: 700,
               }}
             >
