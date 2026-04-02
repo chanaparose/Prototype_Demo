@@ -216,6 +216,7 @@ export function ExploreMobile({
       <ExploreFactoryGrid
         factories={factories ?? []}
         onFactoryClick={(id) => navigate(`/factories/${id}`)}
+        onSeeAll={() => navigate('/factory-ideas?type=factory')}
       />
 
       <ExploreIdeaArticles

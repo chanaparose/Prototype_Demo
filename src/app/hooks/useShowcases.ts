@@ -61,9 +61,9 @@ function cacheKey(type: ShowcaseApiType | undefined) {
 
 /** Map Factory Ideas UI tab → `GET /showcases` query `type` (PD / PM / ID) */
 export function showcaseQueryTypeFromTab(
-  tab: 'all' | 'product' | 'promotion' | 'idea',
+  tab: 'all' | 'product' | 'promotion' | 'idea' | 'factory',
 ): ShowcaseApiType | undefined {
-  if (tab === 'all') return undefined;
+  if (tab === 'all' || tab === 'factory') return undefined;
   if (tab === 'product') return 'PD';
   if (tab === 'promotion') return 'PM';
   return 'ID';

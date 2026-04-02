@@ -13,8 +13,9 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import type { Factory } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi } from '../../services/api';
+import { masterApi, factoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
 import {
   factoryIdeasCategoryOptionSelected,
@@ -24,6 +25,7 @@ import {
 } from '../../utils/exploreToFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
+import { MapPin, Star } from 'lucide-react';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -33,28 +35,51 @@ const COLORS = {
   white: '#FFFFFF',
   gray: '#F5F5F5',
   lightPurpleBg: '#F8F6FA',
+  teal: '#0D9488',
 };
 
-type ContentType = 'all' | 'product' | 'promotion' | 'idea';
+type ContentType = 'all' | 'product' | 'promotion' | 'idea' | 'factory';
 
 const CONTENT_TYPES: { id: ContentType; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
   { id: 'product', label: 'สินค้า' },
   { id: 'promotion', label: 'โปรโมชัน' },
   { id: 'idea', label: 'ไอเดีย' },
+  { id: 'factory', label: 'โรงงาน' },
 ];
 
 const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
   product: 'สินค้า',
   promotion: 'โปรโมชัน',
   idea: 'ไอเดีย',
+  factory: 'โรงงาน',
 };
 
 const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
   product: COLORS.orange,
   promotion: COLORS.purple,
   idea: COLORS.blue,
+  factory: COLORS.teal,
 };
+
+/* ─── Factory normaliser ─── */
+function normFactory(r: Record<string, unknown>): Factory {
+  return {
+    id: String(r.factory_id ?? r.id ?? ''),
+    name: String(r.factory_name ?? r.name ?? ''),
+    image: String(r.image_url ?? r.image ?? r.logo_url ?? ''),
+    location: String(r.province_name ?? r.location ?? ''),
+    rating: Number(r.avg_rating ?? r.rating ?? 0),
+    reviews: Number(r.review_count ?? r.reviews ?? 0),
+    specialization: String(r.specialization ?? ''),
+    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
+    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
+    verified: Boolean(r.is_verified ?? r.verified ?? false),
+    completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
+    priceRange: String(r.price_range ?? r.priceRange ?? ''),
+  };
+}
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
@@ -68,14 +93,34 @@ export function FactoryIdeasDesktop() {
   const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
   const data = useData();
 
-  const showcaseApiType = showcaseQueryTypeFromTab(selectedType);
+  const isFactoryTab = selectedType === 'factory';
+  const showcaseApiType = isFactoryTab ? undefined : showcaseQueryTypeFromTab(selectedType);
   const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
     type: showcaseApiType,
   });
 
+  /* ── Factory data (GET /factories/) ── */
+  const [factoryList, setFactoryList] = useState<Factory[]>([]);
+  const [factoriesLoading, setFactoriesLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedType !== 'all' && selectedType !== 'factory') return;
+    let cancelled = false;
+    setFactoriesLoading(true);
+    factoriesApi.list()
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        setFactoryList(arr.map(normFactory).filter((f) => f.id && f.name));
+      })
+      .catch(() => { if (!cancelled) setFactoryList([]); })
+      .finally(() => { if (!cancelled) setFactoriesLoading(false); });
+    return () => { cancelled = true; };
+  }, [selectedType]);
+
   useEffect(() => {
     const t = searchParams.get('type');
-    if (t === 'product' || t === 'promotion' || t === 'idea') {
+    if (t === 'product' || t === 'promotion' || t === 'idea' || t === 'factory') {
       setSelectedType(t);
     }
   }, [searchParams]);
@@ -139,6 +184,7 @@ export function FactoryIdeasDesktop() {
   );
 
   const visibleItems = useMemo(() => {
+    if (isFactoryTab) return [];
     const q = searchText.trim().toLowerCase();
     return pageShowcases
       .filter((item) => {
@@ -157,7 +203,19 @@ export function FactoryIdeasDesktop() {
         return byType && byCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
+  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+
+  const visibleFactories = useMemo(() => {
+    if (selectedType !== 'all' && selectedType !== 'factory') return [];
+    const q = searchText.trim().toLowerCase();
+    return factoryList.filter((f) => {
+      if (!q) return true;
+      const haystack = [f.name, f.location, f.specialization, ...(f.tags ?? [])].join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [searchText, selectedType, factoryList]);
+
+  const totalCount = isFactoryTab ? visibleFactories.length : visibleItems.length + (selectedType === 'all' ? visibleFactories.length : 0);
 
   const getDetailPath = (type: string, id: string) => {
     if (type === 'product') return `/factory-ideas/products/${id}`;
@@ -196,7 +254,7 @@ export function FactoryIdeasDesktop() {
                 </h2>
               </div>
               <span className="shrink-0 text-sm font-semibold" style={{ color: '#EBD3FF' }}>
-                {visibleItems.length} รายการ
+                {totalCount} รายการ
               </span>
             </div>
           </div>
@@ -334,16 +392,65 @@ export function FactoryIdeasDesktop() {
 
       {/* ── Content ── */}
       <div className="px-8 py-6">
-        {showcasesLoading ? (
+        {(showcasesLoading || factoriesLoading) ? (
           <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2">
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: COLORS.purple }} />
             <p className="text-sm text-gray-500">กำลังโหลดจากเซิร์ฟเวอร์…</p>
           </div>
-        ) : visibleItems.length === 0 ? (
+        ) : totalCount === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <p className="text-4xl mb-3">🔍</p>
             <p className="text-[14px] font-medium" style={{ color: COLORS.blue }}>ไม่พบรายการที่ตรงกับเงื่อนไข</p>
             <p className="text-[12px] text-gray-400 mt-1">ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
+          </div>
+        ) : isFactoryTab ? (
+          /* ━━━ Factory-only Grid ━━━ */
+          <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
+            {visibleFactories.map((factory) => (
+              <article
+                key={factory.id}
+                className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full"
+                onClick={() => navigate(`/factories/${factory.id}`)}
+              >
+                <div className="relative h-36 overflow-hidden bg-gray-100 shrink-0">
+                  <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+                  <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.teal }}>
+                    โรงงาน
+                  </span>
+                  {factory.verified && (
+                    <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                      <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
+                      <span className="text-[9px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArrowUpRight size={11} className="text-white" />
+                  </div>
+                </div>
+                <div className="p-3 flex flex-col flex-1 min-w-0">
+                  <h3 className="text-[12px] font-bold line-clamp-2 leading-snug min-h-[36px]" style={{ color: COLORS.blue }}>
+                    {factory.name}
+                  </h3>
+                  <div className="flex items-center gap-1 mt-1 min-w-0">
+                    <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
+                    <span className="text-[10px] text-gray-400 truncate">{factory.location}</span>
+                  </div>
+                  <div className="mt-auto pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between min-w-0">
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-[10px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
+                        <span className="text-[9px] text-gray-400">({factory.reviews})</span>
+                      </div>
+                      <span className="text-[9px] text-gray-400 shrink-0">
+                        MOQ <span className="font-semibold" style={{ color: COLORS.blue }}>{factory.minOrder}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
@@ -469,6 +576,63 @@ export function FactoryIdeasDesktop() {
                 </article>
               );
             })}
+          </div>
+        )}
+
+        {/* ━━━ Factory section ใน tab "ทั้งหมด" ━━━ */}
+        {selectedType === 'all' && visibleFactories.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold flex items-center gap-2" style={{ color: COLORS.blue }}>
+                <MapPin className="w-5 h-5" style={{ color: COLORS.teal }} />
+                โรงงานแนะนำ
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedType('factory')}
+                className="text-[13px] font-medium hover:opacity-80 transition-opacity"
+                style={{ color: COLORS.purple }}
+              >
+                ดูทั้งหมด ({visibleFactories.length})
+              </button>
+            </div>
+            <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
+              {visibleFactories.slice(0, 5).map((factory) => (
+                <article
+                  key={`fac-${factory.id}`}
+                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full"
+                  onClick={() => navigate(`/factories/${factory.id}`)}
+                >
+                  <div className="relative h-32 overflow-hidden bg-gray-100 shrink-0">
+                    <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.teal }}>
+                      โรงงาน
+                    </span>
+                    {factory.verified && (
+                      <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                        <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2.5 flex flex-col flex-1 min-w-0">
+                    <h3 className="text-[11px] font-bold truncate group-hover:text-[#A238FF] transition-colors" style={{ color: COLORS.blue }}>
+                      {factory.name}
+                    </h3>
+                    <div className="flex items-center gap-0.5 mt-0.5 min-w-0">
+                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                      <span className="text-[9px] text-gray-400 truncate">{factory.location}</span>
+                    </div>
+                    <div className="mt-auto pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-[9px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
+                      </div>
+                      <span className="text-[8px] text-gray-400">MOQ {factory.minOrder}</span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         )}
       </div>

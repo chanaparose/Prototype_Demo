@@ -592,6 +592,7 @@ export function ExploreDesktop({
             <div className="mt-4 flex justify-center">
               <button
                 type="button"
+                onClick={() => navigate('/factory-ideas?type=factory')}
                 className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm"
               >
                 ดูเพิ่มเติม

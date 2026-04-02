@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router';
 import { Search, BadgeCheck, Heart, Sparkles, X, Loader2, ChevronDown, LayoutGrid, List } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import type { Factory } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi, favoritesApi } from '../../services/api';
+import { masterApi, favoritesApi, factoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
 import {
   factoryIdeasCategoryOptionSelected,
@@ -13,6 +14,7 @@ import {
 } from '../../utils/exploreToFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
+import { MapPin, Star } from 'lucide-react';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -22,28 +24,51 @@ const COLORS = {
   white: '#FFFFFF',
   gray: '#F5F5F5',
   lightPurpleBg: '#F8F6FA',
+  teal: '#0D9488',
 };
 
-type ContentType = 'all' | 'product' | 'promotion' | 'idea';
+type ContentType = 'all' | 'product' | 'promotion' | 'idea' | 'factory';
 
 const CONTENT_TYPES: { id: ContentType; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
   { id: 'product', label: 'สินค้า' },
   { id: 'promotion', label: 'โปรโมชัน' },
   { id: 'idea', label: 'ไอเดีย' },
+  { id: 'factory', label: 'โรงงาน' },
 ];
 
 const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
   product: 'สินค้า',
   promotion: 'โปรโมชัน',
   idea: 'ไอเดีย',
+  factory: 'โรงงาน',
 };
 
 const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
   product: COLORS.orange,
   promotion: COLORS.purple,
   idea: COLORS.blue,
+  factory: COLORS.teal,
 };
+
+/* ─── Factory normaliser (snake_case API → camelCase) ─── */
+function normFactory(r: Record<string, unknown>): Factory {
+  return {
+    id: String(r.factory_id ?? r.id ?? ''),
+    name: String(r.factory_name ?? r.name ?? ''),
+    image: String(r.image_url ?? r.image ?? r.logo_url ?? ''),
+    location: String(r.province_name ?? r.location ?? ''),
+    rating: Number(r.avg_rating ?? r.rating ?? 0),
+    reviews: Number(r.review_count ?? r.reviews ?? 0),
+    specialization: String(r.specialization ?? ''),
+    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
+    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
+    verified: Boolean(r.is_verified ?? r.verified ?? false),
+    completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
+    priceRange: String(r.price_range ?? r.priceRange ?? ''),
+  };
+}
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
@@ -60,15 +85,37 @@ export function FactoryIdeasMobile() {
 
   useEffect(() => {
     const t = searchParams.get('type');
-    if (t === 'product' || t === 'promotion' || t === 'idea') {
+    if (t === 'product' || t === 'promotion' || t === 'idea' || t === 'factory') {
       setSelectedType(t);
     }
   }, [searchParams]);
 
-  const showcaseApiType = showcaseQueryTypeFromTab(selectedType);
+  /* ── Showcase data (product / promotion / idea) ── */
+  const isFactoryTab = selectedType === 'factory';
+  const showcaseApiType = isFactoryTab ? undefined : showcaseQueryTypeFromTab(selectedType);
   const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
     type: showcaseApiType,
   });
+
+  /* ── Factory data (GET /factories/) ── */
+  const [factoryList, setFactoryList] = useState<Factory[]>([]);
+  const [factoriesLoading, setFactoriesLoading] = useState(false);
+
+  useEffect(() => {
+    // โหลดโรงงานเมื่อ tab = all หรือ factory
+    if (selectedType !== 'all' && selectedType !== 'factory') return;
+    let cancelled = false;
+    setFactoriesLoading(true);
+    factoriesApi.list()
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        setFactoryList(arr.map(normFactory).filter((f) => f.id && f.name));
+      })
+      .catch(() => { if (!cancelled) setFactoryList([]); })
+      .finally(() => { if (!cancelled) setFactoriesLoading(false); });
+    return () => { cancelled = true; };
+  }, [selectedType]);
 
   const toggleFavorite = useCallback(async (showcaseId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -154,7 +201,9 @@ export function FactoryIdeasMobile() {
     };
   }, [categoryOpen]);
 
+  /* ── Showcase filter (product / promotion / idea) ── */
   const visibleItems = useMemo(() => {
+    if (isFactoryTab) return []; // factory tab ใช้ visibleFactories แทน
     const q = searchText.trim().toLowerCase();
     return pageShowcases
       .filter((item) => {
@@ -172,7 +221,21 @@ export function FactoryIdeasMobile() {
         return byType && byCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
+  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+
+  /* ── Factory filter ── */
+  const visibleFactories = useMemo(() => {
+    if (selectedType !== 'all' && selectedType !== 'factory') return [];
+    const q = searchText.trim().toLowerCase();
+    return factoryList.filter((f) => {
+      if (!q) return true;
+      const haystack = [f.name, f.location, f.specialization, ...(f.tags ?? [])].join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [searchText, selectedType, factoryList]);
+
+  /* ── Total count ── */
+  const totalCount = isFactoryTab ? visibleFactories.length : visibleItems.length + (selectedType === 'all' ? visibleFactories.length : 0);
 
   const getDetailPath = (type: string, id: string) => {
     if (type === 'product')   return `/factory-ideas/products/${id}`;
@@ -213,7 +276,7 @@ export function FactoryIdeasMobile() {
               </h2>
             </div>
             <span className="shrink-0 text-[11px] font-semibold tabular-nums leading-none py-0.5 px-1.5 rounded-md self-center" style={{ color: '#EBD3FF', background: 'rgba(255,255,255,0.12)' }}>
-              {visibleItems.length} รายการ
+              {totalCount} รายการ
             </span>
           </div>
         </div>
@@ -240,92 +303,100 @@ export function FactoryIdeasMobile() {
         </div>
       </div>
 
-      {/* ── Sticky filter pills ── */}
-      <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3 space-y-2.5">
-        {/* Content type — กว้างเท่าเนื้อหา (w-fit) เหลือพื้นที่ขวาเหมือน desktop ไม่ดึงเต็มแถว */}
+      {/* ── Sticky filter bar ── */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20">
+
+        {/* Row 1: Content type pills — scroll แนวนอน แถวเดียว */}
         <div
-          className="inline-flex max-w-full flex-wrap items-center gap-1 p-1 rounded-xl"
-          style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
+          className="flex items-center gap-1.5 px-4 pt-3 pb-2 overflow-x-auto scrollbar-hide"
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          {CONTENT_TYPES.map((type) => (
+          {CONTENT_TYPES.map((type) => {
+            const active = selectedType === type.id;
+            return (
+              <button
+                key={type.id}
+                type="button"
+                onClick={() => setSelectedType(type.id)}
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-[12px] transition-all whitespace-nowrap ${
+                  active ? 'shadow-sm' : 'active:scale-95'
+                }`}
+                style={{
+                  backgroundColor: active ? COLORS.orange : 'rgba(46,34,82,0.07)',
+                  color: active ? COLORS.white : COLORS.blue,
+                  fontWeight: active ? 700 : 500,
+                  boxShadow: active ? '0 2px 8px rgba(227,136,68,0.30)' : 'none',
+                }}
+              >
+                {type.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Row 2: Category dropdown + จำนวน + view toggle — แถวเดียว */}
+        <div className="flex items-center gap-2 px-4 pb-3">
+
+          {/* Category dropdown */}
+          <div ref={categoryDropdownRef} className="relative flex-1 min-w-0 z-30">
             <button
-              key={type.id}
               type="button"
-              onClick={() => setSelectedType(type.id)}
-              className={`px-4 py-2 rounded-lg text-[13px] transition-all ${
-                selectedType === type.id ? 'shadow-sm' : 'hover:opacity-80'
-              }`}
+              onClick={() => setCategoryOpen((o) => !o)}
+              className="w-full flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg border text-[12px] transition-all"
               style={{
-                backgroundColor: selectedType === type.id ? COLORS.orange : 'transparent',
-                color: selectedType === type.id ? COLORS.white : COLORS.blue,
-                fontWeight: selectedType === type.id ? 700 : 500,
-                boxShadow: selectedType === type.id ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
+                borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : '#E5E7EB',
+                backgroundColor: effectiveCategoryId !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
+                color: effectiveCategoryId !== 'all' ? COLORS.purple : '#6B7280',
+                fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
               }}
             >
-              {type.label}
+              <span className="truncate">{selectedCategoryName}</span>
+              <ChevronDown
+                size={14}
+                className={`shrink-0 transition-transform duration-200 ${categoryOpen ? 'rotate-180' : ''}`}
+              />
             </button>
-          ))}
-        </div>
+            {categoryOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl py-1 max-h-[50vh] overflow-y-auto">
+                {categoryFilters.map((cat) => {
+                  const selected = factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id);
+                  return (
+                    <button
+                      key={cat.id === 'all' ? 'all' : `cat-${cat.id}`}
+                      type="button"
+                      onClick={() => { applyCategory(cat.id); setCategoryOpen(false); }}
+                      className="w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50"
+                      style={{
+                        color: selected ? COLORS.purple : '#374151',
+                        fontWeight: selected ? 600 : 400,
+                        backgroundColor: selected ? COLORS.lightPurpleBg : 'transparent',
+                      }}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-        {/* Category — dropdown (เดียวกับ desktop) */}
-        <div ref={categoryDropdownRef} className="relative w-full z-20">
-          <button
-            type="button"
-            onClick={() => setCategoryOpen((o) => !o)}
-            className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all"
-            style={{
-              borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : '#E5E7EB',
-              backgroundColor: effectiveCategoryId !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
-              color: effectiveCategoryId !== 'all' ? COLORS.purple : '#4B5563',
-              fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
-            }}
+          {/* Count badge */}
+          <span
+            className="shrink-0 text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md"
+            style={{ color: COLORS.blue, backgroundColor: 'rgba(46,34,82,0.06)' }}
           >
-            <span className="truncate text-left">{selectedCategoryName}</span>
-            <ChevronDown
-              size={16}
-              className={`shrink-0 transition-transform duration-200 ${categoryOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
-          {categoryOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl border border-gray-200 shadow-lg py-1 max-h-60 overflow-y-auto">
-              {categoryFilters.map((cat) => (
-                <button
-                  key={cat.id === 'all' ? 'all' : `cat-${cat.id}`}
-                  type="button"
-                  onClick={() => {
-                    applyCategory(cat.id);
-                    setCategoryOpen(false);
-                  }}
-                  className="w-full px-4 py-2.5 text-left text-[13px] transition-colors active:bg-gray-50"
-                  style={{
-                    color: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
-                      ? COLORS.purple
-                      : '#374151',
-                    fontWeight: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? 600 : 400,
-                    backgroundColor: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
-                      ? COLORS.lightPurpleBg
-                      : 'transparent',
-                  }}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+            {totalCount} รายการ
+          </span>
 
-        <div className="flex items-center justify-between gap-2 pt-0.5">
-          <p className="text-[11px] flex-1 min-w-0" style={{ color: COLORS.blue }}>
-            พบ <span className="font-semibold">{visibleItems.length}</span> รายการ
-          </p>
+          {/* View toggle */}
           <div
-            className="flex items-center gap-1 p-1 rounded-xl border border-gray-200"
+            className="shrink-0 flex items-center gap-0.5 p-0.5 rounded-lg border border-gray-200"
             style={{ backgroundColor: COLORS.gray }}
           >
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className="p-2 rounded-lg transition-all"
+              className="p-1.5 rounded-md transition-all"
               style={{
                 backgroundColor: viewMode === 'grid' ? COLORS.white : 'transparent',
                 color: viewMode === 'grid' ? COLORS.purple : '#9CA3AF',
@@ -333,12 +404,12 @@ export function FactoryIdeasMobile() {
               }}
               aria-label="มุมมองตาราง"
             >
-              <LayoutGrid size={15} />
+              <LayoutGrid size={14} />
             </button>
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className="p-2 rounded-lg transition-all"
+              className="p-1.5 rounded-md transition-all"
               style={{
                 backgroundColor: viewMode === 'list' ? COLORS.white : 'transparent',
                 color: viewMode === 'list' ? COLORS.purple : '#9CA3AF',
@@ -346,24 +417,74 @@ export function FactoryIdeasMobile() {
               }}
               aria-label="มุมมองรายการ"
             >
-              <List size={15} />
+              <List size={14} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── Content grid ── */}
+      {/* ── Content ── */}
       <div className="px-4 pt-4">
-        {showcasesLoading ? (
+        {(showcasesLoading || factoriesLoading) ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin" style={{ color: COLORS.purple }} />
             <span className="ml-2 text-sm text-gray-500">กำลังโหลด...</span>
           </div>
-        ) : visibleItems.length === 0 ? (
+        ) : totalCount === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
             <p className="text-3xl mb-2">🔍</p>
             <p className="text-sm font-medium" style={{ color: COLORS.blue }}>ไม่พบรายการที่ตรงกับเงื่อนไข</p>
             <p className="text-xs text-gray-400 mt-1">ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
+          </div>
+
+        ) : isFactoryTab ? (
+          /* ━━━ Factory-only Grid ━━━ */
+          <div className="grid grid-cols-2 gap-3">
+            {visibleFactories.map((factory) => (
+              <article
+                key={factory.id}
+                className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                onClick={() => navigate(`/factories/${factory.id}`)}
+              >
+                {/* Image */}
+                <div className="relative h-[150px] shrink-0 bg-gray-100">
+                  <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+                  <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: COLORS.teal }}>
+                    โรงงาน
+                  </span>
+                  {factory.verified && (
+                    <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                      <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
+                      <span className="text-[8px] font-semibold" style={{ color: '#A238FF' }}>ยืนยัน</span>
+                    </div>
+                  )}
+                </div>
+                {/* Body */}
+                <div className="p-3 flex flex-col flex-1 min-w-0">
+                  <h3 className="text-xs font-bold leading-[18px] line-clamp-2 min-h-[36px]" style={{ color: COLORS.blue }}>
+                    {factory.name}
+                  </h3>
+                  <div className="flex items-center gap-1 mt-1 min-w-0">
+                    <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
+                    <span className="text-[10px] text-gray-400 truncate">{factory.location}</span>
+                  </div>
+                  {/* Footer */}
+                  <div className="mt-auto pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between min-w-0">
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-[10px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
+                        <span className="text-[9px] text-gray-400">({factory.reviews})</span>
+                      </div>
+                      <span className="text-[9px] text-gray-400 shrink-0">
+                        MOQ <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>{factory.minOrder}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         ) : viewMode === 'grid' ? (
           /* ━━━ Grid View ━━━
@@ -540,6 +661,61 @@ export function FactoryIdeasMobile() {
                 </article>
               );
             })}
+          </div>
+        )}
+
+        {/* ━━━ Factory section ใน tab "ทั้งหมด" ━━━ */}
+        {selectedType === 'all' && visibleFactories.length > 0 && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold flex items-center gap-1.5" style={{ color: COLORS.blue }}>
+                <MapPin className="w-4 h-4" style={{ color: COLORS.teal }} />
+                โรงงานแนะนำ
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedType('factory')}
+                className="text-[11px] font-medium"
+                style={{ color: COLORS.purple }}
+              >
+                ดูทั้งหมด ({visibleFactories.length})
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {visibleFactories.slice(0, 4).map((factory) => (
+                <article
+                  key={`fac-${factory.id}`}
+                  className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                  onClick={() => navigate(`/factories/${factory.id}`)}
+                >
+                  <div className="relative h-[120px] shrink-0 bg-gray-100">
+                    <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover" />
+                    <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: COLORS.teal }}>
+                      โรงงาน
+                    </span>
+                    {factory.verified && (
+                      <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                        <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2.5 flex flex-col flex-1 min-w-0">
+                    <h3 className="text-[11px] font-bold truncate" style={{ color: COLORS.blue }}>{factory.name}</h3>
+                    <div className="flex items-center gap-0.5 mt-0.5 min-w-0">
+                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                      <span className="text-[9px] text-gray-400 truncate">{factory.location}</span>
+                    </div>
+                    <div className="mt-auto pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-[9px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
+                      </div>
+                      <span className="text-[8px] text-gray-400">MOQ {factory.minOrder}</span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         )}
       </div>
