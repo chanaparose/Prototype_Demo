@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import {
   Search,
   BadgeCheck,
@@ -10,6 +10,7 @@ import {
   ArrowUpRight,
   X,
   ChevronDown,
+  Loader2,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
@@ -22,6 +23,7 @@ import {
   showcaseMatchesSelectedCategoryId,
 } from '../../utils/exploreToFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
+import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -56,13 +58,41 @@ const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
   /** หมวดทั้งหมดจาก GET /categories + GET /master/product-categories (Explore ยังคงแสดงแค่ 6 การ์ด) */
   const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
   const data = useData();
+
+  const showcaseApiType = showcaseQueryTypeFromTab(selectedType);
+  const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
+    type: showcaseApiType,
+  });
+
+  useEffect(() => {
+    const t = searchParams.get('type');
+    if (t === 'product' || t === 'promotion' || t === 'idea') {
+      setSelectedType(t);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!categoryOpen) return;
+    const close = (e: MouseEvent | TouchEvent) => {
+      const el = categoryDropdownRef.current;
+      if (el && !el.contains(e.target as Node)) setCategoryOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [categoryOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,7 +140,7 @@ export function FactoryIdeasDesktop() {
 
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();
-    return data.factoryShowcases
+    return pageShowcases
       .filter((item) => {
         const byType = selectedType === 'all' || item.contentType === selectedType;
         const byCategory = showcaseMatchesSelectedCategoryId(
@@ -118,6 +148,7 @@ export function FactoryIdeasDesktop() {
           effectiveCategoryId,
           apiCategoriesAll,
           data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+          item.categoryId,
         );
         if (!q) return byType && byCategory;
         const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
@@ -126,7 +157,7 @@ export function FactoryIdeasDesktop() {
         return byType && byCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, data.factoryShowcases, apiCategoriesAll, data.categories]);
+  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
 
   const getDetailPath = (type: string, id: string) => {
     if (type === 'product') return `/factory-ideas/products/${id}`;
@@ -200,7 +231,7 @@ export function FactoryIdeasDesktop() {
             <div className="w-px h-6 bg-gray-200" />
 
             {/* Category dropdown */}
-            <div className="relative">
+            <div ref={categoryDropdownRef} className="relative">
               <button
                 type="button"
                 onClick={() => setCategoryOpen(!categoryOpen)}
@@ -216,7 +247,7 @@ export function FactoryIdeasDesktop() {
                 <ChevronDown size={12} className={`transition-transform duration-200 ${categoryOpen ? 'rotate-180' : ''}`} />
               </button>
               {categoryOpen && (
-                <div className="absolute top-full mt-1.5 left-0 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-20 min-w-[180px] max-h-64 overflow-y-auto">
+                <div className="absolute top-full mt-1.5 left-0 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-20 min-w-[180px] max-h-[min(75vh,32rem)] overflow-y-auto">
                   {categoryFilters.map((cat) => (
                     <button
                       key={cat.id}
@@ -303,7 +334,12 @@ export function FactoryIdeasDesktop() {
 
       {/* ── Content ── */}
       <div className="px-8 py-6">
-        {visibleItems.length === 0 ? (
+        {showcasesLoading ? (
+          <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2">
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: COLORS.purple }} />
+            <p className="text-sm text-gray-500">กำลังโหลดจากเซิร์ฟเวอร์…</p>
+          </div>
+        ) : visibleItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <p className="text-4xl mb-3">🔍</p>
             <p className="text-[14px] font-medium" style={{ color: COLORS.blue }}>ไม่พบรายการที่ตรงกับเงื่อนไข</p>

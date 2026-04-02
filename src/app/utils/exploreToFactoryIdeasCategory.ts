@@ -1,4 +1,17 @@
-import { categoryIdsMatch } from './exploreCategoriesFromApi';
+import { categoryIdsMatch, TILE_DB_ID_TO_CONTEXT_ID } from './exploreCategoriesFromApi';
+
+/** เทียบ id หมวดจาก API (ตัวเลข / string) กับค่าใน URL หรือ dropdown รวมแม็ป DB id ↔ context id */
+function categoryIdsEquivalent(a: string, b: string): boolean {
+  const sa = a.trim();
+  const sb = b.trim();
+  if (categoryIdsMatch(sa, sb)) return true;
+  const ctxA = TILE_DB_ID_TO_CONTEXT_ID[sa];
+  if (ctxA && categoryIdsMatch(ctxA, sb)) return true;
+  const ctxB = TILE_DB_ID_TO_CONTEXT_ID[sb];
+  if (ctxB && categoryIdsMatch(sa, ctxB)) return true;
+  if (ctxA && ctxB && categoryIdsMatch(ctxA, ctxB)) return true;
+  return false;
+}
 
 /**
  * เชื่อมการ์ดหมวดบน Explore กับการกรองหน้า factory-ideas (item.category ใน showcase)
@@ -33,14 +46,20 @@ export function factoryIdeasCategoryOptionSelected(selectedId: string, optionId:
 
 /**
  * กรอง showcase ตามหมวดที่เลือก — state ใช้ category id (เช่น จาก ?category_id= หลัง Explore)
+ *
+ * ถ้ามี `itemCategoryId` จาก API (`category_id`) จะเทียบกับ `selectedId` ก่อน แล้วค่อย fallback ชื่อหมวด
  */
 export function showcaseMatchesSelectedCategoryId(
   itemCategory: string,
   selectedId: string,
   masterCategories: CategoryLike[],
   contextCategories: CategoryLike[],
+  itemCategoryId?: string,
 ): boolean {
   if (selectedId === 'all') return true;
+  const cid = itemCategoryId?.trim();
+  if (cid && categoryIdsEquivalent(cid, selectedId)) return true;
+
   const primary = masterCategories.length > 0 ? masterCategories : contextCategories;
   const row = primary.find((c) => categoryIdsMatch(c.id, selectedId));
   if (row) return itemCategory === row.name;

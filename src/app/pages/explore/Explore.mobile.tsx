@@ -213,7 +213,10 @@ export function ExploreMobile({
         onFactoryClick={(id) => navigate(`/factories/${id}`)}
       />
 
-      <ExploreIdeaArticles articles={ideaArticles ?? []} />
+      <ExploreIdeaArticles
+        articles={ideaArticles ?? []}
+        onSeeAll={() => navigate('/factory-ideas?type=idea')}
+      />
 
       {/* โปรโมชันแนะนำ — แบนเนอร์ส้ม (เดียวกับ desktop) แสดงเสมอ; การ์ดเมื่อมีข้อมูล */}
       <div className="mb-5">
