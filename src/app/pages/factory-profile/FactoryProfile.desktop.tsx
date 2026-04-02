@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import {
   MapPin,
@@ -18,12 +18,14 @@ import {
 } from '../../components/features/factory-profile';
 import { ImageWithFallback } from '../../components/shared';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
+import { useData } from '../../contexts/DataContext';
 
 type FactoryProfileState = ReturnType<typeof useFactoryProfile>;
 type FactoryProfileDesktopProps = { state: FactoryProfileState };
 
 export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
   const navigate = useNavigate();
+  const data = useData();
   const {
     factory,
     profile,
@@ -34,7 +36,17 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
     promotionItems,
     articleItems,
     reviews,
+    startConversation,
+    startingConversation,
   } = state;
+
+  const handleChat = useCallback(async () => {
+    if (conversation) { navigate(`/messages/${conversation.id}`); return; }
+    const customerId = data.currentUser?.id;
+    if (!customerId) { navigate('/messages'); return; }
+    const convId = await startConversation(customerId);
+    navigate(convId ? `/messages/${convId}` : '/messages');
+  }, [conversation, navigate, startConversation, data.currentUser]);
 
   if (!factory) {
     return (
@@ -70,7 +82,8 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
         <FactoryProfileHero
           factory={factory}
           onBack={() => navigate('/factory-ideas')}
-          onChat={() => navigate(conversation ? `/messages/${conversation.id}` : '/messages')}
+          onChat={handleChat}
+          chatLoading={startingConversation}
         />
       </div>
 
@@ -175,6 +188,7 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
           <FactoryProfileTabContent
             activeTab={activeTab}
             onTabChange={setActiveTab as (tab: TabId) => void}
+            factoryId={factory.id}
             productItems={productItems}
             promotionItems={promotionItems}
             articleIdeas={articleItems.ideas}

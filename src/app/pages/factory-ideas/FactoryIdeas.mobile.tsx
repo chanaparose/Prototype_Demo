@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, BadgeCheck, Heart, Sparkles, X } from 'lucide-react';
+import { Search, BadgeCheck, Heart, Sparkles, X, Loader2 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi } from '../../services/api';
+import { masterApi, favoritesApi, showcasesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
 import {
   factoryIdeasCategoryOptionSelected,
@@ -11,6 +11,7 @@ import {
   showcaseMatchesSelectedCategoryId,
 } from '../../utils/exploreToFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
+import type { FactoryShowcase } from '../../contexts/DataContext';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -43,12 +44,82 @@ const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
   idea: COLORS.blue,
 };
 
+// ─── Normaliser (snake_case API → camelCase) ──────────────────
+const CT_MAP: Record<string, 'product' | 'promotion' | 'idea'> = {
+  PR: 'product', PM: 'promotion', ID: 'idea',
+  product: 'product', promotion: 'promotion', idea: 'idea',
+};
+
+function normShowcase(r: Record<string, unknown>): FactoryShowcase {
+  return {
+    id: String(r.showcase_id ?? r.id ?? ''),
+    factoryId: String(r.factory_id ?? ''),
+    factoryName: String(r.factory_name ?? r.factoryName ?? ''),
+    title: String(r.title ?? ''),
+    excerpt: String(r.excerpt ?? ''),
+    image: String(r.image_url ?? r.image ?? ''),
+    contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
+    category: String(r.category_name ?? r.category ?? ''),
+    postedAt: String(r.created_at ?? r.postedAt ?? ''),
+    likes: Number(r.likes_count ?? r.likes ?? 0),
+    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
+    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
+    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+  };
+}
+
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
+  // Optimistic favorites: Set of showcase IDs that this session has liked
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const data = useData();
+
+  // ─── Load showcases from API (page-level, not from DataContext) ──
+  const [pageShowcases, setPageShowcases] = useState<FactoryShowcase[]>([]);
+  const [showcasesLoading, setShowcasesLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setShowcasesLoading(true);
+    showcasesApi.list()
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        setPageShowcases(arr.map(normShowcase).filter((s) => s.id && s.title));
+      })
+      .catch(() => {
+        if (!cancelled) setPageShowcases([]);
+      })
+      .finally(() => {
+        if (!cancelled) setShowcasesLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const toggleFavorite = useCallback(async (showcaseId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const numId = Number(showcaseId);
+    const wasLiked = likedIds.has(showcaseId);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (wasLiked) next.delete(showcaseId); else next.add(showcaseId);
+      return next;
+    });
+    try {
+      if (wasLiked) await favoritesApi.remove(numId);
+      else await favoritesApi.add(numId);
+    } catch {
+      // revert
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (wasLiked) next.add(showcaseId); else next.delete(showcaseId);
+        return next;
+      });
+    }
+  }, [likedIds]);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +166,7 @@ export function FactoryIdeasMobile() {
 
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();
-    return data.factoryShowcases
+    return pageShowcases
       .filter((item) => {
         const byType     = selectedType === 'all' || item.contentType === selectedType;
         const byCategory = showcaseMatchesSelectedCategoryId(
@@ -110,7 +181,7 @@ export function FactoryIdeasMobile() {
         return byType && byCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, data.factoryShowcases, apiCategoriesAll, data.categories]);
+  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
 
   const getDetailPath = (type: string, id: string) => {
     if (type === 'product')   return `/factory-ideas/products/${id}`;
@@ -225,7 +296,12 @@ export function FactoryIdeasMobile() {
 
       {/* ── Content grid ── */}
       <div className="px-4 pt-4">
-        {visibleItems.length === 0 ? (
+        {showcasesLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin" style={{ color: COLORS.purple }} />
+            <span className="ml-2 text-sm text-gray-500">กำลังโหลด...</span>
+          </div>
+        ) : visibleItems.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
             <p className="text-3xl mb-2">🔍</p>
             <p className="text-sm font-medium" style={{ color: COLORS.blue }}>ไม่พบรายการที่ตรงกับเงื่อนไข</p>
@@ -283,10 +359,18 @@ export function FactoryIdeasMobile() {
 
                       <div className="flex items-center justify-between mt-1 text-[10px] text-gray-400">
                         <span>MOQ <span className="font-medium" style={{ color: COLORS.blue }}>{item.minOrder}</span></span>
-                        <span className="flex items-center gap-0.5">
-                          <Heart className="w-2.5 h-2.5" />
-                          {item.likes}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => toggleFavorite(item.id, e)}
+                          className="flex items-center gap-0.5 transition-colors"
+                          aria-label="ถูกใจ"
+                        >
+                          <Heart
+                            className="w-2.5 h-2.5"
+                            style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          />
+                          {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                        </button>
                       </div>
                     </div>
 

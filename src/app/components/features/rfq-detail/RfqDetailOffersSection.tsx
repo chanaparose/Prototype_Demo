@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router';
 import {
   CheckCircle,
@@ -10,6 +10,7 @@ import {
   XCircle,
   AlertCircle,
 } from 'lucide-react';
+import { quotationsApi } from '../../../services/api';
 
 export type OfferItem = {
   id: string;
@@ -40,6 +41,7 @@ type RfqDetailOffersSectionProps = {
   selectedOfferId: string | null;
   onSelectOffer: (id: string | null) => void;
   onNavigateToMessages: () => void;
+  onOfferAccepted?: (offerId: string) => void;
 };
 
 export function RfqDetailOffersSection({
@@ -50,7 +52,23 @@ export function RfqDetailOffersSection({
   selectedOfferId,
   onSelectOffer,
   onNavigateToMessages,
+  onOfferAccepted,
 }: RfqDetailOffersSectionProps) {
+  const [acceptingId, setAcceptingId] = useState<string | null>(null);
+
+  const handleAcceptOffer = async (offerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (acceptingId) return;
+    setAcceptingId(offerId);
+    try {
+      await quotationsApi.updateStatus(offerId, 'AC');
+      onOfferAccepted?.(offerId);
+    } catch {
+      // silently fail; user can retry
+    } finally {
+      setAcceptingId(null);
+    }
+  };
   if (isHistoryView && offers.length > 0) {
     return (
       <>
@@ -350,11 +368,12 @@ export function RfqDetailOffersSection({
                   </button>
                   <button
                     type="button"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex-1 py-2.5 rounded-xl text-xs text-white"
+                    onClick={(e) => handleAcceptOffer(offer.id, e)}
+                    disabled={!!acceptingId}
+                    className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
                     style={{ background: '#7A4B94', fontWeight: 600 }}
                   >
-                    เลือกโรงงานนี้
+                    {acceptingId === offer.id ? 'กำลังส่ง...' : 'เลือกโรงงานนี้'}
                   </button>
                 </div>
               </div>

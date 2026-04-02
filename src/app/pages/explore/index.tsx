@@ -14,15 +14,12 @@ export function Explore() {
     setSearchText,
     copiedId,
     setCopiedId,
-    activeRFQs,
-    recentOrders,
     factories,
     categories,
     ideaArticles,
-    factoryShowcases,
-    exploreProducts,
-    explorePromotions,
-    explorePromoCodes,
+    showcases,
+    productShowcases,
+    promotionShowcases,
     promoSlides,
     exploreCategoriesMerged,
     exploreCategoriesLoading,
@@ -47,13 +44,13 @@ export function Explore() {
         exploreCategoriesError={exploreCategoriesError}
         reloadExploreCategories={reloadExploreCategories}
         factories={factories as any}
-        activeRFQs={activeRFQs as any}
-        recentOrders={recentOrders as any}
+        activeRFQs={[]}
+        recentOrders={[]}
         ideaArticles={ideaArticles as any}
-        factoryShowcases={factoryShowcases as any}
-        exploreProducts={exploreProducts as any}
-        explorePromotions={explorePromotions as any}
-        explorePromoCodes={explorePromoCodes as any}
+        factoryShowcases={showcases as any}
+        exploreProducts={productShowcases as any}
+        explorePromotions={promotionShowcases as any}
+        explorePromoCodes={[]}
         promoSlides={promoSlides as any}
       />
     );
@@ -70,10 +67,10 @@ export function Explore() {
       reloadExploreCategories={reloadExploreCategories}
       factories={factories as any}
       ideaArticles={ideaArticles as any}
-      factoryShowcases={factoryShowcases as any}
-      exploreProducts={exploreProducts as any}
-      explorePromotions={explorePromotions as any}
-      explorePromoCodes={explorePromoCodes as any}
+      factoryShowcases={showcases as any}
+      exploreProducts={productShowcases as any}
+      explorePromotions={promotionShowcases as any}
+      explorePromoCodes={[]}
       promoSlides={promoSlides as any}
     />
   );

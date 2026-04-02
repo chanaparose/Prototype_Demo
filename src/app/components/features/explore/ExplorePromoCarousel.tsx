@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Copy, Gift } from 'lucide-react';
-import { PROMO_SLIDES } from './constants';
 
 type Slide = { id: string; title: string; subtitle: string; code: string };
 
 type ExplorePromoCarouselProps = {
   initialIndex?: number;
   onCopyCode?: (code: string, id: string) => void;
-  /** Promo slides from API — falls back to PROMO_SLIDES constant if empty */
+  /** Promo slides จาก API เท่านั้น — ไม่มี fallback */
   promoSlides?: unknown[];
-  /** Promo codes from API — merged into slides if provided */
+  /** Promo codes จาก API — merge เข้า slides */
   promoCodes?: unknown[];
 };
 
@@ -34,12 +33,11 @@ export function ExplorePromoCarousel({
   promoSlides = [],
   promoCodes = [],
 }: ExplorePromoCarouselProps) {
-  // Merge API slides + codes, fallback to hardcoded constant
+  // Merge API slides + codes — ไม่มี fallback ไป mock data
   const slides: Slide[] = useMemo(() => {
     const apiSlides = toSlides(promoSlides);
     const apiCodes = toSlides(promoCodes);
-    const merged = [...apiSlides, ...apiCodes];
-    return merged.length > 0 ? merged : PROMO_SLIDES;
+    return [...apiSlides, ...apiCodes];
   }, [promoSlides, promoCodes]);
 
   const [promoIndex, setPromoIndex] = useState(initialIndex);

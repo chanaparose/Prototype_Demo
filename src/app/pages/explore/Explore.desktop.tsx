@@ -15,7 +15,6 @@ import {
   ShoppingBag,
   Tag,
 } from 'lucide-react';
-import { PROMO_SLIDES as FALLBACK_PROMO_SLIDES } from '../../components/features/explore/constants';
 import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/exploreCategoryTilesConfig';
 import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
@@ -23,7 +22,6 @@ import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '../../components/features/explore/ExploreIdeaArticles';
-import type { FactoryShowcase } from '../../contexts/DataContext';
 /* ── ProductCarouselSection: maaboom.com-style left banner + auto-scrolling card carousel ── */
 type ProductItem = { id: string; title: string; price: string; img: string; discount?: string };
 
@@ -303,6 +301,12 @@ function DesktopCategories({
   );
 }
 
+type ShowcaseItem = {
+  id: string; title: string; excerpt: string; image: string;
+  factoryName: string; factoryId: string; minOrder: number;
+  contentType: string;
+};
+
 type ExploreDesktopProps = {
   searchText: string;
   setSearchText: (v: string) => void;
@@ -317,9 +321,9 @@ type ExploreDesktopProps = {
   activeRFQs: any[];
   recentOrders: any[];
   ideaArticles: IdeaArticleItem[];
-  factoryShowcases: FactoryShowcase[];
-  exploreProducts: unknown[];
-  explorePromotions: unknown[];
+  factoryShowcases: ShowcaseItem[];
+  exploreProducts: ShowcaseItem[];
+  explorePromotions: ShowcaseItem[];
   explorePromoCodes: unknown[];
   promoSlides: unknown[];
 };
@@ -336,32 +340,29 @@ export function ExploreDesktop({
   reloadExploreCategories,
   factories,
   ideaArticles,
-  factoryShowcases,
   exploreProducts,
   explorePromotions,
-  explorePromoCodes,
   promoSlides,
 }: ExploreDesktopProps) {
   const navigate = useNavigate();
   const ideaArticlesList = ideaArticles ?? [];
 
   const productShowcases = useMemo(
-    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'product').slice(0, 8).map((s) => ({
+    () => (exploreProducts ?? []).slice(0, 8).map((s) => ({
       id: s.id, title: s.title, price: `MOQ ${s.minOrder}`, img: s.image,
     })),
-    [factoryShowcases],
+    [exploreProducts],
   );
 
   const promoShowcases = useMemo(
-    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'promotion').slice(0, 4),
-    [factoryShowcases],
+    () => (explorePromotions ?? []).slice(0, 4),
+    [explorePromotions],
   );
 
-  // Merge API promo slides/codes into display slides, fallback to constant
+  // Promo slides จาก API เท่านั้น — ไม่มี fallback
   const desktopPromoSlides = useMemo(() => {
     const slides = Array.isArray(promoSlides) ? promoSlides : [];
-    const codes = Array.isArray(explorePromoCodes) ? explorePromoCodes : [];
-    const fromApi = [...slides, ...codes]
+    return slides
       .map((r: any) => ({
         id: String(r.slide_id ?? r.id ?? ''),
         title: String(r.title ?? ''),
@@ -369,8 +370,7 @@ export function ExploreDesktop({
         code: String(r.code ?? ''),
       }))
       .filter((s) => s.id && s.title);
-    return fromApi.length > 0 ? fromApi : FALLBACK_PROMO_SLIDES;
-  }, [promoSlides, explorePromoCodes]);
+  }, [promoSlides]);
 
   const handleCopy = (code: string, id: string) => {
     navigator.clipboard?.writeText(code);
@@ -432,7 +432,8 @@ export function ExploreDesktop({
           </button>
         </div>
 
-        {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) ═══ */}
+        {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) — แสดงเฉพาะเมื่อมีจาก API ═══ */}
+        {desktopPromoSlides.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
@@ -445,9 +446,12 @@ export function ExploreDesktop({
             {desktopPromoSlides.map((promo) => (
               <div
                 key={promo.id}
-                className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all"
+                className="h-full rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all flex flex-col"
               >
-                <div className="relative overflow-hidden p-5 text-white" style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}>
+                <div
+                  className="relative overflow-hidden p-5 text-white h-full flex-1 flex flex-col"
+                  style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}
+                >
                   {/* Purple ribbon circle top-right */}
                   <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30" style={{ background: '#A238FF' }} />
                   <div className="absolute top-0 right-0 w-14 h-14 rounded-full opacity-20 blur-xl" style={{ background: '#A238FF' }} />
@@ -481,6 +485,7 @@ export function ExploreDesktop({
             ))}
           </div>
         </section>
+        )}
 
         {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
         <DesktopCategories
@@ -495,7 +500,7 @@ export function ExploreDesktop({
         <ProductCarouselSection
           title="สินค้าแนะนำ"
           items={productShowcases}
-          bannerImg={productShowcases[0]?.img ?? 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'}
+          bannerImg={'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'}
           bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง"
         />
 
@@ -537,52 +542,58 @@ export function ExploreDesktop({
             </div>
           </div>
 
-          <div className="p-6 bg-gradient-to-b from-purple-50/20 to-white">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {/* --- Body Section --- */}
+          <div className="p-4 bg-gradient-to-b from-purple-50/20 to-white">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {(factories ?? []).map((factory) => (
                 <div
                   key={factory.id}
                   onClick={() => navigate(`/factories/${factory.id}`)}
-                  className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer flex flex-col"
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
                 >
-                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
+                  <div className="aspect-video relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={factory.image}
                       alt={factory.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     {factory.verified && (
-                      <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-0.5">
-                        <BadgeCheck className="w-3.5 h-3.5 text-[#A238FF]" />
-                        <span className="text-[10px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
+                      <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                        <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
+                        <span className="text-[9px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
                       </div>
                     )}
-                    <div className="absolute top-2 right-2 bg-[#292259]/90 text-white rounded-full px-2 py-0.5 text-[10px]">
+                    <div className="absolute top-1.5 right-1.5 bg-[#292259]/90 text-white rounded-full px-1.5 py-0.5 text-[9px]">
                       {factory.priceRange}
                     </div>
                   </div>
-                  <div className="p-3 flex flex-col flex-1 justify-between">
+                  <div className="p-2.5 flex flex-col flex-1 justify-between">
                     <div>
-                      <h3 className="font-medium text-sm text-gray-700 mb-1.5 truncate group-hover:text-[#A238FF] transition-colors">{factory.name}</h3>
-                      <div className="flex items-center gap-1 mb-1.5">
-                        <MapPin className="w-3 h-3 text-gray-400" />
-                        <span className="text-gray-500 text-xs">{factory.location}</span>
+                      <h3 className="font-medium text-[13px] leading-tight text-gray-700 mb-1 truncate group-hover:text-[#A238FF] transition-colors">
+                        {factory.name}
+                      </h3>
+                      <div className="flex items-center gap-1 mb-1">
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[11px] truncate">{factory.location}</span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-50">
-                      <div className="flex items-center gap-1">
-                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                        <span className="text-gray-700 text-xs font-semibold">{factory.rating}</span>
-                        <span className="text-gray-400 text-[11px]">({factory.reviews})</span>
+                    <div className="flex items-center justify-between pt-1.5 border-t border-gray-50">
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <span className="text-gray-700 text-[11px] font-semibold">{factory.rating}</span>
+                        <span className="text-gray-400 text-[9px]">({factory.reviews})</span>
                       </div>
-                      <span className="text-gray-400 text-[10px]">ขั้นต่ำ {factory.minOrder}</span>
+                      <span className="text-gray-400 text-[9px]">ขั้นต่ำ {factory.minOrder}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-6 flex justify-center">
-              <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-12 py-2.5 rounded-lg text-sm font-medium transition-colors">
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm"
+              >
                 ดูเพิ่มเติม
               </button>
             </div>

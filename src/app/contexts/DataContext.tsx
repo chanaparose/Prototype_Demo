@@ -4,9 +4,9 @@
  * This replaces the static mockData.ts imports.
  * Data is loaded after authentication from various /frontend/* endpoints.
  */
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { frontendApi, categoriesApi } from '../services/api';
+import { frontendApi, categoriesApi, showcasesApi, notificationsApi, conversationsApi } from '../services/api';
 import * as fallbackData from '../data/mockData';
 
 // ─── Types (matching mockData shapes) ───────────────────────────
@@ -244,66 +244,134 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    try {
-      // Use the mock-data endpoint first for a complete dataset,
-      // then we can also call granular endpoints for fresh data on specific pages
-      const data = await frontendApi.getMockData();
+    // Helper: use API data if non-empty array, otherwise fallback to local mockData
+    const arr = <T,>(apiVal: unknown, fb: T[]): T[] => {
+      const a = apiVal as T[] | undefined;
+      return Array.isArray(a) && a.length > 0 ? a : fb;
+    };
 
-      // Helper: use API data if non-empty array, otherwise fallback to local mockData
-      const arr = <T,>(apiVal: unknown, fb: T[]): T[] => {
-        const a = apiVal as T[] | undefined;
-        return Array.isArray(a) && a.length > 0 ? a : fb;
-      };
+    try {
+      // ── เรียกเฉพาะ core data (ไม่รวม showcases — แต่ละหน้าโหลดเอง) ──
+      const [bootstrapRes, notifRes, convsRes] = await Promise.allSettled([
+        frontendApi.getBootstrap(),   // user, categories, factories, rfqs, orders
+        notificationsApi.list(),      // notifications
+        conversationsApi.list(),      // conversations
+      ]);
+
+      const boot = bootstrapRes.status === 'fulfilled' ? bootstrapRes.value : null;
+      const rawNotifs = notifRes.status === 'fulfilled'
+        ? (Array.isArray(notifRes.value) ? notifRes.value : []) as Record<string, unknown>[]
+        : [];
+      const rawConvs = convsRes.status === 'fulfilled'
+        ? (Array.isArray(convsRes.value) ? convsRes.value : []) as Record<string, unknown>[]
+        : [];
+
+      // ── แปลง notifications ────────────────────────────────────────────
+      const mappedNotifs: Notification[] = rawNotifs.map((r) => ({
+        id: String(r.notification_id ?? r.id ?? ''),
+        type: String(r.type ?? ''),
+        title: String(r.title ?? ''),
+        message: String(r.message ?? r.body ?? ''),
+        time: String(r.created_at ?? r.time ?? ''),
+        read: Boolean(r.is_read ?? r.read ?? false),
+        linkTo: String(r.link_to ?? r.linkTo ?? ''),
+        avatar: String(r.avatar ?? ''),
+        rfqId: r.rfq_id ? String(r.rfq_id) : undefined,
+        orderId: r.order_id ? String(r.order_id) : undefined,
+        conversationId: r.conversation_id ? String(r.conversation_id) : undefined,
+      })).filter((n) => n.id);
+
+      // ── แปลง conversations ────────────────────────────────────────────
+      const mappedConvs: Conversation[] = rawConvs.map((r) => ({
+        id: String(r.conversation_id ?? r.id ?? ''),
+        factoryId: String(r.factory_id ?? r.factoryId ?? ''),
+        rfqId: String(r.rfq_id ?? r.rfqId ?? ''),
+        factoryName: String(r.factory_name ?? r.factoryName ?? ''),
+        factoryAvatar: String(r.factory_avatar ?? r.factoryAvatar ?? ''),
+        rfqName: String(r.rfq_name ?? r.rfqName ?? ''),
+        lastMessage: String(r.last_message ?? r.lastMessage ?? ''),
+        time: String(r.updated_at ?? r.time ?? ''),
+        unread: Number(r.unread_count ?? r.unread ?? 0),
+        hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? false),
+        messages: [],
+      })).filter((c) => c.id);
+
+      console.info('[DataContext] bootstrap:', bootstrapRes.status, '| notifs:', rawNotifs.length, '| convs:', rawConvs.length);
 
       setState({
-        currentUser: (data.currentUser as CurrentUser) ?? (fallbackData.currentUser as CurrentUser),
-        categories: arr<Category>(data.categories, fallbackData.categories as Category[]),
-        factories: arr<Factory>(data.factories, fallbackData.factories as Factory[]),
-        factoryProfiles: arr<FactoryProfile>(data.factoryProfiles, fallbackData.factoryProfiles as FactoryProfile[]),
-        factoryReviews: arr<FactoryReview>(data.factoryReviews, fallbackData.factoryReviews as FactoryReview[]),
-        ideaArticles: arr<IdeaArticle>(data.ideaArticles, fallbackData.ideaArticles as IdeaArticle[]),
-        factoryShowcases: arr<FactoryShowcase>(data.factoryShowcases, fallbackData.factoryShowcases as FactoryShowcase[]),
-        rfqs: arr<Rfq>(data.rfqs, fallbackData.rfqs as Rfq[]),
-        orders: arr<Order>(data.orders, fallbackData.orders as Order[]),
-        conversations: arr<Conversation>(data.conversations, fallbackData.conversations as Conversation[]),
-        notifications: arr<Notification>(data.notifications, fallbackData.notifications as Notification[]),
+        currentUser: (boot?.currentUser as CurrentUser) ?? (fallbackData.currentUser as CurrentUser),
+        categories: arr<Category>(boot?.categories, fallbackData.categories as Category[]),
+        factories: arr<Factory>(boot?.factories, fallbackData.factories as Factory[]),
+        factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
+        factoryReviews: fallbackData.factoryReviews as FactoryReview[],
+        // showcases/ideas → ไม่โหลดที่นี่ แต่ละหน้าโหลดเอง (explore, factory-ideas)
+        ideaArticles: [],
+        factoryShowcases: [],
+        rfqs: arr<Rfq>(boot?.rfqs, fallbackData.rfqs as Rfq[]),
+        orders: arr<Order>(boot?.orders, fallbackData.orders as Order[]),
+        conversations: mappedConvs.length > 0 ? mappedConvs : (fallbackData.conversations as Conversation[]),
+        notifications: mappedNotifs.length > 0 ? mappedNotifs : (fallbackData.notifications as Notification[]),
         isLoading: false,
         error: null,
       });
     } catch (err) {
-      console.error('Failed to fetch data, using fallback:', err);
-      // ถ้า API ล้มเหลวทั้งหมด ใช้ mockData แทน
+      console.error('DataContext fetchAll failed:', err);
       setState({
         currentUser: fallbackData.currentUser as CurrentUser,
         categories: fallbackData.categories as Category[],
         factories: fallbackData.factories as Factory[],
         factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
         factoryReviews: fallbackData.factoryReviews as FactoryReview[],
-        ideaArticles: fallbackData.ideaArticles as IdeaArticle[],
-        factoryShowcases: fallbackData.factoryShowcases as FactoryShowcase[],
+        // ❌ ไม่ใช้ mock data สำหรับ showcases/ideas — แสดงว่างเปล่าถ้า API fail
+        ideaArticles: [],
+        factoryShowcases: [],
         rfqs: fallbackData.rfqs as Rfq[],
         orders: fallbackData.orders as Order[],
         conversations: fallbackData.conversations as Conversation[],
         notifications: fallbackData.notifications as Notification[],
         isLoading: false,
-        error: null,
+        error: String(err),
       });
     }
   }, [isAuthenticated]);
 
+  // Initial fetch หลัง auth พร้อม
   useEffect(() => {
     if (!authLoading) {
       fetchAll();
     }
   }, [authLoading, fetchAll]);
 
+  // Refetch เมื่อ user กลับมาที่ tab (visibility change) — หยุด stale data
+  const lastFetchRef = useRef<number>(0);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const STALE_MS = 60_000; // refetch ถ้าข้อมูลเก่ากว่า 1 นาที
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now();
+        if (now - lastFetchRef.current > STALE_MS) {
+          lastFetchRef.current = now;
+          fetchAll();
+        }
+      }
+    };
+    const onOnline = () => fetchAll();
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('online', onOnline);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('online', onOnline);
+    };
+  }, [isAuthenticated, fetchAll]);
+
   // Granular refetch methods for updating specific slices
   const refetchRfqs = async () => {
     try {
-      const data = await frontendApi.getMockData();
+      const data = await frontendApi.getBootstrap();
       setState((prev) => ({
         ...prev,
-        rfqs: (data.rfqs as Rfq[]) ?? prev.rfqs,
+        rfqs: (Array.isArray(data.rfqs) && data.rfqs.length > 0 ? data.rfqs : prev.rfqs) as Rfq[],
       }));
     } catch (err) {
       console.error('Failed to refetch RFQs:', err);
@@ -312,10 +380,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const refetchOrders = async () => {
     try {
-      const data = await frontendApi.getMockData();
+      const data = await frontendApi.getBootstrap();
       setState((prev) => ({
         ...prev,
-        orders: (data.orders as Order[]) ?? prev.orders,
+        orders: (Array.isArray(data.orders) && data.orders.length > 0 ? data.orders : prev.orders) as Order[],
       }));
     } catch (err) {
       console.error('Failed to refetch orders:', err);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ChevronRight,
@@ -15,9 +15,13 @@ import {
   TrendingUp,
   ArrowUpRight,
   ArrowDownLeft,
+  MapPin,
+  Plus,
+  Home,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { transactionsApi, addressesApi } from '../../services/api';
 
 const menuSections = [
   {
@@ -99,23 +103,34 @@ const menuSections = [
   },
 ];
 
-const walletTransactions = [
-  {
-    id: 't1',
-    label: 'ชำระมัดจำ - Sheet Metal Cabinet',
-    amount: -57500,
-    date: '15 ม.ค. 2026',
-    type: 'debit',
-  },
-  {
-    id: 't2',
-    label: 'คืนเงินจาก RFQ ยกเลิก',
-    amount: 5000,
-    date: '10 ม.ค. 2026',
-    type: 'credit',
-  },
-  { id: 't3', label: 'เติมเงิน', amount: 100000, date: '5 ม.ค. 2026', type: 'credit' },
-];
+type WalletTransaction = {
+  id: string;
+  label: string;
+  amount: number;
+  date: string;
+  type: 'credit' | 'debit';
+};
+
+function normTransaction(r: Record<string, unknown>): WalletTransaction {
+  const amount = Number(r.amount ?? 0);
+  const txType = String(r.transaction_type ?? r.type ?? '');
+  const type: 'credit' | 'debit' =
+    txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
+  const rawDate = String(r.created_at ?? r.date ?? '');
+  let date = rawDate;
+  if (rawDate && !Number.isNaN(Date.parse(rawDate))) {
+    date = new Date(rawDate).toLocaleDateString('th-TH', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    });
+  }
+  return {
+    id: String(r.transaction_id ?? r.id ?? ''),
+    label: String(r.description ?? r.label ?? r.note ?? 'รายการ'),
+    amount: Math.abs(amount),
+    date,
+    type,
+  };
+}
 
 export function ProfileMobile() {
   const navigate = useNavigate();
@@ -124,6 +139,78 @@ export function ProfileMobile() {
   const currentUser = data.currentUser;
   const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
   const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
+
+  const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([]);
+  const [txLoading, setTxLoading] = useState(true);
+
+  type Address = { id: string; label: string; detail: string; isDefault: boolean };
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addressesLoading, setAddressesLoading] = useState(true);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [newAddress, setNewAddress] = useState('');
+  const [addingAddress, setAddingAddress] = useState(false);
+
+  const addAddress = async () => {
+    if (!newAddress.trim() || addingAddress) return;
+    setAddingAddress(true);
+    try {
+      await addressesApi.create({
+        address_type: 'shipping',
+        address_detail: newAddress.trim(),
+        sub_district_id: 0,
+        district_id: 0,
+        province_id: 0,
+        zip_code: '',
+        is_default: addresses.length === 0,
+      });
+      setNewAddress('');
+      setShowAddressForm(false);
+      // refetch
+      const raw = (await addressesApi.list()) as Record<string, unknown>[];
+      setAddresses(raw.map((r) => ({
+        id: String(r.address_id ?? r.id ?? ''),
+        label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+        detail: String(r.address_detail ?? r.detail ?? ''),
+        isDefault: Boolean(r.is_default ?? false),
+      })).filter((a) => a.id));
+    } catch {
+      // silent fail
+    } finally {
+      setAddingAddress(false);
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    addressesApi.list()
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        setAddresses(arr.map((r) => ({
+          id: String(r.address_id ?? r.id ?? ''),
+          label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+          detail: String(r.address_detail ?? r.detail ?? ''),
+          isDefault: Boolean(r.is_default ?? false),
+        })).filter((a) => a.id));
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setAddressesLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setTxLoading(true);
+    transactionsApi.list()
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        setWalletTransactions(arr.map(normTransaction).filter((t) => t.id).slice(0, 5));
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setTxLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   if (!currentUser) {
     return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-400 text-sm">กำลังโหลด...</p></div>;
@@ -252,42 +339,48 @@ export function ProfileMobile() {
                 ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
               </button>
             </div>
-            {walletTransactions.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className="w-8 h-8 rounded-xl flex items-center justify-center"
+            {txLoading ? (
+              <p className="text-xs text-gray-400 text-center py-3">กำลังโหลด...</p>
+            ) : walletTransactions.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-3">ยังไม่มีรายการ</p>
+            ) : (
+              walletTransactions.map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center"
+                      style={{
+                        background: tx.type === 'credit' ? '#DCFCE7' : '#FEE2E2',
+                      }}
+                    >
+                      {tx.type === 'credit' ? (
+                        <ArrowDownLeft size={14} style={{ color: '#22C55E' }} />
+                      ) : (
+                        <ArrowUpRight size={14} style={{ color: '#EF4444' }} />
+                      )}
+                    </div>
+                    <div>
+                      <p
+                        className="text-xs text-gray-700 truncate max-w-[160px]"
+                        style={{ fontWeight: 500 }}
+                      >
+                        {tx.label}
+                      </p>
+                      <p className="text-[10px] text-gray-400">{tx.date}</p>
+                    </div>
+                  </div>
+                  <p
+                    className="text-xs shrink-0"
                     style={{
-                      background: tx.type === 'credit' ? '#DCFCE7' : '#FEE2E2',
+                      fontWeight: 700,
+                      color: tx.type === 'credit' ? '#22C55E' : '#EF4444',
                     }}
                   >
-                    {tx.type === 'credit' ? (
-                      <ArrowDownLeft size={14} style={{ color: '#22C55E' }} />
-                    ) : (
-                      <ArrowUpRight size={14} style={{ color: '#EF4444' }} />
-                    )}
-                  </div>
-                  <div>
-                    <p
-                      className="text-xs text-gray-700 truncate max-w-[160px]"
-                      style={{ fontWeight: 500 }}
-                    >
-                      {tx.label}
-                    </p>
-                    <p className="text-[10px] text-gray-400">{tx.date}</p>
-                  </div>
+                    {tx.type === 'credit' ? '+' : '-'}฿{tx.amount.toLocaleString()}
+                  </p>
                 </div>
-                <p
-                  className="text-xs shrink-0"
-                  style={{
-                    fontWeight: 700,
-                    color: tx.type === 'credit' ? '#22C55E' : '#EF4444',
-                  }}
-                >
-                  {tx.type === 'credit' ? '+' : ''}฿{Math.abs(tx.amount).toLocaleString()}
-                </p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -331,6 +424,65 @@ export function ProfileMobile() {
             ))}
           </div>
         ))}
+
+        {/* ── Addresses ── */}
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-4 pt-3 pb-2">
+            <div className="flex items-center gap-2">
+              <Home size={15} style={{ color: '#6C47FF' }} />
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider">ที่อยู่จัดส่ง</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAddressForm((v) => !v)}
+              className="flex items-center gap-0.5 text-[10px] font-semibold text-[#6C47FF]"
+            >
+              <Plus size={12} /> เพิ่ม
+            </button>
+          </div>
+          {showAddressForm && (
+            <div className="px-4 pb-3 flex gap-2">
+              <input
+                type="text"
+                value={newAddress}
+                onChange={(e) => setNewAddress(e.target.value)}
+                placeholder="กรอกที่อยู่จัดส่ง..."
+                className="flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30"
+              />
+              <button
+                type="button"
+                onClick={addAddress}
+                disabled={addingAddress || !newAddress.trim()}
+                className="px-3 py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50"
+                style={{ background: '#6C47FF' }}
+              >
+                {addingAddress ? '...' : 'บันทึก'}
+              </button>
+            </div>
+          )}
+          {addressesLoading ? (
+            <p className="text-xs text-gray-400 text-center py-3">กำลังโหลด...</p>
+          ) : addresses.length === 0 ? (
+            <p className="text-xs text-gray-400 text-center pb-3">ยังไม่มีที่อยู่</p>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {addresses.map((addr) => (
+                <div key={addr.id} className="flex items-start gap-3 px-4 py-3">
+                  <MapPin size={14} className="text-[#6C47FF] mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-700 capitalize">{addr.label}</p>
+                    <p className="text-[11px] text-gray-500 truncate">{addr.detail}</p>
+                  </div>
+                  {addr.isDefault && (
+                    <span className="text-[9px] font-bold text-[#6C47FF] bg-violet-50 px-1.5 py-0.5 rounded-full shrink-0">
+                      หลัก
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button
           onClick={() => { logout(); navigate('/login', { replace: true }); }}

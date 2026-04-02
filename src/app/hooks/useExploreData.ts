@@ -108,14 +108,13 @@ export function useExploreData(options?: UseExploreDataOptions) {
 
   const [showcases, setShowcases] = React.useState<NormalisedShowcase[]>([]);
   const [factories, setFactories] = React.useState<NormFactory[]>([]);
-  const [ideaArticles, setIdeaArticles] = React.useState<NormArticle[]>([]);
   const [promoSlides, setPromoSlides] = React.useState<NormSlide[]>([]);
   const [promoCodes, setPromoCodes] = React.useState<NormSlide[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (!enablePageApis) {
-      setShowcases([]); setFactories([]); setIdeaArticles([]);
+      setShowcases([]); setFactories([]);
       setPromoSlides([]); setPromoCodes([]);
       return;
     }
@@ -124,20 +123,19 @@ export function useExploreData(options?: UseExploreDataOptions) {
     setIsLoading(true);
 
     async function fetchAll() {
-      // 1) Showcases → /showcases
+      // 1) Showcases → /showcases (PR=สินค้า, PM=โปรโมชัน, ID=ไอเดียบทความ)
       const p1 = showcasesApi.list().then((raw) => {
         if (cancelled) return;
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         setShowcases(arr.map(normShowcase).filter((s) => s.id && s.title));
       }).catch(() => {});
 
-      // 2) Explore aggregate → factories, idea_articles, promo_codes
+      // 2) Explore aggregate → factories, promo_codes
+      //    (idea_articles ไม่ใช้จากที่นี่ เพราะมาจาก factory_showcases.content_type='ID' แล้ว)
       const p2 = frontendApi.getExplore().then((data) => {
         if (cancelled) return;
         const f = (Array.isArray(data.factories) ? data.factories : []) as Record<string, unknown>[];
         setFactories(f.map(normFactory).filter((v) => v.id && v.name));
-        const i = (Array.isArray(data.idea_articles) ? data.idea_articles : []) as Record<string, unknown>[];
-        setIdeaArticles(i.map(normArticle).filter((v) => v.id && v.title));
         const c = (Array.isArray(data.promo_codes) ? data.promo_codes : []) as Record<string, unknown>[];
         setPromoCodes(c.map(normSlide).filter((v) => v.id && v.title));
       }).catch(() => {
@@ -173,6 +171,21 @@ export function useExploreData(options?: UseExploreDataOptions) {
 
   const promotionShowcases = React.useMemo(
     () => showcases.filter((s) => s.contentType === 'promotion'),
+    [showcases],
+  );
+
+  // ไอเดียบทความ → factory_showcases.content_type = 'ID'
+  const ideaArticles = React.useMemo(
+    () => showcases
+      .filter((s) => s.contentType === 'idea')
+      .map((s): NormArticle => ({
+        id: s.id,
+        title: s.title,
+        excerpt: s.excerpt,
+        image: s.image,
+        tag: s.category,
+        factoryName: s.factoryName,
+      })),
     [showcases],
   );
 

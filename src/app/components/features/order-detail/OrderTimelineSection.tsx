@@ -1,6 +1,7 @@
-import React from 'react';
-import { CheckCircle, Clock, Circle, Camera } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle, Clock, Circle, Camera, Pencil, X, Check } from 'lucide-react';
 import { formatDateTh } from './utils';
+import { productionUpdatesApi } from '../../../services/api';
 
 export type TimelineMilestone = {
   id: string;
@@ -26,6 +27,27 @@ type OrderTimelineSectionProps = {
 export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSectionProps) {
   const timeline = order.timeline ?? [];
   const hasTimeline = timeline.length > 0;
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editNote, setEditNote] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const startEdit = (milestone: TimelineMilestone) => {
+    setEditingId(milestone.id);
+    setEditNote(milestone.description ?? '');
+  };
+
+  const saveEdit = async (milestoneId: string) => {
+    if (savingId) return;
+    setSavingId(milestoneId);
+    try {
+      await productionUpdatesApi.patch(milestoneId, { description: editNote });
+      setEditingId(null);
+    } catch {
+      // keep editing open on failure
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -113,19 +135,61 @@ export function OrderTimelineSection({ order, onPhotoClick }: OrderTimelineSecti
                           </p>
                         )}
                       </div>
-                      {milestone.status === 'current' && (
-                        <span
-                          className="px-2 py-0.5 rounded-full text-[9px] ml-2"
-                          style={{
-                            background: 'rgba(162,56,255,0.12)',
-                            color: '#A238FF',
-                            fontWeight: 600,
-                          }}
-                        >
-                          ปัจจุบัน
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1 ml-2 shrink-0">
+                        {milestone.status === 'current' && (
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[9px]"
+                            style={{
+                              background: 'rgba(162,56,255,0.12)',
+                              color: '#A238FF',
+                              fontWeight: 600,
+                            }}
+                          >
+                            ปัจจุบัน
+                          </span>
+                        )}
+                        {editingId === milestone.id ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => saveEdit(milestone.id)}
+                              disabled={!!savingId}
+                              className="p-1 rounded-full bg-green-100 text-green-600 disabled:opacity-50"
+                              aria-label="บันทึก"
+                            >
+                              <Check size={11} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingId(null)}
+                              className="p-1 rounded-full bg-gray-100 text-gray-500"
+                              aria-label="ยกเลิก"
+                            >
+                              <X size={11} />
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEdit(milestone)}
+                            className="p-1 rounded-full bg-gray-100 text-gray-400 hover:bg-violet-50 hover:text-[#A238FF] transition-colors"
+                            aria-label="แก้ไขบันทึก"
+                          >
+                            <Pencil size={11} />
+                          </button>
+                        )}
+                      </div>
                     </div>
+
+                    {editingId === milestone.id && (
+                      <textarea
+                        value={editNote}
+                        onChange={(e) => setEditNote(e.target.value)}
+                        placeholder="เพิ่มบันทึก..."
+                        rows={2}
+                        className="w-full mt-1.5 text-[11px] border border-[#A238FF]/30 rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#A238FF] resize-none"
+                      />
+                    )}
 
                     {milestone.photo && (
                       <button

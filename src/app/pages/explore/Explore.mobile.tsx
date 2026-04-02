@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag } from 'lucide-react';
 import {
@@ -11,7 +11,12 @@ import {
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '../../components/features/explore/ExploreIdeaArticles';
-import type { FactoryShowcase } from '../../contexts/DataContext';
+
+type ShowcaseItem = {
+  id: string; title: string; excerpt: string; image: string;
+  factoryName: string; factoryId: string; minOrder: number;
+  contentType: string;
+};
 
 type ExploreMobileProps = {
   searchText: string;
@@ -23,9 +28,9 @@ type ExploreMobileProps = {
   reloadExploreCategories: () => void;
   factories: FactoryItem[];
   ideaArticles: IdeaArticleItem[];
-  factoryShowcases: FactoryShowcase[];
-  exploreProducts: unknown[];
-  explorePromotions: unknown[];
+  factoryShowcases: ShowcaseItem[];
+  exploreProducts: ShowcaseItem[];
+  explorePromotions: ShowcaseItem[];
   explorePromoCodes: unknown[];
   promoSlides: unknown[];
 };
@@ -40,7 +45,6 @@ export function ExploreMobile({
   reloadExploreCategories,
   factories,
   ideaArticles,
-  factoryShowcases,
   exploreProducts,
   explorePromotions,
   explorePromoCodes,
@@ -48,19 +52,10 @@ export function ExploreMobile({
 }: ExploreMobileProps) {
   const navigate = useNavigate();
 
-  const productShowcases = useMemo(
-    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'product').slice(0, 4),
-    [factoryShowcases],
-  );
+  const productShowcases = (exploreProducts ?? []).slice(0, 4);
+  const promoShowcases = (explorePromotions ?? []).slice(0, 4);
 
-  const promoShowcases = useMemo(
-    () => (factoryShowcases ?? []).filter((s) => s.contentType === 'promotion').slice(0, 4),
-    [factoryShowcases],
-  );
-
-  const productBannerImg =
-    productShowcases[0]?.image ??
-    'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700';
+  const productBannerImg = 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700';
   const hasProductShowcases = productShowcases.length > 0;
   const hasPromoShowcases = promoShowcases.length > 0;
   const PROMO_BANNER_IMG =

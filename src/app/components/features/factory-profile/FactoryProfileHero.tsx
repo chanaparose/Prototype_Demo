@@ -17,9 +17,10 @@ type FactoryProfileHeroProps = {
   factory: FactoryHeroInfo;
   onBack: () => void;
   onChat: () => void;
+  chatLoading?: boolean;
 };
 
-export function FactoryProfileHero({ factory, onBack, onChat }: FactoryProfileHeroProps) {
+export function FactoryProfileHero({ factory, onBack, onChat, chatLoading }: FactoryProfileHeroProps) {
   return (
     <div className="relative h-56">
       <ImageWithFallback
@@ -38,10 +39,15 @@ export function FactoryProfileHero({ factory, onBack, onChat }: FactoryProfileHe
       <button
         type="button"
         onClick={onChat}
-        className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
+        disabled={chatLoading}
+        className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md disabled:opacity-60"
         aria-label="แชทกับโรงงาน"
       >
-        <MessageCircle className="w-5 h-5" style={{ color: '#6C47FF' }} />
+        {chatLoading ? (
+          <span className="w-4 h-4 border-2 border-[#6C47FF] border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <MessageCircle className="w-5 h-5" style={{ color: '#6C47FF' }} />
+        )}
       </button>
       <div className="absolute bottom-4 left-4 right-4 text-white">
         <div className="flex items-center gap-1.5 mb-1">
