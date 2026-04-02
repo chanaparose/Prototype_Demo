@@ -183,50 +183,58 @@ export function FactoryIdeasMobile() {
   return (
     <div className="pb-24 min-h-screen" style={{ backgroundColor: COLORS.lightPurpleBg }}>
       {/* ── Header ── */}
-      <div className="bg-white px-4 pt-5 pb-4 border-b border-gray-100">
-        <div className="mb-4">
+      <div className="bg-white px-4 pt-4 pb-3 border-b border-gray-100">
+        <div className="mb-2.5">
           <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: COLORS.orange }}>Discover</p>
-          <h1 className="text-xl font-bold" style={{ color: COLORS.blue }}>แนะนำโรงงาน</h1>
+          <h1 className="text-lg font-bold leading-tight" style={{ color: COLORS.blue }}>แนะนำโรงงาน</h1>
         </div>
 
-        {/* Hero banner */}
+        {/* Hero banner — กระชับขึ้น ~ครึ่งหนึ่ง */}
         <div
-          className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md mb-4"
+          className="rounded-xl px-3 py-2.5 relative overflow-hidden text-white shadow-md mb-2.5"
           style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
         >
-          <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-40 blur-2xl mix-blend-screen" style={{ backgroundColor: '#FF7A00' }} />
-          <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-60 transform translate-x-8 skew-x-[-15deg]" style={{ backgroundColor: '#A238FF' }} />
-          <div className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full opacity-30 blur-xl mix-blend-screen" style={{ backgroundColor: '#A238FF' }} />
-          <div className="relative z-10 flex items-center gap-4">
-            <div className="p-2.5 rounded-full shrink-0" style={{ backgroundColor: 'rgba(162,56,255,0.30)', border: '1px solid rgba(162,56,255,0.50)' }}>
-              <Sparkles size={20} className="text-white" />
+          <div className="absolute -right-5 -top-5 w-24 h-24 rounded-full opacity-35 blur-xl mix-blend-screen pointer-events-none" style={{ backgroundColor: '#FF7A00' }} />
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-50 transform translate-x-5 skew-x-[-15deg] pointer-events-none" style={{ backgroundColor: '#A238FF' }} />
+          <div className="absolute -left-2 -bottom-2 w-14 h-14 rounded-full opacity-25 blur-lg mix-blend-screen pointer-events-none" style={{ backgroundColor: '#A238FF' }} />
+          <div className="relative z-10 flex items-center gap-2.5">
+            <div
+              className="p-1.5 rounded-full shrink-0 flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(162,56,255,0.30)', border: '1px solid rgba(162,56,255,0.50)' }}
+            >
+              <Sparkles size={16} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium mb-0.5" style={{ color: '#EBD3FF' }}>พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์</p>
-              <h2 className="text-base font-bold leading-tight">
+              <p className="text-[11px] font-medium leading-snug mb-0.5" style={{ color: '#EBD3FF' }}>
+                พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์
+              </p>
+              <h2 className="text-[13px] font-bold leading-snug line-clamp-2">
                 ค้นหาไอเดียสินค้าใหม่ พร้อมโรงงานที่ทำได้จริงในที่เดียว
               </h2>
             </div>
-            <span className="shrink-0 text-sm font-semibold" style={{ color: '#EBD3FF' }}>
+            <span className="shrink-0 text-[11px] font-semibold tabular-nums leading-none py-0.5 px-1.5 rounded-md self-center" style={{ color: '#EBD3FF', background: 'rgba(255,255,255,0.12)' }}>
               {visibleItems.length} รายการ
             </span>
           </div>
         </div>
 
         {/* Search */}
-        <div className="flex items-center gap-2.5 rounded-2xl px-4 py-3 border transition-all" style={{ backgroundColor: COLORS.gray, borderColor: '#E5E7EB' }}>
-          <Search size={16} className="text-gray-400 shrink-0" />
+        <div
+          className="flex items-center gap-2 rounded-xl px-3 py-2 border transition-all"
+          style={{ backgroundColor: COLORS.gray, borderColor: '#E5E7EB' }}
+        >
+          <Search size={15} className="text-gray-400 shrink-0" />
           <input
             type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…"
-            className="flex-1 text-sm bg-transparent outline-none placeholder-gray-400"
+            className="flex-1 text-[13px] bg-transparent outline-none placeholder-gray-400 min-w-0"
             style={{ color: COLORS.blue }}
           />
           {searchText && (
-            <button type="button" onClick={() => setSearchText('')}>
-              <X size={14} className="text-gray-400" />
+            <button type="button" onClick={() => setSearchText('')} className="shrink-0 p-0.5">
+              <X size={13} className="text-gray-400" />
             </button>
           )}
         </div>
@@ -234,19 +242,24 @@ export function FactoryIdeasMobile() {
 
       {/* ── Sticky filter pills ── */}
       <div className="bg-white border-b border-gray-100 px-4 pt-3 pb-3 space-y-2.5">
-        {/* Content type */}
-        <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+        {/* Content type — กว้างเท่าเนื้อหา (w-fit) เหลือพื้นที่ขวาเหมือน desktop ไม่ดึงเต็มแถว */}
+        <div
+          className="inline-flex max-w-full flex-wrap items-center gap-1 p-1 rounded-xl"
+          style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
+        >
           {CONTENT_TYPES.map((type) => (
             <button
               key={type.id}
               type="button"
               onClick={() => setSelectedType(type.id)}
-              className="shrink-0 px-4 py-1.5 rounded-full text-[13px] transition-all"
+              className={`px-4 py-2 rounded-lg text-[13px] transition-all ${
+                selectedType === type.id ? 'shadow-sm' : 'hover:opacity-80'
+              }`}
               style={{
-                background: selectedType === type.id ? COLORS.orange : 'rgba(46,34,82,0.07)',
-                color:      selectedType === type.id ? COLORS.white : COLORS.blue,
+                backgroundColor: selectedType === type.id ? COLORS.orange : 'transparent',
+                color: selectedType === type.id ? COLORS.white : COLORS.blue,
                 fontWeight: selectedType === type.id ? 700 : 500,
-                boxShadow:  selectedType === type.id ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
+                boxShadow: selectedType === type.id ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
               }}
             >
               {type.label}
@@ -306,13 +319,13 @@ export function FactoryIdeasMobile() {
             พบ <span className="font-semibold">{visibleItems.length}</span> รายการ
           </p>
           <div
-            className="flex items-center gap-1 p-1 rounded-xl border border-gray-200 shrink-0"
+            className="flex items-center gap-1 p-1 rounded-xl border border-gray-200"
             style={{ backgroundColor: COLORS.gray }}
           >
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className="p-1.5 rounded-lg transition-all"
+              className="p-2 rounded-lg transition-all"
               style={{
                 backgroundColor: viewMode === 'grid' ? COLORS.white : 'transparent',
                 color: viewMode === 'grid' ? COLORS.purple : '#9CA3AF',
@@ -320,12 +333,12 @@ export function FactoryIdeasMobile() {
               }}
               aria-label="มุมมองตาราง"
             >
-              <LayoutGrid size={16} />
+              <LayoutGrid size={15} />
             </button>
             <button
               type="button"
               onClick={() => setViewMode('list')}
-              className="p-1.5 rounded-lg transition-all"
+              className="p-2 rounded-lg transition-all"
               style={{
                 backgroundColor: viewMode === 'list' ? COLORS.white : 'transparent',
                 color: viewMode === 'list' ? COLORS.purple : '#9CA3AF',
@@ -333,7 +346,7 @@ export function FactoryIdeasMobile() {
               }}
               aria-label="มุมมองรายการ"
             >
-              <List size={16} />
+              <List size={15} />
             </button>
           </div>
         </div>
@@ -353,6 +366,9 @@ export function FactoryIdeasMobile() {
             <p className="text-xs text-gray-400 mt-1">ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
           </div>
         ) : viewMode === 'grid' ? (
+          /* ━━━ Grid View ━━━
+             Rule: grid + items-stretch → ทุกการ์ดในแถวเดียวกันสูงเท่ากัน
+             Rule: h-full + flex flex-col → การ์ดยืดเต็ม Grid Track */
           <div className="grid grid-cols-2 gap-3">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
@@ -360,72 +376,81 @@ export function FactoryIdeasMobile() {
               return (
                 <article
                   key={item.id}
-                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                  className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
-                  {/* Image */}
-                  <div className="relative h-32 bg-gray-100">
+                  {/* ── Image: h-[150px] ตายตัว + shrink-0 ป้องกัน flex บีบ ── */}
+                  <div className="relative h-[150px] shrink-0 bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-                    <div className="absolute top-2 left-2">
-                      <span
-                        className="px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white"
-                        style={{ backgroundColor: badgeColor }}
-                      >
-                        {contentTypeLabel[item.contentType]}
-                      </span>
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+                    <span
+                      className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm"
+                      style={{ backgroundColor: badgeColor }}
+                    >
+                      {contentTypeLabel[item.contentType]}
+                    </span>
                   </div>
 
-                  {/* Body */}
-                  <div className="p-2.5 space-y-1.5">
-                    <h3 className="text-[12px] font-bold line-clamp-2 leading-snug" style={{ color: COLORS.blue }}>
+                  {/* ── Body: flex-1 ยืดเต็มที่เหลือ + min-w-0 ให้ truncate ทำงาน ── */}
+                  <div className="p-3 flex flex-col flex-1 min-w-0">
+
+                    {/* Title — min-h-[36px] จอง 2 บรรทัดเสมอ */}
+                    <h3
+                      className="text-xs font-bold leading-[18px] line-clamp-2 min-h-[36px]"
+                      style={{ color: COLORS.blue }}
+                    >
                       {item.title}
                     </h3>
-                    <p className="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">
+
+                    {/* Excerpt — min-h-[28px] จอง 2 บรรทัดเสมอ */}
+                    <p className="text-[10px] leading-[14px] text-gray-400 mt-1 line-clamp-2 min-h-[28px]">
                       {item.excerpt}
                     </p>
 
-                    {/* Factory name */}
-                    <div className="pt-1.5 border-t border-gray-100">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                        className="flex items-center gap-1 text-[10px] font-semibold transition-colors truncate w-full"
-                        style={{ color: COLORS.blue }}
-                      >
-                        <span className="truncate">{item.factoryName}</span>
-                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
-                      </button>
+                    {/* ── Footer: mt-auto ดันลงล่างเสมอ ── */}
+                    <div className="mt-auto pt-2 border-t border-gray-100">
+                      {/* Factory name — h-[18px] ตายตัว ไม่ว่ามีหรือไม่มีชื่อ */}
+                      <div className="h-[18px] mb-1 min-w-0">
+                        {item.factoryName && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
+                            className="flex items-center gap-1 w-full text-left text-[10px] font-semibold active:opacity-80 min-w-0"
+                            style={{ color: COLORS.blue }}
+                          >
+                            <span className="truncate">{item.factoryName}</span>
+                            {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                          </button>
+                        )}
+                      </div>
 
-                      <div className="flex items-center justify-between mt-1 text-[10px] text-gray-400">
-                        <span>MOQ <span className="font-medium" style={{ color: COLORS.blue }}>{item.minOrder}</span></span>
+                      {/* MOQ + Heart — ตำแหน่งตรงกันเสมอ */}
+                      <div className="flex items-center justify-between min-w-0">
+                        <span className="text-[10px] text-gray-400 shrink-0">
+                          MOQ{' '}
+                          <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
+                            {item.minOrder}
+                          </span>
+                        </span>
                         <button
                           type="button"
                           onClick={(e) => toggleFavorite(item.id, e)}
-                          className="flex items-center gap-0.5 transition-colors"
+                          className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400 active:opacity-70"
                           aria-label="ถูกใจ"
                         >
                           <Heart
-                            className="w-2.5 h-2.5"
+                            className="w-3 h-3 shrink-0"
                             style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
                           />
-                          {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                          <span className="tabular-nums font-medium text-gray-500">
+                            {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                          </span>
                         </button>
                       </div>
-                    </div>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1">
-                      {item.tags.slice(0, 2).map((tag) => (
-                        <span key={tag} className="px-1.5 py-0.5 rounded-full text-[9px]" style={{ backgroundColor: COLORS.gray, color: COLORS.blue }}>
-                          #{tag}
-                        </span>
-                      ))}
                     </div>
                   </div>
                 </article>
@@ -433,84 +458,84 @@ export function FactoryIdeasMobile() {
             })}
           </div>
         ) : (
-          <div className="space-y-2">
+          /* ━━━ List View ━━━
+             Rule: h-[130px] ตายตัว + overflow-hidden ซ่อนส่วนที่ล้น */
+          <div className="space-y-3">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
               return (
                 <article
                   key={item.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform cursor-pointer"
+                  className="h-[130px] bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform cursor-pointer"
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
-                  <div className="flex items-center gap-3 p-3">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                  <div className="flex h-full p-3 gap-3">
+
+                    {/* ── Image: w-[100px] + shrink-0 ล็อคขนาด ── */}
+                    <div className="w-[100px] shrink-0 rounded-xl overflow-hidden bg-gray-100 relative">
                       <ImageWithFallback
                         src={item.image}
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
+                      <span
+                        className="absolute top-1.5 left-1.5 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white shadow-sm"
+                        style={{ backgroundColor: badgeColor }}
+                      >
+                        {contentTypeLabel[item.contentType]}
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                            <span
-                              className="px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white"
-                              style={{ backgroundColor: badgeColor }}
-                            >
-                              {contentTypeLabel[item.contentType]}
-                            </span>
-                            {item.category ? (
-                              <span className="text-[9px] text-gray-400 truncate max-w-[120px]">{item.category}</span>
-                            ) : null}
-                          </div>
-                          <h3 className="text-[12px] font-bold line-clamp-2 leading-snug" style={{ color: COLORS.blue }}>
-                            {item.title}
-                          </h3>
-                          <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{item.excerpt}</p>
-                        </div>
-                        <div className="shrink-0 flex flex-col items-end gap-0.5 text-[10px] text-gray-400">
-                          <button
-                            type="button"
-                            onClick={(e) => toggleFavorite(item.id, e)}
-                            className="flex items-center gap-0.5 p-0.5 -mr-0.5"
-                            aria-label="ถูกใจ"
-                          >
-                            <Heart
-                              className="w-3 h-3"
-                              style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
-                            />
-                            <span>{item.likes + (likedIds.has(item.id) ? 1 : 0)}</span>
-                          </button>
-                          <span>
-                            MOQ <span className="font-semibold" style={{ color: COLORS.blue }}>{item.minOrder}</span>
-                          </span>
-                        </div>
+
+                    {/* ── Content: flex-1 + min-w-0 ป้องกันทะลักกรอบ ── */}
+                    <div className="flex flex-col flex-1 min-w-0 justify-between">
+                      <div className="min-w-0">
+                        {item.category && (
+                          <p className="text-[9px] text-gray-400 truncate mb-0.5">{item.category}</p>
+                        )}
+                        <h3
+                          className="text-[12px] font-bold leading-snug line-clamp-2 min-w-0"
+                          style={{ color: COLORS.blue }}
+                        >
+                          {item.title}
+                        </h3>
                       </div>
+
+                      {/* Footer — mt-auto ติดขอบล่าง */}
+                      <div className="flex items-center justify-between gap-2 mt-auto pt-1.5 border-t border-gray-50 min-w-0">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
+                          className="flex items-center gap-1 text-[10px] font-semibold min-w-0 text-left active:opacity-80"
+                          style={{ color: COLORS.blue }}
+                        >
+                          <span className="truncate">{item.factoryName}</span>
+                          {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                        </button>
+                        <span className="text-[9px] text-gray-400 shrink-0">
+                          MOQ <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>{item.minOrder}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ── Right column: w-[40px] + shrink-0 ล็อคขนาด ── */}
+                    <div className="w-[40px] shrink-0 flex flex-col items-center justify-center border-l border-gray-100 pl-2">
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                        className="flex items-center gap-1 text-[10px] font-semibold mt-1.5 truncate w-full text-left"
-                        style={{ color: COLORS.blue }}
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id, e); }}
+                        className="flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-gray-400 active:opacity-70"
+                        aria-label="ถูกใจ"
                       >
-                        <span className="truncate">{item.factoryName}</span>
-                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                        <Heart
+                          className="w-4 h-4 shrink-0"
+                          style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                        />
+                        <span className="text-[9px] font-medium tabular-nums leading-none">
+                          {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                        </span>
                       </button>
-                      {item.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {item.tags.slice(0, 3).map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-1.5 py-0.5 rounded-full text-[9px]"
-                              style={{ backgroundColor: COLORS.gray, color: COLORS.blue }}
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
                     </div>
+
                   </div>
                 </article>
               );

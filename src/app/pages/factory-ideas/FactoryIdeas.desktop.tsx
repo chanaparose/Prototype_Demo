@@ -375,26 +375,34 @@ export function FactoryIdeasDesktop() {
                       <ArrowUpRight size={11} className="text-white" />
                     </div>
                   </div>
-                  <div className="p-3 space-y-2">
-                    <div>
+                  <div className="p-3 flex flex-col gap-2 min-h-0">
+                    <div className="min-w-0">
                       <h3 className="text-[12px] font-bold line-clamp-2 leading-snug" style={{ color: COLORS.blue }}>{item.title}</h3>
                       <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2">{item.excerpt}</p>
                     </div>
-                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                    <div className="pt-2 border-t border-gray-100 space-y-1.5">
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                        className="flex items-center gap-1 text-[10px] font-semibold truncate max-w-[70%] transition-colors"
+                        className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
                         style={{ color: COLORS.blue }}
                       >
-                        {item.factoryName}
+                        <span className="truncate">{item.factoryName}</span>
                         {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
                       </button>
-                      <span className="flex items-center gap-0.5 text-[10px] text-gray-400">
-                        <Heart className="w-2.5 h-2.5" />{item.likes}
-                      </span>
+                      <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                        <span className="min-w-0 truncate">
+                          MOQ{' '}
+                          <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
+                            {item.minOrder}
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
+                          <Heart className="w-2.5 h-2.5 shrink-0" />
+                          {item.likes}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[10px] text-gray-400">MOQ <span className="font-semibold" style={{ color: COLORS.blue }}>{item.minOrder}</span></p>
                   </div>
                 </article>
               );
