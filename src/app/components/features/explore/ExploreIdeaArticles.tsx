@@ -13,16 +13,23 @@ export type IdeaArticleItem = {
 
 type ExploreIdeaArticlesProps = {
   articles: IdeaArticleItem[];
+  /** e.g. navigate to factory-ideas with content-type filter */
+  onSeeAll?: () => void;
 };
 
-export function ExploreIdeaArticles({ articles }: ExploreIdeaArticlesProps) {
+export function ExploreIdeaArticles({ articles, onSeeAll }: ExploreIdeaArticlesProps) {
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between px-4 mb-3">
         <h3 className="text-[#292259]" style={{ fontWeight: 700 }}>
           บทความ Idea
         </h3>
-        <button type="button" className="flex items-center gap-0.5 text-[#A656A0] hover:text-[#A656A0] transition-colors" style={{ fontSize: 13 }}>
+        <button
+          type="button"
+          onClick={onSeeAll}
+          className="flex items-center gap-0.5 text-[#A656A0] hover:text-[#A656A0] transition-colors"
+          style={{ fontSize: 13 }}
+        >
           ดูทั้งหมด
           <ChevronRight className="w-4 h-4" />
         </button>

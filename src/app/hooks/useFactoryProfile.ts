@@ -4,30 +4,7 @@ import { useData } from '../contexts/DataContext';
 import type { FactoryShowcase, IdeaArticle } from '../contexts/DataContext';
 import type { TabId } from '../components/features/factory-profile';
 import { conversationsApi, frontendApi } from '../services/api';
-
-// ─── Normaliser helpers ─────────────────────────────────────────
-const CT_MAP: Record<string, 'product' | 'promotion' | 'idea'> = {
-  PR: 'product', PM: 'promotion', ID: 'idea',
-  product: 'product', promotion: 'promotion', idea: 'idea',
-};
-
-function normShowcase(r: Record<string, unknown>): FactoryShowcase {
-  return {
-    id: String(r.showcase_id ?? r.id ?? ''),
-    factoryId: String(r.factory_id ?? ''),
-    factoryName: String(r.factory_name ?? r.factoryName ?? ''),
-    title: String(r.title ?? ''),
-    excerpt: String(r.excerpt ?? ''),
-    image: String(r.image_url ?? r.image ?? ''),
-    contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
-    category: String(r.category_name ?? r.category ?? ''),
-    postedAt: String(r.created_at ?? r.postedAt ?? ''),
-    likes: Number(r.likes_count ?? r.likes ?? 0),
-    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
-    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
-    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-  };
-}
+import { normShowcase } from './useShowcases';
 
 export function useFactoryProfile() {
   const { id } = useParams<{ id: string }>();

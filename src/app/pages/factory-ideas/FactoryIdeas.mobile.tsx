@@ -1,17 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Search, BadgeCheck, Heart, Sparkles, X, Loader2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
+import { Search, BadgeCheck, Heart, Sparkles, X, Loader2, ChevronDown, LayoutGrid, List } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi, favoritesApi, showcasesApi } from '../../services/api';
+import { masterApi, favoritesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
 import {
   factoryIdeasCategoryOptionSelected,
+  factoryIdeasSelectedCategoryLabel,
   parseMasterProductCategories,
   showcaseMatchesSelectedCategoryId,
 } from '../../utils/exploreToFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
-import type { FactoryShowcase } from '../../contexts/DataContext';
+import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -44,60 +45,30 @@ const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
   idea: COLORS.blue,
 };
 
-// ─── Normaliser (snake_case API → camelCase) ──────────────────
-const CT_MAP: Record<string, 'product' | 'promotion' | 'idea'> = {
-  PR: 'product', PM: 'promotion', ID: 'idea',
-  product: 'product', promotion: 'promotion', idea: 'idea',
-};
-
-function normShowcase(r: Record<string, unknown>): FactoryShowcase {
-  return {
-    id: String(r.showcase_id ?? r.id ?? ''),
-    factoryId: String(r.factory_id ?? ''),
-    factoryName: String(r.factory_name ?? r.factoryName ?? ''),
-    title: String(r.title ?? ''),
-    excerpt: String(r.excerpt ?? ''),
-    image: String(r.image_url ?? r.image ?? ''),
-    contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
-    category: String(r.category_name ?? r.category ?? ''),
-    postedAt: String(r.created_at ?? r.postedAt ?? ''),
-    likes: Number(r.likes_count ?? r.likes ?? 0),
-    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
-    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
-    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-  };
-}
-
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
   // Optimistic favorites: Set of showcase IDs that this session has liked
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const data = useData();
 
-  // ─── Load showcases from API (page-level, not from DataContext) ──
-  const [pageShowcases, setPageShowcases] = useState<FactoryShowcase[]>([]);
-  const [showcasesLoading, setShowcasesLoading] = useState(true);
-
   useEffect(() => {
-    let cancelled = false;
-    setShowcasesLoading(true);
-    showcasesApi.list()
-      .then((raw) => {
-        if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        setPageShowcases(arr.map(normShowcase).filter((s) => s.id && s.title));
-      })
-      .catch(() => {
-        if (!cancelled) setPageShowcases([]);
-      })
-      .finally(() => {
-        if (!cancelled) setShowcasesLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, []);
+    const t = searchParams.get('type');
+    if (t === 'product' || t === 'promotion' || t === 'idea') {
+      setSelectedType(t);
+    }
+  }, [searchParams]);
+
+  const showcaseApiType = showcaseQueryTypeFromTab(selectedType);
+  const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
+    type: showcaseApiType,
+  });
 
   const toggleFavorite = useCallback(async (showcaseId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -164,6 +135,25 @@ export function FactoryIdeasMobile() {
     apiCategoriesAll,
   );
 
+  const selectedCategoryName = factoryIdeasSelectedCategoryLabel(
+    effectiveCategoryId,
+    categoryFilters,
+  );
+
+  useEffect(() => {
+    if (!categoryOpen) return;
+    const close = (e: MouseEvent | TouchEvent) => {
+      const el = categoryDropdownRef.current;
+      if (el && !el.contains(e.target as Node)) setCategoryOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('touchstart', close, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('touchstart', close);
+    };
+  }, [categoryOpen]);
+
   const visibleItems = useMemo(() => {
     const q = searchText.trim().toLowerCase();
     return pageShowcases
@@ -174,6 +164,7 @@ export function FactoryIdeasMobile() {
           effectiveCategoryId,
           apiCategoriesAll,
           data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+          item.categoryId,
         );
         if (!q) return byType && byCategory;
         const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
@@ -263,35 +254,89 @@ export function FactoryIdeasMobile() {
           ))}
         </div>
 
-        {/* Category */}
-        <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
-          {categoryFilters.map((cat) => (
-            <button
-              key={cat.id === 'all' ? 'all' : `cat-${cat.id}`}
-              type="button"
-              onClick={() => applyCategory(cat.id)}
-              className="shrink-0 px-3.5 py-1 rounded-full text-[11px] transition-all"
-              style={{
-                background: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
-                  ? COLORS.blue
-                  : 'rgba(46,34,82,0.05)',
-                color: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
-                  ? COLORS.white
-                  : COLORS.blue,
-                border: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
-                  ? `1px solid ${COLORS.blue}`
-                  : '1px solid rgba(46,34,82,0.12)',
-                fontWeight: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? 600 : 400,
-              }}
-            >
-              {cat.name}
-            </button>
-          ))}
+        {/* Category — dropdown (เดียวกับ desktop) */}
+        <div ref={categoryDropdownRef} className="relative w-full z-20">
+          <button
+            type="button"
+            onClick={() => setCategoryOpen((o) => !o)}
+            className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all"
+            style={{
+              borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : '#E5E7EB',
+              backgroundColor: effectiveCategoryId !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
+              color: effectiveCategoryId !== 'all' ? COLORS.purple : '#4B5563',
+              fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
+            }}
+          >
+            <span className="truncate text-left">{selectedCategoryName}</span>
+            <ChevronDown
+              size={16}
+              className={`shrink-0 transition-transform duration-200 ${categoryOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {categoryOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl border border-gray-200 shadow-lg py-1 max-h-60 overflow-y-auto">
+              {categoryFilters.map((cat) => (
+                <button
+                  key={cat.id === 'all' ? 'all' : `cat-${cat.id}`}
+                  type="button"
+                  onClick={() => {
+                    applyCategory(cat.id);
+                    setCategoryOpen(false);
+                  }}
+                  className="w-full px-4 py-2.5 text-left text-[13px] transition-colors active:bg-gray-50"
+                  style={{
+                    color: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                      ? COLORS.purple
+                      : '#374151',
+                    fontWeight: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? 600 : 400,
+                    backgroundColor: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
+                      ? COLORS.lightPurpleBg
+                      : 'transparent',
+                  }}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <p className="text-[11px] pt-0.5" style={{ color: COLORS.blue }}>
-          พบ <span className="font-semibold">{visibleItems.length}</span> รายการ
-        </p>
+        <div className="flex items-center justify-between gap-2 pt-0.5">
+          <p className="text-[11px] flex-1 min-w-0" style={{ color: COLORS.blue }}>
+            พบ <span className="font-semibold">{visibleItems.length}</span> รายการ
+          </p>
+          <div
+            className="flex items-center gap-1 p-1 rounded-xl border border-gray-200 shrink-0"
+            style={{ backgroundColor: COLORS.gray }}
+          >
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className="p-1.5 rounded-lg transition-all"
+              style={{
+                backgroundColor: viewMode === 'grid' ? COLORS.white : 'transparent',
+                color: viewMode === 'grid' ? COLORS.purple : '#9CA3AF',
+                boxShadow: viewMode === 'grid' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              }}
+              aria-label="มุมมองตาราง"
+            >
+              <LayoutGrid size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className="p-1.5 rounded-lg transition-all"
+              style={{
+                backgroundColor: viewMode === 'list' ? COLORS.white : 'transparent',
+                color: viewMode === 'list' ? COLORS.purple : '#9CA3AF',
+                boxShadow: viewMode === 'list' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+              }}
+              aria-label="มุมมองรายการ"
+            >
+              <List size={16} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ── Content grid ── */}
@@ -307,7 +352,7 @@ export function FactoryIdeasMobile() {
             <p className="text-sm font-medium" style={{ color: COLORS.blue }}>ไม่พบรายการที่ตรงกับเงื่อนไข</p>
             <p className="text-xs text-gray-400 mt-1">ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-2 gap-3">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
@@ -381,6 +426,90 @@ export function FactoryIdeasMobile() {
                           #{tag}
                         </span>
                       ))}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {visibleItems.map((item) => {
+              const factory = data.factories.find((f) => f.id === item.factoryId);
+              const badgeColor = contentTypeBadge[item.contentType];
+              return (
+                <article
+                  key={item.id}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform cursor-pointer"
+                  onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                >
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                      <ImageWithFallback
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                            <span
+                              className="px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white"
+                              style={{ backgroundColor: badgeColor }}
+                            >
+                              {contentTypeLabel[item.contentType]}
+                            </span>
+                            {item.category ? (
+                              <span className="text-[9px] text-gray-400 truncate max-w-[120px]">{item.category}</span>
+                            ) : null}
+                          </div>
+                          <h3 className="text-[12px] font-bold line-clamp-2 leading-snug" style={{ color: COLORS.blue }}>
+                            {item.title}
+                          </h3>
+                          <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{item.excerpt}</p>
+                        </div>
+                        <div className="shrink-0 flex flex-col items-end gap-0.5 text-[10px] text-gray-400">
+                          <button
+                            type="button"
+                            onClick={(e) => toggleFavorite(item.id, e)}
+                            className="flex items-center gap-0.5 p-0.5 -mr-0.5"
+                            aria-label="ถูกใจ"
+                          >
+                            <Heart
+                              className="w-3 h-3"
+                              style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                            />
+                            <span>{item.likes + (likedIds.has(item.id) ? 1 : 0)}</span>
+                          </button>
+                          <span>
+                            MOQ <span className="font-semibold" style={{ color: COLORS.blue }}>{item.minOrder}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
+                        className="flex items-center gap-1 text-[10px] font-semibold mt-1.5 truncate w-full text-left"
+                        style={{ color: COLORS.blue }}
+                      >
+                        <span className="truncate">{item.factoryName}</span>
+                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                      </button>
+                      {item.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {item.tags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              className="px-1.5 py-0.5 rounded-full text-[9px]"
+                              style={{ backgroundColor: COLORS.gray, color: COLORS.blue }}
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </article>

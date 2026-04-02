@@ -607,7 +607,11 @@ export function ExploreDesktop({
               <Tag className="text-[#F27830]" size={20} />
               โปรโมชันแนะนำ
             </h2>
-            <button className="text-[#F28A2E] text-sm font-medium hover:text-[#F27830] flex items-center transition-colors">
+            <button
+              type="button"
+              onClick={() => navigate('/factory-ideas?type=promotion')}
+              className="text-[#F28A2E] text-sm font-medium hover:text-[#F27830] flex items-center transition-colors"
+            >
               ดูเพิ่มเติม <ChevronRight size={16} />
             </button>
           </div>
@@ -653,7 +657,11 @@ export function ExploreDesktop({
         <section className="bg-[#F2F2F2] -mx-8 px-8 py-8 rounded-xl">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-[#292259]">บทความ Idea</h2>
-            <button className="text-[#A656A0] text-sm font-medium hover:underline flex items-center">
+            <button
+              type="button"
+              onClick={() => navigate('/factory-ideas?type=idea')}
+              className="text-[#A656A0] text-sm font-medium hover:underline flex items-center"
+            >
               ดูทั้งหมด <ChevronRight size={16} />
             </button>
           </div>

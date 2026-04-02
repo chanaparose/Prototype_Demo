@@ -283,8 +283,13 @@ export const masterApi = {
 };
 
 // ─── Showcases API ─────────────────────────────────────────────
+/** GET /showcases — see docs/new_api_specs_for_fe.md §7 */
 export const showcasesApi = {
-  list: (type?: string) => api.get<unknown[]>(`/showcases${type ? `?type=${type}` : ''}`),
+  /** @param type API code: `PD` (Product), `PM` (Promotion), `ID` (Idea); omit for all */
+  list: (type?: 'PD' | 'PM' | 'ID' | string) =>
+    api.get<unknown[]>(
+      `/showcases${type ? `?type=${encodeURIComponent(type)}` : ''}`,
+    ),
   create: (data: {
     content_type: string;
     title: string;
