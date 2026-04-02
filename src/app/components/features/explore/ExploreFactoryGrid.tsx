@@ -17,9 +17,10 @@ export type FactoryItem = {
 type ExploreFactoryGridProps = {
   factories: FactoryItem[];
   onFactoryClick: (id: string) => void;
+  onSeeAll?: () => void;
 };
 
-export function ExploreFactoryGrid({ factories, onFactoryClick }: ExploreFactoryGridProps) {
+export function ExploreFactoryGrid({ factories, onFactoryClick, onSeeAll }: ExploreFactoryGridProps) {
   return (
     <div className="mx-4 mb-5 rounded-2xl overflow-hidden border border-gray-200 bg-white">
       {/* Header — matches desktop gradient */}
@@ -95,6 +96,7 @@ export function ExploreFactoryGrid({ factories, onFactoryClick }: ExploreFactory
         <div className="mt-3 flex justify-center">
           <button
             type="button"
+            onClick={onSeeAll}
             className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-1.5 rounded-md text-[11px] font-medium transition-colors"
           >
             ดูเพิ่มเติม

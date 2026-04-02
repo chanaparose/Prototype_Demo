@@ -97,7 +97,7 @@ function ProductCarouselSection({
         {/* Left banner — fixed width square matching card height */}
         <div className="w-[200px] flex-shrink-0 rounded-2xl overflow-hidden relative cursor-pointer shadow-md group"
              style={{ minHeight: 290 }}>
-          <img
+          <ImageWithFallback
             src={bannerImg}
             alt={title}
             className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -163,7 +163,7 @@ function ProductCarouselSection({
                   >
                     {/* Image — taller for product visibility */}
                     <div className="h-[180px] relative overflow-hidden bg-gray-50">
-                      <img
+                      <ImageWithFallback
                         src={product.img}
                         alt={product.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -592,6 +592,7 @@ export function ExploreDesktop({
             <div className="mt-4 flex justify-center">
               <button
                 type="button"
+                onClick={() => navigate('/factory-ideas?type=factory')}
                 className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm"
               >
                 ดูเพิ่มเติม
@@ -619,7 +620,7 @@ export function ExploreDesktop({
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Left Banner — Orange gradient */}
             <div className="lg:w-[40%] rounded-2xl overflow-hidden relative min-h-[260px] flex-shrink-0 group cursor-pointer shadow-md">
-              <img
+              <ImageWithFallback
                 src="https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600"
                 alt="Banner"
                 className="w-full h-full object-cover absolute transition-transform duration-700 group-hover:scale-105"
@@ -635,7 +636,11 @@ export function ExploreDesktop({
               {promoShowcases.map((item) => (
                 <div key={item.id} onClick={() => navigate(`/promotion/${item.id}`)} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
                   <div className="h-36 relative overflow-hidden bg-gray-100">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
                     <div className="absolute top-2 left-2 bg-[#F28A2E] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
                       โปรโมชัน
                     </div>

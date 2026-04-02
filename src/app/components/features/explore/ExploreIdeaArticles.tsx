@@ -49,8 +49,8 @@ export function ExploreIdeaArticles({ articles, onSeeAll }: ExploreIdeaArticlesP
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#FFF0D6]/90 backdrop-blur-sm text-[#D96B00]">
-                {article.tag}
+              <span className="absolute top-2 left-2 px-2 py-1 rounded-full text-[10px] font-bold bg-[#F28A2E] text-white uppercase tracking-wide shadow-sm">
+                {article.tag || 'ไอเดีย'}
               </span>
             </div>
             <div className="p-3">
