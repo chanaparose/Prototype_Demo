@@ -1,7 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/api/v1/:path*", "destination": "https://wemake-server.onrender.com/api/v1/:path*" },
-    { "source": "/health", "destination": "https://wemake-server.onrender.com/health" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
