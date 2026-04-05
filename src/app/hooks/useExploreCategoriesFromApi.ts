@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { ExploreCategoryItem } from '../utils/exploreCategoriesFromApi';
-import { fetchExploreCategoriesMerged } from '../utils/exploreCategoriesFromApi';
+import { fetchExploreCategoriesListOnly } from '../utils/exploreCategoriesFromApi';
 
 export type ExploreCategoriesApiState = {
   merged: ExploreCategoryItem[];
@@ -11,7 +11,7 @@ export type ExploreCategoriesApiState = {
 
 type Options = { enabled?: boolean };
 
-/** โหลดหมวด Explore — ใช้ร่วม desktop + mobile; ตั้ง enabled: false รอจนกว่าจะเปิด (เช่น โหมด manualApi) */
+/** โหลดหมวดหน้า Explore — เฉพาะ GET /categories (ไม่ใช้ product-categories) */
 export function useExploreCategoriesFromApi(options?: Options): ExploreCategoriesApiState {
   const enabled = options?.enabled !== false;
   const [merged, setMerged] = useState<ExploreCategoryItem[]>([]);
@@ -22,7 +22,7 @@ export function useExploreCategoriesFromApi(options?: Options): ExploreCategorie
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchExploreCategoriesMerged();
+      const result = await fetchExploreCategoriesListOnly();
       setMerged(result.merged);
       if (result.bothFailed && result.firstError) {
         setError(result.firstError.message);

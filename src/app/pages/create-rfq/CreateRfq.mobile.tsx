@@ -1,17 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, CheckCircle2, FileText } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileText, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import {
   CreateRfqStep1,
   CreateRfqStep2,
   CreateRfqStep3Summary,
 } from '../../components/features/create-rfq';
-import type { CreateRfqForm } from '../../components/features/create-rfq';
 import type { useCreateRfqState } from '../../hooks/useCreateRfqState';
-import type { Category } from '../../contexts/DataContext';
-
-type CategoryItem = Category;
 
 type CreateRfqState = ReturnType<typeof useCreateRfqState>;
 type CreateRfqMobileProps = { state: CreateRfqState };
@@ -21,12 +17,18 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
     STEPS,
     currentStep,
     form,
-    displayForm,
     displayCategoryName,
+    displaySubCategoryName,
     categories,
-    factoryTypes,
-    matchedFactories,
+    subCategories,
+    subCategoriesLoading,
+    units,
+    shippingMethods,
+    addresses,
     updateForm,
+    canProceed,
+    submitting,
+    submitError,
     handleNext,
     handleBack,
   } = state;
@@ -95,12 +97,12 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
           {currentStep === 1 && (
             <motion.div key="step1"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
-              className="flex flex-col gap-5">
+              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
               <CreateRfqStep1
-                form={form as CreateRfqForm}
-                categories={categories as CategoryItem[]}
-                factoryTypes={factoryTypes}
+                form={form}
+                categories={categories}
+                subCategories={subCategories}
+                subCategoriesLoading={subCategoriesLoading}
                 onUpdate={updateForm}
               />
             </motion.div>
@@ -108,20 +110,27 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
           {currentStep === 2 && (
             <motion.div key="step2"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
-              className="flex flex-col gap-5">
-              <CreateRfqStep2 form={form as CreateRfqForm} onUpdate={updateForm} />
+              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+              <CreateRfqStep2
+                form={form}
+                units={units}
+                onUpdate={updateForm}
+              />
             </motion.div>
           )}
           {currentStep === 3 && (
             <motion.div key="step3"
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
-              className="flex flex-col gap-5">
+              exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
               <CreateRfqStep3Summary
-                form={displayForm as CreateRfqForm}
+                form={form}
                 categoryName={displayCategoryName}
-                matchedFactories={matchedFactories}
+                subCategoryName={displaySubCategoryName}
+                categoryId={form.categoryId}
+                units={units}
+                addresses={addresses}
+                shippingMethods={shippingMethods}
+                onUpdate={updateForm}
               />
             </motion.div>
           )}
@@ -130,15 +139,29 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
 
       {/* ── Fixed bottom CTA ── */}
       <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] px-4 py-4 z-20">
-        <motion.button type="button"
+        {submitError && (
+          <p className="text-[12px] text-red-500 text-center mb-2 font-medium">{submitError}</p>
+        )}
+        <motion.button
+          type="button"
           whileTap={{ scale: 0.98 }}
           onClick={handleNext}
-          className="w-full py-4 rounded-2xl text-white font-bold text-[15px] shadow-lg shadow-violet-200/50 flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, #5B21B6, #6C47FF)' }}>
-          {currentStep === 3
-            ? <><FileText size={17} /> ส่งคำขอใบเสนอราคา</>
-            : <>ถัดไป →</>
-          }
+          disabled={!canProceed || submitting}
+          className={cn(
+            'w-full py-4 rounded-2xl text-white font-bold text-[15px] shadow-lg flex items-center justify-center gap-2 transition-all',
+            canProceed && !submitting
+              ? 'shadow-violet-200/50'
+              : 'opacity-50 cursor-not-allowed',
+          )}
+          style={{ background: 'linear-gradient(135deg, #5B21B6, #6C47FF)' }}
+        >
+          {submitting ? (
+            <><Loader2 size={17} className="animate-spin" /> กำลังส่งคำขอ...</>
+          ) : currentStep === 3 ? (
+            <><FileText size={17} /> ส่งคำขอใบเสนอราคา</>
+          ) : (
+            <>ถัดไป →</>
+          )}
         </motion.button>
       </div>
     </div>

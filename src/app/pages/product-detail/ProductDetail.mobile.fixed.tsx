@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate, useParams } from 'react-router';
+import React, { useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -11,8 +11,8 @@ import {
   PackageCheck,
   Tag,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
+import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -26,29 +26,35 @@ function formatThaiDate(date: string): string {
 
 export function ProductDetailMobile() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const data = useData();
+  const { item, loading, factory, factoryConversation, isIdea, resolvedId } = useProductDetailShowcase();
 
-  const item = data.factoryShowcases.find(
-    (entry) => entry.id === id && entry.contentType === 'product',
-  );
-  const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
-  const factoryConversation = item
-    ? data.conversations.find((conversation) => conversation.factoryId === item.factoryId)
-    : null;
+  const handleBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
 
-  if (!item) {
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8">
+        <span
+          className="h-9 w-9 animate-spin rounded-full border-2 border-violet-600 border-t-transparent"
+          aria-hidden
+        />
+      </div>
+    );
+  }
+
+  if (!item || !resolvedId) {
     return (
       <div className="px-4 pt-5 pb-20">
         <button
           type="button"
-          onClick={() => navigate('/factory-ideas')}
+          onClick={handleBack}
           className="mb-4 inline-flex items-center gap-1 text-sm text-purple-600"
         >
           <ArrowLeft className="w-4 h-4" />
-          กลับหน้าแนะนำโรงงาน
+          กลับ
         </button>
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-sm text-gray-500 shadow-sm">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center text-sm text-gray-500 shadow-sm">
           ไม่พบข้อมูลสินค้า
         </div>
       </div>
@@ -62,7 +68,7 @@ export function ProductDetailMobile() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
         <button
           type="button"
-          onClick={() => navigate('/factory-ideas')}
+          onClick={handleBack}
           className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 text-gray-700" />
@@ -78,8 +84,8 @@ export function ProductDetailMobile() {
           <MessageCircle className="w-5 h-5" style={{ color: '#6C47FF' }} />
         </button>
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/90 mb-2">
-            สินค้า
+          <span className="mb-2 inline-flex rounded-full bg-blue-500/90 px-2 py-0.5 text-[10px] font-bold">
+            {isIdea ? 'ไอเดีย / บทความ' : 'สินค้า'}
           </span>
           <h1 className="text-lg leading-snug" style={{ fontWeight: 700 }}>
             {item.title}

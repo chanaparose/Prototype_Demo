@@ -211,10 +211,14 @@ export const frontendApi = {
 // ─── CRUD endpoints ─────────────────────────────────────────────
 export const categoriesApi = {
   list: () => api.get<unknown[]>('/categories'),
+  /** GET /categories/:id/sub-categories — ดึง sub-categories ของ category */
+  subCategories: (categoryId: string | number) =>
+    api.get<unknown[]>(`/categories/${categoryId}/sub-categories`),
 };
 
 export const factoriesApi = {
-  list: () => api.get<unknown[]>('/factories/'),
+  /** ใช้ /frontend/factories เพราะ /factories/ return null (ไม่ JOIN profile) */
+  list: () => api.get<unknown[]>('/frontend/factories'),
   get: (id: string | number) => api.get<Record<string, unknown>>(`/factories/${id}`),
   create: (data: Record<string, unknown>) => api.post<Record<string, unknown>>('/factories/', data),
   update: (id: string | number, data: Record<string, unknown>) =>
@@ -223,7 +227,10 @@ export const factoriesApi = {
 };
 
 export const rfqsApi = {
-  list: (status?: string) => api.get<unknown[]>(`/rfqs/${status ? `?status=${status}` : ''}`),
+  list: (status?: string) => {
+    const q = status != null && status !== '' ? `?status=${encodeURIComponent(status)}` : '';
+    return api.get<unknown[]>(`/rfqs/${q}`);
+  },
   get: (id: string | number) => api.get<{ rfq: Record<string, unknown>; images: unknown[] }>(`/rfqs/${id}`),
   create: (data: Record<string, unknown>) => api.post<Record<string, unknown>>('/rfqs/', data),
   addImage: (rfqId: string | number, imageUrl: string) =>

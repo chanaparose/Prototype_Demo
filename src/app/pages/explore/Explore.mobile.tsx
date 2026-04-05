@@ -161,11 +161,13 @@ export function ExploreMobile({
                     key={item.id}
                     role="button"
                     tabIndex={0}
-                    onClick={() => navigate(`/product/${item.id}`)}
+                    onClick={() =>
+                      navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
+                    }
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        navigate(`/product/${item.id}`);
+                        navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                       }
                     }}
                     className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer"
@@ -206,7 +208,7 @@ export function ExploreMobile({
                 onClick={() => navigate('/factory-ideas?type=product')}
                 className="mt-3 w-full rounded-full border border-[#A656A0]/40 bg-white py-2.5 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
               >
-                ดูไอเดียสินค้า
+                ดูสินค้าแนะนำ
               </button>
             </div>
           )}
@@ -264,13 +266,13 @@ export function ExploreMobile({
                   key={item.id}
                   role="button"
                   tabIndex={0}
-                  onClick={() => navigate(`/promotion/${item.id}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      navigate(`/promotion/${item.id}`);
-                    }
-                  }}
+                    onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(`/factory-ideas/promotions/${item.id}`);
+                      }
+                    }}
                   className="flex-shrink-0 w-[200px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer"
                 >
                   <div className="h-28 relative overflow-hidden bg-gray-100">

@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate, useParams } from 'react-router';
+import React, { useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -17,8 +17,8 @@ import {
   ArrowUpRight,
   CheckCircle2,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
+import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -28,20 +28,36 @@ function formatThaiDate(date: string): string {
 
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const data = useData();
+  const { item, loading, factory, factoryConversation, isIdea, resolvedId } = useProductDetailShowcase();
 
-  const item = data.factoryShowcases.find((e) => e.id === id && e.contentType === 'product');
-  const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
-  const factoryConversation = item ? data.conversations.find((c) => c.factoryId === item.factoryId) : null;
+  const handleBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
 
-  if (!item) {
+  if (loading) {
+    return (
+      <div
+        className="hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex"
+        style={{ background: '#F8F6FA' }}
+      >
+        <span
+          className="h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"
+          aria-hidden
+        />
+      </div>
+    );
+  }
+
+  if (!item || !resolvedId) {
     return (
       <div className="hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
-        <button type="button" onClick={() => navigate('/factory-ideas')}
+        <button
+          type="button"
+          onClick={handleBack}
           className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors"
-          style={{ color: '#7A4B94' }}>
-          <ArrowLeft className="w-4 h-4" /> กลับหน้าแนะนำโรงงาน
+          style={{ color: '#7A4B94' }}
+        >
+          <ArrowLeft className="w-4 h-4" /> กลับ
         </button>
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
           <p className="text-4xl mb-3">📦</p>
@@ -58,8 +74,11 @@ export function ProductDetailDesktop() {
         <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        <button type="button" onClick={() => navigate('/factory-ideas')}
-          className="absolute top-5 left-8 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white text-[13px] font-medium transition-colors">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="absolute top-5 left-8 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white text-[13px] font-medium transition-colors"
+        >
           <ArrowLeft className="w-4 h-4" /> กลับ
         </button>
 
@@ -77,7 +96,7 @@ export function ProductDetailDesktop() {
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full backdrop-blur-sm text-[11px] font-bold text-white mb-3"
             style={{ background: 'rgba(227,136,68,0.90)' }}
           >
-            <Package className="w-3 h-3" /> สินค้า
+            <Package className="w-3 h-3" /> {isIdea ? 'ไอเดีย / บทความ' : 'สินค้า'}
           </span>
           <h1 className="text-[26px] font-bold text-white leading-snug max-w-3xl">{item.title}</h1>
           <div className="flex items-center gap-4 mt-2 text-white/70 text-[12px]">

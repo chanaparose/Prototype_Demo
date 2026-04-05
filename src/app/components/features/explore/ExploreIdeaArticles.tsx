@@ -49,9 +49,7 @@ export function ExploreIdeaArticles({ articles, onSeeAll }: ExploreIdeaArticlesP
                 alt={article.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <span className="absolute top-2 left-2 px-2 py-1 rounded-full text-[10px] font-bold bg-[#F28A2E] text-white uppercase tracking-wide shadow-sm">
-                {article.tag || 'ไอเดีย'}
-              </span>
+               
             </div>
             <div className="p-3">
               <p className="text-[#292259] font-medium truncate mb-0.5 group-hover:text-[#A656A0] transition-colors" style={{ fontSize: 13 }}>

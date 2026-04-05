@@ -1,89 +1,143 @@
+/**
+ * Step 2: จำนวนและงบประมาณ
+ *
+ * Factory Manager ต้องการ: จำนวน + หน่วย + งบต่อชิ้น + รูปอ้างอิง
+ * UX: Quantity+Unit side-by-side → Budget per piece → Image upload (multi)
+ */
 import React, { useRef, useState } from 'react';
-import { DollarSign, Package, Calendar, Image as ImageIcon, CheckCircle, Loader, XCircle } from 'lucide-react';
+import {
+  Package,
+  DollarSign,
+  Image as ImageIcon,
+  CheckCircle,
+  Loader,
+  X,
+  Plus,
+  ChevronDown,
+} from 'lucide-react';
 import type { CreateRfqForm } from './types';
+import type { Unit } from './types';
 import { mediaApi } from '../../../services/api';
 
 type CreateRfqStep2Props = {
   form: CreateRfqForm;
-  onUpdate: (key: keyof CreateRfqForm, value: string) => void;
+  units: Unit[];
+  onUpdate: <K extends keyof CreateRfqForm>(key: K, value: CreateRfqForm[K]) => void;
 };
 
-type UploadState = { status: 'idle' } | { status: 'uploading' } | { status: 'done'; url: string; name: string } | { status: 'error'; message: string };
-
-export function CreateRfqStep2({ form, onUpdate }: CreateRfqStep2Props) {
+export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadState, setUploadState] = useState<UploadState>({ status: 'idle' });
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadState({ status: 'uploading' });
+    setUploading(true);
     try {
       const res = await mediaApi.upload(file);
-      setUploadState({ status: 'done', url: res.url, name: res.file_name });
+      onUpdate('imageUrls', [...form.imageUrls, res.url]);
     } catch {
-      setUploadState({ status: 'error', message: 'อัปโหลดไม่สำเร็จ ลองอีกครั้ง' });
+      // silent fail — user can retry
     } finally {
-      // reset input so same file can be re-selected
+      setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  const removeImage = (idx: number) => {
+    onUpdate('imageUrls', form.imageUrls.filter((_, i) => i !== idx));
+  };
+
+  const selectedUnit = units.find((u) => u.id === form.unitId);
+
   return (
-    <div className="bg-white p-5 rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-5">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-            <Package size={14} className="text-[#6C47FF]" /> จำนวนที่ต้องการ
-          </label>
+    <div className="flex flex-col gap-5">
+
+      {/* ── 1. จำนวน + หน่วย (side-by-side) ── */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <label className="text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5">
+          <Package size={14} className="text-violet-500" />
+          จำนวนที่ต้องการผลิต <span className="text-red-400">*</span>
+        </label>
+        <div className="flex gap-2">
+          {/* Quantity input */}
           <input
             type="number"
             min={1}
+            inputMode="numeric"
             value={form.quantity}
             onChange={(e) => onUpdate('quantity', e.target.value)}
-            placeholder="หน่วย"
-            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-[15px] rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium placeholder:text-slate-400"
+            placeholder="จำนวน"
+            className="flex-1 min-w-0 bg-gray-50 border border-gray-200 text-gray-800 text-[14px] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 placeholder:text-gray-400 tabular-nums"
           />
+          {/* Unit selector — dropdown */}
+          <div className="relative shrink-0 w-[min(11rem,40vw)] min-w-[7.5rem]">
+            <select
+              value={form.unitId}
+              onChange={(e) => onUpdate('unitId', e.target.value)}
+              aria-label="หน่วยนับ"
+              className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 text-[14px] rounded-xl pl-4 pr-10 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 cursor-pointer"
+            >
+              {units.length === 0 ? (
+                <option value="">— เลือกหน่วย —</option>
+              ) : (
+                units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.name}
+                  </option>
+                ))
+              )}
+            </select>
+            <ChevronDown
+              size={18}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              aria-hidden
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-            <DollarSign size={14} className="text-emerald-500" /> งบประมาณ (บาท)
-          </label>
+        {form.quantity && selectedUnit && (
+          <p className="text-[11px] text-violet-600 font-medium mt-2 bg-violet-50 px-3 py-1.5 rounded-lg">
+            สั่งผลิต {Number(form.quantity).toLocaleString('th-TH')} {selectedUnit.name}
+          </p>
+        )}
+      </div>
+
+      {/* ── 2. งบประมาณต่อชิ้น ── */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <label className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+          <DollarSign size={14} className="text-emerald-500" />
+          งบประมาณต่อชิ้น (บาท) <span className="text-red-400">*</span>
+        </label>
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[14px] font-medium">฿</span>
           <input
             type="text"
-            inputMode="numeric"
-            value={form.budget}
-            onChange={(e) => onUpdate('budget', e.target.value)}
-            placeholder="ไม่บังคับ"
-            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-[15px] rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium placeholder:text-slate-400"
+            inputMode="decimal"
+            value={form.budgetPerPiece}
+            onChange={(e) => {
+              // allow only numbers and decimal point
+              const v = e.target.value.replace(/[^0-9.]/g, '');
+              onUpdate('budgetPerPiece', v);
+            }}
+            placeholder="0.00"
+            className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-[14px] rounded-xl pl-8 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 placeholder:text-gray-400 tabular-nums"
           />
         </div>
+        {form.quantity && form.budgetPerPiece && (
+          <p className="text-[11px] text-emerald-600 font-medium mt-2 bg-emerald-50 px-3 py-1.5 rounded-lg">
+            งบประมาณรวมประมาณ ฿{(Number(form.quantity) * Number(form.budgetPerPiece)).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+        )}
+        <p className="text-[10px] text-gray-400 mt-1.5">
+          ใส่ราคาเป้าหมายต่อ 1 หน่วย เพื่อให้โรงงานเสนอราคาได้ตรงความต้องการ
+        </p>
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
-          วัสดุ / สเปกที่ต้องการ
-        </label>
-        <input
-          type="text"
-          value={form.material}
-          onChange={(e) => onUpdate('material', e.target.value)}
-          placeholder="เช่น ผ้าคอตตอน 100%, ยางธรรมชาติปลอดภัย, เนื้อไก่ ข้าว วิตามิน"
-          className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-[15px] rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium placeholder:text-slate-400"
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-          <Calendar size={14} className="text-amber-500" /> ต้องการรับงานภายในวันที่
-        </label>
-        <input
-          type="date"
-          value={form.deadline}
-          onChange={(e) => onUpdate('deadline', e.target.value)}
-          className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-[15px] rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium"
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
-          รูป/ไฟล์อ้างอิง (ถ้ามี)
+
+      {/* ── 3. รูปอ้างอิง (multi-upload) ── */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <label className="text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5">
+          <ImageIcon size={14} className="text-amber-500" />
+          รูปอ้างอิง / ไฟล์แนบ
         </label>
         <input
           ref={fileInputRef}
@@ -92,47 +146,48 @@ export function CreateRfqStep2({ form, onUpdate }: CreateRfqStep2Props) {
           className="hidden"
           onChange={handleFileChange}
         />
-        {uploadState.status === 'done' ? (
-          <div className="border-2 border-green-200 bg-green-50 rounded-2xl p-5 flex items-center gap-3">
-            <CheckCircle size={22} className="text-green-500 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-green-800 truncate">{uploadState.name}</p>
-              <p className="text-xs text-green-600">อัปโหลดสำเร็จ</p>
+
+        {/* Image grid */}
+        <div className="grid grid-cols-3 gap-2">
+          {/* Uploaded images */}
+          {form.imageUrls.map((url, idx) => (
+            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 group">
+              <img src={url} alt={`อ้างอิง ${idx + 1}`} className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removeImage(idx)}
+                className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity"
+              >
+                <X size={12} className="text-white" />
+              </button>
+              <div className="absolute bottom-1 left-1">
+                <CheckCircle size={14} className="text-green-400 drop-shadow" />
+              </div>
             </div>
+          ))}
+
+          {/* Upload button */}
+          {form.imageUrls.length < 5 && (
             <button
               type="button"
-              onClick={() => setUploadState({ status: 'idle' })}
-              className="text-green-600 hover:text-red-500 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="aspect-square rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center gap-1 hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-50"
             >
-              <XCircle size={18} />
+              {uploading ? (
+                <Loader size={20} className="text-violet-400 animate-spin" />
+              ) : (
+                <Plus size={20} className="text-gray-400" />
+              )}
+              <span className="text-[9px] text-gray-400 font-medium">
+                {uploading ? 'อัปโหลด...' : 'เพิ่มรูป'}
+              </span>
             </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadState.status === 'uploading'}
-            className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-slate-50 hover:bg-slate-100/50 transition-colors cursor-pointer disabled:opacity-60 w-full"
-          >
-            <div className="w-12 h-12 bg-violet-50 rounded-full flex items-center justify-center text-[#6C47FF] mb-1">
-              {uploadState.status === 'uploading' ? (
-                <Loader size={24} className="animate-spin" />
-              ) : (
-                <ImageIcon size={24} />
-              )}
-            </div>
-            <div className="text-center">
-              <p className="font-bold text-slate-700">
-                {uploadState.status === 'uploading' ? 'กำลังอัปโหลด...' : 'แตะเพื่ออัปโหลด'}
-              </p>
-              {uploadState.status === 'error' ? (
-                <p className="text-xs text-red-500 mt-1">{uploadState.message}</p>
-              ) : (
-                <p className="text-xs text-slate-500 mt-1">PNG, JPG, PDF ไม่เกิน 10MB</p>
-              )}
-            </div>
-          </button>
-        )}
+          )}
+        </div>
+        <p className="text-[10px] text-gray-400 mt-2">
+          อัปโหลดได้สูงสุด 5 รูป (PNG, JPG, PDF ไม่เกิน 10MB/รูป)
+        </p>
       </div>
     </div>
   );

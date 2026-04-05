@@ -10,7 +10,7 @@ export type CategoryItem = ExploreCategoryItem;
 type ExploreCategoriesProps = {
   /** สำรองชื่อจาก bundle (เช่น mock-data) ถ้า API ยังไม่มี id นั้น */
   categories?: CategoryItem[];
-  /** ผลรวมจาก GET /categories + GET /master/product-categories (โหลดที่ useExploreData) */
+  /** จาก GET /categories เท่านั้น (โหลดที่ useExploreData → useExploreCategoriesFromApi) */
   mergedFromApi: CategoryItem[];
   apiLoading: boolean;
   apiError: string | null;

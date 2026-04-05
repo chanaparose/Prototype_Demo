@@ -21,6 +21,8 @@ const COLORS = {
   purpleLight: '#9D77B2',
   orange: '#E38844',
   blue: '#2E2252',
+  /** ป้าย “สินค้า” ให้โทนฟ้า แยกจากสีหัวข้อ */
+  productBadgeBlue: '#2563EB',
   white: '#FFFFFF',
   gray: '#F5F5F5',
   lightPurpleBg: '#F8F6FA',
@@ -44,10 +46,11 @@ const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
   factory: 'โรงงาน',
 };
 
+/** สีป้ายให้สอดคล้องหน้า detail: สินค้า=ฟ้า, โปรโมชัน=ส้ม, ไอเดีย=ม่วง */
 const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
-  product: COLORS.orange,
-  promotion: COLORS.purple,
-  idea: COLORS.blue,
+  product: COLORS.productBadgeBlue,
+  promotion: COLORS.orange,
+  idea: COLORS.purple,
   factory: COLORS.teal,
 };
 
@@ -237,10 +240,12 @@ export function FactoryIdeasMobile() {
   /* ── Total count ── */
   const totalCount = isFactoryTab ? visibleFactories.length : visibleItems.length + (selectedType === 'all' ? visibleFactories.length : 0);
 
+  /** Showcase จาก GET /showcases — PD→product-detail, PM→promotion-detail, ID→idea-detail */
   const getDetailPath = (type: string, id: string) => {
-    if (type === 'product')   return `/factory-ideas/products/${id}`;
-    if (type === 'promotion') return `/factory-ideas/promotions/${id}`;
-    return `/factory-ideas/ideas/${id}`;
+    const q = encodeURIComponent(id);
+    if (type === 'product') return `/product-detail?showcase_id=${q}`;
+    if (type === 'promotion') return `/promotion-detail?showcase_id=${q}`;
+    return `/idea-detail?showcase_id=${q}`;
   };
 
   return (

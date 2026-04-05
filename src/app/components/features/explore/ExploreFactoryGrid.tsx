@@ -10,7 +10,6 @@ export type FactoryItem = {
   rating: number;
   reviews: number;
   minOrder: number;
-  priceRange: string;
   verified?: boolean;
 };
 
@@ -61,15 +60,12 @@ export function ExploreFactoryGrid({ factories, onFactoryClick, onSeeAll }: Expl
                   alt={factory.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                {factory.verified && (
+                {factory.verified === true && (
                   <div className="absolute top-1 left-1 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
                     <BadgeCheck className="w-2.5 h-2.5 shrink-0" style={{ color: '#A238FF' }} />
                     <span className="font-medium text-[8px]" style={{ color: '#A238FF' }}>ยืนยัน</span>
                   </div>
                 )}
-                <div className="absolute top-1 right-1 bg-[#292259]/90 text-white rounded-full px-1.5 py-0.5 text-[8px] leading-none">
-                  {factory.priceRange}
-                </div>
               </div>
               <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
                 <div>

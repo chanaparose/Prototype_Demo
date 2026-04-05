@@ -34,11 +34,13 @@ function ProductCarouselSection({
   items,
   bannerImg,
   bannerText,
+  onItemClick,
 }: {
   title: string;
   items: ProductItem[];
   bannerImg: string;
   bannerText: string;
+  onItemClick?: (id: string) => void;
 }) {
   const navigate = useNavigate();
   const hasItems = items.length > 0;
@@ -135,7 +137,7 @@ function ProductCarouselSection({
                 onClick={() => navigate('/factory-ideas?type=product')}
                 className="mt-1 rounded-full border border-[#A656A0]/40 bg-white px-4 py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
               >
-                ดูไอเดียสินค้า
+                ดูสินค้าแนะนำ
               </button>
             </div>
           ) : (
@@ -159,6 +161,15 @@ function ProductCarouselSection({
                 {items.map((product) => (
                   <div
                     key={product.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onItemClick?.(product.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onItemClick?.(product.id);
+                      }
+                    }}
                     className="flex-shrink-0 w-[192px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
                   >
                     {/* Image — taller for product visibility */}
@@ -502,6 +513,9 @@ export function ExploreDesktop({
           items={productShowcases}
           bannerImg={'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'}
           bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง"
+          onItemClick={(id) =>
+            navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
+          }
         />
 
         {/* ═══ 6. โรงงานแนะนำ ═══ */}
@@ -557,15 +571,12 @@ export function ExploreDesktop({
                       alt={factory.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    {factory.verified && (
+                    {factory.verified === true && (
                       <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
                         <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
                         <span className="text-[9px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
                       </div>
                     )}
-                    <div className="absolute top-1.5 right-1.5 bg-[#292259]/90 text-white rounded-full px-1.5 py-0.5 text-[9px]">
-                      {factory.priceRange}
-                    </div>
                   </div>
                   <div className="p-2.5 flex flex-col flex-1 justify-between">
                     <div>
@@ -634,7 +645,7 @@ export function ExploreDesktop({
             {/* Right Scrollable Cards — from factoryShowcases */}
             <div className="lg:w-[60%] flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
               {promoShowcases.map((item) => (
-                <div key={item.id} onClick={() => navigate(`/promotion/${item.id}`)} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
+                <div key={item.id} onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
                   <div className="h-36 relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
@@ -681,9 +692,7 @@ export function ExploreDesktop({
                     alt={ideaArticlesList[0].title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-xs font-bold text-[#A656A0] uppercase tracking-wide bg-white/95 backdrop-blur-sm border border-white/80 shadow-sm">
-                    {ideaArticlesList[0].tag}
-                  </span>
+                 
                 </div>
                 <div className="p-6">
                   <span className="text-xs font-bold text-[#A656A0] mb-2 uppercase tracking-wide">
@@ -715,9 +724,7 @@ export function ExploreDesktop({
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#FFF0D6]/90 backdrop-blur-sm text-[#D96B00]">
-                      {article.tag}
-                    </span>
+                     
                   </div>
                   <div className="w-2/3 p-4 flex flex-col justify-center">
                     <h3 className="font-bold text-sm text-[#292259] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#F28A2E] transition-colors">{article.title}</h3>

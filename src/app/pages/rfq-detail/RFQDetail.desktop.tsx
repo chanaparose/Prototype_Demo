@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
 import {
   HISTORY_STATUSES,
@@ -24,11 +25,62 @@ export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const data = useData();
+  const { refetchRfq, refetchOrders } = data;
+  const { isAuthenticated } = useAuth();
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
 
-  const rfq = data.rfqs.find((r) => r.id === id) || data.rfqs[0];
+  const needsDetailFetch = Boolean(id && isAuthenticated);
+  const [detailSynced, setDetailSynced] = React.useState(!needsDetailFetch);
+
+  React.useEffect(() => {
+    if (!id || !isAuthenticated) {
+      setDetailSynced(true);
+      return;
+    }
+    setDetailSynced(false);
+    let cancelled = false;
+    void refetchRfq(id).finally(() => {
+      if (!cancelled) setDetailSynced(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isAuthenticated, refetchRfq]);
+
+  const rfq = id ? data.rfqs.find((r) => r.id === id) : undefined;
+
+  if (!rfq) {
+    const showLoading = data.isLoading || !detailSynced;
+    return (
+      <div className="hidden lg:block min-h-[60vh]" style={{ backgroundColor: COLORS.lightPurpleBg }}>
+        <div className="max-w-6xl mx-auto px-8 py-14 flex flex-col items-center gap-4 text-center">
+          <button
+            type="button"
+            onClick={() => navigate('/orders')}
+            className="w-10 h-10 rounded-xl flex items-center justify-center border border-gray-200 bg-white self-start"
+          >
+            <ArrowLeft size={18} style={{ color: COLORS.blue }} />
+          </button>
+          <p className="text-sm font-semibold" style={{ color: COLORS.blue }}>
+            {showLoading ? 'กำลังโหลด RFQ...' : 'ไม่พบคำขอนี้ หรือคุณไม่มีสิทธิ์ดู'}
+          </p>
+          {!showLoading && (
+            <button
+              type="button"
+              className="text-sm font-semibold underline"
+              style={{ color: COLORS.purple }}
+              onClick={() => navigate('/orders')}
+            >
+              กลับไป RFQ & คำสั่งซื้อ
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const isHistoryView = HISTORY_STATUSES.includes(
     rfq.status as (typeof HISTORY_STATUSES)[number],
   );
@@ -135,6 +187,12 @@ export function RFQDetailDesktop() {
                   selectedOfferId={selectedOffer}
                   onSelectOffer={setSelectedOffer}
                   onNavigateToMessages={() => navigate('/messages/conv1')}
+                  rfqQuantity={rfq.quantity}
+                  onOfferFlowComplete={async ({ orderId }) => {
+                    if (id) await refetchRfq(id);
+                    await refetchOrders();
+                    if (orderId) navigate(`/orders/${orderId}`);
+                  }}
                 />
               </div>
             </div>
