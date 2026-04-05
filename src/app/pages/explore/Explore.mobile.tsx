@@ -178,9 +178,7 @@ export function ExploreMobile({
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute top-2 left-2 w-5 h-5 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[9px]">
-                        🐾
-                      </div>
+                       
                     </div>
                     <div className="p-2.5">
                       <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
