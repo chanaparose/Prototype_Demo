@@ -20,10 +20,10 @@ import { ImageWithFallback } from '../../components/shared';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
 import { useData } from '../../contexts/DataContext';
 
-type FactoryProfileState = ReturnType<typeof useFactoryProfile>;
-type FactoryProfileDesktopProps = { state: FactoryProfileState };
+type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
+type FactoryDetailDesktopProps = { state: FactoryDetailState };
 
-export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
+export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
   const navigate = useNavigate();
   const data = useData();
   const {
@@ -36,32 +36,54 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
     promotionItems,
     articleItems,
     reviews,
+    detailLoading,
     startConversation,
     startingConversation,
   } = state;
 
+  const handleBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
+
   const handleChat = useCallback(async () => {
-    if (conversation) { navigate(`/messages/${conversation.id}`); return; }
+    if (conversation) {
+      navigate(`/messages/${conversation.id}`);
+      return;
+    }
     const customerId = data.currentUser?.id;
-    if (!customerId) { navigate('/messages'); return; }
+    if (!customerId) {
+      navigate('/messages');
+      return;
+    }
     const convId = await startConversation(customerId);
     navigate(convId ? `/messages/${convId}` : '/messages');
   }, [conversation, navigate, startConversation, data.currentUser]);
 
+  if (detailLoading && !factory) {
+    return (
+      <div className="hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 pb-20 lg:flex">
+        <span
+          className="h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"
+          aria-hidden
+        />
+      </div>
+    );
+  }
+
   if (!factory) {
     return (
-      <div className="hidden lg:block px-8 pt-8 pb-20 bg-gray-50 min-h-[calc(100vh-4rem)]">
+      <div className="hidden min-h-[calc(100vh-4rem)] bg-gray-50 px-8 pb-20 pt-8 lg:block">
         <button
           type="button"
-          onClick={() => navigate('/factory-ideas')}
-          className="mb-6 inline-flex items-center gap-1.5 text-[13px] text-purple-600 hover:text-purple-800 transition-colors font-medium"
+          onClick={() => navigate('/explore')}
+          className="mb-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-purple-600 transition-colors hover:text-purple-800"
         >
-          <ArrowLeft className="w-4 h-4" />
-          กลับหน้าแนะนำโรงงาน
+          <ArrowLeft className="h-4 w-4" />
+          กลับหน้าหลัก
         </button>
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
-          <p className="text-4xl mb-3">🏭</p>
-          <p className="text-[14px] text-gray-500 font-medium">ไม่พบข้อมูลโรงงาน</p>
+        <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+          <p className="mb-3 text-4xl">🏭</p>
+          <p className="text-[14px] font-medium text-gray-500">ไม่พบข้อมูลโรงงาน</p>
         </div>
       </div>
     );
@@ -70,34 +92,37 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
   const statItems = [
     { icon: <Package size={14} className="text-purple-500" />, label: 'MOQ', value: factory.minOrder },
     { icon: <Clock size={14} className="text-purple-500" />, label: 'Lead Time', value: factory.leadTime },
-    { icon: <CheckCircle2 size={14} className="text-purple-500" />, label: 'งานสำเร็จ', value: `${factory.completedOrders} ออเดอร์` },
-    { icon: <Star size={14} className="text-amber-400 fill-amber-400" />, label: 'เรทติ้ง', value: `${factory.rating} (${factory.reviews})` },
+    {
+      icon: <CheckCircle2 size={14} className="text-purple-500" />,
+      label: 'งานสำเร็จ',
+      value: `${factory.completedOrders} ออเดอร์`,
+    },
+    {
+      icon: <Star size={14} className="fill-amber-400 text-amber-400" />,
+      label: 'เรทติ้ง',
+      value: `${factory.rating} (${factory.reviews})`,
+    },
   ];
 
   return (
-    <div className="hidden lg:flex flex-col min-h-[calc(100vh-4rem)] bg-gray-50">
-
-      {/* ── Hero ── */}
+    <div className="hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex">
       <div className="bg-white shadow-sm">
         <FactoryProfileHero
           factory={factory}
-          onBack={() => navigate('/factory-ideas')}
+          onBack={handleBack}
           onChat={handleChat}
           chatLoading={startingConversation}
         />
       </div>
 
-      {/* ── Info strip ── */}
-      <div className="bg-white border-b border-gray-100 px-8 py-4">
-        <div className="flex items-center gap-6 flex-wrap">
-
-          {/* Factory thumb + name */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+      <div className="border-b border-gray-100 bg-white px-8 py-4">
+        <div className="flex flex-wrap items-center gap-6">
+          <div className="flex shrink-0 items-center gap-3">
+            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-gray-100">
               <ImageWithFallback
                 src={factory.image}
                 alt={factory.name}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
             </div>
             <div>
@@ -109,9 +134,8 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
             </div>
           </div>
 
-          <div className="w-px h-8 bg-gray-100 shrink-0" />
+          <div className="h-8 w-px shrink-0 bg-gray-100" />
 
-          {/* Contact */}
           <div className="flex items-center gap-4 text-[12px] text-gray-500">
             <span className="flex items-center gap-1.5">
               <MapPin size={12} className="text-gray-400" />
@@ -124,37 +148,36 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
                   ติดต่อผ่านแชท
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Phone size={12} className="text-gray-400" />
-                  -
+                  <Phone size={12} className="text-gray-400" />-
                 </span>
               </>
             )}
           </div>
 
-          <div className="w-px h-8 bg-gray-100 shrink-0" />
+          <div className="h-8 w-px shrink-0 bg-gray-100" />
 
-          {/* Stats inline */}
           <div className="flex items-center gap-5">
             {statItems.map((s) => (
               <div key={s.label} className="flex items-center gap-1.5">
                 {s.icon}
                 <div>
-                  <p className="text-[9px] text-gray-400 uppercase tracking-wide leading-none mb-0.5">{s.label}</p>
-                  <p className="text-[12px] font-bold text-gray-800 leading-none">{s.value}</p>
+                  <p className="mb-0.5 text-[9px] font-normal uppercase leading-none tracking-wide text-gray-400">
+                    {s.label}
+                  </p>
+                  <p className="text-[12px] font-bold leading-none text-gray-800">{s.value}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Certifications */}
           {profile && (profile.certificates ?? []).length > 0 && (
             <>
-              <div className="w-px h-8 bg-gray-100 shrink-0" />
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="h-8 w-px shrink-0 bg-gray-100" />
+              <div className="flex flex-wrap items-center gap-2">
                 {(profile.certificates ?? []).map((c) => (
                   <span
                     key={c}
-                    className="px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 text-[11px] font-semibold border border-purple-100"
+                    className="rounded-full border border-purple-100 bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700"
                   >
                     {c}
                   </span>
@@ -163,15 +186,14 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
             </>
           )}
 
-          {/* Tags */}
           {factory.tags && factory.tags.length > 0 && (
             <>
-              <div className="w-px h-8 bg-gray-100 shrink-0" />
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="h-8 w-px shrink-0 bg-gray-100" />
+              <div className="flex flex-wrap items-center gap-1.5">
                 {factory.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-medium"
+                    className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500"
                   >
                     {tag}
                   </span>
@@ -182,9 +204,8 @@ export function FactoryProfileDesktop({ state }: FactoryProfileDesktopProps) {
         </div>
       </div>
 
-      {/* ── Tab content (full width) ── */}
       <div className="flex-1 px-8 py-6">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
           <FactoryProfileTabContent
             activeTab={activeTab}
             onTabChange={setActiveTab as (tab: TabId) => void}

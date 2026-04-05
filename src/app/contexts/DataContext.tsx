@@ -6,8 +6,16 @@
  */
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { frontendApi, categoriesApi, showcasesApi, notificationsApi, conversationsApi } from '../services/api';
+import {
+  frontendApi,
+  categoriesApi,
+  showcasesApi,
+  notificationsApi,
+  conversationsApi,
+  rfqsApi,
+} from '../services/api';
 import * as fallbackData from '../data/mockData';
+import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
 
 // ─── Types (matching mockData shapes) ───────────────────────────
 export type Category = {
@@ -90,6 +98,8 @@ export type RfqOffer = {
   aiReason: string;
   completedOrders: number;
   responseTime: string;
+  /** จาก quotations.status: PD | AC | RJ */
+  quoteStatus?: string;
 };
 
 export type Rfq = {
@@ -184,6 +194,150 @@ export type CurrentUser = {
   memberSince: string;
 };
 
+// ─── RFQ / quotation mapping (API: rfqs.status OP|CL|CC, quotations.status PD|AC|RJ) ───
+const CATEGORY_ICON_MAP: Record<string, string> = {
+  'อาหารสัตว์': '🐾',
+  'อาหารเม็ดสัตว์': '🐾',
+  'อาหารเสริม': '💊',
+  'ของเล่นสัตว์เลี้ยง': '🎾',
+  'เสื้อผ้าสัตว์เลี้ยง': '👕',
+  'เสื้อผ้า/สิ่งทอ': '👕',
+  'อุปกรณ์สัตว์เลี้ยง': '🦮',
+  'สายจูง อุปกรณ์': '🦮',
+  'บรรจุภัณฑ์': '📦',
+  'แพ็กเกจจิ้ง': '📦',
+  'เครื่องสำอาง': '✨',
+  'อุปกรณ์อาบน้ำ': '🧴',
+  'เฟอร์นิเจอร์': '🏠',
+  'ที่นอนและบ้าน': '🏠',
+  'พลาสติก': '🔩',
+  'ขนมสัตว์เลี้ยง': '🍖',
+  'ตู้ปลาและกรง': '🐟',
+  'กระเป๋าและรถเข็น': '🧳',
+  'ห้องน้ำและทราย': '🚿',
+};
+
+export function guessCategoryIcon(catName: string): string {
+  if (!catName) return '📋';
+  if (CATEGORY_ICON_MAP[catName]) return CATEGORY_ICON_MAP[catName];
+  for (const [key, icon] of Object.entries(CATEGORY_ICON_MAP)) {
+    if (catName.includes(key) || key.includes(catName)) return icon;
+  }
+  return '📋';
+}
+
+function mergeFrontendRfqPayload(api: Record<string, unknown>): Record<string, unknown> {
+  const rfqPart =
+    api.rfq && typeof api.rfq === 'object' && !Array.isArray(api.rfq)
+      ? (api.rfq as Record<string, unknown>)
+      : api;
+  const rawList =
+    (Array.isArray(api.quotations) && api.quotations) ||
+    (Array.isArray(api.offers) && api.offers) ||
+    (Array.isArray(rfqPart.quotations) && rfqPart.quotations) ||
+    (Array.isArray(rfqPart.offers) && rfqPart.offers) ||
+    [];
+  return { ...rfqPart, offers: rawList };
+}
+
+function mapApiRfqStatus(rawStatus: string, offerCount: number): string {
+  const u = String(rawStatus || '').toUpperCase();
+  if (u === 'CL') return 'completed';
+  if (u === 'CC') return 'cancelled';
+  if (u === 'EX' || u === 'EXPIRED') return 'expired';
+  if (u === 'OP' || u === 'OPEN' || u === '') {
+    return offerCount > 0 ? 'offers_received' : 'pending';
+  }
+  const lower = String(rawStatus).toLowerCase();
+  const known = ['pending', 'offers_received', 'reviewing', 'completed', 'cancelled', 'expired'];
+  if (known.includes(lower)) return lower;
+  return lower || 'pending';
+}
+
+function mapRowToRfqOffer(
+  q: Record<string, unknown>,
+  quantity: number,
+  factories: Factory[],
+): RfqOffer | null {
+  const id = String(q.quote_id ?? q.quotation_id ?? q.quoteId ?? q.id ?? '');
+  if (!id) return null;
+  const fid = String(q.factory_id ?? q.factoryId ?? '');
+  const factory = factories.find((f) => f.id === fid);
+  const explicitPrice = Number(q.price ?? q.total_price ?? 0);
+  const pricePerPiece = Number(q.price_per_piece ?? 0);
+  const mold = Number(q.mold_cost ?? 0);
+  const price =
+    explicitPrice > 0 ? explicitPrice : pricePerPiece * quantity + mold;
+  const st = String(q.status ?? 'PD').toUpperCase();
+  return {
+    id,
+    factoryId: fid,
+    factoryName: String(q.factory_name ?? q.factoryName ?? factory?.name ?? 'โรงงาน'),
+    price,
+    leadTime: Number(q.lead_time_days ?? q.leadTime ?? 0),
+    rating: Number(q.rating ?? factory?.rating ?? 0),
+    verified: Boolean(q.verified ?? factory?.verified ?? false),
+    recommended: false,
+    aiReason: String(q.ai_reason ?? q.aiReason ?? q.notes ?? ''),
+    completedOrders: Number(q.completed_orders ?? factory?.completedOrders ?? 0),
+    responseTime: String(q.response_time ?? q.responseTime ?? '—'),
+    quoteStatus: st,
+  };
+}
+
+function applyRecommendedFlags(offers: RfqOffer[]): RfqOffer[] {
+  const pending = offers.filter((o) => !o.quoteStatus || o.quoteStatus === 'PD');
+  if (pending.length === 0) return offers.map((o) => ({ ...o, recommended: false }));
+  const prices = pending.map((o) => o.price).filter((p) => p > 0);
+  const minPrice = prices.length ? Math.min(...prices) : 0;
+  return offers.map((o) => {
+    const isP = !o.quoteStatus || o.quoteStatus === 'PD';
+    return {
+      ...o,
+      recommended: isP && minPrice > 0 && o.price === minPrice,
+    };
+  });
+}
+
+/** แปลงแถว RFQ จาก bootstrap / GET /frontend/rfqs/:id → Rfq */
+export function normalizeRfqRecord(
+  r: Record<string, unknown>,
+  factories: Factory[],
+  guessIcon: (catName: string) => string = guessCategoryIcon,
+): Rfq {
+  const row = mergeFrontendRfqPayload(r);
+  const cat = String(row.category ?? row.category_name ?? '');
+  const qty = Number(row.quantity ?? 0);
+  const rawOffers = row.offers ?? row.quotations ?? [];
+  const rows = Array.isArray(rawOffers) ? (rawOffers as Record<string, unknown>[]) : [];
+  let offers = rows
+    .map((q) => mapRowToRfqOffer(q, qty, factories))
+    .filter((o): o is RfqOffer => o != null);
+  offers = applyRecommendedFlags(offers);
+  const offerCount = Number(row.offer_count ?? row.offerCount ?? offers.length);
+  const effCount = Math.max(offerCount, offers.length);
+  const status = mapApiRfqStatus(String(row.status ?? ''), effCount);
+  const budgetPerPiece = Number(row.budget_per_piece ?? 0);
+  const budget =
+    Number(row.budget ?? row.total_budget ?? 0) ||
+    (budgetPerPiece > 0 && qty > 0 ? budgetPerPiece * qty : 0);
+  return {
+    id: String(row.rfq_id ?? row.id ?? ''),
+    projectName: String(row.projectName ?? row.title ?? row.project_name ?? ''),
+    category: cat,
+    categoryIcon: String(row.categoryIcon ?? row.category_icon ?? '') || guessIcon(cat),
+    status,
+    offerCount: effCount,
+    budget,
+    quantity: qty,
+    material: String(row.material ?? ''),
+    deadline: String(row.deadline ?? ''),
+    createdAt: String(row.createdAt ?? row.created_at ?? ''),
+    description: String(row.description ?? row.details ?? ''),
+    offers,
+  };
+}
+
 // ─── Data Store ─────────────────────────────────────────────────
 type DataState = {
   currentUser: CurrentUser | null;
@@ -204,6 +358,7 @@ type DataState = {
 type DataContextType = DataState & {
   refetch: () => Promise<void>;
   refetchRfqs: () => Promise<void>;
+  refetchRfq: (id: string) => Promise<void>;
   refetchOrders: () => Promise<void>;
   refetchMessages: () => Promise<void>;
   refetchFactory: (id: string) => Promise<void>;
@@ -246,10 +401,38 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    // Helper: use API data if non-empty array, otherwise fallback to local mockData
-    const arr = <T,>(apiVal: unknown, fb: T[]): T[] => {
-      const a = apiVal as T[] | undefined;
-      return Array.isArray(a) && a.length > 0 ? a : fb;
+    // ── Derive progress from order status when API doesn't provide it ──
+    const guessProgress = (status: string, raw: number): number => {
+      if (raw > 0) return raw;
+      switch (status) {
+        case 'in_production': return 35;
+        case 'shipped': return 85;
+        case 'completed': return 100;
+        default: return 0;
+      }
+    };
+
+    const normOrder = (r: Record<string, unknown>, rfqList?: Rfq[]): Order => {
+      const rfqId = String(r.rfqId ?? r.rfq_id ?? '');
+      const status = String(r.status ?? 'in_production');
+      // Try to derive category from linked RFQ
+      const linkedRfq = rfqList?.find((q) => q.id === rfqId);
+      return {
+        id: String(r.order_id ?? r.id ?? ''),
+        rfqId,
+        factoryId: String(r.factoryId ?? r.factory_id ?? ''),
+        factoryName: String(r.factoryName ?? r.factory_name ?? ''),
+        projectName: String(r.projectName ?? r.project_name ?? r.title ?? ''),
+        category: String(r.category ?? '') || (linkedRfq?.category ?? ''),
+        status,
+        progress: guessProgress(status, Number(r.progress ?? 0)),
+        totalAmount: Number(r.totalAmount ?? r.total_amount ?? 0),
+        depositPaid: Number(r.depositPaid ?? r.deposit_paid ?? r.deposit_amount ?? 0),
+        quantity: Number(r.quantity ?? 0) || (linkedRfq?.quantity ?? 0),
+        createdAt: String(r.createdAt ?? r.created_at ?? ''),
+        estimatedDelivery: String(r.estimatedDelivery ?? r.estimated_delivery ?? ''),
+        timeline: Array.isArray(r.timeline) ? r.timeline as OrderTimeline[] : [],
+      };
     };
 
     try {
@@ -300,17 +483,74 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
       console.info('[DataContext] bootstrap:', bootstrapRes.status, '| notifs:', rawNotifs.length, '| convs:', rawConvs.length);
 
+      // โรงงานจาก bootstrap เท่านั้น — ไม่ fallback เป็น mock เมื่อ bootstrap สำเร็จ (รวมกรณี array ว่าง)
+      const factoryList: Factory[] = (() => {
+        const raw = boot?.factories;
+        if (!Array.isArray(raw)) return [];
+        return (raw as Record<string, unknown>[])
+          .map((row) => normalizeFactoryRow(row))
+          .filter((f) => f.id && f.name);
+      })();
+      const mappedRfqs: Rfq[] = (() => {
+        const raw = boot?.rfqs;
+        if (Array.isArray(raw) && raw.length > 0) {
+          return (raw as Record<string, unknown>[])
+            .map((row) => normalizeRfqRecord(row, factoryList, guessCategoryIcon))
+            .filter((r) => r.id);
+        }
+        return fallbackData.rfqs as Rfq[];
+      })();
+      const mappedOrders: Order[] = (() => {
+        const raw = boot?.orders;
+        if (Array.isArray(raw) && raw.length > 0) {
+          return (raw as Record<string, unknown>[])
+            .map((o) => normOrder(o, mappedRfqs))
+            .filter((o) => o.id);
+        }
+        return fallbackData.orders as Order[];
+      })();
+
       setState({
-        currentUser: (boot?.currentUser as CurrentUser) ?? (fallbackData.currentUser as CurrentUser),
-        categories: arr<Category>(boot?.categories, fallbackData.categories as Category[]),
-        factories: arr<Factory>(boot?.factories, fallbackData.factories as Factory[]),
+        currentUser: boot?.currentUser
+          ? (() => {
+              const u = boot.currentUser;
+              return {
+                id: String(u.id ?? ''),
+                name: String(u.name ?? ''),
+                nameEn: u.nameEn ? String(u.nameEn) : undefined,
+                avatar: String(u.avatar ?? ''),
+                company: String(u.company ?? ''),
+                email: String(u.email ?? ''),
+                phone: String(u.phone ?? ''),
+                walletBalance: Number(u.walletBalance ?? 0),
+                pendingBalance: Number(u.pendingBalance ?? 0),
+                memberSince: String(u.memberSince ?? ''),
+              } as CurrentUser;
+            })()
+          : (fallbackData.currentUser as CurrentUser),
+        categories: (() => {
+          const raw = boot?.categories;
+          if (Array.isArray(raw) && raw.length > 0) {
+            return (raw as Record<string, unknown>[]).map((c) => {
+              const name = String(c.name ?? '');
+              return {
+                id: String(c.id ?? c.category_id ?? ''),
+                name,
+                icon: String(c.icon ?? '') || guessCategoryIcon(name),
+                color: String(c.color ?? '#7C3AED'),
+              } as Category;
+            });
+          }
+          return fallbackData.categories as Category[];
+        })(),
+        factories: factoryList,
         factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
         factoryReviews: fallbackData.factoryReviews as FactoryReview[],
         // showcases/ideas → ไม่โหลดที่นี่ แต่ละหน้าโหลดเอง (explore, factory-ideas)
         ideaArticles: [],
         factoryShowcases: [],
-        rfqs: arr<Rfq>(boot?.rfqs, fallbackData.rfqs as Rfq[]),
-        orders: arr<Order>(boot?.orders, fallbackData.orders as Order[]),
+        rfqs: mappedRfqs,
+        orders: mappedOrders,
         conversations: mappedConvs.length > 0 ? mappedConvs : (fallbackData.conversations as Conversation[]),
         notifications: mappedNotifs.length > 0 ? mappedNotifs : (fallbackData.notifications as Notification[]),
         isLoading: false,
@@ -368,25 +608,97 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, fetchAll]);
 
   // Granular refetch methods for updating specific slices
+  // ── Re-use the same smart normalizers from fetchAll ──
+
   const refetchRfqs = async () => {
     try {
       const data = await frontendApi.getBootstrap();
-      setState((prev) => ({
-        ...prev,
-        rfqs: (Array.isArray(data.rfqs) && data.rfqs.length > 0 ? data.rfqs : prev.rfqs) as Rfq[],
-      }));
+      const raw = data.rfqs;
+      if (Array.isArray(raw) && raw.length > 0) {
+        setState((prev) => {
+          const mapped = (raw as Record<string, unknown>[])
+            .map((row) => normalizeRfqRecord(row, prev.factories, guessCategoryIcon))
+            .filter((r) => r.id);
+          return { ...prev, rfqs: mapped };
+        });
+      }
     } catch (err) {
       console.error('Failed to refetch RFQs:', err);
     }
   };
 
+  const refetchRfq = useCallback(async (id: string) => {
+    try {
+      const payload = (await frontendApi.getRfq(id)) as Record<string, unknown>;
+      let quotes: unknown[] = [];
+      try {
+        const raw = await rfqsApi.listQuotations(id);
+        if (Array.isArray(raw)) quotes = raw;
+        else if (raw && typeof raw === 'object') {
+          const o = raw as Record<string, unknown>;
+          if (Array.isArray(o.data)) quotes = o.data;
+          else if (Array.isArray(o.quotations)) quotes = o.quotations;
+        }
+      } catch {
+        /* บาง environment อาจยังไม่เปิด endpoint นี้ — ใช้แค่ payload จาก /frontend/rfqs */
+      }
+      const merged: Record<string, unknown> =
+        quotes.length > 0 ? { ...payload, quotations: quotes } : payload;
+      setState((prev) => {
+        const mapped = normalizeRfqRecord(merged, prev.factories, guessCategoryIcon);
+        if (!mapped.id) return prev;
+        const exists = prev.rfqs.some((r) => r.id === mapped.id);
+        return {
+          ...prev,
+          rfqs: exists
+            ? prev.rfqs.map((r) => (r.id === mapped.id ? mapped : r))
+            : [mapped, ...prev.rfqs],
+        };
+      });
+    } catch (err) {
+      console.error('Failed to refetch RFQ:', err);
+    }
+  }, []);
+
   const refetchOrders = async () => {
     try {
       const data = await frontendApi.getBootstrap();
-      setState((prev) => ({
-        ...prev,
-        orders: (Array.isArray(data.orders) && data.orders.length > 0 ? data.orders : prev.orders) as Order[],
-      }));
+      const rawOrders = data.orders;
+      const rawRfqs = data.rfqs;
+      if (Array.isArray(rawOrders) && rawOrders.length > 0) {
+        setState((prev) => {
+          const rfqList: Rfq[] = Array.isArray(rawRfqs)
+            ? (rawRfqs as Record<string, unknown>[]).map((r) =>
+                normalizeRfqRecord(r, prev.factories, guessCategoryIcon),
+              )
+            : [];
+          const gp = (s: string, v: number) =>
+            v > 0 ? v : s === 'in_production' ? 35 : s === 'shipped' ? 85 : s === 'completed' ? 100 : 0;
+          const mapO = (r: Record<string, unknown>): Order => {
+            const rfqId = String(r.rfqId ?? r.rfq_id ?? '');
+            const status = String(r.status ?? 'in_production');
+            const linked = rfqList.find((q) => q.id === rfqId);
+            return {
+              id: String(r.order_id ?? r.id ?? ''),
+              rfqId,
+              factoryId: String(r.factoryId ?? r.factory_id ?? ''),
+              factoryName: String(r.factoryName ?? r.factory_name ?? ''),
+              projectName: String(r.projectName ?? r.project_name ?? r.title ?? ''),
+              category: String(r.category ?? '') || (linked?.category ?? ''),
+              status,
+              progress: gp(status, Number(r.progress ?? 0)),
+              totalAmount: Number(r.totalAmount ?? r.total_amount ?? 0),
+              depositPaid: Number(r.depositPaid ?? r.deposit_paid ?? r.deposit_amount ?? 0),
+              quantity: Number(r.quantity ?? 0) || (linked?.quantity ?? 0),
+              createdAt: String(r.createdAt ?? r.created_at ?? ''),
+              estimatedDelivery: String(r.estimatedDelivery ?? r.estimated_delivery ?? ''),
+              timeline: Array.isArray(r.timeline) ? (r.timeline as OrderTimeline[]) : [],
+            };
+          };
+          const mapped = (rawOrders as Record<string, unknown>[]).map(mapO).filter((o) => o.id);
+          return { ...prev, orders: mapped };
+        });
+      }
     } catch (err) {
       console.error('Failed to refetch orders:', err);
     }
@@ -425,6 +737,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         ...state,
         refetch: fetchAll,
         refetchRfqs,
+        refetchRfq,
         refetchOrders,
         refetchMessages,
         refetchFactory,

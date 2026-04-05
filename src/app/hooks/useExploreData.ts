@@ -23,8 +23,13 @@ type NormalisedShowcase = {
 };
 
 const CT_MAP: Record<string, NormalisedShowcase['contentType']> = {
-  PR: 'product', PM: 'promotion', ID: 'idea',
-  product: 'product', promotion: 'promotion', idea: 'idea',
+  PD: 'product',
+  PR: 'product',
+  PM: 'promotion',
+  ID: 'idea',
+  product: 'product',
+  promotion: 'promotion',
+  idea: 'idea',
 };
 
 function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
@@ -42,26 +47,6 @@ function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
     minOrder: Number(r.min_order ?? r.minOrder ?? 0),
     leadTime: String(r.lead_time ?? r.leadTime ?? ''),
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-  };
-}
-
-type NormFactory = {
-  id: string; name: string; image: string; location: string;
-  rating: number; reviews: number; minOrder: number;
-  priceRange: string; verified: boolean;
-};
-
-function normFactory(r: Record<string, unknown>): NormFactory {
-  return {
-    id: String(r.factory_id ?? r.id ?? ''),
-    name: String(r.factory_name ?? r.name ?? ''),
-    image: String(r.image_url ?? r.image ?? r.logo_url ?? ''),
-    location: String(r.province_name ?? r.location ?? ''),
-    rating: Number(r.avg_rating ?? r.rating ?? 0),
-    reviews: Number(r.review_count ?? r.reviews ?? 0),
-    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
-    priceRange: String(r.price_range ?? r.priceRange ?? ''),
-    verified: Boolean(r.is_verified ?? r.verified ?? false),
   };
 }
 
@@ -106,16 +91,21 @@ export function useExploreData(options?: UseExploreDataOptions) {
   const [searchText, setSearchText] = React.useState('');
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
 
-  const [showcases, setShowcases] = React.useState<NormalisedShowcase[]>([]);
-  const [factories, setFactories] = React.useState<NormFactory[]>([]);
+  /** รวม PD+PM+ID สำหรับ prop factoryShowcases (เผื่อใช้ในอนาคต) */
+  const [pdShowcases, setPdShowcases] = React.useState<NormalisedShowcase[]>([]);
+  const [pmShowcases, setPmShowcases] = React.useState<NormalisedShowcase[]>([]);
+  const [idShowcases, setIdShowcases] = React.useState<NormalisedShowcase[]>([]);
   const [promoSlides, setPromoSlides] = React.useState<NormSlide[]>([]);
   const [promoCodes, setPromoCodes] = React.useState<NormSlide[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (!enablePageApis) {
-      setShowcases([]); setFactories([]);
-      setPromoSlides([]); setPromoCodes([]);
+      setPdShowcases([]);
+      setPmShowcases([]);
+      setIdShowcases([]);
+      setPromoSlides([]);
+      setPromoCodes([]);
       return;
     }
 
@@ -123,31 +113,53 @@ export function useExploreData(options?: UseExploreDataOptions) {
     setIsLoading(true);
 
     async function fetchAll() {
-      // 1) Showcases → /showcases (PR=สินค้า, PM=โปรโมชัน, ID=ไอเดียบทความ)
-      const p1 = showcasesApi.list().then((raw) => {
-        if (cancelled) return;
+      const mapRows = (raw: unknown) => {
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        setShowcases(arr.map(normShowcase).filter((s) => s.id && s.title));
-      }).catch(() => {});
+        return arr.map(normShowcase).filter((s) => s.id && s.title);
+      };
 
-      // 2) Explore aggregate → factories, promo_codes
-      //    (idea_articles ไม่ใช้จากที่นี่ เพราะมาจาก factory_showcases.content_type='ID' แล้ว)
-      const p2 = frontendApi.getExplore().then((data) => {
-        if (cancelled) return;
-        const f = (Array.isArray(data.factories) ? data.factories : []) as Record<string, unknown>[];
-        setFactories(f.map(normFactory).filter((v) => v.id && v.name));
-        const c = (Array.isArray(data.promo_codes) ? data.promo_codes : []) as Record<string, unknown>[];
-        setPromoCodes(c.map(normSlide).filter((v) => v.id && v.title));
-      }).catch(() => {
-        // fallback: try individual factory endpoint
-        if (!cancelled) {
-          frontendApi.getFactories().then((raw) => {
-            if (cancelled) return;
-            const f = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-            setFactories(f.map(normFactory).filter((v) => v.id && v.name));
-          }).catch(() => {});
-        }
-      });
+      // สินค้าแนะนำ → GET /showcases?type=PD
+      const pPd = showcasesApi
+        .list('PD')
+        .then((raw) => {
+          if (cancelled) return;
+          setPdShowcases(mapRows(raw));
+        })
+        .catch(() => {
+          if (!cancelled) setPdShowcases([]);
+        });
+
+      // โปรโมชันแนะนำ → GET /showcases?type=PM
+      const pPm = showcasesApi
+        .list('PM')
+        .then((raw) => {
+          if (cancelled) return;
+          setPmShowcases(mapRows(raw));
+        })
+        .catch(() => {
+          if (!cancelled) setPmShowcases([]);
+        });
+
+      // บทความ idea → GET /showcases?type=ID
+      const pId = showcasesApi
+        .list('ID')
+        .then((raw) => {
+          if (cancelled) return;
+          setIdShowcases(mapRows(raw));
+        })
+        .catch(() => {
+          if (!cancelled) setIdShowcases([]);
+        });
+
+      // 2) Explore aggregate → promo_codes เท่านั้น (การ์ดโรงงานมาจาก GET /frontend/bootstrap ใน DataContext)
+      const p2 = frontendApi
+        .getExplore()
+        .then((data) => {
+          if (cancelled) return;
+          const c = (Array.isArray(data.promo_codes) ? data.promo_codes : []) as Record<string, unknown>[];
+          setPromoCodes(c.map(normSlide).filter((v) => v.id && v.title));
+        })
+        .catch(() => {});
 
       // 3) Promo slides → /promo-slides
       const p3 = promoSlidesApi.list().then((raw) => {
@@ -156,7 +168,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
         setPromoSlides(arr.map(normSlide).filter((s) => s.id && s.title));
       }).catch(() => {});
 
-      await Promise.allSettled([p1, p2, p3]);
+      await Promise.allSettled([pPd, pPm, pId, p2, p3]);
       if (!cancelled) setIsLoading(false);
     }
 
@@ -164,30 +176,32 @@ export function useExploreData(options?: UseExploreDataOptions) {
     return () => { cancelled = true; };
   }, [enablePageApis]);
 
-  const productShowcases = React.useMemo(
-    () => showcases.filter((s) => s.contentType === 'product'),
-    [showcases],
-  );
+  const productShowcases = React.useMemo(() => pdShowcases, [pdShowcases]);
 
-  const promotionShowcases = React.useMemo(
-    () => showcases.filter((s) => s.contentType === 'promotion'),
-    [showcases],
-  );
+  const promotionShowcases = React.useMemo(() => pmShowcases, [pmShowcases]);
 
-  // ไอเดียบทความ → factory_showcases.content_type = 'ID'
   const ideaArticles = React.useMemo(
-    () => showcases
-      .filter((s) => s.contentType === 'idea')
-      .map((s): NormArticle => ({
-        id: s.id,
-        title: s.title,
-        excerpt: s.excerpt,
-        image: s.image,
-        tag: s.category,
-        factoryName: s.factoryName,
-      })),
-    [showcases],
+    () =>
+      idShowcases.map(
+        (s): NormArticle => ({
+          id: s.id,
+          title: s.title,
+          excerpt: s.excerpt,
+          image: s.image,
+          tag: s.category,
+          factoryName: s.factoryName,
+        }),
+      ),
+    [idShowcases],
   );
+
+  const showcases = React.useMemo(() => {
+    const byId = new Map<string, NormalisedShowcase>();
+    for (const s of [...pdShowcases, ...pmShowcases, ...idShowcases]) {
+      if (!byId.has(s.id)) byId.set(s.id, s);
+    }
+    return [...byId.values()];
+  }, [pdShowcases, pmShowcases, idShowcases]);
 
   const allPromoSlides = React.useMemo(() => {
     const merged = [...promoSlides, ...promoCodes];
@@ -203,8 +217,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
     searchText, setSearchText,
     copiedId, setCopiedId,
 
-    // API-only data
-    factories,
+    // API-only data (โรงงานบน Explore → useData().factories จาก bootstrap)
     ideaArticles,
     productShowcases,
     promotionShowcases,

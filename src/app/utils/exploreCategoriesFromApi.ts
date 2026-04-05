@@ -104,7 +104,49 @@ export type FetchExploreCategoriesResult = {
   firstError: Error | null;
 };
 
-/** GET /categories + GET /master/product-categories — ใช้ร่วมกันทั้ง desktop/mobile */
+/** หน้า Explore — เฉพาะ GET /categories (ไม่เรียก /master/product-categories) */
+export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCategoriesResult> {
+  let res: PromiseSettledResult<unknown>;
+  try {
+    const value = await categoriesApi.list();
+    res = { status: 'fulfilled', value };
+  } catch (reason) {
+    res = { status: 'rejected', reason };
+  }
+  const fromCat = res.status === 'fulfilled' ? parseCategoriesResponse(res.value) : [];
+  const merged = fromCat;
+
+  if (import.meta.env.DEV) {
+    const verbose =
+      typeof localStorage !== 'undefined' && localStorage.getItem('VERBOSE_API_LOG') === '1';
+    if (verbose) {
+      console.debug('[ExploreCategories API] categories only', {
+        categories: res.status === 'fulfilled' ? res.value : res,
+        merged,
+      });
+    } else {
+      console.debug('[ExploreCategories API]', { mergedCount: merged.length, source: 'GET /categories' });
+    }
+  }
+
+  const bothFailed = res.status === 'rejected';
+  const firstError =
+    res.status === 'rejected'
+      ? res.reason instanceof Error
+        ? res.reason
+        : new Error(String(res.reason))
+      : null;
+
+  return {
+    merged,
+    bothFailed,
+    catRejected: res.status === 'rejected',
+    masterRejected: false,
+    firstError,
+  };
+}
+
+/** GET /categories + GET /master/product-categories — ใช้ที่ factory-ideas ฯลฯ */
 export async function fetchExploreCategoriesMerged(): Promise<FetchExploreCategoriesResult> {
   const [catRes, masterRes] = await Promise.allSettled([
     categoriesApi.list(),

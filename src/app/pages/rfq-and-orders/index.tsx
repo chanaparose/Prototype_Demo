@@ -161,16 +161,7 @@ export function RfqAndOrders() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              to="/rfqs"
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-white/95 backdrop-blur-sm transition-colors hover:bg-white"
-              style={{
-                border: `1px solid ${BORDER_WARM}`,
-                color: DEEP_PURPLE,
-              }}
-            >
-              ไปหน้า RFQ
-            </Link>
+            
             <Link
               to="/create-rfq"
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 shadow-md"

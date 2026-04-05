@@ -32,6 +32,7 @@ const COLORS = {
   purpleLight: '#9D77B2',
   orange: '#E38844',
   blue: '#2E2252',
+  productBadgeBlue: '#2563EB',
   white: '#FFFFFF',
   gray: '#F5F5F5',
   lightPurpleBg: '#F8F6FA',
@@ -56,9 +57,9 @@ const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
 };
 
 const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
-  product: COLORS.orange,
-  promotion: COLORS.purple,
-  idea: COLORS.blue,
+  product: COLORS.productBadgeBlue,
+  promotion: COLORS.orange,
+  idea: COLORS.purple,
   factory: COLORS.teal,
 };
 
@@ -218,9 +219,10 @@ export function FactoryIdeasDesktop() {
   const totalCount = isFactoryTab ? visibleFactories.length : visibleItems.length + (selectedType === 'all' ? visibleFactories.length : 0);
 
   const getDetailPath = (type: string, id: string) => {
-    if (type === 'product') return `/factory-ideas/products/${id}`;
-    if (type === 'promotion') return `/factory-ideas/promotions/${id}`;
-    return `/factory-ideas/ideas/${id}`;
+    const q = encodeURIComponent(id);
+    if (type === 'product') return `/product-detail?showcase_id=${q}`;
+    if (type === 'promotion') return `/promotion-detail?showcase_id=${q}`;
+    return `/idea-detail?showcase_id=${q}`;
   };
 
   const selectedCategoryName = factoryIdeasSelectedCategoryLabel(

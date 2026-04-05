@@ -18,8 +18,17 @@ export function formatDate(dateStr: string): string {
 }
 
 export function getRfqFilterId(status: string): RfqFilterId | null {
-  if (status === 'pending') return 'pending';
-  if (status === 'offers_received' || status === 'reviewing') return 'has_quote';
-  if (status === 'cancelled' || status === 'expired') return 'cancelled_expired';
+  const u = status.toUpperCase();
+  if (u === 'OP' || status === 'pending') return 'pending';
+  if (
+    u === 'OFFERS_RECEIVED' ||
+    u === 'REVIEWING' ||
+    status === 'offers_received' ||
+    status === 'reviewing'
+  ) {
+    return 'has_quote';
+  }
+  if (u === 'CC' || status === 'cancelled' || status === 'expired') return 'cancelled_expired';
+  if (u === 'CL' || status === 'completed') return null;
   return null;
 }

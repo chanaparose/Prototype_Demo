@@ -1,17 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, CheckCircle2, FileText, Lightbulb } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileText, Lightbulb, Loader2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import {
   CreateRfqStep1,
   CreateRfqStep2,
   CreateRfqStep3Summary,
 } from '../../components/features/create-rfq';
-import type { CreateRfqForm } from '../../components/features/create-rfq';
 import type { useCreateRfqState } from '../../hooks/useCreateRfqState';
-import type { Category } from '../../contexts/DataContext';
-
-type CategoryItem = Category;
 
 type CreateRfqState = ReturnType<typeof useCreateRfqState>;
 type CreateRfqDesktopProps = { state: CreateRfqState };
@@ -21,15 +17,24 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
     STEPS,
     currentStep,
     form,
-    displayForm,
     displayCategoryName,
+    displaySubCategoryName,
     categories,
-    factoryTypes,
-    matchedFactories,
+    subCategories,
+    subCategoriesLoading,
+    units,
+    shippingMethods,
+    addresses,
     updateForm,
+    canProceed,
+    submitting,
+    submitError,
     handleNext,
     handleBack,
   } = state;
+
+  const unitName = units.find((u) => u.id === form.unitId)?.name ?? 'หน่วย';
+  const shippingName = shippingMethods.find((m) => m.id === form.shippingMethodId)?.name;
 
   return (
     <div className="hidden lg:flex min-h-[calc(100vh-4rem)] flex-col bg-slate-50">
@@ -88,7 +93,7 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
 
         {/* ── Left: form ── */}
         <div className="flex-1 min-w-0 flex flex-col gap-5 max-w-2xl">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-7 flex-1 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-8 py-7 flex-1 overflow-auto">
             <AnimatePresence mode="wait">
               {currentStep === 1 && (
                 <motion.div key="step1"
@@ -96,9 +101,10 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
                   exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.2 }}
                   className="flex flex-col gap-6">
                   <CreateRfqStep1
-                    form={form as CreateRfqForm}
-                    categories={categories as CategoryItem[]}
-                    factoryTypes={factoryTypes}
+                    form={form}
+                    categories={categories}
+                    subCategories={subCategories}
+                    subCategoriesLoading={subCategoriesLoading}
                     onUpdate={updateForm}
                   />
                 </motion.div>
@@ -108,7 +114,11 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
                   initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.2 }}
                   className="flex flex-col gap-6">
-                  <CreateRfqStep2 form={form as CreateRfqForm} onUpdate={updateForm} />
+                  <CreateRfqStep2
+                    form={form}
+                    units={units}
+                    onUpdate={updateForm}
+                  />
                 </motion.div>
               )}
               {currentStep === 3 && (
@@ -117,9 +127,14 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
                   exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.2 }}
                   className="flex flex-col gap-6">
                   <CreateRfqStep3Summary
-                    form={displayForm as CreateRfqForm}
+                    form={form}
                     categoryName={displayCategoryName}
-                    matchedFactories={matchedFactories}
+                    subCategoryName={displaySubCategoryName}
+                    categoryId={form.categoryId}
+                    units={units}
+                    addresses={addresses}
+                    shippingMethods={shippingMethods}
+                    onUpdate={updateForm}
                   />
                 </motion.div>
               )}
@@ -132,12 +147,22 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
               className="inline-flex items-center gap-1.5 text-[13px] text-slate-500 hover:text-slate-800 transition-colors font-medium px-4 py-2.5 rounded-xl hover:bg-slate-100">
               <ArrowLeft size={15} /> ย้อนกลับ
             </button>
+            {submitError && (
+              <p className="text-[12px] text-red-500 font-medium">{submitError}</p>
+            )}
             <motion.button type="button"
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: canProceed && !submitting ? 1.02 : 1 }}
+              whileTap={{ scale: canProceed && !submitting ? 0.98 : 1 }}
               onClick={handleNext}
-              className="px-8 py-3 rounded-2xl text-white font-bold text-[14px] shadow-lg shadow-violet-200/60 flex items-center gap-2"
+              disabled={!canProceed || submitting}
+              className={cn(
+                'px-8 py-3 rounded-2xl text-white font-bold text-[14px] shadow-lg flex items-center gap-2 transition-all',
+                canProceed && !submitting ? 'shadow-violet-200/60' : 'opacity-50 cursor-not-allowed',
+              )}
               style={{ background: 'linear-gradient(135deg, #5B21B6, #6C47FF)' }}>
-              {currentStep === 3 ? (
+              {submitting ? (
+                <><Loader2 size={16} className="animate-spin" /> กำลังส่งคำขอ...</>
+              ) : currentStep === 3 ? (
                 <><FileText size={16} /> ส่งคำขอใบเสนอราคา</>
               ) : (
                 <>ถัดไป →</>
@@ -155,16 +180,19 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
               สรุปคำขอ
             </p>
             <h2 className="text-[14px] font-bold text-slate-900 mb-4 leading-snug">
-              {displayForm.projectName || (
-                <span className="text-slate-400 font-normal">ยังไม่ได้ระบุชื่อโปรเจกต์</span>
+              {form.title || (
+                <span className="text-slate-400 font-normal">ยังไม่ได้ระบุชื่อสินค้า</span>
               )}
             </h2>
             <div className="space-y-2.5">
               {[
-                { label: 'หมวดหมู่',           value: displayCategoryName },
-                { label: 'ปริมาณโดยประมาณ',   value: displayForm.quantity ? `${displayForm.quantity} หน่วย` : '-' },
-                { label: 'งบประมาณ',            value: displayForm.budget ? `฿${Number(displayForm.budget).toLocaleString()}` : '-' },
-                { label: 'กำหนดส่ง',            value: displayForm.deadline || '-' },
+                { label: 'หมวดหมู่', value: displayCategoryName },
+                { label: 'ประเภทย่อย', value: displaySubCategoryName },
+                { label: 'จำนวน', value: form.quantity ? `${Number(form.quantity).toLocaleString('th-TH')} ${unitName}` : '-' },
+                { label: 'งบ/ชิ้น', value: form.budgetPerPiece ? `฿${Number(form.budgetPerPiece).toLocaleString('th-TH')}` : '-' },
+                { label: 'งบรวมประมาณ', value: form.quantity && form.budgetPerPiece ? `฿${(Number(form.quantity) * Number(form.budgetPerPiece)).toLocaleString('th-TH')}` : '-' },
+                { label: 'รูปแนบ', value: form.imageUrls.length > 0 ? `${form.imageUrls.length} รูป` : '-' },
+                { label: 'วิธีจัดส่ง', value: shippingName ?? '-' },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                   <span className="text-[11px] text-slate-400">{row.label}</span>
@@ -230,9 +258,10 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
               <p className="text-[12px] font-bold text-violet-700">Tips</p>
             </div>
             <ul className="space-y-1.5 text-[11px] text-slate-600 leading-relaxed">
-              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> ระบุปริมาณและสเปกให้ชัดเจน</li>
-              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> แนบรายละเอียดวัสดุหรือมาตรฐานที่ต้องการ</li>
-              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> ระบุ timeline และข้อจำกัดด้านงบประมาณ</li>
+              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> เลือกประเภทย่อยให้ตรง RFQ จะถูกส่งไปถึงโรงงานที่เชี่ยวชาญ</li>
+              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> ระบุจำนวนและหน่วยให้ชัดเจน</li>
+              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> ระบุงบประมาณต่อชิ้นเพื่อให้โรงงานเสนอราคาได้แม่นยำ</li>
+              <li className="flex items-start gap-1.5"><span className="text-violet-400 mt-0.5">·</span> แนบรูปตัวอย่างหรือรายละเอียดวัสดุ/มาตรฐาน</li>
             </ul>
           </div>
         </aside>

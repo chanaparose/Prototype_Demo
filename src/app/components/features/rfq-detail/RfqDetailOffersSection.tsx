@@ -9,8 +9,11 @@ import {
   MessageCircle,
   XCircle,
   AlertCircle,
+  ChevronDown,
 } from 'lucide-react';
-import { quotationsApi } from '../../../services/api';
+import { quotationsApi, ordersApi } from '../../../services/api';
+import type { Quotation } from './QuotationBOQCard';
+import { QuotationBOQDetailsPanel, quotationFromOfferSource } from './QuotationBOQCard';
 
 export type OfferItem = {
   id: string;
@@ -24,6 +27,10 @@ export type OfferItem = {
   verified?: boolean;
   recommended?: boolean;
   aiReason?: string;
+  /** PD | AC | RJ จากตาราง quotations */
+  quoteStatus?: string;
+  /** รายละเอียด BOQ จาก API — รวมกับค่าที่คำนวณจากราคา/จำนวน RFQ */
+  quotationDetail?: Partial<Quotation>;
 };
 
 export type OrderForRfq = {
@@ -41,7 +48,10 @@ type RfqDetailOffersSectionProps = {
   selectedOfferId: string | null;
   onSelectOffer: (id: string | null) => void;
   onNavigateToMessages: () => void;
-  onOfferAccepted?: (offerId: string) => void;
+  /** หลัง PATCH ใบเสนอราคา + พยายามสร้าง Order (ตาม API_SPEC POST /orders/) */
+  onOfferFlowComplete?: (result: { quoteId: string; orderId?: string }) => void;
+  /** จำนวนชิ้นจาก RFQ — ใช้ประมาณราคา/ชิ้นใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
+  rfqQuantity?: number;
 };
 
 export function RfqDetailOffersSection({
@@ -52,19 +62,31 @@ export function RfqDetailOffersSection({
   selectedOfferId,
   onSelectOffer,
   onNavigateToMessages,
-  onOfferAccepted,
+  onOfferFlowComplete,
+  rfqQuantity = 0,
 }: RfqDetailOffersSectionProps) {
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const [flowError, setFlowError] = useState<string | null>(null);
+  const [expandedBoqOfferId, setExpandedBoqOfferId] = useState<string | null>(null);
 
   const handleAcceptOffer = async (offerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (acceptingId) return;
     setAcceptingId(offerId);
+    setFlowError(null);
     try {
       await quotationsApi.updateStatus(offerId, 'AC');
-      onOfferAccepted?.(offerId);
-    } catch {
-      // silently fail; user can retry
+      let orderId: string | undefined;
+      try {
+        const created = (await ordersApi.create(Number(offerId))) as Record<string, unknown>;
+        const oid = created.order_id ?? created.id;
+        if (oid != null && String(oid)) orderId = String(oid);
+      } catch {
+        /* บาง backend สร้าง order ในทรานแซกชันเดียวกับ accept แล้ว — ยัง refetch ต่อได้ */
+      }
+      onOfferFlowComplete?.({ quoteId: offerId, orderId });
+    } catch (err) {
+      setFlowError(err instanceof Error ? err.message : 'ไม่สามารถยอมรับข้อเสนอได้');
     } finally {
       setAcceptingId(null);
     }
@@ -273,11 +295,34 @@ export function RfqDetailOffersSection({
           <p className="text-sm text-[#2E2252] mb-3" style={{ fontWeight: 700 }}>
             เปรียบเทียบใบเสนอราคา
           </p>
+          {flowError && (
+            <p className="text-xs text-red-600 mb-2 px-1" role="alert">
+              {flowError}
+            </p>
+          )}
           <div className="space-y-3">
-            {offers.map((offer) => (
+            {offers.map((offer) => {
+              const qSt = (offer.quoteStatus ?? 'PD').toUpperCase();
+              const isAccepted = qSt === 'AC';
+              const isRejected = qSt === 'RJ';
+              const boqOpen = expandedBoqOfferId === offer.id;
+              return (
               <div
                 key={offer.id}
-                onClick={() => onSelectOffer(selectedOfferId === offer.id ? null : offer.id)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={boqOpen}
+                onClick={() => {
+                  setExpandedBoqOfferId((prev) => (prev === offer.id ? null : offer.id));
+                  onSelectOffer(offer.id);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setExpandedBoqOfferId((prev) => (prev === offer.id ? null : offer.id));
+                    onSelectOffer(offer.id);
+                  }
+                }}
                 className="bg-white rounded-2xl p-4 shadow-sm border-2 cursor-pointer transition-all"
                 style={{
                   borderColor: offer.recommended
@@ -313,18 +358,25 @@ export function RfqDetailOffersSection({
                       </div>
                     </div>
                   </div>
-                  {offer.recommended && (
-                    <span
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px]"
-                      style={{
-                        background: '#F8F6FA',
-                        color: '#7A4B94',
-                        fontWeight: 600,
-                      }}
-                    >
-                      <Award size={10} /> แนะนำ
-                    </span>
-                  )}
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {offer.recommended && (
+                      <span
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px]"
+                        style={{
+                          background: '#F8F6FA',
+                          color: '#7A4B94',
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Award size={10} /> แนะนำ
+                      </span>
+                    )}
+                    <ChevronDown
+                      size={20}
+                      className={`text-gray-400 transition-transform duration-300 ${boqOpen ? 'rotate-180' : ''}`}
+                      aria-hidden
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
@@ -350,6 +402,28 @@ export function RfqDetailOffersSection({
                   </div>
                 </div>
                 <p className="text-[10px] text-gray-500 mb-3">{offer.aiReason}</p>
+                {(isAccepted || isRejected) && (
+                  <p
+                    className="text-[10px] font-semibold mb-2"
+                    style={{ color: isAccepted ? '#059669' : '#64748B' }}
+                  >
+                    {isAccepted ? 'ยอมรับข้อเสนอแล้ว' : 'ไม่ได้รับการเลือก (ปฏิเสธ)'}
+                  </p>
+                )}
+                <p className="text-[10px] text-gray-400 mb-2">
+                  แตะการ์ดเพื่อดูรายละเอียด BOQ
+                </p>
+                <div
+                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${boqOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="overflow-hidden min-h-0">
+                    <QuotationBOQDetailsPanel
+                      quotation={quotationFromOfferSource(offer, rfqQuantity)}
+                      className="-mx-4 border-gray-100 px-4 pb-3 pt-2"
+                    />
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -369,15 +443,22 @@ export function RfqDetailOffersSection({
                   <button
                     type="button"
                     onClick={(e) => handleAcceptOffer(offer.id, e)}
-                    disabled={!!acceptingId}
+                    disabled={!!acceptingId || isAccepted || isRejected}
                     className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
                     style={{ background: '#7A4B94', fontWeight: 600 }}
                   >
-                    {acceptingId === offer.id ? 'กำลังส่ง...' : 'เลือกโรงงานนี้'}
+                    {acceptingId === offer.id
+                      ? 'กำลังส่ง...'
+                      : isAccepted
+                        ? 'ยอมรับแล้ว'
+                        : isRejected
+                          ? 'ปิดใบนี้แล้ว'
+                          : 'ยอมรับข้อเสนอ'}
                   </button>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         </div>
       </>

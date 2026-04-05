@@ -2,7 +2,7 @@ import { createBrowserRouter, redirect } from 'react-router';
 import { Layout } from './components/layout';
 import { Explore } from './pages/explore';
 import { FactoryIdeas } from './pages/factory-ideas';
-import { FactoryProfile } from './pages/factory-profile';
+import { FactoryDetail } from './pages/factories/FactoryDetail';
 import { ProductDetail } from './pages/product-detail';
 import { PromotionDetail } from './pages/promotion-detail';
 import { IdeaDetail } from './pages/idea-detail';
@@ -31,8 +31,11 @@ export const router = createBrowserRouter([
         Component: Layout,
         children: [
           { index: true, Component: Explore },
+          { path: 'product-detail', Component: ProductDetail },
+          { path: 'promotion-detail', Component: PromotionDetail },
+          { path: 'idea-detail', Component: IdeaDetail },
           { path: 'factory-ideas', Component: FactoryIdeas },
-          { path: 'factories/:id', Component: FactoryProfile },
+          { path: 'factories/:id', Component: FactoryDetail },
           { path: 'factories', Component: FactoriesList },
           { path: 'factory-ideas/products/:id', Component: ProductDetail },
           { path: 'factory-ideas/promotions/:id', Component: PromotionDetail },

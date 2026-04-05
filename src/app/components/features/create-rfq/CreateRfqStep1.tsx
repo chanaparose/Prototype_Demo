@@ -1,96 +1,170 @@
+/**
+ * Step 1: สินค้าของคุณ
+ *
+ * 1) เลือกหมวดหมู่ (Visual Cards)
+ * 2) เลือกประเภทย่อย (Radio buttons — จาก lbi_sub_categories)
+ * 3) ชื่อสินค้า
+ * 4) รายละเอียด (free text + smart placeholder ตาม sub-category)
+ */
 import React from 'react';
-import { ChevronDown, FileText, Factory } from 'lucide-react';
-import type { CreateRfqForm } from './types';
+import { FileText, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
+import type { CreateRfqForm, SubCategory } from './types';
+import { CATEGORY_ICONS, SUB_CATEGORY_PLACEHOLDERS, DEFAULT_PLACEHOLDER } from './types';
 
 type Category = { id: string; name: string };
 
 type CreateRfqStep1Props = {
   form: CreateRfqForm;
   categories: Category[];
-  factoryTypes: string[];
-  onUpdate: (key: keyof CreateRfqForm, value: string) => void;
+  subCategories: SubCategory[];
+  subCategoriesLoading: boolean;
+  onUpdate: <K extends keyof CreateRfqForm>(key: K, value: CreateRfqForm[K]) => void;
 };
 
 export function CreateRfqStep1({
   form,
   categories,
-  factoryTypes,
+  subCategories,
+  subCategoriesLoading,
   onUpdate,
 }: CreateRfqStep1Props) {
+  // Smart placeholder based on selected sub-category name
+  const selectedSub = subCategories.find((s) => s.id === form.subCategoryId);
+  const placeholder = selectedSub
+    ? SUB_CATEGORY_PLACEHOLDERS[selectedSub.name] ?? DEFAULT_PLACEHOLDER
+    : DEFAULT_PLACEHOLDER;
+
   return (
-    <div className="bg-white p-5 rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
-          หมวดหมู่สินค้า
+    <div className="flex flex-col gap-5">
+
+      {/* ── 1. หมวดหมู่สินค้า (Visual Cards) ── */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <label className="text-[13px] font-bold text-gray-700 mb-3 block">
+          หมวดหมู่สินค้าที่ต้องการผลิต <span className="text-red-400">*</span>
         </label>
-        <div className="relative">
-          <select
-            value={form.categoryId}
-            onChange={(e) => onUpdate('categoryId', e.target.value)}
-            className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-[15px] rounded-2xl p-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium"
-          >
-            <option value="">เลือกหมวดหมู่</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            size={20}
-          />
+        <div className="grid grid-cols-3 gap-2">
+          {categories.map((cat) => {
+            const active = form.categoryId === cat.id;
+            const icon = CATEGORY_ICONS[cat.id] ?? '📁';
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  if (form.categoryId !== cat.id) {
+                    onUpdate('categoryId', cat.id);
+                    onUpdate('subCategoryId', ''); // reset sub-category
+                  }
+                }}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
+                  active
+                    ? 'border-violet-500 bg-violet-50 shadow-sm'
+                    : 'border-gray-100 bg-gray-50/50 active:scale-[0.97]'
+                }`}
+              >
+                <span className="text-2xl leading-none">{icon}</span>
+                <span
+                  className={`text-[10px] font-semibold leading-tight line-clamp-2 ${
+                    active ? 'text-violet-700' : 'text-gray-600'
+                  }`}
+                >
+                  {cat.name}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-          <Factory size={14} className="text-[#6C47FF]" /> ประเภทโรงงาน
-        </label>
-        <div className="relative">
-          <select
-            value={form.factoryType}
-            onChange={(e) => onUpdate('factoryType', e.target.value)}
-            className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-[15px] rounded-2xl p-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium"
-          >
-            <option value="">เลือกประเภทโรงงาน</option>
-            {factoryTypes.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            size={20}
-          />
+
+      {/* ── 2. ประเภทย่อย (Radio buttons — จาก lbi_sub_categories) ── */}
+      {form.categoryId && (
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+          <label className="text-[13px] font-bold text-gray-700 mb-1 flex items-center gap-1.5">
+            <ChevronRight size={14} className="text-violet-500" />
+            ประเภทย่อย <span className="text-red-400">*</span>
+          </label>
+          <p className="text-[10px] text-gray-400 mb-3">
+            เลือกให้ตรงเพื่อส่ง RFQ ไปถึงโรงงานที่เชี่ยวชาญ
+          </p>
+
+          {subCategoriesLoading ? (
+            <div className="flex items-center justify-center py-6 gap-2 text-gray-400">
+              <Loader2 size={16} className="animate-spin" />
+              <span className="text-[12px]">กำลังโหลด...</span>
+            </div>
+          ) : subCategories.length === 0 ? (
+            <p className="text-[12px] text-gray-400 py-4 text-center">ไม่พบประเภทย่อย</p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {subCategories.map((sub) => {
+                const active = form.subCategoryId === sub.id;
+                return (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => onUpdate('subCategoryId', sub.id)}
+                    className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                      active
+                        ? 'border-violet-500 bg-violet-50'
+                        : 'border-gray-100 bg-gray-50/50 active:scale-[0.98]'
+                    }`}
+                  >
+                    {/* Radio dot */}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      active ? 'border-violet-500' : 'border-gray-300'
+                    }`}>
+                      {active && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+                      )}
+                    </div>
+                    <span className={`text-[13px] font-medium ${
+                      active ? 'text-violet-800' : 'text-gray-600'
+                    }`}>
+                      {sub.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
-        <p className="text-xs text-slate-500">
-          เลือกประเภทโรงงานเพื่อช่วยจับคู่กับโรงงานในระบบ
-        </p>
-      </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
-          <FileText size={14} className="text-[#6C47FF]" /> ชื่อโปรเจกต์ / สินค้า
+      )}
+
+      {/* ── 3. ชื่อสินค้า / โปรเจกต์ ── */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <label className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+          <FileText size={14} className="text-violet-500" />
+          ชื่อสินค้าที่ต้องการผลิต <span className="text-red-400">*</span>
         </label>
         <input
           type="text"
-          value={form.projectName}
-          onChange={(e) => onUpdate('projectName', e.target.value)}
-          placeholder="เช่น อาหารสัตว์แห้งสูตรลูกสุนัข, เสื้อผ้าสัตว์เลี้ยงชุดฤดูร้อน"
-          className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-[15px] rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium placeholder:text-slate-400"
+          maxLength={100}
+          value={form.title}
+          onChange={(e) => onUpdate('title', e.target.value)}
+          placeholder="เช่น อาหารแมวเกรดพรีเมียม สูตรลูกแมว"
+          className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-[14px] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 placeholder:text-gray-400"
         />
+        <p className="text-[10px] text-gray-400 mt-1.5 text-right">
+          {form.title.length}/100
+        </p>
       </div>
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+
+      {/* ── 4. รายละเอียดเพิ่มเติม (free text + smart placeholder) ── */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <label className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+          <Sparkles size={14} className="text-amber-500" />
           รายละเอียดเพิ่มเติม
         </label>
         <textarea
-          value={form.description}
-          onChange={(e) => onUpdate('description', e.target.value)}
-          placeholder="อธิบายความต้องการ เช่น ขนาด สี วัสดุ จำนวนขั้นต่ำ มาตรฐานที่ต้องการ (อย., GMP ฯลฯ)"
-          rows={4}
-          className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-[15px] rounded-2xl p-4 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30 focus:border-[#6C47FF] font-medium placeholder:text-slate-400 resize-none"
+          value={form.details}
+          onChange={(e) => onUpdate('details', e.target.value)}
+          placeholder={placeholder}
+          rows={5}
+          className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-[14px] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 placeholder:text-gray-400 resize-none"
         />
+        <p className="text-[10px] text-gray-400 mt-1.5">
+          ยิ่งให้รายละเอียดมาก โรงงานยิ่งเสนอราคาได้แม่นยำ
+        </p>
       </div>
     </div>
   );

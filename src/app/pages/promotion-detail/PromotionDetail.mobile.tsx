@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate, useParams } from 'react-router';
+import React, { useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -12,8 +12,8 @@ import {
   Star,
   Heart,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
+import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -27,28 +27,34 @@ function formatThaiDate(date: string): string {
 
 export function PromotionDetailMobile() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const data = useData();
+  const { item, loading, factory, factoryConversation, resolvedId } = usePromotionDetailShowcase();
 
-  const item = data.factoryShowcases.find(
-    (entry) => entry.id === id && entry.contentType === 'promotion',
-  );
-  const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
-  const factoryConversation = item
-    ? data.conversations.find((conversation) => conversation.factoryId === item.factoryId)
-    : null;
+  const handleBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
 
-  if (!item) {
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8">
+        <span
+          className="h-9 w-9 animate-spin rounded-full border-2 border-violet-600 border-t-transparent"
+          aria-hidden
+        />
+      </div>
+    );
+  }
+
+  if (!item || !resolvedId) {
     return (
       <div className="px-4 pt-5 pb-20">
         <button
           type="button"
-          onClick={() => navigate('/factory-ideas')}
+          onClick={handleBack}
           className="mb-4 inline-flex items-center gap-1 text-sm"
           style={{ color: '#7A4B94' }}
         >
           <ArrowLeft className="w-4 h-4" />
-          กลับหน้าแนะนำโรงงาน
+          กลับ
         </button>
         <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-sm text-gray-500 shadow-sm">
           ไม่พบข้อมูลโปรโมชัน
@@ -69,7 +75,7 @@ export function PromotionDetailMobile() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <button
           type="button"
-          onClick={() => navigate('/factory-ideas')}
+          onClick={handleBack}
           className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 text-gray-700" />

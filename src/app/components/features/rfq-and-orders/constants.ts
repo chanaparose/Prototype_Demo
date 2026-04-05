@@ -98,6 +98,8 @@ export const RFQ_STATUS_DISPLAY: Record<string, { label: string; color: string; 
   pending: { label: 'รอดำเนินการ', color: '#C2410C', bg: PEACH_MIST },
   offers_received: { label: 'มีใบเสนอราคา', color: PLUM, bg: PLUM_SOFT_BG },
   reviewing: { label: 'มีใบเสนอราคา', color: PLUM, bg: PLUM_SOFT_BG },
+  /** RFQ.status = CL (Closed) หลังลูกค้ายอมรับใบเสนอราคา */
+  completed: { label: 'ปิดคำขอแล้ว', color: '#059669', bg: '#D1FAE5' },
   cancelled: { label: 'ยกเลิก', color: '#5B5470', bg: LILAC_MUTED },
   expired: { label: 'หมดอายุ', color: '#9A3412', bg: '#F5E6D8' },
 };
