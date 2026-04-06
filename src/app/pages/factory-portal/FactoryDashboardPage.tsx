@@ -1,135 +1,311 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router';
-import { Building2, Images, ClipboardList, Package, Wallet, ArrowRight } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { getFactoryEntityId } from '../../utils/factoryUser';
-import { ordersApi, rfqsApi } from '../../services/api';
+import React, { useMemo, useState } from 'react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
+import { TrendingUp, PiggyBank, CheckCircle2, Package, MessageSquareReply } from 'lucide-react';
+import {
+  FACTORY_ANALYTICS_MOCK,
+  type AnalyticsTimeframe,
+  type AnalyticsSummary,
+  type AnalyticsSeriesPoint,
+} from '../../data/factoryAnalyticsMock';
 
-function orderFactoryId(row: Record<string, unknown>): number | null {
-  const v = row.factory_id ?? row.factoryId;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
+const TIMEFRAMES: { id: AnalyticsTimeframe; label: string }[] = [
+  { id: 'daily', label: 'วัน' },
+  { id: 'weekly', label: 'สัปดาห์' },
+  { id: 'monthly', label: 'เดือน' },
+];
+
+const PURPLE = '#A238FF';
+const ORANGE = '#F28A2E';
+const GREEN = '#059669';
+const SLATE = '#94A3B8';
+
+function formatBaht(n: number): string {
+  return `฿${n.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
 }
 
-export function FactoryDashboardPage() {
-  const { user } = useAuth();
-  const fid = getFactoryEntityId(user);
-  const [openRfqCount, setOpenRfqCount] = useState<number | null>(null);
-  const [activeOrders, setActiveOrders] = useState<number | null>(null);
-  const [err, setErr] = useState('');
+function compactAxis(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(0)}k`;
+  return String(n);
+}
 
-  useEffect(() => {
-    let cancelled = false;
-    setErr('');
-    (async () => {
-      try {
-        const rfqsRaw = await rfqsApi.list('OP');
-        const rfqs = (Array.isArray(rfqsRaw) ? rfqsRaw : []) as Record<string, unknown>[];
-        const open = rfqs.filter((r) => {
-          const inner = (r.rfq as Record<string, unknown>) ?? r;
-          const st = String(inner.status ?? r.status ?? '').toUpperCase();
-          return st === 'OP' || st === 'OPEN' || st === '';
-        });
-        if (!cancelled) setOpenRfqCount(open.length);
+function rfqReplyRatePct(summary: AnalyticsSummary): number {
+  if (summary.rfq_received_total <= 0) return 0;
+  return Math.round((summary.rfq_replies_total / summary.rfq_received_total) * 100);
+}
 
-        const ordersRaw = await ordersApi.list();
-        const orders = (Array.isArray(ordersRaw) ? ordersRaw : []) as Record<string, unknown>[];
-        const mine = fid
-          ? orders.filter((o) => orderFactoryId(o) === fid)
-          : orders;
-        const active = mine.filter((o) => {
-          const st = String(o.status ?? '').toUpperCase();
-          return st !== 'CP' && st !== 'COMPLETED';
-        });
-        if (!cancelled) setActiveOrders(active.length);
-      } catch (e) {
-        if (!cancelled) {
-          setErr(e instanceof Error ? e.message : 'โหลดสรุปไม่สำเร็จ');
-          setOpenRfqCount(0);
-          setActiveOrders(0);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [fid]);
+type ChartTooltipProps = {
+  active?: boolean;
+  payload?: Array<{ name?: string; value?: number; color?: string; dataKey?: string }>;
+  label?: string;
+};
 
-  const cards = [
+function MoneyTooltip({ active, payload, label }: ChartTooltipProps) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
+      <p className="font-semibold text-gray-800 mb-1">{label}</p>
+      <ul className="space-y-0.5">
+        {payload.map((p) => (
+          <li key={String(p.dataKey)} className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
+            <span className="text-gray-500">{p.name}:</span>
+            <span className="font-medium text-gray-900">
+              {p.dataKey === 'revenue' || p.dataKey === 'deposits'
+                ? formatBaht(Number(p.value))
+                : Number(p.value).toLocaleString('th-TH')}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function CountTooltip({ active, payload, label }: ChartTooltipProps) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
+      <p className="font-semibold text-gray-800 mb-1">{label}</p>
+      <ul className="space-y-0.5">
+        {payload.map((p) => (
+          <li key={String(p.dataKey)} className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
+            <span className="text-gray-500">{p.name}:</span>
+            <span className="font-medium text-gray-900">
+              {Number(p.value).toLocaleString('th-TH')}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function KpiCard({
+  title,
+  value,
+  sub,
+  icon: Icon,
+  accent,
+}: {
+  title: string;
+  value: string;
+  sub?: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement> & { size?: number }>;
+  accent: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-2">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: `${accent}18` }}
+        >
+          <Icon size={20} style={{ color: accent }} strokeWidth={2} aria-hidden />
+        </div>
+      </div>
+      <p className="mt-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide">{title}</p>
+      <p className="mt-1 text-lg font-bold text-gray-900 tabular-nums">{value}</p>
+      {sub ? <p className="mt-0.5 text-[11px] text-gray-400">{sub}</p> : null}
+    </div>
+  );
+}
+
+function kpiRows(summary: AnalyticsSummary) {
+  return [
     {
-      to: '/factory/profile',
-      title: 'โปรไฟล์',
-      desc: 'ข้อมูลโรงงานและใบรับรอง',
-      icon: Building2,
+      key: 'revenue',
+      title: 'รายได้รวม',
+      value: formatBaht(summary.revenue_total),
+      sub: 'ในช่วงที่เลือก',
+      icon: TrendingUp,
+      accent: PURPLE,
+    },
+    {
+      key: 'deposits',
+      title: 'ยอดมัดจำ',
+      value: formatBaht(summary.deposits_total),
+      sub: 'ในช่วงที่เลือก',
+      icon: PiggyBank,
+      accent: ORANGE,
+    },
+    {
+      key: 'closed',
+      title: 'ปิดงานสำเร็จ',
+      value: summary.closed_orders_total.toLocaleString('th-TH'),
+      sub: 'ออเดอร์',
+      icon: CheckCircle2,
+      accent: GREEN,
+    },
+    {
+      key: 'orders',
+      title: 'ออเดอร์รวม',
+      value: summary.total_orders_total.toLocaleString('th-TH'),
+      sub: 'ทั้งหมดในช่วง',
+      icon: Package,
       accent: '#7C3AED',
     },
     {
-      to: '/factory/showcases?type=PD',
-      title: 'โชว์เคส',
-      desc: 'สินค้า · โปรโมชัน · ไอเดีย (แยกตาม ?type=PD|PM|ID)',
-      icon: Images,
-      accent: '#8B5CF6',
+      key: 'rfq',
+      title: 'ตอบกลับ / RFQ ที่ได้รับ',
+      value: `${summary.rfq_replies_total.toLocaleString('th-TH')} / ${summary.rfq_received_total.toLocaleString('th-TH')}`,
+      sub: `อัตราตอบกลับ ${rfqReplyRatePct(summary)}%`,
+      icon: MessageSquareReply,
+      accent: '#0EA5E9',
     },
-    {
-      to: '/factory/rfqs',
-      title: 'กระดาน RFQ',
-      desc:
-        openRfqCount != null
-          ? `คำขอที่เปิดรับอยู่ ${openRfqCount} รายการ`
-          : 'ดูคำขอเสนอราคาจากลูกค้า',
-      icon: ClipboardList,
-      accent: '#A238FF',
-    },
-    {
-      to: '/factory/orders',
-      title: 'จัดการออเดอร์',
-      desc:
-        activeOrders != null
-          ? `ออเดอร์ที่ยังไม่สำเร็จ ${activeOrders} รายการ`
-          : 'อัปเดตสถานะการผลิต',
-      icon: Package,
-      accent: '#059669',
-    },
-    {
-      to: '/factory/wallet',
-      title: 'กระเป๋าเงิน',
-      desc: 'ยอด escrow และถอนเงิน',
-      icon: Wallet,
-      accent: '#F28A2E',
-    },
-  ];
+  ] as const;
+}
+
+export function FactoryDashboardPage() {
+  const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('daily');
+
+  const bundle = useMemo(() => FACTORY_ANALYTICS_MOCK[timeframe], [timeframe]);
+  const chartData = useMemo(() => bundle.series as AnalyticsSeriesPoint[], [bundle.series]);
+  const kpis = useMemo(() => kpiRows(bundle.summary), [bundle.summary]);
 
   return (
-    <div className="space-y-6">
-      {err ? (
-        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-          {err}
-        </p>
-      ) : null}
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        {cards.map(({ to, title, desc, icon: Icon, accent }) => (
-          <Link
-            key={to}
-            to={to}
-            className="group flex flex-col p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: `${accent}18` }}
+    <div className="space-y-6 pb-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wider">วิเคราะห์ธุรกิจ</p>
+          <h1 className="text-xl font-bold text-gray-900">แดชบอร์ดโรงงาน</h1>
+          <p className="text-xs text-gray-500 mt-1">
+            สรุปผลการดำเนินงาน — ข้อมูลจำลองสำหรับต้นแบบ
+          </p>
+        </div>
+        <div
+          className="flex p-1 rounded-2xl bg-gray-100 w-fit max-w-full flex-wrap"
+          role="tablist"
+          aria-label="ช่วงเวลา"
+        >
+          {TIMEFRAMES.map(({ id, label }) => {
+            const on = timeframe === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setTimeframe(id)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                  on ? 'text-white shadow-md' : 'text-gray-600 hover:bg-white/80'
+                }`}
+                style={
+                  on
+                    ? { background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }
+                    : undefined
+                }
               >
-                <Icon size={24} style={{ color: accent }} strokeWidth={2} />
-              </div>
-              <ArrowRight
-                size={20}
-                className="text-gray-300 group-hover:text-gray-500 transition-colors shrink-0"
-              />
-            </div>
-            <h2 className="mt-4 text-base font-bold text-gray-900">{title}</h2>
-            <p className="mt-1 text-sm text-gray-500">{desc}</p>
-          </Link>
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {kpis.map((k) => (
+          <KpiCard
+            key={k.key}
+            title={k.title}
+            value={k.value}
+            sub={k.sub}
+            icon={k.icon}
+            accent={k.accent}
+          />
         ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-1">
+        <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
+          <h2 className="text-sm font-bold text-gray-900 mb-1">รายได้และมัดจำ</h2>
+          <p className="text-xs text-gray-500 mb-4">เปรียบเทียบตามช่วงเวลา</p>
+          <div className="h-[280px] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke={SLATE} />
+                <YAxis
+                  tickFormatter={compactAxis}
+                  tick={{ fontSize: 11 }}
+                  stroke={SLATE}
+                  width={44}
+                />
+                <Tooltip content={<MoneyTooltip />} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  name="รายได้"
+                  stroke={PURPLE}
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="deposits"
+                  name="มัดจำ"
+                  stroke={ORANGE}
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
+            <h2 className="text-sm font-bold text-gray-900 mb-1">ออเดอร์</h2>
+            <p className="text-xs text-gray-500 mb-4">ทั้งหมดและปิดสำเร็จ</p>
+            <div className="h-[260px] w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke={SLATE} interval={0} angle={-25} textAnchor="end" height={56} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke={SLATE} width={36} />
+                  <Tooltip content={<CountTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="total_orders" name="ออเดอร์รวม" fill={PURPLE} radius={[4, 4, 0, 0]} maxBarSize={36} />
+                  <Bar dataKey="closed_orders" name="ปิดสำเร็จ" fill={GREEN} radius={[4, 4, 0, 0]} maxBarSize={36} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
+            <h2 className="text-sm font-bold text-gray-900 mb-1">RFQ ที่ได้รับ vs การตอบกลับ</h2>
+            <p className="text-xs text-gray-500 mb-4">
+              ยอด RFQ ในช่วงเทียบกับจำนวนครั้งที่ส่งใบเสนอราคา — ตอบกลับจะไม่เกินยอดที่ได้รับใน mock นี้
+            </p>
+            <div className="h-[260px] w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke={SLATE} interval={0} angle={-25} textAnchor="end" height={56} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke={SLATE} width={36} />
+                  <Tooltip content={<CountTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="rfq_received" name="RFQ ที่ได้รับ" fill={SLATE} radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="rfq_replies" name="ตอบกลับ" fill={ORANGE} radius={[4, 4, 0, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
