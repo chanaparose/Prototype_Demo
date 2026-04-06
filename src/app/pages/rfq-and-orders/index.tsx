@@ -56,6 +56,8 @@ export function RfqAndOrders() {
     orderTagCounts,
     rfqs,
     orders,
+    loading,
+    error,
   } = useRfqAndOrdersState({
     primaryTab: 'orders',
   });
@@ -68,9 +70,40 @@ export function RfqAndOrders() {
 
   const navigate = useNavigate();
 
+  // Loading state — show spinner while CRUD endpoints respond
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mx-auto mb-3" style={{ borderColor: PRIMARY_COLOR, borderTopColor: 'transparent' }} />
+          <p className="text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] px-4">
+        <div className="text-center">
+          <p className="text-sm text-red-600 font-semibold mb-2">เกิดข้อผิดพลาด</p>
+          <p className="text-xs text-gray-500 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-white"
+            style={{ background: PRIMARY_COLOR }}
+          >
+            ลองใหม่
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* ─── Mobile Layout (unchanged) ─── */}
+      {/* ─── Mobile Layout ─── */}
       <div className="lg:hidden pb-4 flex flex-col min-h-full pb-20">
         <div className="px-4 pt-5">
           <div className="flex items-center justify-between mb-4">

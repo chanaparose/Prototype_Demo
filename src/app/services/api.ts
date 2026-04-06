@@ -5,9 +5,18 @@
 
 const DEFAULT_API_BASE = '/api/v1';
 
-const BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ||
-  DEFAULT_API_BASE;
+/** Base for all API calls — must end up as `.../api/v1` so e.g. POST /api/v1/auth/register */
+function resolveApiBase(): string {
+  const raw = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '');
+  if (!raw) return DEFAULT_API_BASE;
+  // Absolute URL without /api/vN (common misconfiguration) — append /api/v1
+  if (raw.startsWith('http') && !/\/api\/v\d+(\/|$)/.test(raw)) {
+    return `${raw}/api/v1`;
+  }
+  return raw;
+}
+
+const BASE_URL = resolveApiBase();
 
 // ─── Token helpers ───────────────────────────────────────────────
 export function getToken(): string | null {
@@ -155,6 +164,7 @@ export type AuthResponse = {
 
 export const authApi = {
   login: (payload: LoginPayload) => api.post<AuthResponse>('/auth/login', payload),
+  /** POST {BASE_URL}/auth/register → POST /api/v1/auth/register when base is /api/v1 or …/api/v1 */
   register: (payload: RegisterCustomerPayload | RegisterFactoryPayload) =>
     api.post<AuthResponse>('/auth/register', payload),
   forgotPassword: (email: string) =>

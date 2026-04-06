@@ -462,6 +462,7 @@ export const rfqs = [
     deadline: '2026-03-15',
     createdAt: '2026-02-20',
     description: 'ต้องการผลิตอาหารสัตว์แห้งสูตรลูกสุนัข จำนวน 1,000 กระสอบ ขนาด 2 กก./ถุง',
+    imageUrls: [],
     offers: [
       { id: 'off1a', factoryId: 'f1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', price: 42000, leadTime: 8, rating: 4.9, verified: true, recommended: true, aiReason: 'ราคาคุ้มค่าที่สุด + งานไวสุด', completedOrders: 342, responseTime: '2 ชั่วโมง' },
       { id: 'off1b', factoryId: 'f4', factoryName: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร', price: 38500, leadTime: 12, rating: 4.6, verified: false, recommended: false, aiReason: 'ราคาถูกที่สุด แต่ lead time นานกว่า', completedOrders: 167, responseTime: '5 ชั่วโมง' },
@@ -481,6 +482,7 @@ export const rfqs = [
     deadline: '2026-03-20',
     createdAt: '2026-02-22',
     description: 'ผลิตเสื้อผ้าสัตว์เลี้ยงขนาด S–L จำนวน 2,000 ชิ้น สำหรับฤดูร้อน',
+    imageUrls: [],
     offers: [
       { id: 'off2a', factoryId: 'f2', factoryName: 'เสื้อผ้าสัตว์เลี้ยง สยาม', price: 26000, leadTime: 6, rating: 4.7, verified: true, recommended: true, aiReason: 'ราคาดี + งานไว', completedOrders: 215, responseTime: '3 ชั่วโมง' },
       { id: 'off2b', factoryId: 'f3', factoryName: 'ของเล่นสัตว์เลี้ยง แฮปปี้', price: 28500, leadTime: 9, rating: 4.8, verified: true, recommended: false, aiReason: 'รับผลิตหลากหลาย', completedOrders: 589, responseTime: '4 ชั่วโมง' },
@@ -499,6 +501,7 @@ export const rfqs = [
     deadline: '2026-04-01',
     createdAt: '2026-02-23',
     description: 'ต้องการผลิตของเล่นสัตว์เลี้ยงจากยางธรรมชาติ จำนวน 500 ชิ้น หลายแบบ',
+    imageUrls: [],
     offers: [],
   },
   {
@@ -514,6 +517,7 @@ export const rfqs = [
     deadline: '2026-01-30',
     createdAt: '2026-01-05',
     description: 'สายจูงและปลอกคอสัตว์เลี้ยงหลายขนาด จำนวน 500 ชุด',
+    imageUrls: [],
     offers: [
       { id: 'off4a', factoryId: 'f1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', price: 44000, leadTime: 10, rating: 4.9, verified: true, recommended: false, aiReason: 'คุณภาพดี', completedOrders: 342, responseTime: '3 ชั่วโมง' },
       { id: 'off4b', factoryId: 'f2', factoryName: 'เสื้อผ้าสัตว์เลี้ยง สยาม', price: 46000, leadTime: 12, rating: 4.7, verified: true, recommended: false, aiReason: 'รับผลิตหลากหลาย', completedOrders: 215, responseTime: '5 ชั่วโมง' },
@@ -534,6 +538,7 @@ export const rfqs = [
     deadline: '2026-02-28',
     createdAt: '2026-01-10',
     description: 'ยกเลิกเนื่องจากเปลี่ยนแผนการผลิต',
+    imageUrls: [],
     offers: [
       { id: 'off5a', factoryId: 'f4', factoryName: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร', price: 18500, leadTime: 14, rating: 4.6, verified: false, recommended: false, aiReason: 'เชี่ยวชาญบรรจุภัณฑ์', completedOrders: 167, responseTime: '6 ชั่วโมง' },
     ],
@@ -551,6 +556,7 @@ export const rfqs = [
     deadline: '2026-01-15',
     createdAt: '2025-12-01',
     description: 'RFQ หมดอายุ ไม่มีการส่งคำสั่งซื้อในเวลาที่กำหนด',
+    imageUrls: [],
     offers: [
       { id: 'off6a', factoryId: 'f1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', price: 32000, leadTime: 12, rating: 4.9, verified: true, recommended: false, aiReason: 'วัตถุดิบออร์แกนิก', completedOrders: 342, responseTime: '4 ชั่วโมง' },
       { id: 'off6b', factoryId: 'f4', factoryName: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร', price: 30500, leadTime: 15, rating: 4.6, verified: false, recommended: false, aiReason: 'ราคาต่ำกว่า', completedOrders: 167, responseTime: '8 ชั่วโมง' },
@@ -569,6 +575,7 @@ export const rfqs = [
     deadline: '2026-02-25',
     createdAt: '2026-01-25',
     description: 'ต้องการผลิตอาหารเสริมชนิดเม็ดเคี้ยวสำหรับสุนัขสูงวัย เน้นรสชาติทานง่าย',
+    imageUrls: [],
     offers: [
       { id: 'off7a', factoryId: 'f5', factoryName: 'ฟาร์มาเพ็ท นิวทริชั่น', price: 59500, leadTime: 10, rating: 4.8, verified: true, recommended: true, aiReason: 'มีความเชี่ยวชาญด้านอาหารเสริมและเอกสารครบ', completedOrders: 276, responseTime: '2 ชั่วโมง' },
       { id: 'off7b', factoryId: 'f1', factoryName: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม', price: 61000, leadTime: 12, rating: 4.9, verified: true, recommended: false, aiReason: 'คุณภาพดีและแบรนด์โรงงานแข็งแรง', completedOrders: 342, responseTime: '4 ชั่วโมง' },
@@ -588,6 +595,7 @@ export const rfqs = [
     deadline: '2026-03-25',
     createdAt: '2026-02-26',
     description: 'ต้องการผลิตปลอกคออัจฉริยะสำหรับตลาดพรีเมียม พร้อมบรรจุภัณฑ์พร้อมขาย',
+    imageUrls: [],
     offers: [
       { id: 'off8a', factoryId: 'f6', factoryName: 'Smart Collar Tech', price: 116000, leadTime: 18, rating: 4.7, verified: true, recommended: true, aiReason: 'เชี่ยวชาญอุปกรณ์ IoT และรองรับแอป White-label', completedOrders: 121, responseTime: '3 ชั่วโมง' },
       { id: 'off8b', factoryId: 'f3', factoryName: 'ของเล่นสัตว์เลี้ยง แฮปปี้', price: 109000, leadTime: 24, rating: 4.8, verified: true, recommended: false, aiReason: 'ต้นทุนต่อชิ้นต่ำกว่า แต่ระยะเวลาผลิตนานกว่า', completedOrders: 589, responseTime: '5 ชั่วโมง' },
