@@ -18,6 +18,7 @@ import {
   type AnalyticsSummary,
   type AnalyticsSeriesPoint,
 } from '../../data/factoryAnalyticsMock';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 const TIMEFRAMES: { id: AnalyticsTimeframe; label: string }[] = [
   { id: 'daily', label: 'วัน' },
@@ -117,7 +118,7 @@ function KpiCard({
         </div>
       </div>
       <p className="mt-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide">{title}</p>
-      <p className="mt-1 text-lg font-bold text-gray-900 tabular-nums">{value}</p>
+      <p className="mt-1 text-base sm:text-lg font-bold text-gray-900 tabular-nums break-words">{value}</p>
       {sub ? <p className="mt-0.5 text-[11px] text-gray-400">{sub}</p> : null}
     </div>
   );
@@ -169,24 +170,31 @@ function kpiRows(summary: AnalyticsSummary) {
 }
 
 export function FactoryDashboardPage() {
+  const isDesktop = useIsDesktop();
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('daily');
 
   const bundle = useMemo(() => FACTORY_ANALYTICS_MOCK[timeframe], [timeframe]);
   const chartData = useMemo(() => bundle.series as AnalyticsSeriesPoint[], [bundle.series]);
   const kpis = useMemo(() => kpiRows(bundle.summary), [bundle.summary]);
 
+  const lineChartHeight = isDesktop ? 280 : 220;
+  const barChartHeight = isDesktop ? 260 : 220;
+  const barXAxisProps = isDesktop
+    ? { angle: -25 as const, textAnchor: 'end' as const, height: 56, tick: { fontSize: 10 } }
+    : { angle: 0 as const, textAnchor: 'middle' as const, height: 36, tick: { fontSize: 9 }, interval: 'preserveStartEnd' as const };
+
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-5 sm:space-y-6 pb-8 sm:pb-10 w-full min-w-0">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] text-gray-400 uppercase tracking-wider">วิเคราะห์ธุรกิจ</p>
-          <h1 className="text-xl font-bold text-gray-900">แดชบอร์ดโรงงาน</h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900">แดชบอร์ดโรงงาน</h1>
+          <p className="text-xs text-gray-500 mt-1 max-w-xl">
             สรุปผลการดำเนินงาน — ข้อมูลจำลองสำหรับต้นแบบ
           </p>
         </div>
         <div
-          className="flex p-1 rounded-2xl bg-gray-100 w-fit max-w-full flex-wrap"
+          className="flex p-1 rounded-2xl bg-gray-100 w-fit max-w-full flex-wrap shrink-0"
           role="tablist"
           aria-label="ช่วงเวลา"
         >
@@ -215,7 +223,7 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
         {kpis.map((k) => (
           <KpiCard
             key={k.key}
@@ -232,11 +240,14 @@ export function FactoryDashboardPage() {
         <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
           <h2 className="text-sm font-bold text-gray-900 mb-1">รายได้และมัดจำ</h2>
           <p className="text-xs text-gray-500 mb-4">เปรียบเทียบตามช่วงเวลา</p>
-          <div className="h-[280px] w-full min-w-0">
+          <div className="w-full min-w-0" style={{ height: lineChartHeight }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <LineChart
+                data={chartData}
+                margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 4 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke={SLATE} />
+                <XAxis dataKey="label" tick={{ fontSize: isDesktop ? 11 : 9 }} stroke={SLATE} />
                 <YAxis
                   tickFormatter={compactAxis}
                   tick={{ fontSize: 11 }}
@@ -268,14 +279,17 @@ export function FactoryDashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm min-w-0">
             <h2 className="text-sm font-bold text-gray-900 mb-1">ออเดอร์</h2>
             <p className="text-xs text-gray-500 mb-4">ทั้งหมดและปิดสำเร็จ</p>
-            <div className="h-[260px] w-full min-w-0">
+            <div className="w-full min-w-0" style={{ height: barChartHeight }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 2 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke={SLATE} interval={0} angle={-25} textAnchor="end" height={56} />
+                  <XAxis dataKey="label" stroke={SLATE} interval={0} {...barXAxisProps} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke={SLATE} width={36} />
                   <Tooltip content={<CountTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -291,11 +305,14 @@ export function FactoryDashboardPage() {
             <p className="text-xs text-gray-500 mb-4">
               ยอด RFQ ในช่วงเทียบกับจำนวนครั้งที่ส่งใบเสนอราคา — ตอบกลับจะไม่เกินยอดที่ได้รับใน mock นี้
             </p>
-            <div className="h-[260px] w-full min-w-0">
+            <div className="w-full min-w-0" style={{ height: barChartHeight }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 2 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke={SLATE} interval={0} angle={-25} textAnchor="end" height={56} />
+                  <XAxis dataKey="label" stroke={SLATE} interval={0} {...barXAxisProps} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke={SLATE} width={36} />
                   <Tooltip content={<CountTooltip />} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />

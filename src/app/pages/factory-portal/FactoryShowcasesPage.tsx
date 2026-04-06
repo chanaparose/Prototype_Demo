@@ -23,6 +23,71 @@ function rowId(r: Row): string {
   return String(r.showcase_id ?? r.id ?? '');
 }
 
+function typeLabel(t: ShowcaseType): string {
+  const f = SHOWCASE_TYPES.find((x) => x.type === t);
+  return f?.label ?? t;
+}
+
+function typeBadgeClass(t: ShowcaseType): string {
+  if (t === 'PD') return 'bg-violet-100 text-violet-800 border-violet-200';
+  if (t === 'PM') return 'bg-amber-100 text-amber-900 border-amber-200';
+  return 'bg-sky-100 text-sky-900 border-sky-200';
+}
+
+function promotionExpiryLine(r: Row): string | null {
+  const raw = r.expire_date ?? r.end_date ?? r.valid_until ?? r.promotion_end;
+  if (raw == null || String(raw).trim() === '') return null;
+  const s = String(raw).trim();
+  return `หมดอายุ ${s.length >= 10 ? s.slice(0, 10) : s}`;
+}
+
+function contextDetailLine(activeType: ShowcaseType, r: Row): string {
+  if (activeType === 'PD') {
+    return `MOQ ${String(r.min_order ?? '—')} · Lead ${String(r.lead_time_days ?? '—')} วัน`;
+  }
+  if (activeType === 'PM') {
+    const exp = promotionExpiryLine(r);
+    if (exp) return exp;
+    const ex = String(r.excerpt ?? '').trim();
+    if (!ex) return '—';
+    return ex.length > 52 ? `${ex.slice(0, 52)}…` : ex;
+  }
+  const ex = String(r.excerpt ?? '').trim();
+  if (!ex) return '—';
+  return ex.length > 60 ? `${ex.slice(0, 60)}…` : ex;
+}
+
+function rowContentType(r: Row, fallback: ShowcaseType): ShowcaseType {
+  const c = String(r.content_type ?? r.contentType ?? '').toUpperCase();
+  if (c === 'PD' || c === 'PM' || c === 'ID') return c;
+  return fallback;
+}
+
+function Thumbnail({ src }: { src: string | undefined }) {
+  return (
+    <div
+      className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-gray-100 border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center"
+      aria-hidden
+    >
+      {src ? (
+        <img src={src} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <ImageIcon className="text-gray-300" size={20} strokeWidth={1.5} />
+      )}
+    </div>
+  );
+}
+
+function TypeBadge({ type }: { type: ShowcaseType }) {
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-semibold border ${typeBadgeClass(type)}`}
+    >
+      {typeLabel(type)}
+    </span>
+  );
+}
+
 export function FactoryShowcasesPage() {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
@@ -207,11 +272,11 @@ export function FactoryShowcasesPage() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-5 sm:space-y-6 pb-10 sm:pb-12 w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] text-gray-400 uppercase">GET /showcases?type=…</p>
-          <h2 className="text-lg font-bold text-gray-900">จัดการโชว์เคส</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">จัดการโชว์เคส</h2>
         </div>
         <button
           type="button"
@@ -224,8 +289,9 @@ export function FactoryShowcasesPage() {
         </button>
       </div>
 
-      {/* Section tabs — แต่ละแท็บยิง type แยกตามสเปก */}
-      <div className="flex flex-wrap gap-2 p-1 bg-gray-100 rounded-2xl w-fit max-w-full">
+      {/* Section tabs — เลื่อนแนวนอนบนมือถือ */}
+      <div className="-mx-1 px-1 overflow-x-auto overflow-y-hidden pb-0.5">
+        <div className="flex flex-nowrap sm:flex-wrap gap-2 p-1 bg-gray-100 rounded-2xl w-max min-w-full sm:min-w-0 sm:w-fit max-w-none">
         {SHOWCASE_TYPES.map(({ type, label, hint }) => {
           const on = activeType === type;
           return (
@@ -248,6 +314,7 @@ export function FactoryShowcasesPage() {
             </button>
           );
         })}
+        </div>
       </div>
 
       {error ? (
@@ -261,10 +328,18 @@ export function FactoryShowcasesPage() {
         </p>
       ) : null}
 
-      <p className="text-xs text-gray-500">
-        โหลดรายการด้วย <code className="bg-gray-100 px-1 rounded">GET /showcases?type={activeType}</code>{' '}
-        แล้วกรองเฉพาะโรงงานของคุณ
-      </p>
+      <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 text-xs text-gray-500">
+        <p>
+          <span className="font-medium text-gray-700">สารบัญ</span>
+          {' — กรองเฉพาะโรงงานของคุณ · '}
+          <code className="bg-gray-100 px-1 rounded">GET /showcases?type={activeType}</code>
+        </p>
+        {!loading ? (
+          <span className="text-gray-700 font-semibold tabular-nums shrink-0">
+            {rows.length} รายการ
+          </span>
+        ) : null}
+      </div>
 
       {loading ? (
         <div className="flex justify-center py-16">
@@ -274,62 +349,140 @@ export function FactoryShowcasesPage() {
           />
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.length === 0 ? (
-            <li className="col-span-full text-center text-sm text-gray-400 py-12 bg-white rounded-2xl border border-gray-100">
-              ยังไม่มีรายการในหมวดนี้
-            </li>
-          ) : (
-            rows.map((r) => (
-              <li
-                key={rowId(r)}
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm flex flex-col"
-              >
-                <div className="aspect-[16/10] bg-gray-100 relative">
-                  {r.image_url ? (
-                    <img
-                      src={String(r.image_url)}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                      <ImageIcon size={40} strokeWidth={1.2} />
-                    </div>
-                  )}
-                </div>
-                <div className="p-4 flex-1 flex flex-col">
-                  <p className="font-semibold text-gray-900 line-clamp-2">{String(r.title ?? '')}</p>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                    {String(r.excerpt ?? '') || '—'}
-                  </p>
-                  {activeType === 'PD' ? (
-                    <p className="text-[11px] text-gray-400 mt-2">
-                      MOQ {String(r.min_order ?? '—')} · Lead {String(r.lead_time_days ?? '—')} วัน
-                    </p>
-                  ) : null}
-                  <div className="flex gap-2 mt-3 mt-auto pt-2">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(r)}
-                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
-                    >
-                      <Pencil size={14} />
-                      แก้ไข
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void remove(r)}
-                      className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-sm font-medium border border-red-100 text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
+        <>
+          <ul className="md:hidden space-y-2" aria-label="รายการโชว์เคส">
+            {rows.length === 0 ? (
+              <li className="text-center text-sm text-gray-400 py-10 bg-white rounded-xl border border-gray-100">
+                ยังไม่มีรายการในหมวดนี้
               </li>
-            ))
-          )}
-        </ul>
+            ) : (
+              rows.map((r) => {
+                const id = rowId(r);
+                const ctype = rowContentType(r, activeType);
+                return (
+                  <li
+                    key={id}
+                    className="bg-white rounded-xl border border-gray-100 px-3 py-2.5 flex gap-3 items-start min-w-0"
+                  >
+                    <Thumbnail src={r.image_url ? String(r.image_url) : undefined} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 gap-y-1">
+                        <TypeBadge type={ctype} />
+                        <span className="text-[10px] text-gray-400 font-mono">#{id}</span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mt-1 line-clamp-2">
+                        {String(r.title ?? '—')}
+                      </p>
+                      <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2 break-words">
+                        {contextDetailLine(activeType, r)}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(r)}
+                        className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+                        aria-label="แก้ไข"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void remove(r)}
+                        className="p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50"
+                        aria-label="ลบ"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+
+          <div className="hidden md:block rounded-xl border border-gray-100 bg-white overflow-hidden overflow-x-auto shadow-sm">
+            <table className="w-full text-sm text-left min-w-[640px]">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/80">
+                  <th scope="col" className="py-3 pl-4 pr-2 font-semibold text-gray-600 w-14">
+                    รูป
+                  </th>
+                  <th scope="col" className="py-3 px-2 font-semibold text-gray-600 w-[108px]">
+                    ประเภท
+                  </th>
+                  <th scope="col" className="py-3 px-2 font-semibold text-gray-600 min-w-[160px]">
+                    หัวข้อ
+                  </th>
+                  <th scope="col" className="py-3 px-2 font-semibold text-gray-600 min-w-[200px]">
+                    รายละเอียด
+                  </th>
+                  <th scope="col" className="py-3 pr-4 pl-2 font-semibold text-gray-600 text-right w-[104px]">
+                    การกระทำ
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-gray-400">
+                      ยังไม่มีรายการในหมวดนี้
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((r) => {
+                    const id = rowId(r);
+                    const ctype = rowContentType(r, activeType);
+                    return (
+                      <tr
+                        key={id}
+                        className="border-b border-gray-50 last:border-0 hover:bg-violet-50/40 transition-colors"
+                      >
+                        <td className="py-2.5 pl-4 pr-2 align-middle">
+                          <Thumbnail src={r.image_url ? String(r.image_url) : undefined} />
+                        </td>
+                        <td className="py-2.5 px-2 align-middle">
+                          <TypeBadge type={ctype} />
+                        </td>
+                        <td className="py-2.5 px-2 align-middle max-w-[280px]">
+                          <p className="font-semibold text-gray-900 line-clamp-2">
+                            {String(r.title ?? '—')}
+                          </p>
+                          <p className="text-[10px] text-gray-400 font-mono mt-0.5">#{id}</p>
+                        </td>
+                        <td className="py-2.5 px-2 align-middle text-gray-600 text-xs max-w-xs">
+                          <span className="line-clamp-2 break-words">
+                            {contextDetailLine(activeType, r)}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-4 pl-2 align-middle">
+                          <div className="flex justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => openEdit(r)}
+                              className="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-white"
+                              aria-label="แก้ไข"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void remove(r)}
+                              className="inline-flex items-center justify-center p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50"
+                              aria-label="ลบ"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {modal ? (
@@ -338,7 +491,7 @@ export function FactoryShowcasesPage() {
           role="dialog"
           aria-modal
         >
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 space-y-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-w-lg w-full max-h-[min(90vh,100dvh)] overflow-y-auto p-4 sm:p-5 pb-6 space-y-4">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-lg font-bold text-gray-900">
                 {modal === 'create' ? 'เพิ่มโชว์เคส' : 'แก้ไขโชว์เคส'} · {activeType}
@@ -415,7 +568,7 @@ export function FactoryShowcasesPage() {
             </label>
 
             {activeType === 'PD' ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
                   <span className="text-xs text-gray-500">ขั้นต่ำ (MOQ)</span>
                   <input

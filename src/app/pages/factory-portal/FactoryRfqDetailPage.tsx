@@ -4,6 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { rfqsApi, masterApi, quotationsApi } from '../../services/api';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 type QuoteRow = Record<string, unknown>;
 
@@ -21,6 +22,7 @@ export function FactoryRfqDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
+  const isDesktop = useIsDesktop();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -133,19 +135,23 @@ export function FactoryRfqDetailPage() {
     return null;
   }
 
+  const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';
+
   return (
-    <div className="max-w-lg mx-auto pb-24">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="w-full min-w-0 max-w-lg lg:max-w-5xl mx-auto pb-24 pb-[max(6rem,env(safe-area-inset-bottom,0px))]">
+      <div className="flex items-center gap-3 mb-5 sm:mb-6 min-w-0">
         <button
           type="button"
           onClick={() => navigate('/factory/rfqs')}
-          className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center bg-white"
+          className="w-10 h-10 shrink-0 rounded-xl border border-gray-200 flex items-center justify-center bg-white"
         >
           <ChevronLeft size={22} />
         </button>
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] text-gray-400">RFQ</p>
-          <h1 className="text-lg font-bold text-gray-900 truncate">{rfqTitle || `#${id}`}</h1>
+          <h1 className="text-base sm:text-lg font-bold text-gray-900 truncate">
+            {rfqTitle || `#${id}`}
+          </h1>
         </div>
       </div>
 
@@ -162,39 +168,45 @@ export function FactoryRfqDetailPage() {
         <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
       ) : null}
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-4 mb-4 space-y-2 text-sm">
-        <p>
-          <span className="text-gray-500">รายละเอียด: </span>
-          {String(rfqBody.details ?? rfqBody.description ?? '—')}
-        </p>
-        <p>
-          <span className="text-gray-500">จำนวน: </span>
-          {String(rfqBody.quantity ?? '—')}
-        </p>
-        <p>
-          <span className="text-gray-500">งบ/ชิ้น: </span>
-          {String(rfqBody.budget_per_piece ?? '—')}
-        </p>
-      </section>
+      {!loading ? (
+        <div className={twoCol}>
+          <div className="space-y-4 mb-4 lg:mb-0 min-w-0">
+            <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-2 text-sm break-words">
+              <p>
+                <span className="text-gray-500">รายละเอียด: </span>
+                {String(rfqBody.details ?? rfqBody.description ?? '—')}
+              </p>
+              <p>
+                <span className="text-gray-500">จำนวน: </span>
+                {String(rfqBody.quantity ?? '—')}
+              </p>
+              <p>
+                <span className="text-gray-500">งบ/ชิ้น: </span>
+                {String(rfqBody.budget_per_piece ?? '—')}
+              </p>
+            </section>
 
-      {myQuote ? (
-        <p className="text-sm mb-3">
-          สถานะใบเสนอราคาของคุณ:{' '}
-          <strong>
-            {myStatus === 'PD'
-              ? 'รอลูกค้าตัดสินใจ'
-              : myStatus === 'AC'
-                ? 'ลูกค้ารับแล้ว'
-                : myStatus === 'RJ'
-                  ? 'ปิด / ถูกปฏิเสธ'
-                  : myStatus}
-          </strong>
-        </p>
-      ) : (
-        <p className="text-sm text-gray-600 mb-3">คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
-      )}
+            {myQuote ? (
+              <p className="text-sm px-0.5">
+                สถานะใบเสนอราคาของคุณ:{' '}
+                <strong>
+                  {myStatus === 'PD'
+                    ? 'รอลูกค้าตัดสินใจ'
+                    : myStatus === 'AC'
+                      ? 'ลูกค้ารับแล้ว'
+                      : myStatus === 'RJ'
+                        ? 'ปิด / ถูกปฏิเสธ'
+                        : myStatus}
+                </strong>
+              </p>
+            ) : (
+              <p className="text-sm text-gray-600 px-0.5">
+                คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้
+              </p>
+            )}
+          </div>
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+          <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-3 min-w-0">
         <h2 className="font-bold text-gray-900">
           {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ดูใบเสนอราคา' : 'ส่งใบเสนอราคา'}
         </h2>
@@ -272,7 +284,9 @@ export function FactoryRfqDetailPage() {
             ถอนใบเสนอราคา
           </button>
         )}
-      </section>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -57,8 +57,12 @@ export function FactoryRfqBoardPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-500">
+    <div className="space-y-4 w-full min-w-0 pb-6 sm:pb-8">
+      <div className="min-w-0">
+        <p className="text-[10px] text-gray-400 uppercase tracking-wide">กระดาน RFQ</p>
+        <h1 className="text-lg sm:text-xl font-bold text-gray-900">คำขอที่เปิดรับ</h1>
+      </div>
+      <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
         คำขอที่สถานะเปิด (`OP`) — กรองตาม sub-category จะทำได้เมื่อ backend ส่งพารามิเตอร์หรือข้อมูลครบ
       </p>
       {error ? (
@@ -74,7 +78,7 @@ export function FactoryRfqBoardPage() {
             <li key={r.id}>
               <Link
                 to={`/factory/rfqs/${r.id}`}
-                className="flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-sm transition-shadow"
+                className="flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm transition-shadow min-w-0"
               >
                 <div className="min-w-0">
                   <p className="text-xs text-gray-400">#{r.id}</p>

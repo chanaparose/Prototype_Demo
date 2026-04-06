@@ -68,7 +68,11 @@ export function FactoryOrdersPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full min-w-0 pb-6 sm:pb-8">
+      <div className="min-w-0">
+        <p className="text-[10px] text-gray-400 uppercase tracking-wide">คำสั่งซื้อ</p>
+        <h1 className="text-lg sm:text-xl font-bold text-gray-900">ออเดอร์ของโรงงาน</h1>
+      </div>
       {error ? (
         <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
       ) : null}
@@ -82,7 +86,7 @@ export function FactoryOrdersPage() {
             <li key={r.id}>
               <Link
                 to={`/factory/orders/${r.id}`}
-                className="flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-sm transition-shadow"
+                className="flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm transition-shadow min-w-0"
               >
                 <div className="min-w-0">
                   <p className="text-xs text-gray-400">#{r.id}</p>

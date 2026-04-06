@@ -9,6 +9,7 @@ import {
   masterApi,
   mediaApi,
 } from '../../services/api';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 const ORDER_CHAIN = ['PR', 'QC', 'SH'] as const;
 type OrderSt = (typeof ORDER_CHAIN)[number] | 'CP' | string;
@@ -28,6 +29,7 @@ export function FactoryOrderDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
+  const isDesktop = useIsDesktop();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -133,19 +135,26 @@ export function FactoryOrderDetailPage() {
 
   const title = String(order.title ?? order.project_name ?? `คำสั่งซื้อ #${id}`);
 
+  const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';
+
+  const idleMessage =
+    status === 'SH'
+      ? 'อยู่ในขั้นจัดส่ง — รอลูกค้ายืนยันรับสินค้า (CP)'
+      : 'ไม่มีขั้นตอนถัดไปสำหรับโรงงาน';
+
   return (
-    <div className="max-w-lg mx-auto pb-24">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="w-full min-w-0 max-w-lg lg:max-w-5xl mx-auto pb-24 pb-[max(6rem,env(safe-area-inset-bottom,0px))]">
+      <div className="flex items-center gap-3 mb-5 sm:mb-6 min-w-0">
         <button
           type="button"
           onClick={() => navigate('/factory/orders')}
-          className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center bg-white"
+          className="w-10 h-10 shrink-0 rounded-xl border border-gray-200 flex items-center justify-center bg-white"
         >
           <ChevronLeft size={22} />
         </button>
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] text-gray-400">ออเดอร์</p>
-          <h1 className="text-lg font-bold text-gray-900 truncate">{title}</h1>
+          <h1 className="text-base sm:text-lg font-bold text-gray-900 truncate">{title}</h1>
         </div>
       </div>
 
@@ -162,104 +171,113 @@ export function FactoryOrderDetailPage() {
         <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
       ) : null}
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-        <p className="text-sm text-gray-600 mb-3">สถานะปัจจุบัน (ลำดับบังคับ PR → QC → SH)</p>
-        <div className="flex gap-2 flex-wrap">
-          {ORDER_CHAIN.map((code, i) => {
-            const active = status === code;
-            const past =
-              ORDER_CHAIN.indexOf(status as (typeof ORDER_CHAIN)[number]) > i ||
-              status === 'CP';
-            return (
-              <span
-                key={code}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                  active
-                    ? 'text-white'
-                    : past
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'bg-gray-100 text-gray-400'
-                }`}
-                style={active ? { background: '#A238FF' } : {}}
-              >
-                {code}
-              </span>
-            );
-          })}
-          {status === 'CP' ? (
-            <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white">
-              CP สำเร็จ
-            </span>
-          ) : null}
-        </div>
-      </section>
+      {!loading ? (
+        <div className={twoCol}>
+          <div className="space-y-4 mb-4 lg:mb-0 min-w-0">
+            <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4">
+              <p className="text-xs sm:text-sm text-gray-600 mb-3">
+                สถานะปัจจุบัน (ลำดับบังคับ PR → QC → SH)
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {ORDER_CHAIN.map((code, i) => {
+                  const active = status === code;
+                  const past =
+                    ORDER_CHAIN.indexOf(status as (typeof ORDER_CHAIN)[number]) > i ||
+                    status === 'CP';
+                  return (
+                    <span
+                      key={code}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                        active
+                          ? 'text-white'
+                          : past
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-gray-100 text-gray-400'
+                      }`}
+                      style={active ? { background: '#A238FF' } : {}}
+                    >
+                      {code}
+                    </span>
+                  );
+                })}
+                {status === 'CP' ? (
+                  <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white">
+                    CP สำเร็จ
+                  </span>
+                ) : null}
+              </div>
+            </section>
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-        <h2 className="font-bold text-gray-900 mb-2">ประวัติความคืบหน้า</h2>
-        <ul className="space-y-2 text-sm">
-          {updates.length === 0 ? (
-            <li className="text-gray-400">ยังไม่มีรายการอัปเดต</li>
-          ) : (
-            updates.map((u, idx) => (
-              <li key={String(u.update_id ?? u.id ?? idx)} className="border-b border-gray-50 pb-2">
-                <p className="text-xs text-gray-400">
-                  Step {String(u.step_id ?? '—')} ·{' '}
-                  {String(u.created_at ?? '').slice(0, 16)}
+            <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4">
+              <h2 className="font-bold text-gray-900 mb-2">ประวัติความคืบหน้า</h2>
+              <ul className="space-y-2 text-sm break-words">
+                {updates.length === 0 ? (
+                  <li className="text-gray-400">ยังไม่มีรายการอัปเดต</li>
+                ) : (
+                  updates.map((u, idx) => (
+                    <li
+                      key={String(u.update_id ?? u.id ?? idx)}
+                      className="border-b border-gray-50 pb-2 last:border-0"
+                    >
+                      <p className="text-xs text-gray-400">
+                        Step {String(u.step_id ?? '—')} ·{' '}
+                        {String(u.created_at ?? '').slice(0, 16)}
+                      </p>
+                      <p className="text-gray-800">{String(u.description ?? '')}</p>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </section>
+          </div>
+
+          <div className="min-w-0">
+            {nextStatus && status !== 'CP' ? (
+              <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-3">
+                <h2 className="font-bold text-gray-900">ดำเนินการถัดไป → {nextStatus}</h2>
+                <p className="text-xs text-gray-500">
+                  ขั้นถัดไปใน master: step_id {nextStepId}
+                  {nextStepRow
+                    ? ` (${String(nextStepRow.step_name ?? '')})`
+                    : ' (สำรองจากลำดับสถานะ)'}
                 </p>
-                <p className="text-gray-800">{String(u.description ?? '')}</p>
-              </li>
-            ))
-          )}
-        </ul>
-      </section>
-
-      {nextStatus && status !== 'CP' ? (
-        <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
-          <h2 className="font-bold text-gray-900">
-            ดำเนินการถัดไป → {nextStatus}
-          </h2>
-          <p className="text-xs text-gray-500">
-            ขั้นถัดไปใน master: step_id {nextStepId}
-            {nextStepRow
-              ? ` (${String(nextStepRow.step_name ?? '')})`
-              : ' (สำรองจากลำดับสถานะ)'}
-          </p>
-          <label className="block">
-            <span className="text-xs text-gray-500">รายละเอียด</span>
-            <textarea
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]"
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              disabled={!canAdvance}
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs text-gray-500">รูปประกอบ (ถ้ามี)</span>
-            <input
-              type="file"
-              accept="image/*"
-              className="mt-1 text-sm"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              disabled={!canAdvance}
-            />
-          </label>
-          <button
-            type="button"
-            disabled={busy || !canAdvance}
-            onClick={() => void advance()}
-            className="w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
-          >
-            {busy ? 'กำลังบันทึก...' : `บันทึกและเปลี่ยนเป็น ${nextStatus}`}
-          </button>
-        </section>
-      ) : (
-        <p className="text-sm text-gray-500 text-center py-4">
-          {status === 'SH'
-            ? 'อยู่ในขั้นจัดส่ง — รอลูกค้ายืนยันรับสินค้า (CP)'
-            : 'ไม่มีขั้นตอนถัดไปสำหรับโรงงาน'}
-        </p>
-      )}
+                <label className="block">
+                  <span className="text-xs text-gray-500">รายละเอียด</span>
+                  <textarea
+                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]"
+                    value={desc}
+                    onChange={(e) => setDesc(e.target.value)}
+                    disabled={!canAdvance}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs text-gray-500">รูปประกอบ (ถ้ามี)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="mt-1 text-sm max-w-full"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    disabled={!canAdvance}
+                  />
+                </label>
+                <button
+                  type="button"
+                  disabled={busy || !canAdvance}
+                  onClick={() => void advance()}
+                  className="w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
+                >
+                  {busy ? 'กำลังบันทึก...' : `บันทึกและเปลี่ยนเป็น ${nextStatus}`}
+                </button>
+              </section>
+            ) : (
+              <p className="text-sm text-gray-500 text-center lg:text-left py-4 lg:py-0 lg:px-1">
+                {idleMessage}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

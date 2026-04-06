@@ -123,7 +123,7 @@ export function FactoryProfilePage() {
   }
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-6 sm:space-y-8 pb-6 sm:pb-8 w-full min-w-0">
       {error ? (
         <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
           {error}
@@ -135,7 +135,7 @@ export function FactoryProfilePage() {
         </p>
       ) : null}
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
         <h2 className="text-base font-bold text-gray-900 mb-4">ข้อมูลโรงงาน</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
@@ -190,12 +190,12 @@ export function FactoryProfilePage() {
         </button>
       </section>
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
         <h2 className="text-base font-bold text-gray-900 mb-2">ใบรับรอง</h2>
         <p className="text-xs text-gray-500 mb-4">
           อัปโหลด PDF/รูป — สถานะตรวจสอบจะถูกจัดการโดยแอดมินตาม API
         </p>
-        <div className="flex flex-wrap gap-3 items-end">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end">
           <label className="block">
             <span className="text-xs text-gray-500">รหัสประเภทใบรับรอง (cert_id)</span>
             <input
@@ -244,7 +244,7 @@ export function FactoryProfilePage() {
                 key={String(c.map_id ?? c.cert_id ?? i)}
                 className="text-sm border border-gray-100 rounded-xl px-3 py-2 flex flex-wrap gap-2 justify-between"
               >
-                <span className="text-gray-700 truncate max-w-[200px]">
+                <span className="text-gray-700 truncate min-w-0 max-w-full sm:max-w-[200px]">
                   {String(c.cert_number ?? c.document_url ?? 'เอกสาร')}
                 </span>
                 <span className="text-gray-400 text-xs">

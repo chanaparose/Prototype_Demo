@@ -92,7 +92,7 @@ export function FactoryWalletPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 pb-12">
+    <div className="w-full min-w-0 max-w-lg lg:max-w-4xl mx-auto space-y-5 sm:space-y-6 pb-10 sm:pb-12">
       {error ? (
         <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
       ) : null}
@@ -100,23 +100,24 @@ export function FactoryWalletPage() {
         <p className="text-sm text-emerald-700 bg-emerald-50 rounded-xl px-4 py-3">{okMsg}</p>
       ) : null}
 
-      <div
-        className="rounded-2xl p-5 text-white relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 60%, #A78BFA 100%)',
-        }}
-      >
-        <p className="text-xs opacity-90">เงินพร้อมถอน (good_fund)</p>
-        <p className="text-2xl font-bold mt-1">
-          ฿{(good ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-        </p>
-        <p className="text-xs mt-3 opacity-90">รอรับจาก escrow (pending_fund)</p>
-        <p className="text-lg font-semibold">
-          ฿{(pending ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
-        </p>
-      </div>
+      <div className="lg:grid lg:grid-cols-2 lg:gap-5 lg:items-stretch">
+        <div
+          className="rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden min-h-[140px]"
+          style={{
+            background: 'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 60%, #A78BFA 100%)',
+          }}
+        >
+          <p className="text-xs opacity-90">เงินพร้อมถอน (good_fund)</p>
+          <p className="text-xl sm:text-2xl font-bold mt-1 break-all">
+            ฿{(good ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+          </p>
+          <p className="text-xs mt-3 opacity-90">รอรับจาก escrow (pending_fund)</p>
+          <p className="text-base sm:text-lg font-semibold break-all">
+            ฿{(pending ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+          </p>
+        </div>
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
+        <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3 mt-5 lg:mt-0 flex flex-col">
         <h2 className="font-bold text-gray-900">ถอนเงิน</h2>
         <p className="text-xs text-gray-500">
           ไม่กำหนดยอดขั้นต่ำ — ใช้{' '}
@@ -143,9 +144,10 @@ export function FactoryWalletPage() {
         >
           {withdrawing ? 'กำลังส่งคำขอ...' : 'ขอถอนเงิน'}
         </button>
-      </section>
+        </section>
+      </div>
 
-      <section>
+      <section className="min-w-0">
         <h2 className="font-bold text-gray-900 mb-2">รายการล่าสุด</h2>
         <ul className="space-y-2">
           {tx.length === 0 ? (
@@ -154,7 +156,7 @@ export function FactoryWalletPage() {
             tx.map((t) => (
               <li
                 key={t.id}
-                className="bg-white rounded-xl border border-gray-100 px-3 py-2 text-sm flex justify-between gap-2"
+                className="bg-white rounded-xl border border-gray-100 px-3 py-2 text-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2 min-w-0"
               >
                 <span className="text-gray-600">
                   {t.type} · {t.status}
