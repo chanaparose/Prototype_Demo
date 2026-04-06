@@ -17,6 +17,18 @@ import { Notifications } from './pages/notifications';
 import { FactoriesList } from './pages/factories/FactoriesList';
 import { Login } from './pages/login';
 import { AuthGuard } from './components/AuthGuard';
+import { FactoryRoleGuard } from './components/factory/FactoryRoleGuard';
+import {
+  FactoryPortalLayout,
+  FactoryDashboardPage,
+  FactoryProfilePage,
+  FactoryShowcasesPage,
+  FactoryRfqBoardPage,
+  FactoryRfqDetailPage,
+  FactoryOrdersPage,
+  FactoryOrderDetailPage,
+  FactoryWalletPage,
+} from './pages/factory-portal';
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +61,25 @@ export const router = createBrowserRouter([
           { path: 'rfqs/:id', Component: RFQDetail },
           { path: 'orders/:id', Component: OrderDetail },
           { path: 'messages/:id', Component: ChatRoom },
+          {
+            path: 'factory',
+            Component: FactoryRoleGuard,
+            children: [
+              {
+                Component: FactoryPortalLayout,
+                children: [
+                  { index: true, Component: FactoryDashboardPage },
+                  { path: 'profile', Component: FactoryProfilePage },
+                  { path: 'showcases', Component: FactoryShowcasesPage },
+                  { path: 'rfqs', Component: FactoryRfqBoardPage },
+                  { path: 'rfqs/:id', Component: FactoryRfqDetailPage },
+                  { path: 'orders', Component: FactoryOrdersPage },
+                  { path: 'orders/:id', Component: FactoryOrderDetailPage },
+                  { path: 'wallet', Component: FactoryWalletPage },
+                ],
+              },
+            ],
+          },
         ],
       },
     ],

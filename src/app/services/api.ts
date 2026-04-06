@@ -242,7 +242,10 @@ export const rfqsApi = {
 };
 
 export const ordersApi = {
-  list: (status?: string) => api.get<unknown[]>(`/orders/${status ? `?status=${status}` : ''}`),
+  list: (status?: string) => {
+    const q = status != null && status !== '' ? `?status=${encodeURIComponent(status)}` : '';
+    return api.get<unknown[]>(`/orders${q}`);
+  },
   get: (id: string | number) => api.get<Record<string, unknown>>(`/orders/${id}`),
   create: (quoteId: number) => api.post<Record<string, unknown>>('/orders/', { quote_id: quoteId }),
   updateStatus: (id: string | number, status: string) =>
@@ -284,7 +287,12 @@ export const masterApi = {
     api.get<unknown[]>(`/master/sub-districts?district_id=${districtId}`),
   factoryTypes: () => api.get<unknown[]>('/master/factory-types'),
   productCategories: () => api.get<unknown[]>('/master/product-categories'),
-  productionSteps: () => api.get<unknown[]>('/master/production-steps'),
+  productionSteps: (factoryTypeId?: number) =>
+    api.get<unknown[]>(
+      factoryTypeId != null
+        ? `/master/production-steps?factory_type_id=${factoryTypeId}`
+        : '/master/production-steps',
+    ),
   units: () => api.get<unknown[]>('/master/units'),
   shippingMethods: () => api.get<unknown[]>('/master/shipping-methods'),
 };
@@ -306,6 +314,9 @@ export const showcasesApi = {
     min_order?: number;
     lead_time_days?: number;
   }) => api.post<Record<string, unknown>>('/showcases', data),
+  update: (showcaseId: number | string, data: Record<string, unknown>) =>
+    api.patch<Record<string, unknown>>(`/showcases/${showcaseId}`, data),
+  delete: (showcaseId: number | string) => api.delete(`/showcases/${showcaseId}`),
 };
 
 // ─── Promo Slides API ──────────────────────────────────────────
@@ -359,6 +370,10 @@ export const quotationsApi = {
     api.get<Record<string, unknown>>(`/quotations/${quotationId}`),
   updateStatus: (quotationId: number | string, status: string) =>
     api.patch<Record<string, unknown>>(`/quotations/${quotationId}/status`, { status }),
+  /** Partial update — ใช้เมื่อ backend รองรับ PATCH body (เช่น แก้ราคาก่อนลูกค้ารับ) */
+  patch: (quotationId: number | string, data: Record<string, unknown>) =>
+    api.patch<Record<string, unknown>>(`/quotations/${quotationId}`, data),
+  delete: (quotationId: number | string) => api.delete(`/quotations/${quotationId}`),
 };
 
 // ─── Addresses API ─────────────────────────────────────────────

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { Factory, Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { frontendApi } from '../../services/api';
 
 type Mode = 'login' | 'register';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
@@ -68,7 +69,13 @@ export function Login() {
     setLoading(true);
     try {
       await login({ email, password });
-      navigate('/', { replace: true });
+      try {
+        const me = (await frontendApi.getMe()) as Record<string, unknown>;
+        const role = String(me.role ?? '').toUpperCase();
+        navigate(role === 'FT' ? '/factory' : '/', { replace: true });
+      } catch {
+        navigate('/', { replace: true });
+      }
     } catch (err) {
       console.error('[Login Error]', err);
       setError(err instanceof Error ? err.message : 'เข้าสู่ระบบไม่สำเร็จ');
@@ -90,7 +97,13 @@ export function Login() {
         first_name: firstName,
         last_name: lastName,
       });
-      navigate('/', { replace: true });
+      try {
+        const me = (await frontendApi.getMe()) as Record<string, unknown>;
+        const role = String(me.role ?? '').toUpperCase();
+        navigate(role === 'FT' ? '/factory' : '/', { replace: true });
+      } catch {
+        navigate('/', { replace: true });
+      }
     } catch (err) {
       console.error('[Register Error]', err);
       setError(err instanceof Error ? err.message : 'สมัครสมาชิกไม่สำเร็จ');

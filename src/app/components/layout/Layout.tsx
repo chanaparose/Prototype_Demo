@@ -10,24 +10,41 @@ import {
   X,
   Bell,
   Factory,
+  Wallet,
 } from 'lucide-react';
 import { DesktopSidebar } from './DesktopSidebar';
+import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../contexts/DataContext';
+import { isFactoryRole } from '../../utils/factoryUser';
+import {
+  FACTORY_SIDEBAR_NAV,
+  isFactorySidebarNavActive,
+} from './factoryGlobalNavConfig';
 
-const navLinks = [
+const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
   { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำโรงงาน' },
   { path: '/orders', icon: ClipboardList, label: 'คำสั่งงาน' },
   { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
 ];
 
+type MobileNavItem =
+  | (typeof customerNavLinks)[number]
+  | (typeof FACTORY_SIDEBAR_NAV)[number];
+
 export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const data = useData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isFactory = isFactoryRole(user);
+  const navLinks: MobileNavItem[] = isFactory ? FACTORY_SIDEBAR_NAV : customerNavLinks;
 
   const isActive = (path: string) =>
-    location.pathname === path ||
-    (path !== '/' && location.pathname.startsWith(path));
+    path === '/'
+      ? location.pathname === '/'
+      : location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   return (
     <div className="min-h-screen flex bg-white w-full max-w-full overflow-x-hidden">
@@ -55,11 +72,33 @@ export function Layout() {
 
               {/* Desktop Nav (md only, before lg sidebar kicks in) */}
               <nav className="hidden md:flex lg:hidden items-center gap-1">
-                {navLinks.map(({ path, icon: Icon, label }) => {
+                {navLinks.map((item) => {
+                  if (isFactory && 'href' in item) {
+                    const active = isFactorySidebarNavActive(location.pathname, item);
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => navigate(item.href)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors duration-150"
+                        style={{
+                          color: active ? '#A238FF' : '#6B7280',
+                          background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
+                          fontWeight: active ? 600 : 500,
+                        }}
+                      >
+                        <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
+                        {item.label}
+                      </button>
+                    );
+                  }
+                  const { path, icon: Icon, label } = item as (typeof customerNavLinks)[number];
                   const active = isActive(path);
                   return (
                     <button
                       key={path}
+                      type="button"
                       onClick={() => navigate(path)}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors duration-150"
                       style={{
@@ -77,6 +116,18 @@ export function Layout() {
 
               {/* Right Actions */}
               <div className="flex items-center gap-2">
+                {isFactory ? (
+                  <Link
+                    to="/factory/wallet"
+                    className="lg:hidden flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-violet-50 transition-colors border border-violet-100/80"
+                    title="กระเป๋าเงิน"
+                  >
+                    <Wallet size={18} style={{ color: '#F28A2E' }} />
+                    <span className="text-xs font-bold tabular-nums max-w-[4.5rem] truncate" style={{ color: '#2D1B4E' }}>
+                      ฿{(data.currentUser?.walletBalance ?? 0).toLocaleString()}
+                    </span>
+                  </Link>
+                ) : null}
                 <Link
                   to="/notifications"
                   className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
@@ -120,11 +171,36 @@ export function Layout() {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-100 bg-white shadow-lg">
               <div className="px-4 py-3 space-y-1">
-                {navLinks.map(({ path, icon: Icon, label }) => {
+                {navLinks.map((item) => {
+                  if (isFactory && 'href' in item) {
+                    const active = isFactorySidebarNavActive(location.pathname, item);
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => {
+                          navigate(item.href);
+                          setMobileMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm transition-colors duration-150"
+                        style={{
+                          color: active ? '#A238FF' : '#374151',
+                          background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
+                          fontWeight: active ? 600 : 500,
+                        }}
+                      >
+                        <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                        {item.label}
+                      </button>
+                    );
+                  }
+                  const { path, icon: Icon, label } = item as (typeof customerNavLinks)[number];
                   const active = isActive(path);
                   return (
                     <button
                       key={path}
+                      type="button"
                       onClick={() => {
                         navigate(path);
                         setMobileMenuOpen(false);
@@ -139,9 +215,32 @@ export function Layout() {
                       <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                       {label}
                     </button>
-                  );
-                })}
+                    );
+                  })}
+                {isFactory ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigate('/factory/wallet');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-colors border mt-2"
+                    style={{
+                      color: '#2D1B4E',
+                      background: '#F8F5FF',
+                      borderColor: 'rgba(162,56,255,0.20)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Wallet size={20} style={{ color: '#F28A2E' }} />
+                    <span className="flex-1 text-left">กระเป๋าเงิน</span>
+                    <span className="text-xs font-bold tabular-nums">
+                      ฿{(data.currentUser?.walletBalance ?? 0).toLocaleString()}
+                    </span>
+                  </button>
+                ) : null}
                 <button
+                  type="button"
                   onClick={() => {
                     navigate('/profile');
                     setMobileMenuOpen(false);
