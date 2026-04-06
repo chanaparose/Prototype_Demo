@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ImageWithFallback } from '../../shared';
 
 export type RfqForSpecs = {
   category: string;
@@ -9,6 +10,7 @@ export type RfqForSpecs = {
   deadline: string;
   createdAt: string;
   description?: string;
+  imageUrls?: string[];
 };
 
 type RfqDetailSpecsProps = {
@@ -18,6 +20,7 @@ type RfqDetailSpecsProps = {
 };
 
 export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
+  const imageUrls = rfq.imageUrls?.filter(Boolean) ?? [];
   const rows = [
     { label: 'ประเภทการผลิต', value: rfq.category },
     { label: 'จำนวน', value: `${rfq.quantity.toLocaleString()} ชิ้น` },
@@ -55,6 +58,28 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
               </div>
             ))}
           </div>
+          {imageUrls.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs text-gray-500 mb-2">รูปอ้างอิง / แนบมากับ RFQ</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {imageUrls.map((url, idx) => (
+                  <a
+                    key={`${url}-${idx}`}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100"
+                  >
+                    <ImageWithFallback
+                      src={url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           {rfq.description && (
             <div className="mt-3 pt-3 border-t border-gray-100">
               <p className="text-xs text-gray-500 mb-1">รายละเอียด</p>

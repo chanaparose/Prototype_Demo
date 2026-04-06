@@ -1,7 +1,6 @@
 /**
  * DataContext — Global data store fetched from API
  *
- * This replaces the static mockData.ts imports.
  * Data is loaded after authentication from various /frontend/* endpoints.
  */
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
@@ -14,10 +13,9 @@ import {
   conversationsApi,
   rfqsApi,
 } from '../services/api';
-import * as fallbackData from '../data/mockData';
 import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
 
-// ─── Types (matching mockData shapes) ───────────────────────────
+// ─── Types ──────────────────────────────────────────────────────
 export type Category = {
   id: string;
   name: string;
@@ -115,6 +113,8 @@ export type Rfq = {
   deadline: string;
   createdAt: string;
   description: string;
+  /** URL รูปแนบจาก GET /frontend/rfqs/:id (หรือ bootstrap ถ้ามี) */
+  imageUrls: string[];
   offers: RfqOffer[];
 };
 
@@ -299,6 +299,37 @@ function applyRecommendedFlags(offers: RfqOffer[]): RfqOffer[] {
   });
 }
 
+function parseRfqImageList(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item === 'string') {
+      const s = item.trim();
+      if (s) out.push(s);
+      continue;
+    }
+    if (item && typeof item === 'object' && !Array.isArray(item)) {
+      const o = item as Record<string, unknown>;
+      const u = o.image_url ?? o.imageUrl ?? o.url ?? o.src ?? o.public_url ?? o.publicUrl;
+      if (typeof u === 'string' && u.trim()) out.push(u.trim());
+    }
+  }
+  return out;
+}
+
+/** รูปจาก root `{ images }` หรือใน `rfq` / merged row (ตาม API_SPEC /rfqs/:id) */
+function extractRfqImageUrls(apiRoot: Record<string, unknown>, row: Record<string, unknown>): string[] {
+  const nested =
+    apiRoot.rfq && typeof apiRoot.rfq === 'object' && !Array.isArray(apiRoot.rfq)
+      ? (apiRoot.rfq as Record<string, unknown>)
+      : null;
+  for (const src of [row.images, apiRoot.images, nested?.images]) {
+    const urls = parseRfqImageList(src);
+    if (urls.length > 0) return urls;
+  }
+  return [];
+}
+
 /** แปลงแถว RFQ จาก bootstrap / GET /frontend/rfqs/:id → Rfq */
 export function normalizeRfqRecord(
   r: Record<string, unknown>,
@@ -306,6 +337,7 @@ export function normalizeRfqRecord(
   guessIcon: (catName: string) => string = guessCategoryIcon,
 ): Rfq {
   const row = mergeFrontendRfqPayload(r);
+  const imageUrls = extractRfqImageUrls(r, row);
   const cat = String(row.category ?? row.category_name ?? '');
   const qty = Number(row.quantity ?? 0);
   const rawOffers = row.offers ?? row.quotations ?? [];
@@ -334,6 +366,7 @@ export function normalizeRfqRecord(
     deadline: String(row.deadline ?? ''),
     createdAt: String(row.createdAt ?? row.created_at ?? ''),
     description: String(row.description ?? row.details ?? ''),
+    imageUrls,
     offers,
   };
 }
@@ -498,7 +531,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             .map((row) => normalizeRfqRecord(row, factoryList, guessCategoryIcon))
             .filter((r) => r.id);
         }
-        return fallbackData.rfqs as Rfq[];
+        return [];
       })();
       const mappedOrders: Order[] = (() => {
         const raw = boot?.orders;
@@ -507,7 +540,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             .map((o) => normOrder(o, mappedRfqs))
             .filter((o) => o.id);
         }
-        return fallbackData.orders as Order[];
+        return [];
       })();
 
       setState({
@@ -527,7 +560,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 memberSince: String(u.memberSince ?? ''),
               } as CurrentUser;
             })()
-          : (fallbackData.currentUser as CurrentUser),
+          : null,
         categories: (() => {
           const raw = boot?.categories;
           if (Array.isArray(raw) && raw.length > 0) {
@@ -541,39 +574,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               } as Category;
             });
           }
-          return fallbackData.categories as Category[];
+          return [];
         })(),
         factories: factoryList,
-        factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
-        factoryReviews: fallbackData.factoryReviews as FactoryReview[],
+        factoryProfiles: [],
+        factoryReviews: [],
         // showcases/ideas → ไม่โหลดที่นี่ แต่ละหน้าโหลดเอง (explore, factory-ideas)
         ideaArticles: [],
         factoryShowcases: [],
         rfqs: mappedRfqs,
         orders: mappedOrders,
-        conversations: mappedConvs.length > 0 ? mappedConvs : (fallbackData.conversations as Conversation[]),
-        notifications: mappedNotifs.length > 0 ? mappedNotifs : (fallbackData.notifications as Notification[]),
+        conversations: mappedConvs,
+        notifications: mappedNotifs,
         isLoading: false,
         error: null,
       });
     } catch (err) {
       console.error('DataContext fetchAll failed:', err);
-      setState({
-        currentUser: fallbackData.currentUser as CurrentUser,
-        categories: fallbackData.categories as Category[],
-        factories: fallbackData.factories as Factory[],
-        factoryProfiles: fallbackData.factoryProfiles as FactoryProfile[],
-        factoryReviews: fallbackData.factoryReviews as FactoryReview[],
-        // ❌ ไม่ใช้ mock data สำหรับ showcases/ideas — แสดงว่างเปล่าถ้า API fail
-        ideaArticles: [],
-        factoryShowcases: [],
-        rfqs: fallbackData.rfqs as Rfq[],
-        orders: fallbackData.orders as Order[],
-        conversations: fallbackData.conversations as Conversation[],
-        notifications: fallbackData.notifications as Notification[],
+      setState((prev) => ({
+        ...prev,
         isLoading: false,
         error: String(err),
-      });
+      }));
     }
   }, [isAuthenticated]);
 

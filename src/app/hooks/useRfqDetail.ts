@@ -1,0 +1,274 @@
+/**
+ * useRfqDetail — ดึงข้อมูล RFQ + Quotations จาก CRUD endpoint
+ *
+ * - GET /api/v1/rfqs/:id                → ข้อมูล RFQ
+ * - GET /api/v1/rfqs/:id/quotations     → ใบเสนอราคาทั้งหมด
+ *
+ * Token ถูกแนบอัตโนมัติผ่าน api.ts (Authorization: Bearer <token>)
+ */
+import React from 'react';
+import { useData, type Rfq, type RfqOffer, type Order } from '../contexts/DataContext';
+import { rfqsApi, ordersApi, quotationsApi } from '../services/api';
+
+// ─── Status Code Mapping ───────────────────────────────────────
+const mapRfqStatus = (code: string, hasQuotes: boolean): string => {
+  switch (code.toUpperCase()) {
+    case 'OP': return hasQuotes ? 'offers_received' : 'pending';
+    case 'CL': return 'completed';
+    case 'CC': return 'cancelled';
+    default: return code.toLowerCase();
+  }
+};
+
+const mapOrderStatus = (code: string): string => {
+  switch (code.toUpperCase()) {
+    case 'PR': case 'QC': return 'in_production';
+    case 'SH': return 'shipped';
+    case 'CP': return 'completed';
+    default: return code.toLowerCase();
+  }
+};
+
+// ─── Category Icon Mapping ─────────────────────────────────────
+const CATEGORY_ICON_MAP: Record<string, string> = {
+  'อาหารสัตว์': '🐾', 'อาหารเม็ดสัตว์': '🐾', 'อาหารเสริม': '💊',
+  'ของเล่นสัตว์เลี้ยง': '🎾', 'เสื้อผ้าสัตว์เลี้ยง': '👕',
+  'อุปกรณ์สัตว์เลี้ยง': '🦮', 'บรรจุภัณฑ์': '📦',
+  'ขนมสัตว์เลี้ยง': '🍖', 'ที่นอนและบ้าน': '🏠',
+  'ตู้ปลาและกรง': '🐟', 'กระเป๋าและรถเข็น': '🧳',
+  'ห้องน้ำและทราย': '🚿', 'อุปกรณ์อาบน้ำ': '🧴',
+};
+const guessCategoryIcon = (name: string) => {
+  if (CATEGORY_ICON_MAP[name]) return CATEGORY_ICON_MAP[name];
+  for (const [k, v] of Object.entries(CATEGORY_ICON_MAP)) {
+    if (name.includes(k) || k.includes(name)) return v;
+  }
+  return '📋';
+};
+
+type RawRfqDetail = {
+  rfq: {
+    rfq_id: number;
+    user_id: number;
+    category_id: number;
+    title: string;
+    quantity: number;
+    unit_id: number;
+    budget_per_piece: number;
+    details: string;
+    address_id: number;
+    status: string;
+    created_at: string;
+    [key: string]: unknown;
+  };
+  images: unknown[];
+};
+
+type RawQuotation = {
+  quote_id: number;
+  rfq_id: number;
+  factory_id: number;
+  price_per_piece: number;
+  mold_cost: number;
+  lead_time_days: number;
+  shipping_method_id: number;
+  status: string;
+  create_time: string;
+  [key: string]: unknown;
+};
+
+export function useRfqDetail(rfqId: string | undefined) {
+  const dataCtx = useData();
+
+  // Lookup maps from DataContext (loaded via bootstrap)
+  const categoryMap = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of dataCtx.categories) m.set(String(c.id), c.name);
+    return m;
+  }, [dataCtx.categories]);
+
+  const factoryMap = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const f of dataCtx.factories) m.set(String(f.id), f.name);
+    return m;
+  }, [dataCtx.factories]);
+
+  const [rfq, setRfq] = React.useState<Rfq | null>(null);
+  const [relatedOrder, setRelatedOrder] = React.useState<Order | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // ─── Fetch RFQ detail + quotations ───────────────────────────
+  const fetchDetail = React.useCallback(async () => {
+    if (!rfqId) { setLoading(false); return; }
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Fetch RFQ detail + quotations in parallel
+      const [rfqRes, quotesRes] = await Promise.allSettled([
+        rfqsApi.get(rfqId),
+        rfqsApi.listQuotations(rfqId),
+      ]);
+
+      // Parse RFQ
+      let rawRfq: RawRfqDetail['rfq'] | null = null;
+      if (rfqRes.status === 'fulfilled') {
+        const data = rfqRes.value as RawRfqDetail;
+        rawRfq = data.rfq ?? (data as unknown as RawRfqDetail['rfq']);
+      }
+
+      if (!rawRfq || !rawRfq.rfq_id) {
+        setError('ไม่พบข้อมูล RFQ นี้');
+        setLoading(false);
+        return;
+      }
+
+      // Parse quotations
+      let quotes: RawQuotation[] = [];
+      if (quotesRes.status === 'fulfilled' && Array.isArray(quotesRes.value)) {
+        quotes = quotesRes.value as RawQuotation[];
+      }
+
+      // Map to FE type
+      const catName = categoryMap.get(String(rawRfq.category_id)) ?? '';
+      const budget = Math.round(rawRfq.budget_per_piece * rawRfq.quantity);
+      const status = mapRfqStatus(rawRfq.status, quotes.length > 0);
+      const createdDate = rawRfq.created_at ? rawRfq.created_at.split('T')[0] : '';
+
+      const offers: RfqOffer[] = quotes.map((q) => ({
+        id: String(q.quote_id),
+        factoryId: String(q.factory_id),
+        factoryName: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
+        price: Math.round(q.price_per_piece * rawRfq!.quantity + (q.mold_cost ?? 0)),
+        leadTime: q.lead_time_days,
+        rating: 0,
+        verified: true,
+        recommended: false,
+        aiReason: q.mold_cost > 0
+          ? `รวมค่าแม่พิมพ์ ฿${q.mold_cost.toLocaleString()}`
+          : 'ไม่มีค่าแม่พิมพ์',
+        completedOrders: 0,
+        responseTime: '',
+        // Extra fields for BOQ
+        quoteStatus: q.status,
+        quotationDetail: {
+          quote_id: q.quote_id,
+          price_per_piece: q.price_per_piece,
+          mold_cost: q.mold_cost,
+          lead_time_days: q.lead_time_days,
+          shipping_method: String(q.shipping_method_id),
+          status: q.status === 'AC' ? 'Accepted' : q.status === 'RJ' ? 'Rejected' : 'Pending',
+        },
+      }));
+
+      // Mark the best value as recommended
+      if (offers.length > 0) {
+        // Simple heuristic: lowest total price
+        const sorted = [...offers].sort((a, b) => a.price - b.price);
+        const bestId = sorted[0].id;
+        for (const o of offers) {
+          if (o.id === bestId) {
+            (o as RfqOffer & { recommended: boolean }).recommended = true;
+            (o as RfqOffer & { aiReason: string }).aiReason =
+              'ราคาคุ้มค่าที่สุด — ' + (o as RfqOffer & { aiReason: string }).aiReason;
+          }
+        }
+      }
+
+      const mappedRfq: Rfq = {
+        id: String(rawRfq.rfq_id),
+        projectName: rawRfq.title,
+        category: catName,
+        categoryIcon: guessCategoryIcon(catName),
+        status,
+        offerCount: quotes.length,
+        budget,
+        quantity: rawRfq.quantity,
+        material: '',
+        deadline: '',
+        createdAt: createdDate,
+        description: rawRfq.details ?? '',
+        offers,
+      };
+
+      setRfq(mappedRfq);
+
+      // ── Find related order ──────────────────────────────────
+      // Order links via quote_id — check if any accepted quote has an order
+      const acceptedQuoteIds = quotes.filter((q) => q.status === 'AC').map((q) => q.quote_id);
+      if (acceptedQuoteIds.length > 0) {
+        try {
+          const rawOrders = (await ordersApi.list()) as Array<Record<string, unknown>> | null;
+          if (Array.isArray(rawOrders)) {
+            const matchingOrder = rawOrders.find((o) =>
+              acceptedQuoteIds.includes(Number(o.quote_id)),
+            );
+            if (matchingOrder) {
+              const oStatus = mapOrderStatus(String(matchingOrder.status ?? 'PR'));
+              setRelatedOrder({
+                id: String(matchingOrder.order_id ?? matchingOrder.id ?? ''),
+                rfqId: String(rawRfq.rfq_id),
+                factoryId: String(matchingOrder.factory_id ?? ''),
+                factoryName: factoryMap.get(String(matchingOrder.factory_id)) ?? '',
+                projectName: rawRfq.title,
+                category: catName,
+                status: oStatus,
+                progress: oStatus === 'completed' ? 100 : oStatus === 'shipped' ? 85 : 35,
+                totalAmount: Number(matchingOrder.total_amount ?? 0),
+                depositPaid: Number(matchingOrder.deposit_amount ?? 0),
+                quantity: rawRfq.quantity,
+                createdAt: String(matchingOrder.created_at ?? '').split('T')[0],
+                estimatedDelivery: String(matchingOrder.estimated_delivery ?? '').split('T')[0],
+                timeline: [],
+              });
+            }
+          }
+        } catch { /* no orders found */ }
+      }
+    } catch (err) {
+      console.error('[useRfqDetail] fetchDetail failed:', err);
+      setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูล RFQ ได้');
+    } finally {
+      setLoading(false);
+    }
+  }, [rfqId, categoryMap, factoryMap]);
+
+  // Initial fetch
+  React.useEffect(() => {
+    fetchDetail();
+  }, [fetchDetail]);
+
+  // ─── Accept offer flow ───────────────────────────────────────
+  const acceptOffer = React.useCallback(
+    async (quoteId: string): Promise<{ orderId?: string }> => {
+      // 1. PATCH quotation status → AC
+      await quotationsApi.updateStatus(quoteId, 'AC');
+
+      // 2. Try create order
+      let orderId: string | undefined;
+      try {
+        const created = (await ordersApi.create(Number(quoteId))) as Record<string, unknown>;
+        const oid = created.order_id ?? created.id;
+        if (oid != null) orderId = String(oid);
+      } catch {
+        // Backend might create order in same transaction
+      }
+
+      // 3. Refetch detail to get updated statuses
+      await fetchDetail();
+
+      return { orderId };
+    },
+    [fetchDetail],
+  );
+
+  return {
+    rfq,
+    relatedOrder,
+    loading,
+    error,
+    refetch: fetchDetail,
+    acceptOffer,
+  };
+}
