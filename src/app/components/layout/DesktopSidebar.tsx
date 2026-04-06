@@ -9,8 +9,11 @@ import {
   Plus,
   Bell,
   Wallet,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { isFactoryRole } from '../../utils/factoryUser';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -23,7 +26,7 @@ const DEFAULT_USER_AVATAR_SRC =
     </svg>`,
   );
 
-const navLinks = [
+const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
   { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำโรงงาน' },
   { path: '/orders', icon: ClipboardList, label: 'RFQ & คำสั่งงาน' },
@@ -34,11 +37,21 @@ export function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const data = useData();
+  const { user: authUser } = useAuth();
   const currentUser = data.currentUser;
+  const isFactory = isFactoryRole(authUser);
+  const navLinks = isFactory
+    ? [
+        { path: '/factory', icon: LayoutDashboard, label: 'พอร์ทัลโรงงาน' },
+        ...customerNavLinks.filter((l) => l.path !== '/orders'),
+        { path: '/factory/orders', icon: ClipboardList, label: 'ออเดอร์โรงงาน' },
+      ]
+    : customerNavLinks;
 
   const isActive = (path: string) =>
-    location.pathname === path ||
-    (path !== '/' && location.pathname.startsWith(path));
+    path === '/'
+      ? location.pathname === '/'
+      : location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   const unreadMessages = data.conversations.reduce((s, c) => s + c.unread, 0);
   const activeRfqCount = data.rfqs.filter(
@@ -93,7 +106,7 @@ export function DesktopSidebar() {
                   {unreadMessages}
                 </span>
               )}
-              {path === '/orders' && activeRfqCount > 0 && (
+              {(path === '/orders' || path === '/factory/orders') && activeRfqCount > 0 && (
                 <span
                   className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
                   style={
@@ -125,17 +138,19 @@ export function DesktopSidebar() {
         </p>
       </div>
 
-      {/* Create RFQ Button */}
-      <div className="px-3 pb-3">
-        <button
-          onClick={() => navigate('/create-rfq')}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
-        >
-          <Plus size={18} />
-          สร้าง RFQ ใหม่
-        </button>
-      </div>
+      {/* Create RFQ — เฉพาะลูกค้า */}
+      {!isFactory ? (
+        <div className="px-3 pb-3">
+          <button
+            onClick={() => navigate('/create-rfq')}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
+          >
+            <Plus size={18} />
+            สร้าง RFQ ใหม่
+          </button>
+        </div>
+      ) : null}
 
       {/* Profile footer */}
       <div className="border-t border-gray-100 px-3 py-3 shrink-0">

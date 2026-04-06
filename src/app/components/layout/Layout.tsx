@@ -10,10 +10,13 @@ import {
   X,
   Bell,
   Factory,
+  LayoutDashboard,
 } from 'lucide-react';
 import { DesktopSidebar } from './DesktopSidebar';
+import { useAuth } from '../../contexts/AuthContext';
+import { isFactoryRole } from '../../utils/factoryUser';
 
-const navLinks = [
+const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
   { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำโรงงาน' },
   { path: '/orders', icon: ClipboardList, label: 'คำสั่งงาน' },
@@ -23,11 +26,21 @@ const navLinks = [
 export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isFactory = isFactoryRole(user);
+  const navLinks = isFactory
+    ? [
+        { path: '/factory', icon: LayoutDashboard, label: 'โรงงาน' },
+        ...customerNavLinks.filter((l) => l.path !== '/orders'),
+        { path: '/factory/orders', icon: ClipboardList, label: 'ออเดอร์' },
+      ]
+    : customerNavLinks;
 
   const isActive = (path: string) =>
-    location.pathname === path ||
-    (path !== '/' && location.pathname.startsWith(path));
+    path === '/'
+      ? location.pathname === '/'
+      : location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   return (
     <div className="min-h-screen flex bg-white w-full max-w-full overflow-x-hidden">

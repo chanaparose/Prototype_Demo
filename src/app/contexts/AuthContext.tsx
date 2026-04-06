@@ -22,6 +22,9 @@ export type User = {
   walletBalance: number;
   pendingBalance: number;
   memberSince: string;
+  /** ฝั่งโรงงาน (FT): รหัสโรงงานสำหรับเรียก /factories/:id */
+  factory_id?: number | string;
+  factoryId?: number | string;
   [key: string]: unknown;
 };
 
