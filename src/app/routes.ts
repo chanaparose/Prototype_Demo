@@ -28,6 +28,8 @@ import {
   FactoryOrdersPage,
   FactoryOrderDetailPage,
   FactoryWalletPage,
+  FactoryEditQuotationPage,
+  FactoryQuotationsPage,
 } from './pages/factory-portal';
 
 export const router = createBrowserRouter([
@@ -76,6 +78,8 @@ export const router = createBrowserRouter([
                   { path: 'orders', Component: FactoryOrdersPage },
                   { path: 'orders/:id', Component: FactoryOrderDetailPage },
                   { path: 'wallet', Component: FactoryWalletPage },
+                  { path: 'quotations/:id/edit', Component: FactoryEditQuotationPage },
+                  { path: 'quotations', Component: FactoryQuotationsPage },
                 ],
               },
             ],

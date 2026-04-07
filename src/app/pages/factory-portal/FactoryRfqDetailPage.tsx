@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { rfqsApi, masterApi, quotationsApi } from '../../services/api';
+import { rfqsApi, masterApi, quotationsApi, conversationsApi } from '../../services/api';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 type QuoteRow = Record<string, unknown>;
@@ -102,6 +102,16 @@ export function FactoryRfqDetailPage() {
         await quotationsApi.patch(quoteIdOf(myQuote), payload());
       } else if (!myQuote) {
         await rfqsApi.createQuotation(id, payload());
+      }
+      const customerId = Number(
+        rfqBody.customer_id ?? rfqBody.user_id ?? rfqBody.customer_user_id ?? 0,
+      );
+      if (customerId > 0 && fid != null) {
+        try {
+          await conversationsApi.create({ customer_id: customerId, factory_id: fid });
+        } catch {
+          /* ห้องสนทนาอาจมีอยู่แล้ว — ไม่บล็อก flow */
+        }
       }
       await load();
     } catch (e) {

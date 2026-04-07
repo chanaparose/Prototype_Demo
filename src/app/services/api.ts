@@ -378,6 +378,11 @@ export const certificatesApi = {
 export const quotationsApi = {
   get: (quotationId: number | string) =>
     api.get<Record<string, unknown>>(`/quotations/${quotationId}`),
+  /** ดึง quotation ทั้งหมดของ factory ที่ login (Phase 1.5) */
+  listMine: () => api.get<unknown[]>('/quotations/me'),
+  /** ดึงประวัติการแก้ไข quotation (Phase 1.5 — ต้องมี quotation_history table) */
+  history: (quotationId: number | string) =>
+    api.get<unknown[]>(`/quotations/${quotationId}/history`),
   updateStatus: (quotationId: number | string, status: string) =>
     api.patch<Record<string, unknown>>(`/quotations/${quotationId}/status`, { status }),
   /** Partial update — ใช้เมื่อ backend รองรับ PATCH body (เช่น แก้ราคาก่อนลูกค้ารับ) */

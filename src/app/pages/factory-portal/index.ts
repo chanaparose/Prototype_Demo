@@ -7,3 +7,5 @@ export { FactoryRfqDetailPage } from './FactoryRfqDetailPage';
 export { FactoryOrdersPage } from './FactoryOrdersPage';
 export { FactoryOrderDetailPage } from './FactoryOrderDetailPage';
 export { FactoryWalletPage } from './FactoryWalletPage';
+export { FactoryEditQuotationPage } from './FactoryEditQuotationPage';
+export { FactoryQuotationsPage } from './FactoryQuotationsPage';

@@ -1,23 +1,51 @@
 import React from 'react';
-import { Search, MessageCircle, MessageSquareDot } from 'lucide-react';
+import { Search, MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { ChatRoomEmbedded } from '../chat-room';
+import { ImageWithFallback } from '../../components/shared';
+import type { UiConversation } from './types';
+import { formatConversationTime } from './types';
 
 type MessagesDesktopProps = {
   searchText: string;
   setSearchText: (v: string) => void;
-  filtered: any[];
+  filtered: UiConversation[];
   totalUnread: number;
+  loading: boolean;
+  error: string | null;
+  onReload: () => void;
   selectedId: string | null;
   setSelectedId: (v: string) => void;
+  selectedConversation: UiConversation | null;
 };
+
+function ListSkeleton() {
+  return (
+    <div className="py-2 space-y-0">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="flex items-start gap-3 px-4 py-3.5 animate-pulse">
+          <div className="w-11 h-11 rounded-xl bg-gray-200 shrink-0" />
+          <div className="flex-1 space-y-2 pt-0.5">
+            <div className="h-3.5 bg-gray-200 rounded w-3/5" />
+            <div className="h-3 bg-gray-100 rounded w-2/5" />
+            <div className="h-3 bg-gray-100 rounded w-4/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function MessagesDesktop({
   searchText,
   setSearchText,
   filtered,
   totalUnread,
+  loading,
+  error,
+  onReload,
   selectedId,
   setSelectedId,
+  selectedConversation,
 }: MessagesDesktopProps) {
   return (
     <div className="hidden lg:flex" style={{ height: 'calc(100vh - 0px)' }}>
@@ -51,7 +79,22 @@ export function MessagesDesktop({
 
         {/* Conversation List */}
         <div className="flex-1 overflow-y-auto">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <ListSkeleton />
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-10 px-5 text-center gap-3">
+              <p className="text-sm text-gray-600">{error}</p>
+              <button
+                type="button"
+                onClick={() => void onReload()}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white"
+                style={{ background: '#7A4B94' }}
+              >
+                <RefreshCw size={16} />
+                ลองอีกครั้ง
+              </button>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
@@ -69,6 +112,7 @@ export function MessagesDesktop({
                 return (
                   <button
                     key={conv.id}
+                    type="button"
                     onClick={() => setSelectedId(conv.id)}
                     className="w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors"
                     style={{
@@ -77,10 +121,10 @@ export function MessagesDesktop({
                     }}
                   >
                     <div className="relative shrink-0">
-                      <img
-                        src={conv.factoryAvatar}
+                      <ImageWithFallback
+                        src={conv.factoryImage}
                         alt={conv.factoryName}
-                        className="w-11 h-11 rounded-xl object-cover"
+                        className="w-11 h-11 rounded-xl object-cover bg-gray-100"
                       />
                       {conv.hasQuote && (
                         <span
@@ -100,7 +144,7 @@ export function MessagesDesktop({
                           {conv.factoryName}
                         </p>
                         <span className="text-[10px] text-gray-400 shrink-0 ml-2">
-                          {conv.time}
+                          {formatConversationTime(conv.lastMessageAt)}
                         </span>
                       </div>
                       <p className="text-[10px] mb-0.5 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>
@@ -136,7 +180,19 @@ export function MessagesDesktop({
       <div className="flex-1 flex flex-col bg-gray-50">
         {selectedId ? (
           <div className="h-full px-6 py-5">
-            <ChatRoomEmbedded conversationId={selectedId} />
+            <ChatRoomEmbedded
+              conversationId={selectedId}
+              preview={
+                selectedConversation
+                  ? {
+                      factoryName: selectedConversation.factoryName,
+                      factoryImage: selectedConversation.factoryImage,
+                      rfqName: selectedConversation.rfqName,
+                      hasQuote: selectedConversation.hasQuote,
+                    }
+                  : undefined
+              }
+            />
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center flex-1">

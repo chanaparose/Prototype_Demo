@@ -10,16 +10,16 @@ import {
   ArrowUpRight,
   X,
   ChevronDown,
+  ChevronRight,
   Loader2,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import type { Factory } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi, factoriesApi } from '../../services/api';
+import { masterApi, factoriesApi, categoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
 import {
   factoryIdeasCategoryOptionSelected,
-  factoryIdeasSelectedCategoryLabel,
   parseMasterProductCategories,
   showcaseMatchesSelectedCategoryId,
 } from '../../utils/exploreToFactoryIdeasCategory';
@@ -88,8 +88,21 @@ export function FactoryIdeasDesktop() {
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
+  const subCategoryCacheRef = useRef<
+    Map<string, { id: string; name: string; sortOrder: number }[]>
+  >(new Map());
+  const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
+  const [panelSubs, setPanelSubs] = useState<
+    { id: string; name: string; sortOrder: number }[]
+  >([]);
+  const [panelSubsLoading, setPanelSubsLoading] = useState(false);
+  const [subCategories, setSubCategories] = useState<
+    { id: string; name: string; sortOrder: number }[]
+  >([]);
+  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
   /** หมวดทั้งหมดจาก GET /categories + GET /master/product-categories (Explore ยังคงแสดงแค่ 6 การ์ด) */
   const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
   const data = useData();
@@ -127,10 +140,55 @@ export function FactoryIdeasDesktop() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!categoryOpen) return;
+    if (!categoryMenuOpen || !menuHighlightCategoryId || menuHighlightCategoryId === 'all') {
+      setPanelSubs([]);
+      setPanelSubsLoading(false);
+      return;
+    }
+
+    const cached = subCategoryCacheRef.current.get(menuHighlightCategoryId);
+    if (cached) {
+      setPanelSubs(cached);
+      setPanelSubsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPanelSubsLoading(true);
+    categoriesApi
+      .subCategories(menuHighlightCategoryId)
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped = arr
+          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
+          .map((r) => ({
+            id: String(r.sub_category_id ?? r.id ?? ''),
+            name: String(r.name ?? ''),
+            sortOrder: Number(r.sort_order ?? 0),
+          }))
+          .filter((r) => r.id && r.name)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+        subCategoryCacheRef.current.set(menuHighlightCategoryId, mapped);
+        setPanelSubs(mapped);
+      })
+      .catch(() => {
+        if (!cancelled) setPanelSubs([]);
+      })
+      .finally(() => {
+        if (!cancelled) setPanelSubsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryMenuOpen, menuHighlightCategoryId]);
+
+  useEffect(() => {
+    if (!categoryMenuOpen) return;
     const close = (e: MouseEvent | TouchEvent) => {
-      const el = categoryDropdownRef.current;
-      if (el && !el.contains(e.target as Node)) setCategoryOpen(false);
+      const el = categoryMenuRef.current;
+      if (el && !el.contains(e.target as Node)) setCategoryMenuOpen(false);
     };
     document.addEventListener('mousedown', close);
     document.addEventListener('touchstart', close, { passive: true });
@@ -138,7 +196,7 @@ export function FactoryIdeasDesktop() {
       document.removeEventListener('mousedown', close);
       document.removeEventListener('touchstart', close);
     };
-  }, [categoryOpen]);
+  }, [categoryMenuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -184,6 +242,70 @@ export function FactoryIdeasDesktop() {
     apiCategoriesAll,
   );
 
+  useEffect(() => {
+    if (!categoryMenuOpen) return;
+    setMenuHighlightCategoryId(
+      effectiveCategoryId !== 'all' ? effectiveCategoryId : null,
+    );
+  }, [categoryMenuOpen, effectiveCategoryId]);
+
+  const selectedCategoryIdForSubs =
+    effectiveCategoryId !== 'all' ? effectiveCategoryId : null;
+
+  useEffect(() => {
+    setSelectedSubCategoryId(null);
+    setSubCategories([]);
+
+    if (!selectedCategoryIdForSubs) return;
+
+    let cancelled = false;
+    setSubCategoriesLoading(true);
+
+    categoriesApi
+      .subCategories(selectedCategoryIdForSubs)
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped = arr
+          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
+          .map((r) => ({
+            id: String(r.sub_category_id ?? r.id ?? ''),
+            name: String(r.name ?? ''),
+            sortOrder: Number(r.sort_order ?? 0),
+          }))
+          .filter((r) => r.id && r.name)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+        setSubCategories(mapped);
+        if (selectedCategoryIdForSubs) {
+          subCategoryCacheRef.current.set(selectedCategoryIdForSubs, mapped);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSubCategories([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSubCategoriesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCategoryIdForSubs]);
+
+  const categoryMenuTriggerLabel = useMemo(() => {
+    if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';
+    const catName =
+      categoryFilters.find((c) => c.id === effectiveCategoryId)?.name ?? 'หมวด';
+    if (!selectedSubCategoryId) return `${catName} › ทุกหมวดย่อย`;
+    const subName = subCategories.find((s) => s.id === selectedSubCategoryId)?.name;
+    return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
+  }, [
+    effectiveCategoryId,
+    selectedSubCategoryId,
+    categoryFilters,
+    subCategories,
+  ]);
+
   const visibleItems = useMemo(() => {
     if (isFactoryTab) return [];
     const q = searchText.trim().toLowerCase();
@@ -197,14 +319,19 @@ export function FactoryIdeasDesktop() {
           data.categories.map((c) => ({ id: String(c.id), name: c.name })),
           item.categoryId,
         );
-        if (!q) return byType && byCategory;
+        const bySubCategory = !(
+          selectedSubCategoryId &&
+          item.sub_category_id != null &&
+          String(item.sub_category_id) !== selectedSubCategoryId
+        );
+        if (!q) return byType && byCategory && bySubCategory;
         const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
           .join(' ')
           .toLowerCase();
-        return byType && byCategory && haystack.includes(q);
+        return byType && byCategory && bySubCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+  }, [searchText, selectedType, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
 
   const visibleFactories = useMemo(() => {
     if (selectedType !== 'all' && selectedType !== 'factory') return [];
@@ -225,10 +352,15 @@ export function FactoryIdeasDesktop() {
     return `/idea-detail?showcase_id=${q}`;
   };
 
-  const selectedCategoryName = factoryIdeasSelectedCategoryLabel(
-    effectiveCategoryId,
-    categoryFilters,
-  );
+  const closeCategoryMenu = () => setCategoryMenuOpen(false);
+
+  const pickSubCategory = (subId: string | null, categoryIdForApply: string) => {
+    if (categoryIdForApply && categoryIdForApply !== 'all') {
+      applyCategory(categoryIdForApply);
+    }
+    setSelectedSubCategoryId(subId);
+    closeCategoryMenu();
+  };
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ backgroundColor: COLORS.lightPurpleBg }}>
@@ -290,51 +422,139 @@ export function FactoryIdeasDesktop() {
 
             <div className="w-px h-6 bg-gray-200" />
 
-            {/* Category dropdown */}
-            <div ref={categoryDropdownRef} className="relative">
+            {/* Multi-level category + sub-category menu */}
+            <div ref={categoryMenuRef} className="relative shrink-0 z-20">
               <button
                 type="button"
-                onClick={() => setCategoryOpen(!categoryOpen)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all"
+                onClick={() => setCategoryMenuOpen((o) => !o)}
+                className="flex items-center gap-2 max-w-[min(100vw-8rem,22rem)] px-4 py-2.5 rounded-xl border text-[13px] transition-all"
                 style={{
-                  borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : '#E5E7EB',
-                  backgroundColor: effectiveCategoryId !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
-                  color: effectiveCategoryId !== 'all' ? COLORS.purple : '#4B5563',
-                  fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
+                  borderColor:
+                    effectiveCategoryId !== 'all' || selectedSubCategoryId
+                      ? COLORS.purple
+                      : '#E5E7EB',
+                  backgroundColor:
+                    effectiveCategoryId !== 'all' || selectedSubCategoryId
+                      ? COLORS.lightPurpleBg
+                      : COLORS.gray,
+                  color:
+                    effectiveCategoryId !== 'all' || selectedSubCategoryId
+                      ? COLORS.purple
+                      : '#4B5563',
+                  fontWeight:
+                    effectiveCategoryId !== 'all' || selectedSubCategoryId ? 600 : 400,
                 }}
               >
-                {selectedCategoryName}
-                <ChevronDown size={12} className={`transition-transform duration-200 ${categoryOpen ? 'rotate-180' : ''}`} />
+                <span className="truncate min-w-0 text-left">{categoryMenuTriggerLabel}</span>
+                <ChevronDown
+                  size={12}
+                  className={`shrink-0 transition-transform duration-200 ${categoryMenuOpen ? 'rotate-180' : ''}`}
+                />
               </button>
-              {categoryOpen && (
-                <div className="absolute top-full mt-1.5 left-0 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-20 min-w-[180px] max-h-[min(75vh,32rem)] overflow-y-auto">
-                  {categoryFilters.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => { applyCategory(cat.id); setCategoryOpen(false); }}
-                      className="w-full px-4 py-2 text-left text-[13px] transition-colors"
-                      style={{
-                        color: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? COLORS.purple : '#374151',
-                        fontWeight: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id) ? 600 : 400,
-                        backgroundColor: factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id)
-                          ? COLORS.lightPurpleBg
-                          : 'transparent',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id))
-                          e.currentTarget.style.backgroundColor = COLORS.lightPurpleBg;
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id))
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
+              {categoryMenuOpen ? (
+                <div className="absolute top-full mt-1.5 left-0 flex rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden max-w-[calc(100vw-4rem)]">
+                  <div className="w-44 sm:w-52 max-h-[min(75vh,22rem)] overflow-y-auto border-r border-gray-100 py-1 shrink-0">
+                    {categoryFilters.map((cat) => {
+                      const selected = factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id);
+                      const rowHi =
+                        cat.id === 'all'
+                          ? menuHighlightCategoryId == null
+                          : menuHighlightCategoryId === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onMouseEnter={() =>
+                            setMenuHighlightCategoryId(cat.id === 'all' ? null : cat.id)
+                          }
+                          onClick={() => {
+                            if (cat.id === 'all') {
+                              applyCategory('all');
+                              setSelectedSubCategoryId(null);
+                              closeCategoryMenu();
+                            } else {
+                              applyCategory(cat.id);
+                              setMenuHighlightCategoryId(cat.id);
+                            }
+                          }}
+                          className="w-full flex items-center justify-between gap-1 px-3 py-2.5 text-left text-[13px] transition-colors"
+                          style={{
+                            color: selected ? COLORS.purple : '#374151',
+                            fontWeight: selected ? 600 : 500,
+                            backgroundColor: rowHi ? COLORS.lightPurpleBg : 'transparent',
+                          }}
+                        >
+                          <span className="truncate">{cat.name}</span>
+                          {cat.id !== 'all' ? (
+                            <ChevronRight size={14} className="shrink-0 opacity-40" aria-hidden />
+                          ) : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="w-44 sm:w-52 max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0">
+                    {!menuHighlightCategoryId ? (
+                      <p className="px-3 py-4 text-[11px] text-gray-400 leading-relaxed">
+                        เลือกหมวดทางซ้ายเพื่อดูหมวดย่อย
+                      </p>
+                    ) : panelSubsLoading ? (
+                      <div className="flex items-center gap-2 px-3 py-4 text-xs text-gray-500">
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: COLORS.purple }} />
+                        กำลังโหลดหมวดย่อย…
+                      </div>
+                    ) : panelSubs.length === 0 ? (
+                      <p className="px-3 py-4 text-[11px] text-gray-400">ไม่มีหมวดย่อยในหมวดนี้</p>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => pickSubCategory(null, menuHighlightCategoryId)}
+                          className="w-full px-3 py-2.5 text-left text-[13px]"
+                          style={{
+                            color:
+                              !selectedSubCategoryId &&
+                              effectiveCategoryId === menuHighlightCategoryId
+                                ? COLORS.purple
+                                : '#374151',
+                            fontWeight:
+                              !selectedSubCategoryId &&
+                              effectiveCategoryId === menuHighlightCategoryId
+                                ? 600
+                                : 400,
+                            backgroundColor:
+                              !selectedSubCategoryId &&
+                              effectiveCategoryId === menuHighlightCategoryId
+                                ? COLORS.lightPurpleBg
+                                : 'transparent',
+                          }}
+                        >
+                          ทุกหมวดย่อย
+                        </button>
+                        {panelSubs.map((s) => {
+                          const active =
+                            selectedSubCategoryId === s.id &&
+                            effectiveCategoryId === menuHighlightCategoryId;
+                          return (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => pickSubCategory(s.id, menuHighlightCategoryId)}
+                              className="w-full px-3 py-2.5 text-left text-[13px] transition-colors"
+                              style={{
+                                color: active ? COLORS.purple : '#374151',
+                                fontWeight: active ? 600 : 400,
+                                backgroundColor: active ? COLORS.lightPurpleBg : 'transparent',
+                              }}
+                            >
+                              {s.name}
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                  </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             {/* Search */}

@@ -77,6 +77,9 @@ export type FactoryShowcase = {
   category: string;
   /** จาก API `category_id` — ใช้กรองกับ dropdown / ?category_id= */
   categoryId?: string;
+  /** จาก API เมื่อ BE รองรับ — กรองหมวดย่อย (optional) */
+  sub_category_id?: number;
+  sub_category_name?: string | null;
   postedAt: string;
   likes: number;
   minOrder: number;

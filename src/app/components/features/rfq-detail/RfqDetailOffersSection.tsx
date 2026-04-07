@@ -10,6 +10,8 @@ import {
   XCircle,
   AlertCircle,
   ChevronDown,
+  History,
+  GitCompare,
 } from 'lucide-react';
 import { quotationsApi, ordersApi } from '../../../services/api';
 import type { Quotation } from './QuotationBOQCard';
@@ -95,9 +97,34 @@ export function RfqDetailOffersSection({
     return (
       <>
         <div>
-          <p className="text-sm text-[#2E2252] mb-3" style={{ fontWeight: 700 }}>
-            ประวัติโรงงานที่เคยเสนอราคา
-          </p>
+          <div className="mb-4 lg:mb-8 lg:mt-2 flex items-start gap-3 lg:gap-4">
+            <div
+              className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm"
+              style={{
+                background:
+                  'linear-gradient(145deg, rgba(162,56,255,0.14) 0%, rgba(124,58,237,0.07) 100%)',
+                borderColor: 'rgba(162,56,255,0.25)',
+                boxShadow: '0 2px 8px rgba(162,56,255,0.08)',
+              }}
+              aria-hidden
+            >
+              <History size={19} strokeWidth={2} style={{ color: '#7C3AED' }} />
+            </div>
+            <div className="min-w-0 flex-1 border-b border-gray-100/90 pb-3">
+              <div
+                className="mb-1.5 h-1 w-11 rounded-full"
+                style={{
+                  background: 'linear-gradient(90deg, #A238FF 0%, #F28A2E 100%)',
+                }}
+              />
+              <h3 className="text-base font-bold tracking-tight text-[#2E2252]">
+                ประวัติโรงงานที่เคยเสนอราคา
+              </h3>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
+                โรงงานที่เคยส่งใบเสนอราคามาใน RFQ นี้
+              </p>
+            </div>
+          </div>
           <div className="space-y-3">
             {offers.map((offer) => (
               <div
@@ -292,9 +319,34 @@ export function RfqDetailOffersSection({
           </div>
         </div>
         <div>
-          <p className="text-sm text-[#2E2252] mb-3" style={{ fontWeight: 700 }}>
-            เปรียบเทียบใบเสนอราคา
-          </p>
+          <div className="mb-4 lg:mb-8 lg:mt-2 flex items-start gap-3 lg:gap-4">
+            <div
+              className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm"
+              style={{
+                background:
+                  'linear-gradient(145deg, rgba(242,138,46,0.16) 0%, rgba(162,56,255,0.08) 100%)',
+                borderColor: 'rgba(242,138,46,0.28)',
+                boxShadow: '0 2px 8px rgba(242,138,46,0.1)',
+              }}
+              aria-hidden
+            >
+              <GitCompare size={19} strokeWidth={2} style={{ color: '#C2410C' }} />
+            </div>
+            <div className="min-w-0 flex-1 border-b border-gray-100/90 pb-3">
+              <div
+                className="mb-1.5 h-1 w-11 rounded-full"
+                style={{
+                  background: 'linear-gradient(90deg, #F28A2E 0%, #A238FF 100%)',
+                }}
+              />
+              <h3 className="text-base font-bold tracking-tight text-[#2E2252]">
+                เปรียบเทียบใบเสนอราคา
+              </h3>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
+                เลือกดูรายละเอียดและยอมรับข้อเสนอที่เหมาะสม
+              </p>
+            </div>
+          </div>
           {flowError && (
             <p className="text-xs text-red-600 mb-2 px-1" role="alert">
               {flowError}
