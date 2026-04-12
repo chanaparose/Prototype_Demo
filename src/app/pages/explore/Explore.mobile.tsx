@@ -327,7 +327,12 @@ export function ExploreMobile({
           </h3>
           <p className="text-gray-600 text-sm mb-4 font-medium">สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!</p>
           <div className="flex flex-col gap-2">
-            <button className="w-full py-2.5 rounded-lg font-bold transition-colors shadow-md text-sm text-white" style={{ background: '#A238FF' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/register/factory')}
+              className="w-full py-2.5 rounded-lg font-bold transition-colors shadow-md text-sm text-white"
+              style={{ background: '#A238FF' }}
+            >
               สมัครเลย
             </button>
             <button className="w-full bg-white border border-[#A238FF] text-[#A238FF] py-2.5 rounded-lg font-bold transition-colors text-sm">

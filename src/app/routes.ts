@@ -16,6 +16,7 @@ import { ChatRoom } from './pages/chat-room';
 import { Notifications } from './pages/notifications';
 import { FactoriesList } from './pages/factories/FactoriesList';
 import { Login } from './pages/login';
+import { RegisterFactoryPage } from './pages/auth';
 import { AuthGuard } from './components/AuthGuard';
 import { FactoryRoleGuard } from './components/factory/FactoryRoleGuard';
 import {
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     Component: Login,
+  },
+  {
+    path: '/register/factory',
+    Component: RegisterFactoryPage,
   },
   {
     path: '/',

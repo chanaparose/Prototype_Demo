@@ -39,6 +39,18 @@ type RequestOptions = {
   timeoutMs?: number;
 };
 
+/** Thrown on non-2xx responses so callers can branch on `status` (e.g. 409, 422). */
+export class ApiHttpError extends Error {
+  readonly status: number;
+  readonly body: unknown;
+  constructor(message: string, status: number, body?: unknown) {
+    super(message);
+    this.name = 'ApiHttpError';
+    this.status = status;
+    this.body = body;
+  }
+}
+
 /** Extract error message from various API error response shapes */
 function extractErrorMessage(data: unknown, fallback: string): string {
   if (!data || typeof data !== 'object') return fallback;
@@ -113,8 +125,10 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(
+    throw new ApiHttpError(
       extractErrorMessage(errorData, `API Error: ${res.status} ${res.statusText}`),
+      res.status,
+      errorData,
     );
   }
 
@@ -160,6 +174,8 @@ export type RegisterFactoryPayload = {
 export type AuthResponse = {
   token: string;
   user: Record<string, unknown>;
+  /** Present when registering as factory (role FT). */
+  factory?: Record<string, unknown>;
 };
 
 export const authApi = {

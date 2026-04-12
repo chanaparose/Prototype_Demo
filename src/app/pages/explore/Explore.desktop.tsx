@@ -761,7 +761,11 @@ export function ExploreDesktop({
             </p>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-            <button className="w-full sm:w-auto bg-[#A238FF] hover:bg-[#8B2BE2] text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-md text-sm md:text-base whitespace-nowrap">
+            <button
+              type="button"
+              onClick={() => navigate('/register/factory')}
+              className="w-full sm:w-auto bg-[#A238FF] hover:bg-[#8B2BE2] text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-md text-sm md:text-base whitespace-nowrap"
+            >
               สมัครเลย
             </button>
             <button className="w-full sm:w-auto bg-white border border-[#A238FF] text-[#A238FF] hover:bg-[#F8F5FF] px-8 py-3 rounded-lg font-bold transition-colors text-sm md:text-base whitespace-nowrap">
