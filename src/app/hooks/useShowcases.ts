@@ -33,6 +33,18 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
       ? String(catIdRaw).trim()
       : undefined;
 
+  const subRaw = r.sub_category_id ?? r.subCategoryId;
+  let sub_category_id: number | undefined;
+  if (subRaw != null && String(subRaw).trim() !== '') {
+    const n = Number(subRaw);
+    if (Number.isFinite(n)) sub_category_id = n;
+  }
+  const subNameRaw = r.sub_category_name ?? r.subCategoryName;
+  const sub_category_name =
+    subNameRaw != null && String(subNameRaw).trim() !== ''
+      ? String(subNameRaw)
+      : null;
+
   return {
     id: String(r.showcase_id ?? r.id ?? ''),
     factoryId: String(r.factory_id ?? r.factoryId ?? ''),
@@ -43,6 +55,8 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
     contentType: CT_MAP[String(r.content_type ?? '').trim()] ?? 'product',
     category: String(r.category_name ?? r.category ?? ''),
     categoryId,
+    sub_category_id,
+    sub_category_name,
     postedAt: String(r.created_at ?? r.postedAt ?? ''),
     likes: Number(r.likes_count ?? r.likes ?? 0),
     minOrder: Number(r.min_order ?? r.minOrder ?? 0),

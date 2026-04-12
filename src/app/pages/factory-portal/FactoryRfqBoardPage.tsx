@@ -30,6 +30,7 @@ export function FactoryRfqBoardPage() {
       setLoading(true);
       setError('');
       try {
+        // TODO(BE): ใช้ GET /rfqs/matching หรือ ?for_factory=me แทน list('OP') ทั้งระบบเมื่อ BE พร้อม
         const raw = await rfqsApi.list('OP');
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         const normalized = arr.map(normalizeRfqRow).filter((r) => r.id);

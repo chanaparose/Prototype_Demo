@@ -141,8 +141,10 @@ export function FactoryShowcasesPage() {
         masterApi.productCategories().catch(() => []),
       ]);
       const arr = (Array.isArray(rawList) ? rawList : []) as Row[];
+      // A6: กรองเฉพาะ showcase ของโรงงานปัจจุบัน (client-side; ไม่มี listMine ในรอบ FE-only)
       const mine = arr.filter((s) => Number(s.factory_id ?? s.factoryId) === fid);
       setRows(mine);
+      // TODO(BE): sub_category_id ในฟอร์ม + GET showcases?factory_id=me เมื่อ BE พร้อม
       setCategories((Array.isArray(cats) ? cats : []) as Row[]);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดโชว์เคสไม่สำเร็จ');

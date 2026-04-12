@@ -1,14 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Search, BadgeCheck, Heart, Sparkles, X, Loader2, ChevronDown, LayoutGrid, List } from 'lucide-react';
+import {
+  Search,
+  BadgeCheck,
+  Heart,
+  Sparkles,
+  X,
+  Loader2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  List,
+} from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import type { Factory } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi, favoritesApi, factoriesApi } from '../../services/api';
+import { masterApi, favoritesApi, factoriesApi, categoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
 import {
   factoryIdeasCategoryOptionSelected,
-  factoryIdeasSelectedCategoryLabel,
   parseMasterProductCategories,
   showcaseMatchesSelectedCategoryId,
 } from '../../utils/exploreToFactoryIdeasCategory';
@@ -79,9 +90,23 @@ export function FactoryIdeasMobile() {
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<ContentType>('all');
   const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
-  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
+  const subCategoryCacheRef = useRef<
+    Map<string, { id: string; name: string; sortOrder: number }[]>
+  >(new Map());
+  const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
+  const [panelSubs, setPanelSubs] = useState<
+    { id: string; name: string; sortOrder: number }[]
+  >([]);
+  const [panelSubsLoading, setPanelSubsLoading] = useState(false);
+  const [subCategories, setSubCategories] = useState<
+    { id: string; name: string; sortOrder: number }[]
+  >([]);
+  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
   // Optimistic favorites: Set of showcase IDs that this session has liked
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const data = useData();
@@ -185,16 +210,73 @@ export function FactoryIdeasMobile() {
     apiCategoriesAll,
   );
 
-  const selectedCategoryName = factoryIdeasSelectedCategoryLabel(
-    effectiveCategoryId,
-    categoryFilters,
-  );
+  const selectedCategoryIdForSubs =
+    effectiveCategoryId !== 'all' ? effectiveCategoryId : null;
 
   useEffect(() => {
-    if (!categoryOpen) return;
+    if (!categoryMenuOpen) return;
+    setMenuHighlightCategoryId(
+      effectiveCategoryId !== 'all' ? effectiveCategoryId : null,
+    );
+  }, [categoryMenuOpen, effectiveCategoryId]);
+
+  useEffect(() => {
+    if (categoryMenuOpen) setCategoryMenuStep('categories');
+  }, [categoryMenuOpen]);
+
+  useEffect(() => {
+    if (!categoryMenuOpen || !menuHighlightCategoryId || menuHighlightCategoryId === 'all') {
+      setPanelSubs([]);
+      setPanelSubsLoading(false);
+      return;
+    }
+
+    const cached = subCategoryCacheRef.current.get(menuHighlightCategoryId);
+    if (cached) {
+      setPanelSubs(cached);
+      setPanelSubsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPanelSubsLoading(true);
+    categoriesApi
+      .subCategories(menuHighlightCategoryId)
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped = arr
+          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
+          .map((r) => ({
+            id: String(r.sub_category_id ?? r.id ?? ''),
+            name: String(r.name ?? ''),
+            sortOrder: Number(r.sort_order ?? 0),
+          }))
+          .filter((r) => r.id && r.name)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+        subCategoryCacheRef.current.set(menuHighlightCategoryId, mapped);
+        setPanelSubs(mapped);
+      })
+      .catch(() => {
+        if (!cancelled) setPanelSubs([]);
+      })
+      .finally(() => {
+        if (!cancelled) setPanelSubsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryMenuOpen, menuHighlightCategoryId]);
+
+  useEffect(() => {
+    if (!categoryMenuOpen) return;
     const close = (e: MouseEvent | TouchEvent) => {
-      const el = categoryDropdownRef.current;
-      if (el && !el.contains(e.target as Node)) setCategoryOpen(false);
+      const el = categoryMenuRef.current;
+      if (el && !el.contains(e.target as Node)) {
+        setCategoryMenuOpen(false);
+        setCategoryMenuStep('categories');
+      }
     };
     document.addEventListener('mousedown', close);
     document.addEventListener('touchstart', close, { passive: true });
@@ -202,7 +284,72 @@ export function FactoryIdeasMobile() {
       document.removeEventListener('mousedown', close);
       document.removeEventListener('touchstart', close);
     };
-  }, [categoryOpen]);
+  }, [categoryMenuOpen]);
+
+  useEffect(() => {
+    setSelectedSubCategoryId(null);
+    setSubCategories([]);
+
+    if (!selectedCategoryIdForSubs) return;
+
+    let cancelled = false;
+    setSubCategoriesLoading(true);
+
+    categoriesApi
+      .subCategories(selectedCategoryIdForSubs)
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped = arr
+          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
+          .map((r) => ({
+            id: String(r.sub_category_id ?? r.id ?? ''),
+            name: String(r.name ?? ''),
+            sortOrder: Number(r.sort_order ?? 0),
+          }))
+          .filter((r) => r.id && r.name)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+        setSubCategories(mapped);
+        subCategoryCacheRef.current.set(selectedCategoryIdForSubs, mapped);
+      })
+      .catch(() => {
+        if (!cancelled) setSubCategories([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSubCategoriesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCategoryIdForSubs]);
+
+  const categoryMenuTriggerLabel = useMemo(() => {
+    if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';
+    const catName =
+      categoryFilters.find((c) => c.id === effectiveCategoryId)?.name ?? 'หมวด';
+    if (!selectedSubCategoryId) return `${catName} › ทุกหมวดย่อย`;
+    const subName = subCategories.find((s) => s.id === selectedSubCategoryId)?.name;
+    return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
+  }, [
+    effectiveCategoryId,
+    selectedSubCategoryId,
+    categoryFilters,
+    subCategories,
+  ]);
+
+  const closeCategoryMenu = () => {
+    setCategoryMenuOpen(false);
+    setCategoryMenuStep('categories');
+  };
+
+  const pickSubCategory = (subId: string | null, categoryIdForApply: string) => {
+    if (categoryIdForApply && categoryIdForApply !== 'all') {
+      applyCategory(categoryIdForApply);
+    }
+    setSelectedSubCategoryId(subId);
+    closeCategoryMenu();
+  };
 
   /* ── Showcase filter (product / promotion / idea) ── */
   const visibleItems = useMemo(() => {
@@ -218,13 +365,18 @@ export function FactoryIdeasMobile() {
           data.categories.map((c) => ({ id: String(c.id), name: c.name })),
           item.categoryId,
         );
-        if (!q) return byType && byCategory;
+        const bySubCategory = !(
+          selectedSubCategoryId &&
+          item.sub_category_id != null &&
+          String(item.sub_category_id) !== selectedSubCategoryId
+        );
+        if (!q) return byType && byCategory && bySubCategory;
         const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
           .join(' ').toLowerCase();
-        return byType && byCategory && haystack.includes(q);
+        return byType && byCategory && bySubCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+  }, [searchText, selectedType, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
 
   /* ── Factory filter ── */
   const visibleFactories = useMemo(() => {
@@ -339,14 +491,13 @@ export function FactoryIdeasMobile() {
           })}
         </div>
 
-        {/* Row 2: Category dropdown + จำนวน + view toggle — แถวเดียว */}
-        <div className="flex items-center gap-2 px-4 pb-3">
+        {/* Row 2: Category (multi-level) + จำนวน + view toggle */}
+        <div className="flex flex-wrap items-center gap-2 px-4 pb-3">
 
-          {/* Category dropdown */}
-          <div ref={categoryDropdownRef} className="relative flex-1 min-w-0 z-30">
+          <div ref={categoryMenuRef} className="relative flex-1 min-w-[min(100%,10rem)] z-30">
             <button
               type="button"
-              onClick={() => setCategoryOpen((o) => !o)}
+              onClick={() => setCategoryMenuOpen((o) => !o)}
               className="w-full flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg border text-[12px] transition-all"
               style={{
                 borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : '#E5E7EB',
@@ -355,32 +506,110 @@ export function FactoryIdeasMobile() {
                 fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
               }}
             >
-              <span className="truncate">{selectedCategoryName}</span>
+              <span className="truncate">{categoryMenuTriggerLabel}</span>
               <ChevronDown
                 size={14}
-                className={`shrink-0 transition-transform duration-200 ${categoryOpen ? 'rotate-180' : ''}`}
+                className={`shrink-0 transition-transform duration-200 ${categoryMenuOpen ? 'rotate-180' : ''}`}
               />
             </button>
-            {categoryOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl py-1 max-h-[50vh] overflow-y-auto">
-                {categoryFilters.map((cat) => {
-                  const selected = factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id);
-                  return (
+            {categoryMenuOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl py-1 max-h-[50vh] overflow-y-auto z-40">
+                {categoryMenuStep === 'categories' ? (
+                  categoryFilters.map((cat) => {
+                    const selected = factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id);
+                    const isAll = cat.id === 'all';
+                    return (
+                      <button
+                        key={isAll ? 'all' : `cat-${cat.id}`}
+                        type="button"
+                        onClick={() => {
+                          if (isAll) {
+                            applyCategory('all');
+                            setSelectedSubCategoryId(null);
+                            closeCategoryMenu();
+                          } else {
+                            applyCategory(cat.id);
+                            setMenuHighlightCategoryId(cat.id);
+                            setCategoryMenuStep('subs');
+                          }
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center justify-between gap-2 text-left text-[12px] transition-colors active:bg-gray-50"
+                        style={{
+                          color: selected ? COLORS.purple : '#374151',
+                          fontWeight: selected ? 600 : 400,
+                          backgroundColor: selected ? COLORS.lightPurpleBg : 'transparent',
+                        }}
+                      >
+                        <span className="truncate">{cat.name}</span>
+                        {!isAll && (
+                          <ChevronRight size={16} className="shrink-0 text-gray-400" aria-hidden />
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <>
                     <button
-                      key={cat.id === 'all' ? 'all' : `cat-${cat.id}`}
                       type="button"
-                      onClick={() => { applyCategory(cat.id); setCategoryOpen(false); }}
-                      className="w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50"
-                      style={{
-                        color: selected ? COLORS.purple : '#374151',
-                        fontWeight: selected ? 600 : 400,
-                        backgroundColor: selected ? COLORS.lightPurpleBg : 'transparent',
-                      }}
+                      onClick={() => setCategoryMenuStep('categories')}
+                      className="w-full px-4 py-2.5 flex items-center gap-2 text-left text-[12px] font-medium active:bg-gray-50"
+                      style={{ color: COLORS.purple }}
                     >
-                      {cat.name}
+                      <ChevronLeft size={18} className="shrink-0" aria-hidden />
+                      หมวดหมู่
                     </button>
-                  );
-                })}
+                    <div className="mx-3 border-t border-gray-100" />
+                    {panelSubsLoading ? (
+                      <div className="px-4 py-6 flex items-center justify-center gap-2 text-[12px] text-gray-500">
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                        กำลังโหลดหมวดย่อย...
+                      </div>
+                    ) : panelSubs.length === 0 ? (
+                      <p className="px-4 py-4 text-center text-[12px] text-gray-500">
+                        ไม่มีหมวดย่อยในหมวดนี้
+                      </p>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cid = menuHighlightCategoryId;
+                            if (cid) pickSubCategory(null, cid);
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50"
+                          style={{
+                            color: !selectedSubCategoryId ? COLORS.purple : '#374151',
+                            fontWeight: !selectedSubCategoryId ? 600 : 400,
+                            backgroundColor: !selectedSubCategoryId ? COLORS.lightPurpleBg : 'transparent',
+                          }}
+                        >
+                          ทุกหมวดย่อย
+                        </button>
+                        {panelSubs.map((s) => {
+                          const sel = selectedSubCategoryId === s.id;
+                          return (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => {
+                                const cid = menuHighlightCategoryId;
+                                if (cid) pickSubCategory(s.id, cid);
+                              }}
+                              className="w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50"
+                              style={{
+                                color: sel ? COLORS.purple : '#374151',
+                                fontWeight: sel ? 600 : 400,
+                                backgroundColor: sel ? COLORS.lightPurpleBg : 'transparent',
+                              }}
+                            >
+                              {s.name}
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>

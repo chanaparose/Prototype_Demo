@@ -6,6 +6,7 @@ import {
   Images,
   ClipboardList,
   Package,
+  FileText,
 } from 'lucide-react';
 
 /**
@@ -67,6 +68,14 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     href: '/factory/rfqs',
     activeMatch: 'prefix',
     activePath: '/factory/rfqs',
+  },
+  {
+    key: 'factory-quotations',
+    label: 'ใบเสนอราคา',
+    icon: FileText,
+    href: '/factory/quotations',
+    activeMatch: 'prefix',
+    activePath: '/factory/quotations',
   },
   {
     key: 'factory-orders',

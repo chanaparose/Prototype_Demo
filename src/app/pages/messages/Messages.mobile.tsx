@@ -1,18 +1,48 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Search } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
+import { ImageWithFallback } from '../../components/shared';
+import type { UiConversation } from './types';
+import { formatConversationTime } from './types';
+
 type MessagesMobileProps = {
   searchText: string;
   setSearchText: (v: string) => void;
-  filtered: any[];
+  filtered: UiConversation[];
   totalUnread: number;
+  loading: boolean;
+  error: string | null;
+  onReload: () => void;
 };
+
+function ListSkeleton() {
+  return (
+    <div className="space-y-3">
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className="bg-white rounded-2xl p-4 border border-gray-50 animate-pulse flex gap-3"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-gray-200 shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            <div className="h-3 bg-gray-100 rounded w-1/3" />
+            <div className="h-3 bg-gray-100 rounded w-4/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function MessagesMobile({
   searchText,
   setSearchText,
   filtered,
   totalUnread,
+  loading,
+  error,
+  onReload,
 }: MessagesMobileProps) {
   const navigate = useNavigate();
 
@@ -50,8 +80,22 @@ export function MessagesMobile({
         />
       </div>
 
-      {/* Conversation List */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <ListSkeleton />
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+          <p className="text-sm text-gray-600 px-4">{error}</p>
+          <button
+            type="button"
+            onClick={() => void onReload()}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{ background: '#7A4B94' }}
+          >
+            <RefreshCw size={16} />
+            ลองอีกครั้ง
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
         <MobileEmptyState />
       ) : (
         <div className="space-y-3">
@@ -72,20 +116,28 @@ function ConversationCard({
   conv,
   onClick,
 }: {
-  conv: any;
+  conv: UiConversation;
   onClick: () => void;
 }) {
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98]"
     >
       <div className="flex items-center gap-3">
         <div className="relative shrink-0">
-          <img
-            src={conv.factoryAvatar}
+          <ImageWithFallback
+            src={conv.factoryImage}
             alt={conv.factoryName}
-            className="w-12 h-12 rounded-2xl object-cover"
+            className="w-12 h-12 rounded-2xl object-cover bg-gray-100"
           />
           {conv.hasQuote && (
             <span
@@ -105,7 +157,7 @@ function ConversationCard({
               {conv.factoryName}
             </p>
             <span className="text-[10px] text-gray-400 shrink-0 ml-2">
-              {conv.time}
+              {formatConversationTime(conv.lastMessageAt)}
             </span>
           </div>
           <p className="text-[10px] mb-1 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>

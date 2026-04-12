@@ -132,6 +132,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: true,
       isLoading: false,
     });
+
+    try {
+      const fullUser = await frontendApi.getMe();
+      console.log('[Auth] /frontend/me after register:', fullUser);
+      setState((prev) => ({ ...prev, user: fullUser as unknown as User }));
+    } catch (err) {
+      console.warn('[Auth] /frontend/me failed after register, using basic user:', err);
+    }
   };
 
   const logout = () => {

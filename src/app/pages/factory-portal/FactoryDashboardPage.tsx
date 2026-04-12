@@ -11,13 +11,13 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { TrendingUp, PiggyBank, CheckCircle2, Package, MessageSquareReply } from 'lucide-react';
+import { TrendingUp, PiggyBank, CheckCircle2, Package, MessageSquareReply, RefreshCw } from 'lucide-react';
 import {
-  FACTORY_ANALYTICS_MOCK,
+  useFactoryDashboard,
   type AnalyticsTimeframe,
   type AnalyticsSummary,
   type AnalyticsSeriesPoint,
-} from '../../data/factoryAnalyticsMock';
+} from './hooks/useFactoryDashboard';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 const TIMEFRAMES: { id: AnalyticsTimeframe; label: string }[] = [
@@ -136,9 +136,9 @@ function kpiRows(summary: AnalyticsSummary) {
     },
     {
       key: 'deposits',
-      title: 'ยอดมัดจำ',
+      title: 'เงินรอรับ (กระเป๋า)',
       value: formatBaht(summary.deposits_total),
-      sub: 'ในช่วงที่เลือก',
+      sub: 'pending_fund จาก wallets/me',
       icon: PiggyBank,
       accent: ORANGE,
     },
@@ -160,9 +160,9 @@ function kpiRows(summary: AnalyticsSummary) {
     },
     {
       key: 'rfq',
-      title: 'ตอบกลับ / RFQ ที่ได้รับ',
-      value: `${summary.rfq_replies_total.toLocaleString('th-TH')} / ${summary.rfq_received_total.toLocaleString('th-TH')}`,
-      sub: `อัตราตอบกลับ ${rfqReplyRatePct(summary)}%`,
+      title: 'ใบเสนอราคา / RFQ เปิด',
+      value: `${summary.pending_quotations_total.toLocaleString('th-TH')} รอ · ส่งแล้ว ${summary.rfq_replies_total.toLocaleString('th-TH')}`,
+      sub: `RFQ เปิดในระบบ ${summary.rfq_received_total.toLocaleString('th-TH')} · อัตราตอบกลับ ${rfqReplyRatePct(summary)}%`,
       icon: MessageSquareReply,
       accent: '#0EA5E9',
     },
@@ -172,10 +172,10 @@ function kpiRows(summary: AnalyticsSummary) {
 export function FactoryDashboardPage() {
   const isDesktop = useIsDesktop();
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('daily');
+  const { loading, error, summary, series, reload } = useFactoryDashboard(timeframe);
 
-  const bundle = useMemo(() => FACTORY_ANALYTICS_MOCK[timeframe], [timeframe]);
-  const chartData = useMemo(() => bundle.series as AnalyticsSeriesPoint[], [bundle.series]);
-  const kpis = useMemo(() => kpiRows(bundle.summary), [bundle.summary]);
+  const chartData = useMemo(() => series as AnalyticsSeriesPoint[], [series]);
+  const kpis = useMemo(() => kpiRows(summary), [summary]);
 
   const lineChartHeight = isDesktop ? 280 : 220;
   const barChartHeight = isDesktop ? 260 : 220;
@@ -183,14 +183,40 @@ export function FactoryDashboardPage() {
     ? { angle: -25 as const, textAnchor: 'end' as const, height: 56, tick: { fontSize: 10 } }
     : { angle: 0 as const, textAnchor: 'middle' as const, height: 36, tick: { fontSize: 9 }, interval: 'preserveStartEnd' as const };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-3">
+        <div
+          className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
+          style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+        />
+        <p className="text-sm text-gray-500">กำลังโหลดแดชบอร์ด…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5 sm:space-y-6 pb-8 sm:pb-10 w-full min-w-0">
+      {error ? (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="flex-1">{error}</p>
+          <button
+            type="button"
+            onClick={() => void reload()}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-white shrink-0"
+            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+          >
+            <RefreshCw size={16} />
+            ลองอีกครั้ง
+          </button>
+        </div>
+      ) : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-[10px] text-gray-400 uppercase tracking-wider">วิเคราะห์ธุรกิจ</p>
           <h1 className="text-lg sm:text-xl font-bold text-gray-900">แดชบอร์ดโรงงาน</h1>
           <p className="text-xs text-gray-500 mt-1 max-w-xl">
-            สรุปผลการดำเนินงาน — ข้อมูลจำลองสำหรับต้นแบบ
+            สรุปจาก RFQ เปิด, ออเดอร์ของโรงงาน, ใบเสนอราคา และกระเป๋า — คำนวณฝั่ง client
           </p>
         </div>
         <div
@@ -303,7 +329,7 @@ export function FactoryDashboardPage() {
           <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
             <h2 className="text-sm font-bold text-gray-900 mb-1">RFQ ที่ได้รับ vs การตอบกลับ</h2>
             <p className="text-xs text-gray-500 mb-4">
-              ยอด RFQ ในช่วงเทียบกับจำนวนครั้งที่ส่งใบเสนอราคา — ตอบกลับจะไม่เกินยอดที่ได้รับใน mock นี้
+              ช่วงเวลาอิงจากวันที่สร้าง (ถ้า API ไม่ส่งวันที่ จะกระจายค่าโดยประมาณเพื่อให้เห็นแนวโน้ม)
             </p>
             <div className="w-full min-w-0" style={{ height: barChartHeight }}>
               <ResponsiveContainer width="100%" height="100%">

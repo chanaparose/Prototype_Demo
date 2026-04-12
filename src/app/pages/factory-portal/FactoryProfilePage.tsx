@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { factoriesApi, certificatesApi, mediaApi } from '../../services/api';
+import { factoriesApi, certificatesApi, mediaApi, addressesApi } from '../../services/api';
 
 export function FactoryProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -19,6 +19,8 @@ export function FactoryProfilePage() {
   const [description, setDescription] = useState('');
 
   const [certs, setCerts] = useState<Record<string, unknown>[]>([]);
+  const [addresses, setAddresses] = useState<Record<string, unknown>[]>([]);
+  const [isVerified, setIsVerified] = useState(false);
   const [certIdInput, setCertIdInput] = useState('1');
   const [certNumber, setCertNumber] = useState('');
   const [certExpire, setCertExpire] = useState('');
@@ -33,9 +35,10 @@ export function FactoryProfilePage() {
     setLoading(true);
     setError('');
     try {
-      const [factoryRow, certList] = await Promise.all([
+      const [factoryRow, certList, addrRes] = await Promise.all([
         factoriesApi.get(fid),
         certificatesApi.listByFactory(fid),
+        addressesApi.list().catch(() => []),
       ]);
 
       const f = factoryRow as Record<string, unknown>;
@@ -44,8 +47,10 @@ export function FactoryProfilePage() {
       setPhone(String(f.phone ?? user?.phone ?? ''));
       setAddress(String(f.address ?? ''));
       setDescription(String(f.description ?? ''));
+      setIsVerified(Boolean(f.is_verified ?? f.verified));
 
       setCerts(Array.isArray(certList) ? (certList as Record<string, unknown>[]) : []);
+      setAddresses(Array.isArray(addrRes) ? (addrRes as Record<string, unknown>[]) : []);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดข้อมูลไม่สำเร็จ');
     } finally {
@@ -135,6 +140,18 @@ export function FactoryProfilePage() {
         </p>
       ) : null}
 
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+            isVerified
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-amber-50 text-amber-900 border-amber-200'
+          }`}
+        >
+          {isVerified ? 'ยืนยันแล้ว (Verified)' : 'รอแอดมินตรวจสอบ'}
+        </span>
+      </div>
+
       <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
         <h2 className="text-base font-bold text-gray-900 mb-4">ข้อมูลโรงงาน</h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -188,6 +205,33 @@ export function FactoryProfilePage() {
         >
           {saving ? 'กำลังบันทึก...' : 'บันทึกโปรไฟล์'}
         </button>
+      </section>
+
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
+        <h2 className="text-base font-bold text-gray-900 mb-1">ที่อยู่ในระบบ</h2>
+        <p className="text-xs text-gray-500 mb-3">
+          จาก <code className="text-[11px] bg-gray-100 px-1 rounded">GET /addresses</code>
+          {/* TODO(BE): ผูกที่อยู่กับโรงงานแยกตาม factory เมื่อ BE รองรับ */}
+        </p>
+        <ul className="space-y-2">
+          {addresses.length === 0 ? (
+            <li className="text-sm text-gray-400">ยังไม่มีที่อยู่ — เพิ่มได้จาก flow ลูกค้า/API เมื่อพร้อม</li>
+          ) : (
+            addresses.map((a, i) => (
+              <li
+                key={String(a.address_id ?? a.id ?? i)}
+                className="text-sm border border-gray-100 rounded-xl px-3 py-2 text-gray-700"
+              >
+                <span className="font-medium text-gray-900">
+                  {String(a.address_type ?? 'ที่อยู่')}
+                </span>
+                {' · '}
+                {String(a.address_detail ?? a.detail ?? '—')}
+                {a.zip_code != null ? ` · ${String(a.zip_code)}` : ''}
+              </li>
+            ))
+          )}
+        </ul>
       </section>
 
       <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
