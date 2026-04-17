@@ -280,7 +280,7 @@ export const rfqsApi = {
   /** RFQ ที่ match หมวดของโรงงานตาม JWT */
   matching: () => api.get<unknown[]>('/rfqs/matching'),
   get: (id: string | number) => api.get<{ rfq: Record<string, unknown>; images: unknown[] }>(`/rfqs/${id}`),
-  create: (data: Record<string, unknown>) => api.post<Record<string, unknown>>('/rfqs/', data),
+  create: (data: Record<string, unknown>) => api.post<Record<string, unknown>>('/rfqs', data),
   addImage: (rfqId: string | number, imageUrl: string) =>
     api.post(`/rfqs/${rfqId}/images`, { image_url: imageUrl }),
   cancel: (rfqId: string | number) => api.patch(`/rfqs/${rfqId}/cancel`),
