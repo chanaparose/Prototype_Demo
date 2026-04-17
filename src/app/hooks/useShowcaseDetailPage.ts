@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useData } from '../contexts/DataContext';
 import type { FactoryShowcase } from '../contexts/DataContext';
@@ -16,40 +16,33 @@ export function showcaseIdMatches(a: string, b: string): boolean {
 }
 
 type ShowcaseContentType = FactoryShowcase['contentType'];
-type ApiType = 'PD' | 'PM' | 'ID';
-
-const ORDER_PRODUCT: Array<ApiType | undefined> = ['PD', 'PM', 'ID', undefined];
-const ORDER_PROMO: Array<ApiType | undefined> = ['PM', 'PD', 'ID', undefined];
-const ORDER_IDEA: Array<ApiType | undefined> = ['ID', 'PD', 'PM', undefined];
 
 const PAGE_CONFIG: Record<
   'product' | 'promotion' | 'idea',
-  { acceptTypes: ShowcaseContentType[]; apiTypeOrder: Array<ApiType | undefined> }
+  { acceptTypes: ShowcaseContentType[] }
 > = {
-  product: { acceptTypes: ['product'], apiTypeOrder: ORDER_PRODUCT },
-  promotion: { acceptTypes: ['promotion'], apiTypeOrder: ORDER_PROMO },
-  idea: { acceptTypes: ['idea'], apiTypeOrder: ORDER_IDEA },
+  product: { acceptTypes: ['product'] },
+  promotion: { acceptTypes: ['promotion'] },
+  idea: { acceptTypes: ['idea'] },
 };
 
-async function fetchShowcaseByIdOrdered(
-  id: string,
-  typeOrder: Array<ApiType | undefined>,
-  acceptTypes: ShowcaseContentType[],
-): Promise<FactoryShowcase | null> {
-  for (const t of typeOrder) {
-    const raw = await showcasesApi.list(t).catch(() => []);
-    const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-    for (const row of arr) {
-      const s = normShowcase(row);
-      if (!s.id || !showcaseIdMatches(s.id, id)) continue;
-      if (acceptTypes.includes(s.contentType)) return s;
-    }
+/** แปลง payload GET /showcases/:id เป็นแถวเดียวสำหรับ normShowcase */
+function unwrapShowcaseDetailPayload(raw: Record<string, unknown>): Record<string, unknown> {
+  const inner = raw.showcase;
+  if (inner && typeof inner === 'object') return inner as Record<string, unknown>;
+  const data = raw.data;
+  if (data && typeof data === 'object' && ('showcase_id' in data || 'id' in data)) {
+    return data as Record<string, unknown>;
   }
-  return null;
+  return raw;
+}
+
+function hasRichSections(c: FactoryShowcase | null | undefined): boolean {
+  return Boolean(c?.sections && Array.isArray(c.sections) && c.sections.length > 0);
 }
 
 function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
-  const { acceptTypes, apiTypeOrder } = PAGE_CONFIG[kind];
+  const { acceptTypes } = PAGE_CONFIG[kind];
   const { id: pathId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const qId = searchParams.get('showcase_id');
@@ -58,6 +51,8 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const data = useData();
   const [apiItem, setApiItem] = useState<FactoryShowcase | null>(null);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const viewedIdRef = useRef<string>('');
 
   const fromContext = useMemo(() => {
     if (!resolvedId) return null;
@@ -69,34 +64,69 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   }, [data.factoryShowcases, resolvedId, acceptTypes]);
 
   useEffect(() => {
+    viewedIdRef.current = '';
+  }, [resolvedId]);
+
+  useEffect(() => {
     if (!resolvedId) {
       setApiItem(null);
       setFetchLoading(false);
+      setFetchError(null);
       return;
     }
-    if (fromContext) {
+
+    if (hasRichSections(fromContext)) {
       setApiItem(null);
       setFetchLoading(false);
+      setFetchError(null);
       return;
     }
 
     let cancelled = false;
     setFetchLoading(true);
+    setFetchError(null);
     setApiItem(null);
 
-    void fetchShowcaseByIdOrdered(resolvedId, apiTypeOrder, acceptTypes).then((found) => {
-      if (cancelled) return;
-      setApiItem(found);
-      setFetchLoading(false);
-    });
+    void (async () => {
+      try {
+        const raw = await showcasesApi.get(resolvedId);
+        if (cancelled) return;
+        const row = unwrapShowcaseDetailPayload(raw as Record<string, unknown>);
+        const s = normShowcase(row);
+        if (!s.id || !acceptTypes.includes(s.contentType)) {
+          setFetchError('ไม่พบข้อมูลโชว์เคส');
+          setApiItem(null);
+        } else {
+          setApiItem(s);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setFetchError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
+          setApiItem(null);
+        }
+      } finally {
+        if (!cancelled) setFetchLoading(false);
+      }
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [resolvedId, fromContext, kind]);
+  }, [resolvedId, fromContext, acceptTypes]);
 
-  const item = fromContext ?? apiItem;
-  const loading = !!resolvedId && !fromContext && fetchLoading;
+  const item = apiItem ?? fromContext;
+
+  useEffect(() => {
+    if (!resolvedId || !item) return;
+    const ready = apiItem != null || hasRichSections(fromContext);
+    if (!ready) return;
+    if (viewedIdRef.current === resolvedId) return;
+    viewedIdRef.current = resolvedId;
+    void showcasesApi.incrementView(resolvedId).catch(() => {});
+  }, [resolvedId, item, apiItem, fromContext]);
+
+  const loading = Boolean(resolvedId && !item && fetchLoading);
+  const error = fetchError;
   const factory = item ? data.factories.find((f) => showcaseIdMatches(f.id, item.factoryId)) : null;
   const factoryConversation = item
     ? data.conversations.find((c) => showcaseIdMatches(c.factoryId, item.factoryId))
@@ -106,6 +136,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     resolvedId,
     item,
     loading,
+    error,
     factory,
     factoryConversation,
   };

@@ -9,6 +9,8 @@ function normalizeRfqRow(row: Record<string, unknown>): {
   status: string;
   budget: string;
   qty: string;
+  categoryName: string;
+  subCategoryName: string;
 } {
   const inner = (row.rfq as Record<string, unknown>) ?? row;
   const id = String(inner.rfq_id ?? inner.id ?? row.rfq_id ?? row.id ?? '');
@@ -16,7 +18,13 @@ function normalizeRfqRow(row: Record<string, unknown>): {
   const status = String(inner.status ?? row.status ?? '').toUpperCase();
   const budget = inner.budget_per_piece != null ? String(inner.budget_per_piece) : '—';
   const qty = inner.quantity != null ? String(inner.quantity) : '—';
-  return { id, title, status, budget, qty };
+  const categoryName = String(
+    inner.category_name ?? row.category_name ?? '',
+  ).trim();
+  const subCategoryName = String(
+    inner.sub_category_name ?? row.sub_category_name ?? '',
+  ).trim();
+  return { id, title, status, budget, qty, categoryName, subCategoryName };
 }
 
 export function FactoryRfqBoardPage() {
@@ -30,8 +38,7 @@ export function FactoryRfqBoardPage() {
       setLoading(true);
       setError('');
       try {
-        // TODO(BE): ใช้ GET /rfqs/matching หรือ ?for_factory=me แทน list('OP') ทั้งระบบเมื่อ BE พร้อม
-        const raw = await rfqsApi.list('OP');
+        const raw = await rfqsApi.matching();
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         const normalized = arr.map(normalizeRfqRow).filter((r) => r.id);
         if (!cancelled) setRows(normalized);
@@ -64,7 +71,7 @@ export function FactoryRfqBoardPage() {
         <h1 className="text-lg sm:text-xl font-bold text-gray-900">คำขอที่เปิดรับ</h1>
       </div>
       <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
-        คำขอที่สถานะเปิด (`OP`) — กรองตาม sub-category จะทำได้เมื่อ backend ส่งพารามิเตอร์หรือข้อมูลครบ
+        คำขอที่ตรงกับหมวดหมู่ของโรงงานคุณ — จาก <code className="text-[11px] bg-gray-100 px-1 rounded">GET /rfqs/matching</code>
       </p>
       {error ? (
         <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
@@ -72,7 +79,7 @@ export function FactoryRfqBoardPage() {
       <ul className="space-y-2">
         {rows.length === 0 ? (
           <li className="text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 p-6 text-center">
-            ไม่มี RFQ ที่เปิดรับในขณะนี้
+            ไม่มี RFQ ที่ตรงกับหมวดของโรงงานในขณะนี้
           </li>
         ) : (
           rows.map((r) => (
@@ -85,6 +92,11 @@ export function FactoryRfqBoardPage() {
                   <p className="text-xs text-gray-400">#{r.id}</p>
                   <p className="font-semibold text-gray-900 truncate">{r.title}</p>
                   <p className="text-xs text-gray-500 mt-1">
+                    {r.subCategoryName
+                      ? `${r.subCategoryName} · `
+                      : r.categoryName
+                        ? `${r.categoryName} · `
+                        : ''}
                     งบ/ชิ้น {r.budget} · จำนวน {r.qty}
                   </p>
                 </div>

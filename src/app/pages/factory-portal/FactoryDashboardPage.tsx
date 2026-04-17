@@ -160,9 +160,9 @@ function kpiRows(summary: AnalyticsSummary) {
     },
     {
       key: 'rfq',
-      title: 'ใบเสนอราคา / RFQ เปิด',
+      title: 'ใบเสนอราคา / RFQ ที่ match',
       value: `${summary.pending_quotations_total.toLocaleString('th-TH')} รอ · ส่งแล้ว ${summary.rfq_replies_total.toLocaleString('th-TH')}`,
-      sub: `RFQ เปิดในระบบ ${summary.rfq_received_total.toLocaleString('th-TH')} · อัตราตอบกลับ ${rfqReplyRatePct(summary)}%`,
+      sub: `RFQ ที่ตรงหมวด (matching) ${summary.rfq_received_total.toLocaleString('th-TH')} · อัตราตอบกลับ ${rfqReplyRatePct(summary)}%`,
       icon: MessageSquareReply,
       accent: '#0EA5E9',
     },
@@ -216,7 +216,8 @@ export function FactoryDashboardPage() {
           <p className="text-[10px] text-gray-400 uppercase tracking-wider">วิเคราะห์ธุรกิจ</p>
           <h1 className="text-lg sm:text-xl font-bold text-gray-900">แดชบอร์ดโรงงาน</h1>
           <p className="text-xs text-gray-500 mt-1 max-w-xl">
-            สรุปจาก RFQ เปิด, ออเดอร์ของโรงงาน, ใบเสนอราคา และกระเป๋า — คำนวณฝั่ง client
+            KPI หลักจาก <code className="text-[10px] bg-gray-100 px-1 rounded">GET /factories/me/analytics</code> และ{' '}
+            <code className="text-[10px] bg-gray-100 px-1 rounded">GET /factories/me/dashboard</code> (ถ้า API ล้มเหลวจะใช้ค่าที่คำนวณจากออเดอร์/RFQ ฝั่ง client); กราฟยังคำนวณจากออเดอร์ตามช่วงเวลา
           </p>
         </div>
         <div

@@ -15,6 +15,7 @@ type NormalisedShowcase = {
   image: string;
   contentType: 'product' | 'promotion' | 'idea';
   category: string;
+  subCategoryName: string;
   postedAt: string;
   likes: number;
   minOrder: number;
@@ -42,6 +43,7 @@ function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
     image: String(r.image_url ?? r.image ?? ''),
     contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
     category: String(r.category_name ?? r.category ?? ''),
+    subCategoryName: String(r.sub_category_name ?? r.subCategoryName ?? ''),
     postedAt: String(r.created_at ?? r.postedAt ?? ''),
     likes: Number(r.likes_count ?? r.likes ?? 0),
     minOrder: Number(r.min_order ?? r.minOrder ?? 0),

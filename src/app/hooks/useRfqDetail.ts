@@ -8,7 +8,7 @@
  */
 import React from 'react';
 import { useData, type Rfq, type RfqOffer, type Order } from '../contexts/DataContext';
-import { rfqsApi, ordersApi, quotationsApi } from '../services/api';
+import { rfqsApi, ordersApi, quotationsApi, masterApi, categoriesApi } from '../services/api';
 
 // ─── Status Code Mapping ───────────────────────────────────────
 const mapRfqStatus = (code: string, hasQuotes: boolean): string => {
@@ -47,6 +47,7 @@ const guessCategoryIcon = (name: string) => {
 };
 
 type RawRfqDetail = {
+  images?: unknown[];
   rfq: {
     rfq_id: number;
     user_id: number;
@@ -61,8 +62,52 @@ type RawRfqDetail = {
     created_at: string;
     [key: string]: unknown;
   };
-  images: unknown[];
 };
+
+/** ดึงชื่อประเภทย่อยจาก payload GET /rfqs/:id (รองรับหลายรูปแบบฟิลด์ / root / nested) */
+function extractSubCategoryNameFromRfqResponse(
+  detailPayload: Record<string, unknown> | null,
+  rawRfq: Record<string, unknown>,
+): string {
+  const fromRfq = String(
+    rawRfq.sub_category_name ??
+      rawRfq.subCategoryName ??
+      rawRfq.SubCategoryName ??
+      '',
+  ).trim();
+  if (fromRfq) return fromRfq;
+  if (!detailPayload) return '';
+  const fromRoot = String(
+    detailPayload.sub_category_name ??
+      detailPayload.subCategoryName ??
+      '',
+  ).trim();
+  if (fromRoot) return fromRoot;
+  const inner = detailPayload.rfq;
+  if (inner && typeof inner === 'object') {
+    const o = inner as Record<string, unknown>;
+    return String(o.sub_category_name ?? o.subCategoryName ?? '').trim();
+  }
+  return '';
+}
+
+async function resolveSubCategoryNameById(
+  rawRfq: Record<string, unknown>,
+  currentName: string,
+): Promise<string> {
+  if (currentName) return currentName;
+  const subId = Number(rawRfq.sub_category_id ?? rawRfq.subCategoryId ?? 0);
+  const catId = String(rawRfq.category_id ?? '');
+  if (!Number.isFinite(subId) || subId <= 0 || !catId) return '';
+  try {
+    const rawSubs = await categoriesApi.subCategories(catId);
+    const rows = (Array.isArray(rawSubs) ? rawSubs : []) as Record<string, unknown>[];
+    const row = rows.find((x) => Number(x.sub_category_id ?? x.id) === subId);
+    return String(row?.name ?? '').trim();
+  } catch {
+    return '';
+  }
+}
 
 type RawQuotation = {
   quote_id: number;
@@ -111,10 +156,12 @@ export function useRfqDetail(rfqId: string | undefined) {
         rfqsApi.listQuotations(rfqId),
       ]);
 
-      // Parse RFQ
+      // Parse RFQ (+ images จาก payload เดียวกัน)
       let rawRfq: RawRfqDetail['rfq'] | null = null;
-      if (rfqRes.status === 'fulfilled') {
+      let detailPayload: RawRfqDetail | null = null;
+      if (rfqRes.status === 'fulfilled' && rfqRes.value) {
         const data = rfqRes.value as RawRfqDetail;
+        detailPayload = data;
         rawRfq = data.rfq ?? (data as unknown as RawRfqDetail['rfq']);
       }
 
@@ -135,6 +182,50 @@ export function useRfqDetail(rfqId: string | undefined) {
       const budget = Math.round(rawRfq.budget_per_piece * rawRfq.quantity);
       const status = mapRfqStatus(rawRfq.status, quotes.length > 0);
       const createdDate = rawRfq.created_at ? rawRfq.created_at.split('T')[0] : '';
+
+      const rExtra = rawRfq as Record<string, unknown>;
+      const deadlineRaw = String(
+        rExtra.deadline ?? rExtra.target_date ?? rExtra.delivery_deadline ?? '',
+      ).trim();
+      const deadline =
+        deadlineRaw && deadlineRaw.includes('T') ? deadlineRaw.split('T')[0] : deadlineRaw;
+
+      const payloadRecord =
+        detailPayload != null ? (detailPayload as unknown as Record<string, unknown>) : null;
+      const rawRecord = rawRfq as unknown as Record<string, unknown>;
+      let subCategoryName = extractSubCategoryNameFromRfqResponse(payloadRecord, rawRecord);
+      subCategoryName = await resolveSubCategoryNameById(rawRecord, subCategoryName);
+      const subCategoryIdNum = Number(rawRecord.sub_category_id ?? rawRecord.subCategoryId ?? 0);
+      const subCategoryId =
+        Number.isFinite(subCategoryIdNum) && subCategoryIdNum > 0 ? subCategoryIdNum : undefined;
+
+      let shippingMethodName = String(rExtra.shipping_method_name ?? '').trim();
+      const shipIdRaw = rExtra.shipping_method_id;
+      if (!shippingMethodName && shipIdRaw != null && Number(shipIdRaw) > 0) {
+        try {
+          const ships = await masterApi.shippingMethods();
+          const arr = (Array.isArray(ships) ? ships : []) as Record<string, unknown>[];
+          const sid = Number(shipIdRaw);
+          const row = arr.find((x) => Number(x.shipping_method_id ?? x.id) === sid);
+          if (row) {
+            shippingMethodName = String(row.method_name ?? row.name ?? '').trim();
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+
+      const imageUrls: string[] = [];
+      if (detailPayload && Array.isArray(detailPayload.images)) {
+        for (const img of detailPayload.images) {
+          if (typeof img === 'string' && img) imageUrls.push(img);
+          else if (img && typeof img === 'object') {
+            const o = img as Record<string, unknown>;
+            const u = String(o.url ?? o.image_url ?? '').trim();
+            if (u) imageUrls.push(u);
+          }
+        }
+      }
 
       const offers: RfqOffer[] = quotes.map((q) => ({
         id: String(q.quote_id),
@@ -186,10 +277,14 @@ export function useRfqDetail(rfqId: string | undefined) {
         budget,
         quantity: rawRfq.quantity,
         material: '',
-        deadline: '',
+        deadline: deadline || '',
         createdAt: createdDate,
         description: rawRfq.details ?? '',
+        imageUrls,
         offers,
+        subCategoryName: subCategoryName || undefined,
+        subCategoryId,
+        shippingMethodName: shippingMethodName || undefined,
       };
 
       setRfq(mappedRfq);

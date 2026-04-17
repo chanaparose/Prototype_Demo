@@ -5,7 +5,7 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { showcasesApi } from '../services/api';
-import type { FactoryShowcase } from '../contexts/DataContext';
+import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '../contexts/DataContext';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID';
 
@@ -45,6 +45,12 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
       ? String(subNameRaw)
       : null;
 
+  const factoryImageUrl = String(r.factory_image_url ?? r.factoryImageUrl ?? '').trim();
+  const fr = r.factory_rating ?? r.factoryRating;
+  const factoryRating =
+    fr != null && String(fr).trim() !== '' && Number.isFinite(Number(fr)) ? Number(fr) : undefined;
+  const factoryVerified = Boolean(r.factory_verified ?? r.factoryVerified);
+
   return {
     id: String(r.showcase_id ?? r.id ?? ''),
     factoryId: String(r.factory_id ?? r.factoryId ?? ''),
@@ -62,6 +68,30 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
     minOrder: Number(r.min_order ?? r.minOrder ?? 0),
     leadTime,
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+    ...(factoryImageUrl ? { factoryImageUrl } : {}),
+    ...(factoryRating != null ? { factoryRating } : {}),
+    ...(factoryVerified ? { factoryVerified } : {}),
+    ...(r.description != null && String(r.description).trim() !== '' ? { description: String(r.description) } : {}),
+    ...(r.price_range != null && String(r.price_range).trim() !== ''
+      ? { priceRange: String(r.price_range) }
+      : r.priceRange != null && String(r.priceRange).trim() !== ''
+        ? { priceRange: String(r.priceRange) }
+        : {}),
+    ...(Array.isArray(r.sections) && r.sections.length > 0
+      ? { sections: r.sections as import('../contexts/DataContext').ShowcaseSection[] }
+      : {}),
+    ...(Array.isArray(r.images) && r.images.length > 0
+      ? { images: r.images as ShowcaseImageRow[] }
+      : {}),
+    ...(Array.isArray(r.specs) && r.specs.length > 0
+      ? {
+          specs: (r.specs as Record<string, unknown>[]).map((sp) => ({
+            spec_key: String(sp.spec_key ?? ''),
+            spec_value: String(sp.spec_value ?? ''),
+            sort_order: Number(sp.sort_order ?? 0),
+          })) as ShowcaseSpecRow[],
+        }
+      : {}),
   };
 }
 

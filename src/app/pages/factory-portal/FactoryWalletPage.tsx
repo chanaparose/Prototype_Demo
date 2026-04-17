@@ -28,7 +28,12 @@ export function FactoryWalletPage() {
       setGood(Number(w.good_fund ?? w.walletBalance ?? 0));
       setPending(Number(w.pending_fund ?? w.pendingBalance ?? 0));
 
-      const raw = await transactionsApi.list().catch(() => []);
+      let raw: unknown;
+      try {
+        raw = await walletApi.transactions();
+      } catch {
+        raw = await transactionsApi.list().catch(() => []);
+      }
       const arr = (Array.isArray(raw) ? raw : []) as TxRow[];
       setTx(arr.map(normTx).filter((t) => t.id).slice(0, 30));
     } catch (e) {
@@ -89,7 +94,9 @@ export function FactoryWalletPage() {
       <section className="min-w-0">
         <h2 className="font-bold text-gray-900 mb-2">รายการเคลื่อนไหวล่าสุด</h2>
         <p className="text-xs text-gray-500 mb-3">
-          จาก <code className="text-[11px] bg-gray-100 px-1 rounded">GET /transactions</code>
+          จาก{' '}
+          <code className="text-[11px] bg-gray-100 px-1 rounded">GET /wallets/me/transactions</code>
+          {' '}(หรือ <code className="text-[11px] bg-gray-100 px-1 rounded">GET /transactions</code> ถ้า endpoint แรกยังไม่พร้อม)
         </p>
         <ul className="space-y-2">
           {tx.length === 0 ? (

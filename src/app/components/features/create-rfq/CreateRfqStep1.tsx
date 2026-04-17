@@ -18,6 +18,8 @@ type CreateRfqStep1Props = {
   categories: Category[];
   subCategories: SubCategory[];
   subCategoriesLoading: boolean;
+  subCategoriesError?: string | null;
+  onRetrySubCategories?: () => void;
   onUpdate: <K extends keyof CreateRfqForm>(key: K, value: CreateRfqForm[K]) => void;
 };
 
@@ -26,6 +28,8 @@ export function CreateRfqStep1({
   categories,
   subCategories,
   subCategoriesLoading,
+  subCategoriesError,
+  onRetrySubCategories,
   onUpdate,
 }: CreateRfqStep1Props) {
   // Smart placeholder based on selected sub-category name
@@ -87,7 +91,20 @@ export function CreateRfqStep1({
             เลือกให้ตรงเพื่อส่ง RFQ ไปถึงโรงงานที่เชี่ยวชาญ
           </p>
 
-          {subCategoriesLoading ? (
+          {subCategoriesError ? (
+            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 space-y-2">
+              <p className="text-[12px] text-red-700">{subCategoriesError}</p>
+              {onRetrySubCategories ? (
+                <button
+                  type="button"
+                  onClick={() => onRetrySubCategories()}
+                  className="text-[12px] font-semibold text-violet-700 underline"
+                >
+                  ลองโหลดอีกครั้ง
+                </button>
+              ) : null}
+            </div>
+          ) : subCategoriesLoading ? (
             <div className="flex items-center justify-center py-6 gap-2 text-gray-400">
               <Loader2 size={16} className="animate-spin" />
               <span className="text-[12px]">กำลังโหลด...</span>

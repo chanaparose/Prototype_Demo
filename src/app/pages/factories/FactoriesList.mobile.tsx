@@ -8,7 +8,7 @@ type FactoriesListState = ReturnType<typeof useFactoriesList>;
 type FactoriesListMobileProps = { state: FactoriesListState };
 
 export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
-  const { factories, locations, filters, setSearchText, setLocation, setVerifiedOnly } = state;
+  const { factories, locations, filters, setSearchText, setLocation, setVerifiedOnly, loadError } = state;
   const navigate = useNavigate();
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -17,6 +17,11 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
 
   return (
     <div className="pb-24 bg-gray-50 min-h-screen">
+      {loadError ? (
+        <div className="mx-4 mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          {loadError} — แสดงข้อมูลจากแคชในแอป
+        </div>
+      ) : null}
       {/* ── Header ── */}
       <div className="bg-white px-4 pt-5 pb-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
@@ -181,6 +186,11 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                   <div>
                     <p className="text-[13px] font-bold text-gray-900 truncate">{factory.name}</p>
                     <p className="text-[11px] text-gray-500 truncate mt-0.5">{factory.specialization}</p>
+                    {factory.factoryTypeName ? (
+                      <p className="text-[10px] text-violet-600 font-medium truncate mt-0.5">
+                        {factory.factoryTypeName}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="mt-2 space-y-1">

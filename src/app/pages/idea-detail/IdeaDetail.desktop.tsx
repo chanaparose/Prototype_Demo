@@ -18,7 +18,9 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../components/shared';
+import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { useIdeaDetailShowcase } from '../../hooks/useShowcaseDetailPage';
+import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -28,7 +30,7 @@ function formatThaiDate(date: string): string {
 
 export function IdeaDetailDesktop() {
   const navigate = useNavigate();
-  const { item, loading, factory, factoryConversation, resolvedId } = useIdeaDetailShowcase();
+  const { item, loading, error, factory, factoryConversation, resolvedId } = useIdeaDetailShowcase();
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -61,11 +63,13 @@ export function IdeaDetailDesktop() {
         </button>
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
           <p className="text-4xl mb-3">💡</p>
-          <p className="text-[14px] text-gray-500 font-medium">ไม่พบข้อมูลไอเดีย</p>
+          <p className="text-[14px] text-gray-500 font-medium">{error || 'ไม่พบข้อมูลไอเดีย'}</p>
         </div>
       </div>
     );
   }
+
+  const subName = item.sub_category_name?.trim();
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
@@ -103,6 +107,11 @@ export function IdeaDetailDesktop() {
             <span className="flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5" /> เผยแพร่ {formatThaiDate(item.postedAt)}</span>
             <span className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5" /> {item.likes} ถูกใจ</span>
             <span className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" /> {item.category}</span>
+            {subName ? (
+              <span className="inline-flex items-center rounded-full border border-white/40 bg-white/15 text-white text-[11px] font-semibold px-2.5 py-0.5">
+                sub: {subName}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
@@ -130,64 +139,86 @@ export function IdeaDetailDesktop() {
             <p className="text-[14px] font-medium text-gray-700 leading-relaxed">{item.excerpt}</p>
           </div>
 
-          {/* How to apply */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>วิธีนำไอเดียไปต่อยอด</h2>
-            <div className="space-y-4">
-              {[
-                {
-                  icon: <ListChecks className="w-5 h-5" style={{ color: '#7A4B94' }} />,
-                  title: 'วางแผน Requirement',
-                  desc: 'สรุปสเปกสินค้า วัตถุดิบ และงบประมาณที่ต้องการก่อนเริ่มคุยกับโรงงาน เพื่อให้ได้ราคาที่แม่นยำ',
-                },
-                {
-                  icon: <TrendingUp className="w-5 h-5" style={{ color: '#E38844' }} />,
-                  title: 'ทดสอบตลาดด้วย MOQ เล็ก',
-                  desc: 'เริ่มจากล็อตเล็กเพื่อวัดตลาด ก่อนขยาย production เพื่อลดความเสี่ยงในการถือสต็อก',
-                },
-                {
-                  icon: <Lightbulb className="w-5 h-5" style={{ color: '#7A4B94' }} />,
-                  title: 'ปรับ Positioning และแพ็กเกจ',
-                  desc: 'ออกแบบแพ็กเกจและจุดขายให้ตรงกลุ่มเป้าหมายเพื่อเพิ่มอัตราการซื้อซ้ำและ margin',
-                },
-              ].map((s, i) => (
-                <div key={i} className="flex gap-4">
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.15)' }}
-                  >
-                    {s.icon}
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-bold" style={{ color: '#2E2252' }}>{s.title}</p>
-                    <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{s.desc}</p>
+          {/* Highlight sections (from DB or fallback) */}
+          {(() => {
+            const highlightSections = getSectionsByType(item.sections, 'highlight');
+            if (highlightSections.length > 0) {
+              return highlightSections.map((sec) => (
+                <div key={sec.section_id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                  <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>{sec.section_title}</h2>
+                  <div className="space-y-4">
+                    {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => {
+                      const Icon = getIcon(si.icon_name);
+                      return (
+                        <div key={si.item_id} className="flex gap-4">
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.15)' }}>
+                            {Icon ? <Icon className="w-5 h-5" style={{ color: '#7A4B94' }} /> : <Lightbulb className="w-5 h-5" style={{ color: '#7A4B94' }} />}
+                          </div>
+                          <div>
+                            {si.title ? <p className="text-[13px] font-bold" style={{ color: '#2E2252' }}>{interpolate(si.title, item)}</p> : null}
+                            <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{interpolate(si.description, item)}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              ));
+            }
+            return (
+              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>วิธีนำไอเดียไปต่อยอด</h2>
+                <div className="space-y-4">
+                  {[
+                    { icon: <ListChecks className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: 'วางแผน Requirement', desc: 'สรุปสเปกสินค้า วัตถุดิบ และงบประมาณที่ต้องการก่อนเริ่มคุยกับโรงงาน เพื่อให้ได้ราคาที่แม่นยำ' },
+                    { icon: <TrendingUp className="w-5 h-5" style={{ color: '#E38844' }} />, title: 'ทดสอบตลาดด้วย MOQ เล็ก', desc: 'เริ่มจากล็อตเล็กเพื่อวัดตลาด ก่อนขยาย production เพื่อลดความเสี่ยงในการถือสต็อก' },
+                    { icon: <Lightbulb className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: 'ปรับ Positioning และแพ็กเกจ', desc: 'ออกแบบแพ็กเกจและจุดขายให้ตรงกลุ่มเป้าหมายเพื่อเพิ่มอัตราการซื้อซ้ำและ margin' },
+                  ].map((s, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.15)' }}>{s.icon}</div>
+                      <div>
+                        <p className="text-[13px] font-bold" style={{ color: '#2E2252' }}>{s.title}</p>
+                        <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{s.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
-          {/* Pre-production checklist */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>สิ่งที่ควรเตรียมก่อนเริ่มผลิต</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                'กลุ่มเป้าหมายและจุดขายหลักของสินค้า',
-                'ขนาดบรรจุ / วัสดุ / สเปกที่ต้องการ',
-                'งบประมาณต่อรอบผลิตและเวลาเปิดตัว',
-                'เอกสารที่ต้องใช้ เช่น อย., HALAL',
-              ].map((txt, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2.5 p-3 rounded-xl"
-                  style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.12)' }}
-                >
-                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#7A4B94' }} />
-                  <p className="text-[12px] text-gray-600 leading-relaxed">{txt}</p>
+          {/* Checklist sections (from DB or fallback) */}
+          {(() => {
+            const checklistSections = getSectionsByType(item.sections, 'checklist');
+            if (checklistSections.length > 0) {
+              return checklistSections.map((sec) => (
+                <div key={sec.section_id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                  <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>{sec.section_title}</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => (
+                      <div key={si.item_id} className="flex items-start gap-2.5 p-3 rounded-xl" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.12)' }}>
+                        <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#7A4B94' }} />
+                        <p className="text-[12px] text-gray-600 leading-relaxed">{interpolate(si.description, item)}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              ));
+            }
+            return (
+              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>สิ่งที่ควรเตรียมก่อนเริ่มผลิต</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {['กลุ่มเป้าหมายและจุดขายหลักของสินค้า', 'ขนาดบรรจุ / วัสดุ / สเปกที่ต้องการ', 'งบประมาณต่อรอบผลิตและเวลาเปิดตัว', 'เอกสารที่ต้องใช้ เช่น อย., HALAL'].map((txt, i) => (
+                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.12)' }}>
+                      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#7A4B94' }} />
+                      <p className="text-[12px] text-gray-600 leading-relaxed">{txt}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Tags */}
           <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
@@ -197,6 +228,7 @@ export function IdeaDetailDesktop() {
                 className="px-2.5 py-1 rounded-full text-[11px] font-medium"
                 style={{ background: 'rgba(122,75,148,0.10)', color: '#7A4B94' }}
               >{item.category}</span>
+              {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
             </div>
             <div className="flex flex-wrap gap-2">
               {item.tags.map((tag) => (
@@ -270,6 +302,9 @@ export function IdeaDetailDesktop() {
             <div className="space-y-3">
               {[
                 { icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />,     label: 'หมวดหมู่',        value: item.category },
+                ...(subName
+                  ? [{ icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'ประเภทย่อย', value: subName }]
+                  : []),
                 { icon: <Package className="w-4 h-4" style={{ color: '#7A4B94' }} />,  label: 'ขั้นต่ำการผลิต', value: `MOQ ${item.minOrder}` },
                 { icon: <Clock className="w-4 h-4" style={{ color: '#E38844' }} />,    label: 'ระยะเวลาผลิต',   value: item.leadTime },
                 { icon: <Heart className="w-4 h-4" style={{ color: '#E38844' }} />,    label: 'ความสนใจ',        value: `${item.likes} คน` },

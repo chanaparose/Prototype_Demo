@@ -50,6 +50,7 @@ export function DesktopSidebar() {
       : location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   const unreadMessages = data.conversations.reduce((s, c) => s + c.unread, 0);
+  const unreadNotifications = data.notifications.filter((n) => !n.read).length;
   const activeRfqCount = data.rfqs.filter(
     (r) =>
       r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired',
@@ -228,12 +229,14 @@ export function DesktopSidebar() {
             className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0"
           >
             <Bell size={17} style={{ color: '#A238FF' }} />
-            <span
-              className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full text-white text-[8px] flex items-center justify-center font-bold border-2 border-white"
-              style={{ background: '#F28A2E' }}
-            >
-              3
-            </span>
+            {unreadNotifications > 0 ? (
+              <span
+                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold border-2 border-white tabular-nums"
+                style={{ background: '#F28A2E' }}
+              >
+                {unreadNotifications > 99 ? '99+' : unreadNotifications}
+              </span>
+            ) : null}
           </Link>
         </div>
       </div>

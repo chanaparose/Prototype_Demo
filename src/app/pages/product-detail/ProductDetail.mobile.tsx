@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
+import { SubCategoryTag } from '../../components/SubCategoryTag';
+import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -36,6 +38,8 @@ export function ProductDetailMobile() {
   const factoryConversation = item
     ? data.conversations.find((conversation) => conversation.factoryId === item.factoryId)
     : null;
+
+  const subName = item?.sub_category_name?.trim();
 
   if (!item) {
     return (
@@ -83,12 +87,24 @@ export function ProductDetailMobile() {
           <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
         </button>
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <span
-            className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2"
-            style={{ background: 'rgba(227,136,68,0.90)' }}
-          >
-            สินค้า
-          </span>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            <span
+              className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+              style={{ background: 'rgba(227,136,68,0.90)' }}
+            >
+              สินค้า
+            </span>
+            {item.category ? (
+              <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 border border-white/35">
+                หมวด: {item.category}
+              </span>
+            ) : null}
+            {subName ? (
+              <span className="inline-flex items-center rounded-full border border-white/40 bg-white/15 text-[10px] font-semibold px-2 py-0.5">
+                sub: {subName}
+              </span>
+            ) : null}
+          </div>
           <h1 className="text-lg leading-snug" style={{ fontWeight: 700 }}>
             {item.title}
           </h1>
@@ -138,6 +154,12 @@ export function ProductDetailMobile() {
               <p className="text-gray-400">หมวดหมู่</p>
               <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.category}</p>
             </div>
+            {subName ? (
+              <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
+                <p className="text-gray-400">ประเภทย่อย</p>
+                <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{subName}</p>
+              </div>
+            ) : null}
             <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">ขั้นต่ำการผลิต</p>
               <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>MOQ {item.minOrder}</p>
@@ -155,32 +177,47 @@ export function ProductDetailMobile() {
           </div>
         </div>
 
-        {/* Highlights */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
-            จุดเด่นที่เหมาะกับแบรนด์
-          </p>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p className="flex items-start gap-2">
-              <PackageCheck className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
-              รองรับ OEM/Private Label สำหรับผู้เริ่มต้นและแบรนด์ที่ต้องการขยายไลน์
-            </p>
-            <p className="flex items-start gap-2">
-              <Clock3 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />
-              กำหนด timeline ผลิตชัดเจน ช่วยวางแผนเปิดตัวสินค้าได้ง่าย
-            </p>
-            <p className="flex items-start gap-2">
-              <Building2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
-              มีโรงงานที่เชี่ยวชาญเฉพาะด้าน พร้อมทีมให้คำแนะนำก่อนเริ่มผลิต
-            </p>
-          </div>
-        </div>
+        {/* Highlight sections (from DB or fallback) */}
+        {(() => {
+          const highlightSections = getSectionsByType(item.sections, 'highlight');
+          if (highlightSections.length > 0) {
+            return highlightSections.map((sec) => (
+              <div key={sec.section_id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>{sec.section_title}</p>
+                <div className="space-y-2 text-sm text-gray-600">
+                  {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => {
+                    const Icon = getIcon(si.icon_name) ?? PackageCheck;
+                    return (
+                      <p key={si.item_id} className="flex items-start gap-2">
+                        <Icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
+                        {interpolate(si.description, item)}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            ));
+          }
+          return (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>จุดเด่นที่เหมาะกับแบรนด์</p>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p className="flex items-start gap-2"><PackageCheck className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />รองรับ OEM/Private Label สำหรับผู้เริ่มต้นและแบรนด์ที่ต้องการขยายไลน์</p>
+                <p className="flex items-start gap-2"><Clock3 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />กำหนด timeline ผลิตชัดเจน ช่วยวางแผนเปิดตัวสินค้าได้ง่าย</p>
+                <p className="flex items-start gap-2"><Building2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />มีโรงงานที่เชี่ยวชาญเฉพาะด้าน พร้อมทีมให้คำแนะนำก่อนเริ่มผลิต</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Tags */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2" style={{ fontWeight: 700, color: '#2E2252' }}>
-            แท็กสินค้า
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
+              แท็กสินค้า
+            </p>
+            {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
+          </div>
           <div className="flex flex-wrap gap-2">
             {item.tags.map((tag) => (
               <span
@@ -199,18 +236,33 @@ export function ProductDetailMobile() {
           </div>
         </div>
 
-        {/* Info before factory */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
-            ข้อมูลที่ควรแจ้งโรงงานก่อนเริ่มผลิต
-          </p>
-          <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
-            <li>กลุ่มเป้าหมายและจุดขายหลักของสินค้า</li>
-            <li>ขนาดบรรจุ/วัสดุ/รสชาติหรือสเปกที่ต้องการ</li>
-            <li>งบประมาณต่อรอบผลิต และช่วงเวลาที่ต้องการเปิดขาย</li>
-            <li>เอกสารที่ต้องใช้ เช่น อย., HALAL, หรือมาตรฐานเฉพาะแบรนด์</li>
-          </ul>
-        </div>
+        {/* Checklist sections (from DB or fallback) */}
+        {(() => {
+          const checklistSections = getSectionsByType(item.sections, 'checklist');
+          if (checklistSections.length > 0) {
+            return checklistSections.map((sec) => (
+              <div key={sec.section_id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>{sec.section_title}</p>
+                <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
+                  {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => (
+                    <li key={si.item_id}>{interpolate(si.description, item)}</li>
+                  ))}
+                </ul>
+              </div>
+            ));
+          }
+          return (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>ข้อมูลที่ควรแจ้งโรงงานก่อนเริ่มผลิต</p>
+              <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
+                <li>กลุ่มเป้าหมายและจุดขายหลักของสินค้า</li>
+                <li>ขนาดบรรจุ/วัสดุ/รสชาติหรือสเปกที่ต้องการ</li>
+                <li>งบประมาณต่อรอบผลิต และช่วงเวลาที่ต้องการเปิดขาย</li>
+                <li>เอกสารที่ต้องใช้ เช่น อย., HALAL, หรือมาตรฐานเฉพาะแบรนด์</li>
+              </ul>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../../utils/factoryUser';
-import { rfqsApi, ordersApi, quotationsApi, walletApi } from '../../../services/api';
+import { rfqsApi, ordersApi, quotationsApi, walletApi, factoriesApi } from '../../../services/api';
 
 export type AnalyticsTimeframe = 'daily' | 'weekly' | 'monthly';
 
@@ -204,16 +204,20 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
   const [allOrders, setAllOrders] = useState<Record<string, unknown>[]>([]);
   const [myQuotes, setMyQuotes] = useState<Record<string, unknown>[]>([]);
   const [wallet, setWallet] = useState<Record<string, unknown> | null>(null);
+  const [analyticsApi, setAnalyticsApi] = useState<Record<string, unknown> | null>(null);
+  const [dashboardApi, setDashboardApi] = useState<Record<string, unknown> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [rfqRes, ordRes, qRes, wRes] = await Promise.allSettled([
-        rfqsApi.list('OP'),
+      const [rfqRes, ordRes, qRes, wRes, aRes, dRes] = await Promise.allSettled([
+        rfqsApi.matching(),
         ordersApi.list(),
         quotationsApi.listMine(),
         walletApi.getMe(),
+        factoriesApi.getAnalytics(),
+        factoriesApi.getDashboard(),
       ]);
 
       if (rfqRes.status === 'fulfilled') {
@@ -243,11 +247,25 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
         setWallet(null);
       }
 
+      if (aRes.status === 'fulfilled' && aRes.value && typeof aRes.value === 'object') {
+        setAnalyticsApi(aRes.value as Record<string, unknown>);
+      } else {
+        setAnalyticsApi(null);
+      }
+
+      if (dRes.status === 'fulfilled' && dRes.value && typeof dRes.value === 'object') {
+        setDashboardApi(dRes.value as Record<string, unknown>);
+      } else {
+        setDashboardApi(null);
+      }
+
       if (
         rfqRes.status === 'rejected' &&
         ordRes.status === 'rejected' &&
         qRes.status === 'rejected' &&
-        wRes.status === 'rejected'
+        wRes.status === 'rejected' &&
+        aRes.status === 'rejected' &&
+        dRes.status === 'rejected'
       ) {
         setError('โหลดข้อมูลแดชบอร์ดไม่สำเร็จ');
       }
@@ -267,25 +285,50 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
 
   const summary: AnalyticsSummary = useMemo(() => {
     const pendingFund = wallet != null ? Number(wallet.pending_fund ?? wallet.pendingBalance ?? 0) : 0;
-    const rfq_received_total = opRfqs.length;
-    const rfq_replies_total = fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
-    let revenue_total = 0;
-    let closed_orders_total = 0;
+    const rfq_received_client = opRfqs.length;
+    const rfq_replies_client = fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
+    let revenue_client = 0;
+    let closed_orders_client = 0;
     for (const row of mineOrders) {
       const st = orderStatus(row);
       if (st === 'CP') {
-        closed_orders_total += 1;
-        revenue_total += orderTotalAmount(row);
+        closed_orders_client += 1;
+        revenue_client += orderTotalAmount(row);
       }
     }
-    const total_orders_total = mineOrders.length;
-    const pending_quotations_total =
+    const total_orders_client = mineOrders.length;
+    const pending_quotations_client =
       fid != null
         ? myQuotes.filter(
             (q) =>
               quoteFactoryId(q) === fid && String(q.status ?? 'PD').toUpperCase() === 'PD',
           ).length
         : 0;
+
+    const A = analyticsApi;
+    const D = dashboardApi;
+    const hasA = A != null;
+    const hasD = D != null;
+
+    const revenue_total = hasA
+      ? Number(A.total_revenue ?? A.revenue_total ?? revenue_client)
+      : revenue_client;
+    const closed_orders_total = hasA
+      ? Number(A.completed_orders ?? A.closed_orders_total ?? closed_orders_client)
+      : closed_orders_client;
+    const total_orders_total = hasA
+      ? Number(A.total_orders ?? A.total_orders_total ?? total_orders_client)
+      : total_orders_client;
+    const rfq_received_total = hasA
+      ? Number(A.total_quotations ?? A.rfq_received_total ?? rfq_received_client)
+      : rfq_received_client;
+    const rfq_replies_total = hasA
+      ? Number(A.accepted_quotes ?? A.accepted_quotes_count ?? A.rfq_replies_total ?? rfq_replies_client)
+      : rfq_replies_client;
+    const pending_quotations_total = hasD
+      ? Number(D.pending_quotations_total ?? D.pending_quotations ?? pending_quotations_client)
+      : pending_quotations_client;
+
     return {
       revenue_total,
       deposits_total: pendingFund,
@@ -295,7 +338,7 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
       rfq_replies_total,
       pending_quotations_total,
     };
-  }, [mineOrders, myQuotes, opRfqs, fid, wallet]);
+  }, [mineOrders, myQuotes, opRfqs, fid, wallet, analyticsApi, dashboardApi]);
 
   const series = useMemo(() => {
     return buildSeries(mineOrders, opRfqs, myQuotes, fid, timeframe);

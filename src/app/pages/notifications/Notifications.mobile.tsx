@@ -27,6 +27,19 @@ export function NotificationsMobile() {
     }
   }, [localRead]);
 
+  const [markingAll, setMarkingAll] = useState(false);
+  const markAllRead = useCallback(async () => {
+    setMarkingAll(true);
+    try {
+      await notificationsApi.markAllAsRead();
+      setLocalRead(new Set(data.notifications.map((n) => n.id)));
+    } catch {
+      /* ignore */
+    } finally {
+      setMarkingAll(false);
+    }
+  }, [data.notifications]);
+
   const isRead = (notif: { id: string; read: boolean }) =>
     notif.read || localRead.has(notif.id);
 
@@ -61,7 +74,18 @@ export function NotificationsMobile() {
             )}
           </div>
         </div>
-        <div className="w-10 h-10" aria-hidden />
+        {unreadCount > 0 ? (
+          <button
+            type="button"
+            onClick={() => void markAllRead()}
+            disabled={markingAll}
+            className="text-[11px] font-semibold text-[#A238FF] disabled:opacity-50 px-2 py-1 rounded-lg hover:bg-violet-50"
+          >
+            {markingAll ? '…' : 'อ่านทั้งหมด'}
+          </button>
+        ) : (
+          <div className="w-10 h-10" aria-hidden />
+        )}
       </div>
 
       <div className="px-4 py-4 flex-1">

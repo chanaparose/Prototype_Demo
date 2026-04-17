@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router';
 import { Plus, Pencil, Trash2, ImageIcon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { showcasesApi, mediaApi, masterApi } from '../../services/api';
+import { showcasesApi, mediaApi, masterApi, categoriesApi } from '../../services/api';
 
 export const SHOWCASE_TYPES = [
   { type: 'PD' as const, label: 'สินค้า', hint: 'Product' },
@@ -43,7 +43,9 @@ function promotionExpiryLine(r: Row): string | null {
 
 function contextDetailLine(activeType: ShowcaseType, r: Row): string {
   if (activeType === 'PD') {
-    return `MOQ ${String(r.min_order ?? '—')} · Lead ${String(r.lead_time_days ?? '—')} วัน`;
+    const sub = String(r.sub_category_name ?? r.subCategoryName ?? '').trim();
+    const base = `MOQ ${String(r.min_order ?? '—')} · Lead ${String(r.lead_time_days ?? '—')} วัน`;
+    return sub ? `${sub} · ${base}` : base;
   }
   if (activeType === 'PM') {
     const exp = promotionExpiryLine(r);
@@ -123,6 +125,9 @@ export function FactoryShowcasesPage() {
   const [excerpt, setExcerpt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [subCategoryId, setSubCategoryId] = useState('');
+  const [subCategories, setSubCategories] = useState<Row[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
   const [minOrder, setMinOrder] = useState('');
   const [leadDays, setLeadDays] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -137,14 +142,11 @@ export function FactoryShowcasesPage() {
     setError('');
     try {
       const [rawList, cats] = await Promise.all([
-        showcasesApi.list(activeType),
+        showcasesApi.listByFactory(fid, activeType),
         masterApi.productCategories().catch(() => []),
       ]);
       const arr = (Array.isArray(rawList) ? rawList : []) as Row[];
-      // A6: กรองเฉพาะ showcase ของโรงงานปัจจุบัน (client-side; ไม่มี listMine ในรอบ FE-only)
-      const mine = arr.filter((s) => Number(s.factory_id ?? s.factoryId) === fid);
-      setRows(mine);
-      // TODO(BE): sub_category_id ในฟอร์ม + GET showcases?factory_id=me เมื่อ BE พร้อม
+      setRows(arr);
       setCategories((Array.isArray(cats) ? cats : []) as Row[]);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดโชว์เคสไม่สำเร็จ');
@@ -158,12 +160,40 @@ export function FactoryShowcasesPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (!categoryId || activeType !== 'PD') {
+      setSubCategories([]);
+      setSubCategoryId('');
+      return;
+    }
+    let cancelled = false;
+    setSubsLoading(true);
+    categoriesApi
+      .subCategories(categoryId)
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Row[];
+        setSubCategories(arr);
+      })
+      .catch(() => {
+        if (!cancelled) setSubCategories([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSubsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId, activeType, modal]);
+
   const openCreate = () => {
     setEditing(null);
     setTitle('');
     setExcerpt('');
     setImageUrl('');
     setCategoryId('');
+    setSubCategoryId('');
+    setSubCategories([]);
     setMinOrder('');
     setLeadDays('');
     setModal('create');
@@ -179,6 +209,10 @@ export function FactoryShowcasesPage() {
       r.category_id != null && r.category_id !== ''
         ? String(r.category_id)
         : '',
+    );
+    const subRaw = r.sub_category_id ?? r.subCategoryId;
+    setSubCategoryId(
+      subRaw != null && String(subRaw).trim() !== '' ? String(subRaw) : '',
     );
     setMinOrder(r.min_order != null ? String(r.min_order) : '');
     setLeadDays(r.lead_time_days != null ? String(r.lead_time_days) : '');
@@ -215,6 +249,10 @@ export function FactoryShowcasesPage() {
     if (activeType === 'PD') {
       payload.min_order = minOrder ? Number(minOrder) : undefined;
       payload.lead_time_days = leadDays ? Number(leadDays) : undefined;
+      if (subCategoryId) {
+        const n = Number(subCategoryId);
+        if (Number.isFinite(n)) payload.sub_category_id = n;
+      }
     }
     return payload;
   };
@@ -236,6 +274,7 @@ export function FactoryShowcasesPage() {
           excerpt: body.excerpt as string | undefined,
           image_url: body.image_url as string | undefined,
           category_id: body.category_id as number | undefined,
+          sub_category_id: body.sub_category_id as number | undefined,
           min_order: body.min_order as number | undefined,
           lead_time_days: body.lead_time_days as number | undefined,
         });
@@ -570,26 +609,51 @@ export function FactoryShowcasesPage() {
             </label>
 
             {activeType === 'PD' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <>
                 <label className="block">
-                  <span className="text-xs text-gray-500">ขั้นต่ำ (MOQ)</span>
-                  <input
-                    type="number"
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                    value={minOrder}
-                    onChange={(e) => setMinOrder(e.target.value)}
-                  />
+                  <span className="text-xs text-gray-500">หมวดย่อย (sub_category_id)</span>
+                  <select
+                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60"
+                    value={subCategoryId}
+                    onChange={(e) => setSubCategoryId(e.target.value)}
+                    disabled={!categoryId || subsLoading}
+                  >
+                    <option value="">— ไม่ระบุ —</option>
+                    {subCategories.map((s) => {
+                      const sid = String(s.sub_category_id ?? s.id ?? '');
+                      const nm = String(s.name ?? s.name_th ?? sid);
+                      return (
+                        <option key={sid} value={sid}>
+                          {nm}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {!categoryId ? (
+                    <p className="text-[11px] text-gray-400 mt-1">เลือกหมวดหลักก่อนเพื่อโหลดหมวดย่อย</p>
+                  ) : null}
                 </label>
-                <label className="block">
-                  <span className="text-xs text-gray-500">Lead time (วัน)</span>
-                  <input
-                    type="number"
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                    value={leadDays}
-                    onChange={(e) => setLeadDays(e.target.value)}
-                  />
-                </label>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className="text-xs text-gray-500">ขั้นต่ำ (MOQ)</span>
+                    <input
+                      type="number"
+                      className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                      value={minOrder}
+                      onChange={(e) => setMinOrder(e.target.value)}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs text-gray-500">Lead time (วัน)</span>
+                    <input
+                      type="number"
+                      className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                      value={leadDays}
+                      onChange={(e) => setLeadDays(e.target.value)}
+                    />
+                  </label>
+                </div>
+              </>
             ) : null}
 
             <div className="flex gap-2 pt-2">

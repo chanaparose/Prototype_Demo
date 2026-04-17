@@ -37,6 +37,8 @@ export type Factory = {
   verified: boolean;
   completedOrders: number;
   priceRange: string;
+  /** จาก GET /factories — ชื่อประเภทโรงงาน */
+  factoryTypeName?: string;
 };
 
 export type FactoryProfile = {
@@ -66,12 +68,39 @@ export type IdeaArticle = {
   publishedAt: string;
 };
 
+export type ShowcaseSectionItem = {
+  item_id: number;
+  title: string | null;
+  description: string;
+  icon_name: string | null;
+  sort_order: number;
+};
+
+export type ShowcaseSection = {
+  section_id: number;
+  section_type: 'highlight' | 'checklist';
+  section_title: string;
+  sort_order: number;
+  items: ShowcaseSectionItem[];
+};
+
+/** จาก GET /showcases/:id — gallery (ดิบจาก API) */
+export type ShowcaseImageRow = Record<string, unknown>;
+
+/** จาก GET /showcases/:id — specs PD */
+export type ShowcaseSpecRow = {
+  spec_key: string;
+  spec_value: string;
+  sort_order?: number;
+};
+
 export type FactoryShowcase = {
   id: string;
   factoryId: string;
   factoryName: string;
   title: string;
   excerpt: string;
+  description?: string;
   image: string;
   contentType: 'product' | 'promotion' | 'idea';
   category: string;
@@ -84,7 +113,14 @@ export type FactoryShowcase = {
   likes: number;
   minOrder: number;
   leadTime: string;
+  priceRange?: string;
   tags: string[];
+  factoryImageUrl?: string;
+  factoryRating?: number;
+  factoryVerified?: boolean;
+  sections?: ShowcaseSection[];
+  images?: ShowcaseImageRow[];
+  specs?: ShowcaseSpecRow[];
 };
 
 export type RfqOffer = {
@@ -119,6 +155,12 @@ export type Rfq = {
   /** URL รูปแนบจาก GET /frontend/rfqs/:id (หรือ bootstrap ถ้ามี) */
   imageUrls: string[];
   offers: RfqOffer[];
+  /** จาก rfqs.sub_category_name (join) */
+  subCategoryName?: string;
+  /** จาก rfqs.sub_category_id เมื่อมี id แต่ชื่อยังว่าง */
+  subCategoryId?: number;
+  /** จาก rfqs.shipping_method_name หรือ master */
+  shippingMethodName?: string;
 };
 
 export type OrderTimeline = {

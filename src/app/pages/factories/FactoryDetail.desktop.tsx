@@ -39,6 +39,10 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
     detailLoading,
     startConversation,
     startingConversation,
+    factoryCategoryNames,
+    factorySubCategoryNames,
+    factorySubCategoryPairs,
+    apiCertificates,
   } = state;
 
   const handleBack = useCallback(() => {
@@ -196,6 +200,61 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
                     className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500"
                   >
                     {tag}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+
+          {(factorySubCategoryPairs.length > 0 ||
+            factoryCategoryNames.length > 0 ||
+            factorySubCategoryNames.length > 0) && (
+            <>
+              <div className="h-8 w-px shrink-0 bg-gray-100" />
+              <div className="flex flex-wrap items-center gap-2">
+                {factorySubCategoryPairs.length > 0
+                  ? factorySubCategoryPairs.map((p, i) => (
+                      <span
+                        key={`pair-${p.categoryLabel}-${p.subLabel}-${i}`}
+                        className="rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800"
+                      >
+                        {p.categoryLabel} › {p.subLabel}
+                      </span>
+                    ))
+                  : (
+                    <>
+                      {factoryCategoryNames.map((n) => (
+                        <span
+                          key={`cat-${n}`}
+                          className="rounded-full border border-sky-100 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-800"
+                        >
+                          {n}
+                        </span>
+                      ))}
+                      {factorySubCategoryNames.map((n) => (
+                        <span
+                          key={`sub-${n}`}
+                          className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[11px] font-medium text-teal-800"
+                        >
+                          {n}
+                        </span>
+                      ))}
+                    </>
+                  )}
+              </div>
+            </>
+          )}
+
+          {apiCertificates.length > 0 && (
+            <>
+              <div className="h-8 w-px shrink-0 bg-gray-100" />
+              <div className="flex flex-wrap items-center gap-2">
+                {apiCertificates.map((c, i) => (
+                  <span
+                    key={String(c.map_id ?? c.cert_id ?? c.id ?? i)}
+                    className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800"
+                  >
+                    {String(c.cert_name ?? c.name_th ?? c.cert_number ?? 'ใบรับรอง')}
                   </span>
                 ))}
               </div>

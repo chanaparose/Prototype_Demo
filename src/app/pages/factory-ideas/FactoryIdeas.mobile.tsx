@@ -16,13 +16,19 @@ import {
 import { useData } from '../../contexts/DataContext';
 import type { Factory } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi, favoritesApi, factoriesApi, categoriesApi } from '../../services/api';
+import { masterApi, favoritesApi, factoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
+import {
+  loadSubCategories,
+  prefetchSubCategoriesFor,
+  getCachedSubCategoriesSync,
+} from '../../utils/subCategoriesCache';
 import {
   factoryIdeasCategoryOptionSelected,
   parseMasterProductCategories,
   showcaseMatchesSelectedCategoryId,
 } from '../../utils/exploreToFactoryIdeasCategory';
+import { logFactoryIdeasCategory } from '../../utils/debugFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
 import { MapPin, Star } from 'lucide-react';
@@ -94,9 +100,6 @@ export function FactoryIdeasMobile() {
   const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const categoryMenuRef = useRef<HTMLDivElement>(null);
-  const subCategoryCacheRef = useRef<
-    Map<string, { id: string; name: string; sortOrder: number }[]>
-  >(new Map());
   const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
   const [panelSubs, setPanelSubs] = useState<
     { id: string; name: string; sortOrder: number }[]
@@ -174,15 +177,32 @@ export function FactoryIdeasMobile() {
         const res = await fetchExploreCategoriesMerged();
         if (cancelled) return;
         let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
+        let categorySource: 'exploreMerged' | 'masterProductCategories' | 'empty' = 'exploreMerged';
         if (rows.length === 0) {
+          categorySource = 'empty';
           try {
             const raw = await masterApi.productCategories();
-            if (!cancelled) rows = parseMasterProductCategories(raw);
+            if (!cancelled) {
+              rows = parseMasterProductCategories(raw);
+              categorySource =
+                rows.length > 0 ? 'masterProductCategories' : 'empty';
+            }
           } catch {
             /* keep [] */
           }
         }
-        if (!cancelled) setApiCategoriesAll(rows);
+        if (!cancelled) {
+          setApiCategoriesAll(rows);
+          // Prefetch sub-categories for every category in parallel —
+          // dropdown clicks become instant (module-level cache in subCategoriesCache.ts)
+          prefetchSubCategoriesFor(rows.map((r) => r.id));
+          logFactoryIdeasCategory('categoryMenu.apiCategoriesAll', {
+            source: categorySource,
+            exploreMergedCount: res.merged.length,
+            rowCount: rows.length,
+            rows,
+          });
+        }
       } catch {
         if (!cancelled) setApiCategoriesAll([]);
       }
@@ -204,6 +224,15 @@ export function FactoryIdeasMobile() {
       .sort((a, b) => a.name.localeCompare(b.name, 'th'));
     return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
   }, [apiCategoriesAll, data.categories]);
+
+  useEffect(() => {
+    logFactoryIdeasCategory('categoryMenu.categoryFilters', {
+      count: categoryFilters.length,
+      items: categoryFilters,
+      dataContextCategoriesCount: data.categories.length,
+      apiCategoriesAllCount: apiCategoriesAll.length,
+    });
+  }, [categoryFilters, data.categories.length, apiCategoriesAll.length]);
 
   const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
     data.categories,
@@ -231,8 +260,13 @@ export function FactoryIdeasMobile() {
       return;
     }
 
-    const cached = subCategoryCacheRef.current.get(menuHighlightCategoryId);
+    // Synchronous cache peek — prefetch likely already resolved this
+    const cached = getCachedSubCategoriesSync(menuHighlightCategoryId);
     if (cached) {
+      logFactoryIdeasCategory('panelSubs.cacheHit', {
+        menuHighlightCategoryId,
+        panelSubs: cached,
+      });
       setPanelSubs(cached);
       setPanelSubsLoading(false);
       return;
@@ -240,25 +274,19 @@ export function FactoryIdeasMobile() {
 
     let cancelled = false;
     setPanelSubsLoading(true);
-    categoriesApi
-      .subCategories(menuHighlightCategoryId)
-      .then((raw) => {
+    logFactoryIdeasCategory('panelSubs.request', {
+      endpoint: `GET sub-categories (category_id=${menuHighlightCategoryId})`,
+      menuHighlightCategoryId,
+    });
+    loadSubCategories(menuHighlightCategoryId)
+      .then((mapped) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped = arr
-          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
-          .map((r) => ({
-            id: String(r.sub_category_id ?? r.id ?? ''),
-            name: String(r.name ?? ''),
-            sortOrder: Number(r.sort_order ?? 0),
-          }))
-          .filter((r) => r.id && r.name)
-          .sort((a, b) => a.sortOrder - b.sortOrder);
-        subCategoryCacheRef.current.set(menuHighlightCategoryId, mapped);
+        logFactoryIdeasCategory('panelSubs.apiResponse', {
+          menuHighlightCategoryId,
+          mappedLength: mapped.length,
+          mapped,
+        });
         setPanelSubs(mapped);
-      })
-      .catch(() => {
-        if (!cancelled) setPanelSubs([]);
       })
       .finally(() => {
         if (!cancelled) setPanelSubsLoading(false);
@@ -292,28 +320,20 @@ export function FactoryIdeasMobile() {
 
     if (!selectedCategoryIdForSubs) return;
 
+    // Synchronous cache peek — prefetch likely already resolved this
+    const cached = getCachedSubCategoriesSync(selectedCategoryIdForSubs);
+    if (cached) {
+      setSubCategories(cached);
+      return;
+    }
+
     let cancelled = false;
     setSubCategoriesLoading(true);
 
-    categoriesApi
-      .subCategories(selectedCategoryIdForSubs)
-      .then((raw) => {
+    loadSubCategories(selectedCategoryIdForSubs)
+      .then((mapped) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped = arr
-          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
-          .map((r) => ({
-            id: String(r.sub_category_id ?? r.id ?? ''),
-            name: String(r.name ?? ''),
-            sortOrder: Number(r.sort_order ?? 0),
-          }))
-          .filter((r) => r.id && r.name)
-          .sort((a, b) => a.sortOrder - b.sortOrder);
         setSubCategories(mapped);
-        subCategoryCacheRef.current.set(selectedCategoryIdForSubs, mapped);
-      })
-      .catch(() => {
-        if (!cancelled) setSubCategories([]);
       })
       .finally(() => {
         if (!cancelled) setSubCategoriesLoading(false);

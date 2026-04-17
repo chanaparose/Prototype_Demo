@@ -15,7 +15,9 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../components/shared';
+import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { useIdeaDetailShowcase } from '../../hooks/useShowcaseDetailPage';
+import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -25,7 +27,7 @@ function formatThaiDate(date: string): string {
 
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
-  const { item, loading, factory, factoryConversation, resolvedId } = useIdeaDetailShowcase();
+  const { item, loading, error, factory, factoryConversation, resolvedId } = useIdeaDetailShowcase();
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -55,11 +57,13 @@ export function IdeaDetailMobile() {
           กลับ
         </button>
         <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center text-sm text-gray-500 shadow-sm">
-          ไม่พบข้อมูลไอเดีย
+          {error || 'ไม่พบข้อมูลไอเดีย'}
         </div>
       </div>
     );
   }
+
+  const subName = item.sub_category_name?.trim();
 
   return (
     <div>
@@ -153,6 +157,7 @@ export function IdeaDetailMobile() {
             <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">หมวดหมู่</p>
               <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.category}</p>
+              {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" className="mt-1" /> : null}
             </div>
             <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">ขั้นต่ำการผลิต</p>
@@ -171,26 +176,38 @@ export function IdeaDetailMobile() {
           </div>
         </div>
 
-        {/* How to apply */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
-            วิธีนำไอเดียไปต่อยอด
-          </p>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p className="flex items-start gap-2">
-              <ListChecks className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
-              สรุป Requirement สินค้าและงบประมาณก่อนเริ่มคุยโรงงาน
-            </p>
-            <p className="flex items-start gap-2">
-              <TrendingUp className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />
-              ทดลองตลาดด้วย MOQ ที่เหมาะสม และวัดผลก่อนขยายล็อต
-            </p>
-            <p className="flex items-start gap-2">
-              <Lightbulb className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
-              ปรับจุดขายและแพ็กเกจให้ตรงกลุ่มเป้าหมาย
-            </p>
-          </div>
-        </div>
+        {/* Highlight sections (from DB or fallback) */}
+        {(() => {
+          const highlightSections = getSectionsByType(item.sections, 'highlight');
+          if (highlightSections.length > 0) {
+            return highlightSections.map((sec) => (
+              <div key={sec.section_id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>{sec.section_title}</p>
+                <div className="space-y-2 text-sm text-gray-600">
+                  {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => {
+                    const Icon = getIcon(si.icon_name) ?? Lightbulb;
+                    return (
+                      <p key={si.item_id} className="flex items-start gap-2">
+                        <Icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
+                        {interpolate(si.description, item)}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            ));
+          }
+          return (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>วิธีนำไอเดียไปต่อยอด</p>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p className="flex items-start gap-2"><ListChecks className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />สรุป Requirement สินค้าและงบประมาณก่อนเริ่มคุยโรงงาน</p>
+                <p className="flex items-start gap-2"><TrendingUp className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />ทดลองตลาดด้วย MOQ ที่เหมาะสม และวัดผลก่อนขยายล็อต</p>
+                <p className="flex items-start gap-2"><Lightbulb className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />ปรับจุดขายและแพ็กเกจให้ตรงกลุ่มเป้าหมาย</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Tags */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
@@ -198,6 +215,7 @@ export function IdeaDetailMobile() {
             แท็กที่เกี่ยวข้อง
           </p>
           <div className="flex flex-wrap gap-2">
+            {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
             {item.tags.map((tag) => (
               <span
                 key={tag}
@@ -215,18 +233,33 @@ export function IdeaDetailMobile() {
           </div>
         </div>
 
-        {/* Pre-production checklist */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
-            สิ่งที่ควรเตรียมก่อนเริ่มผลิต
-          </p>
-          <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
-            <li>กลุ่มเป้าหมายและจุดขายหลักของสินค้า</li>
-            <li>ขนาดบรรจุ / วัสดุ / สเปกที่ต้องการ</li>
-            <li>งบประมาณต่อรอบผลิตและเวลาเปิดตัว</li>
-            <li>เอกสารที่ต้องใช้ เช่น อย., HALAL</li>
-          </ul>
-        </div>
+        {/* Checklist sections (from DB or fallback) */}
+        {(() => {
+          const checklistSections = getSectionsByType(item.sections, 'checklist');
+          if (checklistSections.length > 0) {
+            return checklistSections.map((sec) => (
+              <div key={sec.section_id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>{sec.section_title}</p>
+                <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
+                  {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => (
+                    <li key={si.item_id}>{interpolate(si.description, item)}</li>
+                  ))}
+                </ul>
+              </div>
+            ));
+          }
+          return (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>สิ่งที่ควรเตรียมก่อนเริ่มผลิต</p>
+              <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
+                <li>กลุ่มเป้าหมายและจุดขายหลักของสินค้า</li>
+                <li>ขนาดบรรจุ / วัสดุ / สเปกที่ต้องการ</li>
+                <li>งบประมาณต่อรอบผลิตและเวลาเปิดตัว</li>
+                <li>เอกสารที่ต้องใช้ เช่น อย., HALAL</li>
+              </ul>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

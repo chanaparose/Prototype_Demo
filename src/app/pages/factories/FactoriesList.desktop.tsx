@@ -18,7 +18,7 @@ type FactoriesListState = ReturnType<typeof useFactoriesList>;
 type FactoriesListDesktopProps = { state: FactoriesListState };
 
 export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
-  const { factories, locations, filters, setSearchText, setLocation, setVerifiedOnly } = state;
+  const { factories, locations, filters, setSearchText, setLocation, setVerifiedOnly, loadError } = state;
   const navigate = useNavigate();
   const [locationOpen, setLocationOpen] = useState(false);
 
@@ -31,6 +31,13 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)] bg-gray-50">
+      {loadError ? (
+        <div className="px-8 pt-4">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            {loadError} — แสดงข้อมูลจากแคชในแอป
+          </div>
+        </div>
+      ) : null}
 
       {/* ── Sticky top filter bar ── */}
       <div className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10">
@@ -196,6 +203,11 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                   <div>
                     <p className="text-[13px] font-bold text-gray-900 truncate">{factory.name}</p>
                     <p className="text-[11px] text-gray-400 truncate mt-0.5">{factory.specialization}</p>
+                    {factory.factoryTypeName ? (
+                      <p className="text-[10px] text-violet-600 font-medium truncate mt-0.5">
+                        {factory.factoryTypeName}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="flex items-center justify-between text-[11px]">

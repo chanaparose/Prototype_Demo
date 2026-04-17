@@ -15,9 +15,10 @@ type ExploreIdeaArticlesProps = {
   articles: IdeaArticleItem[];
   /** e.g. navigate to factory-ideas with content-type filter */
   onSeeAll?: () => void;
+  onArticleClick?: (id: string) => void;
 };
 
-export function ExploreIdeaArticles({ articles, onSeeAll }: ExploreIdeaArticlesProps) {
+export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: ExploreIdeaArticlesProps) {
   return (
     <div className="mb-5">
       <div className="flex items-center justify-between px-4 mb-3">
@@ -41,6 +42,7 @@ export function ExploreIdeaArticles({ articles, onSeeAll }: ExploreIdeaArticlesP
         {articles.map((article) => (
           <div
             key={article.id}
+            onClick={() => onArticleClick?.(article.id)}
             className="flex-shrink-0 w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-[#A656A0]/30 transition-all group"
           >
             <div className="relative h-36 overflow-hidden">

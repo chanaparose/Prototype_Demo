@@ -1,7 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { factoriesApi, certificatesApi, mediaApi, addressesApi } from '../../services/api';
+import {
+  factoriesApi,
+  certificatesApi,
+  mediaApi,
+  addressesApi,
+  masterApi,
+  categoriesApi,
+} from '../../services/api';
 
 export function FactoryProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -26,6 +33,15 @@ export function FactoryProfilePage() {
   const [certExpire, setCertExpire] = useState('');
   const [certUploading, setCertUploading] = useState(false);
 
+  const [masterCertTypes, setMasterCertTypes] = useState<{ id: number; label: string }[]>([]);
+  const [productCategories, setProductCategories] = useState<{ id: number; name: string }[]>([]);
+  const [selCatIds, setSelCatIds] = useState<number[]>([]);
+  const [selSubIds, setSelSubIds] = useState<number[]>([]);
+  const [subOptions, setSubOptions] = useState<{ id: number; name: string; categoryId: number }[]>([]);
+  const [catSubLoading, setCatSubLoading] = useState(false);
+  const [savingCats, setSavingCats] = useState(false);
+  const [savingSubs, setSavingSubs] = useState(false);
+
   const load = useCallback(async () => {
     if (fid == null) {
       setError('ไม่พบรหัสโรงงานในบัญชี — กรุณาล็อกอินใหม่');
@@ -35,10 +51,22 @@ export function FactoryProfilePage() {
     setLoading(true);
     setError('');
     try {
-      const [factoryRow, certList, addrRes] = await Promise.all([
+      const [
+        factoryRow,
+        certList,
+        addrRes,
+        mc,
+        pc,
+        fc,
+        fsc,
+      ] = await Promise.all([
         factoriesApi.get(fid),
         certificatesApi.listByFactory(fid),
         addressesApi.list().catch(() => []),
+        masterApi.certificates().catch(() => []),
+        masterApi.productCategories().catch(() => []),
+        factoriesApi.getCategories(fid).catch(() => []),
+        factoriesApi.getSubCategories(fid).catch(() => []),
       ]);
 
       const f = factoryRow as Record<string, unknown>;
@@ -51,6 +79,44 @@ export function FactoryProfilePage() {
 
       setCerts(Array.isArray(certList) ? (certList as Record<string, unknown>[]) : []);
       setAddresses(Array.isArray(addrRes) ? (addrRes as Record<string, unknown>[]) : []);
+
+      const mct = (Array.isArray(mc) ? mc : [])
+        .map((r) => {
+          const o = r as Record<string, unknown>;
+          const id = Number(o.cert_id ?? o.id);
+          const label = String(o.name_th ?? o.name ?? o.cert_name ?? id);
+          return { id, label };
+        })
+        .filter((x) => Number.isFinite(x.id) && x.id > 0);
+      setMasterCertTypes(mct);
+
+      const pcr = (Array.isArray(pc) ? pc : [])
+        .map((r) => {
+          const o = r as Record<string, unknown>;
+          const id = Number(o.category_id ?? o.id);
+          const name = String(o.name ?? o.category_name ?? '').trim();
+          return { id, name };
+        })
+        .filter((x) => Number.isFinite(x.id) && x.id > 0 && x.name);
+      setProductCategories(pcr);
+
+      const fcArr = Array.isArray(fc) ? fc : [];
+      const catIds = fcArr
+        .map((r) => {
+          const o = r as Record<string, unknown>;
+          return Number(o.category_id ?? o.id);
+        })
+        .filter((n) => Number.isFinite(n) && n > 0);
+      setSelCatIds(catIds);
+
+      const fscArr = Array.isArray(fsc) ? fsc : [];
+      const subIds = fscArr
+        .map((r) => {
+          const o = r as Record<string, unknown>;
+          return Number(o.sub_category_id ?? o.id);
+        })
+        .filter((n) => Number.isFinite(n) && n > 0);
+      setSelSubIds(subIds);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดข้อมูลไม่สำเร็จ');
     } finally {
@@ -61,6 +127,97 @@ export function FactoryProfilePage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (fid == null || selCatIds.length === 0) {
+      setSubOptions([]);
+      return;
+    }
+    let cancelled = false;
+    setCatSubLoading(true);
+    Promise.all(selCatIds.map((cid) => categoriesApi.subCategories(cid).catch(() => [])))
+      .then((results) => {
+        if (cancelled) return;
+        const map = new Map<number, { id: number; name: string; categoryId: number }>();
+        selCatIds.forEach((cid, idx) => {
+          const arr = Array.isArray(results[idx])
+            ? (results[idx] as Record<string, unknown>[])
+            : [];
+          for (const row of arr) {
+            const sid = Number(row.sub_category_id ?? row.id);
+            if (!Number.isFinite(sid) || sid <= 0) continue;
+            const nm = String(row.name ?? row.name_th ?? sid);
+            map.set(sid, { id: sid, name: nm, categoryId: cid });
+          }
+        });
+        setSubOptions(
+          [...map.values()].sort((a, b) => a.name.localeCompare(b.name, 'th')),
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setCatSubLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fid, selCatIds]);
+
+  const toggleCat = (id: number) => {
+    setSelCatIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id].sort((a, b) => a - b),
+    );
+  };
+
+  const toggleSub = (id: number) => {
+    setSelSubIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id].sort((a, b) => a - b),
+    );
+  };
+
+  const saveFactoryCategories = async () => {
+    if (fid == null) return;
+    setSavingCats(true);
+    setOkMsg('');
+    setError('');
+    try {
+      await factoriesApi.setCategories(fid, selCatIds);
+      setOkMsg('บันทึกหมวดหมู่หลักแล้ว');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'บันทึกหมวดหมู่ไม่สำเร็จ');
+    } finally {
+      setSavingCats(false);
+    }
+  };
+
+  const saveFactorySubCategories = async () => {
+    if (fid == null) return;
+    setSavingSubs(true);
+    setOkMsg('');
+    setError('');
+    try {
+      await factoriesApi.setSubCategories(fid, selSubIds);
+      setOkMsg('บันทึกหมวดย่อยแล้ว');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'บันทึกหมวดย่อยไม่สำเร็จ');
+    } finally {
+      setSavingSubs(false);
+    }
+  };
+
+  const removeCertificate = async (c: Record<string, unknown>) => {
+    if (fid == null) return;
+    const delId = c.map_id ?? c.factory_certificate_id ?? c.id;
+    if (delId == null || delId === '') return;
+    if (!window.confirm('ลบใบรับรองนี้?')) return;
+    setError('');
+    try {
+      await certificatesApi.delete(fid, delId as string | number);
+      setOkMsg('ลบใบรับรองแล้ว');
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ลบใบรับรองไม่สำเร็จ');
+    }
+  };
 
   const saveProfile = async () => {
     if (fid == null) return;
@@ -208,6 +365,84 @@ export function FactoryProfilePage() {
       </section>
 
       <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
+        <h2 className="text-base font-bold text-gray-900 mb-1">หมวดสินค้าของโรงงาน</h2>
+        <p className="text-xs text-gray-500 mb-3">
+          <code className="text-[11px] bg-gray-100 px-1 rounded">GET/POST /factories/…/categories</code>
+          {' · '}
+          <code className="text-[11px] bg-gray-100 px-1 rounded">…/sub-categories</code>
+        </p>
+        <p className="text-xs font-semibold text-gray-700 mb-2">หมวดหลัก</p>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {productCategories.length === 0 ? (
+            <span className="text-sm text-gray-400">ไม่มีรายการหมวดจาก master หรือโหลดไม่สำเร็จ</span>
+          ) : (
+            productCategories.map((c) => (
+              <label
+                key={c.id}
+                className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-3 py-2 cursor-pointer hover:bg-gray-50"
+              >
+                <input
+                  type="checkbox"
+                  checked={selCatIds.includes(c.id)}
+                  onChange={() => toggleCat(c.id)}
+                  className="rounded border-gray-300 text-[#A238FF] focus:ring-[#A238FF]"
+                />
+                <span>{c.name}</span>
+              </label>
+            ))
+          )}
+        </div>
+        <button
+          type="button"
+          disabled={savingCats}
+          onClick={() => void saveFactoryCategories()}
+          className="px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-50 mb-6"
+          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+        >
+          {savingCats ? 'กำลังบันทึก...' : 'บันทึกหมวดหลัก'}
+        </button>
+
+        <p className="text-xs font-semibold text-gray-700 mb-2">หมวดย่อย (ตามหมวดหลักที่เลือก)</p>
+        {catSubLoading ? (
+          <p className="text-sm text-gray-400 mb-2">กำลังโหลดหมวดย่อย…</p>
+        ) : null}
+        <div className="flex flex-wrap gap-2 mb-3">
+          {subOptions.length === 0 ? (
+            <span className="text-sm text-gray-400">
+              {selCatIds.length === 0 ? 'เลือกหมวดหลักอย่างน้อย 1 รายการ' : 'ไม่มีหมวดย่อยหรือยังโหลดไม่สำเร็จ'}
+            </span>
+          ) : (
+            subOptions.map((s) => (
+              <label
+                key={s.id}
+                className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-3 py-2 cursor-pointer hover:bg-gray-50"
+              >
+                <input
+                  type="checkbox"
+                  checked={selSubIds.includes(s.id)}
+                  onChange={() => toggleSub(s.id)}
+                  className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                />
+                <span>
+                  {s.name}
+                  <span className="text-gray-400 text-[10px] ml-1">(cat {s.categoryId})</span>
+                </span>
+              </label>
+            ))
+          )}
+        </div>
+        <button
+          type="button"
+          disabled={savingSubs || subOptions.length === 0}
+          onClick={() => void saveFactorySubCategories()}
+          className="px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #0D9488 0%, #14B8A6 100%)' }}
+        >
+          {savingSubs ? 'กำลังบันทึก...' : 'บันทึกหมวดย่อย'}
+        </button>
+      </section>
+
+      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
         <h2 className="text-base font-bold text-gray-900 mb-1">ที่อยู่ในระบบ</h2>
         <p className="text-xs text-gray-500 mb-3">
           จาก <code className="text-[11px] bg-gray-100 px-1 rounded">GET /addresses</code>
@@ -240,13 +475,27 @@ export function FactoryProfilePage() {
           อัปโหลด PDF/รูป — สถานะตรวจสอบจะถูกจัดการโดยแอดมินตาม API
         </p>
         <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end">
-          <label className="block">
-            <span className="text-xs text-gray-500">รหัสประเภทใบรับรอง (cert_id)</span>
-            <input
-              className="mt-1 w-28 rounded-xl border border-gray-200 px-3 py-2 text-sm"
-              value={certIdInput}
-              onChange={(e) => setCertIdInput(e.target.value)}
-            />
+          <label className="block min-w-[200px]">
+            <span className="text-xs text-gray-500">ประเภทใบรับรอง (cert_id)</span>
+            {masterCertTypes.length > 0 ? (
+              <select
+                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                value={certIdInput}
+                onChange={(e) => setCertIdInput(e.target.value)}
+              >
+                {masterCertTypes.map((m) => (
+                  <option key={m.id} value={String(m.id)}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className="mt-1 w-28 rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                value={certIdInput}
+                onChange={(e) => setCertIdInput(e.target.value)}
+              />
+            )}
           </label>
           <label className="block flex-1 min-w-[140px]">
             <span className="text-xs text-gray-500">เลขที่เอกสาร</span>
@@ -286,14 +535,23 @@ export function FactoryProfilePage() {
             certs.map((c, i) => (
               <li
                 key={String(c.map_id ?? c.cert_id ?? i)}
-                className="text-sm border border-gray-100 rounded-xl px-3 py-2 flex flex-wrap gap-2 justify-between"
+                className="text-sm border border-gray-100 rounded-xl px-3 py-2 flex flex-wrap gap-2 justify-between items-center"
               >
                 <span className="text-gray-700 truncate min-w-0 max-w-full sm:max-w-[200px]">
                   {String(c.cert_number ?? c.document_url ?? 'เอกสาร')}
                 </span>
-                <span className="text-gray-400 text-xs">
-                  {String(c.verify_status ?? c.status ?? '—')}
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-gray-400 text-xs">
+                    {String(c.verify_status ?? c.status ?? '—')}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void removeCertificate(c)}
+                    className="text-xs font-semibold text-red-600 hover:underline"
+                  >
+                    ลบ
+                  </button>
+                </div>
               </li>
             ))
           )}

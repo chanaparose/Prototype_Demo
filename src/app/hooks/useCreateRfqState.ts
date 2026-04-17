@@ -68,27 +68,41 @@ export function useCreateRfqState() {
   /* ── Load sub-categories when category changes ── */
   const [subCategories, setSubCategories] = React.useState<SubCategory[]>([]);
   const [subCategoriesLoading, setSubCategoriesLoading] = React.useState(false);
+  const [subCategoriesError, setSubCategoriesError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
+  const reloadSubCategories = React.useCallback(async () => {
     if (!form.categoryId) {
       setSubCategories([]);
+      setSubCategoriesError(null);
       return;
     }
     setSubCategoriesLoading(true);
-    categoriesApi.subCategories(form.categoryId)
-      .then((raw) => {
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped: SubCategory[] = arr.map((r) => ({
+    setSubCategoriesError(null);
+    try {
+      const raw = await categoriesApi.subCategories(form.categoryId);
+      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const mapped: SubCategory[] = arr
+        .map((r) => ({
           id: String(r.sub_category_id ?? r.id ?? ''),
           name: String(r.name ?? ''),
           sortOrder: Number(r.sort_order ?? 0),
-        })).filter((s) => s.id && s.name);
-        mapped.sort((a, b) => a.sortOrder - b.sortOrder);
-        setSubCategories(mapped);
-      })
-      .catch(() => setSubCategories([]))
-      .finally(() => setSubCategoriesLoading(false));
+        }))
+        .filter((s) => s.id && s.name);
+      mapped.sort((a, b) => a.sortOrder - b.sortOrder);
+      setSubCategories(mapped);
+    } catch (e) {
+      setSubCategories([]);
+      setSubCategoriesError(
+        e instanceof Error ? e.message : 'โหลดประเภทย่อยไม่สำเร็จ',
+      );
+    } finally {
+      setSubCategoriesLoading(false);
+    }
   }, [form.categoryId]);
+
+  React.useEffect(() => {
+    void reloadSubCategories();
+  }, [reloadSubCategories]);
 
   /* ── Load addresses from API ── */
   const [addresses, setAddresses] = React.useState<Address[]>([]);
@@ -137,11 +151,12 @@ export function useCreateRfqState() {
   /* ── Validation per step ── */
   const canProceed = React.useMemo(() => {
     if (currentStep === 1) {
-      // category + sub-category + title ต้องมี
-      // ถ้ายังโหลด sub-categories อยู่ หรือไม่มี sub-categories → ไม่บังคับ subCategoryId
+      if (!form.categoryId || !form.title.trim()) return false;
+      if (subCategoriesLoading) return false;
+      if (subCategoriesError) return false;
       const needsSub = subCategories.length > 0;
       const hasSubIfNeeded = needsSub ? Boolean(form.subCategoryId) : true;
-      return Boolean(form.categoryId && hasSubIfNeeded && form.title.trim());
+      return hasSubIfNeeded;
     }
     if (currentStep === 2) {
       return Boolean(form.quantity && Number(form.quantity) > 0 && form.unitId && form.budgetPerPiece);
@@ -150,7 +165,7 @@ export function useCreateRfqState() {
       return Boolean(form.addressId && form.shippingMethodId);
     }
     return false;
-  }, [currentStep, form, subCategories.length]);
+  }, [currentStep, form, subCategories.length, subCategoriesLoading, subCategoriesError]);
 
   /* ── Submit to API ── */
   const submitRfq = React.useCallback(async () => {
@@ -225,6 +240,8 @@ export function useCreateRfqState() {
     categories,
     subCategories,
     subCategoriesLoading,
+    subCategoriesError,
+    reloadSubCategories,
     units,
     shippingMethods,
     addresses,
