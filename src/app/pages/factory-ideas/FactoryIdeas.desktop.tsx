@@ -16,13 +16,19 @@ import {
 import { useData } from '../../contexts/DataContext';
 import type { Factory } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi, factoriesApi, categoriesApi } from '../../services/api';
+import { masterApi, factoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
+import {
+  loadSubCategories,
+  prefetchSubCategoriesFor,
+  getCachedSubCategoriesSync,
+} from '../../utils/subCategoriesCache';
 import {
   factoryIdeasCategoryOptionSelected,
   parseMasterProductCategories,
   showcaseMatchesSelectedCategoryId,
 } from '../../utils/exploreToFactoryIdeasCategory';
+import { logFactoryIdeasCategory } from '../../utils/debugFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
 import { MapPin, Star } from 'lucide-react';
@@ -90,9 +96,15 @@ export function FactoryIdeasDesktop() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const categoryMenuRef = useRef<HTMLDivElement>(null);
-  const subCategoryCacheRef = useRef<
-    Map<string, { id: string; name: string; sortOrder: number }[]>
-  >(new Map());
+  /**
+   * When `pickSubCategory` triggers a category change (hover-selected category
+   * differs from effective), the resulting `selectedCategoryIdForSubs` effect
+   * would otherwise wipe the sub-id we just set. This ref tells the effect to
+   * skip the reset exactly once. (Mobile doesn't need it because the user must
+   * tap the category row first — `applyCategory` in `pickSubCategory` is a
+   * no-op there, so the effect never re-runs.)
+   */
+  const skipSubResetOnNextCategoryChangeRef = useRef(false);
   const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
   const [panelSubs, setPanelSubs] = useState<
     { id: string; name: string; sortOrder: number }[]
@@ -146,8 +158,13 @@ export function FactoryIdeasDesktop() {
       return;
     }
 
-    const cached = subCategoryCacheRef.current.get(menuHighlightCategoryId);
+    // Synchronous cache peek — prefetch likely already resolved this
+    const cached = getCachedSubCategoriesSync(menuHighlightCategoryId);
     if (cached) {
+      logFactoryIdeasCategory('panelSubs.cacheHit', {
+        menuHighlightCategoryId,
+        panelSubs: cached,
+      });
       setPanelSubs(cached);
       setPanelSubsLoading(false);
       return;
@@ -155,25 +172,19 @@ export function FactoryIdeasDesktop() {
 
     let cancelled = false;
     setPanelSubsLoading(true);
-    categoriesApi
-      .subCategories(menuHighlightCategoryId)
-      .then((raw) => {
+    logFactoryIdeasCategory('panelSubs.request', {
+      endpoint: `GET sub-categories (category_id=${menuHighlightCategoryId})`,
+      menuHighlightCategoryId,
+    });
+    loadSubCategories(menuHighlightCategoryId)
+      .then((mapped) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped = arr
-          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
-          .map((r) => ({
-            id: String(r.sub_category_id ?? r.id ?? ''),
-            name: String(r.name ?? ''),
-            sortOrder: Number(r.sort_order ?? 0),
-          }))
-          .filter((r) => r.id && r.name)
-          .sort((a, b) => a.sortOrder - b.sortOrder);
-        subCategoryCacheRef.current.set(menuHighlightCategoryId, mapped);
+        logFactoryIdeasCategory('panelSubs.apiResponse', {
+          menuHighlightCategoryId,
+          mappedLength: mapped.length,
+          mapped,
+        });
         setPanelSubs(mapped);
-      })
-      .catch(() => {
-        if (!cancelled) setPanelSubs([]);
       })
       .finally(() => {
         if (!cancelled) setPanelSubsLoading(false);
@@ -205,15 +216,32 @@ export function FactoryIdeasDesktop() {
         const res = await fetchExploreCategoriesMerged();
         if (cancelled) return;
         let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
+        let categorySource: 'exploreMerged' | 'masterProductCategories' | 'empty' = 'exploreMerged';
         if (rows.length === 0) {
+          categorySource = 'empty';
           try {
             const raw = await masterApi.productCategories();
-            if (!cancelled) rows = parseMasterProductCategories(raw);
+            if (!cancelled) {
+              rows = parseMasterProductCategories(raw);
+              categorySource =
+                rows.length > 0 ? 'masterProductCategories' : 'empty';
+            }
           } catch {
             /* keep [] */
           }
         }
-        if (!cancelled) setApiCategoriesAll(rows);
+        if (!cancelled) {
+          setApiCategoriesAll(rows);
+          // Prefetch sub-categories for every category in parallel —
+          // dropdown clicks become instant (module-level cache in subCategoriesCache.ts)
+          prefetchSubCategoriesFor(rows.map((r) => r.id));
+          logFactoryIdeasCategory('categoryMenu.apiCategoriesAll', {
+            source: categorySource,
+            exploreMergedCount: res.merged.length,
+            rowCount: rows.length,
+            rows,
+          });
+        }
       } catch {
         if (!cancelled) setApiCategoriesAll([]);
       }
@@ -237,6 +265,15 @@ export function FactoryIdeasDesktop() {
     return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
   }, [apiCategoriesAll, data.categories]);
 
+  useEffect(() => {
+    logFactoryIdeasCategory('categoryMenu.categoryFilters', {
+      count: categoryFilters.length,
+      items: categoryFilters,
+      dataContextCategoriesCount: data.categories.length,
+      apiCategoriesAllCount: apiCategoriesAll.length,
+    });
+  }, [categoryFilters, data.categories.length, apiCategoriesAll.length]);
+
   const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
     data.categories,
     apiCategoriesAll,
@@ -253,35 +290,31 @@ export function FactoryIdeasDesktop() {
     effectiveCategoryId !== 'all' ? effectiveCategoryId : null;
 
   useEffect(() => {
-    setSelectedSubCategoryId(null);
+    // Skip the reset when the category change was triggered by pickSubCategory
+    // (it already set the new sub id we want to keep).
+    if (skipSubResetOnNextCategoryChangeRef.current) {
+      skipSubResetOnNextCategoryChangeRef.current = false;
+    } else {
+      setSelectedSubCategoryId(null);
+    }
     setSubCategories([]);
 
     if (!selectedCategoryIdForSubs) return;
 
+    // Synchronous cache peek — prefetch likely already resolved this
+    const cached = getCachedSubCategoriesSync(selectedCategoryIdForSubs);
+    if (cached) {
+      setSubCategories(cached);
+      return;
+    }
+
     let cancelled = false;
     setSubCategoriesLoading(true);
 
-    categoriesApi
-      .subCategories(selectedCategoryIdForSubs)
-      .then((raw) => {
+    loadSubCategories(selectedCategoryIdForSubs)
+      .then((mapped) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped = arr
-          .filter((r) => String(r.status ?? 'A').toUpperCase() === 'A')
-          .map((r) => ({
-            id: String(r.sub_category_id ?? r.id ?? ''),
-            name: String(r.name ?? ''),
-            sortOrder: Number(r.sort_order ?? 0),
-          }))
-          .filter((r) => r.id && r.name)
-          .sort((a, b) => a.sortOrder - b.sortOrder);
         setSubCategories(mapped);
-        if (selectedCategoryIdForSubs) {
-          subCategoryCacheRef.current.set(selectedCategoryIdForSubs, mapped);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setSubCategories([]);
       })
       .finally(() => {
         if (!cancelled) setSubCategoriesLoading(false);
@@ -355,6 +388,15 @@ export function FactoryIdeasDesktop() {
   const closeCategoryMenu = () => setCategoryMenuOpen(false);
 
   const pickSubCategory = (subId: string | null, categoryIdForApply: string) => {
+    // If the category is about to change as a result of this pick, tell the
+    // effect to keep our freshly-chosen sub id instead of clearing it.
+    if (
+      categoryIdForApply &&
+      categoryIdForApply !== 'all' &&
+      categoryIdForApply !== effectiveCategoryId
+    ) {
+      skipSubResetOnNextCategoryChangeRef.current = true;
+    }
     if (categoryIdForApply && categoryIdForApply !== 'all') {
       applyCategory(categoryIdForApply);
     }

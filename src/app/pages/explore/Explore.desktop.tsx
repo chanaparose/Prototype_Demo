@@ -23,7 +23,15 @@ import type { CategoryItem } from '../../components/features/explore/ExploreCate
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '../../components/features/explore/ExploreIdeaArticles';
 /* ── ProductCarouselSection: maaboom.com-style left banner + auto-scrolling card carousel ── */
-type ProductItem = { id: string; title: string; price: string; img: string; discount?: string };
+type ProductItem = {
+  id: string;
+  title: string;
+  price: string;
+  img: string;
+  discount?: string;
+  category?: string;
+  subCategoryName?: string;
+};
 
 const CARD_W = 204; // card width (192px) + gap (12px)
 const VISIBLE_CARDS = 4;
@@ -194,6 +202,11 @@ function ProductCarouselSection({
                       <p className="text-gray-700 text-xs mb-2 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[32px]">
                         {product.title}
                       </p>
+                      {(product.category || product.subCategoryName) ? (
+                        <p className="text-[10px] text-violet-700/90 font-medium truncate mb-1">
+                          {[product.category, product.subCategoryName].filter(Boolean).join(' › ')}
+                        </p>
+                      ) : null}
                       <p className="font-bold text-[#F28A2E] text-base">{product.price}</p>
                     </div>
                   </div>
@@ -316,6 +329,8 @@ type ShowcaseItem = {
   id: string; title: string; excerpt: string; image: string;
   factoryName: string; factoryId: string; minOrder: number;
   contentType: string;
+  category?: string;
+  subCategoryName?: string;
 };
 
 type ExploreDesktopProps = {
@@ -360,7 +375,12 @@ export function ExploreDesktop({
 
   const productShowcases = useMemo(
     () => (exploreProducts ?? []).slice(0, 8).map((s) => ({
-      id: s.id, title: s.title, price: `MOQ ${s.minOrder}`, img: s.image,
+      id: s.id,
+      title: s.title,
+      price: `MOQ ${s.minOrder}`,
+      img: s.image,
+      category: s.category,
+      subCategoryName: s.subCategoryName,
     })),
     [exploreProducts],
   );
@@ -685,7 +705,9 @@ export function ExploreDesktop({
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Left Large Article */}
             {ideaArticlesList.length > 0 && (
-              <div className="lg:w-[35%] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex-shrink-0 cursor-pointer group">
+              <div
+                onClick={() => navigate(`/idea-detail?showcase_id=${ideaArticlesList[0].id}`)}
+                className="lg:w-[35%] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex-shrink-0 cursor-pointer group">
                 <div className="h-48 relative overflow-hidden">
                   <ImageWithFallback
                     src={ideaArticlesList[0].image}
@@ -716,6 +738,7 @@ export function ExploreDesktop({
               {ideaArticlesList.slice(1).map((article) => (
                 <div
                   key={article.id}
+                  onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
                   className="flex bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group h-full max-h-[140px] flex-shrink-0 min-w-[300px]"
                 >
                   <div className="w-1/3 relative overflow-hidden">

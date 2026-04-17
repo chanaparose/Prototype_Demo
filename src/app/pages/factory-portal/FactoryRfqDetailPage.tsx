@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -147,6 +147,16 @@ export function FactoryRfqDetailPage() {
 
   const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';
 
+  const customerSub = String(rfqBody.sub_category_name ?? '').trim();
+  const customerShipLabel = useMemo(() => {
+    const byName = String(rfqBody.shipping_method_name ?? '').trim();
+    if (byName) return byName;
+    const sid = Number(rfqBody.shipping_method_id ?? 0);
+    if (!sid) return '';
+    const row = shippingMethods.find((m) => Number(m.shipping_method_id ?? m.id) === sid);
+    return row ? String(row.method_name ?? row.name ?? '').trim() : '';
+  }, [rfqBody, shippingMethods]);
+
   return (
     <div className="w-full min-w-0 max-w-lg lg:max-w-5xl mx-auto pb-24 pb-[max(6rem,env(safe-area-inset-bottom,0px))]">
       <div className="flex items-center gap-3 mb-5 sm:mb-6 min-w-0">
@@ -182,6 +192,18 @@ export function FactoryRfqDetailPage() {
         <div className={twoCol}>
           <div className="space-y-4 mb-4 lg:mb-0 min-w-0">
             <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-2 text-sm break-words">
+              {!loading ? (
+                <div className="rounded-xl border border-violet-100 bg-violet-50/60 px-3 py-2 space-y-1 mb-1">
+                  <p>
+                    <span className="text-gray-500">ประเภทย่อย (ลูกค้า): </span>
+                    {customerSub || '—'}
+                  </p>
+                  <p>
+                    <span className="text-gray-500">วิธีจัดส่งที่ลูกค้าต้องการ: </span>
+                    {customerShipLabel || '—'}
+                  </p>
+                </div>
+              ) : null}
               <p>
                 <span className="text-gray-500">รายละเอียด: </span>
                 {String(rfqBody.details ?? rfqBody.description ?? '—')}

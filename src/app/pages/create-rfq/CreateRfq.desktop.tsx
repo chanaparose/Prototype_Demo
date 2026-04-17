@@ -22,6 +22,8 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
     categories,
     subCategories,
     subCategoriesLoading,
+    subCategoriesError,
+    reloadSubCategories,
     units,
     shippingMethods,
     addresses,
@@ -105,6 +107,8 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
                     categories={categories}
                     subCategories={subCategories}
                     subCategoriesLoading={subCategoriesLoading}
+                    subCategoriesError={subCategoriesError}
+                    onRetrySubCategories={() => void reloadSubCategories()}
                     onUpdate={updateForm}
                   />
                 </motion.div>

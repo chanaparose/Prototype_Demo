@@ -143,101 +143,105 @@ export function FactoryProfileTabContent({
       </div>
 
       {activeTab === 'products' && (
-        <div className="space-y-3">
+        <div>
           {productItems.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center">
               โรงงานนี้ยังไม่มีสินค้าแนะนำ
             </div>
           ) : (
-            productItems.map((item) => (
+            <div className="grid grid-cols-2 gap-3">
+            {productItems.map((item) => (
               <div
                 key={item.id}
                 onClick={() => onProductClick(item.id)}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform min-w-0"
               >
-                <div className="h-36">
+                <div className="h-28 sm:h-32">
                   <ImageWithFallback
                     src={item.image}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-3">
-                  <p className="text-sm text-gray-900 line-clamp-1" style={{ fontWeight: 700 }}>
+                <div className="p-2.5 sm:p-3">
+                  <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
                     {item.title}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
-                  <p className="text-[11px] text-gray-400 mt-2">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1.5">
                     MOQ {item.minOrder} • {item.leadTime}
                   </p>
                 </div>
               </div>
-            ))
+            ))}
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'promotions' && (
-        <div className="space-y-3">
+        <div>
           {promotionItems.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center">
               โรงงานนี้ยังไม่มีโปรโมชัน
             </div>
           ) : (
-            promotionItems.map((item) => (
+            <div className="grid grid-cols-2 gap-3">
+            {promotionItems.map((item) => (
               <div
                 key={item.id}
                 onClick={() => onPromotionClick(item.id)}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform min-w-0"
               >
-                <div className="h-36">
+                <div className="h-28 sm:h-32">
                   <ImageWithFallback
                     src={item.image}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-3">
-                  <p className="text-sm text-gray-900 line-clamp-1" style={{ fontWeight: 700 }}>
+                <div className="p-2.5 sm:p-3">
+                  <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
                     {item.title}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
-                  <p className="text-[11px] text-amber-700 mt-2">
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
+                  <p className="text-[10px] sm:text-[11px] text-amber-700 mt-1.5">
                     ขั้นต่ำเริ่มที่ MOQ {item.minOrder}
                   </p>
                 </div>
               </div>
-            ))
+            ))}
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'articles' && (
-        <div className="space-y-3">
+        <div>
           {articleIdeas.length === 0 && articleShowcases.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center">
               โรงงานนี้ยังไม่มีบทความ
             </div>
           ) : (
-            <>
+            <div className="grid grid-cols-2 gap-3">
               {articleIdeas.map((article) => (
                 <div
                   key={article.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-w-0"
                 >
-                  <div className="h-36">
+                  <div className="h-28 sm:h-32">
                     <ImageWithFallback
                       src={article.image}
                       alt={article.title}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="p-3">
-                    <p className="text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
+                  <div className="p-2.5 sm:p-3">
+                    <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
                       {article.title}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{article.excerpt}</p>
-                    <p className="text-[11px] text-gray-400 mt-2">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{article.excerpt}</p>
+                    <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1.5">
                       {formatThaiDate(article.publishedAt)}
                     </p>
                   </div>
@@ -247,27 +251,27 @@ export function FactoryProfileTabContent({
                 <div
                   key={item.id}
                   onClick={() => onIdeaClick(item.id)}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform min-w-0"
                 >
-                  <div className="h-36">
+                  <div className="h-28 sm:h-32">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="p-3">
-                    <p className="text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
+                  <div className="p-2.5 sm:p-3">
+                    <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
                       {item.title}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
-                    <p className="text-[11px] text-gray-400 mt-2">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
+                    <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1.5">
                       {item.postedAt ? formatThaiDate(item.postedAt) : ''}
                     </p>
                   </div>
                 </div>
               ))}
-            </>
+            </div>
           )}
         </div>
       )}

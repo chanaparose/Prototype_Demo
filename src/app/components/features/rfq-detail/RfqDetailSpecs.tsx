@@ -11,6 +11,10 @@ export type RfqForSpecs = {
   createdAt: string;
   description?: string;
   imageUrls?: string[];
+  subCategoryName?: string;
+  /** จาก GET /rfqs/:id — แสดงแถวประเภทย่อยแม้ยัง resolve ชื่อไม่ได้ */
+  subCategoryId?: number;
+  shippingMethodName?: string;
 };
 
 type RfqDetailSpecsProps = {
@@ -21,8 +25,17 @@ type RfqDetailSpecsProps = {
 
 export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
   const imageUrls = rfq.imageUrls?.filter(Boolean) ?? [];
+  const subLabel = (rfq.subCategoryName ?? '').trim();
+  const hasSubFromApi = Boolean(subLabel) || (rfq.subCategoryId != null && rfq.subCategoryId > 0);
+
   const rows = [
     { label: 'ประเภทการผลิต', value: rfq.category },
+    ...(hasSubFromApi
+      ? [{ label: 'ประเภทย่อย', value: subLabel || '—' }]
+      : []),
+    ...(rfq.shippingMethodName
+      ? [{ label: 'วิธีส่งของ', value: rfq.shippingMethodName }]
+      : []),
     { label: 'จำนวน', value: `${rfq.quantity.toLocaleString()} ชิ้น` },
     { label: 'วัสดุ', value: rfq.material },
     { label: 'งบประมาณ', value: `฿${rfq.budget.toLocaleString()}` },

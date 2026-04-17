@@ -17,6 +17,8 @@ type ShowcaseItem = {
   id: string; title: string; excerpt: string; image: string;
   factoryName: string; factoryId: string; minOrder: number;
   contentType: string;
+  category?: string;
+  subCategoryName?: string;
 };
 
 type ExploreMobileProps = {
@@ -182,6 +184,11 @@ export function ExploreMobile({
                     </div>
                     <div className="p-2.5">
                       <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
+                      {(item.category || item.subCategoryName) ? (
+                        <p className="text-[10px] text-violet-700 font-medium truncate mb-0.5">
+                          {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
+                        </p>
+                      ) : null}
                       <p className="text-[11px] text-gray-500 truncate">{item.factoryName}</p>
                     </div>
                   </div>
@@ -222,6 +229,7 @@ export function ExploreMobile({
       <ExploreIdeaArticles
         articles={ideaArticles ?? []}
         onSeeAll={() => navigate('/factory-ideas?type=idea')}
+        onArticleClick={(id) => navigate(`/idea-detail?showcase_id=${id}`)}
       />
 
       {/* โปรโมชันแนะนำ — แบนเนอร์ส้ม (เดียวกับ desktop) แสดงเสมอ; การ์ดเมื่อมีข้อมูล */}

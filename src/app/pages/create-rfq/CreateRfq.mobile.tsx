@@ -22,6 +22,8 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
     categories,
     subCategories,
     subCategoriesLoading,
+    subCategoriesError,
+    reloadSubCategories,
     units,
     shippingMethods,
     addresses,
@@ -103,6 +105,8 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
                 categories={categories}
                 subCategories={subCategories}
                 subCategoriesLoading={subCategoriesLoading}
+                subCategoriesError={subCategoriesError}
+                onRetrySubCategories={() => void reloadSubCategories()}
                 onUpdate={updateForm}
               />
             </motion.div>

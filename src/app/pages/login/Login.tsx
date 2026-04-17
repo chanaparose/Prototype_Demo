@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
 import { Factory, Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontendApi } from '../../services/api';
@@ -362,7 +362,27 @@ export function Login() {
           )}
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        {/* Factory Registration CTA */}
+        <div className="mt-5 bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3 border border-purple-100">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#F5F0FF] flex items-center justify-center shrink-0">
+              <Factory size={18} className="text-[#6C47FF]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-800">เป็นเจ้าของโรงงาน?</p>
+              <p className="text-xs text-gray-400">รับ RFQ จากลูกค้าทั่วประเทศ</p>
+            </div>
+          </div>
+          <Link
+            to="/register/factory"
+            className="shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+          >
+            สมัครบัญชีโรงงาน
+          </Link>
+        </div>
+
+        <p className="text-center text-xs text-gray-400 mt-5">
           WeMake Manufacturing Platform v1.0
         </p>
       </div>

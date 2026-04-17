@@ -37,6 +37,7 @@ export function Layout() {
   const location = useLocation();
   const { user } = useAuth();
   const data = useData();
+  const unreadNotifications = data.notifications.filter((n) => !n.read).length;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isFactory = isFactoryRole(user);
   const navLinks: MobileNavItem[] = isFactory ? FACTORY_SIDEBAR_NAV : customerNavLinks;
@@ -133,12 +134,14 @@ export function Layout() {
                   className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
                 >
                   <Bell size={20} style={{ color: '#A238FF' }} />
-                  <span
-                    className="absolute top-1 right-1 w-4 h-4 rounded-full text-white flex items-center justify-center text-[9px]"
-                    style={{ background: '#F28A2E', fontWeight: 700 }}
-                  >
-                    3
-                  </span>
+                  {unreadNotifications > 0 ? (
+                    <span
+                      className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white flex items-center justify-center text-[9px] border-2 border-white tabular-nums"
+                      style={{ background: '#F28A2E', fontWeight: 700 }}
+                    >
+                      {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                    </span>
+                  ) : null}
                 </Link>
 
                 <button

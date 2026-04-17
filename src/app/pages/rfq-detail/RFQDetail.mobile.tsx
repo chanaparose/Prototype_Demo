@@ -119,6 +119,22 @@ export function RFQDetailMobile() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4">
+        {(rfq.subCategoryName || rfq.shippingMethodName) ? (
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-2 text-sm">
+            {rfq.subCategoryName ? (
+              <p>
+                <span className="text-gray-500">ประเภทย่อย: </span>
+                <span style={{ fontWeight: 600, color: COLORS.blue }}>{rfq.subCategoryName}</span>
+              </p>
+            ) : null}
+            {rfq.shippingMethodName ? (
+              <p>
+                <span className="text-gray-500">วิธีส่งของ: </span>
+                <span style={{ fontWeight: 600, color: COLORS.blue }}>{rfq.shippingMethodName}</span>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         <RfqDetailStatusCard
           rfq={rfq}
           isHistoryView={isHistoryView}

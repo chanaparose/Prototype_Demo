@@ -3,6 +3,7 @@ import type { Factory } from '../contexts/DataContext';
 /** แปลงแถวโรงงานจาก API (bootstrap / frontend/factories ฯลฯ) → รูปแบบ Factory ของแอป */
 export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = ''): Factory {
   const id = String(row.id ?? row.factory_id ?? idFallback);
+  const ftn = String(row.factory_type_name ?? row.factoryTypeName ?? '').trim();
   return {
     id,
     name: String(row.name ?? row.factory_name ?? ''),
@@ -17,5 +18,6 @@ export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = '
     verified: Boolean(row.is_verified ?? row.verified ?? false),
     completedOrders: Number(row.completed_orders ?? row.completedOrders ?? 0),
     priceRange: String(row.price_range ?? row.priceRange ?? ''),
+    ...(ftn ? { factoryTypeName: ftn } : {}),
   };
 }

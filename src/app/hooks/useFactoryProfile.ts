@@ -9,11 +9,12 @@ import type {
   IdeaArticle,
 } from '../contexts/DataContext';
 import type { TabId } from '../components/features/factory-profile';
-import { conversationsApi, frontendApi } from '../services/api';
+import { conversationsApi, factoriesApi, frontendApi, showcasesApi } from '../services/api';
 import { normShowcase } from './useShowcases';
 
 function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: Factory | null): Factory {
   const b = fallback ?? undefined;
+  const ftn = String(row.factory_type_name ?? row.factoryTypeName ?? '').trim();
   return {
     id: String(row.id ?? row.factory_id ?? id),
     name: String(row.name ?? row.factory_name ?? b?.name ?? ''),
@@ -28,6 +29,7 @@ function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: 
     verified: Boolean(row.is_verified ?? row.verified ?? b?.verified ?? false),
     completedOrders: Number(row.completed_orders ?? row.completedOrders ?? b?.completedOrders ?? 0),
     priceRange: String(row.price_range ?? row.priceRange ?? b?.priceRange ?? ''),
+    ...(ftn ? { factoryTypeName: ftn } : {}),
   };
 }
 
@@ -73,6 +75,10 @@ type ApiDetailState =
       profile: FactoryProfile | null;
       reviews: FactoryReview[];
       showcases: FactoryShowcase[];
+      factoryCategoryNames: string[];
+      factorySubCategoryNames: string[];
+      factorySubCategoryPairs: { categoryLabel: string; subLabel: string }[];
+      apiCertificates: Record<string, unknown>[];
     }
   | { status: 'error' };
 
@@ -96,32 +102,122 @@ export function useFactoryProfile() {
     setApi({ status: 'loading' });
     let cancelled = false;
 
-    frontendApi
-      .getFactory(id)
-      .then((res) => {
-        if (cancelled) return;
-        const fid = String(id);
+    const fid = String(id);
+    const fb = factoriesRef.current.find((f) => String(f.id) === fid);
+    const profFallback = profilesRef.current.find((p) => String(p.factoryId) === fid);
+
+    const nameFromCatRow = (row: unknown): string | null => {
+      if (!row || typeof row !== 'object') return null;
+      const o = row as Record<string, unknown>;
+      const n = String(o.name ?? o.category_name ?? o.sub_category_name ?? '').trim();
+      return n || null;
+    };
+
+    const extractNestedArray = (
+      top: Record<string, unknown>,
+      inner: Record<string, unknown>,
+      key: string,
+    ): unknown[] => {
+      if (Array.isArray(top[key])) return top[key] as unknown[];
+      if (Array.isArray(inner[key])) return inner[key] as unknown[];
+      return [];
+    };
+
+    (async () => {
+      const [factRes, frontRes] = await Promise.allSettled([
+        factoriesApi.get(fid),
+        frontendApi.getFactory(id),
+      ]);
+
+      if (cancelled) return;
+
+      let factory: Factory | null = null;
+      let factoryCategoryNames: string[] = [];
+      let factorySubCategoryNames: string[] = [];
+      let factorySubCategoryPairs: { categoryLabel: string; subLabel: string }[] = [];
+      let apiCertificates: Record<string, unknown>[] = [];
+
+      const pushPair = (cat: string, sub: string) => {
+        const c = cat.trim();
+        const s = sub.trim();
+        if (!s) return;
+        factorySubCategoryPairs.push({ categoryLabel: c || 'หมวด', subLabel: s });
+      };
+
+      if (factRes.status === 'fulfilled' && factRes.value && typeof factRes.value === 'object') {
+        const raw = factRes.value as Record<string, unknown>;
+        const rawF =
+          raw.factory && typeof raw.factory === 'object'
+            ? (raw.factory as Record<string, unknown>)
+            : raw;
+        factory = mapFactoryFromApi(rawF, fid, fb);
+
+        for (const row of extractNestedArray(raw, rawF, 'categories')) {
+          const n = nameFromCatRow(row);
+          if (n) factoryCategoryNames.push(n);
+        }
+        for (const row of extractNestedArray(raw, rawF, 'sub_categories')) {
+          const n = nameFromCatRow(row);
+          if (n) factorySubCategoryNames.push(n);
+        }
+
+        for (const row of extractNestedArray(raw, rawF, 'factory_sub_categories')) {
+          if (!row || typeof row !== 'object') continue;
+          const o = row as Record<string, unknown>;
+          pushPair(
+            String(o.category_name ?? o.parent_category_name ?? ''),
+            String(o.sub_category_name ?? o.name ?? ''),
+          );
+        }
+        for (const row of extractNestedArray(raw, rawF, 'sub_categories')) {
+          if (!row || typeof row !== 'object') continue;
+          const o = row as Record<string, unknown>;
+          const cat = String(o.category_name ?? o.parent_category_name ?? '').trim();
+          const sub = String(o.sub_category_name ?? o.name ?? '').trim();
+          if (cat && sub) pushPair(cat, sub);
+        }
+
+        const seen = new Set<string>();
+        factorySubCategoryPairs = factorySubCategoryPairs.filter((p) => {
+          const k = `${p.categoryLabel}|${p.subLabel}`;
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+
+        const certArr = extractNestedArray(raw, rawF, 'certificates');
+        apiCertificates = certArr.filter((x): x is Record<string, unknown> => x != null && typeof x === 'object') as Record<
+          string,
+          unknown
+        >[];
+      }
+
+      let profile: FactoryProfile | null = profFallback ?? null;
+      let reviews: FactoryReview[] = [];
+      let showcases: FactoryShowcase[] = [];
+
+      if (frontRes.status === 'fulfilled' && frontRes.value) {
+        const res = frontRes.value;
         const rawF = (res.factory && typeof res.factory === 'object' ? res.factory : {}) as Record<
           string,
           unknown
         >;
-        const fb = factoriesRef.current.find((f) => String(f.id) === fid);
-        const factory = mapFactoryFromApi(rawF, fid, fb);
+        if (!factory) {
+          factory = mapFactoryFromApi(rawF, fid, fb);
+        }
 
         const rawP =
           res.profile && typeof res.profile === 'object' ? (res.profile as Record<string, unknown>) : null;
-        const profFallback = profilesRef.current.find((p) => String(p.factoryId) === fid);
-        const profile =
+        profile =
           rawP && Object.keys(rawP).length > 0
             ? mapProfileFromApi(rawP, fid, profFallback ?? null)
             : (profFallback ?? null);
 
         const revRows = Array.isArray(res.reviews) ? (res.reviews as Record<string, unknown>[]) : [];
-        const reviews: FactoryReview[] = revRows
+        reviews = revRows
           .map((r) => mapReviewFromApi(r, fid))
           .filter((x): x is FactoryReview => x != null);
 
-        const showcases: FactoryShowcase[] = [];
         for (const key of ['products', 'promotions', 'ideas'] as const) {
           const arr = res[key];
           if (Array.isArray(arr)) {
@@ -134,12 +230,58 @@ export function useFactoryProfile() {
             }
           }
         }
+      }
 
-        setApi({ status: 'ok', factory, profile, reviews, showcases });
-      })
-      .catch(() => {
+      if (factory && id) {
+        try {
+          const rawList = await showcasesApi.listByFactory(id);
+          const arr = (Array.isArray(rawList) ? rawList : []) as Record<string, unknown>[];
+          const fromApi = arr
+            .map((row) => normShowcase(row))
+            .filter((s) => s.id && s.title)
+            .map((s) => {
+              if (!s.factoryId) s.factoryId = String(id);
+              return s;
+            });
+          if (fromApi.length > 0) showcases = fromApi;
+        } catch {
+          /* graceful: keep BFF showcases */
+        }
+      }
+
+      if (factRes.status === 'fulfilled' && reviews.length === 0) {
+        const raw = factRes.value as Record<string, unknown>;
+        const rawF =
+          raw.factory && typeof raw.factory === 'object'
+            ? (raw.factory as Record<string, unknown>)
+            : raw;
+        const revRows = extractNestedArray(raw, rawF, 'reviews') as Record<string, unknown>[];
+        reviews = revRows
+          .map((r) => mapReviewFromApi(r, fid))
+          .filter((x): x is FactoryReview => x != null);
+      }
+
+      if (!factory) {
         if (!cancelled) setApi({ status: 'error' });
-      });
+        return;
+      }
+
+      if (!cancelled) {
+        setApi({
+          status: 'ok',
+          factory,
+          profile,
+          reviews,
+          showcases,
+          factoryCategoryNames,
+          factorySubCategoryNames,
+          factorySubCategoryPairs,
+          apiCertificates,
+        });
+      }
+    })().catch(() => {
+      if (!cancelled) setApi({ status: 'error' });
+    });
 
     return () => {
       cancelled = true;
@@ -161,6 +303,11 @@ export function useFactoryProfile() {
       ? api.reviews
       : data.factoryReviews.filter((r) => String(r.factoryId) === String(id));
   const factoryShowcases = api.status === 'ok' ? api.showcases : [];
+
+  const factoryCategoryNames = api.status === 'ok' ? api.factoryCategoryNames : [];
+  const factorySubCategoryNames = api.status === 'ok' ? api.factorySubCategoryNames : [];
+  const factorySubCategoryPairs = api.status === 'ok' ? api.factorySubCategoryPairs : [];
+  const apiCertificates = api.status === 'ok' ? api.apiCertificates : [];
 
   const conversation = data.conversations.find((c) => String(c.factoryId) === String(id));
   const detailLoading = api.status === 'loading';
@@ -227,5 +374,9 @@ export function useFactoryProfile() {
     detailLoading,
     startConversation,
     startingConversation,
+    factoryCategoryNames,
+    factorySubCategoryNames,
+    factorySubCategoryPairs,
+    apiCertificates,
   };
 }

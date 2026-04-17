@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { ApiHttpError, masterApi } from '../../services/api';
+import { ApiHttpError, masterApi, factoriesApi } from '../../services/api';
 
 export interface FormState {
   factory_name: string;
@@ -47,7 +47,7 @@ function mapFactoryTypes(raw: unknown): FactoryTypeOption[] {
     if (!r || typeof r !== 'object') continue;
     const o = r as Record<string, unknown>;
     const id = Number(o.factory_type_id ?? o.id);
-    const name_th = String(o.name_th ?? o.name ?? '').trim();
+    const name_th = String(o.name_th ?? o.type_name ?? o.name ?? '').trim();
     if (!Number.isFinite(id) || id <= 0 || !name_th) continue;
     out.push({ factory_type_id: id, name_th });
   }
@@ -56,7 +56,7 @@ function mapFactoryTypes(raw: unknown): FactoryTypeOption[] {
 
 export type FormErrors = Partial<Record<keyof FormState, string>>;
 
-const FIELD_ORDER: (keyof FormState)[] = [
+const FIELD_ORDER_FULL: (keyof FormState)[] = [
   'factory_name',
   'factory_type_id',
   'tax_id',
@@ -67,12 +67,20 @@ const FIELD_ORDER: (keyof FormState)[] = [
   'acceptTerms',
 ];
 
+const FIELD_ORDER_LOGGED_IN: (keyof FormState)[] = [
+  'factory_name',
+  'factory_type_id',
+  'tax_id',
+  'acceptTerms',
+];
+
 export function useRegisterFactory() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, isAuthenticated, isLoading: authLoading } = useAuth();
   const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<FormErrors>({});
   const [factoryTypes, setFactoryTypes] = useState<FactoryTypeOption[]>([]);
+  const [factoryTypesLoading, setFactoryTypesLoading] = useState(true);
   const [factoryTypesLoadFailed, setFactoryTypesLoadFailed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -82,7 +90,9 @@ export function useRegisterFactory() {
     fieldRefs.current[key] = el;
   }, []);
 
-  useEffect(() => {
+  const fetchFactoryTypes = useCallback(() => {
+    setFactoryTypesLoading(true);
+    setFactoryTypesLoadFailed(false);
     masterApi
       .factoryTypes()
       .then((res) => {
@@ -92,8 +102,13 @@ export function useRegisterFactory() {
       .catch(() => {
         setFactoryTypes([]);
         setFactoryTypesLoadFailed(true);
-      });
+      })
+      .finally(() => setFactoryTypesLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchFactoryTypes();
+  }, [fetchFactoryTypes]);
 
   const setField = useCallback(<K extends keyof FormState>(k: K, v: FormState[K]) => {
     setForm((s) => ({ ...s, [k]: v }));
@@ -103,6 +118,10 @@ export function useRegisterFactory() {
 
   const validateField = useCallback(
     (k: keyof FormState, values: FormState = form): string | undefined => {
+      // Skip account-related fields when user is already logged in
+      if (isAuthenticated && (k === 'email' || k === 'phone' || k === 'password' || k === 'confirmPassword')) {
+        return undefined;
+      }
       const t = values.factory_name.trim();
       switch (k) {
         case 'factory_name': {
@@ -117,7 +136,8 @@ export function useRegisterFactory() {
         case 'tax_id': {
           const id = values.tax_id.replace(/\D/g, '');
           if (!/^\d{13}$/.test(id)) return 'เลขภาษีต้องเป็นตัวเลข 13 หลัก';
-          if (!isValidThaiTaxIdDigits(id)) return 'เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง (ตรวจสอบเลขควบคุม)';
+          // ปิดการตรวจเลขควบคุมชั่วคราว — validate เฉพาะ 13 หลักก่อน
+          // if (!isValidThaiTaxIdDigits(id)) return 'เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง (ตรวจสอบเลขควบคุม)';
           return undefined;
         }
         case 'email': {
@@ -150,17 +170,19 @@ export function useRegisterFactory() {
           return undefined;
       }
     },
-    [form],
+    [form, isAuthenticated],
   );
 
+  const activeFieldOrder = isAuthenticated ? FIELD_ORDER_LOGGED_IN : FIELD_ORDER_FULL;
+
   const scrollToFirstError = useCallback((err: FormErrors) => {
-    for (const k of FIELD_ORDER) {
+    for (const k of activeFieldOrder) {
       if (err[k]) {
         fieldRefs.current[k]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         break;
       }
     }
-  }, []);
+  }, [activeFieldOrder]);
 
   const blurField = useCallback(
     (k: keyof FormState) => {
@@ -173,7 +195,7 @@ export function useRegisterFactory() {
   const submit = async () => {
     setApiError(null);
     const e: FormErrors = {};
-    for (const k of FIELD_ORDER) {
+    for (const k of activeFieldOrder) {
       const msg = validateField(k, form);
       if (msg) e[k] = msg;
     }
@@ -185,20 +207,30 @@ export function useRegisterFactory() {
     setSubmitting(true);
     try {
       const taxDigits = form.tax_id.replace(/\D/g, '');
-      await register({
-        role: 'FT',
-        email: form.email.trim(),
-        phone: form.phone.replace(/\s/g, ''),
-        password: form.password,
-        factory_name: form.factory_name.trim(),
-        factory_type_id: form.factory_type_id,
-        tax_id: taxDigits,
-      });
+      if (isAuthenticated) {
+        // Logged-in path: JWT carries user identity — just create the factory record
+        await factoriesApi.create({
+          factory_name: form.factory_name.trim(),
+          factory_type_id: form.factory_type_id,
+          tax_id: taxDigits,
+        });
+      } else {
+        // Guest path: full registration creates user + factory together
+        await register({
+          role: 'FT',
+          email: form.email.trim(),
+          phone: form.phone.replace(/\s/g, ''),
+          password: form.password,
+          factory_name: form.factory_name.trim(),
+          factory_type_id: form.factory_type_id,
+          tax_id: taxDigits,
+        });
+      }
       navigate('/factory', { replace: true });
     } catch (err) {
       if (err instanceof ApiHttpError) {
         if (err.status === 409) {
-          setApiError('อีเมลหรือเลขภาษีนี้ถูกใช้แล้ว');
+          setApiError('เลขภาษีนี้ถูกใช้แล้ว');
         } else if (err.status === 422) {
           const pwErr = {
             password: 'รหัสผ่านไม่ปลอดภัยหรือไม่ตรงตามเงื่อนไขของระบบ',
@@ -222,9 +254,13 @@ export function useRegisterFactory() {
     form,
     errors,
     factoryTypes,
+    factoryTypesLoading,
     factoryTypesLoadFailed,
+    retryFactoryTypes: fetchFactoryTypes,
     submitting,
     apiError,
+    isAuthenticated,
+    authLoading,
     setField,
     submit,
     blurField,

@@ -200,6 +200,22 @@ export function RFQDetailDesktop() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <p className="text-sm font-bold mb-3" style={{ color: COLORS.blue }}>ข้อมูล RFQ</p>
               <div className="grid grid-cols-2 gap-3 text-sm">
+                {rfq.subCategoryName ? (
+                  <div className="rounded-xl p-3 col-span-2" style={{ backgroundColor: COLORS.lightPurpleBg }}>
+                    <p className="text-[11px] text-gray-400">ประเภทย่อย</p>
+                    <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
+                      {rfq.subCategoryName}
+                    </p>
+                  </div>
+                ) : null}
+                {rfq.shippingMethodName ? (
+                  <div className="rounded-xl p-3 col-span-2" style={{ backgroundColor: COLORS.lightPurpleBg }}>
+                    <p className="text-[11px] text-gray-400">วิธีส่งของ</p>
+                    <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
+                      {rfq.shippingMethodName}
+                    </p>
+                  </div>
+                ) : null}
                 <div className="rounded-xl p-3" style={{ backgroundColor: COLORS.lightPurpleBg }}>
                   <p className="text-[11px] text-gray-400">จำนวน</p>
                   <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>

@@ -1,5 +1,8 @@
 import React from 'react';
 import { useData } from '../contexts/DataContext';
+import type { Factory } from '../contexts/DataContext';
+import { factoriesApi } from '../services/api';
+import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
 
 export type FactoryFilterState = {
   searchText: string;
@@ -9,7 +12,39 @@ export type FactoryFilterState = {
 
 export function useFactoriesList() {
   const data = useData();
-  const allFactories = data.factories;
+  const [apiFactories, setApiFactories] = React.useState<Factory[] | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
+    factoriesApi
+      .list()
+      .then((raw) => {
+        if (cancelled) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped = arr
+          .map((row) => normalizeFactoryRow(row))
+          .filter((f) => f.id && f.name);
+        setApiFactories(mapped);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setApiFactories(null);
+          setLoadError(err instanceof Error ? err.message : 'โหลดรายการโรงงานไม่สำเร็จ');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const allFactories = apiFactories ?? data.factories;
 
   const [filters, setFilters] = React.useState<FactoryFilterState>({
     searchText: '',
@@ -18,7 +53,7 @@ export function useFactoriesList() {
   });
 
   const uniqueLocations = React.useMemo(
-    () => Array.from(new Set(allFactories.map((f) => f.location))).sort(),
+    () => Array.from(new Set(allFactories.map((f) => f.location))).filter(Boolean).sort(),
     [allFactories],
   );
 
@@ -39,10 +74,9 @@ export function useFactoriesList() {
         const q = filters.searchText.toLowerCase();
         const matchName = f.name.toLowerCase().includes(q);
         const matchSpec = f.specialization.toLowerCase().includes(q);
-        const matchTags = f.tags.some((t) =>
-          t.toLowerCase().includes(q),
-        );
-        if (!matchName && !matchSpec && !matchTags) return false;
+        const matchType = (f.factoryTypeName ?? '').toLowerCase().includes(q);
+        const matchTags = f.tags.some((t) => t.toLowerCase().includes(q));
+        if (!matchName && !matchSpec && !matchType && !matchTags) return false;
       }
       return true;
     });
@@ -56,6 +90,8 @@ export function useFactoriesList() {
     setSearchText,
     setLocation,
     setVerifiedOnly,
+    loading,
+    loadError,
+    usedApiList: apiFactories != null,
   };
 }
-

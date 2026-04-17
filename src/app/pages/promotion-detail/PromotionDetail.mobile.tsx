@@ -13,7 +13,9 @@ import {
   Heart,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../components/shared';
+import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
+import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -27,7 +29,7 @@ function formatThaiDate(date: string): string {
 
 export function PromotionDetailMobile() {
   const navigate = useNavigate();
-  const { item, loading, factory, factoryConversation, resolvedId } = usePromotionDetailShowcase();
+  const { item, loading, error, factory, factoryConversation, resolvedId } = usePromotionDetailShowcase();
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -57,11 +59,13 @@ export function PromotionDetailMobile() {
           กลับ
         </button>
         <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center text-sm text-gray-500 shadow-sm">
-          ไม่พบข้อมูลโปรโมชัน
+          {error || 'ไม่พบข้อมูลโปรโมชัน'}
         </div>
       </div>
     );
   }
+
+  const subName = item.sub_category_name?.trim();
 
   return (
     <div>
@@ -157,6 +161,7 @@ export function PromotionDetailMobile() {
             <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">หมวดหมู่</p>
               <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.category}</p>
+              {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" className="mt-1" /> : null}
             </div>
             <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
               <p className="text-gray-400">ขั้นต่ำการผลิต</p>
@@ -175,26 +180,38 @@ export function PromotionDetailMobile() {
           </div>
         </div>
 
-        {/* Conditions */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
-            เงื่อนไขโปรโมชัน
-          </p>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p className="flex items-start gap-2">
-              <CirclePercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
-              สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญ
-            </p>
-            <p className="flex items-start gap-2">
-              <CalendarClock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />
-              ระยะเวลาผลิตโดยเฉลี่ย {item.leadTime} (ขึ้นอยู่กับสเปกจริง)
-            </p>
-            <p className="flex items-start gap-2">
-              <TicketPercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
-              ขั้นต่ำการสั่งผลิตที่ MOQ {item.minOrder}
-            </p>
-          </div>
-        </div>
+        {/* Highlight sections (from DB or fallback) */}
+        {(() => {
+          const highlightSections = getSectionsByType(item.sections, 'highlight');
+          if (highlightSections.length > 0) {
+            return highlightSections.map((sec) => (
+              <div key={sec.section_id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>{sec.section_title}</p>
+                <div className="space-y-2 text-sm text-gray-600">
+                  {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => {
+                    const Icon = getIcon(si.icon_name) ?? CirclePercent;
+                    return (
+                      <p key={si.item_id} className="flex items-start gap-2">
+                        <Icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />
+                        {interpolate(si.description, item)}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            ));
+          }
+          return (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>เงื่อนไขโปรโมชัน</p>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p className="flex items-start gap-2"><CirclePercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญ</p>
+                <p className="flex items-start gap-2"><CalendarClock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />ระยะเวลาผลิตโดยเฉลี่ย {item.leadTime} (ขึ้นอยู่กับสเปกจริง)</p>
+                <p className="flex items-start gap-2"><TicketPercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />ขั้นต่ำการสั่งผลิตที่ MOQ {item.minOrder}</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Tags */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
@@ -202,6 +219,7 @@ export function PromotionDetailMobile() {
             หมวดและแท็ก
           </p>
           <div className="flex flex-wrap gap-2">
+            {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
             {item.tags.map((tag) => (
               <span
                 key={tag}
@@ -219,18 +237,33 @@ export function PromotionDetailMobile() {
           </div>
         </div>
 
-        {/* Before claiming */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
-            รายละเอียดที่จำเป็นก่อนรับโปรโมชัน
-          </p>
-          <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
-            <li>ช่วงเวลาที่ต้องการเริ่มผลิตและวันเปิดตัวสินค้า</li>
-            <li>จำนวนผลิตที่คาดการณ์ในรอบแรกและรอบถัดไป</li>
-            <li>รูปแบบแพ็กเกจหรือฉลากที่ต้องการให้รวมในโปรฯ</li>
-            <li>เงื่อนไขการชำระเงินและเอกสารที่แบรนด์ต้องใช้</li>
-          </ul>
-        </div>
+        {/* Checklist sections (from DB or fallback) */}
+        {(() => {
+          const checklistSections = getSectionsByType(item.sections, 'checklist');
+          if (checklistSections.length > 0) {
+            return checklistSections.map((sec) => (
+              <div key={sec.section_id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>{sec.section_title}</p>
+                <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
+                  {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => (
+                    <li key={si.item_id}>{interpolate(si.description, item)}</li>
+                  ))}
+                </ul>
+              </div>
+            ));
+          }
+          return (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>รายละเอียดที่จำเป็นก่อนรับโปรโมชัน</p>
+              <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
+                <li>ช่วงเวลาที่ต้องการเริ่มผลิตและวันเปิดตัวสินค้า</li>
+                <li>จำนวนผลิตที่คาดการณ์ในรอบแรกและรอบถัดไป</li>
+                <li>รูปแบบแพ็กเกจหรือฉลากที่ต้องการให้รวมในโปรฯ</li>
+                <li>เงื่อนไขการชำระเงินและเอกสารที่แบรนด์ต้องใช้</li>
+              </ul>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
