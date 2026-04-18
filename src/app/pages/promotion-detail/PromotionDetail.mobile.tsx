@@ -15,6 +15,8 @@ import {
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
+import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
+import { useAuth } from '../../contexts/AuthContext';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
 
 function formatThaiDate(date: string): string {
@@ -29,7 +31,9 @@ function formatThaiDate(date: string): string {
 
 export function PromotionDetailMobile() {
   const navigate = useNavigate();
-  const { item, loading, error, factory, factoryConversation, resolvedId } = usePromotionDetailShowcase();
+  const { user } = useAuth();
+  const { startChat, starting } = useStartChatWithFactory();
+  const { item, loading, error, factory, resolvedId } = usePromotionDetailShowcase();
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -66,6 +70,8 @@ export function PromotionDetailMobile() {
   }
 
   const subName = item.sub_category_name?.trim();
+  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
+  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
 
   return (
     <div>
@@ -84,16 +90,27 @@ export function PromotionDetailMobile() {
         >
           <ArrowLeft className="w-4 h-4 text-gray-700" />
         </button>
-        <button
-          type="button"
-          onClick={() =>
-            navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')
-          }
-          className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
-          aria-label="แชทกับโรงงาน"
-        >
-          <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
-        </button>
+        {canChat ? (
+          <button
+            type="button"
+            onClick={() =>
+              void startChat(item.factoryId, {
+                type: 'PM',
+                id: String(resolvedId),
+                title: item.title,
+              })
+            }
+            disabled={starting}
+            className="absolute top-4 right-4 w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-md disabled:opacity-70"
+            aria-label="แชทกับโรงงาน"
+          >
+            {starting ? (
+              <span className="w-4 h-4 border-2 border-[#7A4B94] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
+            )}
+          </button>
+        ) : null}
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <span
             className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2"

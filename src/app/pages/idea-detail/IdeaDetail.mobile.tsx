@@ -17,6 +17,8 @@ import {
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { useIdeaDetailShowcase } from '../../hooks/useShowcaseDetailPage';
+import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
+import { useAuth } from '../../contexts/AuthContext';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
 
 function formatThaiDate(date: string): string {
@@ -27,7 +29,9 @@ function formatThaiDate(date: string): string {
 
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
-  const { item, loading, error, factory, factoryConversation, resolvedId } = useIdeaDetailShowcase();
+  const { user } = useAuth();
+  const { startChat, starting } = useStartChatWithFactory();
+  const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -64,6 +68,8 @@ export function IdeaDetailMobile() {
   }
 
   const subName = item.sub_category_name?.trim();
+  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
+  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
 
   return (
     <div>
@@ -78,14 +84,27 @@ export function IdeaDetailMobile() {
         >
           <ArrowLeft className="w-4 h-4 text-gray-700" />
         </button>
-        <button
-          type="button"
-          onClick={() => navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')}
-          className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
-          aria-label="แชทกับโรงงาน"
-        >
-          <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
-        </button>
+        {canChat ? (
+          <button
+            type="button"
+            onClick={() =>
+              void startChat(item.factoryId, {
+                type: 'ID',
+                id: String(resolvedId),
+                title: item.title,
+              })
+            }
+            disabled={starting}
+            className="absolute top-4 right-4 w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-md disabled:opacity-70"
+            aria-label="แชทกับโรงงาน"
+          >
+            {starting ? (
+              <span className="w-4 h-4 border-2 border-[#7A4B94] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
+            )}
+          </button>
+        ) : null}
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <span
             className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2"
@@ -147,6 +166,17 @@ export function IdeaDetailMobile() {
           </div>
           <p className="text-sm text-gray-700 leading-relaxed">{item.excerpt}</p>
         </div>
+
+        {item.description ? (
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>
+              เนื้อหาบทความ
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+              {item.description}
+            </p>
+          </div>
+        ) : null}
 
         {/* Stats grid */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">

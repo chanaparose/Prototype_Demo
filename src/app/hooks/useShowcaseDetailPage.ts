@@ -128,9 +128,6 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const loading = Boolean(resolvedId && !item && fetchLoading);
   const error = fetchError;
   const factory = item ? data.factories.find((f) => showcaseIdMatches(f.id, item.factoryId)) : null;
-  const factoryConversation = item
-    ? data.conversations.find((c) => showcaseIdMatches(c.factoryId, item.factoryId))
-    : null;
 
   return {
     resolvedId,
@@ -138,7 +135,6 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     loading,
     error,
     factory,
-    factoryConversation,
   };
 }
 

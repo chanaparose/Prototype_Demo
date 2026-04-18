@@ -18,18 +18,19 @@ import {
 } from '../../components/features/factory-profile';
 import { ImageWithFallback } from '../../components/shared';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
-import { useData } from '../../contexts/DataContext';
+import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
+import { useAuth } from '../../contexts/AuthContext';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailDesktopProps = { state: FactoryDetailState };
 
 export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
   const navigate = useNavigate();
-  const data = useData();
+  const { user } = useAuth();
+  const { startChat, starting } = useStartChatWithFactory();
   const {
     factory,
     profile,
-    conversation,
     activeTab,
     setActiveTab,
     productItems,
@@ -37,8 +38,6 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
     articleItems,
     reviews,
     detailLoading,
-    startConversation,
-    startingConversation,
     factoryCategoryNames,
     factorySubCategoryNames,
     factorySubCategoryPairs,
@@ -49,19 +48,16 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
     navigate(-1);
   }, [navigate]);
 
+  const isSelfFactory = String(user?.id ?? '') === String(factory?.id ?? '');
+  const canChat = !isSelfFactory && String(factory?.id ?? '').trim() !== '';
   const handleChat = useCallback(async () => {
-    if (conversation) {
-      navigate(`/messages/${conversation.id}`);
-      return;
-    }
-    const customerId = data.currentUser?.id;
-    if (!customerId) {
-      navigate('/messages');
-      return;
-    }
-    const convId = await startConversation(customerId);
-    navigate(convId ? `/messages/${convId}` : '/messages');
-  }, [conversation, navigate, startConversation, data.currentUser]);
+    if (!factory) return;
+    await startChat(factory.id, {
+      type: 'FT',
+      id: String(factory.id),
+      title: factory.name,
+    });
+  }, [factory, startChat]);
 
   if (detailLoading && !factory) {
     return (
@@ -115,7 +111,8 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
           factory={factory}
           onBack={handleBack}
           onChat={handleChat}
-          chatLoading={startingConversation}
+          chatLoading={starting}
+          showChat={canChat}
         />
       </div>
 

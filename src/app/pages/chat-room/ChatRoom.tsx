@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
   Phone,
@@ -11,11 +11,14 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
 import type { Conversation, Message } from '../../contexts/DataContext';
 import { messagesApi, conversationsApi } from '../../services/api';
 import { ImageWithFallback } from '../../components/shared';
+import type { ChatReference } from '../../hooks/useStartChatWithFactory';
 
 export type ChatRoomPreview = {
+  factoryId?: string;
   factoryName: string;
   factoryImage: string;
   rfqName: string;
@@ -79,6 +82,7 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [msgLoading, setMsgLoading] = useState(true);
   const [header, setHeader] = useState({
+    factoryId: preview?.factoryId ?? '',
     factoryName: preview?.factoryName ?? '',
     factoryAvatar: preview?.factoryImage ?? '',
     rfqName: preview?.rfqName ?? '',
@@ -87,12 +91,13 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
 
   useEffect(() => {
     setHeader({
+      factoryId: preview?.factoryId ?? '',
       factoryName: preview?.factoryName ?? '',
       factoryAvatar: preview?.factoryImage ?? '',
       rfqName: preview?.rfqName ?? '',
       hasQuote: Boolean(preview?.hasQuote),
     });
-  }, [preview?.factoryName, preview?.factoryImage, preview?.rfqName, preview?.hasQuote]);
+  }, [preview?.factoryId, preview?.factoryName, preview?.factoryImage, preview?.rfqName, preview?.hasQuote]);
 
   useEffect(() => {
     if (!conversationId) {
@@ -127,6 +132,12 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
         if (cancelled || !row || typeof row !== 'object') return;
         const r = row as Record<string, unknown>;
         setHeader((h) => ({
+          factoryId:
+            r.factory_id != null && String(r.factory_id).trim()
+              ? String(r.factory_id)
+              : r.factoryId != null && String(r.factoryId).trim()
+                ? String(r.factoryId)
+                : h.factoryId,
           factoryName:
             r.factory_name != null && String(r.factory_name).trim()
               ? String(r.factory_name)
@@ -159,7 +170,7 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
   const conv: Conversation = useMemo(
     () => ({
       id: conversationId,
-      factoryId: '',
+      factoryId: header.factoryId || '',
       rfqId: '',
       factoryName: header.factoryName,
       factoryAvatar: header.factoryAvatar,
@@ -179,10 +190,13 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
 export function ChatRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const data = useData();
+  const seedReference = (location.state as { reference?: ChatReference } | null)?.reference ?? null;
   const fromCtx = id ? data.conversations.find((c) => c.id === id) : undefined;
   const preview: ChatRoomPreview | undefined = fromCtx
     ? {
+        factoryId: fromCtx.factoryId,
         factoryName: fromCtx.factoryName,
         factoryImage: fromCtx.factoryAvatar,
         rfqName: fromCtx.rfqName,
@@ -199,7 +213,16 @@ export function ChatRoom() {
   }
 
   return (
-    <ChatRoomBody conv={conv} onBack={() => navigate(-1)} variant="full" msgLoading={msgLoading} />
+    <ChatRoomBody
+      conv={conv}
+      onBack={() => navigate(-1)}
+      variant="full"
+      msgLoading={msgLoading}
+      seedReference={seedReference}
+      clearSeedReference={() => {
+        navigate(location.pathname, { replace: true, state: null });
+      }}
+    />
   );
 }
 
@@ -208,6 +231,8 @@ type ChatRoomBodyProps = {
   onBack?: () => void;
   variant: 'full' | 'embedded';
   msgLoading?: boolean;
+  seedReference?: ChatReference | null;
+  clearSeedReference?: () => void;
 };
 
 export function ChatRoomEmbedded({
@@ -223,11 +248,22 @@ export function ChatRoomEmbedded({
   );
 }
 
-function ChatRoomBody({ conv, onBack, variant, msgLoading }: ChatRoomBodyProps) {
+function ChatRoomBody({
+  conv,
+  onBack,
+  variant,
+  msgLoading,
+  seedReference,
+  clearSeedReference,
+}: ChatRoomBodyProps) {
+  const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [miniDashOpen, setMiniDashOpen] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [reference, setReference] = useState<ChatReference | null>(seedReference ?? null);
   const [messages, setMessages] = useState<Message[]>(() => conv.messages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const seedConsumedRef = useRef(false);
 
   useEffect(() => {
     setMessages(conv.messages);
@@ -237,12 +273,60 @@ function ChatRoomBody({ conv, onBack, variant, msgLoading }: ChatRoomBodyProps) 
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = () => {
-    if (!message.trim()) return;
+  useEffect(() => {
+    seedConsumedRef.current = false;
+  }, [conv.id, seedReference?.type, seedReference?.id, seedReference?.title]);
+
+  useEffect(() => {
+    if (!seedReference || seedConsumedRef.current) return;
+    setReference(seedReference);
+    if (!message.trim()) {
+      const seedTitle = seedReference.title?.trim() || 'รายการนี้';
+      setMessage(`สนใจสอบถามเกี่ยวกับ \"${seedTitle}\"`);
+    }
+    clearSeedReference?.();
+    seedConsumedRef.current = true;
+  }, [seedReference, message, clearSeedReference]);
+
+  const sendMessage = async () => {
+    const text = message.trim();
+    if (!text || sending) return;
+    setSending(true);
+
+    const activeReference = reference ?? {
+      type: 'FT' as const,
+      id: String(conv.factoryId || conv.id),
+      title: conv.factoryName,
+    };
+
+    const receiverId = Number(conv.factoryId);
+    const convId = Number(conv.id);
+    const hasApiPayload =
+      Number.isFinite(receiverId) &&
+      receiverId > 0 &&
+      Number.isFinite(convId) &&
+      convId > 0 &&
+      activeReference.id.trim() !== '';
+
+    if (hasApiPayload) {
+      try {
+        await messagesApi.send({
+          reference_type: activeReference.type,
+          reference_id: activeReference.id,
+          receiver_id: receiverId,
+          conv_id: convId,
+          content: text,
+          message_type: 'TX',
+        });
+      } catch (e) {
+        console.error('[chat.send]', e);
+      }
+    }
+
     const newMsg: Message = {
       id: `m${Date.now()}`,
-      sender: 'user' as const,
-      text: message,
+      sender: user?.role === 'FT' ? 'factory' : 'user',
+      text,
       time: new Date().toLocaleTimeString('th-TH', {
         hour: '2-digit',
         minute: '2-digit',
@@ -251,12 +335,14 @@ function ChatRoomBody({ conv, onBack, variant, msgLoading }: ChatRoomBodyProps) 
     };
     setMessages((prev) => [...prev, newMsg]);
     setMessage('');
+    setReference(null);
+    setSending(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      void sendMessage();
     }
   };
 
@@ -479,6 +565,21 @@ function ChatRoomBody({ conv, onBack, variant, msgLoading }: ChatRoomBodyProps) 
 
       {/* Input Area */}
       <div className="px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-gray-100">
+        {reference ? (
+          <div className="mb-2 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800">
+              {reference.type}
+              {reference.title ? ` · ${reference.title}` : ''}
+            </span>
+            <button
+              type="button"
+              onClick={() => setReference(null)}
+              className="text-[11px] text-gray-500 hover:text-gray-700"
+            >
+              ล้างอ้างอิง
+            </button>
+          </div>
+        ) : null}
         <div className="flex items-end gap-2">
           <button type="button" className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
             <Paperclip size={18} className="text-gray-500" />
@@ -495,16 +596,16 @@ function ChatRoomBody({ conv, onBack, variant, msgLoading }: ChatRoomBodyProps) 
           </div>
           <button
             type="button"
-            onClick={sendMessage}
-            disabled={!message.trim()}
+            onClick={() => void sendMessage()}
+            disabled={!message.trim() || sending}
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all"
             style={{
-              background: message.trim() ? '#E38844' : '#E5E7EB',
+              background: message.trim() && !sending ? '#E38844' : '#E5E7EB',
             }}
           >
             <Send
               size={17}
-              style={{ color: message.trim() ? '#fff' : '#9CA3AF' }}
+              style={{ color: message.trim() && !sending ? '#fff' : '#9CA3AF' }}
             />
           </button>
         </div>

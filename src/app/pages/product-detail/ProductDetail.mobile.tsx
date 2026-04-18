@@ -12,6 +12,8 @@ import {
   Tag,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
@@ -30,16 +32,17 @@ export function ProductDetailMobile() {
   const navigate = useNavigate();
   const { id } = useParams();
   const data = useData();
+  const { user } = useAuth();
+  const { startChat, starting } = useStartChatWithFactory();
 
   const item = data.factoryShowcases.find(
     (entry) => entry.id === id && entry.contentType === 'product',
   );
   const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
-  const factoryConversation = item
-    ? data.conversations.find((conversation) => conversation.factoryId === item.factoryId)
-    : null;
 
   const subName = item?.sub_category_name?.trim();
+  const isSelfFactory = String(user?.id ?? '') === String(item?.factoryId ?? '');
+  const canChat = Boolean(item) && !isSelfFactory && String(item?.factoryId ?? '').trim() !== '';
 
   if (!item) {
     return (
@@ -76,16 +79,27 @@ export function ProductDetailMobile() {
         >
           <ArrowLeft className="w-4 h-4 text-gray-700" />
         </button>
-        <button
-          type="button"
-          onClick={() =>
-            navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')
-          }
-          className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md"
-          aria-label="แชทกับโรงงาน"
-        >
-          <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
-        </button>
+        {canChat ? (
+          <button
+            type="button"
+            onClick={() =>
+              void startChat(item.factoryId, {
+                type: 'PD',
+                id: String(id ?? item.id ?? ''),
+                title: item.title,
+              })
+            }
+            disabled={starting}
+            className="absolute top-4 right-4 w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-md disabled:opacity-70"
+            aria-label="แชทกับโรงงาน"
+          >
+            {starting ? (
+              <span className="w-4 h-4 border-2 border-[#7A4B94] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <MessageCircle className="w-5 h-5" style={{ color: '#7A4B94' }} />
+            )}
+          </button>
+        ) : null}
         <div className="absolute bottom-4 left-4 right-4 text-white">
           <div className="flex flex-wrap gap-1.5 mb-2">
             <span
