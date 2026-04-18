@@ -185,6 +185,7 @@ export function MessagesDesktop({
               preview={
                 selectedConversation
                   ? {
+                      factoryId: selectedConversation.factoryId,
                       factoryName: selectedConversation.factoryName,
                       factoryImage: selectedConversation.factoryImage,
                       rfqName: selectedConversation.rfqName,

@@ -20,6 +20,8 @@ import {
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
+import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
+import { useAuth } from '../../contexts/AuthContext';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
 
 function formatThaiDate(date: string): string {
@@ -30,7 +32,9 @@ function formatThaiDate(date: string): string {
 
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
-  const { item, loading, error, factory, factoryConversation, isIdea, resolvedId } = useProductDetailShowcase();
+  const { user } = useAuth();
+  const { startChat, starting } = useStartChatWithFactory();
+  const { item, loading, error, factory, isIdea, resolvedId } = useProductDetailShowcase();
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -72,6 +76,14 @@ export function ProductDetailDesktop() {
   }
 
   const subName = item.sub_category_name?.trim();
+  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
+  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
+  const handleStartChat = () =>
+    void startChat(item.factoryId, {
+      type: 'PD',
+      id: String(resolvedId),
+      title: item.title,
+    });
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
@@ -88,14 +100,22 @@ export function ProductDetailDesktop() {
           <ArrowLeft className="w-4 h-4" /> กลับ
         </button>
 
-        <button
-          type="button"
-          onClick={() => navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')}
-          className="absolute top-5 right-8 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-[13px] font-bold shadow-md hover:shadow-lg transition-all"
-          style={{ color: '#7A4B94' }}
-        >
-          <MessageCircle className="w-4 h-4" /> แชทกับโรงงาน
-        </button>
+        {canChat ? (
+          <button
+            type="button"
+            onClick={handleStartChat}
+            disabled={starting}
+            className="absolute top-5 right-8 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-[13px] font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-70"
+            style={{ color: '#7A4B94' }}
+          >
+            {starting ? (
+              <span className="w-4 h-4 border-2 border-[#7A4B94] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <MessageCircle className="w-4 h-4" />
+            )}{' '}
+            แชทกับโรงงาน
+          </button>
+        ) : null}
 
         <div className="absolute bottom-0 left-0 right-0 px-8 pb-7">
           <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -330,12 +350,20 @@ export function ProductDetailDesktop() {
 
           {/* CTAs */}
           <div className="space-y-2">
-            <button type="button"
-              onClick={() => navigate(factoryConversation ? `/messages/${factoryConversation.id}` : '/messages')}
-              className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white shadow-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #2D1B4E, #4A267D)' }}>
-              <MessageCircle className="w-4 h-4" /> แชทกับโรงงาน
-            </button>
+            {canChat ? (
+              <button type="button"
+                onClick={handleStartChat}
+                disabled={starting}
+                className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white shadow-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-70"
+                style={{ background: 'linear-gradient(135deg, #2D1B4E, #4A267D)' }}>
+                {starting ? (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <MessageCircle className="w-4 h-4" />
+                )}{' '}
+                แชทกับโรงงาน
+              </button>
+            ) : null}
             <button type="button" onClick={() => navigate(`/factories/${item.factoryId}`)}
               className="w-full py-3 rounded-2xl text-[13px] font-semibold transition-colors"
               style={{

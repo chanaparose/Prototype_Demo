@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { Plus, Pencil, Trash2, ImageIcon } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { showcasesApi, mediaApi, masterApi, categoriesApi } from '../../services/api';
+import { showcasesApi, mediaApi, factoriesApi, categoriesApi } from '../../services/api';
 
 export const SHOWCASE_TYPES = [
   { type: 'PD' as const, label: 'สินค้า', hint: 'Product' },
@@ -18,9 +18,29 @@ function isShowcaseType(s: string | null): s is ShowcaseType {
 }
 
 type Row = Record<string, unknown>;
+type CategoryOption = { id: number; name: string };
+type SubCategoryOption = { id: number; name: string; categoryId: number };
 
 function rowId(r: Row): string {
   return String(r.showcase_id ?? r.id ?? '');
+}
+
+function parseCategoryOption(r: Row): CategoryOption | null {
+  const id = Number(r.category_id ?? r.id);
+  if (!Number.isFinite(id) || id <= 0) return null;
+  const name = String(r.category_name ?? r.name ?? r.name_th ?? id).trim();
+  if (!name) return null;
+  return { id, name };
+}
+
+function parseSubCategoryOption(r: Row): SubCategoryOption | null {
+  const id = Number(r.sub_category_id ?? r.id);
+  const categoryId = Number(r.category_id ?? r.parent_category_id ?? r.categoryId);
+  if (!Number.isFinite(id) || id <= 0) return null;
+  if (!Number.isFinite(categoryId) || categoryId <= 0) return null;
+  const name = String(r.sub_category_name ?? r.name ?? r.name_th ?? id).trim();
+  if (!name) return null;
+  return { id, name, categoryId };
 }
 
 function typeLabel(t: ShowcaseType): string {
@@ -93,6 +113,7 @@ function TypeBadge({ type }: { type: ShowcaseType }) {
 export function FactoryShowcasesPage() {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const activeType: ShowcaseType = useMemo(() => {
@@ -112,7 +133,8 @@ export function FactoryShowcasesPage() {
   };
 
   const [rows, setRows] = useState<Row[]>([]);
-  const [categories, setCategories] = useState<Row[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [factorySubCategories, setFactorySubCategories] = useState<SubCategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [okMsg, setOkMsg] = useState('');
@@ -123,11 +145,10 @@ export function FactoryShowcasesPage() {
 
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
+  const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [subCategoryId, setSubCategoryId] = useState('');
-  const [subCategories, setSubCategories] = useState<Row[]>([]);
-  const [subsLoading, setSubsLoading] = useState(false);
   const [minOrder, setMinOrder] = useState('');
   const [leadDays, setLeadDays] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -141,16 +162,50 @@ export function FactoryShowcasesPage() {
     setLoading(true);
     setError('');
     try {
-      const [rawList, cats] = await Promise.all([
+      const [rawList, catsRaw, assignedSubsRaw] = await Promise.all([
         showcasesApi.listByFactory(fid, activeType),
-        masterApi.productCategories().catch(() => []),
+        factoriesApi.getCategories(fid).catch(() => []),
+        factoriesApi.getSubCategories(fid).catch(() => []),
       ]);
       const arr = (Array.isArray(rawList) ? rawList : []) as Row[];
       setRows(arr);
-      setCategories((Array.isArray(cats) ? cats : []) as Row[]);
+
+      const cats = (Array.isArray(catsRaw) ? catsRaw : [])
+        .map((r) => parseCategoryOption(r as Row))
+        .filter((x): x is CategoryOption => x != null);
+      setCategories(cats);
+
+      const assignedSubRows = (Array.isArray(assignedSubsRaw) ? assignedSubsRaw : []) as Row[];
+      const assignedSubIds = new Set<number>();
+      const subMap = new Map<number, SubCategoryOption>();
+      for (const row of assignedSubRows) {
+        const sid = Number(row.sub_category_id ?? row.id);
+        if (Number.isFinite(sid) && sid > 0) assignedSubIds.add(sid);
+        const parsed = parseSubCategoryOption(row);
+        if (parsed) subMap.set(parsed.id, parsed);
+      }
+
+      await Promise.all(
+        cats.map(async (cat) => {
+          const raw = await categoriesApi.subCategories(cat.id).catch(() => []);
+          const subRows = (Array.isArray(raw) ? raw : []) as Row[];
+          for (const row of subRows) {
+            const parsed = parseSubCategoryOption({ ...row, category_id: cat.id });
+            if (!parsed) continue;
+            if (assignedSubIds.size === 0 || assignedSubIds.has(parsed.id)) {
+              subMap.set(parsed.id, parsed);
+            }
+          }
+        }),
+      );
+
+      const subList = [...subMap.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
+      setFactorySubCategories(subList);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดโชว์เคสไม่สำเร็จ');
       setRows([]);
+      setCategories([]);
+      setFactorySubCategories([]);
     } finally {
       setLoading(false);
     }
@@ -160,40 +215,27 @@ export function FactoryShowcasesPage() {
     void load();
   }, [load]);
 
+  const filteredSubCategories = useMemo(() => {
+    const cid = Number(categoryId);
+    if (!Number.isFinite(cid) || cid <= 0) return [];
+    return factorySubCategories.filter((s) => s.categoryId === cid);
+  }, [factorySubCategories, categoryId]);
+
   useEffect(() => {
-    if (!categoryId || activeType !== 'PD') {
-      setSubCategories([]);
-      setSubCategoryId('');
-      return;
-    }
-    let cancelled = false;
-    setSubsLoading(true);
-    categoriesApi
-      .subCategories(categoryId)
-      .then((raw) => {
-        if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Row[];
-        setSubCategories(arr);
-      })
-      .catch(() => {
-        if (!cancelled) setSubCategories([]);
-      })
-      .finally(() => {
-        if (!cancelled) setSubsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [categoryId, activeType, modal]);
+    if (!subCategoryId) return;
+    const found = filteredSubCategories.some((s) => String(s.id) === subCategoryId);
+    if (!found) setSubCategoryId('');
+  }, [filteredSubCategories, subCategoryId]);
 
   const openCreate = () => {
+    if (categories.length === 0) return;
     setEditing(null);
     setTitle('');
     setExcerpt('');
+    setDescription('');
     setImageUrl('');
     setCategoryId('');
     setSubCategoryId('');
-    setSubCategories([]);
     setMinOrder('');
     setLeadDays('');
     setModal('create');
@@ -204,6 +246,7 @@ export function FactoryShowcasesPage() {
     setEditing(r);
     setTitle(String(r.title ?? ''));
     setExcerpt(String(r.excerpt ?? ''));
+    setDescription(String(r.description ?? ''));
     setImageUrl(String(r.image_url ?? ''));
     setCategoryId(
       r.category_id != null && r.category_id !== ''
@@ -243,16 +286,17 @@ export function FactoryShowcasesPage() {
     const payload: Record<string, unknown> = {
       title: title.trim(),
       excerpt: excerpt.trim() || undefined,
+      description: activeType === 'ID' ? description.trim() || undefined : undefined,
       image_url: imageUrl.trim() || undefined,
       category_id: categoryId ? Number(categoryId) : undefined,
     };
     if (activeType === 'PD') {
       payload.min_order = minOrder ? Number(minOrder) : undefined;
       payload.lead_time_days = leadDays ? Number(leadDays) : undefined;
-      if (subCategoryId) {
-        const n = Number(subCategoryId);
-        if (Number.isFinite(n)) payload.sub_category_id = n;
-      }
+    }
+    if (subCategoryId) {
+      const n = Number(subCategoryId);
+      if (Number.isFinite(n)) payload.sub_category_id = n;
     }
     return payload;
   };
@@ -260,6 +304,10 @@ export function FactoryShowcasesPage() {
   const submit = async () => {
     if (!title.trim()) {
       setError('กรุณากรอกหัวข้อ');
+      return;
+    }
+    if (activeType === 'PD' && !subCategoryId) {
+      setError('กรุณาเลือกหมวดหมู่ย่อยของสินค้า');
       return;
     }
     setSaving(true);
@@ -272,6 +320,7 @@ export function FactoryShowcasesPage() {
           content_type: activeType,
           title: String(body.title ?? title.trim()),
           excerpt: body.excerpt as string | undefined,
+          description: body.description as string | undefined,
           image_url: body.image_url as string | undefined,
           category_id: body.category_id as number | undefined,
           sub_category_id: body.sub_category_id as number | undefined,
@@ -311,6 +360,7 @@ export function FactoryShowcasesPage() {
   if (fid == null) {
     return <p className="text-sm text-red-600">บัญชีนี้ไม่ใช่โรงงาน</p>;
   }
+  const hasFactoryCategories = categories.length > 0;
 
   return (
     <div className="space-y-5 sm:space-y-6 pb-10 sm:pb-12 w-full min-w-0">
@@ -322,13 +372,27 @@ export function FactoryShowcasesPage() {
         <button
           type="button"
           onClick={openCreate}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold"
+          disabled={!hasFactoryCategories}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
         >
           <Plus size={18} />
           เพิ่มรายการ ({activeType})
         </button>
       </div>
+
+      {!hasFactoryCategories ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          คุณยังไม่ได้เลือกหมวดหมู่สินค้าในโปรไฟล์ —{' '}
+          <button
+            type="button"
+            onClick={() => navigate('/factory/profile')}
+            className="underline underline-offset-2 font-semibold"
+          >
+            ไปที่โปรไฟล์
+          </button>
+        </div>
+      ) : null}
 
       {/* Section tabs — เลื่อนแนวนอนบนมือถือ */}
       <div className="-mx-1 px-1 overflow-x-auto overflow-y-hidden pb-0.5">
@@ -564,8 +628,12 @@ export function FactoryShowcasesPage() {
               <textarea
                 className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[72px]"
                 value={excerpt}
+                maxLength={activeType === 'ID' ? 200 : undefined}
                 onChange={(e) => setExcerpt(e.target.value)}
               />
+              {activeType === 'ID' ? (
+                <p className="text-[11px] text-gray-400 mt-1">{excerpt.length}/200 ตัวอักษร</p>
+              ) : null}
             </label>
 
             <label className="block">
@@ -597,34 +665,48 @@ export function FactoryShowcasesPage() {
               >
                 <option value="">—</option>
                 {categories.map((c) => {
-                  const id = String(c.category_id ?? c.id ?? '');
-                  const nm = String(c.category_name ?? c.name ?? id);
                   return (
-                    <option key={id} value={id}>
-                      {nm}
+                    <option key={String(c.id)} value={String(c.id)}>
+                      {c.name}
                     </option>
                   );
                 })}
               </select>
             </label>
 
-            {activeType === 'PD' ? (
+            {activeType === 'ID' ? (
+              <label className="block">
+                <span className="text-xs text-gray-500">เนื้อหาบทความ (description)</span>
+                <textarea
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[160px]"
+                  value={description}
+                  maxLength={5000}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+                <p className="text-[11px] text-gray-400 mt-1">
+                  {description.length}/5000 ตัวอักษร
+                </p>
+              </label>
+            ) : null}
+
+            {activeType === 'PD' || activeType === 'PM' || activeType === 'ID' ? (
               <>
                 <label className="block">
-                  <span className="text-xs text-gray-500">หมวดย่อย (sub_category_id)</span>
+                  <span className="text-xs text-gray-500">
+                    หมวดย่อย (sub_category_id){activeType === 'PD' ? ' *' : ''}
+                  </span>
                   <select
                     className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60"
                     value={subCategoryId}
                     onChange={(e) => setSubCategoryId(e.target.value)}
-                    disabled={!categoryId || subsLoading}
+                    disabled={!categoryId}
                   >
-                    <option value="">— ไม่ระบุ —</option>
-                    {subCategories.map((s) => {
-                      const sid = String(s.sub_category_id ?? s.id ?? '');
-                      const nm = String(s.name ?? s.name_th ?? sid);
+                    {activeType === 'PM' ? <option value="">— ไม่ระบุ (ทั้งโรงงาน) —</option> : null}
+                    {activeType === 'ID' ? <option value="">— ไม่ระบุ —</option> : null}
+                    {filteredSubCategories.map((s) => {
                       return (
-                        <option key={sid} value={sid}>
-                          {nm}
+                        <option key={String(s.id)} value={String(s.id)}>
+                          {s.name}
                         </option>
                       );
                     })}
@@ -633,27 +715,30 @@ export function FactoryShowcasesPage() {
                     <p className="text-[11px] text-gray-400 mt-1">เลือกหมวดหลักก่อนเพื่อโหลดหมวดย่อย</p>
                   ) : null}
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="block">
-                    <span className="text-xs text-gray-500">ขั้นต่ำ (MOQ)</span>
-                    <input
-                      type="number"
-                      className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                      value={minOrder}
-                      onChange={(e) => setMinOrder(e.target.value)}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-xs text-gray-500">Lead time (วัน)</span>
-                    <input
-                      type="number"
-                      className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                      value={leadDays}
-                      onChange={(e) => setLeadDays(e.target.value)}
-                    />
-                  </label>
-                </div>
               </>
+            ) : null}
+
+            {activeType === 'PD' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="text-xs text-gray-500">ขั้นต่ำ (MOQ)</span>
+                  <input
+                    type="number"
+                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                    value={minOrder}
+                    onChange={(e) => setMinOrder(e.target.value)}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs text-gray-500">Lead time (วัน)</span>
+                  <input
+                    type="number"
+                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                    value={leadDays}
+                    onChange={(e) => setLeadDays(e.target.value)}
+                  />
+                </label>
+              </div>
             ) : null}
 
             <div className="flex gap-2 pt-2">
