@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Package, ChevronRight, Calendar, CheckCircle2, Truck } from 'lucide-react';
+import { Package, ChevronRight, Calendar, CheckCircle2, Truck, Banknote } from 'lucide-react';
 import {
   ACCENT_ORANGE,
   ACCENT_ORANGE_BG,
@@ -25,6 +25,7 @@ export type OrderItem = {
 };
 
 type OrderTagCounts = {
+  pendingPayment: number;
   inProduction: number;
   shipped: number;
   completed: number;
@@ -38,12 +39,17 @@ type OrderSectionProps = {
 };
 
 const ORDER_TABS: { id: OrderFilterId; label: string; icon: typeof Package }[] = [
+  { id: 'pending_payment', label: 'รอชำระ', icon: Banknote },
   { id: 'in_production', label: 'กำลังผลิต', icon: Package },
   { id: 'shipped', label: 'จัดส่งแล้ว', icon: Truck },
   { id: 'completed', label: 'เสร็จสิ้น', icon: CheckCircle2 },
 ];
 
-const ORDER_TAB_ICONS: Record<OrderFilterId, typeof Package | typeof Truck | typeof CheckCircle2> = {
+const ORDER_TAB_ICONS: Record<
+  OrderFilterId,
+  typeof Package | typeof Truck | typeof CheckCircle2 | typeof Banknote
+> = {
+  pending_payment: Banknote,
   in_production: Package,
   shipped: Truck,
   completed: CheckCircle2,
@@ -60,7 +66,7 @@ export function OrderSection({
   return (
     <>
       <div
-        className="grid grid-cols-3 mb-3 rounded-xl px-1.5 py-2 border"
+        className="grid grid-cols-2 min-[380px]:grid-cols-4 mb-3 rounded-xl px-1.5 py-2 border gap-1"
         style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
       >
         {ORDER_TABS.map((tab) => {
@@ -68,11 +74,13 @@ export function OrderSection({
           const isActive = orderFilter === tab.id;
           const th = ORDER_MOBILE_TAB_THEME[tab.id];
           const count =
-            tab.id === 'in_production'
-              ? orderTagCounts.inProduction
-              : tab.id === 'shipped'
-                ? orderTagCounts.shipped
-                : orderTagCounts.completed;
+            tab.id === 'pending_payment'
+              ? orderTagCounts.pendingPayment
+              : tab.id === 'in_production'
+                ? orderTagCounts.inProduction
+                : tab.id === 'shipped'
+                  ? orderTagCounts.shipped
+                  : orderTagCounts.completed;
           return (
             <button
               key={tab.id}
@@ -131,7 +139,8 @@ export function OrderSection({
       ) : (
         <div className="space-y-3">
           {filteredOrders.map((order) => {
-            const cfg = ORDER_STATUS_CONFIG[order.status];
+            const cfg =
+              ORDER_STATUS_CONFIG[order.status] ?? ORDER_STATUS_CONFIG.pending;
             return (
               <div
                 key={order.id}
@@ -190,7 +199,9 @@ export function OrderSection({
                             ? PROGRESS_COMPLETED
                             : order.status === 'shipped'
                               ? ACCENT_ORANGE
-                              : PROGRESS_GRADIENT_ACTIVE,
+                              : order.status === 'pending_payment'
+                                ? ACCENT_ORANGE_DEEP
+                                : PROGRESS_GRADIENT_ACTIVE,
                       }}
                     />
                   </div>

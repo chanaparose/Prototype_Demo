@@ -8,7 +8,9 @@
  */
 import React from 'react';
 import { useData, type Rfq, type RfqOffer, type Order } from '../contexts/DataContext';
-import { rfqsApi, ordersApi, quotationsApi, masterApi, categoriesApi } from '../services/api';
+import { rfqsApi, ordersApi, masterApi, categoriesApi } from '../services/api';
+import { summarizeRfqAddress } from '../utils/rfqAddressSummary';
+import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
 
 // ─── Status Code Mapping ───────────────────────────────────────
 const mapRfqStatus = (code: string, hasQuotes: boolean): string => {
@@ -16,15 +18,6 @@ const mapRfqStatus = (code: string, hasQuotes: boolean): string => {
     case 'OP': return hasQuotes ? 'offers_received' : 'pending';
     case 'CL': return 'completed';
     case 'CC': return 'cancelled';
-    default: return code.toLowerCase();
-  }
-};
-
-const mapOrderStatus = (code: string): string => {
-  switch (code.toUpperCase()) {
-    case 'PR': case 'QC': return 'in_production';
-    case 'SH': return 'shipped';
-    case 'CP': return 'completed';
     default: return code.toLowerCase();
   }
 };
@@ -142,10 +135,20 @@ export function useRfqDetail(rfqId: string | undefined) {
   const [relatedOrder, setRelatedOrder] = React.useState<Order | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  /** ข้อมูลเสริมจาก RFQ ดิบ — ใช้ factory detail / spec FACTORY_RFQ_BOARD_UX */
+  const [shippingMethodId, setShippingMethodId] = React.useState<number | null>(null);
+  const [addressSummary, setAddressSummary] = React.useState('');
+  const [targetDays, setTargetDays] = React.useState<number | null>(null);
 
   // ─── Fetch RFQ detail + quotations ───────────────────────────
   const fetchDetail = React.useCallback(async () => {
-    if (!rfqId) { setLoading(false); return; }
+    if (!rfqId) {
+      setLoading(false);
+      setShippingMethodId(null);
+      setAddressSummary('');
+      setTargetDays(null);
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -167,6 +170,9 @@ export function useRfqDetail(rfqId: string | undefined) {
 
       if (!rawRfq || !rawRfq.rfq_id) {
         setError('ไม่พบข้อมูล RFQ นี้');
+        setShippingMethodId(null);
+        setAddressSummary('');
+        setTargetDays(null);
         setLoading(false);
         return;
       }
@@ -216,7 +222,13 @@ export function useRfqDetail(rfqId: string | undefined) {
       }
 
       const imageUrls: string[] = [];
-      if (detailPayload && Array.isArray(detailPayload.images)) {
+      const rfqUrls = rawRfq.image_urls;
+      if (Array.isArray(rfqUrls)) {
+        for (const u of rfqUrls) {
+          if (typeof u === 'string' && u.trim()) imageUrls.push(u.trim());
+        }
+      }
+      if (imageUrls.length === 0 && detailPayload && Array.isArray(detailPayload.images)) {
         for (const img of detailPayload.images) {
           if (typeof img === 'string' && img) imageUrls.push(img);
           else if (img && typeof img === 'object') {
@@ -287,6 +299,18 @@ export function useRfqDetail(rfqId: string | undefined) {
         shippingMethodName: shippingMethodName || undefined,
       };
 
+      const shipIdNum = Number(shipIdRaw ?? 0);
+      setShippingMethodId(Number.isFinite(shipIdNum) && shipIdNum > 0 ? shipIdNum : null);
+      setAddressSummary(summarizeRfqAddress(rawRecord));
+      const td = Number(
+        rExtra.target_days ??
+          rExtra.lead_time_target ??
+          rExtra.customer_lead_days ??
+          rExtra.delivery_days ??
+          0,
+      );
+      setTargetDays(Number.isFinite(td) && td > 0 ? td : null);
+
       setRfq(mappedRfq);
 
       // ── Find related order ──────────────────────────────────
@@ -300,7 +324,7 @@ export function useRfqDetail(rfqId: string | undefined) {
               acceptedQuoteIds.includes(Number(o.quote_id)),
             );
             if (matchingOrder) {
-              const oStatus = mapOrderStatus(String(matchingOrder.status ?? 'PR'));
+              const oStatus = mapOrderStatusFromApi(String(matchingOrder.status ?? 'PR'));
               setRelatedOrder({
                 id: String(matchingOrder.order_id ?? matchingOrder.id ?? ''),
                 rfqId: String(rawRfq.rfq_id),
@@ -309,7 +333,7 @@ export function useRfqDetail(rfqId: string | undefined) {
                 projectName: rawRfq.title,
                 category: catName,
                 status: oStatus,
-                progress: oStatus === 'completed' ? 100 : oStatus === 'shipped' ? 85 : 35,
+                progress: guessOrderProgress(oStatus),
                 totalAmount: Number(matchingOrder.total_amount ?? 0),
                 depositPaid: Number(matchingOrder.deposit_amount ?? 0),
                 quantity: rawRfq.quantity,
@@ -337,20 +361,12 @@ export function useRfqDetail(rfqId: string | undefined) {
   // ─── Accept offer flow ───────────────────────────────────────
   const acceptOffer = React.useCallback(
     async (quoteId: string): Promise<{ orderId?: string }> => {
-      // 1. PATCH quotation status → AC
-      await quotationsApi.updateStatus(quoteId, 'AC');
-
-      // 2. Try create order
+      // POST /orders เท่านั้น — BE accept quote + reject siblings + close RFQ + สร้าง order PP (ไม่ PATCH quotation ก่อน)
       let orderId: string | undefined;
-      try {
-        const created = (await ordersApi.create(Number(quoteId))) as Record<string, unknown>;
-        const oid = created.order_id ?? created.id;
-        if (oid != null) orderId = String(oid);
-      } catch {
-        // Backend might create order in same transaction
-      }
+      const created = (await ordersApi.create(Number(quoteId))) as Record<string, unknown>;
+      const oid = created.order_id ?? created.id;
+      if (oid != null) orderId = String(oid);
 
-      // 3. Refetch detail to get updated statuses
       await fetchDetail();
 
       return { orderId };
@@ -365,5 +381,8 @@ export function useRfqDetail(rfqId: string | undefined) {
     error,
     refetch: fetchDetail,
     acceptOffer,
+    shippingMethodId,
+    addressSummary,
+    targetDays,
   };
 }

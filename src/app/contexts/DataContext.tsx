@@ -14,6 +14,7 @@ import {
   rfqsApi,
 } from '../services/api';
 import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
+import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
 
 // ─── Types ──────────────────────────────────────────────────────
 export type Category = {
@@ -479,20 +480,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    // ── Derive progress from order status when API doesn't provide it ──
-    const guessProgress = (status: string, raw: number): number => {
-      if (raw > 0) return raw;
-      switch (status) {
-        case 'in_production': return 35;
-        case 'shipped': return 85;
-        case 'completed': return 100;
-        default: return 0;
-      }
-    };
-
     const normOrder = (r: Record<string, unknown>, rfqList?: Rfq[]): Order => {
       const rfqId = String(r.rfqId ?? r.rfq_id ?? '');
-      const status = String(r.status ?? 'in_production');
+      const status = mapOrderStatusFromApi(String(r.status ?? 'PR'));
       // Try to derive category from linked RFQ
       const linkedRfq = rfqList?.find((q) => q.id === rfqId);
       return {
@@ -503,7 +493,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         projectName: String(r.projectName ?? r.project_name ?? r.title ?? ''),
         category: String(r.category ?? '') || (linkedRfq?.category ?? ''),
         status,
-        progress: guessProgress(status, Number(r.progress ?? 0)),
+        progress:
+          Number(r.progress ?? 0) > 0
+            ? Number(r.progress ?? 0)
+            : guessOrderProgress(status),
         totalAmount: Number(r.totalAmount ?? r.total_amount ?? 0),
         depositPaid: Number(r.depositPaid ?? r.deposit_paid ?? r.deposit_amount ?? 0),
         quantity: Number(r.quantity ?? 0) || (linkedRfq?.quantity ?? 0),

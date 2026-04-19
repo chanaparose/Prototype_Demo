@@ -11,6 +11,7 @@ import {
   Bell,
   Factory,
   Wallet,
+  Lock,
 } from 'lucide-react';
 import { DesktopSidebar } from './DesktopSidebar';
 import { useAuth } from '../../contexts/AuthContext';
@@ -20,6 +21,7 @@ import {
   FACTORY_SIDEBAR_NAV,
   isFactorySidebarNavActive,
 } from './factoryGlobalNavConfig';
+import { factoryVerifyStatus } from '../factory/FactoryVerifiedGuard';
 
 const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
@@ -41,6 +43,7 @@ export function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isFactory = isFactoryRole(user);
   const navLinks: MobileNavItem[] = isFactory ? FACTORY_SIDEBAR_NAV : customerNavLinks;
+  const factoryApproved = factoryVerifyStatus(user) === 'AP';
 
   const isActive = (path: string) =>
     path === '/'
@@ -77,12 +80,19 @@ export function Layout() {
                   if (isFactory && 'href' in item) {
                     const active = isFactorySidebarNavActive(location.pathname, item);
                     const Icon = item.icon;
+                    const locked = Boolean(item.requiresApproval && !factoryApproved);
                     return (
                       <button
                         key={item.key}
                         type="button"
-                        onClick={() => navigate(item.href)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors duration-150"
+                        title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
+                        onClick={() => {
+                          if (locked) return;
+                          navigate(item.href);
+                        }}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors duration-150 ${
+                          locked ? 'cursor-not-allowed opacity-60' : ''
+                        }`}
                         style={{
                           color: active ? '#A238FF' : '#6B7280',
                           background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
@@ -91,6 +101,7 @@ export function Layout() {
                       >
                         <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
                         {item.label}
+                        {locked ? <Lock size={14} className="shrink-0 text-violet-500" aria-hidden /> : null}
                       </button>
                     );
                   }
@@ -178,15 +189,20 @@ export function Layout() {
                   if (isFactory && 'href' in item) {
                     const active = isFactorySidebarNavActive(location.pathname, item);
                     const Icon = item.icon;
+                    const locked = Boolean(item.requiresApproval && !factoryApproved);
                     return (
                       <button
                         key={item.key}
                         type="button"
+                        title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
                         onClick={() => {
+                          if (locked) return;
                           navigate(item.href);
                           setMobileMenuOpen(false);
                         }}
-                        className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm transition-colors duration-150"
+                        className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm transition-colors duration-150 ${
+                          locked ? 'cursor-not-allowed opacity-60' : ''
+                        }`}
                         style={{
                           color: active ? '#A238FF' : '#374151',
                           background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
@@ -195,6 +211,7 @@ export function Layout() {
                       >
                         <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                         {item.label}
+                        {locked ? <Lock size={16} className="shrink-0 text-violet-500 ml-auto" aria-hidden /> : null}
                       </button>
                     );
                   }
@@ -220,28 +237,6 @@ export function Layout() {
                     </button>
                     );
                   })}
-                {isFactory ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigate('/factory/wallet');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-colors border mt-2"
-                    style={{
-                      color: '#2D1B4E',
-                      background: '#F8F5FF',
-                      borderColor: 'rgba(162,56,255,0.20)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    <Wallet size={20} style={{ color: '#F28A2E' }} />
-                    <span className="flex-1 text-left">กระเป๋าเงิน</span>
-                    <span className="text-xs font-bold tabular-nums">
-                      ฿{(data.currentUser?.walletBalance ?? 0).toLocaleString()}
-                    </span>
-                  </button>
-                ) : null}
                 <button
                   type="button"
                   onClick={() => {

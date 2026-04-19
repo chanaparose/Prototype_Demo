@@ -10,6 +10,7 @@
 import React from 'react';
 import { useData, type Rfq, type Order } from '../contexts/DataContext';
 import { rfqsApi, ordersApi } from '../services/api';
+import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
 import { getRfqFilterId } from '../components/features/rfq-and-orders';
 import type { RfqFilterId, OrderFilterId } from '../components/features/rfq-and-orders';
 
@@ -36,20 +37,7 @@ const mapRfqStatus = (code: string, hasQuotes: boolean): string => {
   }
 };
 
-// Order: PR=Production, QC=QualityCheck, SH=Shipped, CP=Completed
-const mapOrderStatus = (code: string): string => {
-  switch (code.toUpperCase()) {
-    case 'PR':
-    case 'QC':
-      return 'in_production';
-    case 'SH':
-      return 'shipped';
-    case 'CP':
-      return 'completed';
-    default:
-      return code.toLowerCase();
-  }
-};
+// Order: PP=รอชำระ, PR/QC=ผลิต, SH=ส่ง, CP=เสร็จ — ดู orderCustomerStatus.ts
 
 // ─── Category Icon Mapping ─────────────────────────────────────
 const CATEGORY_ICON_MAP: Record<string, string> = {
@@ -72,16 +60,6 @@ const guessCategoryIcon = (name: string) => {
     if (name.includes(k) || k.includes(name)) return v;
   }
   return '📋';
-};
-
-// ─── Progress from status ──────────────────────────────────────
-const guessProgress = (status: string): number => {
-  switch (status) {
-    case 'in_production': return 35;
-    case 'shipped': return 85;
-    case 'completed': return 100;
-    default: return 0;
-  }
 };
 
 // ─── Raw API types ─────────────────────────────────────────────
@@ -147,7 +125,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     initial?.rfqFilter ?? 'pending',
   );
   const [orderFilter, setOrderFilter] = React.useState<OrderFilterId>(
-    initial?.orderFilter ?? 'in_production',
+    initial?.orderFilter ?? 'pending_payment',
   );
 
   // ─── CRUD data ───────────────────────────────────────────────
@@ -227,7 +205,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
       // We need project name from rfqs. If rfqs is already loaded, use it.
       // Also build a quote_id → rfq_id mapping from rfqs' offers
       const mapped: Order[] = rawList.map((raw) => {
-        const status = mapOrderStatus(raw.status);
+        const status = mapOrderStatusFromApi(String(raw.status ?? ''));
         const fName = factoryMap.get(String(raw.factory_id)) ?? `โรงงาน #${raw.factory_id}`;
         const deliveryDate = raw.estimated_delivery
           ? String(raw.estimated_delivery).split('T')[0]
@@ -263,7 +241,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
           projectName: projectName || `คำสั่งซื้อ #${raw.order_id}`,
           category,
           status,
-          progress: guessProgress(status),
+          progress: guessOrderProgress(status),
           totalAmount: raw.total_amount ?? 0,
           depositPaid: raw.deposit_amount ?? 0,
           quantity,
@@ -329,6 +307,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
 
   const orderTagCounts = React.useMemo(
     () => ({
+      pendingPayment: orders.filter((o) => o.status === 'pending_payment').length,
       inProduction: orders.filter((o) => o.status === 'in_production').length,
       shipped: orders.filter((o) => o.status === 'shipped').length,
       completed: orders.filter((o) => o.status === 'completed').length,

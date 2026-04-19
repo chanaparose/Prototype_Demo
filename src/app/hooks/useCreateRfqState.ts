@@ -190,17 +190,14 @@ export function useCreateRfqState() {
         payload.shipping_method_id = Number(form.shippingMethodId);
       }
 
-      const res = await rfqsApi.create(payload);
-      const rfqId = res.rfq_id ?? res.id;
-
-      // 2) Upload images (if any)
-      if (rfqId && form.imageUrls.length > 0) {
-        await Promise.allSettled(
-          form.imageUrls.map((url) => rfqsApi.addImage(rfqId as number, url)),
-        );
+      const imageUrls = [...new Set(form.imageUrls.map((u) => u.trim()).filter(Boolean))].slice(0, 5);
+      if (imageUrls.length > 0) {
+        (payload as Record<string, unknown>).image_urls = imageUrls;
       }
 
-      // 3) Navigate to success / orders page
+      await rfqsApi.create(payload);
+
+      // Navigate to success / orders page (รูปส่งใน POST เดียว — FACTORY_UI_SPEC §1.2)
       navigate('/orders');
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด ลองอีกครั้ง');

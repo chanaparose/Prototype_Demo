@@ -9,6 +9,7 @@ import {
   Plus,
   Bell,
   Wallet,
+  Lock,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,6 +18,7 @@ import {
   FACTORY_SIDEBAR_NAV,
   isFactorySidebarNavActive,
 } from './factoryGlobalNavConfig';
+import { factoryVerifyStatus } from '../factory/FactoryVerifiedGuard';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -43,6 +45,7 @@ export function DesktopSidebar() {
   const { user: authUser } = useAuth();
   const currentUser = data.currentUser;
   const isFactory = isFactoryRole(authUser);
+  const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
 
   const isActivePath = (path: string) =>
     path === '/'
@@ -85,12 +88,19 @@ export function DesktopSidebar() {
           ? FACTORY_SIDEBAR_NAV.map((item) => {
               const active = isFactorySidebarNavActive(location.pathname, item);
               const Icon = item.icon;
+              const locked = Boolean(item.requiresApproval && !factoryApproved);
               return (
                 <button
                   key={item.key}
                   type="button"
-                  onClick={() => navigate(item.href)}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150"
+                  title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
+                  onClick={() => {
+                    if (locked) return;
+                    navigate(item.href);
+                  }}
+                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150 ${
+                    locked ? 'cursor-not-allowed opacity-60' : ''
+                  }`}
                   style={{
                     color: active ? '#A238FF' : '#6B7280',
                     background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
@@ -99,6 +109,9 @@ export function DesktopSidebar() {
                 >
                   <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                   <span className="flex-1 text-left">{item.label}</span>
+                  {locked ? (
+                    <Lock size={16} className="shrink-0 text-violet-500" strokeWidth={2} aria-hidden />
+                  ) : null}
                   {item.badge === 'unread-messages' && unreadMessages > 0 ? (
                     <span
                       className="w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
@@ -151,7 +164,7 @@ export function DesktopSidebar() {
             })}
       </nav>
 
-      {/* Wallet Summary — โรงงาน: แตะเพื่อไปหน้ากระเป๋าเงิน (ไม่มีรายการใน sidebar) */}
+      {/* สรุปยอดกระเป๋า — โรงงาน: ทางลัด (มีเมนูกระเป๋าเงินใน nav แล้ว) */}
       {isFactory ? (
         <Link
           to="/factory/wallet"

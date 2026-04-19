@@ -13,7 +13,7 @@ import {
   History,
   GitCompare,
 } from 'lucide-react';
-import { quotationsApi, ordersApi } from '../../../services/api';
+import { ordersApi } from '../../../services/api';
 import type { Quotation } from './QuotationBOQCard';
 import { QuotationBOQDetailsPanel, quotationFromOfferSource } from './QuotationBOQCard';
 
@@ -50,7 +50,7 @@ type RfqDetailOffersSectionProps = {
   selectedOfferId: string | null;
   onSelectOffer: (id: string | null) => void;
   onNavigateToMessages: () => void;
-  /** หลัง PATCH ใบเสนอราคา + พยายามสร้าง Order (ตาม API_SPEC POST /orders/) */
+  /** หลัง POST /orders (BE accept quote + สร้าง order PP) — ไม่ PATCH quotation ก่อน */
   onOfferFlowComplete?: (result: { quoteId: string; orderId?: string }) => void;
   /** จำนวนชิ้นจาก RFQ — ใช้ประมาณราคา/ชิ้นใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
   rfqQuantity?: number;
@@ -77,15 +77,10 @@ export function RfqDetailOffersSection({
     setAcceptingId(offerId);
     setFlowError(null);
     try {
-      await quotationsApi.updateStatus(offerId, 'AC');
       let orderId: string | undefined;
-      try {
-        const created = (await ordersApi.create(Number(offerId))) as Record<string, unknown>;
-        const oid = created.order_id ?? created.id;
-        if (oid != null && String(oid)) orderId = String(oid);
-      } catch {
-        /* บาง backend สร้าง order ในทรานแซกชันเดียวกับ accept แล้ว — ยัง refetch ต่อได้ */
-      }
+      const created = (await ordersApi.create(Number(offerId))) as Record<string, unknown>;
+      const oid = created.order_id ?? created.id;
+      if (oid != null && String(oid)) orderId = String(oid);
       onOfferFlowComplete?.({ quoteId: offerId, orderId });
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'ไม่สามารถยอมรับข้อเสนอได้');

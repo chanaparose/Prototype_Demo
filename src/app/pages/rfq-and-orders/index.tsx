@@ -40,6 +40,7 @@ import {
   Truck,
   CheckCircle2,
   Layers,
+  Banknote,
 } from 'lucide-react';
 
 export function RfqAndOrders() {
@@ -404,8 +405,16 @@ export function RfqAndOrders() {
                 </div>
               </div>
 
-              <div className="flex gap-1 px-4 pt-3 pb-2">
+              <div className="flex flex-wrap gap-1 px-4 pt-3 pb-2">
                 {[
+                  {
+                    id: 'pending_payment' as OrderFilterId,
+                    label: 'รอชำระ',
+                    icon: Banknote,
+                    count: orderTagCounts.pendingPayment,
+                    color: ORDER_STATUS_CONFIG.pending_payment.color,
+                    bg: ORDER_STATUS_CONFIG.pending_payment.bg,
+                  },
                   {
                     id: 'in_production' as OrderFilterId,
                     label: 'กำลังผลิต',
@@ -475,7 +484,8 @@ export function RfqAndOrders() {
                   </div>
                 ) : (
                   desktopFilteredOrders.map((order) => {
-                    const cfg = ORDER_STATUS_CONFIG[order.status];
+                    const cfg =
+                      ORDER_STATUS_CONFIG[order.status] ?? ORDER_STATUS_CONFIG.pending;
                     return (
                       <div
                         key={order.id}
@@ -525,7 +535,9 @@ export function RfqAndOrders() {
                                     ? PROGRESS_COMPLETED
                                     : order.status === 'shipped'
                                       ? ACCENT_ORANGE
-                                      : PROGRESS_GRADIENT_ACTIVE,
+                                      : order.status === 'pending_payment'
+                                        ? ACCENT_ORANGE_DEEP
+                                        : PROGRESS_GRADIENT_ACTIVE,
                               }}
                             />
                           </div>

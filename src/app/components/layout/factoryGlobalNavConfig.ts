@@ -7,36 +7,26 @@ import {
   ClipboardList,
   Package,
   FileText,
+  Wallet,
 } from 'lucide-react';
 
 /**
- * เมนู sidebar สำหรับบัญชีโรงงาน (FT)
- * — ไม่มีหน้าแรก / แนะนำโรงงาน; รายการพอร์ทัลอยู่ที่นี่แทนแถบแท็บใน FactoryPortalLayout
- * — กระเป๋าเงินไม่อยู่ในรายการนี้: เข้าจาก Wallet Summary (sidebar) / แถบ header & เมนูมือถือ
+ * เมนู sidebar สำหรับบัญชีโรงงาน (FT) — ลำดับตาม FACTORY_UI_SPEC.md §3
+ * requiresApproval: เมื่อ verify_status !== 'AP' ให้ lock ที่ sidebar + หน้าใช้ FactoryVerifiedGuard
  */
 export type FactorySidebarNavItem = {
   key: string;
   label: string;
   icon: LucideIcon;
-  /** ส่งให้ navigate() — รองรับ query เช่น โชว์เคส */
   href: string;
   badge?: 'unread-messages';
-  /** วิธีเทียบ active กับ location.pathname */
   activeMatch: 'exact' | 'prefix' | 'pathname';
-  /** สำหรับ activeMatch === 'exact' | 'pathname' */
   activePath: string;
+  /** ต้องอนุมัติ (AP) ก่อนเข้าได้ */
+  requiresApproval?: boolean;
 };
 
 export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
-  {
-    key: 'messages',
-    label: 'ข้อความ',
-    icon: MessageCircle,
-    href: '/messages',
-    badge: 'unread-messages',
-    activeMatch: 'prefix',
-    activePath: '/messages',
-  },
   {
     key: 'factory-dash',
     label: 'แดชบอร์ด',
@@ -47,7 +37,7 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   },
   {
     key: 'factory-profile',
-    label: 'โปรไฟล์',
+    label: 'ข้อมูลโรงงาน',
     icon: Building2,
     href: '/factory/profile',
     activeMatch: 'prefix',
@@ -55,11 +45,12 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   },
   {
     key: 'factory-showcases',
-    label: 'โชว์เคส',
+    label: 'Showcases',
     icon: Images,
     href: '/factory/showcases?type=PD',
     activeMatch: 'pathname',
     activePath: '/factory/showcases',
+    requiresApproval: true,
   },
   {
     key: 'factory-rfqs',
@@ -68,6 +59,7 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     href: '/factory/rfqs',
     activeMatch: 'prefix',
     activePath: '/factory/rfqs',
+    requiresApproval: true,
   },
   {
     key: 'factory-quotations',
@@ -76,6 +68,7 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     href: '/factory/quotations',
     activeMatch: 'prefix',
     activePath: '/factory/quotations',
+    requiresApproval: true,
   },
   {
     key: 'factory-orders',
@@ -84,6 +77,24 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     href: '/factory/orders',
     activeMatch: 'prefix',
     activePath: '/factory/orders',
+    requiresApproval: true,
+  },
+  {
+    key: 'factory-wallet',
+    label: 'กระเป๋าเงิน',
+    icon: Wallet,
+    href: '/factory/wallet',
+    activeMatch: 'prefix',
+    activePath: '/factory/wallet',
+  },
+  {
+    key: 'messages',
+    label: 'ข้อความ',
+    icon: MessageCircle,
+    href: '/messages',
+    badge: 'unread-messages',
+    activeMatch: 'prefix',
+    activePath: '/messages',
   },
 ];
 
@@ -99,4 +110,3 @@ export function isFactorySidebarNavActive(
   }
   return pathname === item.activePath || pathname.startsWith(`${item.activePath}/`);
 }
-
