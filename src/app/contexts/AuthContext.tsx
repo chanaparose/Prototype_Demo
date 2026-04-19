@@ -25,6 +25,8 @@ export type User = {
   /** ฝั่งโรงงาน (FT): รหัสโรงงานสำหรับเรียก /factories/:id */
   factory_id?: number | string;
   factoryId?: number | string;
+  /** FT: PD = รอตรวจ, AP = อนุมัติ, RJ = ปฏิเสธ — ดู FACTORY_UI_SPEC / FACTORY_ONBOARDING_SPEC */
+  verify_status?: string;
   [key: string]: unknown;
 };
 

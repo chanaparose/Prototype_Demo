@@ -256,10 +256,11 @@ export const factoriesApi = {
   getDashboard: () => api.get<Record<string, unknown>>('/factories/me/dashboard'),
   /** GET /factories/me/analytics — revenue, orders, ratings */
   getAnalytics: () => api.get<Record<string, unknown>>('/factories/me/analytics'),
+  /** แทนที่ทั้งชุด — ต้องเป็น PUT ตาม FACTORY_UI_SPEC §1.1 */
   setCategories: (factoryId: string | number, categoryIds: number[]) =>
-    api.post(`/factories/${factoryId}/categories`, { category_ids: categoryIds }),
+    api.put(`/factories/${factoryId}/categories`, { category_ids: categoryIds }),
   setSubCategories: (factoryId: string | number, subCategoryIds: number[]) =>
-    api.post(`/factories/${factoryId}/sub-categories`, { sub_category_ids: subCategoryIds }),
+    api.put(`/factories/${factoryId}/sub-categories`, { sub_category_ids: subCategoryIds }),
   getCategories: (factoryId: string | number) =>
     api.get<unknown[]>(`/factories/${factoryId}/categories`),
   getSubCategories: (factoryId: string | number) =>
@@ -272,6 +273,10 @@ export const factoriesApi = {
     api.delete(`/factories/${factoryId}/sub-categories/${subCategoryId}`),
 };
 
+export type RfqDetailPayload = {
+  rfq: Record<string, unknown> & { image_urls?: string[] };
+};
+
 export const rfqsApi = {
   list: (status?: string) => {
     const q = status != null && status !== '' ? `?status=${encodeURIComponent(status)}` : '';
@@ -279,10 +284,11 @@ export const rfqsApi = {
   },
   /** RFQ ที่ match หมวดของโรงงานตาม JWT */
   matching: () => api.get<unknown[]>('/rfqs/matching'),
-  get: (id: string | number) => api.get<{ rfq: Record<string, unknown>; images: unknown[] }>(`/rfqs/${id}`),
-  create: (data: Record<string, unknown>) => api.post<Record<string, unknown>>('/rfqs', data),
-  addImage: (rfqId: string | number, imageUrl: string) =>
-    api.post(`/rfqs/${rfqId}/images`, { image_url: imageUrl }),
+  /** รูปอยู่ที่ rfq.image_urls — ไม่มี top-level images (FACTORY_UI_SPEC §1.2) */
+  get: (id: string | number) => api.get<RfqDetailPayload>(`/rfqs/${id}`),
+  /** ส่ง image_urls ใน body เดียว (สูงสุด 5 URL) — ไม่เรียก POST /rfqs/:id/images */
+  create: (data: Record<string, unknown> & { image_urls?: string[] }) =>
+    api.post<Record<string, unknown>>('/rfqs', data),
   cancel: (rfqId: string | number) => api.patch(`/rfqs/${rfqId}/cancel`),
   createQuotation: (rfqId: string | number, data: Record<string, unknown>) =>
     api.post(`/rfqs/${rfqId}/quotations`, data),
@@ -295,7 +301,16 @@ export const ordersApi = {
     return api.get<unknown[]>(`/orders${q}`);
   },
   get: (id: string | number) => api.get<Record<string, unknown>>(`/orders/${id}`),
-  create: (quoteId: number) => api.post<Record<string, unknown>>('/orders/', { quote_id: quoteId }),
+  /** POST /api/v1/orders — body { quote_id } ตาม FE_ORDER_PAYMENT_ALIGNMENT / PAYMENT_ORDER_FLOW (ไม่มี trailing slash) */
+  create: (quoteId: number) => api.post<Record<string, unknown>>('/orders', { quote_id: quoteId }),
+  /** POST /orders/:order_id/payments — DP = มัดจำ (amount = deposit_amount), FP = ยอดที่เหลือ */
+  createPayment: (
+    orderId: string | number,
+    body: { type: 'DP' | 'FP'; amount: number },
+  ) => api.post<Record<string, unknown>>(`/orders/${orderId}/payments`, body),
+  /** POST /orders/:order_id/payments/:tx_id/verify — ยืนยันและตัด good_fund */
+  verifyPayment: (orderId: string | number, txId: string | number) =>
+    api.post<Record<string, unknown>>(`/orders/${orderId}/payments/${txId}/verify`, {}),
   updateStatus: (id: string | number, status: string) =>
     api.patch(`/orders/${id}/status`, { status }),
   /** PATCH /orders/:id/cancel — customer cancels (only allowed at PE/PP/PR/WF) */

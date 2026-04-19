@@ -11,7 +11,18 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { TrendingUp, PiggyBank, CheckCircle2, Package, MessageSquareReply, RefreshCw } from 'lucide-react';
+import { Link } from 'react-router';
+import {
+  TrendingUp,
+  PiggyBank,
+  CheckCircle2,
+  Package,
+  MessageSquareReply,
+  RefreshCw,
+  AlertTriangle,
+} from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { factoryVerifyStatus } from '../../components/factory/FactoryVerifiedGuard';
 import {
   useFactoryDashboard,
   type AnalyticsTimeframe,
@@ -170,6 +181,14 @@ function kpiRows(summary: AnalyticsSummary) {
 }
 
 export function FactoryDashboardPage() {
+  const { user } = useAuth();
+  const verifySt = factoryVerifyStatus(user);
+  const verifyReason = String(
+    (user as Record<string, unknown> | null)?.verify_rejection_reason ??
+      (user as Record<string, unknown> | null)?.rejection_reason ??
+      '',
+  ).trim();
+
   const isDesktop = useIsDesktop();
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('daily');
   const { loading, error, summary, series, reload } = useFactoryDashboard(timeframe);
@@ -197,6 +216,38 @@ export function FactoryDashboardPage() {
 
   return (
     <div className="space-y-5 sm:space-y-6 pb-8 sm:pb-10 w-full min-w-0">
+      {verifySt !== 'AP' ? (
+        <div
+          className={`rounded-2xl border px-4 py-3 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-start gap-3 ${
+            verifySt === 'RJ'
+              ? 'border-rose-200 bg-rose-50/90 text-rose-950'
+              : 'border-amber-200 bg-amber-50/90 text-amber-950'
+          }`}
+          role="status"
+        >
+          <AlertTriangle
+            className={`w-5 h-5 shrink-0 mt-0.5 ${verifySt === 'RJ' ? 'text-rose-600' : 'text-amber-600'}`}
+            strokeWidth={2}
+            aria-hidden
+          />
+          <div className="flex-1 min-w-0 text-sm leading-relaxed">
+            <p className="font-bold">
+              {verifySt === 'RJ' ? 'บัญชีโรงงานไม่ผ่านการตรวจสอบ' : 'โรงงานอยู่ระหว่างตรวจสอบ'}
+            </p>
+            <p className="mt-1 opacity-95">
+              {verifySt === 'RJ'
+                ? verifyReason || 'กรุณาปรับข้อมูลและส่งตรวจสอบใหม่จากหน้าโปรไฟล์'
+                : 'เมื่อแอดมินอนุมัติแล้ว คุณจะเข้า Showcase, กระดาน RFQ, ใบเสนอราคา และออเดอร์ได้'}
+            </p>
+            <Link
+              to="/factory/profile"
+              className="inline-block mt-3 text-sm font-semibold underline underline-offset-2 hover:opacity-90"
+            >
+              ไปที่ข้อมูลโรงงาน →
+            </Link>
+          </div>
+        </div>
+      ) : null}
       {error ? (
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <p className="flex-1">{error}</p>

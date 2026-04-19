@@ -1,3 +1,4 @@
+export { OrderPendingPaymentSection } from './OrderPendingPaymentSection';
 export { OrderSummaryCard } from './OrderSummaryCard';
 export { OrderOverviewSection } from './OrderOverviewSection';
 export { OrderTimelineSection } from './OrderTimelineSection';

@@ -48,7 +48,7 @@ export const PROGRESS_COMPLETED =
   'linear-gradient(90deg, #2D1B4E 0%, #6D28D9 100%)';
 
 export type RfqFilterId = 'pending' | 'has_quote' | 'cancelled_expired';
-export type OrderFilterId = 'in_production' | 'shipped' | 'completed';
+export type OrderFilterId = 'pending_payment' | 'in_production' | 'shipped' | 'completed';
 
 /** ธีมแท็บกรอง RFQ — แยกสีตามแท็บ */
 export const RFQ_FILTER_THEME: Record<
@@ -77,6 +77,11 @@ export const ORDER_MOBILE_TAB_THEME: Record<
   OrderFilterId,
   { activeBg: string; activeColor: string; badgeInactive: string }
 > = {
+  pending_payment: {
+    activeBg: PEACH_MIST,
+    activeColor: ACCENT_ORANGE_DEEP,
+    badgeInactive: BADGE_ALERT_BG,
+  },
   in_production: {
     activeBg: PLUM_SOFT_BG,
     activeColor: PLUM,
@@ -108,6 +113,12 @@ export const ORDER_STATUS_CONFIG: Record<
   string,
   { label: string; color: string; bg: string; dot: string }
 > = {
+  pending_payment: {
+    label: 'รอชำระมัดจำ',
+    color: ACCENT_ORANGE_DEEP,
+    bg: PEACH_MIST,
+    dot: ACCENT_ORANGE,
+  },
   in_production: {
     label: 'กำลังผลิต',
     color: PLUM,

@@ -19,6 +19,7 @@ import { Login } from './pages/login';
 import { RegisterFactoryPage } from './pages/auth';
 import { AuthGuard } from './components/AuthGuard';
 import { FactoryRoleGuard } from './components/factory/FactoryRoleGuard';
+import { FactoryVerifiedGuard } from './components/factory/FactoryVerifiedGuard';
 import {
   FactoryPortalLayout,
   FactoryDashboardPage,
@@ -77,14 +78,19 @@ export const router = createBrowserRouter([
                 children: [
                   { index: true, Component: FactoryDashboardPage },
                   { path: 'profile', Component: FactoryProfilePage },
-                  { path: 'showcases', Component: FactoryShowcasesPage },
-                  { path: 'rfqs', Component: FactoryRfqBoardPage },
-                  { path: 'rfqs/:id', Component: FactoryRfqDetailPage },
-                  { path: 'orders', Component: FactoryOrdersPage },
-                  { path: 'orders/:id', Component: FactoryOrderDetailPage },
                   { path: 'wallet', Component: FactoryWalletPage },
-                  { path: 'quotations/:id/edit', Component: FactoryEditQuotationPage },
-                  { path: 'quotations', Component: FactoryQuotationsPage },
+                  {
+                    Component: FactoryVerifiedGuard,
+                    children: [
+                      { path: 'showcases', Component: FactoryShowcasesPage },
+                      { path: 'rfqs', Component: FactoryRfqBoardPage },
+                      { path: 'rfqs/:id', Component: FactoryRfqDetailPage },
+                      { path: 'quotations/:id/edit', Component: FactoryEditQuotationPage },
+                      { path: 'quotations', Component: FactoryQuotationsPage },
+                      { path: 'orders', Component: FactoryOrdersPage },
+                      { path: 'orders/:id', Component: FactoryOrderDetailPage },
+                    ],
+                  },
                 ],
               },
             ],

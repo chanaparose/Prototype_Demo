@@ -17,6 +17,7 @@ type FactoryInfo = {
 };
 
 const STATUS_CONFIG: Record<string, { label: string }> = {
+  pending_payment: { label: 'รอชำระมัดจำ' },
   in_production: { label: 'กำลังผลิต' },
   shipped: { label: 'จัดส่งแล้ว' },
   completed: { label: 'เสร็จสิ้น' },
@@ -28,7 +29,7 @@ type OrderSummaryCardProps = {
 };
 
 export function OrderSummaryCard({ order, relatedFactory }: OrderSummaryCardProps) {
-  const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.in_production;
+  const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending_payment;
 
   return (
     <div

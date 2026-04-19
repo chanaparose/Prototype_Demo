@@ -1,20 +1,25 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, History, Lock } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { getFactoryEntityId } from '../../utils/factoryUser';
 import { quotationsApi, masterApi } from '../../services/api';
+import { ShippingMethodLockedField } from '../../components/factory/ShippingMethodLockedField';
 
 type Row = Record<string, unknown>;
 
 export function FactoryEditQuotationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const factoryEntityId = getFactoryEntityId(user);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [quote, setQuote] = useState<Row>({});
   const [history, setHistory] = useState<Row[]>([]);
-  const [shippingMethods, setShippingMethods] = useState<Row[]>([]);
+  const [shipMethodLabel, setShipMethodLabel] = useState('');
 
   const [price, setPrice] = useState('');
   const [mold, setMold] = useState('');
@@ -40,8 +45,17 @@ export function FactoryEditQuotationPage() {
       setPrice(String(body.price_per_piece ?? ''));
       setMold(String(body.mold_cost ?? ''));
       setLeadDays(String(body.lead_time_days ?? ''));
-      setShipId(String(body.shipping_method_id ?? ''));
-      setShippingMethods(Array.isArray(ships) ? (ships as Row[]) : []);
+      const sid = Number(body.shipping_method_id ?? 0);
+      setShipId(Number.isFinite(sid) && sid > 0 ? String(sid) : '');
+      const shipArr = (Array.isArray(ships) ? ships : []) as Row[];
+      const nameFromMaster = shipArr.find(
+        (m) => Number(m.shipping_method_id ?? m.id) === sid,
+      );
+      setShipMethodLabel(
+        String(nameFromMaster?.method_name ?? nameFromMaster?.name ?? '').trim() ||
+          String(body.shipping_method_name ?? '').trim() ||
+          (sid > 0 ? `#${sid}` : ''),
+      );
 
       try {
         const h = await quotationsApi.history(id);
@@ -60,14 +74,36 @@ export function FactoryEditQuotationPage() {
     void load();
   }, [load]);
 
+  const lockedShipId = useMemo(() => {
+    const n = Number(shipId);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [shipId]);
+
   const save = async () => {
     if (!id) return;
     if (isLocked) {
       setError('ใบเสนอราคานี้ถูกล็อกแล้ว ไม่สามารถแก้ไขได้');
       return;
     }
-    if (!price || Number.isNaN(Number(price))) {
+    if (factoryEntityId == null) {
+      setError('ไม่พบข้อมูลโรงงาน กรุณา login ใหม่');
+      return;
+    }
+    if (!price || Number.isNaN(Number(price)) || Number(price) <= 0) {
       setError('กรุณากรอกราคาต่อชิ้นที่ถูกต้อง');
+      return;
+    }
+    const ld = Number(leadDays);
+    if (!Number.isFinite(ld) || ld <= 0) {
+      setError('กรอกระยะเวลาผลิต (วัน) ให้มากกว่า 0');
+      return;
+    }
+    if (lockedShipId == null) {
+      setError('ไม่พบวิธีจัดส่งในใบเสนอราคา — ไม่สามารถบันทึกได้');
+      return;
+    }
+    if (!reason.trim()) {
+      setError('กรุณากรอกเหตุผลการแก้ไข');
       return;
     }
     setSaving(true);
@@ -75,11 +111,12 @@ export function FactoryEditQuotationPage() {
     setInfo('');
     try {
       await quotationsApi.patch(id, {
+        factory_id: factoryEntityId,
         price_per_piece: Number(price),
         mold_cost: Number(mold) || 0,
-        lead_time_days: Number(leadDays) || 0,
-        shipping_method_id: Number(shipId) || 1,
-        reason: reason || undefined,
+        lead_time_days: ld,
+        shipping_method_id: lockedShipId,
+        reason: reason.trim(),
       });
       setInfo('บันทึกการแก้ไขเรียบร้อย');
       setReason('');
@@ -171,28 +208,14 @@ export function FactoryEditQuotationPage() {
                 onChange={(e) => setLeadDays(e.target.value)}
               />
             </label>
+            <div className={isLocked ? 'opacity-70' : ''}>
+              <ShippingMethodLockedField
+                methodName={shipMethodLabel || '—'}
+                hint="ใช้ค่าเดิมจากใบเสนอราคา (ตรงกับ RFQ ของลูกค้า) — แก้ไขวิธีส่งไม่ได้"
+              />
+            </div>
             <label className="block">
-              <span className="text-xs text-gray-500">วิธีจัดส่ง</span>
-              <select
-                disabled={isLocked}
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
-                value={shipId}
-                onChange={(e) => setShipId(e.target.value)}
-              >
-                <option value="">— เลือก —</option>
-                {shippingMethods.map((m) => {
-                  const mid = String(m.shipping_method_id ?? m.id ?? '');
-                  const label = String(m.method_name ?? m.name ?? mid);
-                  return (
-                    <option key={mid} value={mid}>
-                      {label}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-xs text-gray-500">เหตุผลที่แก้ไข (จะบันทึกลง audit log)</span>
+              <span className="text-xs text-gray-500">เหตุผลที่แก้ไข * (บันทึกลง audit log)</span>
               <textarea
                 disabled={isLocked}
                 rows={2}
