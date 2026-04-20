@@ -42,11 +42,7 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
 
   const handleChat = useCallback(async () => {
     if (!factory) return;
-    await startChat(factory.id, {
-      type: 'FT',
-      id: String(factory.id),
-      title: factory.name,
-    });
+    await startChat(factory.id);
   }, [factory, startChat]);
 
   if (detailLoading && !factory) {

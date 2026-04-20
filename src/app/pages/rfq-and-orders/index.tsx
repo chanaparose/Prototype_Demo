@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router';
+import { toast } from 'sonner';
+import { rfqsApi } from '../../services/api';
 import { RfqSection, OrderSection } from '../../components/features/rfq-and-orders';
 import {
   PRIMARY_BG,
@@ -41,7 +43,11 @@ import {
   CheckCircle2,
   Layers,
   Banknote,
+  XCircle,
 } from 'lucide-react';
+
+/** FE statuses that map back to BE `OP` (cancellable) */
+const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 export function RfqAndOrders() {
   const {
@@ -59,9 +65,32 @@ export function RfqAndOrders() {
     orders,
     loading,
     error,
+    refetch,
   } = useRfqAndOrdersState({
     primaryTab: 'orders',
   });
+
+  const [cancellingRfqId, setCancellingRfqId] = React.useState<string | null>(null);
+
+  const handleCancelRfq = React.useCallback(
+    async (rfqId: string) => {
+      if (cancellingRfqId) return;
+      const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
+      if (!ok) return;
+      setCancellingRfqId(rfqId);
+      try {
+        await rfqsApi.cancel(rfqId);
+        toast.success('ยกเลิก RFQ สำเร็จ');
+        await refetch();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้';
+        toast.error(msg);
+      } finally {
+        setCancellingRfqId(null);
+      }
+    },
+    [cancellingRfqId, refetch],
+  );
 
   // For now, desktop panels share the same filters as mobile
   const desktopRfqFilter: RfqFilterId = rfqFilter;
@@ -167,6 +196,8 @@ export function RfqAndOrders() {
               setRfqFilter={setRfqFilter}
               filteredRfqs={filteredRfqs}
               rfqTagCounts={rfqTagCounts}
+              onCancelRfq={handleCancelRfq}
+              cancellingRfqId={cancellingRfqId}
             />
           ) : (
             <OrderSection
@@ -365,6 +396,28 @@ export function RfqAndOrders() {
                               {rfq.offerCount} โรงงานตอบ →
                             </span>
                           </div>
+                          {CANCELLABLE_STATUSES.has(rfq.status) ? (
+                            <div className="mt-3 pl-12 flex justify-start">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleCancelRfq(rfq.id);
+                                }}
+                                disabled={cancellingRfqId === rfq.id}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold disabled:opacity-50"
+                                style={{
+                                  color: '#B91C1C',
+                                  background: '#FEF2F2',
+                                  border: '1px solid #FECACA',
+                                }}
+                              >
+                                <XCircle size={12} />
+                                {cancellingRfqId === rfq.id ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       </Link>
                     );

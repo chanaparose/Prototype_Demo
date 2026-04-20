@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { conversationsApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { ApiConversation, UiConversation, normalizeConversation } from './types';
+import { sortConversations } from './selectors';
 
 function rowToApiConversation(r: Record<string, unknown>): ApiConversation | null {
   const conv_id = Number(r.conv_id ?? r.conversation_id ?? r.id);
@@ -20,6 +21,8 @@ function rowToApiConversation(r: Record<string, unknown>): ApiConversation | nul
             ? String(r.factory_avatar)
             : undefined,
     rfq_id: r.rfq_id != null ? Number(r.rfq_id) : null,
+    customer_name: r.customer_name != null ? String(r.customer_name) : undefined,
+    customer_image: r.customer_image != null ? String(r.customer_image) : undefined,
     rfq_title:
       r.rfq_title != null
         ? String(r.rfq_title)
@@ -41,7 +44,8 @@ function rowToApiConversation(r: Record<string, unknown>): ApiConversation | nul
     unread_customer: Number(r.unread_customer ?? r.unread_count ?? r.unread ?? 0),
     unread_factory: Number(r.unread_factory ?? r.unread_factory_count ?? 0),
     has_quote: Boolean(r.has_quote ?? r.hasQuote ?? false),
-    updated_at: String(r.updated_at ?? r.time ?? r.created_at ?? ''),
+    created_at: String(r.created_at ?? ''),
+    updated_at: String(r.updated_at ?? r.time ?? ''),
   };
 }
 
@@ -59,10 +63,12 @@ export function useConversations() {
     try {
       const raw = await conversationsApi.list();
       const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-      const mapped = arr
-        .map(rowToApiConversation)
-        .filter((x): x is ApiConversation => x != null)
-        .map((r) => normalizeConversation(r, role));
+      const mapped = sortConversations(
+        arr
+          .map(rowToApiConversation)
+          .filter((x): x is ApiConversation => x != null)
+          .map((r) => normalizeConversation(r, role)),
+      );
       setItems(mapped);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดข้อความไม่สำเร็จ');

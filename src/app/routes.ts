@@ -32,6 +32,7 @@ import {
   FactoryWalletPage,
   FactoryEditQuotationPage,
   FactoryQuotationsPage,
+  FactoryShowcaseEditPage,
 } from './pages/factory-portal';
 
 export const router = createBrowserRouter([
@@ -69,6 +70,7 @@ export const router = createBrowserRouter([
           { path: 'rfqs/:id', Component: RFQDetail },
           { path: 'orders/:id', Component: OrderDetail },
           { path: 'messages/:id', Component: ChatRoom },
+          { path: 'chat-room/:id', Component: ChatRoom },
           {
             path: 'factory',
             Component: FactoryRoleGuard,
@@ -83,6 +85,7 @@ export const router = createBrowserRouter([
                     Component: FactoryVerifiedGuard,
                     children: [
                       { path: 'showcases', Component: FactoryShowcasesPage },
+                      { path: 'showcases/:id/edit', Component: FactoryShowcaseEditPage },
                       { path: 'rfqs', Component: FactoryRfqBoardPage },
                       { path: 'rfqs/:id', Component: FactoryRfqDetailPage },
                       { path: 'quotations/:id/edit', Component: FactoryEditQuotationPage },

@@ -90,7 +90,7 @@ export function IdeaDetailMobile() {
             onClick={() =>
               void startChat(item.factoryId, {
                 type: 'ID',
-                id: String(resolvedId),
+                id: Number(resolvedId),
                 title: item.title,
               })
             }

@@ -2,6 +2,9 @@ import React from 'react';
 import { Link } from 'react-router';
 import { FileText } from 'lucide-react';
 import { formatDateTh } from './utils';
+import { OrderPaymentScheduleCard } from './OrderPaymentScheduleCard';
+import { OrderPendingPaymentSection } from './OrderPendingPaymentSection';
+import { useOrderDetail } from '../../../pages/order-detail/OrderDetailContext';
 
 export type OrderForOverview = {
   totalAmount: number;
@@ -39,39 +42,41 @@ type OrderOverviewSectionProps = {
   rfqOffers: OfferForOverview[];
 };
 
-export function OrderOverviewSection({
-  order,
-  relatedRfq,
-  rfqOffers,
-}: OrderOverviewSectionProps) {
+export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOverviewSectionProps) {
+  const { paymentSchedule, mappedOrder, refetchAll } = useOrderDetail();
+  const showDepositPayment = mappedOrder.status === 'pending_payment';
+
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>
-          สถานะการชำระเงิน
-        </p>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-500">ชำระมัดจำ 50%</span>
-          <span className="text-xs" style={{ color: '#22C55E', fontWeight: 600 }}>
-            ✓ ชำระแล้ว ฿{order.depositPaid.toLocaleString('th-TH')}
-          </span>
+      <OrderPaymentScheduleCard schedule={paymentSchedule} />
+
+      {showDepositPayment ? (
+        <OrderPendingPaymentSection
+          orderId={mappedOrder.id}
+          depositAmount={mappedOrder.depositPaid}
+          totalAmount={mappedOrder.totalAmount}
+          onVerified={() => void refetchAll()}
+        />
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 text-sm text-gray-600 space-y-2">
+          <p className="font-semibold text-gray-900">สรุปการชำระเงิน</p>
+          <p>
+            มัดจำ:{' '}
+            <span className="font-medium text-gray-900">
+              ฿{order.depositPaid.toLocaleString('th-TH')}
+            </span>
+          </p>
+          <p>
+            ยอดรวม:{' '}
+            <span className="font-medium text-gray-900">
+              ฿{order.totalAmount.toLocaleString('th-TH')}
+            </span>
+          </p>
+          <p className="text-xs text-gray-500">
+            ไม่มีรายการชำระเงินที่ต้องดำเนินการในขณะนี้
+          </p>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500">ยอดคงเหลือ</span>
-          <span className="text-xs text-gray-900" style={{ fontWeight: 600 }}>
-            ฿{(order.totalAmount - order.depositPaid).toLocaleString('th-TH')}
-          </span>
-        </div>
-        <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${(order.depositPaid / order.totalAmount) * 100}%`,
-              background: '#22C55E',
-            }}
-          />
-        </div>
-      </div>
+      )}
 
       {relatedRfq && (
         <div className="bg-white rounded-2xl p-4 shadow-sm">

@@ -79,7 +79,7 @@ export function PromotionDetailDesktop() {
   const handleStartChat = () =>
     void startChat(item.factoryId, {
       type: 'PM',
-      id: String(resolvedId),
+      id: Number(resolvedId),
       title: item.title,
     });
 

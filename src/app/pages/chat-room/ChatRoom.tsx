@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -8,14 +8,24 @@ import {
   Paperclip,
   ChevronDown,
   ChevronUp,
-  CreditCard,
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
-import type { Conversation, Message } from '../../contexts/DataContext';
+import type { Conversation } from '../../contexts/DataContext';
 import { messagesApi, conversationsApi } from '../../services/api';
 import { ImageWithFallback } from '../../components/shared';
-import type { ChatReference } from '../../hooks/useStartChatWithFactory';
+import type { ChatReference } from '../../utils/chatContract';
+import {
+  buildSendPayload,
+  getCurrentUserId,
+  parseApiConversation,
+  resolveReceiverId,
+  type ApiConversation,
+} from '../../utils/chatContract';
+import { MessageBubble, rowToRoomMessage, type RoomMessage } from '../../components/chat/MessageBubble';
+import { ReferenceChip } from '../../components/chat/ReferenceChip';
+import { sortMessagesByCreatedAt, insertMessageSorted, dedupeByKey } from '../messages/selectors';
+import { useMarkAsRead } from '../messages/useMarkAsRead';
 
 export type ChatRoomPreview = {
   factoryId?: string;
@@ -25,62 +35,41 @@ export type ChatRoomPreview = {
   hasQuote?: boolean;
 };
 
-function normApiMessage(r: Record<string, unknown>): Message {
-  const id = String(r.message_id ?? r.id ?? '');
-  const content = String(r.content ?? r.text ?? r.body ?? '');
-  const msgType = String(r.message_type ?? r.type ?? 'TX').toUpperCase();
-  const senderRole = String(r.sender_role ?? r.sender_type ?? '').toUpperCase();
-  const sender: 'factory' | 'user' =
-    senderRole === 'FT' || senderRole === 'FACTORY' || senderRole === 'F' ? 'factory' : 'user';
-  const timeRaw = r.created_at ?? r.sent_at ?? r.time ?? '';
-  let time = '';
-  if (timeRaw) {
-    const d = new Date(String(timeRaw));
-    time = Number.isNaN(d.getTime())
-      ? String(timeRaw)
-      : d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-  }
-  if (msgType === 'QT') {
-    let quoteData: Message['quoteData'];
-    try {
-      const qd = r.quote_data ?? r.quoteData;
-      const q = (typeof qd === 'string' ? JSON.parse(qd) : qd) as Record<string, unknown>;
-      if (q && typeof q === 'object') {
-        quoteData = {
-          price: Number(q.price ?? 0),
-          leadTime: Number(q.lead_time ?? q.leadTime ?? 0),
-          validUntil: String(q.valid_until ?? q.validUntil ?? ''),
-        };
-      }
-    } catch {
-      /* optional quote payload */
-    }
-    return {
-      id: id || `qt-${content.slice(0, 8)}-${time}`,
-      sender,
-      text: content || 'ใบเสนอราคา',
-      time,
-      type: 'quote',
-      quoteData,
-    };
-  }
-  return {
-    id: id || `tx-${content.slice(0, 8)}-${time}`,
-    sender,
-    text: content,
-    time,
-    type: 'text',
-  };
+function messagesFromApi(raw: unknown): RoomMessage[] {
+  const arr = Array.isArray(raw) ? raw : [];
+  const msgs = (arr as Record<string, unknown>[])
+    .map(rowToRoomMessage)
+    .filter(
+      (m): m is RoomMessage =>
+        m != null && (m.content.trim() !== '' || m.message_type === 'QT' || m.message_type === 'IM'),
+    );
+  return sortMessagesByCreatedAt(msgs);
 }
 
-function messagesFromApi(raw: unknown): Message[] {
-  const arr = Array.isArray(raw) ? raw : [];
-  return (arr as Record<string, unknown>[]).map(normApiMessage).filter((m) => m.text || m.type === 'quote');
+function referenceLabel(ref: ChatReference): string {
+  const t = ref.title?.trim();
+  switch (ref.type) {
+    case 'PD':
+      return t ? `สินค้า · ${t}` : 'สินค้า';
+    case 'PM':
+      return t ? `โปรโมชัน · ${t}` : 'โปรโมชัน';
+    case 'ID':
+      return t ? `ไอเดีย · ${t}` : 'ไอเดีย';
+    case 'RQ':
+      return t ? `RFQ · ${t}` : 'RFQ';
+    case 'OD':
+      return t ? `Order · ${t}` : 'Order';
+    default:
+      return t ?? 'อ้างอิง';
+  }
 }
 
 function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { refetchConversations } = useData();
+  const markAsRead = useMarkAsRead();
+  const [messages, setMessages] = useState<RoomMessage[]>([]);
   const [msgLoading, setMsgLoading] = useState(true);
+  const [apiConv, setApiConv] = useState<ApiConversation | null>(null);
   const [header, setHeader] = useState({
     factoryId: preview?.factoryId ?? '',
     factoryName: preview?.factoryName ?? '',
@@ -103,14 +92,54 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
     if (!conversationId) {
       setMessages([]);
       setMsgLoading(false);
+      setApiConv(null);
       return;
     }
     let cancelled = false;
     setMsgLoading(true);
-    messagesApi
-      .listByConversation(conversationId)
-      .then((raw) => {
-        if (!cancelled) setMessages(messagesFromApi(raw));
+    Promise.all([
+      messagesApi.listByConversation(conversationId).catch(() => [] as unknown[]),
+      conversationsApi.get(conversationId).catch(() => null as Record<string, unknown> | null),
+    ])
+      .then(([rawMsgs, rawConv]) => {
+        if (cancelled) return;
+        setMessages(messagesFromApi(rawMsgs));
+
+        if (rawConv && typeof rawConv === 'object') {
+          const r = rawConv as Record<string, unknown>;
+          const parsed = parseApiConversation(r);
+          if (parsed) setApiConv(parsed);
+          setHeader((h) => ({
+            factoryId:
+              r.factory_id != null && String(r.factory_id).trim()
+                ? String(r.factory_id)
+                : r.factoryId != null && String(r.factoryId).trim()
+                  ? String(r.factoryId)
+                  : h.factoryId,
+            factoryName:
+              r.factory_name != null && String(r.factory_name).trim()
+                ? String(r.factory_name)
+                : h.factoryName,
+            factoryAvatar:
+              r.factory_image != null && String(r.factory_image).trim()
+                ? String(r.factory_image)
+                : r.factory_image_url != null && String(r.factory_image_url).trim()
+                  ? String(r.factory_image_url)
+                  : r.factory_avatar != null && String(r.factory_avatar).trim()
+                    ? String(r.factory_avatar)
+                    : h.factoryAvatar,
+            rfqName:
+              r.rfq_title != null && String(r.rfq_title).trim()
+                ? String(r.rfq_title)
+                : r.rfq_name != null && String(r.rfq_name).trim()
+                  ? String(r.rfq_name)
+                  : h.rfqName,
+            hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? h.hasQuote),
+          }));
+        }
+
+        void markAsRead(conversationId);
+        void refetchConversations();
       })
       .catch(() => {
         if (!cancelled) setMessages([]);
@@ -121,51 +150,7 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
     return () => {
       cancelled = true;
     };
-  }, [conversationId]);
-
-  useEffect(() => {
-    if (!conversationId) return;
-    let cancelled = false;
-    conversationsApi
-      .get(conversationId)
-      .then((row) => {
-        if (cancelled || !row || typeof row !== 'object') return;
-        const r = row as Record<string, unknown>;
-        setHeader((h) => ({
-          factoryId:
-            r.factory_id != null && String(r.factory_id).trim()
-              ? String(r.factory_id)
-              : r.factoryId != null && String(r.factoryId).trim()
-                ? String(r.factoryId)
-                : h.factoryId,
-          factoryName:
-            r.factory_name != null && String(r.factory_name).trim()
-              ? String(r.factory_name)
-              : h.factoryName,
-          factoryAvatar:
-            r.factory_image != null && String(r.factory_image).trim()
-              ? String(r.factory_image)
-              : r.factory_image_url != null && String(r.factory_image_url).trim()
-                ? String(r.factory_image_url)
-                : r.factory_avatar != null && String(r.factory_avatar).trim()
-                  ? String(r.factory_avatar)
-                  : h.factoryAvatar,
-          rfqName:
-            r.rfq_title != null && String(r.rfq_title).trim()
-              ? String(r.rfq_title)
-              : r.rfq_name != null && String(r.rfq_name).trim()
-                ? String(r.rfq_name)
-                : h.rfqName,
-          hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? h.hasQuote),
-        }));
-      })
-      .catch(() => {
-        /* keep preview / list header */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [conversationId]);
+  }, [conversationId, markAsRead, refetchConversations]);
 
   const conv: Conversation = useMemo(
     () => ({
@@ -179,12 +164,12 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
       time: '',
       unread: 0,
       hasQuote: header.hasQuote,
-      messages,
+      messages: [],
     }),
-    [conversationId, header, messages],
+    [conversationId, header],
   );
 
-  return { conv, msgLoading };
+  return { conv, apiConv, messages, setMessages, msgLoading, refetchConversations };
 }
 
 export function ChatRoom() {
@@ -204,7 +189,7 @@ export function ChatRoom() {
       }
     : undefined;
 
-  const { conv, msgLoading } = useChatThread(id ?? '', preview);
+  const { conv, apiConv, messages, setMessages, msgLoading, refetchConversations } = useChatThread(id ?? '', preview);
 
   if (!id) {
     return (
@@ -215,9 +200,13 @@ export function ChatRoom() {
   return (
     <ChatRoomBody
       conv={conv}
+      apiConv={apiConv}
+      messages={messages}
+      setMessages={setMessages}
       onBack={() => navigate(-1)}
       variant="full"
       msgLoading={msgLoading}
+      refetchConversations={refetchConversations}
       seedReference={seedReference}
       clearSeedReference={() => {
         navigate(location.pathname, { replace: true, state: null });
@@ -228,9 +217,13 @@ export function ChatRoom() {
 
 type ChatRoomBodyProps = {
   conv: Conversation;
+  apiConv: ApiConversation | null;
+  messages: RoomMessage[];
+  setMessages: React.Dispatch<React.SetStateAction<RoomMessage[]>>;
   onBack?: () => void;
   variant: 'full' | 'embedded';
   msgLoading?: boolean;
+  refetchConversations?: () => Promise<void>;
   seedReference?: ChatReference | null;
   clearSeedReference?: () => void;
 };
@@ -242,32 +235,43 @@ export function ChatRoomEmbedded({
   conversationId: string;
   preview?: ChatRoomPreview;
 }) {
-  const { conv, msgLoading } = useChatThread(conversationId, preview);
+  const { conv, apiConv, messages, setMessages, msgLoading, refetchConversations } = useChatThread(
+    conversationId,
+    preview,
+  );
   return (
-    <ChatRoomBody conv={conv} variant="embedded" msgLoading={msgLoading} />
+    <ChatRoomBody
+      conv={conv}
+      apiConv={apiConv}
+      messages={messages}
+      setMessages={setMessages}
+      variant="embedded"
+      msgLoading={msgLoading}
+      refetchConversations={refetchConversations}
+    />
   );
 }
 
 function ChatRoomBody({
   conv,
+  apiConv,
+  messages,
+  setMessages,
   onBack,
   variant,
   msgLoading,
+  refetchConversations,
   seedReference,
   clearSeedReference,
 }: ChatRoomBodyProps) {
   const { user } = useAuth();
+  const currentUserId = getCurrentUserId(user);
   const [message, setMessage] = useState('');
   const [miniDashOpen, setMiniDashOpen] = useState(true);
   const [sending, setSending] = useState(false);
-  const [reference, setReference] = useState<ChatReference | null>(seedReference ?? null);
-  const [messages, setMessages] = useState<Message[]>(() => conv.messages);
+  const [pendingRef, setPendingRef] = useState<ChatReference | null>(seedReference ?? null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const seedConsumedRef = useRef(false);
-
-  useEffect(() => {
-    setMessages(conv.messages);
-  }, [conv.id, conv.messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -279,64 +283,97 @@ function ChatRoomBody({
 
   useEffect(() => {
     if (!seedReference || seedConsumedRef.current) return;
-    setReference(seedReference);
+    setPendingRef(seedReference);
     if (!message.trim()) {
       const seedTitle = seedReference.title?.trim() || 'รายการนี้';
-      setMessage(`สนใจสอบถามเกี่ยวกับ \"${seedTitle}\"`);
+      setMessage(`สนใจสอบถามเกี่ยวกับ "${seedTitle}"`);
     }
     clearSeedReference?.();
     seedConsumedRef.current = true;
   }, [seedReference, message, clearSeedReference]);
 
-  const sendMessage = async () => {
-    const text = message.trim();
-    if (!text || sending) return;
-    setSending(true);
-
-    const activeReference = reference ?? {
-      type: 'FT' as const,
-      id: String(conv.factoryId || conv.id),
-      title: conv.factoryName,
-    };
-
-    const receiverId = Number(conv.factoryId);
-    const convId = Number(conv.id);
-    const hasApiPayload =
-      Number.isFinite(receiverId) &&
-      receiverId > 0 &&
-      Number.isFinite(convId) &&
-      convId > 0 &&
-      activeReference.id.trim() !== '';
-
-    if (hasApiPayload) {
+  const sendWithText = useCallback(
+    async (text: string, tempKey: string, attachRef: ChatReference | null) => {
+      if (!apiConv || currentUserId == null) return;
       try {
-        await messagesApi.send({
-          reference_type: activeReference.type,
-          reference_id: activeReference.id,
-          receiver_id: receiverId,
-          conv_id: convId,
-          content: text,
-          message_type: 'TX',
-        });
+        const res = (await messagesApi.send(
+          buildSendPayload({
+            conv: apiConv,
+            currentUserId,
+            content: text,
+            reference: attachRef ?? undefined,
+            messageType: 'TX',
+          }),
+        )) as Record<string, unknown>;
+        const serverRow = rowToRoomMessage(res);
+        if (serverRow && serverRow.key) {
+          setMessages((prev) =>
+            sortMessagesByCreatedAt(
+              dedupeByKey([
+                ...prev.filter((m) => m.key !== tempKey && m.key !== serverRow.key),
+                { ...serverRow, status: 'ok' as const },
+              ]),
+            ),
+          );
+        } else {
+          const mid = String(res.message_id ?? res.id ?? tempKey);
+          setMessages((prev) =>
+            sortMessagesByCreatedAt(
+              dedupeByKey(
+                prev.map((m) =>
+                  m.key === tempKey ? { ...m, key: mid, status: 'ok' as const } : m,
+                ),
+              ),
+            ),
+          );
+        }
+        void refetchConversations?.();
+        if (attachRef) setPendingRef(null);
       } catch (e) {
         console.error('[chat.send]', e);
+        setMessages((prev) =>
+          prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
+        );
       }
-    }
+    },
+    [apiConv, currentUserId, setMessages, refetchConversations],
+  );
 
-    const newMsg: Message = {
-      id: `m${Date.now()}`,
-      sender: user?.role === 'FT' ? 'factory' : 'user',
-      text,
-      time: new Date().toLocaleTimeString('th-TH', {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      type: 'text' as const,
+  const sendMessage = async () => {
+    const text = message.trim();
+    if (!text || sending || currentUserId == null) return;
+    if (!apiConv) {
+      return;
+    }
+    setSending(true);
+    const tempKey = `tmp-${Date.now()}`;
+    const now = new Date();
+    const attachOnce = pendingRef;
+    const optimistic: RoomMessage = {
+      key: tempKey,
+      sender_id: currentUserId,
+      receiver_id: resolveReceiverId(apiConv, currentUserId),
+      content: text,
+      created_at: now.toISOString(),
+      display_time: now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
+      message_type: 'TX',
+      reference_type: attachOnce?.type ?? '',
+      reference_id: attachOnce?.id ?? 0,
+      status: 'sending',
     };
-    setMessages((prev) => [...prev, newMsg]);
+    setMessages((prev) => insertMessageSorted(prev, optimistic));
     setMessage('');
-    setReference(null);
+    const refToSend = attachOnce ?? null;
+    if (attachOnce) setPendingRef(null);
+    await sendWithText(text, tempKey, refToSend);
     setSending(false);
+  };
+
+  const retrySend = (key: string) => {
+    const row = messages.find((m) => m.key === key);
+    if (!row || row.status !== 'error' || !apiConv || currentUserId == null) return;
+    setMessages((prev) => prev.map((m) => (m.key === key ? { ...m, status: 'sending' as const } : m)));
+    void sendWithText(row.content, key, null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -346,7 +383,8 @@ function ChatRoomBody({
     }
   };
 
-  const latestQuote = messages.find((m) => m.type === 'quote');
+  const latestQuote = messages.find((m) => m.message_type === 'QT' && m.quoteData);
+  const showMiniDash = Boolean(apiConv?.has_quote ?? conv.hasQuote);
 
   return (
     <div
@@ -356,7 +394,6 @@ function ChatRoomBody({
           : 'h-full flex flex-col bg-white rounded-l-3xl overflow-hidden shadow-sm'
       }
     >
-      {/* Header */}
       <div className="px-4 pt-5 pb-3 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           {variant === 'full' ? (
@@ -396,189 +433,138 @@ function ChatRoomBody({
           </div>
         </div>
 
-        {/* Mini Dashboard */}
-        <div
-          className="rounded-2xl overflow-hidden transition-all duration-300"
-          style={{ background: '#F8F6FA' }}
-        >
-          <button
-            type="button"
-            onClick={() => setMiniDashOpen(!miniDashOpen)}
-            className="w-full flex items-center justify-between px-3 py-2.5"
+        {showMiniDash ? (
+          <div
+            className="rounded-2xl overflow-hidden transition-all duration-300"
+            style={{ background: '#F8F6FA' }}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-sm">📋</span>
-              <span
-                className="text-xs truncate max-w-[200px]"
-                style={{ fontWeight: 600, color: '#2E2252' }}
-              >
-                {conv.rfqName || 'RFQ'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span
-                className="px-2 py-0.5 rounded-full text-[9px]"
-                style={{
-                  background: 'rgba(46,34,82,0.08)',
-                  color: '#2E2252',
-                  fontWeight: 600,
-                }}
-              >
-                RFQ Active
-              </span>
-              {miniDashOpen ? (
-                <ChevronUp size={14} className="text-gray-400" />
-              ) : (
-                <ChevronDown size={14} className="text-gray-400" />
-              )}
-            </div>
-          </button>
-
-          {miniDashOpen && latestQuote?.quoteData && (
-            <div className="px-3 pb-3 border-t" style={{ borderColor: 'rgba(122,75,148,0.15)' }}>
-              <div className="flex gap-3 mt-2.5">
-                <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                  <p
-                    className="text-sm"
-                    style={{ fontWeight: 700, color: '#E38844' }}
-                  >
-                    ฿{latestQuote.quoteData.price.toLocaleString()}
-                  </p>
-                  <p className="text-[9px] text-gray-500">ราคา</p>
-                </div>
-                <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                  <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
-                    {latestQuote.quoteData.leadTime} วัน
-                  </p>
-                  <p className="text-[9px] text-gray-500">lead time</p>
-                </div>
-                <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                  <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
-                    {latestQuote.quoteData.validUntil}
-                  </p>
-                  <p className="text-[9px] text-gray-500">ใช้ได้ถึง</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {msgLoading && messages.length === 0 && (
-          <p className="text-center text-sm text-gray-400 py-8">กำลังโหลดข้อความ…</p>
-        )}
-        {messages.map((msg) => {
-          const isUser = msg.sender === 'user';
-
-          if (msg.type === 'quote' && msg.quoteData) {
-            return (
-              <div key={msg.id} className="flex justify-center">
-                <div
-                  className="w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm"
-                  style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+            <button
+              type="button"
+              onClick={() => setMiniDashOpen(!miniDashOpen)}
+              className="w-full flex items-center justify-between px-3 py-2.5"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm">📋</span>
+                <span
+                  className="text-xs truncate max-w-[200px]"
+                  style={{ fontWeight: 600, color: '#2E2252' }}
                 >
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CreditCard size={16} className="text-yellow-300" />
-                      <span className="text-white text-xs" style={{ fontWeight: 700 }}>
-                        ใบเสนอราคาทางการ
-                      </span>
-                    </div>
-                    <div className="flex gap-3 mb-4">
-                      <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
-                        <p className="text-white" style={{ fontWeight: 700 }}>
-                          ฿{msg.quoteData.price.toLocaleString()}
-                        </p>
-                        <p className="text-white/70 text-[9px]">ราคารวม</p>
-                      </div>
-                      <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
-                        <p className="text-white" style={{ fontWeight: 700 }}>
-                          {msg.quoteData.leadTime} วัน
-                        </p>
-                        <p className="text-white/70 text-[9px]">lead time</p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      className="w-full py-3 rounded-xl text-sm"
-                      style={{
-                        background: 'rgba(255,255,255,0.95)',
-                        color: '#6C47FF',
-                        fontWeight: 700,
-                      }}
-                    >
-                      💳 ชำระมัดจำ 50%
-                    </button>
-                    <p className="text-white/60 text-[10px] text-center mt-2">
-                      ใช้ได้ถึง {msg.quoteData.validUntil}
+                  {conv.rfqName || 'RFQ / ใบเสนอราคา'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span
+                  className="px-2 py-0.5 rounded-full text-[9px]"
+                  style={{
+                    background: 'rgba(46,34,82,0.08)',
+                    color: '#2E2252',
+                    fontWeight: 600,
+                  }}
+                >
+                  {apiConv?.has_quote ? 'มีใบเสนอราคา' : 'สถานะ'}
+                </span>
+                {miniDashOpen ? (
+                  <ChevronUp size={14} className="text-gray-400" />
+                ) : (
+                  <ChevronDown size={14} className="text-gray-400" />
+                )}
+              </div>
+            </button>
+
+            {miniDashOpen && latestQuote?.quoteData && (
+              <div className="px-3 pb-3 border-t" style={{ borderColor: 'rgba(122,75,148,0.15)' }}>
+                <div className="flex gap-3 mt-2.5">
+                  <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
+                    <p className="text-sm" style={{ fontWeight: 700, color: '#E38844' }}>
+                      ฿{latestQuote.quoteData.price.toLocaleString()}
                     </p>
+                    <p className="text-[9px] text-gray-500">ราคา</p>
+                  </div>
+                  <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
+                    <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
+                      {latestQuote.quoteData.leadTime} วัน
+                    </p>
+                    <p className="text-[9px] text-gray-500">lead time</p>
+                  </div>
+                  <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
+                    <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
+                      {latestQuote.quoteData.validUntil}
+                    </p>
+                    <p className="text-[9px] text-gray-500">ใช้ได้ถึง</p>
                   </div>
                 </div>
               </div>
-            );
-          }
+            )}
+          </div>
+        ) : null}
+      </div>
 
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${isUser ? 'justify-end' : 'justify-start'} gap-2`}
-            >
-              {!isUser && (
-                <ImageWithFallback
-                  src={conv.factoryAvatar}
-                  alt=""
-                  className="w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100"
-                />
-              )}
-              <div
-                className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${
-                  isUser ? 'rounded-br-md' : 'rounded-bl-md'
-                }`}
-                style={{
-                  background: isUser ? '#7A4B94' : '#F3F4F6',
-                }}
-              >
-                <p
-                  className="text-sm"
-                  style={{ color: isUser ? '#fff' : '#1F2937' }}
-                >
-                  {msg.text}
-                </p>
-                <p
-                  className="text-[10px] mt-0.5"
-                  style={{
-                    color: isUser ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
-                    textAlign: isUser ? 'right' : 'left',
-                  }}
-                >
-                  {msg.time}
-                  {isUser && <span className="ml-1">✓✓</span>}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {!apiConv && (
+          <p className="text-center text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+            กำลังโหลดข้อมูลห้องแชท… รอสักครู่ก่อนส่งข้อความ
+          </p>
+        )}
+        {msgLoading && messages.length === 0 && (
+          <p className="text-center text-sm text-gray-400 py-8">กำลังโหลดข้อความ…</p>
+        )}
+        {currentUserId != null &&
+          messages.map((msg, i) => {
+            const prev = messages[i - 1];
+            const showDateSeparator =
+              Boolean(msg.created_at) &&
+              (!prev ||
+                new Date(prev.created_at || 0).toDateString() !== new Date(msg.created_at || 0).toDateString());
+            return (
+              <React.Fragment key={msg.key}>
+                {showDateSeparator ? (
+                  <div className="flex justify-center my-3">
+                    <span className="text-[10px] text-gray-400 bg-gray-100 rounded-full px-3 py-1">
+                      {new Date(msg.created_at).toLocaleDateString('th-TH', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                ) : null}
+                <div>
+                  <MessageBubble msg={msg} currentUserId={currentUserId} peerAvatarUrl={conv.factoryAvatar} />
+                  {msg.status === 'error' ? (
+                    <div
+                      className={`flex ${msg.sender_id === currentUserId ? 'justify-end' : 'justify-start'} mt-1`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => retrySend(msg.key)}
+                        className="text-[11px] text-red-600 underline"
+                      >
+                        ส่งใหม่
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </React.Fragment>
+            );
+          })}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <div className="px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-gray-100">
-        {reference ? (
-          <div className="mb-2 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800">
-              {reference.type}
-              {reference.title ? ` · ${reference.title}` : ''}
-            </span>
+        {pendingRef ? (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <ReferenceChip reference={pendingRef} />
             <button
               type="button"
-              onClick={() => setReference(null)}
+              onClick={() => setPendingRef(null)}
               className="text-[11px] text-gray-500 hover:text-gray-700"
             >
               ล้างอ้างอิง
             </button>
           </div>
+        ) : null}
+        {pendingRef ? (
+          <p className="text-[10px] text-gray-500 mb-2">ข้อความถัดไปจะแนบ: {referenceLabel(pendingRef)}</p>
         ) : null}
         <div className="flex items-end gap-2">
           <button type="button" className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0">
@@ -590,22 +576,23 @@ function ChatRoomBody({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="พิมพ์ข้อความ..."
+              placeholder={apiConv ? 'พิมพ์ข้อความ...' : 'รอโหลดห้องแชท...'}
+              disabled={!apiConv}
               className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none"
             />
           </div>
           <button
             type="button"
             onClick={() => void sendMessage()}
-            disabled={!message.trim() || sending}
+            disabled={!message.trim() || sending || !apiConv}
             className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all"
             style={{
-              background: message.trim() && !sending ? '#E38844' : '#E5E7EB',
+              background: message.trim() && !sending && apiConv ? '#E38844' : '#E5E7EB',
             }}
           >
             <Send
               size={17}
-              style={{ color: message.trim() && !sending ? '#fff' : '#9CA3AF' }}
+              style={{ color: message.trim() && !sending && apiConv ? '#fff' : '#9CA3AF' }}
             />
           </button>
         </div>

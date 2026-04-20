@@ -26,10 +26,13 @@ const STATUS_CONFIG: Record<string, { label: string }> = {
 type OrderSummaryCardProps = {
   order: OrderSummary;
   relatedFactory?: FactoryInfo | null;
+  /** API-driven label (e.g. หมดกำหนดชำระ for PE) — never show raw codes like PP/PE */
+  statusLabelTh?: string;
 };
 
-export function OrderSummaryCard({ order, relatedFactory }: OrderSummaryCardProps) {
+export function OrderSummaryCard({ order, relatedFactory, statusLabelTh }: OrderSummaryCardProps) {
   const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending_payment;
+  const badgeLabel = statusLabelTh?.trim() || cfg.label;
 
   return (
     <div
@@ -58,7 +61,7 @@ export function OrderSummaryCard({ order, relatedFactory }: OrderSummaryCardProp
             className="px-2.5 py-1 rounded-full text-[10px]"
             style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600 }}
           >
-            {cfg.label}
+            {badgeLabel}
           </span>
         </div>
         <div className="space-y-1.5 mb-3">

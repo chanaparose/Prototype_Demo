@@ -1,3 +1,4 @@
+export { OrderActionBanner } from './OrderActionBanner';
 export { OrderPendingPaymentSection } from './OrderPendingPaymentSection';
 export { OrderSummaryCard } from './OrderSummaryCard';
 export { OrderOverviewSection } from './OrderOverviewSection';

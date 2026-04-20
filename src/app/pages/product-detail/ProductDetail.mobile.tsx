@@ -82,13 +82,15 @@ export function ProductDetailMobile() {
         {canChat ? (
           <button
             type="button"
-            onClick={() =>
+            onClick={() => {
+              const sid = Number(id ?? item.id ?? 0);
+              if (!Number.isFinite(sid) || sid <= 0) return;
               void startChat(item.factoryId, {
                 type: 'PD',
-                id: String(id ?? item.id ?? ''),
+                id: sid,
                 title: item.title,
-              })
-            }
+              });
+            }}
             disabled={starting}
             className="absolute top-4 right-4 w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-md disabled:opacity-70"
             aria-label="แชทกับโรงงาน"

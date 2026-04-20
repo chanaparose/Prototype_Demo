@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, Trash2, ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon, SquareArrowOutUpRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi, mediaApi, factoriesApi, categoriesApi } from '../../services/api';
@@ -485,9 +485,18 @@ export function FactoryShowcasesPage() {
                     <div className="flex flex-col gap-1 shrink-0">
                       <button
                         type="button"
+                        onClick={() => navigate(`/factory/showcases/${id}/edit`)}
+                        className="p-2 rounded-lg border border-violet-100 text-violet-700 hover:bg-violet-50"
+                        aria-label="แก้ไขแบบเต็มหน้า"
+                        title="แก้ไขแบบเต็มหน้า"
+                      >
+                        <SquareArrowOutUpRight size={16} />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => openEdit(r)}
                         className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
-                        aria-label="แก้ไข"
+                        aria-label="แก้ไขด่วน"
                       >
                         <Pencil size={16} />
                       </button>
@@ -564,9 +573,18 @@ export function FactoryShowcasesPage() {
                           <div className="flex justify-end gap-1">
                             <button
                               type="button"
+                              onClick={() => navigate(`/factory/showcases/${id}/edit`)}
+                              className="inline-flex items-center justify-center p-2 rounded-lg border border-violet-100 text-violet-700 hover:bg-violet-50"
+                              aria-label="แก้ไขแบบเต็มหน้า"
+                              title="แก้ไขแบบเต็มหน้า"
+                            >
+                              <SquareArrowOutUpRight size={16} />
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => openEdit(r)}
                               className="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-white"
-                              aria-label="แก้ไข"
+                              aria-label="แก้ไขด่วน"
                             >
                               <Pencil size={16} />
                             </button>

@@ -2,13 +2,10 @@ import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
-import { conversationsApi } from '../services/api';
+import { openChatSession } from '../utils/openChatSession';
+import { getCurrentUserId, initialMessageForReference, type ChatReference } from '../utils/chatContract';
 
-export type ChatReference = {
-  type: 'PD' | 'PM' | 'ID' | 'FT';
-  id: string;
-  title?: string;
-};
+export type { ChatReference };
 
 export function useStartChatWithFactory() {
   const { user, isAuthenticated } = useAuth();
@@ -17,7 +14,7 @@ export function useStartChatWithFactory() {
   const inFlightRef = useRef(false);
 
   const startChat = useCallback(
-    async (factoryUserId: number | string, reference?: ChatReference) => {
+    async (factoryEntityId: number | string, reference?: ChatReference | null) => {
       if (!isAuthenticated || !user) {
         const redirect = `${window.location.pathname}${window.location.search}`;
         navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
@@ -25,39 +22,32 @@ export function useStartChatWithFactory() {
       }
       if (starting || inFlightRef.current) return null;
 
-      const myUserId = Number(user.id);
-      const factoryIdNum = Number(factoryUserId);
-      if (!Number.isFinite(myUserId) || myUserId <= 0 || !Number.isFinite(factoryIdNum) || factoryIdNum <= 0) {
+      const myUserId = getCurrentUserId(user);
+      const factoryIdNum = Number(factoryEntityId);
+      if (myUserId == null || !Number.isFinite(factoryIdNum) || factoryIdNum <= 0) {
         return null;
       }
 
       setStarting(true);
       inFlightRef.current = true;
       try {
-        const convsRaw = await conversationsApi.list();
-        const convs = (Array.isArray(convsRaw) ? convsRaw : []) as Record<string, unknown>[];
-
-        const existing = convs.find((c) => {
-          const cFactoryId = String(c.factory_id ?? c.factoryId ?? '').trim();
-          const cCustomerId = String(c.customer_id ?? c.customerId ?? '').trim();
-          return cFactoryId === String(factoryIdNum) && cCustomerId === String(myUserId);
-        });
-
-        let convId = '';
-        if (existing) {
-          convId = String(existing.conversation_id ?? existing.conv_id ?? existing.id ?? '').trim();
+        const ref = reference ?? null;
+        if (ref) {
+          await openChatSession(navigate, user, {
+            customerUserId: myUserId,
+            factoryEntityId: factoryIdNum,
+            firstMessage: {
+              content: initialMessageForReference(ref),
+              reference: ref,
+            },
+          });
         } else {
-          const res = (await conversationsApi.create({
-            customer_id: myUserId,
-            factory_id: factoryIdNum,
-          })) as Record<string, unknown>;
-          convId = String(res.conversation_id ?? res.conv_id ?? res.id ?? '').trim();
+          await openChatSession(navigate, user, {
+            customerUserId: myUserId,
+            factoryEntityId: factoryIdNum,
+          });
         }
-
-        if (!convId) throw new Error('ไม่พบรหัสการสนทนา');
-
-        navigate(`/messages/${convId}`, { state: { reference } });
-        return convId;
+        return 'ok';
       } catch (err) {
         console.error('[startChat]', err);
         toast.error('เริ่มแชทไม่สำเร็จ กรุณาลองใหม่');

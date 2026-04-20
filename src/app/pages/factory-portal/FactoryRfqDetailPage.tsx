@@ -1,14 +1,17 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { rfqsApi, masterApi, quotationsApi, conversationsApi } from '../../services/api';
+import { rfqsApi, quotationsApi, conversationsApi, messagesApi } from '../../services/api';
+import { findOrCreateConversation, openChatSession } from '../../utils/openChatSession';
+import { buildSendPayload, chatRoomPath, getCurrentUserId } from '../../utils/chatContract';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { DeadlineBadge } from '../../components/factory/DeadlineBadge';
 import { ShippingMethodLockedField } from '../../components/factory/ShippingMethodLockedField';
+import { QuotationCreateForm, type QuotationCreateFormHandle } from '../../components/factory/QuotationCreateForm';
 import { summarizeRfqAddress } from '../../utils/rfqAddressSummary';
-import { hoursUntilDeadline } from '../../utils/rfqDeadline';
 
 type QuoteRow = Record<string, unknown>;
 
@@ -33,13 +36,12 @@ export function FactoryRfqDetailPage() {
   const [rfqTitle, setRfqTitle] = useState('');
   const [rfqBody, setRfqBody] = useState<Record<string, unknown>>({});
   const [quotes, setQuotes] = useState<QuoteRow[]>([]);
-  const [shippingMethods, setShippingMethods] = useState<Record<string, unknown>[]>([]);
 
-  const [price, setPrice] = useState('');
-  const [mold, setMold] = useState('');
-  const [leadDays, setLeadDays] = useState('');
+  const quoteFormRef = useRef<QuotationCreateFormHandle>(null);
+  const shippingMethodsQ = useShippingMethods();
 
-  const [submitting, setSubmitting] = useState(false);
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [chatBusy, setChatBusy] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const load = useCallback(async () => {
@@ -47,16 +49,11 @@ export function FactoryRfqDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const [detail, qList, ships] = await Promise.all([
-        rfqsApi.get(id),
-        rfqsApi.listQuotations(id),
-        masterApi.shippingMethods(),
-      ]);
+      const [detail, qList] = await Promise.all([rfqsApi.get(id), rfqsApi.listQuotations(id)]);
       const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
       setRfqTitle(String(rfq.title ?? ''));
       setRfqBody(rfq);
       setQuotes(Array.isArray(qList) ? (qList as QuoteRow[]) : []);
-      setShippingMethods(Array.isArray(ships) ? (ships as Record<string, unknown>[]) : []);
       const sidCheck = Number(rfq.shipping_method_id ?? 0);
       if (!Number.isFinite(sidCheck) || sidCheck <= 0) {
         console.warn('[FactoryRfqDetail] RFQ missing shipping_method_id', { rfq_id: rfq.rfq_id ?? id });
@@ -76,18 +73,6 @@ export function FactoryRfqDetailPage() {
   const myStatus = myQuote ? String(myQuote.status ?? 'PD').toUpperCase() : '';
   const canEdit = Boolean(myQuote && myStatus === 'PD');
 
-  useEffect(() => {
-    if (myQuote) {
-      setPrice(String(myQuote.price_per_piece ?? ''));
-      setMold(String(myQuote.mold_cost ?? ''));
-      setLeadDays(String(myQuote.lead_time_days ?? ''));
-    } else {
-      setPrice('');
-      setMold('');
-      setLeadDays('');
-    }
-  }, [myQuote]);
-
   const rfqShipId = useMemo(() => {
     const n = Number(rfqBody.shipping_method_id ?? 0);
     return Number.isFinite(n) && n > 0 ? n : null;
@@ -97,9 +82,9 @@ export function FactoryRfqDetailPage() {
     const byName = String(rfqBody.shipping_method_name ?? '').trim();
     if (byName) return byName;
     if (rfqShipId == null) return '';
-    const row = shippingMethods.find((m) => Number(m.shipping_method_id ?? m.id) === rfqShipId);
-    return row ? String(row.method_name ?? row.name ?? '').trim() : '';
-  }, [rfqBody, rfqShipId, shippingMethods]);
+    const row = shippingMethodsQ.data?.find((m) => m.id === rfqShipId);
+    return row?.label ?? '';
+  }, [rfqBody, rfqShipId, shippingMethodsQ.data]);
 
   const deadlineIso = useMemo(() => {
     const raw = String(
@@ -154,78 +139,75 @@ export function FactoryRfqDetailPage() {
 
   const rfqStatus = String(rfqBody.status ?? '').toUpperCase();
 
-  const buildPayload = useCallback(() => {
-    const sid = rfqShipId;
-    return {
-      factory_id: fid as number,
-      price_per_piece: Number(price),
-      mold_cost: Number(mold) || 0,
-      lead_time_days: Number(leadDays),
-      shipping_method_id: sid != null ? sid : 0,
-    };
-  }, [fid, price, mold, leadDays, rfqShipId]);
+  const customerId = useMemo(
+    () => Number(rfqBody.customer_id ?? rfqBody.user_id ?? rfqBody.customer_user_id ?? 0),
+    [rfqBody],
+  );
 
-  const formWarnings = useMemo(() => {
-    const w: string[] = [];
-    const p = Number(price);
-    const ld = Number(leadDays);
-    if (budgetPerPiece != null && Number.isFinite(p) && p > budgetPerPiece) {
-      w.push('ราคาสูงกว่างบลูกค้า อาจถูกปฏิเสธ');
-    }
-    if (targetDaysCustomer != null && Number.isFinite(ld) && ld > targetDaysCustomer) {
-      w.push(`ช้ากว่าที่ลูกค้าต้องการ ${targetDaysCustomer} วัน`);
-    }
-    const h = hoursUntilDeadline(deadlineIso);
-    if (h != null && h > 0 && h < 24) {
-      w.push('RFQ ใกล้ปิดรับ รีบยืนยัน');
-    }
-    return w;
-  }, [price, leadDays, budgetPerPiece, targetDaysCustomer, deadlineIso]);
-
-  const submitQuote = async () => {
-    if (!id) return;
-    if (fid == null) {
-      setError('ไม่พบข้อมูลโรงงาน กรุณา login ใหม่');
+  const openChatToCustomer = async () => {
+    if (fid == null || !Number.isFinite(customerId) || customerId <= 0) {
+      setError('ไม่พบรหัสลูกค้าใน RFQ');
       return;
     }
-    if (rfqShipId == null) {
-      setError('RFQ นี้ยังไม่ระบุวิธีจัดส่ง กรุณาติดต่อลูกค้า');
-      return;
-    }
-    const p = Number(price);
-    if (!Number.isFinite(p) || p <= 0) {
-      setError('กรอกราคาต่อชิ้น');
-      return;
-    }
-    const ld = Number(leadDays);
-    if (!Number.isFinite(ld) || ld <= 0) {
-      setError('กรอกระยะเวลาผลิต (วัน)');
-      return;
-    }
-    const payload = buildPayload();
-    setSubmitting(true);
+    setChatBusy(true);
     setError('');
     try {
-      if (myQuote && canEdit) {
-        await quotationsApi.patch(quoteIdOf(myQuote), payload);
-      } else if (!myQuote) {
-        await rfqsApi.createQuotation(id, payload);
-      }
-      const customerId = Number(
-        rfqBody.customer_id ?? rfqBody.user_id ?? rfqBody.customer_user_id ?? 0,
-      );
-      if (customerId > 0 && fid != null) {
-        try {
-          await conversationsApi.create({ customer_id: customerId, factory_id: fid });
-        } catch {
-          /* ห้องสนทนาอาจมีอยู่แล้ว */
-        }
-      }
-      await load();
+      await openChatSession(navigate, user, {
+        customerUserId: customerId,
+        factoryEntityId: fid,
+        pendingReference: {
+          type: 'RQ',
+          id: Number(id),
+          title: rfqTitle || `RFQ #${id}`,
+        },
+      });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'บันทึกใบเสนอราคาไม่สำเร็จ');
+      setError(e instanceof Error ? e.message : 'เปิดแชทไม่สำเร็จ');
     } finally {
-      setSubmitting(false);
+      setChatBusy(false);
+    }
+  };
+
+  const sendQuoteMessageToCustomer = async () => {
+    const uid = getCurrentUserId(user);
+    if (fid == null || !Number.isFinite(customerId) || customerId <= 0 || uid == null) {
+      setError('ไม่พบข้อมูลลูกค้าหรือบัญชี');
+      return;
+    }
+    const vals = quoteFormRef.current?.getValues();
+    const p = Number(vals?.price_per_piece ?? '');
+    const ld = Number(vals?.lead_time_days ?? '');
+    if (!Number.isFinite(p) || p <= 0 || !Number.isFinite(ld) || ld <= 0) {
+      setError('กรอกราคาและ lead time ก่อนส่งใบเสนอราคาในแชท');
+      return;
+    }
+    const until = new Date();
+    until.setDate(until.getDate() + 30);
+    const quoteData = JSON.stringify({
+      price: p,
+      lead_time: ld,
+      valid_until: until.toISOString().slice(0, 10),
+    });
+    setChatBusy(true);
+    setError('');
+    try {
+      const conv = await findOrCreateConversation(customerId, fid);
+      if (!conv) throw new Error('สร้างห้องแชทไม่สำเร็จ');
+      await messagesApi.send(
+        buildSendPayload({
+          conv,
+          currentUserId: uid,
+          content: 'ใบเสนอราคา',
+          messageType: 'QT',
+          reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
+          quoteData,
+        }),
+      );
+      navigate(chatRoomPath(conv.conv_id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ส่งใบเสนอราคาในแชทไม่สำเร็จ');
+    } finally {
+      setChatBusy(false);
     }
   };
 
@@ -233,7 +215,7 @@ export function FactoryRfqDetailPage() {
     if (!myQuote) return;
     const qid = quoteIdOf(myQuote);
     if (!qid) return;
-    setSubmitting(true);
+    setCancelBusy(true);
     setError('');
     try {
       try {
@@ -245,7 +227,7 @@ export function FactoryRfqDetailPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ยกเลิกใบเสนอราคาไม่สำเร็จ');
     } finally {
-      setSubmitting(false);
+      setCancelBusy(false);
     }
   };
 
@@ -255,8 +237,6 @@ export function FactoryRfqDetailPage() {
   const customerSub = String(rfqBody.sub_category_name ?? '').trim();
   const breadcrumb =
     customerCat && customerSub ? `${customerCat} › ${customerSub}` : customerSub || customerCat || '—';
-
-  const canSubmitForm = (!myQuote || canEdit) && rfqShipId != null && fid != null;
 
   if (!id) {
     return null;
@@ -420,81 +400,84 @@ export function FactoryRfqDetailPage() {
               </div>
             ) : null}
 
-            <label className="block">
-              <span className="text-xs text-gray-500">ราคา/ชิ้น *</span>
-              <input
-                type="number"
-                step="0.01"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                disabled={!!myQuote && !canEdit}
+            {fid != null && rfqShipId != null ? (
+              <QuotationCreateForm
+                key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
+                ref={quoteFormRef}
+                rfqId={id}
+                factoryId={fid}
+                lockedShippingMethodId={rfqShipId}
+                patchQuotationId={
+                  myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
+                }
+                initial={
+                  myQuote
+                    ? {
+                        price_per_piece: String(myQuote.price_per_piece ?? ''),
+                        mold_cost: String(myQuote.mold_cost ?? ''),
+                        lead_time_days: String(myQuote.lead_time_days ?? ''),
+                      }
+                    : undefined
+                }
+                submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
+                readOnly={Boolean(myQuote && !canEdit)}
+                showHeading={false}
+                budgetPerPiece={budgetPerPiece}
+                targetDaysCustomer={targetDaysCustomer}
+                deadlineIso={deadlineIso}
+                onSubmitted={async () => {
+                  if (customerId > 0 && fid != null) {
+                    try {
+                      await conversationsApi.create({ customer_id: customerId, factory_id: fid });
+                    } catch {
+                      /* ห้องสนทนาอาจมีอยู่แล้ว */
+                    }
+                  }
+                  await load();
+                }}
               />
-              {budgetPerPiece != null ? (
-                <span className="text-[11px] text-gray-500">งบลูกค้า {budgetPerPiece.toLocaleString('th-TH')} บ./ชิ้น</span>
-              ) : null}
-            </label>
-            <label className="block">
-              <span className="text-xs text-gray-500">ค่าแม่พิมพ์ (ถ้ามี)</span>
-              <input
-                type="number"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                value={mold}
-                onChange={(e) => setMold(e.target.value)}
-                disabled={!!myQuote && !canEdit}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs text-gray-500">Lead time (วัน) *</span>
-              <input
-                type="number"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                value={leadDays}
-                onChange={(e) => setLeadDays(e.target.value)}
-                disabled={!!myQuote && !canEdit}
-              />
-              {targetDaysCustomer != null ? (
-                <span className="text-[11px] text-gray-500">ลูกค้าต้องการ {targetDaysCustomer} วัน</span>
-              ) : null}
-            </label>
-
-            <ShippingMethodLockedField
-              methodName={customerShipLabel || `#${rfqShipId}`}
-              hint="ใช้ตามที่ลูกค้าเลือกไว้ใน RFQ"
-            />
-
-            {formWarnings.length > 0 ? (
-              <ul className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 space-y-1">
-                {formWarnings.map((w) => (
-                  <li key={w}>⚠ {w}</li>
-                ))}
-              </ul>
             ) : null}
 
-            {(!myQuote || canEdit) && (
+            {canEdit && rfqShipId != null ? (
               <button
                 type="button"
-                disabled={submitting || !canSubmitForm}
-                onClick={() => void submitQuote()}
-                className="w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
-              >
-                {submitting ? 'กำลังบันทึก...' : myQuote ? 'บันทึกการแก้ไข' : 'ส่งใบเสนอราคา'}
-              </button>
-            )}
-
-            {canEdit && (
-              <button
-                type="button"
-                disabled={submitting}
+                disabled={cancelBusy}
                 onClick={() => void cancelQuote()}
-                className="w-full py-3 rounded-xl border border-red-200 text-red-600 text-sm font-semibold"
+                className="w-full py-3 rounded-xl border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50"
               >
                 ถอนใบเสนอราคา
               </button>
-            )}
+            ) : null}
           </section>
         </div>
+      ) : null}
+
+      {customerId > 0 && fid != null ? (
+        <section className="w-full min-w-0 max-w-lg lg:max-w-5xl mx-auto mt-6 rounded-2xl border border-gray-100 bg-white p-4 space-y-3">
+          <h2 className="text-sm font-bold text-gray-900">ติดต่อลูกค้า</h2>
+          <p className="text-xs text-gray-500">
+            เปิดห้องแชทกับลูกค้า — ข้อความแรกจากโรงงานจะแนบบริบท RFQ ตามสเปก
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              disabled={chatBusy}
+              onClick={() => void openChatToCustomer()}
+              className="flex-1 py-3 rounded-xl border border-violet-200 text-violet-800 text-sm font-semibold disabled:opacity-50"
+            >
+              ส่งข้อความหาลูกค้า
+            </button>
+            <button
+              type="button"
+              disabled={chatBusy}
+              onClick={() => void sendQuoteMessageToCustomer()}
+              className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #0D9488 0%, #14B8A6 100%)' }}
+            >
+              ส่งใบเสนอราคาในแชท (QT)
+            </button>
+          </div>
+        </section>
       ) : null}
 
       {lightbox != null && imageUrls[lightbox] ? (

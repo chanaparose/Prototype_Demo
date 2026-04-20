@@ -3,6 +3,8 @@
  * Base path ตาม docs/API_SPEC.md: .../api/v1
  */
 
+import type { MessagesSendBody } from '../utils/chatContract';
+
 const DEFAULT_API_BASE = '/api/v1';
 
 /** Base for all API calls — must end up as `.../api/v1` so e.g. POST /api/v1/auth/register */
@@ -95,7 +97,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     signal: controller.signal,
   };
 
-  if (body && method !== 'GET') {
+  if (body != null && method !== 'GET') {
     config.body = JSON.stringify(body);
   }
 
@@ -141,7 +143,8 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 // ─── Convenience methods ────────────────────────────────────────
 export const api = {
   get: <T>(endpoint: string) => request<T>(endpoint),
-  post: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'POST', body }),
+  post: <T>(endpoint: string, body?: unknown, headers?: Record<string, string>) =>
+    request<T>(endpoint, { method: 'POST', body, headers }),
   patch: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PATCH', body }),
   put: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PUT', body }),
   delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
@@ -323,12 +326,64 @@ export const ordersApi = {
   ) => api.post<Record<string, unknown>>(`/orders/${id}/ship`, data),
   /** GET /orders/:id/activity — activity timeline */
   activity: (id: string | number) => api.get<unknown[]>(`/orders/${id}/activity`),
+  /** POST /orders/:id/production-updates — tracking (IP/CD, image_urls[], payment confirm header optional) */
+  postProductionUpdate: (
+    orderId: string | number,
+    data: {
+      step_id: number;
+      status: 'IP' | 'CD';
+      description?: string;
+      image_urls: string[];
+      confirm_payment_trigger?: boolean;
+    },
+    extraHeaders?: Record<string, string>,
+  ) => api.post<Record<string, unknown>>(`/orders/${orderId}/production-updates`, data, extraHeaders),
+  /** Legacy shape — maps to new API (single image → array). */
   addProductionUpdate: (
     orderId: string | number,
     data: { step_id: number; description: string; image_url?: string },
-  ) => api.post(`/orders/${orderId}/production-updates`, data),
-  listProductionUpdates: (orderId: string | number) =>
-    api.get<unknown[]>(`/orders/${orderId}/production-updates`),
+  ) =>
+    ordersApi.postProductionUpdate(orderId, {
+      step_id: data.step_id,
+      status: 'CD',
+      description: data.description,
+      image_urls: data.image_url ? [data.image_url] : [],
+    }),
+  /** @deprecated Prefer getProductionUpdatesBundle for typed bundle */
+  listProductionUpdates: async (orderId: string | number) => {
+    const b = await ordersApi.getProductionUpdatesBundle(orderId);
+    return b.updates as unknown[];
+  },
+  getProductionUpdatesBundle: async (orderId: string | number) => {
+    const raw = (await api.get<Record<string, unknown> | unknown[]>(
+      `/orders/${orderId}/production-updates`,
+    )) as Record<string, unknown> | unknown[];
+    if (Array.isArray(raw)) {
+      return {
+        order_id: Number(orderId),
+        order_status: '',
+        updates: raw as Record<string, unknown>[],
+      };
+    }
+    const updates = Array.isArray(raw.updates)
+      ? (raw.updates as Record<string, unknown>[])
+      : Array.isArray(raw.data)
+        ? (raw.data as Record<string, unknown>[])
+        : [];
+    const template_preview = Array.isArray(raw.template_preview)
+      ? (raw.template_preview as Record<string, unknown>[])
+      : undefined;
+    return {
+      order_id: Number(raw.order_id ?? orderId),
+      order_status: String(raw.order_status ?? raw.orderStatus ?? ''),
+      updates,
+      production_locked:
+        raw.production_locked === true ? true : raw.production_locked === false ? false : undefined,
+      lock_reason: raw.lock_reason != null ? String(raw.lock_reason) : undefined,
+      lock_context: raw.lock_context,
+      template_preview,
+    };
+  },
   /** GET /orders/:id/disputes — list disputes */
   listDisputes: (orderId: string | number) =>
     api.get<unknown[]>(`/orders/${orderId}/disputes`),
@@ -366,16 +421,7 @@ export const paymentSchedulesApi = {
 };
 
 export const messagesApi = {
-  send: (data: {
-    reference_type: string;
-    reference_id: string;
-    receiver_id: number;
-    content: string;
-    attachment_url?: string;
-    conv_id?: number;
-    message_type?: string; // TX (text), QT (quote), IM (image)
-    quote_data?: string | null; // JSON string for QT type
-  }) => api.post('/messages/', data),
+  send: (data: MessagesSendBody) => api.post('/messages/', data),
   list: (referenceType: string, referenceId: string) =>
     api.get<unknown[]>(`/messages/?reference_type=${referenceType}&reference_id=${referenceId}`),
   listByConversation: (convId: number | string) =>
@@ -559,6 +605,8 @@ export const conversationsApi = {
   get: (convId: number | string) => api.get<Record<string, unknown>>(`/conversations/${convId}`),
   create: (data: { customer_id: number; factory_id: number }) =>
     api.post<Record<string, unknown>>('/conversations', data),
+  /** PATCH /conversations/:id/read — typically 204 No Content */
+  markAsRead: (convId: number | string) => api.patch<void>(`/conversations/${convId}/read`),
 };
 
 // ─── Notifications API ─────────────────────────────────────────
@@ -647,6 +695,13 @@ export const transactionsApi = {
 export const productionUpdatesApi = {
   patch: (updateId: number | string, data: Record<string, unknown>) =>
     api.patch<Record<string, unknown>>(`/production-updates/${updateId}`, data),
+  reject: (updateId: number | string, data: { rejected_reason: string }) =>
+    api.patch<Record<string, unknown>>(`/production-updates/${updateId}/reject`, data),
+};
+
+/** Global production step template (6 steps) — GET /production/steps */
+export const productionApi = {
+  listSteps: () => api.get<Record<string, unknown>>('/production/steps'),
 };
 
 // ─── Media Upload API ──────────────────────────────────────────

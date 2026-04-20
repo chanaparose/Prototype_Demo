@@ -440,8 +440,29 @@ type DataContextType = DataState & {
   refetchRfq: (id: string) => Promise<void>;
   refetchOrders: () => Promise<void>;
   refetchMessages: () => Promise<void>;
+  /** Refresh only `conversations` from `GET /conversations` (after send / mark-as-read). */
+  refetchConversations: () => Promise<void>;
   refetchFactory: (id: string) => Promise<void>;
 };
+
+/** Normalize `GET /conversations` rows into app `Conversation` (shared by bootstrap + refetch). */
+function mapConversationRowsFromApi(rawConvs: Record<string, unknown>[]): Conversation[] {
+  return rawConvs
+    .map((r) => ({
+      id: String(r.conversation_id ?? r.id ?? ''),
+      factoryId: String(r.factory_id ?? r.factoryId ?? ''),
+      rfqId: String(r.rfq_id ?? r.rfqId ?? ''),
+      factoryName: String(r.factory_name ?? r.factoryName ?? ''),
+      factoryAvatar: String(r.factory_avatar ?? r.factoryAvatar ?? ''),
+      rfqName: String(r.rfq_name ?? r.rfqName ?? ''),
+      lastMessage: String(r.last_message ?? r.lastMessage ?? ''),
+      time: String(r.updated_at ?? r.time ?? ''),
+      unread: Number(r.unread_count ?? r.unread ?? 0),
+      hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? false),
+      messages: [],
+    }))
+    .filter((c) => c.id);
+}
 
 const INITIAL_STATE: DataState = {
   currentUser: null,
@@ -538,19 +559,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       })).filter((n) => n.id);
 
       // ── แปลง conversations ────────────────────────────────────────────
-      const mappedConvs: Conversation[] = rawConvs.map((r) => ({
-        id: String(r.conversation_id ?? r.id ?? ''),
-        factoryId: String(r.factory_id ?? r.factoryId ?? ''),
-        rfqId: String(r.rfq_id ?? r.rfqId ?? ''),
-        factoryName: String(r.factory_name ?? r.factoryName ?? ''),
-        factoryAvatar: String(r.factory_avatar ?? r.factoryAvatar ?? ''),
-        rfqName: String(r.rfq_name ?? r.rfqName ?? ''),
-        lastMessage: String(r.last_message ?? r.lastMessage ?? ''),
-        time: String(r.updated_at ?? r.time ?? ''),
-        unread: Number(r.unread_count ?? r.unread ?? 0),
-        hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? false),
-        messages: [],
-      })).filter((c) => c.id);
+      const mappedConvs: Conversation[] = mapConversationRowsFromApi(rawConvs);
 
       console.info('[DataContext] bootstrap:', bootstrapRes.status, '| notifs:', rawNotifs.length, '| convs:', rawConvs.length);
 
@@ -776,6 +785,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refetchConversations = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const raw = await conversationsApi.list();
+      const rawConvs = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const mappedConvs = mapConversationRowsFromApi(rawConvs);
+      setState((prev) => ({ ...prev, conversations: mappedConvs }));
+    } catch (err) {
+      console.error('Failed to refetch conversations:', err);
+    }
+  }, [isAuthenticated]);
+
   const refetchFactory = async (id: string) => {
     try {
       const data = await frontendApi.getFactory(id);
@@ -800,6 +821,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         refetchRfq,
         refetchOrders,
         refetchMessages,
+        refetchConversations,
         refetchFactory,
       }}
     >

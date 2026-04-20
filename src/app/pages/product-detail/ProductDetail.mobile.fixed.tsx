@@ -73,7 +73,7 @@ export function ProductDetailMobile() {
   const handleStartChat = () =>
     void startChat(item.factoryId, {
       type: 'PD',
-      id: String(resolvedId),
+      id: Number(resolvedId),
       title: item.title,
     });
 
