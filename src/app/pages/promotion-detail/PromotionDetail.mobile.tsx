@@ -96,7 +96,7 @@ export function PromotionDetailMobile() {
             onClick={() =>
               void startChat(item.factoryId, {
                 type: 'PM',
-                id: String(resolvedId),
+                id: Number(resolvedId),
                 title: item.title,
               })
             }

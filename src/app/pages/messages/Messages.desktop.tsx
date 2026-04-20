@@ -21,7 +21,7 @@ type MessagesDesktopProps = {
 function ListSkeleton() {
   return (
     <div className="py-2 space-y-0">
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3, 4].map((i) => (
         <div key={i} className="flex items-start gap-3 px-4 py-3.5 animate-pulse">
           <div className="w-11 h-11 rounded-xl bg-gray-200 shrink-0" />
           <div className="flex-1 space-y-2 pt-0.5">
@@ -144,7 +144,7 @@ export function MessagesDesktop({
                           {conv.factoryName}
                         </p>
                         <span className="text-[10px] text-gray-400 shrink-0 ml-2">
-                          {formatConversationTime(conv.lastMessageAt)}
+                          {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
                         </span>
                       </div>
                       <p className="text-[10px] mb-0.5 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>

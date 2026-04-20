@@ -4,6 +4,8 @@ export type ApiConversation = {
   factory_id: number;
   factory_name?: string;
   factory_image?: string;
+  customer_name?: string;
+  customer_image?: string;
   rfq_id?: number | null;
   rfq_title?: string | null;
   last_message?: string;
@@ -11,6 +13,7 @@ export type ApiConversation = {
   unread_customer: number;
   unread_factory: number;
   has_quote: boolean;
+  created_at: string;
   updated_at: string;
 };
 
@@ -22,6 +25,8 @@ export type UiConversation = {
   rfqName: string;
   lastMessage: string;
   lastMessageAt: string;
+  /** Sort fallback when last_message_at is empty */
+  updatedAt: string;
   unread: number;
   hasQuote: boolean;
 };
@@ -30,14 +35,21 @@ export function normalizeConversation(
   row: ApiConversation,
   viewerRole: 'CU' | 'FT',
 ): UiConversation {
+  const peerName =
+    viewerRole === 'CU'
+      ? (row.factory_name?.trim() ? row.factory_name : 'การสนทนา')
+      : (row.customer_name?.trim() || `Customer #${row.customer_id}`);
+  const peerImage =
+    viewerRole === 'CU' ? (row.factory_image ?? '') : (row.customer_image ?? '');
   return {
     id: String(row.conv_id),
     factoryId: String(row.factory_id),
-    factoryName: row.factory_name ?? '',
-    factoryImage: row.factory_image ?? '',
+    factoryName: peerName,
+    factoryImage: peerImage,
     rfqName: row.rfq_title ?? '',
     lastMessage: row.last_message ?? '',
-    lastMessageAt: row.last_message_at ?? row.updated_at ?? '',
+    lastMessageAt: row.last_message_at ?? '',
+    updatedAt: row.updated_at ?? '',
     unread: viewerRole === 'CU' ? row.unread_customer : row.unread_factory,
     hasQuote: Boolean(row.has_quote),
   };

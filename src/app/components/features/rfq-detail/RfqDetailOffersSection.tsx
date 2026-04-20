@@ -49,7 +49,8 @@ type RfqDetailOffersSectionProps = {
   orderForRfq: OrderForRfq | null | undefined;
   selectedOfferId: string | null;
   onSelectOffer: (id: string | null) => void;
-  onNavigateToMessages: () => void;
+  /** แชทกับโรงงานของ offer นี้ (ลูกค้า) — ส่ง RFQ reference ตาม spec */
+  onChatWithOffer?: (offer: OfferItem) => void;
   /** หลัง POST /orders (BE accept quote + สร้าง order PP) — ไม่ PATCH quotation ก่อน */
   onOfferFlowComplete?: (result: { quoteId: string; orderId?: string }) => void;
   /** จำนวนชิ้นจาก RFQ — ใช้ประมาณราคา/ชิ้นใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
@@ -63,7 +64,7 @@ export function RfqDetailOffersSection({
   orderForRfq,
   selectedOfferId,
   onSelectOffer,
-  onNavigateToMessages,
+  onChatWithOffer,
   onOfferFlowComplete,
   rfqQuantity = 0,
 }: RfqDetailOffersSectionProps) {
@@ -472,21 +473,23 @@ export function RfqDetailOffersSection({
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNavigateToMessages();
-                    }}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs border"
-                    style={{
-                      borderColor: '#7A4B94',
-                      color: '#7A4B94',
-                      fontWeight: 600,
-                    }}
-                  >
-                    <MessageCircle size={14} /> แชท
-                  </button>
+                  {onChatWithOffer ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onChatWithOffer(offer);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs border"
+                      style={{
+                        borderColor: '#7A4B94',
+                        color: '#7A4B94',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <MessageCircle size={14} /> แชท
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     onClick={(e) => handleAcceptOffer(offer.id, e)}

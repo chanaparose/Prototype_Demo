@@ -79,7 +79,7 @@ export function IdeaDetailDesktop() {
   const handleStartChat = () =>
     void startChat(item.factoryId, {
       type: 'ID',
-      id: String(resolvedId),
+      id: Number(resolvedId),
       title: item.title,
     });
 

@@ -18,7 +18,7 @@ type MessagesMobileProps = {
 function ListSkeleton() {
   return (
     <div className="space-y-3">
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3, 4].map((i) => (
         <div
           key={i}
           className="bg-white rounded-2xl p-4 border border-gray-50 animate-pulse flex gap-3"
@@ -103,7 +103,7 @@ export function MessagesMobile({
             <ConversationCard
               key={conv.id}
               conv={conv}
-              onClick={() => navigate(`/messages/${conv.id}`)}
+              onClick={() => navigate(`/chat-room/${conv.id}`)}
             />
           ))}
         </div>
@@ -157,7 +157,7 @@ function ConversationCard({
               {conv.factoryName}
             </p>
             <span className="text-[10px] text-gray-400 shrink-0 ml-2">
-              {formatConversationTime(conv.lastMessageAt)}
+              {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
             </span>
           </div>
           <p className="text-[10px] mb-1 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>

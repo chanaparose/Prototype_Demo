@@ -1,0 +1,188 @@
+import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import { Link } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
+import type { Order } from '../../contexts/DataContext';
+import type {
+  ProductionLockContext,
+  ProductionUpdatesBundle,
+} from '../../components/features/production/types';
+import { mapOrderStatusFromApi, guessOrderProgress } from '../../utils/orderCustomerStatus';
+import { useOrderDetailQuery } from '../../hooks/order-detail/useOrderDetailQuery';
+import { useOrderProductionUpdates } from '../../hooks/production/useOrderProductionUpdates';
+import { getOrderUiMode, type LockReason, type OrderUiMode } from './getOrderUiMode';
+import {
+  buildFallbackLockContext,
+  normalizeLockReason,
+  orderStatusLabelTh,
+  parseNextAction,
+  parsePaymentSchedule,
+  type NextAction,
+  type PaymentScheduleItem,
+} from './orderDetailFromApi';
+function unwrapOrderPayload(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== 'object') return {};
+  const r = raw as Record<string, unknown>;
+  const inner = r.order;
+  if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
+    return inner as Record<string, unknown>;
+  }
+  return r;
+}
+
+function mapApiOrderToOrder(
+  row: Record<string, unknown>,
+  factories: { id: string; name: string }[],
+): Order {
+  const fid = String(row.factory_id ?? '');
+  const st = mapOrderStatusFromApi(String(row.status ?? ''));
+  const fName = factories.find((f) => f.id === fid)?.name ?? `โรงงาน #${fid}`;
+  return {
+    id: String(row.order_id ?? row.id ?? ''),
+    rfqId: String(row.rfq_id ?? ''),
+    factoryId: fid,
+    factoryName: fName,
+    projectName: String(row.project_name ?? row.title ?? `คำสั่งซื้อ #${row.order_id ?? row.id}`),
+    category: '',
+    status: st,
+    progress: guessOrderProgress(st),
+    totalAmount: Number(row.total_amount ?? 0),
+    depositPaid: Number(row.deposit_amount ?? 0),
+    quantity: Number(row.quantity ?? 0),
+    createdAt: String(row.created_at ?? '').split('T')[0] ?? '',
+    estimatedDelivery: String(row.estimated_delivery ?? '').split('T')[0] ?? '',
+    timeline: [],
+  };
+}
+
+export type OrderDetailContextValue = {
+  orderId: string;
+  mappedOrder: Order;
+  apiStatus: string;
+  statusLabelTh: string;
+  uiMode: OrderUiMode;
+  nextAction: NextAction | null;
+  paymentSchedule: PaymentScheduleItem[];
+  production: ProductionUpdatesBundle;
+  effectiveProductionLocked: boolean;
+  effectiveLockReason: LockReason;
+  lockContextMerged: ProductionLockContext;
+  refetchAll: () => Promise<void>;
+};
+
+const OrderDetailContext = createContext<OrderDetailContextValue | null>(null);
+
+export function useOrderDetail(): OrderDetailContextValue {
+  const ctx = useContext(OrderDetailContext);
+  if (!ctx) throw new Error('useOrderDetail must be used within OrderDetailProvider');
+  return ctx;
+}
+
+type ProviderProps = {
+  orderId: string;
+  factories: { id: string; name: string }[];
+  children: React.ReactNode;
+};
+
+export function OrderDetailProvider({ orderId, factories, children }: ProviderProps) {
+  const orderQ = useOrderDetailQuery(orderId);
+  const prodQ = useOrderProductionUpdates(orderId);
+  const qc = useQueryClient();
+
+  const refetchAll = useCallback(async () => {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ['order', orderId] }),
+      qc.invalidateQueries({ queryKey: ['order', orderId, 'production-updates'] }),
+    ]);
+  }, [qc, orderId]);
+
+  const value = useMemo((): OrderDetailContextValue | null => {
+    if (!orderQ.data) return null;
+    const row = unwrapOrderPayload(orderQ.data);
+    const apiStatus = String(row.status ?? '').toUpperCase();
+    const uiMode = getOrderUiMode(apiStatus);
+    const paymentSchedule = parsePaymentSchedule(row);
+    const nextAction = parseNextAction(row, orderId, apiStatus);
+    const statusLabelTh = orderStatusLabelTh(
+      apiStatus,
+      row.status_label_th != null ? String(row.status_label_th) : undefined,
+    );
+    const mappedOrder = mapApiOrderToOrder(row, factories);
+    const production: ProductionUpdatesBundle =
+      prodQ.data ??
+      ({
+        order_id: Number(orderId) || 0,
+        order_status: apiStatus,
+        updates: [],
+      } as ProductionUpdatesBundle);
+
+    const apiLocked =
+      production.production_locked === true
+        ? true
+        : production.production_locked === false
+          ? false
+          : undefined;
+    const effectiveProductionLocked = apiLocked ?? uiMode.productionLocked;
+    const effectiveLockReason: LockReason = normalizeLockReason(production.lock_reason, apiStatus);
+
+    let lockContextMerged = { ...(production.lock_context ?? {}) };
+    if (effectiveProductionLocked && Object.keys(lockContextMerged).length === 0) {
+      lockContextMerged = {
+        ...lockContextMerged,
+        ...buildFallbackLockContext(orderId, row, paymentSchedule),
+      };
+    }
+    if (effectiveProductionLocked && !lockContextMerged.payment_url && nextAction?.cta_url) {
+      lockContextMerged = { ...lockContextMerged, payment_url: nextAction.cta_url };
+    }
+    if (effectiveProductionLocked && !lockContextMerged.deposit_amount && nextAction?.amount) {
+      lockContextMerged = { ...lockContextMerged, deposit_amount: nextAction.amount };
+    }
+    if (effectiveProductionLocked && !lockContextMerged.deposit_due_date && nextAction?.due_date) {
+      lockContextMerged = { ...lockContextMerged, deposit_due_date: nextAction.due_date };
+    }
+
+    return {
+      orderId,
+      mappedOrder,
+      apiStatus,
+      statusLabelTh,
+      uiMode,
+      nextAction,
+      paymentSchedule,
+      production,
+      effectiveProductionLocked,
+      effectiveLockReason,
+      lockContextMerged,
+      refetchAll,
+    };
+  }, [orderQ.data, prodQ.data, factories, orderId]);
+
+  if (orderQ.isPending && !orderQ.data) {
+    return (
+      <div className="min-h-[40vh] flex flex-col items-center justify-center px-4">
+        <div
+          className="w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mb-3"
+          style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+        />
+        <p className="text-sm text-gray-500">กำลังโหลดคำสั่งซื้อ…</p>
+      </div>
+    );
+  }
+
+  if (orderQ.isError || !value) {
+    return (
+      <div className="min-h-[40vh] flex flex-col items-center justify-center px-4">
+        <p className="text-sm text-gray-500 mb-4 text-center">ไม่พบคำสั่งซื้อจากระบบ</p>
+        <Link
+          to="/orders"
+          className="px-6 py-3 rounded-xl text-white font-semibold text-center inline-block"
+          style={{ background: '#A238FF' }}
+        >
+          กลับไปรายการคำสั่งซื้อ
+        </Link>
+      </div>
+    );
+  }
+
+  return <OrderDetailContext.Provider value={value}>{children}</OrderDetailContext.Provider>;
+}

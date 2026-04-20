@@ -3,11 +3,14 @@ import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { MessagesMobile } from './Messages.mobile';
 import { MessagesDesktop } from './Messages.desktop';
 import { useConversations } from './useConversations';
+import { useMarkAsRead } from './useMarkAsRead';
+import { sortConversations } from './selectors';
 import type { UiConversation } from './types';
 
 export function Messages() {
   const isDesktop = useIsDesktop();
   const { items, loading, error, reload } = useConversations();
+  const markAsRead = useMarkAsRead();
   const [searchText, setSearchText] = React.useState('');
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
@@ -21,14 +24,24 @@ export function Messages() {
     }
   }, [items, selectedId]);
 
+  React.useEffect(() => {
+    if (!isDesktop || !selectedId) return;
+    void (async () => {
+      await markAsRead(selectedId);
+      void reload();
+    })();
+  }, [isDesktop, selectedId, markAsRead, reload]);
+
   const filtered = React.useMemo(() => {
     const q = searchText.toLowerCase().trim();
-    if (!q) return items;
-    return items.filter(
-      (c) =>
-        c.factoryName.toLowerCase().includes(q) ||
-        c.rfqName.toLowerCase().includes(q),
-    );
+    const list = !q
+      ? items
+      : items.filter(
+          (c) =>
+            c.factoryName.toLowerCase().includes(q) ||
+            c.rfqName.toLowerCase().includes(q),
+        );
+    return sortConversations(list);
   }, [searchText, items]);
 
   const totalUnread = React.useMemo(

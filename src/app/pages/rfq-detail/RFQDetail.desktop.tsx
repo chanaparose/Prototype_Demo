@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { MessageCircle, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useRfqDetail } from '../../hooks/useRfqDetail';
+import { openChatSession } from '../../utils/openChatSession';
+import { getCurrentUserId, initialMessageForReference } from '../../utils/chatContract';
+import type { OfferItem } from '../../components/features/rfq-detail/RfqDetailOffersSection';
 import {
   HISTORY_STATUSES,
   RfqDetailOffersSection,
@@ -23,10 +27,31 @@ const COLORS = {
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { rfq, relatedOrder, loading, error, refetch } = useRfqDetail(id);
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
+
+  const handleChatWithOffer = useCallback(
+    async (offer: OfferItem) => {
+      if (!rfq) return;
+      const my = getCurrentUserId(user);
+      const fid = Number(offer.factoryId);
+      const rid = Number(id);
+      if (my == null || !Number.isFinite(fid) || fid <= 0 || !Number.isFinite(rid) || rid <= 0) return;
+      const ref = { type: 'RQ' as const, id: rid, title: rfq.projectName };
+      await openChatSession(navigate, user, {
+        customerUserId: my,
+        factoryEntityId: fid,
+        firstMessage: {
+          content: initialMessageForReference(ref),
+          reference: ref,
+        },
+      });
+    },
+    [user, navigate, id, rfq?.projectName],
+  );
 
   if (!rfq) {
     return (
@@ -132,18 +157,6 @@ export function RFQDetailDesktop() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 bg-white hover:bg-gray-50"
-              onClick={() => navigate('/messages/conv1')}
-            >
-              <span className="inline-flex items-center gap-2">
-                <MessageCircle size={16} style={{ color: COLORS.purple }} />
-                <span style={{ color: COLORS.blue }}>แชทกับโรงงาน</span>
-              </span>
-            </button>
-          </div>
         </div>
 
         {/* Content */}
@@ -184,7 +197,7 @@ export function RFQDetailDesktop() {
                   orderForRfq={relatedOrder ?? undefined}
                   selectedOfferId={selectedOffer}
                   onSelectOffer={setSelectedOffer}
-                  onNavigateToMessages={() => navigate('/messages/conv1')}
+                  onChatWithOffer={handleChatWithOffer}
                   rfqQuantity={rfq.quantity}
                   onOfferFlowComplete={async ({ orderId }) => {
                     await refetch();

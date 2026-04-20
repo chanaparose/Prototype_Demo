@@ -6,7 +6,7 @@
  * rfqs           → orders.rfqId (เฉพาะ rfq ที่มี order จะมีคำสั่งซื้อ), offers[].factoryId ∈ factories
  * orders         → order.rfqId ∈ rfqs, order.factoryId ∈ rfqs[rfq].offers[].factoryId
  * conversations  → factoryId ∈ factories, rfqId อ้างถึง rfq ที่คุยกัน (หรือ order)
- * notifications  → linkTo อ้างถึง /rfqs/:id, /orders/:id, /messages/:id ที่มีอยู่จริง
+ * notifications  → linkTo อ้างถึง /rfqs/:id, /orders/:id, /chat-room/:id ที่มีอยู่จริง
  */
 
 export const currentUser = {
@@ -814,7 +814,7 @@ export const notifications = [
     message: 'เสื้อผ้าสัตว์เลี้ยง สยาม: ชิ้นงานอยู่ระหว่างการจัดส่งครับ',
     time: '2 ชั่วโมงที่แล้ว',
     read: false,
-    linkTo: '/messages/conv2',
+    linkTo: '/chat-room/conv2',
     conversationId: 'conv2',
     avatar: 'https://images.unsplash.com/photo-1684259499086-93cb3e555803?w=80&h=80&fit=crop',
   },
@@ -857,7 +857,7 @@ export const notifications = [
     message: 'Smart Collar Tech: แนบใบเสนอราคาพร้อมสเปกโมดูล GPS ให้แล้วครับ',
     time: '20 นาทีที่แล้ว',
     read: false,
-    linkTo: '/messages/conv5',
+    linkTo: '/chat-room/conv5',
     conversationId: 'conv5',
     avatar: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=80&h=80&fit=crop',
   },

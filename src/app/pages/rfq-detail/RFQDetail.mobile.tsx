@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useAuth } from '../../contexts/AuthContext';
+import { openChatSession } from '../../utils/openChatSession';
+import { getCurrentUserId, initialMessageForReference } from '../../utils/chatContract';
+import type { OfferItem } from '../../components/features/rfq-detail/RfqDetailOffersSection';
 import { ChevronLeft } from 'lucide-react';
 import { useRfqDetail } from '../../hooks/useRfqDetail';
 import {
@@ -20,9 +24,30 @@ const COLORS = {
 export function RFQDetailMobile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { rfq, relatedOrder, loading, error, refetch } = useRfqDetail(id);
   const [specsOpen, setSpecsOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
+
+  const handleChatWithOffer = useCallback(
+    async (offer: OfferItem) => {
+      if (!rfq) return;
+      const my = getCurrentUserId(user);
+      const fid = Number(offer.factoryId);
+      const rid = Number(id);
+      if (my == null || !Number.isFinite(fid) || fid <= 0 || !Number.isFinite(rid) || rid <= 0) return;
+      const ref = { type: 'RQ' as const, id: rid, title: rfq.projectName };
+      await openChatSession(navigate, user, {
+        customerUserId: my,
+        factoryEntityId: fid,
+        firstMessage: {
+          content: initialMessageForReference(ref),
+          reference: ref,
+        },
+      });
+    },
+    [user, navigate, id, rfq?.projectName],
+  );
 
   if (!rfq) {
     return (
@@ -155,7 +180,7 @@ export function RFQDetailMobile() {
           orderForRfq={relatedOrder ?? undefined}
           selectedOfferId={selectedOffer}
           onSelectOffer={setSelectedOffer}
-          onNavigateToMessages={() => navigate('/messages/conv1')}
+          onChatWithOffer={handleChatWithOffer}
           rfqQuantity={rfq.quantity}
           onOfferFlowComplete={async ({ orderId }) => {
             await refetch();
