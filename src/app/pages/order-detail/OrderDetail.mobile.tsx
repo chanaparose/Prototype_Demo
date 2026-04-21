@@ -10,6 +10,8 @@ import {
   OrderOverviewSection,
   OrderPhotoGallery,
   OrderActionBanner,
+  DepositPaymentModal,
+  RfqReferenceCard,
 } from '../../components/features/order-detail';
 import { OrderProductionTab } from '../../components/features/production/OrderProductionTab';
 import { useOrderDetail } from './OrderDetailContext';
@@ -25,10 +27,25 @@ function OrderDetailMobileBody() {
     paymentSchedule,
     statusLabelTh,
     lockContextMerged,
+    rfqSummary,
+    rfq,
+    refetchAll,
   } = useOrderDetail();
 
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'overview' | 'production'>('overview');
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
+
+  const depositAmount =
+    nextAction?.amount ??
+    paymentSchedule.find((s) => s.stage === 'DEPOSIT')?.amount ??
+    lockContextMerged.deposit_amount ??
+    0;
+
+  const openDepositModal = () => {
+    if (depositAmount <= 0) return;
+    setDepositModalOpen(true);
+  };
 
   const relatedRfq = data.rfqs.find((r) => r.id === order.rfqId);
   const relatedFactory = data.factories.find((f) => f.id === order.factoryId);
@@ -62,14 +79,15 @@ function OrderDetailMobileBody() {
         >
           <ChevronLeft size={22} className="text-gray-700" />
         </button>
-        <div className="text-center">
-          <p className="text-[10px] text-gray-400">คำสั่งซื้อ #{order.id}</p>
+        <div className="text-center min-w-0 flex-1 px-2">
           <h1
-            className="text-sm text-gray-900 max-w-[200px] truncate mx-auto"
+            className="text-sm text-gray-900 max-w-[240px] truncate mx-auto"
             style={{ fontWeight: 700 }}
+            title={rfq?.title ?? order.projectName}
           >
-            {order.projectName}
+            {rfq?.title ?? order.projectName}
           </h1>
+          <p className="text-[10px] text-gray-400">คำสั่งซื้อ #{order.id}</p>
         </div>
         <button
           type="button"
@@ -84,6 +102,7 @@ function OrderDetailMobileBody() {
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
           <OrderSummaryCard
             order={order}
+            rfqSummary={rfqSummary}
             relatedFactory={relatedFactory}
             statusLabelTh={statusLabelTh}
           />
@@ -94,6 +113,7 @@ function OrderDetailMobileBody() {
               paymentSchedule={paymentSchedule}
               variant={uiMode.lockReason === 'DEPOSIT_EXPIRED' ? 'deposit_expired' : 'pending_deposit'}
               fallbackCtaUrl={lockContextMerged.payment_url}
+              onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
             />
           ) : null}
 
@@ -125,16 +145,19 @@ function OrderDetailMobileBody() {
           </div>
 
           {activeSection === 'overview' && (
-            <OrderOverviewSection
-              order={{
-                totalAmount: order.totalAmount,
-                depositPaid: order.depositPaid,
-                factoryId: order.factoryId,
-                factoryName: order.factoryName,
-              }}
-              relatedRfq={relatedRfq ?? undefined}
-              rfqOffers={rfqOffers}
-            />
+            <>
+              {rfq ? <RfqReferenceCard rfq={rfq} variant="accordion" /> : null}
+              <OrderOverviewSection
+                order={{
+                  totalAmount: order.totalAmount,
+                  depositPaid: order.depositPaid,
+                  factoryId: order.factoryId,
+                  factoryName: order.factoryName,
+                }}
+                relatedRfq={relatedRfq ?? undefined}
+                rfqOffers={rfqOffers}
+              />
+            </>
           )}
 
           {activeSection === 'production' && (
@@ -142,6 +165,7 @@ function OrderDetailMobileBody() {
               orderId={order.id}
               onPhotoClick={setSelectedPhoto}
               onRequestOverviewTab={() => setActiveSection('overview')}
+              onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
             />
           )}
         </div>
@@ -165,6 +189,14 @@ function OrderDetailMobileBody() {
       </div>
 
       <OrderPhotoGallery photoUrl={selectedPhoto} onClose={() => setSelectedPhoto(null)} />
+
+      <DepositPaymentModal
+        open={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        orderId={order.id}
+        amount={depositAmount}
+        onSuccess={refetchAll}
+      />
     </div>
   );
 }

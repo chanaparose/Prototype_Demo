@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { MergedProductionStep } from './types';
+import { deriveStepStates } from './stepDerivedState';
 
 function orderStatusLabel(code: string): string {
   const u = code.toUpperCase();
@@ -33,13 +34,30 @@ type Props = {
 export function ProductionHeader({ merged, orderStatus }: Props) {
   const total = merged.length;
   const done = merged.filter((m) => m.update.status === 'CD').length;
+  const derived = useMemo(() => deriveStepStates(merged, orderStatus), [merged, orderStatus]);
 
-  const currentName = useMemo(() => {
-    const ip = merged.find((m) => m.update.status === 'IP');
-    if (ip) return ip.template.step_name_th;
-    const pd = merged.find((m) => m.update.status === 'PD');
-    return pd?.template.step_name_th ?? '—';
-  }, [merged]);
+  const currentIdx = useMemo(() => {
+    const idx = derived.findIndex((d) => d === 'active' || d === 'blocked');
+    if (idx >= 0) return idx;
+    const up = derived.findIndex((d) => d === 'upcoming');
+    return up >= 0 ? up : -1;
+  }, [derived]);
+
+  const currentName =
+    currentIdx >= 0 ? merged[currentIdx]?.template.step_name_th ?? '—' : 'เสร็จสิ้นทุกขั้นตอน';
+
+  const currentState = currentIdx >= 0 ? derived[currentIdx] : 'completed';
+
+  const pillClass =
+    currentState === 'active'
+      ? 'bg-violet-100 text-violet-800'
+      : currentState === 'blocked'
+        ? 'bg-amber-100 text-amber-800'
+        : currentState === 'rejected'
+          ? 'bg-red-100 text-red-800'
+          : done === total && total > 0
+            ? 'bg-emerald-100 text-emerald-800'
+            : 'bg-gray-100 text-gray-800';
 
   const lastIso = useMemo(() => {
     let best = '';
@@ -58,7 +76,7 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-bold text-gray-900">ความคืบหน้าการผลิต</p>
         <span
-          className="text-[11px] font-semibold px-2 py-1 rounded-lg bg-gray-100 text-gray-800"
+          className={`text-[11px] font-semibold px-2 py-1 rounded-lg ${pillClass}`}
           aria-label={`สถานะคำสั่งซื้อ ${orderStatusLabel(orderStatus)}`}
         >
           {orderStatusLabel(orderStatus)}
@@ -66,7 +84,10 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
       </div>
       <div>
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#7C3AED' }} />
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${pct}%`, background: '#7C3AED' }}
+          />
         </div>
         <p className="text-xs text-gray-600 mt-1.5">
           {done}/{total} ขั้นตอน

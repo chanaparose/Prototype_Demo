@@ -4,6 +4,7 @@
  */
 
 import type { MessagesSendBody } from '../utils/chatContract';
+import type { OrderDetailDTO } from '../types/api';
 
 const DEFAULT_API_BASE = '/api/v1';
 
@@ -303,13 +304,23 @@ export const ordersApi = {
     const q = status != null && status !== '' ? `?status=${encodeURIComponent(status)}` : '';
     return api.get<unknown[]>(`/orders${q}`);
   },
-  get: (id: string | number) => api.get<Record<string, unknown>>(`/orders/${id}`),
+  get: (id: string | number) => api.get<OrderDetailDTO | Record<string, unknown>>(`/orders/${id}`),
+  getOne: (id: string | number) => api.get<OrderDetailDTO | Record<string, unknown>>(`/orders/${id}`),
   /** POST /api/v1/orders — body { quote_id } ตาม FE_ORDER_PAYMENT_ALIGNMENT / PAYMENT_ORDER_FLOW (ไม่มี trailing slash) */
   create: (quoteId: number) => api.post<Record<string, unknown>>('/orders', { quote_id: quoteId }),
-  /** POST /orders/:order_id/payments — DP = มัดจำ (amount = deposit_amount), FP = ยอดที่เหลือ */
+  /** POST /orders/:order_id/payments — DP = มัดจำ (amount = deposit_amount), FP = ยอดที่เหลือ
+   *  payment_method (optional, BE v2 contract per FE_PP_STATE_HANDOFF.md §v2.3.1):
+   *  - 'WALLET'   → atomic wallet→wallet transfer (customer good_fund → factory pending_fund)
+   *  - 'PROMPTPAY'/'BANK' → legacy off-ledger flow (still requires /verify step)
+   *  idempotency_key allows safe client retries. */
   createPayment: (
     orderId: string | number,
-    body: { type: 'DP' | 'FP'; amount: number },
+    body: {
+      type: 'DP' | 'FP';
+      amount: number;
+      payment_method?: 'WALLET' | 'PROMPTPAY' | 'BANK';
+      idempotency_key?: string;
+    },
   ) => api.post<Record<string, unknown>>(`/orders/${orderId}/payments`, body),
   /** POST /orders/:order_id/payments/:tx_id/verify — ยืนยันและตัด good_fund */
   verifyPayment: (orderId: string | number, txId: string | number) =>

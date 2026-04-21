@@ -110,6 +110,18 @@ export function parseApiConversation(row: Record<string, unknown>): ApiConversat
   if (!Number.isFinite(conv_id) || conv_id <= 0) return null;
   const customer_id = Number(row.customer_id ?? row.customerId ?? 0);
   const factory_id = Number(row.factory_id ?? row.factoryId ?? 0);
+  const customerObj = (row.customer && typeof row.customer === 'object'
+    ? (row.customer as Record<string, unknown>)
+    : {}) as Record<string, unknown>;
+  const customerFirst = customerObj.first_name != null ? String(customerObj.first_name).trim() : '';
+  const customerLast = customerObj.last_name != null ? String(customerObj.last_name).trim() : '';
+  const customerFullName = [customerFirst, customerLast].filter(Boolean).join(' ').trim();
+  const resolvedCustomerName =
+    row.customer_name != null && String(row.customer_name).trim()
+      ? String(row.customer_name)
+      : customerObj.display_name != null && String(customerObj.display_name).trim()
+        ? String(customerObj.display_name)
+        : customerFullName || undefined;
   return {
     conv_id,
     customer_id: Number.isFinite(customer_id) ? customer_id : 0,
@@ -123,7 +135,7 @@ export function parseApiConversation(row: Record<string, unknown>): ApiConversat
           : row.factory_avatar != null
             ? String(row.factory_avatar)
             : undefined,
-    customer_name: row.customer_name != null ? String(row.customer_name) : undefined,
+    customer_name: resolvedCustomerName,
     customer_image: row.customer_image != null ? String(row.customer_image) : undefined,
     rfq_id: row.rfq_id != null ? Number(row.rfq_id) : null,
     rfq_title:

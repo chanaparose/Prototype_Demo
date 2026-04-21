@@ -19,6 +19,7 @@ import {
   type NextAction,
   type PaymentScheduleItem,
 } from './orderDetailFromApi';
+import type { QuoteNestedDTO, RfqNestedDTO } from '../../types/api';
 function unwrapOrderPayload(raw: unknown): Record<string, unknown> {
   if (!raw || typeof raw !== 'object') return {};
   const r = raw as Record<string, unknown>;
@@ -36,12 +37,18 @@ function mapApiOrderToOrder(
   const fid = String(row.factory_id ?? '');
   const st = mapOrderStatusFromApi(String(row.status ?? ''));
   const fName = factories.find((f) => f.id === fid)?.name ?? `โรงงาน #${fid}`;
+  const rfqObj =
+    row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
+      ? (row.rfq as Record<string, unknown>)
+      : null;
   return {
     id: String(row.order_id ?? row.id ?? ''),
     rfqId: String(row.rfq_id ?? ''),
     factoryId: fid,
     factoryName: fName,
-    projectName: String(row.project_name ?? row.title ?? `คำสั่งซื้อ #${row.order_id ?? row.id}`),
+    projectName: String(
+      rfqObj?.title ?? row.project_name ?? row.title ?? `คำสั่งซื้อ #${row.order_id ?? row.id}`,
+    ),
     category: '',
     status: st,
     progress: guessOrderProgress(st),
@@ -53,6 +60,11 @@ function mapApiOrderToOrder(
     timeline: [],
   };
 }
+
+export type RfqSummaryInfo = {
+  quantity: number;
+  unit_name: string;
+};
 
 export type OrderDetailContextValue = {
   orderId: string;
@@ -66,8 +78,29 @@ export type OrderDetailContextValue = {
   effectiveProductionLocked: boolean;
   effectiveLockReason: LockReason;
   lockContextMerged: ProductionLockContext;
+  /** RFQ-derived quantity + unit for OrderSummaryCard. Null when order has no linked RFQ. */
+  rfqSummary: RfqSummaryInfo | null;
+  rfq: RfqNestedDTO | null;
+  quotation: QuoteNestedDTO | null;
   refetchAll: () => Promise<void>;
 };
+
+function extractRfqSummary(row: Record<string, unknown>): RfqSummaryInfo | null {
+  const rfq = row.rfq;
+  if (rfq && typeof rfq === 'object') {
+    const r = rfq as Record<string, unknown>;
+    const q = Number(r.quantity);
+    if (Number.isFinite(q) && q > 0) {
+      return { quantity: q, unit_name: String(r.unit_name ?? 'ชิ้น') };
+    }
+  }
+  // Legacy flat-row fallback: some BE versions expose rfq_quantity / quantity at top level.
+  const legacy = Number(row.rfq_quantity ?? row.quantity);
+  if (Number.isFinite(legacy) && legacy > 0) {
+    return { quantity: legacy, unit_name: String(row.unit_name ?? 'ชิ้น') };
+  }
+  return null;
+}
 
 const OrderDetailContext = createContext<OrderDetailContextValue | null>(null);
 
@@ -153,6 +186,15 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       effectiveProductionLocked,
       effectiveLockReason,
       lockContextMerged,
+      rfqSummary: extractRfqSummary(row),
+      rfq:
+        row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
+          ? (row.rfq as RfqNestedDTO)
+          : null,
+      quotation:
+        row.quotation && typeof row.quotation === 'object' && !Array.isArray(row.quotation)
+          ? (row.quotation as QuoteNestedDTO)
+          : null,
       refetchAll,
     };
   }, [orderQ.data, prodQ.data, factories, orderId]);

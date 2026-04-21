@@ -23,9 +23,15 @@ type Props = {
   orderId: string;
   onPhotoClick?: (url: string) => void;
   onRequestOverviewTab?: () => void;
+  onPayDeposit?: () => void;
 };
 
-export function OrderProductionTab({ orderId, onPhotoClick, onRequestOverviewTab }: Props) {
+export function OrderProductionTab({
+  orderId,
+  onPhotoClick,
+  onRequestOverviewTab,
+  onPayDeposit,
+}: Props) {
   const { user } = useAuth();
   const {
     effectiveProductionLocked,
@@ -119,6 +125,7 @@ export function OrderProductionTab({ orderId, onPhotoClick, onRequestOverviewTab
         lockContext={lockContextMerged}
         templatePreview={templatePreview}
         onBackToOverview={onRequestOverviewTab}
+        onPayDeposit={onPayDeposit}
       />
     );
   }
@@ -160,6 +167,7 @@ export function OrderProductionTab({ orderId, onPhotoClick, onRequestOverviewTab
       <ProductionHeader merged={merged} orderStatus={orderStatus} />
       <ProductionTimeline
         merged={merged}
+        orderStatus={orderStatus}
         isFactory={productionInteractive}
         isCustomer={isCustomer && !uiMode.readOnly}
         onOpenDrawer={(m) => {

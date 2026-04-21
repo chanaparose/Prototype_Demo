@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { ChatRoomEmbedded } from '../chat-room';
-import { ImageWithFallback } from '../../components/shared';
+import { ChatPartyHeader } from '../../components/features/chat/ChatPartyHeader';
 import type { UiConversation } from './types';
 import { formatConversationTime } from './types';
 
@@ -120,33 +120,23 @@ export function MessagesDesktop({
                       borderLeft: isActive ? '3px solid #7A4B94' : '3px solid transparent',
                     }}
                   >
-                    <div className="relative shrink-0">
-                      <ImageWithFallback
-                        src={conv.factoryImage}
-                        alt={conv.factoryName}
-                        className="w-11 h-11 rounded-xl object-cover bg-gray-100"
-                      />
-                      {conv.hasQuote && (
-                        <span
-                          className="absolute -bottom-1 -right-1 rounded-full text-white text-[9px] font-bold flex items-center justify-center w-[18px] h-[18px]"
-                          style={{ background: '#E38844' }}
-                        >
-                          ฿
-                        </span>
-                      )}
-                    </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-0.5">
-                        <p
-                          className="text-sm truncate"
-                          style={{ fontWeight: conv.unread > 0 ? 700 : 600, color: '#2E2252' }}
-                        >
-                          {conv.factoryName}
-                        </p>
-                        <span className="text-[10px] text-gray-400 shrink-0 ml-2">
-                          {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
-                        </span>
-                      </div>
+                      <ChatPartyHeader
+                        view={conv.view}
+                        density="row"
+                        trailing={
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-[10px] text-gray-400 shrink-0 ml-2">
+                              {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
+                            </span>
+                            {conv.unread > 0 ? (
+                              <span className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2 font-bold bg-[#A238FF]">
+                                {conv.unread}
+                              </span>
+                            ) : null}
+                          </div>
+                        }
+                      />
                       <p className="text-[10px] mb-0.5 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>
                       <div className="flex items-center justify-between">
                         <p
@@ -158,14 +148,6 @@ export function MessagesDesktop({
                         >
                           {conv.lastMessage}
                         </p>
-                        {conv.unread > 0 && (
-                          <span
-                            className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2 font-bold"
-                            style={{ background: '#E38844' }}
-                          >
-                            {conv.unread}
-                          </span>
-                        )}
                       </div>
                     </div>
                   </button>
@@ -185,9 +167,9 @@ export function MessagesDesktop({
               preview={
                 selectedConversation
                   ? {
-                      factoryId: selectedConversation.factoryId,
-                      factoryName: selectedConversation.factoryName,
-                      factoryImage: selectedConversation.factoryImage,
+                      factoryId: String(selectedConversation.conv.factory_id),
+                      factoryName: selectedConversation.view.title,
+                      factoryImage: selectedConversation.view.avatarUrl,
                       rfqName: selectedConversation.rfqName,
                       hasQuote: selectedConversation.hasQuote,
                     }

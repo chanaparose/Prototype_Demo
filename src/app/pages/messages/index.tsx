@@ -38,7 +38,7 @@ export function Messages() {
       ? items
       : items.filter(
           (c) =>
-            c.factoryName.toLowerCase().includes(q) ||
+            c.view.title.toLowerCase().includes(q) ||
             c.rfqName.toLowerCase().includes(q),
         );
     return sortConversations(list);

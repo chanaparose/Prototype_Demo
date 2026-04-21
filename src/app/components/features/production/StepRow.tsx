@@ -1,9 +1,11 @@
 import React from 'react';
-import { Lock, CheckCircle2, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
+import { Lock, CheckCircle2, XCircle, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import type { MergedProductionStep } from './types';
+import { STEP_VISUAL, type StepDerivedState } from './stepDerivedState';
 
 type Props = {
   merged: MergedProductionStep;
+  derivedState: StepDerivedState;
   expanded: boolean;
   onToggleExpand: () => void;
   isFactory: boolean;
@@ -14,8 +16,61 @@ type Props = {
   onPhotoClick: (url: string) => void;
 };
 
+function renderStateIcon(state: StepDerivedState) {
+  switch (state) {
+    case 'completed':
+      return <CheckCircle2 size={20} className="text-emerald-600" aria-hidden />;
+    case 'active':
+      return (
+        <span className="relative inline-flex items-center justify-center" aria-hidden>
+          <span className="absolute inset-0 rounded-full bg-violet-300/40 motion-safe:animate-ping" />
+          <Loader2
+            size={20}
+            className="text-[#A238FF] motion-safe:animate-spin"
+            style={{ animationDuration: '1.6s' }}
+          />
+        </span>
+      );
+    case 'blocked':
+      return <AlertCircle size={20} className="text-amber-500" aria-hidden />;
+    case 'rejected':
+      return <XCircle size={20} className="text-red-500" aria-hidden />;
+    case 'upcoming':
+    default:
+      return <Lock size={18} className="text-gray-300" aria-hidden />;
+  }
+}
+
+function rowShell(state: StepDerivedState): string {
+  switch (state) {
+    case 'active':
+      return 'bg-[#F5ECFF] border-[#A238FF] shadow-sm';
+    case 'blocked':
+      return 'bg-amber-50 border-amber-200';
+    case 'rejected':
+      return 'bg-red-50 border-red-200';
+    case 'completed':
+    case 'upcoming':
+    default:
+      return 'bg-white border-gray-100';
+  }
+}
+
+function titleClass(state: StepDerivedState): string {
+  if (state === 'active') return 'text-sm text-gray-900 font-bold';
+  if (state === 'upcoming') return 'text-sm text-gray-400 font-semibold';
+  return 'text-sm text-gray-700 font-semibold';
+}
+
+function descClass(state: StepDerivedState): string {
+  if (state === 'active') return 'text-[11px] text-gray-600 mt-0.5 line-clamp-1';
+  if (state === 'upcoming') return 'text-[11px] text-gray-400 mt-0.5 line-clamp-1';
+  return 'text-[11px] text-gray-500 mt-0.5 line-clamp-1';
+}
+
 export function StepRow({
   merged,
+  derivedState,
   expanded,
   onToggleExpand,
   isFactory,
@@ -27,26 +82,9 @@ export function StepRow({
 }: Props) {
   const { template, update } = merged;
   const st = update.status;
-
-  const statusIcon = (() => {
-    if (st === 'PD') return <Lock size={18} className="text-gray-400" aria-hidden />;
-    if (st === 'IP')
-      return (
-        <Loader2
-          size={18}
-          className="text-amber-500 animate-spin"
-          style={{ animationDuration: '2.2s' }}
-          aria-label="กำลังดำเนินการ"
-        />
-      );
-    if (st === 'CD') return <CheckCircle2 size={18} className="text-emerald-600" aria-hidden />;
-    return <AlertTriangle size={18} className="text-red-500" aria-hidden />;
-  })();
-
-  const rowBg =
-    st === 'IP' ? 'bg-amber-50/60 border-amber-100' : st === 'RJ' ? 'bg-red-50/40 border-red-100' : 'bg-white border-gray-100';
-
-  const showPayChip = template.is_payment_trigger;
+  const visual = STEP_VISUAL[derivedState];
+  const isActive = derivedState === 'active';
+  const isBlocked = derivedState === 'blocked';
 
   const ctaFactory =
     st === 'IP' ? (
@@ -84,6 +122,18 @@ export function StepRow({
       >
         ส่งใหม่
       </button>
+    ) : isFactory && isActive ? (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenDrawer();
+        }}
+        className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
+        style={{ background: '#A238FF' }}
+      >
+        เริ่มขั้นนี้
+      </button>
     ) : null;
 
   const ctaCustomer =
@@ -100,8 +150,16 @@ export function StepRow({
       </button>
     ) : null;
 
+  const showPayChip =
+    template.is_payment_trigger &&
+    (derivedState === 'upcoming' || derivedState === 'active' || derivedState === 'blocked');
+
   return (
-    <div className={`rounded-2xl border ${rowBg} overflow-hidden`}>
+    <div
+      className={`rounded-2xl border ${rowShell(derivedState)} overflow-hidden transition-colors`}
+      aria-current={isActive ? 'step' : undefined}
+      aria-disabled={derivedState === 'upcoming' ? true : undefined}
+    >
       <div
         role="button"
         tabIndex={0}
@@ -114,12 +172,22 @@ export function StepRow({
           }
         }}
       >
-        <div className="mt-0.5 shrink-0" aria-hidden>
-          {statusIcon}
-        </div>
+        <div className="mt-0.5 shrink-0">{renderStateIcon(derivedState)}</div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-900">{template.step_name_th}</p>
-          <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{template.description}</p>
+          <div className="flex items-center gap-2 min-w-0">
+            <p className={`${titleClass(derivedState)} truncate`}>{template.step_name_th}</p>
+            {visual.chipLabel ? (
+              <span
+                className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${visual.chipClass}`}
+              >
+                {visual.chipLabel}
+              </span>
+            ) : null}
+            <span className="sr-only">{visual.ariaLabel}</span>
+          </div>
+          {template.description ? (
+            <p className={descClass(derivedState)}>{template.description}</p>
+          ) : null}
         </div>
         <div className="shrink-0 flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
           {isFactory ? ctaFactory : null}
@@ -127,12 +195,20 @@ export function StepRow({
         </div>
       </div>
 
-      {showPayChip && (st === 'IP' || st === 'PD') ? (
+      {showPayChip ? (
         <div className="px-4 pb-2 -mt-1">
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg bg-violet-100 text-violet-900">
             <Sparkles size={12} aria-hidden />
             ขั้นนี้จะทริกเกอร์ชำระเงินงวดถัดไป
           </span>
+        </div>
+      ) : null}
+
+      {isBlocked ? (
+        <div className="px-4 pb-3 -mt-1">
+          <p className="text-[11px] text-amber-800">
+            รอลูกค้าดำเนินการก่อนจึงจะเริ่มขั้นตอนนี้ได้
+          </p>
         </div>
       ) : null}
 

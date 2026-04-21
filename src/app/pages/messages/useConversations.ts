@@ -1,57 +1,48 @@
 import { useEffect, useState, useCallback } from 'react';
 import { conversationsApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { ApiConversation, UiConversation, normalizeConversation } from './types';
+import type { ConversationDTO } from '../../types/api';
+import { getCurrentUserId } from '../../utils/chatContract';
+import { resolveCounterparty } from '../../utils/counterparty';
+import { unreadForViewer, UiConversation } from './types';
 import { sortConversations } from './selectors';
 
-function rowToApiConversation(r: Record<string, unknown>): ApiConversation | null {
+function rowToConversation(r: Record<string, unknown>): ConversationDTO | null {
   const conv_id = Number(r.conv_id ?? r.conversation_id ?? r.id);
   if (!Number.isFinite(conv_id)) return null;
+  const customerId = Number(r.customer_id ?? r.customerId ?? 0);
+  const factoryId = Number(r.factory_id ?? r.factoryId ?? 0);
+  const customerObj = (r.customer && typeof r.customer === 'object' ? r.customer : {}) as Record<string, unknown>;
+  const factoryObj = (r.factory && typeof r.factory === 'object' ? r.factory : {}) as Record<string, unknown>;
   return {
     conv_id,
-    customer_id: Number(r.customer_id ?? r.customerId ?? 0),
-    factory_id: Number(r.factory_id ?? r.factoryId ?? 0),
-    factory_name: r.factory_name != null ? String(r.factory_name) : undefined,
-    factory_image:
-      r.factory_image != null
-        ? String(r.factory_image)
-        : r.factory_image_url != null
-          ? String(r.factory_image_url)
-          : r.factory_avatar != null
-            ? String(r.factory_avatar)
-            : undefined,
-    rfq_id: r.rfq_id != null ? Number(r.rfq_id) : null,
-    customer_name: r.customer_name != null ? String(r.customer_name) : undefined,
-    customer_image: r.customer_image != null ? String(r.customer_image) : undefined,
-    rfq_title:
-      r.rfq_title != null
-        ? String(r.rfq_title)
-        : r.rfq_name != null
-          ? String(r.rfq_name)
-          : null,
-    last_message:
-      r.last_message != null
-        ? String(r.last_message)
-        : r.lastMessage != null
-          ? String(r.lastMessage)
-          : undefined,
-    last_message_at:
-      r.last_message_at != null
-        ? String(r.last_message_at)
-        : r.lastMessageAt != null
-          ? String(r.lastMessageAt)
-          : undefined,
+    customer_id: Number.isFinite(customerId) ? customerId : 0,
+    factory_id: Number.isFinite(factoryId) ? factoryId : 0,
+    last_message: String(r.last_message ?? r.lastMessage ?? ''),
     unread_customer: Number(r.unread_customer ?? r.unread_count ?? r.unread ?? 0),
     unread_factory: Number(r.unread_factory ?? r.unread_factory_count ?? 0),
     has_quote: Boolean(r.has_quote ?? r.hasQuote ?? false),
-    created_at: String(r.created_at ?? ''),
     updated_at: String(r.updated_at ?? r.time ?? ''),
+    viewer_role: r.viewer_role === 'FT' ? 'FT' : r.viewer_role === 'CT' ? 'CT' : undefined,
+    customer: {
+      user_id: Number(customerObj.user_id ?? customerId ?? 0),
+      first_name: String(customerObj.first_name ?? ''),
+      last_name: String(customerObj.last_name ?? ''),
+      display_name: String(customerObj.display_name ?? r.customer_name ?? ''),
+    },
+    factory: {
+      user_id: Number(factoryObj.user_id ?? factoryId ?? 0),
+      factory_name: String(factoryObj.factory_name ?? r.factory_name ?? ''),
+      image_url: String(factoryObj.image_url ?? r.factory_image ?? r.factory_image_url ?? ''),
+      is_verified: factoryObj.is_verified === true,
+      specialization: String(factoryObj.specialization ?? ''),
+    },
   };
 }
 
 export function useConversations() {
   const { user } = useAuth();
-  const role = (user?.role === 'FT' ? 'FT' : 'CU') as 'CU' | 'FT';
+  const currentUserId = getCurrentUserId(user);
 
   const [items, setItems] = useState<UiConversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,11 +54,28 @@ export function useConversations() {
     try {
       const raw = await conversationsApi.list();
       const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      if (currentUserId == null) {
+        setItems([]);
+        return;
+      }
       const mapped = sortConversations(
         arr
-          .map(rowToApiConversation)
-          .filter((x): x is ApiConversation => x != null)
-          .map((r) => normalizeConversation(r, role)),
+          .map(rowToConversation)
+          .filter((x): x is ConversationDTO => x != null)
+          .map((conv) => {
+            const view = resolveCounterparty(conv, currentUserId);
+            return {
+              id: String(conv.conv_id),
+              conv,
+              view,
+              rfqName: '',
+              lastMessage: conv.last_message ?? '',
+              lastMessageAt: conv.updated_at ?? '',
+              updatedAt: conv.updated_at ?? '',
+              unread: unreadForViewer(conv, view.viewerRole),
+              hasQuote: Boolean(conv.has_quote),
+            };
+          }),
       );
       setItems(mapped);
     } catch (e) {
@@ -76,7 +84,7 @@ export function useConversations() {
     } finally {
       setLoading(false);
     }
-  }, [role]);
+  }, [currentUserId]);
 
   useEffect(() => {
     void load();

@@ -12,6 +12,7 @@ type Props = {
   lockContext: ProductionLockContext;
   templatePreview: ProductionStepTemplate[];
   onBackToOverview?: () => void;
+  onPayDeposit?: () => void;
 };
 
 export function ProductionLockedState({
@@ -19,11 +20,18 @@ export function ProductionLockedState({
   lockContext,
   templatePreview,
   onBackToOverview,
+  onPayDeposit,
 }: Props) {
   const body = useMemo(() => {
     switch (reason) {
       case 'PENDING_DEPOSIT':
-        return <LockedPendingDeposit ctx={lockContext} onBackToOverview={onBackToOverview} />;
+        return (
+          <LockedPendingDeposit
+            ctx={lockContext}
+            onBackToOverview={onBackToOverview}
+            onPayDeposit={onPayDeposit}
+          />
+        );
       case 'DEPOSIT_EXPIRED':
         return <LockedDepositExpired ctx={lockContext} onBackToOverview={onBackToOverview} />;
       case 'ORDER_CANCELLED':
@@ -31,7 +39,7 @@ export function ProductionLockedState({
       default:
         return <LockedUnknownReason />;
     }
-  }, [reason, lockContext, onBackToOverview]);
+  }, [reason, lockContext, onBackToOverview, onPayDeposit]);
 
   return (
     <div className="flex flex-col items-center space-y-6 py-6 sm:py-8">

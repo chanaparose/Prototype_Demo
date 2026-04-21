@@ -15,6 +15,8 @@ type Props = {
   variant: 'pending_deposit' | 'deposit_expired';
   /** When BE omits next_action.cta_url (lock_context.payment_url) */
   fallbackCtaUrl?: string;
+  /** When supplied, CTA opens in-page payment modal instead of navigating */
+  onPayDeposit?: () => void;
 };
 
 export function OrderActionBanner({
@@ -22,6 +24,7 @@ export function OrderActionBanner({
   paymentSchedule,
   variant,
   fallbackCtaUrl,
+  onPayDeposit,
 }: Props) {
   const navigate = useNavigate();
   const dep = paymentSchedule.find((s) => s.stage === 'DEPOSIT');
@@ -36,6 +39,10 @@ export function OrderActionBanner({
     variant === 'deposit_expired' ? 'หมดกำหนดชำระมัดจำ' : 'ขั้นต่อไป: ชำระมัดจำ';
 
   const onCta = () => {
+    if (onPayDeposit) {
+      onPayDeposit();
+      return;
+    }
     if (ctaUrl.startsWith('http')) {
       window.location.href = ctaUrl;
       return;
