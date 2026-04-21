@@ -8,12 +8,19 @@ export type OrderSummary = {
   status: string;
   progress: number;
   totalAmount: number;
-  quantity: number;
+  /** @deprecated — prefer passing `rfqSummary.quantity` derived from order.rfq */
+  quantity?: number;
   estimatedDelivery: string;
 };
 
 type FactoryInfo = {
   image?: string;
+};
+
+/** Canonical quantity source — comes from `order.rfq` on the enriched payload. */
+export type RfqSummary = {
+  quantity: number;
+  unit_name: string;
 };
 
 const STATUS_CONFIG: Record<string, { label: string }> = {
@@ -25,14 +32,31 @@ const STATUS_CONFIG: Record<string, { label: string }> = {
 
 type OrderSummaryCardProps = {
   order: OrderSummary;
+  /** RFQ-derived summary (quantity + unit). Prefer this over legacy order.quantity. */
+  rfqSummary?: RfqSummary | null;
   relatedFactory?: FactoryInfo | null;
   /** API-driven label (e.g. หมดกำหนดชำระ for PE) — never show raw codes like PP/PE */
   statusLabelTh?: string;
 };
 
-export function OrderSummaryCard({ order, relatedFactory, statusLabelTh }: OrderSummaryCardProps) {
+export function OrderSummaryCard({
+  order,
+  rfqSummary,
+  relatedFactory,
+  statusLabelTh,
+}: OrderSummaryCardProps) {
   const cfg = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending_payment;
   const badgeLabel = statusLabelTh?.trim() || cfg.label;
+
+  // Quantity resolution: prefer rfqSummary (BE-enriched), fall back to legacy order.quantity
+  // (kept during the rollout window — remove once all call sites migrate).
+  const legacyQty =
+    typeof order.quantity === 'number' && Number.isFinite(order.quantity) && order.quantity > 0
+      ? order.quantity
+      : null;
+  const qty = rfqSummary?.quantity ?? legacyQty;
+  const unit = rfqSummary?.unit_name ?? 'ชิ้น';
+  const qtyText = qty != null ? `${qty.toLocaleString('th-TH')} ${unit}` : '—';
 
   return (
     <div
@@ -86,7 +110,7 @@ export function OrderSummaryCard({ order, relatedFactory, statusLabelTh }: Order
           <div className="w-px bg-white/30" />
           <div>
             <p className="text-white text-sm" style={{ fontWeight: 700 }}>
-              {order.quantity.toLocaleString('th-TH')} ชิ้น
+              {qtyText}
             </p>
             <p className="text-white/70 text-[10px]">จำนวน</p>
           </div>

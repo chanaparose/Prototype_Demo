@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Search, RefreshCw } from 'lucide-react';
-import { ImageWithFallback } from '../../components/shared';
+import { ChatPartyHeader } from '../../components/features/chat/ChatPartyHeader';
 import type { UiConversation } from './types';
 import { formatConversationTime } from './types';
 
@@ -132,54 +132,28 @@ function ConversationCard({
       }}
       className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98]"
     >
-      <div className="flex items-center gap-3">
-        <div className="relative shrink-0">
-          <ImageWithFallback
-            src={conv.factoryImage}
-            alt={conv.factoryName}
-            className="w-12 h-12 rounded-2xl object-cover bg-gray-100"
-          />
-          {conv.hasQuote && (
-            <span
-              className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white"
-              style={{ background: '#E38844', fontWeight: 700 }}
-            >
-              ฿
-            </span>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-0.5">
-            <p
-              className="text-sm truncate"
-              style={{ fontWeight: conv.unread > 0 ? 700 : 600, color: '#2E2252' }}
-            >
-              {conv.factoryName}
-            </p>
-            <span className="text-[10px] text-gray-400 shrink-0 ml-2">
-              {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
-            </span>
-          </div>
-          <p className="text-[10px] mb-1 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>
-          <div className="flex items-center justify-between">
-            <p
-              className="text-xs truncate max-w-[180px]"
-              style={{
-                color: conv.unread > 0 ? '#374151' : '#9CA3AF',
-                fontWeight: conv.unread > 0 ? 500 : 400,
-              }}
-            >
-              {conv.lastMessage}
-            </p>
-            {conv.unread > 0 && (
-              <span
-                className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2"
-                style={{ background: '#E38844', fontWeight: 700 }}
-              >
-                {conv.unread}
+      <div className="space-y-1.5">
+        <ChatPartyHeader
+          view={conv.view}
+          density="row"
+          trailing={
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-[10px] text-gray-400">
+                {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
               </span>
-            )}
-          </div>
+              {conv.unread > 0 ? (
+                <span className="px-1.5 py-0.5 rounded-full bg-[#A238FF] text-white text-[10px]">
+                  {conv.unread}
+                </span>
+              ) : null}
+            </div>
+          }
+        />
+        <div className="pl-[56px]">
+          <p className="text-[10px] mb-1 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>
+          <p className="text-xs truncate max-w-[220px]" style={{ color: conv.unread > 0 ? '#374151' : '#9CA3AF' }}>
+            {conv.lastMessage}
+          </p>
         </div>
       </div>
       {conv.hasQuote && (

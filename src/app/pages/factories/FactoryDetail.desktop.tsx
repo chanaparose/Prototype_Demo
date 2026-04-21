@@ -131,25 +131,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             </div>
           </div>
 
-          <div className="h-8 w-px shrink-0 bg-gray-100" />
-
-          <div className="flex items-center gap-4 text-[12px] text-gray-500">
-            <span className="flex items-center gap-1.5">
-              <MapPin size={12} className="text-gray-400" />
-              {factory.location}
-            </span>
-            {profile && (
-              <>
-                <span className="flex items-center gap-1.5">
-                  <Mail size={12} className="text-gray-400" />
-                  ติดต่อผ่านแชท
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Phone size={12} className="text-gray-400" />-
-                </span>
-              </>
-            )}
-          </div>
+           
 
           <div className="h-8 w-px shrink-0 bg-gray-100" />
 
@@ -264,7 +246,6 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             factoryId={factory.id}
             productItems={productItems}
             promotionItems={promotionItems}
-            articleIdeas={articleItems.ideas}
             articleShowcases={articleItems.showcaseIdeas}
             factory={{
               name: factory.name,
@@ -278,6 +259,10 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             }}
             profile={profile}
             reviews={reviews}
+            factoryCategoryNames={factoryCategoryNames}
+            factorySubCategoryNames={factorySubCategoryNames}
+            factorySubCategoryPairs={factorySubCategoryPairs}
+            apiCertificates={apiCertificates}
             onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
             onPromotionClick={(itemId) => navigate(`/factory-ideas/promotions/${itemId}`)}
             onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}

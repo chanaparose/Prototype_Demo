@@ -14,9 +14,11 @@ import { diffDaysFromNow, formatDateTh } from '../utils';
 type Props = {
   ctx: ProductionLockContext;
   onBackToOverview?: () => void;
+  /** When supplied, CTA opens in-page payment modal instead of navigating */
+  onPayDeposit?: () => void;
 };
 
-export function LockedPendingDeposit({ ctx, onBackToOverview }: Props) {
+export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Props) {
   const navigate = useNavigate();
   const due = ctx.deposit_due_date ?? '';
   const daysLeft = diffDaysFromNow(due);
@@ -25,6 +27,10 @@ export function LockedPendingDeposit({ ctx, onBackToOverview }: Props) {
   const payUrl = ctx.payment_url ?? '';
 
   const pay = () => {
+    if (onPayDeposit) {
+      onPayDeposit();
+      return;
+    }
     if (payUrl.startsWith('http')) {
       window.location.href = payUrl;
       return;

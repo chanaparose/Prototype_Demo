@@ -71,12 +71,15 @@ type FactoryProfileTabContentProps = {
   onTabChange: (tab: TabId) => void;
   productItems: ShowcaseItem[];
   promotionItems: ShowcaseItem[];
-  articleIdeas: IdeaArticle[];
   articleShowcases: ShowcaseItem[];
   factory: FactoryAbout;
   factoryId?: string;
   profile: FactoryProfileExtra | null | undefined;
   reviews: ReviewItem[];
+  factoryCategoryNames?: string[];
+  factorySubCategoryNames?: string[];
+  factorySubCategoryPairs?: { categoryLabel: string; subLabel: string }[];
+  apiCertificates?: Record<string, unknown>[];
   onProductClick: (id: string) => void;
   onPromotionClick: (id: string) => void;
   onIdeaClick: (id: string) => void;
@@ -87,12 +90,15 @@ export function FactoryProfileTabContent({
   onTabChange,
   productItems,
   promotionItems,
-  articleIdeas,
   articleShowcases,
   factory,
   factoryId,
   profile,
   reviews,
+  factoryCategoryNames = [],
+  factorySubCategoryNames = [],
+  factorySubCategoryPairs = [],
+  apiCertificates = [],
   onProductClick,
   onPromotionClick,
   onIdeaClick,
@@ -149,7 +155,7 @@ export function FactoryProfileTabContent({
               โรงงานนี้ยังไม่มีสินค้าแนะนำ
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {productItems.map((item) => (
               <div
                 key={item.id}
@@ -186,7 +192,7 @@ export function FactoryProfileTabContent({
               โรงงานนี้ยังไม่มีโปรโมชัน
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {promotionItems.map((item) => (
               <div
                 key={item.id}
@@ -218,35 +224,12 @@ export function FactoryProfileTabContent({
 
       {activeTab === 'articles' && (
         <div>
-          {articleIdeas.length === 0 && articleShowcases.length === 0 ? (
+          {articleShowcases.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center">
               โรงงานนี้ยังไม่มีบทความ
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {articleIdeas.map((article) => (
-                <div
-                  key={article.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-w-0"
-                >
-                  <div className="h-28 sm:h-32">
-                    <ImageWithFallback
-                      src={article.image}
-                      alt={article.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-2.5 sm:p-3">
-                    <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
-                      {article.title}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{article.excerpt}</p>
-                    <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1.5">
-                      {formatThaiDate(article.publishedAt)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {articleShowcases.map((item) => (
                 <div
                   key={item.id}
@@ -296,10 +279,72 @@ export function FactoryProfileTabContent({
                 ประเภทสินค้าที่รับผลิต:{' '}
                 {(profile?.acceptedProductTypes ?? [factory.specialization]).join(', ')}
               </p>
-              <p className="flex items-start gap-2">
+              {(factorySubCategoryPairs.length > 0 ||
+                factoryCategoryNames.length > 0 ||
+                factorySubCategoryNames.length > 0) && (
+                <div className="flex items-start gap-2">
+                  <Package className="w-4 h-4 mt-0.5 text-purple-600" />
+                  <div>
+                    <p>หมวดสินค้า</p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {factorySubCategoryPairs.length > 0
+                        ? factorySubCategoryPairs.map((p, i) => (
+                            <span
+                              key={`pair-${p.categoryLabel}-${p.subLabel}-${i}`}
+                              className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-800"
+                            >
+                              {p.categoryLabel} › {p.subLabel}
+                            </span>
+                          ))
+                        : (
+                          <>
+                            {factoryCategoryNames.map((n) => (
+                              <span
+                                key={`cat-${n}`}
+                                className="rounded-full border border-sky-100 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-800"
+                              >
+                                {n}
+                              </span>
+                            ))}
+                            {factorySubCategoryNames.map((n) => (
+                              <span
+                                key={`sub-${n}`}
+                                className="rounded-full border border-teal-100 bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-800"
+                              >
+                                {n}
+                              </span>
+                            ))}
+                          </>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 mt-0.5 text-purple-600" />
-                มาตรฐาน/ใบรับรอง: {(profile?.certificates ?? []).join(', ') || '-'}
-              </p>
+                <div>
+                  <p>มาตรฐาน/ใบรับรอง</p>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {(profile?.certificates ?? []).map((c) => (
+                      <span
+                        key={c}
+                        className="rounded-full border border-purple-100 bg-purple-50 px-2 py-0.5 text-[10px] font-semibold text-purple-700"
+                      >
+                        {c}
+                      </span>
+                    ))}
+                    {apiCertificates.map((c, i) => (
+                      <span
+                        key={String(c.map_id ?? c.cert_id ?? c.id ?? i)}
+                        className="rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800"
+                      >
+                        {String(c.cert_name ?? c.name_th ?? c.cert_number ?? 'ใบรับรอง')}
+                      </span>
+                    ))}
+                    {(profile?.certificates ?? []).length === 0 && apiCertificates.length === 0 ? <span>-</span> : null}
+                  </div>
+                </div>
+              </div>
               <p className="flex items-start gap-2">
                 <Star className="w-4 h-4 mt-0.5 text-purple-600" />
                 รีวิวเฉลี่ย: {factory.rating} จาก {factory.reviews} รีวิว

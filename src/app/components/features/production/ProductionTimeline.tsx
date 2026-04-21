@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { MergedProductionStep } from './types';
 import { StepRow } from './StepRow';
+import { deriveStepStates } from './stepDerivedState';
 
 type Props = {
   merged: MergedProductionStep[];
+  orderStatus?: string;
   isFactory: boolean;
   isCustomer: boolean;
   onOpenDrawer: (m: MergedProductionStep) => void;
@@ -13,6 +15,7 @@ type Props = {
 
 export function ProductionTimeline({
   merged,
+  orderStatus,
   isFactory,
   isCustomer,
   onOpenDrawer,
@@ -21,9 +24,14 @@ export function ProductionTimeline({
 }: Props) {
   const [openCode, setOpenCode] = useState<string | null>(null);
 
+  const derivedStates = useMemo(
+    () => deriveStepStates(merged, orderStatus),
+    [merged, orderStatus],
+  );
+
   return (
     <div className="space-y-3" aria-label="ไทม์ไลน์การผลิต">
-      {merged.map((m) => {
+      {merged.map((m, i) => {
         const key = m.template.step_code || String(m.template.step_id);
         const expanded = openCode === key;
         const uid = m.update.update_id;
@@ -33,6 +41,7 @@ export function ProductionTimeline({
           <StepRow
             key={key}
             merged={m}
+            derivedState={derivedStates[i]}
             expanded={expanded}
             onToggleExpand={() => setOpenCode(expanded ? null : key)}
             isFactory={isFactory}

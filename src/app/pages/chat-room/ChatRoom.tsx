@@ -26,6 +26,9 @@ import { MessageBubble, rowToRoomMessage, type RoomMessage } from '../../compone
 import { ReferenceChip } from '../../components/chat/ReferenceChip';
 import { sortMessagesByCreatedAt, insertMessageSorted, dedupeByKey } from '../messages/selectors';
 import { useMarkAsRead } from '../messages/useMarkAsRead';
+import { resolveCounterparty, FACTORY_FALLBACK_AVATAR } from '../../utils/counterparty';
+import { ChatPartyHeader } from '../../components/features/chat/ChatPartyHeader';
+import type { ConversationDTO } from '../../types/api';
 
 export type ChatRoomPreview = {
   factoryId?: string;
@@ -385,6 +388,34 @@ function ChatRoomBody({
 
   const latestQuote = messages.find((m) => m.message_type === 'QT' && m.quoteData);
   const showMiniDash = Boolean(apiConv?.has_quote ?? conv.hasQuote);
+  const counterpartyView = useMemo(() => {
+    if (!apiConv || currentUserId == null) return null;
+    const normalized: ConversationDTO = {
+      conv_id: apiConv.conv_id,
+      customer_id: apiConv.customer_id,
+      factory_id: apiConv.factory_id,
+      last_message: apiConv.last_message ?? '',
+      unread_customer: apiConv.unread_customer,
+      unread_factory: apiConv.unread_factory,
+      has_quote: apiConv.has_quote,
+      updated_at: apiConv.updated_at,
+      viewer_role: apiConv.customer_id === currentUserId ? 'CT' : 'FT',
+      customer: {
+        user_id: apiConv.customer_id,
+        first_name: '',
+        last_name: '',
+        display_name: apiConv.customer_name ?? '',
+      },
+      factory: {
+        user_id: apiConv.factory_id,
+        factory_name: apiConv.factory_name ?? conv.factoryName,
+        image_url: apiConv.factory_image ?? conv.factoryAvatar ?? '',
+        is_verified: false,
+        specialization: '',
+      },
+    };
+    return resolveCounterparty(normalized, currentUserId);
+  }, [apiConv, currentUserId, conv.factoryName, conv.factoryAvatar]);
 
   return (
     <div
@@ -407,26 +438,27 @@ function ChatRoomBody({
           ) : (
             <div />
           )}
-          <div className="flex items-center gap-2.5">
-            <ImageWithFallback
-              src={conv.factoryAvatar}
-              alt={conv.factoryName}
-              className="w-8 h-8 rounded-xl object-cover bg-gray-100"
-            />
-            <div className="text-center">
-              <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
-                {conv.factoryName || 'การสนทนา'}
-              </p>
-              <div className="flex items-center gap-1 justify-center">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full" />
-                <p className="text-[10px] text-green-500">Online</p>
+          <div className="min-w-[220px]">
+            {counterpartyView ? (
+              <ChatPartyHeader
+                view={{ ...counterpartyView, avatarUrl: counterpartyView.avatarUrl || FACTORY_FALLBACK_AVATAR }}
+                density="header"
+              />
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <ImageWithFallback
+                  src={conv.factoryAvatar}
+                  alt={conv.factoryName}
+                  className="w-8 h-8 rounded-xl object-cover bg-gray-100"
+                />
+                <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
+                  {conv.factoryName || 'การสนทนา'}
+                </p>
               </div>
-            </div>
+            )}
           </div>
           <div className="flex gap-2">
-            <button type="button" className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Phone size={17} className="text-gray-600" />
-            </button>
+            
             <button type="button" className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
               <MoreVertical size={17} className="text-gray-600" />
             </button>

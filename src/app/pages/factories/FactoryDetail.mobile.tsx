@@ -233,7 +233,6 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
           factoryId={factory.id}
           productItems={productItems}
           promotionItems={promotionItems}
-          articleIdeas={articleItems.ideas}
           articleShowcases={articleItems.showcaseIdeas}
           factory={{
             name: factory.name,
@@ -247,6 +246,10 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
           }}
           profile={profile}
           reviews={reviews}
+          factoryCategoryNames={factoryCategoryNames}
+          factorySubCategoryNames={factorySubCategoryNames}
+          factorySubCategoryPairs={factorySubCategoryPairs}
+          apiCertificates={apiCertificates}
           onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
           onPromotionClick={(itemId) => navigate(`/factory-ideas/promotions/${itemId}`)}
           onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}
