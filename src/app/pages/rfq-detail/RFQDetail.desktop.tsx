@@ -1,8 +1,10 @@
 import React, { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRfqDetail } from '../../hooks/useRfqDetail';
+import { rfqsApi } from '../../services/api';
 import { openChatSession } from '../../utils/openChatSession';
 import { getCurrentUserId, initialMessageForReference } from '../../utils/chatContract';
 import type { OfferItem } from '../../components/features/rfq-detail/RfqDetailOffersSection';
@@ -23,6 +25,7 @@ const COLORS = {
   gray: '#F5F5F5',
   lightPurpleBg: '#F8F6FA',
 };
+const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +35,7 @@ export function RFQDetailDesktop() {
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
+  const [cancelling, setCancelling] = React.useState(false);
 
   const handleChatWithOffer = useCallback(
     async (offer: OfferItem) => {
@@ -121,6 +125,7 @@ export function RFQDetailDesktop() {
   const statusLabel = isHistoryView
     ? STATUS_LABEL[rfq.status] ?? rfq.status
     : `${rfq.offerCount} ใบเสนอราคา`;
+  const canCancel = CANCELLABLE_STATUSES.has(rfq.status);
 
   return (
     <div className="hidden lg:block" style={{ backgroundColor: COLORS.lightPurpleBg }}>
@@ -156,7 +161,29 @@ export function RFQDetailDesktop() {
               <span>งบ: ฿{rfq.budget.toLocaleString()}</span>
             </div>
           </div>
-
+          {canCancel ? (
+            <button
+              type="button"
+              disabled={cancelling}
+              onClick={async () => {
+                const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
+                if (!ok) return;
+                setCancelling(true);
+                try {
+                  await rfqsApi.cancel(rfq.id);
+                  toast.success('ยกเลิก RFQ สำเร็จ');
+                  await refetch();
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
+                } finally {
+                  setCancelling(false);
+                }
+              }}
+              className="px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold disabled:opacity-60"
+            >
+              {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
+            </button>
+          ) : null}
         </div>
 
         {/* Content */}

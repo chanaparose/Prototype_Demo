@@ -24,6 +24,7 @@ import {
   type ShippingMethod,
   type Address,
 } from '../components/features/create-rfq';
+import { type AddressFormPayload } from '../components/factory/AddressFormModal';
 import { rfqsApi, masterApi, addressesApi, categoriesApi } from '../services/api';
 
 export function useCreateRfqState() {
@@ -107,13 +108,16 @@ export function useCreateRfqState() {
   /* ── Load addresses from API ── */
   const [addresses, setAddresses] = React.useState<Address[]>([]);
   const [addressesLoading, setAddressesLoading] = React.useState(true);
+  const [addressModalOpen, setAddressModalOpen] = React.useState(false);
+  const [addressModalSaving, setAddressModalSaving] = React.useState(false);
 
-  const loadAddresses = React.useCallback(() => {
+  const loadAddresses = React.useCallback(async (): Promise<Address[]> => {
     setAddressesLoading(true);
-    addressesApi.list()
-      .then((raw) => {
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped: Address[] = arr.map((r) => ({
+    try {
+      const raw = await addressesApi.list();
+      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const mapped: Address[] = arr
+        .map((r) => ({
           id: String(r.address_id ?? r.id ?? ''),
           addressDetail: String(r.address_detail ?? ''),
           subDistrict: String(r.sub_district_name ?? r.sub_district ?? ''),
@@ -121,20 +125,53 @@ export function useCreateRfqState() {
           province: String(r.province_name ?? r.province ?? ''),
           zipCode: String(r.zip_code ?? ''),
           isDefault: Boolean(r.is_default ?? false),
-        })).filter((a) => a.id);
-        setAddresses(mapped);
+        }))
+        .filter((a) => a.id);
+      setAddresses(mapped);
 
-        // Auto-select default address
-        if (!form.addressId) {
-          const def = mapped.find((a) => a.isDefault) ?? mapped[0];
-          if (def) setForm((prev) => ({ ...prev, addressId: def.id }));
-        }
-      })
-      .catch(() => setAddresses([]))
-      .finally(() => setAddressesLoading(false));
+      // Auto-select default address
+      if (!form.addressId) {
+        const def = mapped.find((a) => a.isDefault) ?? mapped[0];
+        if (def) setForm((prev) => ({ ...prev, addressId: def.id }));
+      }
+      return mapped;
+    } catch {
+      setAddresses([]);
+      return [];
+    } finally {
+      setAddressesLoading(false);
+    }
   }, [form.addressId]);
 
   React.useEffect(() => { loadAddresses(); }, []);
+
+  const openAddressModal = React.useCallback(() => {
+    setAddressModalOpen(true);
+  }, []);
+
+  const closeAddressModal = React.useCallback(() => {
+    if (addressModalSaving) return;
+    setAddressModalOpen(false);
+  }, [addressModalSaving]);
+
+  const submitAddress = React.useCallback(
+    async (payload: AddressFormPayload) => {
+      setAddressModalSaving(true);
+      try {
+        const created = (await addressesApi.create(payload)) as Record<string, unknown>;
+        const createdId = String(created.address_id ?? created.id ?? '').trim();
+        const latest = await loadAddresses();
+        const nextId = createdId || latest.find((a) => a.isDefault)?.id || latest[latest.length - 1]?.id || '';
+        if (nextId) {
+          setForm((prev) => ({ ...prev, addressId: nextId }));
+        }
+        setAddressModalOpen(false);
+      } finally {
+        setAddressModalSaving(false);
+      }
+    },
+    [loadAddresses],
+  );
 
   /* ── Derived ── */
   const displayCategoryName =
@@ -244,6 +281,11 @@ export function useCreateRfqState() {
     addresses,
     addressesLoading,
     loadAddresses,
+    addressModalOpen,
+    addressModalSaving,
+    openAddressModal,
+    closeAddressModal,
+    submitAddress,
 
     // submit
     submitting,

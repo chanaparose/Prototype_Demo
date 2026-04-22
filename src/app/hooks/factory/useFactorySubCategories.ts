@@ -12,7 +12,7 @@ export function useFactorySubCategories(factoryId: number | string | null | unde
       const raw = await factoriesApi.getSubCategories(factoryId as string | number);
       const arr = (Array.isArray(raw) ? raw : []) as Row[];
       return arr
-        .map((r) => Number(r.sub_category_id ?? r.id))
+        .map((r) => Number(r.sub_category_id ?? r.row_id ?? r.id))
         .filter((n) => Number.isFinite(n) && n > 0);
     },
     staleTime: 0,

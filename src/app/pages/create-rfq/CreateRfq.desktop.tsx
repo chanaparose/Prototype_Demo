@@ -27,6 +27,7 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
     units,
     shippingMethods,
     addresses,
+    openAddressModal,
     updateForm,
     canProceed,
     submitting,
@@ -139,6 +140,7 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
                     addresses={addresses}
                     shippingMethods={shippingMethods}
                     onUpdate={updateForm}
+                    onAddAddress={openAddressModal}
                   />
                 </motion.div>
               )}

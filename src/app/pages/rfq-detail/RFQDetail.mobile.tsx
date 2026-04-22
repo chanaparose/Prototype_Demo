@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
+import { rfqsApi } from '../../services/api';
 import { openChatSession } from '../../utils/openChatSession';
 import { getCurrentUserId, initialMessageForReference } from '../../utils/chatContract';
 import type { OfferItem } from '../../components/features/rfq-detail/RfqDetailOffersSection';
@@ -13,6 +15,8 @@ import {
   HISTORY_STATUSES,
   STATUS_LABEL,
 } from '../../components/features/rfq-detail';
+
+const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 const COLORS = {
   purple: '#7A4B94',
@@ -28,6 +32,7 @@ export function RFQDetailMobile() {
   const { rfq, relatedOrder, loading, error, refetch } = useRfqDetail(id);
   const [specsOpen, setSpecsOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const handleChatWithOffer = useCallback(
     async (offer: OfferItem) => {
@@ -108,6 +113,7 @@ export function RFQDetailMobile() {
   const isHistoryView = HISTORY_STATUSES.includes(
     rfq.status as (typeof HISTORY_STATUSES)[number],
   );
+  const canCancel = CANCELLABLE_STATUSES.has(rfq.status);
 
   const statusBadgeStyle = isHistoryView
     ? rfq.status === 'completed'
@@ -144,6 +150,29 @@ export function RFQDetailMobile() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4">
+        {canCancel ? (
+          <button
+            type="button"
+            disabled={cancelling}
+            onClick={async () => {
+              const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
+              if (!ok) return;
+              setCancelling(true);
+              try {
+                await rfqsApi.cancel(rfq.id);
+                toast.success('ยกเลิก RFQ สำเร็จ');
+                await refetch();
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
+              } finally {
+                setCancelling(false);
+              }
+            }}
+            className="w-full rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold py-2.5 disabled:opacity-60"
+          >
+            {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
+          </button>
+        ) : null}
         {(rfq.subCategoryName || rfq.shippingMethodName) ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-2 text-sm">
             {rfq.subCategoryName ? (
