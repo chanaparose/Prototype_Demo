@@ -7,6 +7,7 @@ import type { DerivedCardState, FactoryOrderRow } from '../types';
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: string }> = {
   PP: { label: 'รอชำระมัดจำ', badgeClass: 'bg-amber-100 text-amber-800', icon: '⏳' },
   PE: { label: 'หมดกำหนดชำระ', badgeClass: 'bg-red-100 text-red-800', icon: '⛔' },
+  PD: { label: 'ชำระมัดจำแล้ว', badgeClass: 'bg-teal-100 text-teal-800', icon: '💳' },
   PR: { label: 'กำลังผลิต', badgeClass: 'bg-violet-100 text-violet-800', icon: '⚙️' },
   QC: { label: 'ตรวจสอบคุณภาพ', badgeClass: 'bg-indigo-100 text-indigo-800', icon: '🔍' },
   SH: { label: 'จัดส่งแล้ว', badgeClass: 'bg-sky-100 text-sky-800', icon: '📦' },

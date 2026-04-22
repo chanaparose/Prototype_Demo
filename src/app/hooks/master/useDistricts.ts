@@ -9,9 +9,9 @@ export interface DistrictOption {
 }
 
 function toOption(r: Row): DistrictOption | null {
-  const id = Number(r.district_id ?? r.id);
+  const id = Number(r.district_id ?? r.row_id ?? r.id);
   if (!Number.isFinite(id) || id <= 0) return null;
-  const name = String(r.district_name ?? r.name_th ?? r.name ?? '').trim();
+  const name = String(r.district_name ?? r.name_th ?? r.name ?? r.name_en ?? '').trim();
   if (!name) return null;
   return { id, name };
 }

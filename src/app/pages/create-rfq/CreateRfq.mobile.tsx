@@ -27,6 +27,7 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
     units,
     shippingMethods,
     addresses,
+    openAddressModal,
     updateForm,
     canProceed,
     submitting,
@@ -135,6 +136,7 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
                 addresses={addresses}
                 shippingMethods={shippingMethods}
                 onUpdate={updateForm}
+                onAddAddress={openAddressModal}
               />
             </motion.div>
           )}

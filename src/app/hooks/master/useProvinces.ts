@@ -9,9 +9,9 @@ export interface ProvinceOption {
 }
 
 function toOption(r: Row): ProvinceOption | null {
-  const id = Number(r.province_id ?? r.id);
+  const id = Number(r.province_id ?? r.row_id ?? r.id);
   if (!Number.isFinite(id) || id <= 0) return null;
-  const name = String(r.province_name ?? r.name_th ?? r.name ?? '').trim();
+  const name = String(r.province_name ?? r.name_th ?? r.name ?? r.name_en ?? '').trim();
   if (!name) return null;
   return { id, name };
 }

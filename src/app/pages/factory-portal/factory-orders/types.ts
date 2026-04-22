@@ -1,4 +1,4 @@
-export type OrderStatusCode = 'PP' | 'PE' | 'PR' | 'QC' | 'SH' | 'CP' | 'CN';
+export type OrderStatusCode = 'PP' | 'PE' | 'PD' | 'PR' | 'QC' | 'SH' | 'CP' | 'CN';
 
 export interface ProductionSummaryRow {
   current_step_code: string | null;

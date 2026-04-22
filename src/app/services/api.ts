@@ -252,7 +252,7 @@ export const factoriesApi = {
   get: (id: string | number) => api.get<Record<string, unknown>>(`/factories/${id}`),
   create: (data: Record<string, unknown>) => api.post<Record<string, unknown>>('/factories/', data),
   update: (id: string | number, data: Record<string, unknown>) =>
-    api.patch<Record<string, unknown>>(`/factories/${id}`, data),
+    api.put<Record<string, unknown>>(`/factories/${id}`, data),
   delete: (id: string | number) => api.delete(`/factories/${id}`),
   /** GET /factories/me — own factory profile (JWT role=FT) */
   getMe: () => api.get<Record<string, unknown>>('/factories/me'),

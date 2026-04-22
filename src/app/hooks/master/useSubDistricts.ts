@@ -10,9 +10,9 @@ export interface SubDistrictOption {
 }
 
 function toOption(r: Row): SubDistrictOption | null {
-  const id = Number(r.sub_district_id ?? r.id);
+  const id = Number(r.sub_district_id ?? r.row_id ?? r.id);
   if (!Number.isFinite(id) || id <= 0) return null;
-  const name = String(r.sub_district_name ?? r.name_th ?? r.name ?? '').trim();
+  const name = String(r.sub_district_name ?? r.name_th ?? r.name ?? r.name_en ?? '').trim();
   if (!name) return null;
   const zipCodeRaw = String(r.zip_code ?? r.postcode ?? '').trim();
   return {

@@ -31,7 +31,7 @@ export interface OrderDetailDTO {
   factory_id: number;
   total_amount: number;
   deposit_amount: number;
-  status: 'PP' | 'PE' | 'PR' | 'QC' | 'SH' | 'CP' | 'CN';
+  status: 'PP' | 'PE' | 'PD' | 'PR' | 'QC' | 'SH' | 'CP' | 'CN';
   payment_type?: string | null;
   estimated_delivery?: string | null;
   created_at: string;

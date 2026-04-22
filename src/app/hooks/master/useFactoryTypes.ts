@@ -16,8 +16,10 @@ export function useFactoryTypes() {
       const arr = (Array.isArray(raw) ? raw : []) as Row[];
       return arr
         .map((r): FactoryTypeOption | null => {
-          const id = Number(r.factory_type_id ?? r.id);
-          const label = String(r.name ?? r.name_th ?? r.factory_type_name ?? '').trim();
+          const id = Number(r.factory_type_id ?? r.row_id ?? r.id);
+          const label = String(
+            r.type_name ?? r.factory_type_name ?? r.name_th ?? r.name ?? '',
+          ).trim();
           if (!Number.isFinite(id) || id <= 0 || !label) return null;
           return { id, label };
         })

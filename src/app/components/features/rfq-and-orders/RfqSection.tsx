@@ -9,7 +9,6 @@ import {
   Clock3,
   FileCheck2,
   OctagonX,
-  XCircle,
 } from 'lucide-react';
 import {
   PRIMARY_COLOR,
@@ -50,12 +49,7 @@ type RfqSectionProps = {
   setRfqFilter: (id: RfqFilterId) => void;
   filteredRfqs: RfqItem[];
   rfqTagCounts: RfqTagCounts;
-  onCancelRfq?: (rfqId: string) => void | Promise<void>;
-  cancellingRfqId?: string | null;
 };
-
-/** FE statuses that map back to BE `OP` (cancellable) */
-const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 const RFQ_TABS: { id: RfqFilterId; label: string; icon: typeof Clock3 }[] = [
   { id: 'pending', label: 'รอดำเนินการ', icon: Clock3 },
@@ -68,8 +62,6 @@ export function RfqSection({
   setRfqFilter,
   filteredRfqs,
   rfqTagCounts,
-  onCancelRfq,
-  cancellingRfqId,
 }: RfqSectionProps) {
   const navigate = useNavigate();
 
@@ -228,33 +220,11 @@ export function RfqSection({
                     </span>
                   </div>
                   <div
-                    className="mt-2 pt-2 flex items-center justify-between gap-2 text-xs"
+                    className="mt-2 pt-2 flex items-center justify-end gap-2 text-xs"
                     style={{
                       borderTop: `1px solid ${BORDER_WARM}`,
                     }}
                   >
-                    {CANCELLABLE_STATUSES.has(rfq.status) && onCancelRfq ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onCancelRfq(rfq.id);
-                        }}
-                        disabled={cancellingRfqId === rfq.id}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg font-semibold disabled:opacity-50"
-                        style={{
-                          color: '#B91C1C',
-                          background: '#FEF2F2',
-                          border: '1px solid #FECACA',
-                        }}
-                      >
-                        <XCircle size={12} />
-                        {cancellingRfqId === rfq.id ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
-                      </button>
-                    ) : (
-                      <span />
-                    )}
                     <span
                       className="flex items-center gap-1"
                       style={{ color: ic, fontWeight: 600 }}

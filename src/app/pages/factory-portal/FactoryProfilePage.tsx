@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,6 +23,12 @@ import {
   PROFILE_FORM_DEFAULTS,
   type ProfileFormValues,
 } from '../../components/factory/profile/ProfileFormTypes';
+
+function normalizeIds(ids: number[]): number[] {
+  return Array.from(new Set(ids))
+    .filter((id) => Number.isFinite(id) && id > 0)
+    .sort((a, b) => a - b);
+}
 
 function countDirty(dirtyFields: Record<string, unknown>): number {
   let n = 0;
@@ -55,9 +61,8 @@ export function FactoryProfilePage() {
       ((factoryRaw as Record<string, unknown>).is_verified ? 'AP' : 'PD'),
   );
 
-  const form = useForm<ProfileFormValues>({
-    defaultValues: PROFILE_FORM_DEFAULTS,
-    values: {
+  const initialValues = useMemo<ProfileFormValues>(
+    () => ({
       factory_name: String(
         (factoryRaw as Record<string, unknown>).factory_name ??
           (factoryRaw as Record<string, unknown>).name ??
@@ -69,9 +74,14 @@ export function FactoryProfilePage() {
         const v = Number((factoryRaw as Record<string, unknown>).factory_type_id);
         return Number.isFinite(v) && v > 0 ? v : null;
       })(),
-      category_ids: catsQ.data ?? [],
-      sub_category_ids: subsQ.data ?? [],
-    },
+      category_ids: normalizeIds(catsQ.data ?? []),
+      sub_category_ids: normalizeIds(subsQ.data ?? []),
+    }),
+    [factoryRaw, catsQ.data, subsQ.data],
+  );
+
+  const form = useForm<ProfileFormValues>({
+    defaultValues: PROFILE_FORM_DEFAULTS,
     mode: 'onBlur',
   });
 
@@ -81,6 +91,17 @@ export function FactoryProfilePage() {
 
   const changeCount = countDirty(form.formState.dirtyFields as Record<string, unknown>);
   const isDirty = form.formState.isDirty;
+  const lastPrefillKeyRef = useRef('');
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (saving) return;
+    if (form.formState.isDirty) return;
+    const nextKey = JSON.stringify(initialValues);
+    if (lastPrefillKeyRef.current === nextKey) return;
+    form.reset(initialValues);
+    lastPrefillKeyRef.current = nextKey;
+  }, [form, initialValues, isLoading, saving]);
 
   useBeforeUnload(isDirty);
 
@@ -98,33 +119,75 @@ export function FactoryProfilePage() {
     setError('');
     setOkMsg('');
 
-    const results = await Promise.allSettled([
-      factoriesApi.update(fid, {
+    const normalizedCategoryIds = normalizeIds(v.category_ids);
+    const normalizedSubCategoryIds = normalizeIds(v.sub_category_ids);
+
+    const saveDraftValues: ProfileFormValues = {
+      ...v,
+      category_ids: normalizedCategoryIds,
+      sub_category_ids: normalizedSubCategoryIds,
+    };
+
+    let failed = 0;
+    let subCategoryVerifyWarning = '';
+
+    try {
+      await factoriesApi.update(fid, {
         factory_name: v.factory_name.trim(),
         tax_id: v.tax_id.trim() || undefined,
         description: v.description.trim() || undefined,
         factory_type_id: v.factory_type_id ?? undefined,
-      }),
-      factoriesApi.setCategories(fid, v.category_ids),
-      factoriesApi.setSubCategories(fid, v.sub_category_ids),
-    ]);
+      });
+    } catch {
+      failed += 1;
+    }
 
-    const failed = results.filter((r) => r.status === 'rejected');
+    try {
+      await factoriesApi.setCategories(fid, normalizedCategoryIds);
+    } catch {
+      failed += 1;
+    }
+
+    try {
+      await factoriesApi.setSubCategories(fid, normalizedSubCategoryIds);
+
+      // Verify persisted sub-category ids to detect backend update gaps.
+      const verifyRaw = await factoriesApi.getSubCategories(fid);
+      const verifyRows = (Array.isArray(verifyRaw) ? verifyRaw : []) as Array<Record<string, unknown>>;
+      if (verifyRows.length > 0 || normalizedSubCategoryIds.length === 0) {
+        const persisted = Array.from(
+          new Set(
+            verifyRows
+              .map((r) => Number(r.sub_category_id ?? r.id))
+              .filter((n) => Number.isFinite(n) && n > 0),
+          ),
+        ).sort((a, b) => a - b);
+        const persistedKey = persisted.join(',');
+        const desiredKey = normalizedSubCategoryIds.join(',');
+        if (persistedKey !== desiredKey) {
+          subCategoryVerifyWarning = 'บันทึกสำเร็จ แต่หมวดย่อยอาจอัปเดตไม่ครบ';
+        }
+      }
+    } catch {
+      failed += 1;
+    }
+
     setSaving(false);
 
-    if (failed.length === 0) {
-      setOkMsg('บันทึกข้อมูลเรียบร้อย');
-      form.reset(v);
+    if (failed === 0) {
+      setOkMsg(subCategoryVerifyWarning || 'บันทึกข้อมูลเรียบร้อย');
+      form.reset(saveDraftValues);
+      lastPrefillKeyRef.current = JSON.stringify(saveDraftValues);
       await refreshUser();
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['factory', 'me'] }),
         qc.invalidateQueries({ queryKey: ['factory', String(fid), 'categories'] }),
         qc.invalidateQueries({ queryKey: ['factory', String(fid), 'sub-categories'] }),
       ]);
-    } else if (failed.length === results.length) {
+    } else if (failed === 3) {
       setError('บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง');
     } else {
-      setError(`บันทึกสำเร็จบางส่วน (${failed.length} จาก ${results.length} ล้มเหลว)`);
+      setError(`บันทึกสำเร็จบางส่วน (${failed} จาก 3 ล้มเหลว)`);
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['factory', 'me'] }),
         qc.invalidateQueries({ queryKey: ['factory', String(fid), 'categories'] }),
@@ -184,7 +247,7 @@ export function FactoryProfilePage() {
         changeCount={changeCount}
         saving={saving}
         onSave={() => void handleSave()}
-        onDiscard={() => form.reset()}
+        onDiscard={() => form.reset(initialValues)}
       />
     </form>
   );
