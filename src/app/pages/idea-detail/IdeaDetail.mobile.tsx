@@ -119,7 +119,8 @@ export function IdeaDetailMobile() {
       <div className="px-4 pt-4 pb-8 space-y-3">
         <article className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-2">บทความ</p>
-          <MarkdownBody source={item.content || ''} className="max-w-none !text-[15px] leading-7 text-gray-800 [&_h1]:!text-[24px] [&_h2]:!text-[20px] [&_h3]:!text-[18px]" />
+          <MarkdownBody source={item.content || ''} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+              />
         </article>
 
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">

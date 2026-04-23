@@ -114,6 +114,7 @@ export function PromotionDetailDesktop() {
     );
   }
 
+  const subName = item.sub_category_name?.trim() ?? null;
   const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
   const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
@@ -129,10 +130,28 @@ export function PromotionDetailDesktop() {
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: BRAND.purpleSoft }}>
+      {/* ── Breadcrumb / back row ── */}
       <div className="px-8 pt-5 pb-3">
-        <button type="button" onClick={handleBack} className="inline-flex items-center gap-1 text-[13px] font-medium" style={{ color: BRAND.purple }}>
-          <ArrowLeft className="w-4 h-4" /> กลับ
-        </button>
+        <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-1 font-medium hover:opacity-80"
+            style={{ color: BRAND.purple }}
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> กลับ
+          </button>
+          <ChevronRight className="w-3 h-3 text-gray-300" />
+          <span>{item.category || 'ทั้งหมด'}</span>
+          {subName ? (
+            <>
+              <ChevronRight className="w-3 h-3 text-gray-300" />
+              <span>{subName}</span>
+            </>
+          ) : null}
+          <ChevronRight className="w-3 h-3 text-gray-300" />
+          <span className="truncate max-w-[32rem]" style={{ color: BRAND.ink }}>{item.title}</span>
+        </div>
       </div>
 
       <div className="px-8 pb-10 space-y-4">

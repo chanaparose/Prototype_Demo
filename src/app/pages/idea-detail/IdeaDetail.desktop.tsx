@@ -129,7 +129,8 @@ export function IdeaDetailDesktop() {
         <div className="mx-auto max-w-4xl space-y-6">
           <article className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-3">บทความ</p>
-            <MarkdownBody source={item.content || ''} className="max-w-none !text-[16px] md:!text-[17px] leading-8 text-gray-800 [&_h1]:!text-[30px] [&_h2]:!text-[24px] [&_h3]:!text-[20px]" />
+            <MarkdownBody source={item.content || ''} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+              />
           </article>
 
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
