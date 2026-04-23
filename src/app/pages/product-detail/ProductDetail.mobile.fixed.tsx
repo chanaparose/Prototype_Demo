@@ -1,26 +1,26 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   BadgeCheck,
   Building2,
+  CheckCircle2,
+  Clock,
   Clock3,
   Heart,
   MapPin,
   MessageCircle,
+  Package,
   PackageCheck,
   Tag,
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
+import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -54,15 +54,10 @@ export function ProductDetailMobile() {
     if (urls.length > 0) return urls.slice(0, 5);
     return item?.image ? [item.image] : [];
   }, [item?.image, item?.imageUrls]);
-  const [activeImage, setActiveImage] = useState(0);
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
-
-  useEffect(() => {
-    setActiveImage(0);
-  }, [item?.id]);
 
   if (loading) {
     return (
@@ -107,7 +102,7 @@ export function ProductDetailMobile() {
   return (
     <div>
       <div className="relative h-56">
-        <ImageWithFallback src={gallery[activeImage] ?? item.image} alt={item.title} className="w-full h-full object-cover" />
+        <ImageWithFallback src={gallery[0] ?? item.image} alt={item.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
         <button
           type="button"
@@ -158,14 +153,12 @@ export function ProductDetailMobile() {
           <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
             <div className="grid grid-cols-5 gap-2">
               {gallery.map((url, idx) => (
-                <button
+                <div
                   key={`${url}-${idx}`}
-                  type="button"
-                  onClick={() => setActiveImage(idx)}
-                  className={`aspect-square rounded-lg overflow-hidden border ${idx === activeImage ? 'border-orange-500' : 'border-gray-200'}`}
+                  className="aspect-square rounded-lg overflow-hidden border border-gray-200"
                 >
                   <img src={url} alt="" className="w-full h-full object-cover" />
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -203,38 +196,34 @@ export function ProductDetailMobile() {
           <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
             รายละเอียดสินค้า
           </p>
-          <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-inherit prose-strong:font-semibold prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-blockquote:border-l-orange-300 prose-a:text-orange-700 prose-p:text-[13px] prose-li:text-[13px] prose-headings:text-[15px] prose-h3:text-[14px] prose-blockquote:text-[13px]">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>
-              {markdown}
-            </ReactMarkdown>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-xl bg-gray-50 p-2.5">
-              <p className="text-gray-400">หมวดหมู่</p>
-              <p className="text-gray-700 mt-0.5">{item.category}</p>
-            </div>
-            {subName ? (
-              <div className="rounded-xl bg-violet-50 p-2.5">
-                <p className="text-violet-400">ประเภทย่อย</p>
-                <p className="text-violet-700 mt-0.5 font-medium">{subName}</p>
-              </div>
-            ) : null}
-            <div className="rounded-xl bg-gray-50 p-2.5">
-              <p className="text-gray-400">ขั้นต่ำการผลิต</p>
-              <p className="text-gray-700 mt-0.5">MOQ {item.minOrder}</p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-2.5">
-              <p className="text-gray-400">ระยะเวลาผลิต</p>
-              <p className="text-gray-700 mt-0.5">{item.leadTime}</p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-2.5">
-              <p className="text-gray-400">ความสนใจ</p>
-              <p className="text-gray-700 mt-0.5 inline-flex items-center gap-1">
-                <Heart className="w-3 h-3" /> {item.likes}
-              </p>
-            </div>
-          </div>
+          <MarkdownBody source={markdown} className="max-w-none !text-sm md:!text-sm text-gray-700 leading-relaxed" />
+          
         </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p
+              className="text-[10px] font-semibold tracking-[0.1em] uppercase mb-3"
+              style={{ color: '#9D77B2' }}
+            >
+              ข้อมูลสินค้า
+            </p>
+            <div className="space-y-2">
+              {[
+                { icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'หมวดหมู่', value: item.category },
+                ...(subName
+                  ? [{ icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'ประเภทย่อย', value: subName }]
+                  : []),
+                { icon: <Package className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'ขั้นต่ำการผลิต', value: `MOQ ${item.minOrder}` },
+                { icon: <Clock className="w-4 h-4" style={{ color: '#E38844' }} />, label: 'ระยะเวลาผลิต', value: item.leadTime },
+                { icon: <Heart className="w-4 h-4" style={{ color: '#E38844' }} />, label: 'ความสนใจ', value: `${item.likes} คน` },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                  <div className="flex items-center gap-2 text-[12px] text-gray-500">{row.icon} {row.label}</div>
+                  <span className="text-[12px] font-semibold" style={{ color: '#2E2252' }}>{row.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
         {(() => {
           const highlightSections = getSectionsByType(item.sections, 'highlight');
@@ -282,15 +271,26 @@ export function ProductDetailMobile() {
           }
           return (
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <p className="text-sm text-gray-900 mb-2.5" style={{ fontWeight: 700 }}>
+              <h2 className="text-[15px] font-bold mb-3" style={{ color: '#2E2252' }}>
                 ข้อมูลที่ควรแจ้งโรงงานก่อนเริ่มผลิต
-              </p>
-              <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
-                <li>กลุ่มเป้าหมายและจุดขายหลักของสินค้า</li>
-                <li>ขนาดบรรจุ/วัสดุ/รสชาติหรือสเปกที่ต้องการ</li>
-                <li>งบประมาณต่อรอบผลิต และช่วงเวลาที่ต้องการเปิดขาย</li>
-                <li>เอกสารที่ต้องใช้ เช่น อย., HALAL, หรือมาตรฐานเฉพาะแบรนด์</li>
-              </ul>
+              </h2>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  'กลุ่มเป้าหมายและจุดขายหลักของสินค้า',
+                  'ขนาดบรรจุ/วัสดุ/รสชาติหรือสเปกที่ต้องการ',
+                  'งบประมาณต่อรอบผลิต และช่วงเวลาที่ต้องการเปิดขาย',
+                  'เอกสารที่ต้องใช้ เช่น อย., HALAL, หรือมาตรฐานเฉพาะแบรนด์',
+                ].map((txt, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-2.5 p-3 rounded-xl"
+                    style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.12)' }}
+                  >
+                    <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#7A4B94' }} />
+                    <p className="text-[12px] text-gray-600 leading-relaxed">{txt}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           );
         })()}
