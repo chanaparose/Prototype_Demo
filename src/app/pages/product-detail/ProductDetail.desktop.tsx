@@ -209,7 +209,10 @@ export function ProductDetailDesktop() {
               </div>
               <p className="text-[13px] font-bold" style={{ color: '#6B3F85' }}>รายละเอียดสินค้า</p>
             </div>
-            <MarkdownBody source={markdown} className="max-w-none text-[14px] text-gray-700 leading-relaxed" />
+            <MarkdownBody
+              source={markdown}
+              className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+            />
           </div>
 
           {/* Highlight sections (from DB or fallback) */}
