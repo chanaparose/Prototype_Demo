@@ -415,7 +415,7 @@ export function ProductDetailMobile() {
         {markdown ? (
           <MarkdownBody
             source={markdown}
-            className="max-w-none text-[13px] leading-6 text-gray-700"
+            className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
           />
         ) : (
           <p className="text-[12px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>
@@ -453,40 +453,65 @@ export function ProductDetailMobile() {
         </div>
       </div>
 
-      {relatedProducts.length > 0 ? (
-        <>
-          <div className="h-2" style={{ background: '#F5F5F5' }} />
-          <div className="bg-white px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[13px] font-bold" style={{ color: BRAND.ink }}>
-                สินค้าที่ใกล้เคียง
-              </p>
-            </div>
+      <>
+        <div className="h-2" style={{ background: '#F5F5F5' }} />
+        <div className="bg-white px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[13px] font-bold" style={{ color: BRAND.ink }}>
+              สินค้าที่ใกล้เคียง
+            </p>
+          </div>
+          {relatedProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-2">
               {relatedProducts.slice(0, 4).map((rp) => (
                 <button
                   key={rp.id}
                   type="button"
                   onClick={() => navigate(`/product-detail?showcase_id=${rp.id}`)}
-                  className="rounded-lg border border-gray-100 overflow-hidden text-left"
+                  className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer text-left"
                 >
-                  <div className="aspect-square bg-gray-100">
+                  <div className="relative h-[150px] shrink-0 bg-gray-100">
                     <ImageWithFallback src={rp.image} alt={rp.title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+                    <span
+                      className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm"
+                      style={{ backgroundColor: BRAND.orange }}
+                    >
+                      สินค้า
+                    </span>
                   </div>
-                  <div className="p-2">
-                    <p className="text-[11px] font-semibold text-gray-800 line-clamp-2 min-h-[2.25rem]">{rp.title}</p>
-                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{rp.factoryName}</p>
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="text-[10px] text-orange-700 font-semibold">MOQ {rp.minOrder || '-'}</span>
-                      <span className="text-[10px] text-gray-400 inline-flex items-center gap-1"><Heart className="w-3 h-3" /> {rp.likes}</span>
+                  <div className="p-3 flex flex-col flex-1 min-w-0">
+                    <h3 className="text-xs font-bold leading-[18px] line-clamp-2 min-h-[36px]" style={{ color: BRAND.ink }}>
+                      {rp.title}
+                    </h3>
+                    <p className="text-[10px] leading-[14px] text-gray-400 mt-1 line-clamp-2 min-h-[28px]">
+                      {rp.excerpt || 'รายละเอียดสินค้า'}
+                    </p>
+                    <div className="mt-auto pt-2 border-t border-gray-100">
+                      <div className="h-[18px] mb-1 min-w-0">
+                        <p className="text-[10px] font-semibold truncate" style={{ color: BRAND.ink }}>
+                          {rp.factoryName}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between min-w-0">
+                        <span className="text-[10px] text-gray-400 shrink-0">
+                          MOQ <span className="font-semibold tabular-nums" style={{ color: BRAND.ink }}>{rp.minOrder || '-'}</span>
+                        </span>
+                        <span className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400">
+                          <Heart className="w-3 h-3 shrink-0" />
+                          <span className="tabular-nums">{rp.likes}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </button>
               ))}
             </div>
-          </div>
-        </>
-      ) : null}
+          ) : (
+            <p className="text-center text-xs text-gray-400 py-4">ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้</p>
+          )}
+        </div>
+      </>
 
       {/* ── Sticky bottom CTA bar ── */}
       <div

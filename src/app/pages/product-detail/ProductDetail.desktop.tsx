@@ -613,39 +613,6 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        {/* ── Related products ── */}
-        {relatedProducts.length > 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-3 border-b" style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}>
-              <p className="text-[14px] font-bold" style={{ color: BRAND.ink }}>
-                สินค้าที่ใกล้เคียง
-              </p>
-            </div>
-            <div className="p-6 grid grid-cols-4 gap-3">
-              {relatedProducts.map((rp) => (
-                <button
-                  key={rp.id}
-                  type="button"
-                  onClick={() => navigate(`/product-detail?showcase_id=${rp.id}`)}
-                  className="text-left rounded-xl border border-gray-100 hover:border-orange-200 hover:shadow-sm transition-all overflow-hidden bg-white"
-                >
-                  <div className="aspect-square bg-gray-100">
-                    <ImageWithFallback src={rp.image} alt={rp.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-2.5">
-                    <p className="text-[12px] font-semibold text-gray-800 line-clamp-2 min-h-[2.5rem]">{rp.title}</p>
-                    <p className="text-[11px] text-gray-500 mt-1 line-clamp-1">{rp.factoryName}</p>
-                    <div className="mt-1.5 flex items-center justify-between">
-                      <span className="text-[11px] text-orange-700 font-semibold">MOQ {rp.minOrder || '-'}</span>
-                      <span className="text-[11px] text-gray-400 inline-flex items-center gap-1"><Heart className="w-3 h-3" /> {rp.likes}</span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
         {/* ── CTA banner (bottom) ── */}
         <div
           className="rounded-2xl p-5 flex items-center justify-between shadow-sm"
@@ -683,6 +650,70 @@ export function ProductDetailDesktop() {
               <ArrowUpRight className="w-4 h-4" /> ดูโปรไฟล์โรงงาน
             </button>
           </div>
+        </div>
+
+        {/* ── Related products ── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-3 border-b" style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}>
+            <p className="text-[14px] font-bold" style={{ color: BRAND.ink }}>
+              สินค้าที่ใกล้เคียง
+            </p>
+          </div>
+          {relatedProducts.length > 0 ? (
+            <div className="p-6 grid grid-cols-4 gap-4">
+              {relatedProducts.map((rp) => (
+                <button
+                  key={rp.id}
+                  type="button"
+                  onClick={() => navigate(`/product-detail?showcase_id=${rp.id}`)}
+                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+                >
+                  <div className="relative h-36 overflow-hidden bg-gray-100">
+                    <ImageWithFallback
+                      src={rp.image}
+                      alt={rp.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                    <div className="absolute top-2 left-2">
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white"
+                        style={{ backgroundColor: BRAND.orange }}
+                      >
+                        สินค้า
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 flex flex-col gap-2 min-h-0">
+                    <div className="min-w-0">
+                      <h3 className="text-[12px] font-bold line-clamp-2 leading-snug min-h-[36px]" style={{ color: BRAND.ink }}>
+                        {rp.title}
+                      </h3>
+                      <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2 min-h-[28px]">
+                        {rp.excerpt || 'รายละเอียดสินค้า'}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-100 space-y-1.5">
+                      <p className="text-[10px] font-semibold truncate" style={{ color: BRAND.ink }}>
+                        {rp.factoryName}
+                      </p>
+                      <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                        <span className="min-w-0 truncate">
+                          MOQ <span className="font-semibold tabular-nums" style={{ color: BRAND.ink }}>{rp.minOrder || '-'}</span>
+                        </span>
+                        <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
+                          <Heart className="w-2.5 h-2.5 shrink-0" />
+                          {rp.likes}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-sm text-gray-400">ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้</div>
+          )}
         </div>
       </div>
     </div>

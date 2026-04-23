@@ -547,6 +547,26 @@ export const showcasesApi = {
     const qs = q.toString();
     return api.get<unknown[]>(`/showcases${qs ? `?${qs}` : ''}`);
   },
+  /**
+   * Extended filter for GET /showcases
+   * Supports category/sub-category/status filters from FE handoff.
+   */
+  listFiltered: (params: {
+    type?: 'PD' | 'PM' | 'ID' | string;
+    factory_id?: string | number;
+    status?: string;
+    category_id?: number | string;
+    sub_category_id?: number | string;
+  }) => {
+    const q = new URLSearchParams();
+    if (params.type) q.set('type', String(params.type));
+    if (params.factory_id != null && String(params.factory_id).trim() !== '') q.set('factory_id', String(params.factory_id));
+    if (params.status) q.set('status', String(params.status));
+    if (params.category_id != null && String(params.category_id).trim() !== '') q.set('category_id', String(params.category_id));
+    if (params.sub_category_id != null && String(params.sub_category_id).trim() !== '') q.set('sub_category_id', String(params.sub_category_id));
+    const qs = q.toString();
+    return api.get<unknown[]>(`/showcases${qs ? `?${qs}` : ''}`);
+  },
   /** GET /showcases/:id — detail with images, specs, sections */
   get: (showcaseId: number | string) =>
     api.get<Record<string, unknown>>(`/showcases/${showcaseId}`),
