@@ -115,6 +115,25 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   }, [resolvedId, fromContext, acceptTypes]);
 
   const item = apiItem ?? fromContext;
+  const relatedProducts = useMemo(() => {
+    if (!item || kind !== 'product') return [] as FactoryShowcase[];
+    const allProducts = data.factoryShowcases.filter((s) => s.contentType === 'product' && s.id !== item.id);
+    const sameSub = allProducts.filter((s) => {
+      if (item.sub_category_id == null || s.sub_category_id == null) return false;
+      return Number(s.sub_category_id) === Number(item.sub_category_id);
+    });
+    const sameCategory = allProducts.filter((s) => {
+      const a = String(item.categoryId ?? item.category ?? '').trim();
+      const b = String(s.categoryId ?? s.category ?? '').trim();
+      return a !== '' && b !== '' && a === b;
+    });
+    const merged = [...sameSub, ...sameCategory, ...allProducts];
+    const uniq = new Map<string, FactoryShowcase>();
+    for (const s of merged) {
+      if (!uniq.has(s.id)) uniq.set(s.id, s);
+    }
+    return [...uniq.values()].slice(0, 8);
+  }, [data.factoryShowcases, item, kind]);
 
   useEffect(() => {
     if (!resolvedId || !item) return;
@@ -135,6 +154,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     loading,
     error,
     factory,
+    relatedProducts,
   };
 }
 
