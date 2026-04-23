@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
 import { ChevronLeft, Save } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 import { showcasesApi } from '../../services/api';
 import { useEditForm } from '../../hooks/forms/useEditForm';
@@ -14,40 +18,72 @@ import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategorie
 import { useUnits } from '../../hooks/master/useUnits';
 
 type ContentType = 'PD' | 'PM' | 'ID';
+type EditorTab = 'write' | 'preview';
+
+const PRODUCT_MARKDOWN_TEMPLATE = `> รับผลิต OEM พร้อมช่วยปรับสูตร เริ่ม MOQ 500 ถุง เหมาะสำหรับเริ่มทำแบรนด์
+
+รับผลิตอาหารเม็ดสูตร Grain-Free สำหรับสุนัขและแมว ใช้วัตถุดิบคุณภาพสูง ปรับสูตรตามกลุ่มเป้าหมาย พร้อมออกแบบแพ็กเกจให้ตรงตลาด
+
+## จุดเด่นที่เหมาะกับแบรนด์
+
+- **รองรับการเริ่มต้น**: เหมาะกับการทดลองตลาดและปรับสูตร/สเปกตามกลุ่มลูกค้า
+- **Lead time ชัดเจน**: ระยะเวลาผลิตเฉลี่ย {lead_time} ช่วยวางแผนเปิดตัวได้ง่าย
+- **ยกระดับ Perceived Value**: เพิ่มความน่าเชื่อถือและภาพลักษณ์แบรนด์ด้วยสเปกและมาตรฐานที่ครบ
+
+## ข้อมูลที่ควรแจ้งโรงงานก่อนเริ่มผลิต
+
+1. กลุ่มเป้าหมายและตำแหน่งราคาที่ต้องการ
+2. สูตร/ขนาดเม็ด/คุณสมบัติหลักของสินค้า
+3. รูปแบบบรรจุภัณฑ์ และจำนวนที่ต้องการต่อรอบผลิต
+4. มาตรฐานหรือเอกสารที่ต้องใช้ เช่น อย., Halal, GMP
+`;
+
+function normalizeMarkdownContent(raw: string): string {
+  return raw
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .trim();
+}
 
 interface ShowcaseFormValues {
   content_type: ContentType;
+  type: ContentType;
   title: string;
   excerpt: string;
-  description: string;
+  content: string;
   image_url: string;
+  images: string[];
   category_id: number | null;
   sub_category_id: number | null;
-  min_order: number | null;
+  moq: number | null;
   lead_time_days: number | null;
-  price: number | null;
+  base_price: number | null;
   unit_id: number | null;
-  original_price: number | null;
-  special_price: number | null;
+  promo_price: number | null;
+  production_capacity: number | null;
+  sample_available: boolean;
   start_date: string;
   end_date: string;
-  status: 'DR' | 'PB' | 'AR';
+  status: 'DR' | 'AC' | 'HI' | 'AR';
 }
 
 const DEFAULTS: ShowcaseFormValues = {
   content_type: 'PD',
+  type: 'PD',
   title: '',
   excerpt: '',
-  description: '',
+  content: '',
   image_url: '',
+  images: [],
   category_id: null,
   sub_category_id: null,
-  min_order: null,
+  moq: null,
   lead_time_days: null,
-  price: null,
+  base_price: null,
   unit_id: null,
-  original_price: null,
-  special_price: null,
+  promo_price: null,
+  production_capacity: null,
+  sample_available: false,
   start_date: '',
   end_date: '',
   status: 'DR',
@@ -70,26 +106,55 @@ function numOrNull(v: unknown): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function parseImageUrls(raw: unknown): string[] {
+  const src = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string' && raw.trim().startsWith('[')
+      ? (() => {
+          try {
+            const p = JSON.parse(raw) as unknown;
+            return Array.isArray(p) ? p : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
+  return src
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      if (!item || typeof item !== 'object') return '';
+      const row = item as Record<string, unknown>;
+      return String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
+    })
+    .filter((u) => u !== '')
+    .slice(0, 5);
+}
+
 function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
   const r = raw ?? {};
-  const ct = String(r.content_type ?? 'PD').toUpperCase();
+  const ct = String(r.type ?? r.content_type ?? 'PD').toUpperCase();
+  const images = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
+  const image_url = images[0] ?? String(r.image_url ?? '').trim();
   return {
     content_type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ContentType,
+    type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ContentType,
     title: String(r.title ?? '').trim(),
     excerpt: String(r.excerpt ?? '').trim(),
-    description: String(r.description ?? '').trim(),
-    image_url: String(r.image_url ?? '').trim(),
+    content: String(r.content ?? r.description ?? '').trim(),
+    image_url,
+    images,
     category_id: numOrNull(r.category_id),
     sub_category_id: numOrNull(r.sub_category_id),
-    min_order: numOrNull(r.min_order),
+    moq: numOrNull(r.moq ?? r.min_order),
     lead_time_days: numOrNull(r.lead_time_days),
-    price: numOrNull(r.price),
+    base_price: numOrNull(r.base_price ?? r.price),
     unit_id: numOrNull(r.unit_id),
-    original_price: numOrNull(r.original_price),
-    special_price: numOrNull(r.special_price),
+    promo_price: numOrNull(r.promo_price ?? r.special_price),
+    production_capacity: numOrNull(r.production_capacity),
+    sample_available: Boolean(r.sample_available),
     start_date: String(r.start_date ?? '').slice(0, 10),
     end_date: String(r.end_date ?? '').slice(0, 10),
-    status: (['DR', 'PB', 'AR'].includes(String(r.status))
+    status: (['DR', 'AC', 'HI', 'AR'].includes(String(r.status))
       ? String(r.status)
       : 'DR') as ShowcaseFormValues['status'],
   };
@@ -130,12 +195,14 @@ export function FactoryShowcaseEditPage() {
 
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [contentTab, setContentTab] = React.useState<EditorTab>('write');
+  const markdownContent = normalizeMarkdownContent(form.watch('content') || '');
 
   const save = useCallback(async () => {
     if (!id) return;
     const v = form.getValues();
     if (!v.title.trim()) {
-      setError('กรุณากรอกชื่อโปรโมชัน/สินค้า/ไอเดีย');
+      setError('กรุณากรอกชื่อรายการ');
       return;
     }
     if (v.content_type === 'PM') {
@@ -152,23 +219,27 @@ export function FactoryShowcaseEditPage() {
     setError('');
 
     const payload: Record<string, unknown> = {
+      type: v.content_type,
+      content_type: v.content_type,
       title: v.title.trim(),
       excerpt: v.excerpt.trim() || undefined,
-      description: v.description.trim() || undefined,
+      content: v.content.trim() || undefined,
+      images: [v.image_url.trim()].filter((u) => u !== ''),
       image_url: v.image_url.trim() || undefined,
       category_id: v.category_id ?? undefined,
       sub_category_id: v.sub_category_id ?? undefined,
       status: v.status,
     };
     if (v.content_type === 'PD' || v.content_type === 'PM') {
-      payload.min_order = v.min_order ?? undefined;
+      payload.moq = v.moq ?? undefined;
       payload.lead_time_days = v.lead_time_days ?? undefined;
-      payload.price = v.price ?? undefined;
+      payload.base_price = v.base_price ?? undefined;
+      payload.production_capacity = v.production_capacity ?? undefined;
+      payload.sample_available = v.sample_available;
       payload.unit_id = v.unit_id ?? undefined;
     }
     if (v.content_type === 'PM') {
-      payload.original_price = v.original_price ?? undefined;
-      payload.special_price = v.special_price ?? undefined;
+      payload.promo_price = v.promo_price ?? undefined;
       payload.start_date = v.start_date;
       payload.end_date = v.end_date;
     }
@@ -260,7 +331,8 @@ export function FactoryShowcaseEditPage() {
                   className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
                 >
                   <option value="DR">ร่าง</option>
-                  <option value="PB">เผยแพร่</option>
+                  <option value="AC">Active</option>
+                  <option value="HI">Hidden</option>
                   <option value="AR">เก็บเข้าคลัง</option>
                 </select>
               </label>
@@ -285,12 +357,56 @@ export function FactoryShowcaseEditPage() {
         </label>
 
         <label className="block">
-          <span className="text-xs text-gray-500">รายละเอียด</span>
-          <textarea
-            rows={5}
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-            {...form.register('description')}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-gray-500">รายละเอียด (Markdown)</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className={`px-2 py-1 text-xs rounded-md border ${contentTab === 'write' ? 'bg-orange-50 border-orange-200 text-orange-700' : 'border-gray-200 text-gray-600'}`}
+                onClick={() => setContentTab('write')}
+              >
+                Write
+              </button>
+              <button
+                type="button"
+                className={`px-2 py-1 text-xs rounded-md border ${contentTab === 'preview' ? 'bg-orange-50 border-orange-200 text-orange-700' : 'border-gray-200 text-gray-600'}`}
+                onClick={() => setContentTab('preview')}
+              >
+                Preview
+              </button>
+              <button
+                type="button"
+                className="px-2 py-1 text-xs rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50"
+                onClick={() => {
+                  const current = form.getValues('content') ?? '';
+                  if (!current.trim()) {
+                    form.setValue('content', PRODUCT_MARKDOWN_TEMPLATE, { shouldDirty: true });
+                  }
+                }}
+              >
+                ใช้ตัวอย่าง
+              </button>
+            </div>
+          </div>
+          {contentTab === 'write' ? (
+            <textarea
+              rows={8}
+              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-mono"
+              {...form.register('content')}
+            />
+          ) : (
+            <div className="mt-1 rounded-xl border border-gray-200 bg-white px-4 py-3 min-h-[180px]">
+              {markdownContent ? (
+                <div className="prose prose-sm max-w-none prose-p:text-[13px] prose-li:text-[13px] prose-headings:text-[15px] prose-strong:text-inherit prose-strong:font-semibold">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>
+                    {markdownContent}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">ยังไม่มีเนื้อหาให้แสดงตัวอย่าง</p>
+              )}
+            </div>
+          )}
         </label>
 
         <label className="block">
@@ -365,7 +481,7 @@ export function FactoryShowcaseEditPage() {
                 type="number"
                 step="0.01"
                 className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                {...form.register('base_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
               />
             </label>
             <Controller
@@ -388,7 +504,7 @@ export function FactoryShowcaseEditPage() {
               <input
                 type="number"
                 className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('min_order', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                {...form.register('moq', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
               />
             </label>
             <label className="block">
@@ -408,21 +524,12 @@ export function FactoryShowcaseEditPage() {
           <h2 className="text-sm font-bold text-amber-900">พารามิเตอร์โปรโมชัน (Flash Sale)</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-xs text-gray-500">ราคาเดิม</span>
-              <input
-                type="number"
-                step="0.01"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('original_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-              />
-            </label>
-            <label className="block">
               <span className="text-xs text-gray-500">ราคาโปรโมชัน</span>
               <input
                 type="number"
                 step="0.01"
                 className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('special_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                {...form.register('promo_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
               />
             </label>
             <label className="block">

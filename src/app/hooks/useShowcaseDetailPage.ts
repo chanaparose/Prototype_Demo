@@ -52,6 +52,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const [apiItem, setApiItem] = useState<FactoryShowcase | null>(null);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [relatedApiShowcases, setRelatedApiShowcases] = useState<FactoryShowcase[]>([]);
   const viewedIdRef = useRef<string>('');
 
   const fromContext = useMemo(() => {
@@ -115,6 +116,93 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   }, [resolvedId, fromContext, acceptTypes]);
 
   const item = apiItem ?? fromContext;
+  useEffect(() => {
+    if (kind === 'idea' || !resolvedId) {
+      setRelatedApiShowcases([]);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        // Guarantee related API requests even when context is sparse.
+        const detailRaw = await showcasesApi.get(resolvedId).catch(() => ({}));
+        const detailRow = unwrapShowcaseDetailPayload((detailRaw as Record<string, unknown>) ?? {});
+        const detail = item ?? normShowcase(detailRow);
+        const apiType = kind === 'promotion' ? 'PM' : 'PD';
+        const targetContentType: FactoryShowcase['contentType'] =
+          kind === 'promotion' ? 'promotion' : 'product';
+
+        const subIdFromDetail = detail.sub_category_id ?? Number(detailRow.sub_category_id ?? NaN);
+        const catIdFromDetail =
+          detail.categoryId != null && String(detail.categoryId).trim() !== ''
+            ? Number(detail.categoryId)
+            : Number(detailRow.category_id ?? NaN);
+
+        const buckets: FactoryShowcase[] = [];
+
+        if (Number.isFinite(Number(subIdFromDetail)) && Number(subIdFromDetail) > 0) {
+          const rawSub = await showcasesApi.listFiltered({
+            type: apiType,
+            sub_category_id: Number(subIdFromDetail),
+          }).catch(() => []);
+          const subRows = (Array.isArray(rawSub) ? rawSub : []) as Record<string, unknown>[];
+          buckets.push(...subRows.map(normShowcase));
+        }
+
+        if (Number.isFinite(Number(catIdFromDetail)) && Number(catIdFromDetail) > 0) {
+          const rawCat = await showcasesApi.listFiltered({
+            type: apiType,
+            category_id: Number(catIdFromDetail),
+          }).catch(() => []);
+          const catRows = (Array.isArray(rawCat) ? rawCat : []) as Record<string, unknown>[];
+          buckets.push(...catRows.map(normShowcase));
+        }
+
+        if (buckets.length === 0) {
+          const rawAll = await showcasesApi.listFiltered({ type: apiType }).catch(() => []);
+          const allRows = (Array.isArray(rawAll) ? rawAll : []) as Record<string, unknown>[];
+          buckets.push(...allRows.map(normShowcase));
+        }
+
+        const currentId = detail.id || String(resolvedId);
+        const uniq = new Map<string, FactoryShowcase>();
+        for (const row of buckets) {
+          if (!row.id || row.id === currentId || row.contentType !== targetContentType) continue;
+          if (!uniq.has(row.id)) uniq.set(row.id, row);
+        }
+        if (!cancelled) setRelatedApiShowcases([...uniq.values()].slice(0, 8));
+      } catch {
+        if (!cancelled) setRelatedApiShowcases([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [kind, resolvedId, item]);
+
+  const relatedShowcases = useMemo(() => {
+    if (!item || kind === 'idea') return [] as FactoryShowcase[];
+    const targetContentType: FactoryShowcase['contentType'] =
+      kind === 'promotion' ? 'promotion' : 'product';
+    const allByType = data.factoryShowcases.filter(
+      (s) => s.contentType === targetContentType && s.id !== item.id,
+    );
+    const sameSub = allByType.filter((s) => {
+      if (item.sub_category_id == null || s.sub_category_id == null) return false;
+      return Number(s.sub_category_id) === Number(item.sub_category_id);
+    });
+    const sameCategory = allByType.filter((s) => {
+      const a = String(item.categoryId ?? item.category ?? '').trim();
+      const b = String(s.categoryId ?? s.category ?? '').trim();
+      return a !== '' && b !== '' && a === b;
+    });
+    const merged = [...sameSub, ...sameCategory, ...allByType, ...relatedApiShowcases];
+    const uniq = new Map<string, FactoryShowcase>();
+    for (const s of merged) {
+      if (!uniq.has(s.id)) uniq.set(s.id, s);
+    }
+    return [...uniq.values()].slice(0, 8);
+  }, [data.factoryShowcases, item, kind, relatedApiShowcases]);
 
   useEffect(() => {
     if (!resolvedId || !item) return;
@@ -135,6 +223,8 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     loading,
     error,
     factory,
+    relatedShowcases,
+    relatedProducts: kind === 'product' ? relatedShowcases : ([] as FactoryShowcase[]),
   };
 }
 

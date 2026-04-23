@@ -20,12 +20,38 @@ const CT_MAP: Record<string, 'product' | 'promotion' | 'idea'> = {
   idea: 'idea',
 };
 
+function parseImageUrls(raw: unknown): string[] {
+  const src = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string' && raw.trim().startsWith('[')
+      ? (() => {
+          try {
+            const p = JSON.parse(raw) as unknown;
+            return Array.isArray(p) ? p : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
+  return src
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      if (!item || typeof item !== 'object') return '';
+      const row = item as Record<string, unknown>;
+      return String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
+    })
+    .filter((u) => u !== '')
+    .slice(0, 5);
+}
+
 export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
   const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
   const leadTime =
     leadRaw != null && leadRaw !== ''
       ? String(leadRaw)
       : '';
+  const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
+  const firstImage = imageUrls[0] ?? String(r.image_url ?? r.image ?? '').trim();
 
   const catIdRaw = r.category_id ?? r.categoryId;
   const categoryId =
@@ -57,16 +83,31 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
     factoryName: String(r.factory_name ?? r.factoryName ?? ''),
     title: String(r.title ?? ''),
     excerpt: String(r.excerpt ?? ''),
-    image: String(r.image_url ?? r.image ?? ''),
-    contentType: CT_MAP[String(r.content_type ?? '').trim()] ?? 'product',
+    image: firstImage,
+    ...(imageUrls.length > 0 ? { imageUrls } : {}),
+    contentType: CT_MAP[String(r.type ?? r.content_type ?? '').trim()] ?? 'product',
     category: String(r.category_name ?? r.category ?? ''),
     categoryId,
     sub_category_id,
     sub_category_name,
     postedAt: String(r.created_at ?? r.postedAt ?? ''),
     likes: Number(r.likes_count ?? r.likes ?? 0),
-    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
+    minOrder: Number(r.moq ?? r.min_order ?? r.minOrder ?? 0),
     leadTime,
+    ...(r.content != null && String(r.content).trim() !== '' ? { content: String(r.content) } : {}),
+    ...(r.base_price != null && Number.isFinite(Number(r.base_price))
+      ? { basePrice: Number(r.base_price) }
+      : {}),
+    ...(r.promo_price != null && Number.isFinite(Number(r.promo_price))
+      ? { promoPrice: Number(r.promo_price) }
+      : {}),
+    ...(r.production_capacity != null && Number.isFinite(Number(r.production_capacity))
+      ? { productionCapacity: Number(r.production_capacity) }
+      : {}),
+    ...(r.sample_available != null ? { sampleAvailable: Boolean(r.sample_available) } : {}),
+    ...(r.start_date != null && String(r.start_date).trim() !== '' ? { startDate: String(r.start_date) } : {}),
+    ...(r.end_date != null && String(r.end_date).trim() !== '' ? { endDate: String(r.end_date) } : {}),
+    ...(r.status != null && String(r.status).trim() !== '' ? { status: String(r.status) } : {}),
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
     ...(factoryImageUrl ? { factoryImageUrl } : {}),
     ...(factoryRating != null ? { factoryRating } : {}),

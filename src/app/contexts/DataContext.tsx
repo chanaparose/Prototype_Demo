@@ -102,7 +102,9 @@ export type FactoryShowcase = {
   title: string;
   excerpt: string;
   description?: string;
+  content?: string;
   image: string;
+  imageUrls?: string[];
   contentType: 'product' | 'promotion' | 'idea';
   category: string;
   /** จาก API `category_id` — ใช้กรองกับ dropdown / ?category_id= */
@@ -114,6 +116,13 @@ export type FactoryShowcase = {
   likes: number;
   minOrder: number;
   leadTime: string;
+  basePrice?: number;
+  promoPrice?: number;
+  productionCapacity?: number;
+  sampleAvailable?: boolean;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
   priceRange?: string;
   tags: string[];
   factoryImageUrl?: string;

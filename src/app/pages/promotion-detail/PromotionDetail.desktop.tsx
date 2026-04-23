@@ -1,28 +1,35 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   BadgeCheck,
   CalendarClock,
-  CirclePercent,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
   MapPin,
   MessageCircle,
-  Tag,
-  TicketPercent,
   Star,
-  Heart,
-  CalendarDays,
-  Package,
-  Clock,
-  ArrowUpRight,
-  CheckCircle2,
+  Store,
+  TicketPercent,
 } from 'lucide-react';
+
 import { ImageWithFallback } from '../../components/shared';
-import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
-import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
+import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
+
+const BRAND = {
+  rose: '#E11D48',
+  roseSoft: '#FFF1F5',
+  orange: '#E38844',
+  orangeSoft: '#FFF4E8',
+  purple: '#7A4B94',
+  purpleSoft: '#F8F6FA',
+  ink: '#2E2252',
+  border: '#EDE7F1',
+} as const;
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -30,52 +37,90 @@ function formatThaiDate(date: string): string {
   return new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 }
 
+function normalizeMarkdownContent(raw: unknown): string {
+  const s = String(raw ?? '');
+  if (!s) return '';
+  return s
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .trim();
+}
+
+function formatTHB(value: number | undefined): string | null {
+  if (value == null || !Number.isFinite(value) || value <= 0) return null;
+  return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(value);
+}
+
+function daysBetween(a: Date, b: Date): number {
+  const oneDay = 24 * 60 * 60 * 1000;
+  return Math.max(0, Math.ceil((b.getTime() - a.getTime()) / oneDay));
+}
+
+function promoMeta(startDate?: string, endDate?: string) {
+  const now = new Date();
+  const s = startDate ? new Date(startDate) : null;
+  const e = endDate ? new Date(endDate) : null;
+  const sOk = s && !Number.isNaN(s.getTime());
+  const eOk = e && !Number.isNaN(e.getTime());
+
+  if (!sOk || !eOk) return { status: 'โปรโมชัน', hint: 'กรุณาตรวจสอบวันเริ่มและวันสิ้นสุด' };
+  if (now < s!) return { status: 'โปรใกล้เริ่ม', hint: `เริ่มในอีก ${daysBetween(now, s!)} วัน` };
+  if (now > e!) return { status: 'หมดโปรแล้ว', hint: `สิ้นสุดเมื่อ ${formatThaiDate(endDate!)}` };
+  return { status: 'กำลังจัดโปร', hint: `เหลืออีก ${daysBetween(now, e!)} วัน` };
+}
+
 export function PromotionDetailDesktop() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
-  const { item, loading, error, factory, resolvedId } = usePromotionDetailShowcase();
+  const { item, loading, error, factory, resolvedId, relatedShowcases } = usePromotionDetailShowcase();
 
-  const handleBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
+  const gallery = useMemo(() => {
+    const urls = Array.isArray(item?.imageUrls)
+      ? item.imageUrls.filter((u) => String(u).trim() !== '')
+      : [];
+    if (urls.length > 0) return urls.slice(0, 8);
+    return item?.image ? [item.image] : [];
+  }, [item?.image, item?.imageUrls]);
+  const [activeImage, setActiveImage] = useState(0);
+
+  const handleBack = useCallback(() => navigate(-1), [navigate]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [item?.id]);
 
   if (loading) {
     return (
-      <div
-        className="hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex"
-        style={{ background: '#F8F6FA' }}
-      >
-        <span
-          className="h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"
-          aria-hidden
-        />
+      <div className="hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex" style={{ background: BRAND.purpleSoft }}>
+        <span className="h-10 w-10 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" aria-hidden />
       </div>
     );
   }
 
   if (!item || !resolvedId) {
     return (
-      <div className="hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
-        <button
-          type="button"
-          onClick={handleBack}
-          className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors"
-          style={{ color: '#7A4B94' }}
-        >
+      <div className="hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]" style={{ background: BRAND.purpleSoft }}>
+        <button type="button" onClick={handleBack} className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium" style={{ color: BRAND.purple }}>
           <ArrowLeft className="w-4 h-4" /> กลับ
         </button>
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
-          <p className="text-4xl mb-3">🎁</p>
           <p className="text-[14px] text-gray-500 font-medium">{error || 'ไม่พบข้อมูลโปรโมชัน'}</p>
         </div>
       </div>
     );
   }
 
-  const subName = item.sub_category_name?.trim();
+  const subName = item.sub_category_name?.trim() ?? null;
   const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
   const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
+  const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
+  const promo = promoMeta(item.startDate, item.endDate);
+  const priceText = formatTHB(item.promoPrice ?? item.basePrice) ?? 'สอบถามราคา';
+
   const handleStartChat = () =>
     void startChat(item.factoryId, {
       type: 'PM',
@@ -84,289 +129,226 @@ export function PromotionDetailDesktop() {
     });
 
   return (
-    <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
-      {/* ── Hero banner ── */}
-      <div className="relative h-72 overflow-hidden bg-gray-200">
-        <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-
-        <button
-          type="button"
-          onClick={handleBack}
-          className="absolute top-5 left-8 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white text-[13px] font-medium transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> กลับ
-        </button>
-
-        {canChat ? (
+    <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: BRAND.purpleSoft }}>
+      {/* ── Breadcrumb / back row ── */}
+      <div className="px-8 pt-5 pb-3">
+        <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
           <button
             type="button"
-            onClick={handleStartChat}
-            disabled={starting}
-            className="absolute top-5 right-8 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-[13px] font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-70"
-            style={{ color: '#7A4B94' }}
+            onClick={handleBack}
+            className="inline-flex items-center gap-1 font-medium hover:opacity-80"
+            style={{ color: BRAND.purple }}
           >
-            {starting ? (
-              <span className="w-4 h-4 border-2 border-[#7A4B94] border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <MessageCircle className="w-4 h-4" />
-            )}{' '}
-            แชทกับโรงงาน
+            <ArrowLeft className="w-3.5 h-3.5" /> กลับ
           </button>
-        ) : null}
-
-        <div className="absolute bottom-0 left-0 right-0 px-8 pb-7">
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full backdrop-blur-sm text-[11px] font-bold text-white mb-3"
-            style={{ background: 'rgba(227,136,68,0.90)' }}
-          >
-            <TicketPercent className="w-3 h-3" /> โปรโมชัน
-          </span>
-          <h1 className="text-[26px] font-bold text-white leading-snug max-w-3xl">{item.title}</h1>
-          <div className="flex items-center gap-4 mt-2 text-white/70 text-[12px]">
-            <span className="flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5" /> เผยแพร่ {formatThaiDate(item.postedAt)}</span>
-            <span className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5" /> {item.likes} ถูกใจ</span>
-            <span className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" /> {item.category}</span>
-            {subName ? (
-              <span className="inline-flex items-center rounded-full border border-white/40 bg-white/15 text-white text-[11px] font-semibold px-2.5 py-0.5">
-                sub: {subName}
-              </span>
-            ) : null}
-          </div>
+          <ChevronRight className="w-3 h-3 text-gray-300" />
+          <span>{item.category || 'ทั้งหมด'}</span>
+          {subName ? (
+            <>
+              <ChevronRight className="w-3 h-3 text-gray-300" />
+              <span>{subName}</span>
+            </>
+          ) : null}
+          <ChevronRight className="w-3 h-3 text-gray-300" />
+          <span className="truncate max-w-[32rem]" style={{ color: BRAND.ink }}>{item.title}</span>
         </div>
       </div>
 
-      {/* ── Body ── */}
-      <div className="px-8 py-7 flex gap-7">
-
-        {/* ── Left: main content ── */}
-        <div className="flex-1 min-w-0 space-y-5">
-
-          {/* Deal highlight */}
-          <div
-            className="rounded-2xl p-6 shadow-sm"
-            style={{ background: '#FFF4E8', border: '1px solid rgba(227,136,68,0.25)' }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'rgba(227,136,68,0.15)' }}
-              >
-                <TicketPercent className="w-4 h-4" style={{ color: '#E38844' }} />
+      <div className="px-8 pb-10 space-y-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="flex gap-8">
+            <div className="w-[450px] shrink-0">
+              <div className="relative aspect-square rounded-xl overflow-hidden border" style={{ borderColor: BRAND.border, background: '#F5F5F5' }}>
+                <ImageWithFallback src={gallery[activeImage] ?? item.image} alt={item.title} className="w-full h-full object-cover" />
+                {gallery.length > 1 ? (
+                  <>
+                    <button type="button" onClick={() => setActiveImage((p) => (p - 1 + gallery.length) % gallery.length)} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/35 text-white flex items-center justify-center">
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button type="button" onClick={() => setActiveImage((p) => (p + 1) % gallery.length)} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/35 text-white flex items-center justify-center">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                ) : null}
               </div>
-              <p className="text-[13px] font-bold" style={{ color: '#E38844' }}>ดีลพิเศษจากโรงงาน</p>
-            </div>
-            <p className="text-[14px] font-medium text-gray-700 leading-relaxed">{item.excerpt}</p>
-          </div>
-
-          {/* Highlight sections (from DB or fallback) */}
-          {(() => {
-            const highlightSections = getSectionsByType(item.sections, 'highlight');
-            if (highlightSections.length > 0) {
-              return highlightSections.map((sec) => (
-                <div key={sec.section_id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>{sec.section_title}</h2>
-                  <div className="space-y-4">
-                    {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => {
-                      const Icon = getIcon(si.icon_name);
-                      return (
-                        <div key={si.item_id} className="flex gap-4">
-                          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.15)' }}>
-                            {Icon ? <Icon className="w-5 h-5" style={{ color: '#7A4B94' }} /> : <TicketPercent className="w-5 h-5" style={{ color: '#7A4B94' }} />}
-                          </div>
-                          <div>
-                            {si.title ? <p className="text-[13px] font-bold" style={{ color: '#2E2252' }}>{interpolate(si.title, item)}</p> : null}
-                            <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{interpolate(si.description, item)}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ));
-            }
-            return (
-              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>เงื่อนไขโปรโมชัน</h2>
-                <div className="space-y-4">
-                  {[
-                    { icon: <CirclePercent className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: 'คำสั่งซื้อใหม่', desc: 'สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญเท่านั้น' },
-                    { icon: <CalendarClock className="w-5 h-5" style={{ color: '#E38844' }} />, title: 'ระยะเวลาผลิต', desc: `ระยะเวลาผลิตโดยเฉลี่ย ${item.leadTime} ขึ้นอยู่กับสเปกและปริมาณจริง` },
-                    { icon: <TicketPercent className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: `MOQ ${item.minOrder}`, desc: 'ขั้นต่ำการสั่งผลิตที่กำหนด สามารถเจรจาเพิ่มเติมได้ผ่านแชท' },
-                  ].map((s, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.15)' }}>{s.icon}</div>
-                      <div>
-                        <p className="text-[13px] font-bold" style={{ color: '#2E2252' }}>{s.title}</p>
-                        <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{s.desc}</p>
-                      </div>
-                    </div>
+              {gallery.length > 1 ? (
+                <div className="grid grid-cols-5 gap-2 mt-3">
+                  {gallery.slice(0, 5).map((url, idx) => (
+                    <button
+                      key={`${url}-${idx}`}
+                      type="button"
+                      onClick={() => setActiveImage(idx)}
+                      className="aspect-square rounded-lg overflow-hidden border-2"
+                      style={{ borderColor: idx === activeImage ? BRAND.rose : BRAND.border }}
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
                   ))}
                 </div>
-              </div>
-            );
-          })()}
-
-          {/* Checklist sections (from DB or fallback) */}
-          {(() => {
-            const checklistSections = getSectionsByType(item.sections, 'checklist');
-            if (checklistSections.length > 0) {
-              return checklistSections.map((sec) => (
-                <div key={sec.section_id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>{sec.section_title}</h2>
-                  <div className="grid grid-cols-2 gap-3">
-                    {sec.items.sort((a, b) => a.sort_order - b.sort_order).map((si) => (
-                      <div key={si.item_id} className="flex items-start gap-2.5 p-3 rounded-xl" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.12)' }}>
-                        <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#7A4B94' }} />
-                        <p className="text-[12px] text-gray-600 leading-relaxed">{interpolate(si.description, item)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ));
-            }
-            return (
-              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>รายละเอียดที่จำเป็นก่อนรับโปรโมชัน</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  {['ช่วงเวลาที่ต้องการเริ่มผลิตและวันเปิดตัวสินค้า', 'จำนวนผลิตที่คาดการณ์ในรอบแรกและรอบถัดไป', 'รูปแบบแพ็กเกจหรือฉลากที่ต้องการให้รวมในโปรฯ', 'เงื่อนไขการชำระเงินและเอกสารที่แบรนด์ต้องใช้'].map((txt, i) => (
-                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.12)' }}>
-                      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#7A4B94' }} />
-                      <p className="text-[12px] text-gray-600 leading-relaxed">{txt}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Tags */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <h2 className="text-[13px] font-bold" style={{ color: '#2E2252' }}>หมวดและแท็ก</h2>
-              <span
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium"
-                style={{ background: 'rgba(227,136,68,0.12)', color: '#E38844' }}
-              >{item.category}</span>
-              {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
+              ) : null}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {item.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors cursor-pointer"
-                  style={{
-                    background: 'rgba(122,75,148,0.08)',
-                    color: '#7A4B94',
-                    border: '1px solid rgba(122,75,148,0.20)',
-                  }}
-                >
-                  <Tag className="w-3 h-3" /> {tag}
+
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-bold text-white" style={{ background: BRAND.rose }}>
+                  <TicketPercent className="w-3 h-3" /> โปรโมชัน
                 </span>
-              ))}
+                {factory?.verified ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-bold text-white" style={{ background: BRAND.orange }}>
+                    <BadgeCheck className="w-3 h-3" /> Preferred
+                  </span>
+                ) : null}
+              </div>
+
+              <h1 className="text-[20px] leading-snug font-medium" style={{ color: BRAND.ink }}>{item.title}</h1>
+
+              <div className="flex items-center gap-4 py-3 mt-1 border-b border-gray-100 text-[13px] text-gray-500">
+                <span className="inline-flex items-center gap-1">
+                  <span className="border-b" style={{ color: BRAND.orange, borderColor: BRAND.orange }}>{Number(factory?.rating ?? 0).toFixed(1)}</span>
+                  <Star className="w-3.5 h-3.5 fill-current" style={{ color: BRAND.orange }} />
+                </span>
+                <span>{factory?.reviews ?? 0} รีวิว</span>
+                <span>•</span>
+                <span>{item.likes} คนสนใจ</span>
+              </div>
+
+              <div className="mt-4 px-4 py-3 rounded-md" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                <p className="text-[22px] font-medium leading-none text-gray-800">{priceText}</p>
+                {item.basePrice != null && item.promoPrice != null && item.basePrice > item.promoPrice ? (
+                  <p className="text-[12px] text-gray-400 line-through mt-1">{formatTHB(item.basePrice)}</p>
+                ) : null}
+              </div>
+
+              <div className="mt-5 rounded-xl border border-rose-100 bg-rose-50 px-4 py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold text-rose-700">ช่วงเวลาโปรโมชัน</p>
+                  <span className="text-xs font-semibold text-rose-700">{promo.status}</span>
+                </div>
+                <p className="text-xs text-rose-700 mt-1 inline-flex items-center gap-1"><CalendarClock className="w-3.5 h-3.5" /> {promo.hint}</p>
+                <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                  <div className="rounded-lg bg-white border border-rose-100 p-2">
+                    <p className="text-gray-500">วันที่เริ่ม</p>
+                    <p className="font-semibold text-gray-800">{item.startDate ? formatThaiDate(item.startDate) : '-'}</p>
+                  </div>
+                  <div className="rounded-lg bg-white border border-rose-100 p-2">
+                    <p className="text-gray-500">วันที่สิ้นสุด</p>
+                    <p className="font-semibold text-gray-800">{item.endDate ? formatThaiDate(item.endDate) : '-'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center gap-3">
+                {canChat ? (
+                  <button type="button" onClick={handleStartChat} disabled={starting} className="flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 rounded-md text-[14px] font-semibold" style={{ background: BRAND.orangeSoft, color: BRAND.orange, border: `1px solid ${BRAND.orange}` }}>
+                    <MessageCircle className="w-4 h-4" /> แชทกับโรงงาน
+                  </button>
+                ) : null}
+                <button type="button" onClick={() => navigate(`/factories/${item.factoryId}`)} className="flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 rounded-md text-[14px] font-bold text-white" style={{ background: BRAND.orange }}>
+                  <Store className="w-4 h-4" /> ดูโปรไฟล์โรงงาน
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ── Right sidebar ── */}
-        <aside className="w-72 flex-shrink-0 space-y-4">
-
-          {/* Factory card */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <p
-              className="text-[10px] font-semibold tracking-[0.1em] uppercase mb-3"
-              style={{ color: '#9D77B2' }}
-            >โรงงานที่โพสต์</p>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-20 h-20 rounded-full overflow-hidden border shrink-0" style={{ borderColor: BRAND.border }}>
                 <ImageWithFallback src={factory?.image ?? ''} alt={item.factoryName} className="w-full h-full object-cover" />
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-[13px] font-bold truncate" style={{ color: '#2E2252' }}>{item.factoryName}</p>
-                  {factory?.verified && <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: '#7A4B94' }} />}
+                  <p className="text-[15px] font-semibold truncate" style={{ color: BRAND.ink }}>{item.factoryName}</p>
+                  {factory?.verified ? <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: BRAND.purple }} /> : null}
                 </div>
-                <p className="text-[11px] text-gray-500 truncate mt-0.5">{factory?.specialization}</p>
+                <p className="text-[12px] text-gray-500 truncate mt-0.5">{factory?.specialization || 'โรงงานรับผลิต OEM / Private Label'}</p>
+                <p className="text-[12px] text-gray-500 mt-1 inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {factory?.location || '-'}</p>
               </div>
             </div>
-            <div className="space-y-2 text-[12px] text-gray-600 mb-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                <span>{factory?.location ?? '-'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="w-3.5 h-3.5 fill-amber-400" style={{ color: '#E38844' }} />
-                <span><span className="font-semibold">{factory?.rating}</span> ({factory?.reviews} รีวิว)</span>
-              </div>
+            <div className="grid grid-cols-3 gap-6 text-[13px] flex-1">
+              <div><p className="text-gray-400 mb-1">เรตติ้งเฉลี่ย</p><p className="font-semibold" style={{ color: BRAND.orange }}>{Number(factory?.rating ?? 0).toFixed(1)}</p></div>
+              <div><p className="text-gray-400 mb-1">รีวิวทั้งหมด</p><p className="font-semibold" style={{ color: BRAND.orange }}>{factory?.reviews ?? 0}</p></div>
+              <div><p className="text-gray-400 mb-1">ออเดอร์ที่เสร็จแล้ว</p><p className="font-semibold" style={{ color: BRAND.orange }}>{factory?.completedOrders ?? 0}</p></div>
             </div>
-            <button type="button" onClick={() => navigate(`/factories/${item.factoryId}`)}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] font-semibold transition-colors"
-              style={{
-                border: '1px solid rgba(122,75,148,0.30)',
-                color: '#7A4B94',
-                background: 'transparent',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(122,75,148,0.06)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              ดูโปรไฟล์โรงงาน <ArrowUpRight className="w-3.5 h-3.5" />
-            </button>
           </div>
+        </div>
 
-          {/* Promo stats */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <p
-              className="text-[10px] font-semibold tracking-[0.1em] uppercase mb-3"
-              style={{ color: '#9D77B2' }}
-            >ข้อมูลโปรโมชัน</p>
-            <div className="space-y-3">
-              {[
-                { icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />,          label: 'หมวดหมู่',        value: item.category },
-                ...(subName
-                  ? [{ icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'ประเภทย่อย', value: subName }]
-                  : []),
-                { icon: <Package className="w-4 h-4" style={{ color: '#7A4B94' }} />,       label: 'ขั้นต่ำการผลิต', value: `MOQ ${item.minOrder}` },
-                { icon: <Clock className="w-4 h-4" style={{ color: '#E38844' }} />,          label: 'ระยะเวลาผลิต',   value: item.leadTime },
-                { icon: <Heart className="w-4 h-4" style={{ color: '#E38844' }} />,          label: 'ความสนใจ',        value: `${item.likes} คน` },
-              ].map((row) => (
-                <div key={row.label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                  <div className="flex items-center gap-2 text-[12px] text-gray-500">{row.icon} {row.label}</div>
-                  <span className="text-[12px] font-semibold" style={{ color: '#2E2252' }}>{row.value}</span>
-                </div>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-3 border-b" style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}>
+            <p className="text-[14px] font-bold" style={{ color: BRAND.ink }}>รายละเอียดสินค้า (Markdown)</p>
+          </div>
+          <div className="p-6">
+            {markdown ? <MarkdownBody source={markdown} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+          /> : <p className="text-[13px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-3 border-b" style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}>
+            <p className="text-[14px] font-bold" style={{ color: BRAND.ink }}>คะแนนรีวิว</p>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center gap-8">
+              <div>
+                <p className="text-[34px] leading-none font-bold" style={{ color: BRAND.orange }}>{Number(factory?.rating ?? 0).toFixed(1)}</p>
+                <p className="text-[12px] text-gray-500 mt-1">จาก {factory?.reviews ?? 0} รีวิว</p>
+              </div>
+              <div className="flex-1 space-y-2">
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const rating = Number(factory?.rating ?? 0);
+                  const intensity = Math.max(0, Math.min(100, ((rating - (star - 1)) / 1) * 100));
+                  return (
+                    <div key={star} className="flex items-center gap-2">
+                      <span className="w-10 text-[12px] text-gray-500">{star} ดาว</span>
+                      <div className="h-2 flex-1 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${intensity}%`, background: BRAND.orange }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-3 border-b" style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}>
+            <p className="text-[14px] font-bold" style={{ color: BRAND.ink }}>สินค้าที่ใกล้เคียง</p>
+          </div>
+          {relatedShowcases.length > 0 ? (
+            <div className="p-6 grid grid-cols-4 gap-4">
+              {relatedShowcases.map((rp) => (
+                <button
+                  key={rp.id}
+                  type="button"
+                  onClick={() => navigate(`/promotion-detail?showcase_id=${rp.id}`)}
+                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+                >
+                  <div className="relative h-36 overflow-hidden bg-gray-100">
+                    <ImageWithFallback src={rp.image} alt={rp.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="absolute top-2 left-2">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: BRAND.rose }}>โปรโมชัน</span>
+                    </div>
+                  </div>
+                  <div className="p-3 flex flex-col gap-2 min-h-0">
+                    <h3 className="text-[12px] font-bold line-clamp-2 leading-snug min-h-[36px]" style={{ color: BRAND.ink }}>{rp.title}</h3>
+                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2 min-h-[28px]">{rp.excerpt || 'รายละเอียดสินค้า'}</p>
+                    <div className="pt-2 border-t border-gray-100">
+                      <p className="text-[10px] font-semibold truncate" style={{ color: BRAND.ink }}>{rp.factoryName}</p>
+                      <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                        <span className="min-w-0 truncate">MOQ <span className="font-semibold" style={{ color: BRAND.ink }}>{rp.minOrder || '-'}</span></span>
+                        <span className="inline-flex items-center gap-0.5"><Heart className="w-2.5 h-2.5" /> {rp.likes}</span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
               ))}
             </div>
-          </div>
-
-          {/* CTAs */}
-          <div className="space-y-2">
-            {canChat ? (
-              <button type="button"
-                onClick={handleStartChat}
-                disabled={starting}
-                className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white shadow-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-70"
-                style={{ background: 'linear-gradient(135deg, #2D1B4E, #4A267D)' }}>
-                {starting ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <MessageCircle className="w-4 h-4" />
-                )}{' '}
-                แชทกับโรงงาน
-              </button>
-            ) : null}
-            <button type="button" onClick={() => navigate(`/factories/${item.factoryId}`)}
-              className="w-full py-3 rounded-2xl text-[13px] font-semibold transition-colors"
-              style={{
-                color: '#7A4B94',
-                border: '1px solid rgba(122,75,148,0.30)',
-                background: 'transparent',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(122,75,148,0.06)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              ดูโปรไฟล์เพิ่มเติม
-            </button>
-          </div>
-        </aside>
+          ) : (
+            <div className="p-8 text-center text-sm text-gray-400">ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้</div>
+          )}
+        </div>
       </div>
     </div>
   );
