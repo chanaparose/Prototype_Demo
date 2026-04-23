@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
+import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -30,15 +31,37 @@ function formatThaiDate(date: string): string {
   return new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 }
 
+function normalizeMarkdownContent(raw: unknown): string {
+  const s = String(raw ?? '');
+  if (!s) return '';
+  return s
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .trim();
+}
+
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, isIdea, resolvedId } = useProductDetailShowcase();
+  const gallery = useMemo(() => {
+    const urls = Array.isArray(item?.imageUrls) ? item.imageUrls.filter((u) => String(u).trim() !== '') : [];
+    if (urls.length > 0) return urls.slice(0, 5);
+    return item?.image ? [item.image] : [];
+  }, [item?.image, item?.imageUrls]);
+  const [activeImage, setActiveImage] = useState(0);
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [item?.id]);
 
   if (loading) {
     return (
@@ -84,12 +107,13 @@ export function ProductDetailDesktop() {
       id: Number(resolvedId),
       title: item.title,
     });
+  const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
       {/* ── Hero banner ── */}
       <div className="relative h-72 overflow-hidden bg-gray-200">
-        <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
+        <ImageWithFallback src={gallery[activeImage] ?? item.image} alt={item.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
         <button
@@ -152,22 +176,40 @@ export function ProductDetailDesktop() {
 
         {/* ── Left: main content ── */}
         <div className="flex-1 min-w-0 space-y-5">
+          {gallery.length > 1 ? (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="grid grid-cols-5 gap-2">
+                {gallery.map((url, idx) => (
+                  <button
+                    key={`${url}-${idx}`}
+                    type="button"
+                    onClick={() => setActiveImage(idx)}
+                    className={`aspect-square rounded-lg overflow-hidden border transition-colors ${idx === activeImage ? 'border-orange-500' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          
 
           {/* Product highlight */}
           <div
             className="rounded-2xl p-6 shadow-sm"
-            style={{ background: '#FFF4E8', border: '1px solid rgba(227,136,68,0.25)' }}
+            style={{ background: '#FAF7FD', border: '1px solid rgba(122,75,148,0.16)' }}
           >
             <div className="flex items-center gap-2 mb-3">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'rgba(227,136,68,0.15)' }}
+                style={{ background: 'rgba(122,75,148,0.12)' }}
               >
-                <Package className="w-4 h-4" style={{ color: '#E38844' }} />
+                <Package className="w-4 h-4" style={{ color: '#7A4B94' }} />
               </div>
-              <p className="text-[13px] font-bold" style={{ color: '#E38844' }}>รายละเอียดสินค้า</p>
+              <p className="text-[13px] font-bold" style={{ color: '#6B3F85' }}>รายละเอียดสินค้า</p>
             </div>
-            <p className="text-[14px] font-medium text-gray-700 leading-relaxed">{item.excerpt}</p>
+            <MarkdownBody source={markdown} className="max-w-none text-[14px] text-gray-700 leading-relaxed" />
           </div>
 
           {/* Highlight sections (from DB or fallback) */}
@@ -196,26 +238,7 @@ export function ProductDetailDesktop() {
                 </div>
               ));
             }
-            return (
-              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>จุดเด่นที่เหมาะกับแบรนด์</h2>
-                <div className="space-y-4">
-                  {[
-                    { icon: <Package className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: 'รองรับการเริ่มต้น', desc: 'เหมาะกับการทดลองตลาดและปรับสูตร/สเปกได้ตามกลุ่มลูกค้า' },
-                    { icon: <Clock className="w-5 h-5" style={{ color: '#E38844' }} />, title: 'Lead time ชัดเจน', desc: `ระยะเวลาผลิตโดยเฉลี่ย ${item.leadTime} ช่วยวางแผนเปิดตัวได้ง่าย` },
-                    { icon: <Star className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: 'ยกระดับ Perceived Value', desc: 'เพิ่มความน่าเชื่อถือและมูลค่าแบรนด์ด้วยรายละเอียดและมาตรฐานที่ครบ' },
-                  ].map((s, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.15)' }}>{s.icon}</div>
-                      <div>
-                        <p className="text-[13px] font-bold" style={{ color: '#2E2252' }}>{s.title}</p>
-                        <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{s.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
+            
           })()}
 
           {/* Checklist sections (from DB or fallback) */}
@@ -252,31 +275,7 @@ export function ProductDetailDesktop() {
           })()}
 
           {/* Tags */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <h2 className="text-[13px] font-bold" style={{ color: '#2E2252' }}>แท็กและหมวดหมู่</h2>
-              <span
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium"
-                style={{ background: 'rgba(227,136,68,0.12)', color: '#E38844' }}
-              >{item.category}</span>
-              {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {item.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors cursor-pointer"
-                  style={{
-                    background: 'rgba(122,75,148,0.08)',
-                    color: '#7A4B94',
-                    border: '1px solid rgba(122,75,148,0.20)',
-                  }}
-                >
-                  <Tag className="w-3 h-3" /> {tag}
-                </span>
-              ))}
-            </div>
-          </div>
+          
         </div>
 
         {/* ── Right sidebar ── */}

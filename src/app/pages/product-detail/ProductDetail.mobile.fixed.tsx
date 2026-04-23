@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -11,6 +11,10 @@ import {
   PackageCheck,
   Tag,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
@@ -28,15 +32,37 @@ function formatThaiDate(date: string): string {
   }).format(d);
 }
 
+function normalizeMarkdownContent(raw: unknown): string {
+  const s = String(raw ?? '');
+  if (!s) return '';
+  return s
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .trim();
+}
+
 export function ProductDetailMobile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, isIdea, resolvedId } = useProductDetailShowcase();
+  const gallery = useMemo(() => {
+    const urls = Array.isArray(item?.imageUrls) ? item.imageUrls.filter((u) => String(u).trim() !== '') : [];
+    if (urls.length > 0) return urls.slice(0, 5);
+    return item?.image ? [item.image] : [];
+  }, [item?.image, item?.imageUrls]);
+  const [activeImage, setActiveImage] = useState(0);
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [item?.id]);
 
   if (loading) {
     return (
@@ -76,11 +102,12 @@ export function ProductDetailMobile() {
       id: Number(resolvedId),
       title: item.title,
     });
+  const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
 
   return (
     <div>
       <div className="relative h-56">
-        <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
+        <ImageWithFallback src={gallery[activeImage] ?? item.image} alt={item.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
         <button
           type="button"
@@ -127,6 +154,23 @@ export function ProductDetailMobile() {
       </div>
 
       <div className="px-4 pt-4 space-y-3">
+        {gallery.length > 1 ? (
+          <div className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
+            <div className="grid grid-cols-5 gap-2">
+              {gallery.map((url, idx) => (
+                <button
+                  key={`${url}-${idx}`}
+                  type="button"
+                  onClick={() => setActiveImage(idx)}
+                  className={`aspect-square rounded-lg overflow-hidden border ${idx === activeImage ? 'border-orange-500' : 'border-gray-200'}`}
+                >
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+ 
         <div
           onClick={() => navigate(`/factories/${item.factoryId}`)}
           className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
@@ -159,7 +203,11 @@ export function ProductDetailMobile() {
           <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
             รายละเอียดสินค้า
           </p>
-          <p className="text-sm text-gray-600">{item.excerpt}</p>
+          <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-inherit prose-strong:font-semibold prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-blockquote:border-l-orange-300 prose-a:text-orange-700 prose-p:text-[13px] prose-li:text-[13px] prose-headings:text-[15px] prose-h3:text-[14px] prose-blockquote:text-[13px]">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>
+              {markdown}
+            </ReactMarkdown>
+          </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="rounded-xl bg-gray-50 p-2.5">
               <p className="text-gray-400">หมวดหมู่</p>
@@ -215,27 +263,7 @@ export function ProductDetailMobile() {
               </div>
             ));
           }
-          return (
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <p className="text-sm text-gray-900 mb-2.5" style={{ fontWeight: 700 }}>
-                จุดเด่นที่เหมาะกับแบรนด์
-              </p>
-              <div className="space-y-2 text-sm text-gray-600">
-                <p className="flex items-start gap-2">
-                  <PackageCheck className="w-4 h-4 mt-0.5 text-purple-600" />
-                  รองรับ OEM/Private Label สำหรับผู้เริ่มต้นและแบรนด์ที่ต้องการขยายไลน์
-                </p>
-                <p className="flex items-start gap-2">
-                  <Clock3 className="w-4 h-4 mt-0.5 text-purple-600" />
-                  กำหนด timeline ผลิตชัดเจน ช่วยวางแผนเปิดตัวสินค้าได้ง่าย
-                </p>
-                <p className="flex items-start gap-2">
-                  <Building2 className="w-4 h-4 mt-0.5 text-purple-600" />
-                  มีโรงงานที่เชี่ยวชาญเฉพาะด้าน พร้อมทีมให้คำแนะนำก่อนเริ่มผลิต
-                </p>
-              </div>
-            </div>
-          );
+           
         })()}
 
         {(() => {
@@ -267,32 +295,7 @@ export function ProductDetailMobile() {
           );
         })()}
 
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
-              แท็กและหมวดหมู่
-            </p>
-            {item.category ? (
-              <span
-                className="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
-                style={{ background: 'rgba(227,136,68,0.12)', color: '#E38844' }}
-              >{item.category}</span>
-            ) : null}
-            {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {item.tags.length > 0 ? (
-              item.tags.map((tag) => (
-                <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs">
-                  <Tag className="w-3 h-3" />
-                  {tag}
-                </span>
-              ))
-            ) : (
-              <span className="text-xs text-gray-400">ยังไม่มีแท็กสินค้า</span>
-            )}
-          </div>
-        </div>
+        
       </div>
     </div>
   );

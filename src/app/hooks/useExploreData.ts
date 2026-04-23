@@ -33,20 +33,45 @@ const CT_MAP: Record<string, NormalisedShowcase['contentType']> = {
   idea: 'idea',
 };
 
+function parseImageUrls(raw: unknown): string[] {
+  const src = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string' && raw.trim().startsWith('[')
+      ? (() => {
+          try {
+            const p = JSON.parse(raw) as unknown;
+            return Array.isArray(p) ? p : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
+  return src
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      if (!item || typeof item !== 'object') return '';
+      const row = item as Record<string, unknown>;
+      return String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
+    })
+    .filter((u) => u !== '')
+    .slice(0, 5);
+}
+
 function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
+  const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
   return {
     id: String(r.showcase_id ?? r.id ?? ''),
     factoryId: String(r.factory_id ?? ''),
     factoryName: String(r.factory_name ?? r.factoryName ?? ''),
     title: String(r.title ?? ''),
     excerpt: String(r.excerpt ?? ''),
-    image: String(r.image_url ?? r.image ?? ''),
-    contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
+    image: imageUrls[0] ?? String(r.image_url ?? r.image ?? ''),
+    contentType: CT_MAP[String(r.type ?? r.content_type ?? '')] ?? 'product',
     category: String(r.category_name ?? r.category ?? ''),
     subCategoryName: String(r.sub_category_name ?? r.subCategoryName ?? ''),
     postedAt: String(r.created_at ?? r.postedAt ?? ''),
     likes: Number(r.likes_count ?? r.likes ?? 0),
-    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
+    minOrder: Number(r.moq ?? r.min_order ?? r.minOrder ?? 0),
     leadTime: String(r.lead_time ?? r.leadTime ?? ''),
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
   };

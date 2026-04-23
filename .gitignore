@@ -38,3 +38,4 @@ coverage/
 
 ref/
 docs/
+.pnpm-store/

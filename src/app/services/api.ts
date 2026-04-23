@@ -556,13 +556,24 @@ export const showcasesApi = {
       `/factories/${factoryId}/showcases${type ? `?type=${encodeURIComponent(type)}` : ''}`,
     ),
   create: (data: {
-    content_type: string;
+    type?: string;
+    content_type?: string;
     title: string;
     excerpt?: string;
     description?: string;
+    content?: string;
     image_url?: string;
+    images?: string[];
     category_id?: number;
     sub_category_id?: number;
+    moq?: number;
+    production_capacity?: number;
+    base_price?: number;
+    promo_price?: number;
+    sample_available?: boolean;
+    start_date?: string;
+    end_date?: string;
+    linked_showcases?: number[];
     min_order?: number;
     lead_time_days?: number;
     price_range?: string;

@@ -27,9 +27,12 @@ export function FactoryOrderCard({
   return (
     <article className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm min-w-0">
       <div className="flex items-start justify-between gap-2">
-        <p className="font-semibold text-gray-900 text-sm leading-snug">
-          #{row.order_id} · {row.rfq?.title ?? `Order #${row.order_id}`}
-        </p>
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-900 text-sm leading-snug truncate">
+            {row.rfq?.title ?? `Order #${row.order_id}`}
+          </p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Order #{row.order_id}</p>
+        </div>
         <div className="flex flex-wrap justify-end gap-1">
           <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${STATUS_CONFIG[row.status].badgeClass}`}>
             {STATUS_CONFIG[row.status].icon} {STATUS_CONFIG[row.status].label}

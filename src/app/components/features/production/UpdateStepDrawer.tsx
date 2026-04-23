@@ -33,7 +33,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
   useEffect(() => {
     if (!open || !step) return;
     setNotes(String(step.update.description ?? '').slice(0, 500));
-    setUrls([...(step.update.image_urls ?? [])].slice(0, 6));
+    setUrls([...(step.update.image_urls ?? [])].slice(0, 5));
     setPayConfirm(false);
     setErr('');
   }, [open, step]);
@@ -56,11 +56,11 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
     setErr('');
     try {
       const next = [...urls];
-      for (let i = 0; i < files.length && next.length < 6; i++) {
+      for (let i = 0; i < files.length && next.length < 5; i++) {
         const up = await mediaApi.upload(files[i]);
         if (up.url?.startsWith('https://')) next.push(up.url);
       }
-      setUrls(next.slice(0, 6));
+      setUrls(next.slice(0, 5));
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'อัปโหลดไม่สำเร็จ');
     } finally {
@@ -192,7 +192,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
           </label>
 
           <div>
-            <span className="text-xs text-gray-500">ภาพหลักฐาน (สูงสุด 6)</span>
+            <span className="text-xs text-gray-500">ภาพหลักฐาน (สูงสุด 5)</span>
             <div className="mt-2 grid grid-cols-3 sm:grid-cols-3 gap-2">
               {urls.map((url, idx) => (
                 <div key={`${url}-${idx}`} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
@@ -225,7 +225,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
                   </div>
                 </div>
               ))}
-              {urls.length < 6 ? (
+              {urls.length < 5 ? (
                 <label className="aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
                   <Plus size={22} className="text-gray-400" />
                   <span className="text-[10px] text-gray-500 mt-1">เพิ่ม</span>

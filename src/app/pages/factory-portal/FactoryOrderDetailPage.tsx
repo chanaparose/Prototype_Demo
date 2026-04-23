@@ -133,7 +133,12 @@ export function FactoryOrderDetailPage() {
 
   if (!id) return null;
 
-  const title = String(order.title ?? order.project_name ?? `คำสั่งซื้อ #${id}`);
+  const rfqObj = (order.rfq && typeof order.rfq === 'object'
+    ? (order.rfq as Record<string, unknown>)
+    : null);
+  const title = String(
+    rfqObj?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id}`,
+  );
 
   const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';
 
