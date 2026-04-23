@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
+import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -30,15 +31,37 @@ function formatThaiDate(date: string): string {
   return new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 }
 
+function normalizeMarkdownContent(raw: unknown): string {
+  const s = String(raw ?? '');
+  if (!s) return '';
+  return s
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .trim();
+}
+
+
 export function PromotionDetailDesktop() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId } = usePromotionDetailShowcase();
+  const gallery = useMemo(() => {
+    const urls = Array.isArray(item?.imageUrls) ? item.imageUrls.filter((u) => String(u).trim() !== '') : [];
+    if (urls.length > 0) return urls.slice(0, 5);
+    return item?.image ? [item.image] : [];
+  }, [item?.image, item?.imageUrls]);
+  const [activeImage, setActiveImage] = useState(0);
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
+  useEffect(() => {
+    setActiveImage(0);
+  }, [item?.id]);
 
   if (loading) {
     return (
@@ -76,6 +99,7 @@ export function PromotionDetailDesktop() {
   const subName = item.sub_category_name?.trim();
   const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
   const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
+  const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const handleStartChat = () =>
     void startChat(item.factoryId, {
       type: 'PM',
@@ -87,7 +111,7 @@ export function PromotionDetailDesktop() {
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
       {/* ── Hero banner ── */}
       <div className="relative h-72 overflow-hidden bg-gray-200">
-        <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
+        <ImageWithFallback src={gallery[activeImage] ?? item.image} alt={item.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
         <button
@@ -141,22 +165,43 @@ export function PromotionDetailDesktop() {
 
         {/* ── Left: main content ── */}
         <div className="flex-1 min-w-0 space-y-5">
+          {gallery.length > 1 ? (
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <div className="grid grid-cols-5 gap-2">
+                {gallery.map((url, idx) => (
+                  <button
+                    key={`${url}-${idx}`}
+                    type="button"
+                    onClick={() => setActiveImage(idx)}
+                    className={`aspect-square rounded-lg overflow-hidden border transition-colors ${idx === activeImage ? 'border-orange-500' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {/* Deal highlight */}
-          <div
-            className="rounded-2xl p-6 shadow-sm"
-            style={{ background: '#FFF4E8', border: '1px solid rgba(227,136,68,0.25)' }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'rgba(227,136,68,0.15)' }}
-              >
-                <TicketPercent className="w-4 h-4" style={{ color: '#E38844' }} />
-              </div>
-              <p className="text-[13px] font-bold" style={{ color: '#E38844' }}>ดีลพิเศษจากโรงงาน</p>
+           
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p className="text-[12px] font-semibold mb-2" style={{ color: '#9D77B2' }}>เวลาโปรโมชั่น</p>
+            <div className="flex items-center gap-2 text-[13px] text-gray-700">
+              <CalendarClock className="w-4 h-4 text-[#E38844]" />
+              {item.startDate && item.endDate
+                ? `${formatThaiDate(item.startDate)} - ${formatThaiDate(item.endDate)}`
+                : 'ยังไม่ระบุช่วงเวลาโปรโมชั่น'}
             </div>
-            <p className="text-[14px] font-medium text-gray-700 leading-relaxed">{item.excerpt}</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+            <h2 className="text-[15px] font-bold mb-3" style={{ color: '#2E2252' }}>
+              รายละเอียดโปรโมชัน
+            </h2>
+            <MarkdownBody
+              source={markdown}
+              className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+            />
           </div>
 
           {/* Highlight sections (from DB or fallback) */}
@@ -185,26 +230,7 @@ export function PromotionDetailDesktop() {
                 </div>
               ));
             }
-            return (
-              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                <h2 className="text-[15px] font-bold mb-4" style={{ color: '#2E2252' }}>เงื่อนไขโปรโมชัน</h2>
-                <div className="space-y-4">
-                  {[
-                    { icon: <CirclePercent className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: 'คำสั่งซื้อใหม่', desc: 'สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญเท่านั้น' },
-                    { icon: <CalendarClock className="w-5 h-5" style={{ color: '#E38844' }} />, title: 'ระยะเวลาผลิต', desc: `ระยะเวลาผลิตโดยเฉลี่ย ${item.leadTime} ขึ้นอยู่กับสเปกและปริมาณจริง` },
-                    { icon: <TicketPercent className="w-5 h-5" style={{ color: '#7A4B94' }} />, title: `MOQ ${item.minOrder}`, desc: 'ขั้นต่ำการสั่งผลิตที่กำหนด สามารถเจรจาเพิ่มเติมได้ผ่านแชท' },
-                  ].map((s, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.15)' }}>{s.icon}</div>
-                      <div>
-                        <p className="text-[13px] font-bold" style={{ color: '#2E2252' }}>{s.title}</p>
-                        <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{s.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
+            
           })()}
 
           {/* Checklist sections (from DB or fallback) */}
@@ -241,31 +267,7 @@ export function PromotionDetailDesktop() {
           })()}
 
           {/* Tags */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <h2 className="text-[13px] font-bold" style={{ color: '#2E2252' }}>หมวดและแท็ก</h2>
-              <span
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium"
-                style={{ background: 'rgba(227,136,68,0.12)', color: '#E38844' }}
-              >{item.category}</span>
-              {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {item.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors cursor-pointer"
-                  style={{
-                    background: 'rgba(122,75,148,0.08)',
-                    color: '#7A4B94',
-                    border: '1px solid rgba(122,75,148,0.20)',
-                  }}
-                >
-                  <Tag className="w-3 h-3" /> {tag}
-                </span>
-              ))}
-            </div>
-          </div>
+           
         </div>
 
         {/* ── Right sidebar ── */}
@@ -334,6 +336,14 @@ export function PromotionDetailDesktop() {
                   <span className="text-[12px] font-semibold" style={{ color: '#2E2252' }}>{row.value}</span>
                 </div>
               ))}
+              <div className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                <div className="flex items-center gap-2 text-[12px] text-gray-500">
+                  <CalendarClock className="w-4 h-4" style={{ color: '#E38844' }} /> ช่วงเวลาโปร
+                </div>
+                <span className="text-[12px] font-semibold" style={{ color: '#2E2252' }}>
+                  {item.startDate && item.endDate ? `${formatThaiDate(item.startDate)} - ${formatThaiDate(item.endDate)}` : '-'}
+                </span>
+              </div>
             </div>
           </div>
 

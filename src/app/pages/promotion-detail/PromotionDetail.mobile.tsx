@@ -5,12 +5,15 @@ import {
   BadgeCheck,
   CalendarClock,
   CirclePercent,
+  CheckCircle2,
+  Clock,
   MapPin,
   MessageCircle,
+  Package,
   Tag,
   TicketPercent,
-  Star,
   Heart,
+  CalendarDays,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
@@ -18,6 +21,7 @@ import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
+import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -28,6 +32,19 @@ function formatThaiDate(date: string): string {
     year: 'numeric',
   }).format(d);
 }
+
+function normalizeMarkdownContent(raw: unknown): string {
+  const s = String(raw ?? '');
+  if (!s) return '';
+  return s
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .trim();
+}
+
 
 export function PromotionDetailMobile() {
   const navigate = useNavigate();
@@ -72,6 +89,7 @@ export function PromotionDetailMobile() {
   const subName = item.sub_category_name?.trim();
   const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
   const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
+  const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
 
   return (
     <div>
@@ -112,15 +130,20 @@ export function PromotionDetailMobile() {
           </button>
         ) : null}
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <span
-            className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold mb-2"
-            style={{ background: 'rgba(227,136,68,0.90)' }}
-          >
-            โปรโมชัน
-          </span>
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              className="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+              style={{ background: 'rgba(227,136,68,0.90)' }}
+            >
+              โปรโมชัน
+            </span>
+          </div>
           <h1 className="text-lg leading-snug" style={{ fontWeight: 700 }}>
             {item.title}
           </h1>
+          <div className="mt-1 text-[11px] text-white/85 flex items-center gap-1.5">
+            <CalendarDays className="w-3 h-3" /> เผยแพร่ {formatThaiDate(item.postedAt)}
+          </div>
         </div>
       </div>
 
@@ -157,43 +180,55 @@ export function PromotionDetailMobile() {
         </div>
 
         {/* Deal highlight */}
-        <div
-          className="rounded-2xl p-4 shadow-sm"
-          style={{ background: '#FFF4E8', border: '1px solid rgba(227,136,68,0.25)' }}
-        >
-          <p className="text-xs mb-1 font-semibold" style={{ color: '#E38844' }}>
-            ดีลพิเศษจากโรงงาน
-          </p>
-          <p className="text-sm text-gray-800" style={{ fontWeight: 700 }}>
-            {item.excerpt}
-          </p>
+         
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p className="text-[12px] font-semibold mb-2" style={{ color: '#9D77B2' }}>เวลาโปรโมชั่น</p>
+          <div className="flex items-center gap-2 text-[13px] text-gray-700">
+            <CalendarClock className="w-4 h-4 text-[#E38844]" />
+            {item.startDate && item.endDate
+              ? `${formatThaiDate(item.startDate)} - ${formatThaiDate(item.endDate)}`
+              : 'ยังไม่ระบุช่วงเวลาโปรโมชั่น'}
+          </div>
         </div>
 
-        {/* Stats */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
           <p className="text-sm" style={{ fontWeight: 700, color: '#2E2252' }}>
             รายละเอียดโปรโมชัน
           </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
-              <p className="text-gray-400">หมวดหมู่</p>
-              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.category}</p>
-              {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" className="mt-1" /> : null}
-            </div>
-            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
-              <p className="text-gray-400">ขั้นต่ำการผลิต</p>
-              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>MOQ {item.minOrder}</p>
-            </div>
-            <div className="rounded-xl p-2.5" style={{ background: '#F8F6FA' }}>
-              <p className="text-gray-400">ระยะเวลาผลิต</p>
-              <p className="mt-0.5" style={{ color: '#2E2252', fontWeight: 600 }}>{item.leadTime}</p>
-            </div>
-            <div className="rounded-xl p-2.5" style={{ background: '#FFF4E8' }}>
-              <p className="text-gray-400">ความสนใจ</p>
-              <p className="mt-0.5 inline-flex items-center gap-1" style={{ color: '#E38844', fontWeight: 600 }}>
-                <Heart className="w-3 h-3" /> {item.likes}
-              </p>
-            </div>
+          <MarkdownBody
+            source={markdown}
+            className="max-w-none !text-sm md:!text-sm text-gray-700 leading-relaxed"
+          />
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p
+            className="text-[10px] font-semibold tracking-[0.1em] uppercase mb-3"
+            style={{ color: '#9D77B2' }}
+          >
+            ข้อมูลโปรโมชัน
+          </p>
+          <div className="space-y-2">
+            {[
+              { icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'หมวดหมู่', value: item.category },
+              ...(subName
+                ? [{ icon: <Tag className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'ประเภทย่อย', value: subName }]
+                : []),
+              { icon: <Package className="w-4 h-4" style={{ color: '#7A4B94' }} />, label: 'ขั้นต่ำการผลิต', value: `MOQ ${item.minOrder}` },
+              { icon: <Clock className="w-4 h-4" style={{ color: '#E38844' }} />, label: 'ระยะเวลาผลิต', value: item.leadTime },
+              { icon: <Heart className="w-4 h-4" style={{ color: '#E38844' }} />, label: 'ความสนใจ', value: `${item.likes} คน` },
+              {
+                icon: <CalendarClock className="w-4 h-4" style={{ color: '#E38844' }} />,
+                label: 'ช่วงเวลาโปร',
+                value: item.startDate && item.endDate ? `${formatThaiDate(item.startDate)} - ${formatThaiDate(item.endDate)}` : '-',
+              },
+            ].map((row) => (
+              <div key={row.label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                <div className="flex items-center gap-2 text-[12px] text-gray-500">{row.icon} {row.label}</div>
+                <span className="text-[12px] font-semibold" style={{ color: '#2E2252' }}>{row.value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -218,41 +253,11 @@ export function PromotionDetailMobile() {
               </div>
             ));
           }
-          return (
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>เงื่อนไขโปรโมชัน</p>
-              <div className="space-y-2 text-sm text-gray-600">
-                <p className="flex items-start gap-2"><CirclePercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />สำหรับคำสั่งซื้อใหม่ที่เริ่มผลิตภายในช่วงแคมเปญ</p>
-                <p className="flex items-start gap-2"><CalendarClock className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#E38844' }} />ระยะเวลาผลิตโดยเฉลี่ย {item.leadTime} (ขึ้นอยู่กับสเปกจริง)</p>
-                <p className="flex items-start gap-2"><TicketPercent className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#7A4B94' }} />ขั้นต่ำการสั่งผลิตที่ MOQ {item.minOrder}</p>
-              </div>
-            </div>
-          );
+          
         })()}
 
         {/* Tags */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p className="text-sm mb-2" style={{ fontWeight: 700, color: '#2E2252' }}>
-            หมวดและแท็ก
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {subName ? <SubCategoryTag name={subName} variant="outline" size="sm" /> : null}
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs"
-                style={{
-                  background: 'rgba(122,75,148,0.10)',
-                  color: '#7A4B94',
-                  border: '1px solid rgba(122,75,148,0.20)',
-                }}
-              >
-                <Tag className="w-3 h-3" />
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
+         
 
         {/* Checklist sections (from DB or fallback) */}
         {(() => {
@@ -271,13 +276,26 @@ export function PromotionDetailMobile() {
           }
           return (
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <p className="text-sm mb-2.5" style={{ fontWeight: 700, color: '#2E2252' }}>รายละเอียดที่จำเป็นก่อนรับโปรโมชัน</p>
-              <ul className="space-y-1.5 text-sm text-gray-600 list-disc pl-5">
-                <li>ช่วงเวลาที่ต้องการเริ่มผลิตและวันเปิดตัวสินค้า</li>
-                <li>จำนวนผลิตที่คาดการณ์ในรอบแรกและรอบถัดไป</li>
-                <li>รูปแบบแพ็กเกจหรือฉลากที่ต้องการให้รวมในโปรฯ</li>
-                <li>เงื่อนไขการชำระเงินและเอกสารที่แบรนด์ต้องใช้</li>
-              </ul>
+              <h2 className="text-[15px] font-bold mb-3" style={{ color: '#2E2252' }}>
+                รายละเอียดที่จำเป็นก่อนรับโปรโมชัน
+              </h2>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  'ช่วงเวลาที่ต้องการเริ่มผลิตและวันเปิดตัวสินค้า',
+                  'จำนวนผลิตที่คาดการณ์ในรอบแรกและรอบถัดไป',
+                  'รูปแบบแพ็กเกจหรือฉลากที่ต้องการให้รวมในโปรฯ',
+                  'เงื่อนไขการชำระเงินและเอกสารที่แบรนด์ต้องใช้',
+                ].map((txt, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-2.5 p-3 rounded-xl"
+                    style={{ background: '#F8F6FA', border: '1px solid rgba(122,75,148,0.12)' }}
+                  >
+                    <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: '#7A4B94' }} />
+                    <p className="text-[12px] text-gray-600 leading-relaxed">{txt}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           );
         })()}
