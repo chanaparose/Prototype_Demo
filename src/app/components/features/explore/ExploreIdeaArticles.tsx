@@ -1,6 +1,5 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { ImageWithFallback } from '../../shared';
 
 export type IdeaArticleItem = {
   id: string;
@@ -43,25 +42,25 @@ export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: Expl
           <div
             key={article.id}
             onClick={() => onArticleClick?.(article.id)}
-            className="flex-shrink-0 w-[280px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-[#A656A0]/30 transition-all group"
+            className="flex-shrink-0 w-[320px] bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-[#A656A0]/30 transition-all group"
           >
-            <div className="relative h-36 overflow-hidden">
-              <ImageWithFallback
-                src={article.image}
-                alt={article.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-               
-            </div>
-            <div className="p-3">
-              <p className="text-[#292259] font-medium truncate mb-0.5 group-hover:text-[#A656A0] transition-colors" style={{ fontSize: 13 }}>
-                {article.title}
-              </p>
-              <p className="text-gray-500 line-clamp-2 mb-2" style={{ fontSize: 11 }}>
-                {article.excerpt}
-              </p>
-              <p className="text-gray-400" style={{ fontSize: 10 }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0]">
+                {article.tag || 'Idea'}
+              </span>
+              <p className="text-[10px] text-gray-400 truncate">
                 {article.factoryName}
+              </p>
+            </div>
+            <p className="text-[#292259] font-semibold line-clamp-2 mb-1 group-hover:text-[#A656A0] transition-colors" style={{ fontSize: 14 }}>
+              {article.title}
+            </p>
+            <p className="text-gray-500 line-clamp-3" style={{ fontSize: 12 }}>
+              {article.excerpt}
+            </p>
+            <div className="mt-2 pt-2 border-t border-gray-100">
+              <p className="text-gray-400" style={{ fontSize: 10 }}>
+                แตะเพื่ออ่านต่อ
               </p>
             </div>
           </div>

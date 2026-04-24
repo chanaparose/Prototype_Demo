@@ -702,64 +702,39 @@ export function ExploreDesktop({
             </button>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Left Large Article */}
-            {ideaArticlesList.length > 0 && (
-              <div
-                onClick={() => navigate(`/idea-detail?showcase_id=${ideaArticlesList[0].id}`)}
-                className="lg:w-[35%] bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex-shrink-0 cursor-pointer group">
-                <div className="h-48 relative overflow-hidden">
-                  <ImageWithFallback
-                    src={ideaArticlesList[0].image}
-                    alt={ideaArticlesList[0].title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                 
-                </div>
-                <div className="p-6">
-                  <span className="text-xs font-bold text-[#A656A0] mb-2 uppercase tracking-wide">
-                    {ideaArticlesList[0].tag}
-                  </span>
-                  <h3 className="text-lg font-bold text-[#292259] mb-2 group-hover:text-[#A656A0] transition-colors line-clamp-2">
-                    {ideaArticlesList[0].title}
-                  </h3>
-                  <p className="text-sm text-gray-500 line-clamp-2 mb-4">
-                    {ideaArticlesList[0].excerpt}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <span className="font-medium text-gray-600">{ideaArticlesList[0].factoryName}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Right Stacked Articles */}
-            <div className="lg:w-[65%] flex flex-col gap-4 h-full justify-between">
-              {ideaArticlesList.slice(1).map((article) => (
+          {ideaArticlesList.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-8 text-center text-sm text-gray-500">
+              ยังไม่มีบทความในขณะนี้
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {ideaArticlesList.map((article) => (
                 <div
                   key={article.id}
                   onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
-                  className="flex bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group h-full max-h-[140px] flex-shrink-0 min-w-[300px]"
+                  className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow cursor-pointer group min-h-[138px]"
                 >
-                  <div className="w-1/3 relative overflow-hidden">
-                    <ImageWithFallback
-                      src={article.image}
-                      alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                     
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2.5 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
+                      {article.tag || 'Idea'}
+                    </span>
+                    <span className="text-[10px] text-gray-400 truncate">
+                      {article.factoryName}
+                    </span>
                   </div>
-                  <div className="w-2/3 p-4 flex flex-col justify-center">
-                    <h3 className="font-bold text-sm text-[#292259] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#F28A2E] transition-colors">{article.title}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-1 mb-2">{article.excerpt}</p>
-                    <div className="mt-auto flex items-center gap-2 text-[10px] text-gray-400">
-                      <span className="font-medium text-gray-600">{article.factoryName}</span>
-                    </div>
+                  <h3 className="font-bold text-[15px] text-[#292259] mb-2 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors">
+                    {article.title}
+                  </h3>
+                  <p className="text-[12px] text-gray-500 line-clamp-3">
+                    {article.excerpt}
+                  </p>
+                  <div className="mt-3 pt-2 border-t border-gray-100 text-[10px] text-gray-400">
+                    แตะเพื่ออ่านต่อ
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          )}
         </section>
 
         {/* ═══ 8. Registration CTA ═══ */}

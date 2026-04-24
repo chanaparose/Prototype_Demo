@@ -377,7 +377,33 @@ export function FactoryIdeasMobile() {
     const q = searchText.trim().toLowerCase();
     return pageShowcases
       .filter((item) => {
+        const hideIdeaFromAll = selectedType === 'all' && item.contentType === 'idea';
         const byType     = selectedType === 'all' || item.contentType === selectedType;
+        const byCategory = showcaseMatchesSelectedCategoryId(
+          item.category,
+          effectiveCategoryId,
+          apiCategoriesAll,
+          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+          item.categoryId,
+        );
+        const bySubCategory = !(
+          selectedSubCategoryId &&
+          item.sub_category_id != null &&
+          String(item.sub_category_id) !== selectedSubCategoryId
+        );
+        if (!q) return !hideIdeaFromAll && byType && byCategory && bySubCategory;
+        const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
+          .join(' ').toLowerCase();
+        return !hideIdeaFromAll && byType && byCategory && bySubCategory && haystack.includes(q);
+      })
+      .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+  }, [searchText, selectedType, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+
+  const visibleIdeaItems = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    return pageShowcases
+      .filter((item) => {
+        const byType = item.contentType === 'idea';
         const byCategory = showcaseMatchesSelectedCategoryId(
           item.category,
           effectiveCategoryId,
@@ -396,7 +422,7 @@ export function FactoryIdeasMobile() {
         return byType && byCategory && bySubCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+  }, [searchText, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
 
   /* ── Factory filter ── */
   const visibleFactories = useMemo(() => {
@@ -410,7 +436,11 @@ export function FactoryIdeasMobile() {
   }, [searchText, selectedType, factoryList]);
 
   /* ── Total count ── */
-  const totalCount = isFactoryTab ? visibleFactories.length : visibleItems.length + (selectedType === 'all' ? visibleFactories.length : 0);
+  const totalCount = isFactoryTab
+    ? visibleFactories.length
+    : selectedType === 'idea'
+      ? visibleIdeaItems.length
+      : visibleItems.length + (selectedType === 'all' ? visibleFactories.length + visibleIdeaItems.length : 0);
 
   /** Showcase จาก GET /showcases — PD→product-detail, PM→promotion-detail, ID→idea-detail */
   const getDetailPath = (type: string, id: string) => {
@@ -740,6 +770,72 @@ export function FactoryIdeasMobile() {
               </article>
             ))}
           </div>
+        ) : selectedType === 'idea' ? (
+          <div className="space-y-3">
+            {visibleIdeaItems.map((item) => {
+              const factory = data.factories.find((f) => f.id === item.factoryId);
+              return (
+                <article
+                  key={item.id}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3"
+                  onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                      ไอเดีย
+                    </span>
+                    <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
+                  </div>
+                  <h3 className="text-[13px] font-bold leading-[19px] line-clamp-2" style={{ color: COLORS.blue }}>
+                    {item.title}
+                  </h3>
+                  <p className="text-[11px] leading-[16px] text-gray-500 mt-1 line-clamp-3">
+                    {item.excerpt || ' '}
+                  </p>
+                  <div className="pt-2 mt-2 border-t border-gray-100">
+                    <div className="h-[18px] mb-1 min-w-0">
+                      {item.factoryName ? (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/factories/${item.factoryId}`);
+                          }}
+                          className="flex items-center gap-1 w-full text-left text-[10px] font-semibold active:opacity-80 min-w-0"
+                          style={{ color: COLORS.blue }}
+                        >
+                          <span className="truncate">{item.factoryName}</span>
+                          {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                        </button>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center justify-between min-w-0">
+                      <span className="text-[10px] text-gray-400 shrink-0">
+                        MOQ{' '}
+                        <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
+                          {item.minOrder}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id, e); }}
+                        className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400 active:opacity-70"
+                        aria-label="ถูกใจ"
+                      >
+                        <Heart
+                          className="w-3 h-3 shrink-0"
+                          style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                        />
+                        <span className="tabular-nums font-medium text-gray-500">
+                          {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         ) : viewMode === 'grid' ? (
           /* ━━━ Grid View ━━━
              Rule: grid + items-stretch → ทุกการ์ดในแถวเดียวกันสูงเท่ากัน
@@ -969,6 +1065,89 @@ export function FactoryIdeasMobile() {
                   </div>
                 </article>
               ))}
+            </div>
+          </div>
+        )}
+        {selectedType === 'all' && visibleIdeaItems.length > 0 && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold flex items-center gap-1.5" style={{ color: COLORS.blue }}>
+                <Sparkles className="w-4 h-4" style={{ color: COLORS.purple }} />
+                บทความ Idea
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedType('idea')}
+                className="text-[11px] font-medium"
+                style={{ color: COLORS.purple }}
+              >
+                ดูทั้งหมด ({visibleIdeaItems.length})
+              </button>
+            </div>
+            <div className="space-y-3">
+              {visibleIdeaItems.slice(0, 4).map((item) => {
+                const factory = data.factories.find((f) => f.id === item.factoryId);
+                return (
+                  <article
+                    key={`idea-${item.id}`}
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3"
+                    onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                        ไอเดีย
+                      </span>
+                      <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
+                    </div>
+                    <h3 className="text-[13px] font-bold leading-[19px] line-clamp-2" style={{ color: COLORS.blue }}>
+                      {item.title}
+                    </h3>
+                    <p className="text-[11px] leading-[16px] text-gray-500 mt-1 line-clamp-3">
+                      {item.excerpt || ' '}
+                    </p>
+                    <div className="pt-2 mt-2 border-t border-gray-100">
+                      <div className="h-[18px] mb-1 min-w-0">
+                        {item.factoryName ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/factories/${item.factoryId}`);
+                            }}
+                            className="flex items-center gap-1 w-full text-left text-[10px] font-semibold active:opacity-80 min-w-0"
+                            style={{ color: COLORS.blue }}
+                          >
+                            <span className="truncate">{item.factoryName}</span>
+                            {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                          </button>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center justify-between min-w-0">
+                        <span className="text-[10px] text-gray-400 shrink-0">
+                          MOQ{' '}
+                          <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
+                            {item.minOrder}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id, e); }}
+                          className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400 active:opacity-70"
+                          aria-label="ถูกใจ"
+                        >
+                          <Heart
+                            className="w-3 h-3 shrink-0"
+                            style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          />
+                          <span className="tabular-nums font-medium text-gray-500">
+                            {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         )}

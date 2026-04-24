@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { openChatSession } from '../utils/openChatSession';
-import { getCurrentUserId, initialMessageForReference, type ChatReference } from '../utils/chatContract';
+import { getCurrentUserId, type ChatReference } from '../utils/chatContract';
 
 export type { ChatReference };
 
@@ -36,10 +36,7 @@ export function useStartChatWithFactory() {
           await openChatSession(navigate, user, {
             customerUserId: myUserId,
             factoryEntityId: factoryIdNum,
-            firstMessage: {
-              content: initialMessageForReference(ref),
-              reference: ref,
-            },
+            pendingReference: ref,
           });
         } else {
           await openChatSession(navigate, user, {

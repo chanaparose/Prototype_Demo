@@ -137,12 +137,6 @@ export function ProductDetailDesktop() {
   if (subName) specRows.push({ label: 'ประเภทย่อย', value: subName });
   specRows.push({ label: 'ขั้นต่ำการสั่งผลิต', value: `${item.minOrder} ชิ้น (MOQ)` });
   if (item.leadTime) specRows.push({ label: 'ระยะเวลาผลิต', value: item.leadTime });
-  if (item.productionCapacity != null && item.productionCapacity > 0) {
-    specRows.push({ label: 'กำลังการผลิต', value: `${item.productionCapacity.toLocaleString('th-TH')} ชิ้น/เดือน` });
-  }
-  if (item.sampleAvailable != null) {
-    specRows.push({ label: 'มีตัวอย่างสินค้า', value: item.sampleAvailable ? 'มี' : 'ไม่มี' });
-  }
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
   if (Array.isArray(item.specs) && item.specs.length > 0) {
     const sorted = [...item.specs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -359,11 +353,6 @@ export function ProductDetailDesktop() {
                     <span style={{ color: BRAND.ink }}>{item.leadTime}</span>
                   </>
                 ) : null}
-
-                <span className="text-gray-400">ตัวอย่างสินค้า</span>
-                <span style={{ color: BRAND.ink }}>
-                  {item.sampleAvailable ? 'มีให้ขอตัวอย่างก่อนผลิต' : 'สอบถามกับโรงงานเพื่อขอตัวอย่าง'}
-                </span>
 
                 {factory?.location ? (
                   <>

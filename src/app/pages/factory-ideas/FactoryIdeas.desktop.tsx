@@ -344,7 +344,34 @@ export function FactoryIdeasDesktop() {
     const q = searchText.trim().toLowerCase();
     return pageShowcases
       .filter((item) => {
+        const hideIdeaFromAll = selectedType === 'all' && item.contentType === 'idea';
         const byType = selectedType === 'all' || item.contentType === selectedType;
+        const byCategory = showcaseMatchesSelectedCategoryId(
+          item.category,
+          effectiveCategoryId,
+          apiCategoriesAll,
+          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+          item.categoryId,
+        );
+        const bySubCategory = !(
+          selectedSubCategoryId &&
+          item.sub_category_id != null &&
+          String(item.sub_category_id) !== selectedSubCategoryId
+        );
+        if (!q) return !hideIdeaFromAll && byType && byCategory && bySubCategory;
+        const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
+          .join(' ')
+          .toLowerCase();
+        return !hideIdeaFromAll && byType && byCategory && bySubCategory && haystack.includes(q);
+      })
+      .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+  }, [searchText, selectedType, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+
+  const visibleIdeaItems = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    return pageShowcases
+      .filter((item) => {
+        const byType = item.contentType === 'idea';
         const byCategory = showcaseMatchesSelectedCategoryId(
           item.category,
           effectiveCategoryId,
@@ -364,7 +391,7 @@ export function FactoryIdeasDesktop() {
         return byType && byCategory && bySubCategory && haystack.includes(q);
       })
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  }, [searchText, selectedType, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories, isFactoryTab]);
+  }, [searchText, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
 
   const visibleFactories = useMemo(() => {
     if (selectedType !== 'all' && selectedType !== 'factory') return [];
@@ -376,7 +403,11 @@ export function FactoryIdeasDesktop() {
     });
   }, [searchText, selectedType, factoryList]);
 
-  const totalCount = isFactoryTab ? visibleFactories.length : visibleItems.length + (selectedType === 'all' ? visibleFactories.length : 0);
+  const totalCount = isFactoryTab
+    ? visibleFactories.length
+    : selectedType === 'idea'
+      ? visibleIdeaItems.length
+      : visibleItems.length + (selectedType === 'all' ? visibleFactories.length + visibleIdeaItems.length : 0);
 
   const getDetailPath = (type: string, id: string) => {
     const q = encodeURIComponent(id);
@@ -716,6 +747,53 @@ export function FactoryIdeasDesktop() {
               </article>
             ))}
           </div>
+        ) : selectedType === 'idea' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {visibleIdeaItems.map((item) => {
+              const factory = data.factories.find((f) => f.id === item.factoryId);
+              return (
+                <article
+                  key={item.id}
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4"
+                  onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                      ไอเดีย
+                    </span>
+                    <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
+                  </div>
+                  <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors" style={{ color: COLORS.blue }}>
+                    {item.title}
+                  </h3>
+                  <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
+                  <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
+                      className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
+                      style={{ color: COLORS.blue }}
+                    >
+                      <span className="truncate">{item.factoryName}</span>
+                      {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                    </button>
+                    <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                      <span className="min-w-0 truncate">
+                        MOQ{' '}
+                        <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
+                          {item.minOrder}
+                        </span>
+                      </span>
+                      <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
+                        <Heart className="w-2.5 h-2.5 shrink-0" />
+                        {item.likes}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
             {visibleItems.map((item) => {
@@ -896,6 +974,70 @@ export function FactoryIdeasDesktop() {
                   </div>
                 </article>
               ))}
+            </div>
+          </div>
+        )}
+        {selectedType === 'all' && visibleIdeaItems.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold flex items-center gap-2" style={{ color: COLORS.blue }}>
+                <Sparkles className="w-5 h-5" style={{ color: COLORS.purple }} />
+                บทความ Idea
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedType('idea')}
+                className="text-[13px] font-medium hover:opacity-80 transition-opacity"
+                style={{ color: COLORS.purple }}
+              >
+                ดูทั้งหมด ({visibleIdeaItems.length})
+              </button>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {visibleIdeaItems.slice(0, 6).map((item) => {
+                const factory = data.factories.find((f) => f.id === item.factoryId);
+                return (
+                  <article
+                    key={`idea-${item.id}`}
+                    className="group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4"
+                    onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                        ไอเดีย
+                      </span>
+                      <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
+                    </div>
+                    <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors" style={{ color: COLORS.blue }}>
+                      {item.title}
+                    </h3>
+                    <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
+                    <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
+                        className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
+                        style={{ color: COLORS.blue }}
+                      >
+                        <span className="truncate">{item.factoryName}</span>
+                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                      </button>
+                      <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                        <span className="min-w-0 truncate">
+                          MOQ{' '}
+                          <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
+                            {item.minOrder}
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
+                          <Heart className="w-2.5 h-2.5 shrink-0" />
+                          {item.likes}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </div>
         )}

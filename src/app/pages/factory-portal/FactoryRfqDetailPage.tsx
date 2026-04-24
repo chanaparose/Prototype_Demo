@@ -2,8 +2,9 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../contexts/DataContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { rfqsApi, quotationsApi, conversationsApi, messagesApi } from '../../services/api';
+import { rfqsApi, quotationsApi, conversationsApi, messagesApi, categoriesApi } from '../../services/api';
 import { findOrCreateConversation, openChatSession } from '../../utils/openChatSession';
 import { buildSendPayload, chatRoomPath, getCurrentUserId } from '../../utils/chatContract';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
@@ -28,6 +29,7 @@ export function FactoryRfqDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const data = useData();
   const fid = getFactoryEntityId(user);
   const isDesktop = useIsDesktop();
 
@@ -36,6 +38,7 @@ export function FactoryRfqDetailPage() {
   const [rfqTitle, setRfqTitle] = useState('');
   const [rfqBody, setRfqBody] = useState<Record<string, unknown>>({});
   const [quotes, setQuotes] = useState<QuoteRow[]>([]);
+  const [subCategoryName, setSubCategoryName] = useState('');
 
   const quoteFormRef = useRef<QuotationCreateFormHandle>(null);
   const shippingMethodsQ = useShippingMethods();
@@ -69,6 +72,27 @@ export function FactoryRfqDetailPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const cid = Number(rfqBody.category_id ?? 0);
+    const sid = Number(rfqBody.sub_category_id ?? 0);
+    if (!Number.isFinite(cid) || cid <= 0 || !Number.isFinite(sid) || sid <= 0) {
+      setSubCategoryName('');
+      return;
+    }
+    let mounted = true;
+    void categoriesApi.subCategories(cid)
+      .then((raw) => {
+        if (!mounted) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const hit = arr.find((r) => Number(r.sub_category_id ?? r.id ?? 0) === sid);
+        setSubCategoryName(String(hit?.name ?? '').trim());
+      })
+      .catch(() => setSubCategoryName(''));
+    return () => {
+      mounted = false;
+    };
+  }, [rfqBody.category_id, rfqBody.sub_category_id]);
+
   const myQuote = fid != null ? quotes.find((q) => quoteFid(q) === fid) : undefined;
   const myStatus = myQuote ? String(myQuote.status ?? 'PD').toUpperCase() : '';
   const canEdit = Boolean(myQuote && myStatus === 'PD');
@@ -87,27 +111,24 @@ export function FactoryRfqDetailPage() {
   }, [rfqBody, rfqShipId, shippingMethodsQ.data]);
 
   const deadlineIso = useMemo(() => {
-    const raw = String(
-      rfqBody.deadline ?? rfqBody.target_date ?? rfqBody.rfq_deadline ?? rfqBody.expires_at ?? '',
-    ).trim();
+    const raw = String(rfqBody.required_delivery_date ?? '').trim();
     return raw || null;
   }, [rfqBody]);
 
   const targetDaysCustomer = useMemo(() => {
     const n = Number(
-      rfqBody.target_days ??
-        rfqBody.lead_time_target ??
-        rfqBody.customer_lead_days ??
-        rfqBody.delivery_days ??
-        0,
+      rfqBody.target_lead_time_days ?? 0,
     );
     return Number.isFinite(n) && n > 0 ? n : null;
   }, [rfqBody]);
 
-  const addressSummary = useMemo(() => summarizeRfqAddress(rfqBody), [rfqBody]);
+  const addressSummary = useMemo(
+    () => summarizeRfqAddress(rfqBody),
+    [rfqBody],
+  );
 
   const imageUrls = useMemo(() => {
-    const urls = rfqBody.image_urls;
+    const urls = Array.isArray(rfqBody.image_urls) ? rfqBody.image_urls : rfqBody.reference_images;
     const out: string[] = [];
     if (Array.isArray(urls)) {
       for (const u of urls) {
@@ -233,8 +254,12 @@ export function FactoryRfqDetailPage() {
 
   const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';
 
-  const customerCat = String(rfqBody.category_name ?? '').trim();
-  const customerSub = String(rfqBody.sub_category_name ?? '').trim();
+  const categoryIdNum = Number(rfqBody.category_id ?? 0);
+  const customerCat =
+    String(rfqBody.category_name ?? '').trim() ||
+    data.categories.find((c) => Number(c.id) === categoryIdNum)?.name ||
+    '';
+  const customerSub = String(rfqBody.sub_category_name ?? '').trim() || subCategoryName;
   const breadcrumb =
     customerCat && customerSub ? `${customerCat} › ${customerSub}` : customerSub || customerCat || '—';
 
@@ -381,6 +406,40 @@ export function FactoryRfqDetailPage() {
                 <span className="text-gray-500">รายละเอียด: </span>
                 {String(rfqBody.details ?? rfqBody.description ?? '—')}
               </p>
+              <p>
+                <span className="text-gray-500">วัสดุ/เกรด: </span>
+                {String(rfqBody.material_grade ?? '-')}
+              </p>
+              <p>
+                <span className="text-gray-500">สเปกบรรจุภัณฑ์: </span>
+                {String(rfqBody.packaging_spec ?? '-')}
+              </p>
+              <p>
+                <span className="text-gray-500">ราคาเป้าหมาย/ชิ้น: </span>
+                {rfqBody.target_unit_price != null ? `${Number(rfqBody.target_unit_price).toLocaleString('th-TH')} บาท` : '-'}
+              </p>
+              <p>
+                <span className="text-gray-500">วันที่ต้องการรับสินค้า: </span>
+                {deadlineIso ? new Date(deadlineIso).toLocaleDateString('th-TH') : '-'}
+              </p>
+              <p>
+                <span className="text-gray-500">ต้องการตัวอย่าง: </span>
+                {Boolean(rfqBody.sample_required) ? `ใช่${rfqBody.sample_qty ? ` (${String(rfqBody.sample_qty)} ชิ้น)` : ''}` : 'ไม่'}
+              </p>
+              <p>
+                <span className="text-gray-500">ประเภทการตรวจสอบ: </span>
+                {String(rfqBody.inspection_type ?? '-')}
+              </p>
+              {Array.isArray(rfqBody.certifications_required) && rfqBody.certifications_required.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-gray-500">ใบรับรองที่ต้องการ:</span>
+                  {rfqBody.certifications_required.map((c) => (
+                    <span key={String(c)} className="text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
+                      {String(c)}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </section>
 
             <p className="text-sm text-gray-700 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2">
@@ -407,6 +466,7 @@ export function FactoryRfqDetailPage() {
                 rfqId={id}
                 factoryId={fid}
                 lockedShippingMethodId={rfqShipId}
+                rfqQuantity={quantity}
                 patchQuotationId={
                   myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
                 }
@@ -414,8 +474,11 @@ export function FactoryRfqDetailPage() {
                   myQuote
                     ? {
                         price_per_piece: String(myQuote.price_per_piece ?? ''),
-                        mold_cost: String(myQuote.mold_cost ?? ''),
+                        tooling_mold_cost: String(myQuote.tooling_mold_cost ?? (myQuote as Record<string, unknown>).mold_cost ?? ''),
+                        shipping_cost: String(myQuote.shipping_cost ?? ''),
+                        packaging_cost: String(myQuote.packaging_cost ?? ''),
                         lead_time_days: String(myQuote.lead_time_days ?? ''),
+                        validity_days: String(myQuote.validity_days ?? '14'),
                       }
                     : undefined
                 }

@@ -118,8 +118,6 @@ export type FactoryShowcase = {
   leadTime: string;
   basePrice?: number;
   promoPrice?: number;
-  productionCapacity?: number;
-  sampleAvailable?: boolean;
   startDate?: string;
   endDate?: string;
   status?: string;

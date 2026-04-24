@@ -5,6 +5,7 @@
 
 import type { MessagesSendBody } from '../utils/chatContract';
 import type { OrderDetailDTO } from '../types/api';
+import type { RfqDetailResponse, RfqListItem, QuotationRow } from '../types/rfq';
 
 const DEFAULT_API_BASE = '/api/v1';
 
@@ -22,12 +23,38 @@ function resolveApiBase(): string {
 const BASE_URL = resolveApiBase();
 
 // ─── Token helpers ───────────────────────────────────────────────
+function normalizeToken(raw: unknown): string {
+  if (typeof raw !== 'string') return '';
+  let trimmed = raw.trim();
+  if (!trimmed) return '';
+  // tolerate values like `"eyJ..."` or `'eyJ...'`
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    trimmed = trimmed.slice(1, -1).trim();
+  }
+  return trimmed.replace(/^Bearer\s+/i, '').trim();
+}
+
 export function getToken(): string | null {
-  return localStorage.getItem('auth_token');
+  const raw = localStorage.getItem('auth_token');
+  const normalized = normalizeToken(raw);
+  if (!normalized) return null;
+  // Self-heal old/incorrect persisted values like "Bearer xxx"
+  if (raw !== normalized) localStorage.setItem('auth_token', normalized);
+  return normalized;
 }
 
 export function setToken(token: string) {
-  localStorage.setItem('auth_token', token);
+  const normalized = normalizeToken(token);
+  if (!normalized) return;
+  localStorage.setItem('auth_token', normalized);
+  try {
+    sessionStorage.setItem('auth_login_at', String(Date.now()));
+  } catch {
+    // ignore storage availability issues
+  }
 }
 
 export function removeToken() {
@@ -119,9 +146,23 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   if (res.status === 401) {
     const errorData = await res.json().catch(() => ({}));
     const authPostFailed = method === 'POST' && endpoint.startsWith('/auth/');
+    let skipImmediateLogout = false;
+    try {
+      const t = Number(sessionStorage.getItem('auth_login_at') ?? 0);
+      // Right after login, /frontend/me can transiently 401 on some deployments.
+      if (endpoint === '/frontend/me' && Number.isFinite(t) && t > 0 && Date.now() - t < 20_000) {
+        skipImmediateLogout = true;
+      }
+    } catch {
+      // ignore
+    }
     if (!authPostFailed) {
-      removeToken();
-      window.location.href = '/login';
+      if (!skipImmediateLogout) {
+        removeToken();
+        window.location.href = '/login';
+      } else {
+        console.warn('[api] transient 401 on /frontend/me right after login; keep token and retry later');
+      }
     }
     throw new Error(extractErrorMessage(errorData, 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'));
   }
@@ -277,26 +318,23 @@ export const factoriesApi = {
     api.delete(`/factories/${factoryId}/sub-categories/${subCategoryId}`),
 };
 
-export type RfqDetailPayload = {
-  rfq: Record<string, unknown> & { image_urls?: string[] };
-};
-
 export const rfqsApi = {
   list: (status?: string) => {
     const q = status != null && status !== '' ? `?status=${encodeURIComponent(status)}` : '';
-    return api.get<unknown[]>(`/rfqs${q}`);
+    return api.get<RfqListItem[]>(`/rfqs${q}`);
   },
   /** RFQ ที่ match หมวดของโรงงานตาม JWT */
-  matching: () => api.get<unknown[]>('/rfqs/matching'),
+  matching: () => api.get<RfqListItem[] | null>('/rfqs/matching'),
   /** รูปอยู่ที่ rfq.image_urls — ไม่มี top-level images (FACTORY_UI_SPEC §1.2) */
-  get: (id: string | number) => api.get<RfqDetailPayload>(`/rfqs/${id}`),
+  get: (id: string | number) => api.get<RfqDetailResponse>(`/rfqs/${id}`),
   /** ส่ง image_urls ใน body เดียว (สูงสุด 5 URL) — ไม่เรียก POST /rfqs/:id/images */
   create: (data: Record<string, unknown> & { image_urls?: string[] }) =>
     api.post<Record<string, unknown>>('/rfqs', data),
   cancel: (rfqId: string | number) => api.patch(`/rfqs/${rfqId}/cancel`),
   createQuotation: (rfqId: string | number, data: Record<string, unknown>) =>
     api.post(`/rfqs/${rfqId}/quotations`, data),
-  listQuotations: (rfqId: string | number) => api.get<unknown[]>(`/rfqs/${rfqId}/quotations`),
+  listQuotations: (rfqId: string | number) =>
+    api.get<QuotationRow[] | null>(`/rfqs/${rfqId}/quotations`),
 };
 
 export const ordersApi = {
@@ -576,27 +614,20 @@ export const showcasesApi = {
       `/factories/${factoryId}/showcases${type ? `?type=${encodeURIComponent(type)}` : ''}`,
     ),
   create: (data: {
-    type?: string;
-    content_type?: string;
+    content_type: 'PD' | 'PM' | 'ID';
     title: string;
     excerpt?: string;
-    description?: string;
     content?: string;
     image_url?: string;
-    images?: string[];
     category_id?: number;
     sub_category_id?: number;
     moq?: number;
-    production_capacity?: number;
+    lead_time_days?: number;
     base_price?: number;
     promo_price?: number;
-    sample_available?: boolean;
     start_date?: string;
     end_date?: string;
     linked_showcases?: number[];
-    min_order?: number;
-    lead_time_days?: number;
-    price_range?: string;
     status?: string;
   }) => api.post<Record<string, unknown>>('/showcases', data),
   update: (showcaseId: number | string, data: Record<string, unknown>) =>
@@ -705,6 +736,120 @@ export const quotationsApi = {
   patch: (quotationId: number | string, data: Record<string, unknown>) =>
     api.patch<Record<string, unknown>>(`/quotations/${quotationId}`, data),
   delete: (quotationId: number | string) => api.delete(`/quotations/${quotationId}`),
+};
+
+// ─── Platform Config API (admin) ───────────────────────────────
+export interface PlatformConfig {
+  config_id: number;
+  default_commission_rate: number;
+  promo_commission_rate?: number | null;
+  promo_start_at?: string | null;
+  promo_end_at?: string | null;
+  promo_label?: string | null;
+  vat_rate: number;
+  currency_code: string;
+  effective_from: string;
+  effective_to?: string | null;
+}
+
+export const platformConfigApi = {
+  getActive: () => api.get<PlatformConfig>('/admin/platform-config'),
+  create: (body: Partial<PlatformConfig>) =>
+    api.post<PlatformConfig>('/admin/platform-config', body),
+  history: () => api.get<PlatformConfig[]>('/admin/platform-config/history'),
+};
+
+// ─── Quotation Builder API (extended) ──────────────────────────
+export interface QuotationItem {
+  item_no: number;
+  description: string;
+  qty: number;
+  unit?: string;
+  unit_price: number;
+  discount_pct: number;
+  line_total: number;
+  note?: string;
+}
+
+export interface QuotationBreakdown {
+  subtotal: number;
+  discount_amount: number;
+  shipping_cost: number;
+  packaging_cost: number;
+  tooling_mold_cost: number;
+  pre_vat_base: number;
+  vat_rate: number;
+  vat_amount: number;
+  grand_total: number;
+  platform_commission_rate: number;
+  platform_commission_amount: number;
+  factory_net_receivable: number;
+  platform_config_id: number;
+}
+
+export interface QuotationCreateInput {
+  rfq_id: number;
+  items: Omit<QuotationItem, 'line_total'>[];
+  discount_amount: number;
+  shipping_cost: number;
+  shipping_method?: string;
+  packaging_cost: number;
+  tooling_mold_cost: number;
+  lead_time_days?: number;
+  production_start_date?: string;
+  delivery_date?: string;
+  incoterms?: 'EXW' | 'FOB' | 'CIF' | 'DDP';
+  payment_terms?: '50_50' | '30_70' | 'net_30' | 'lc_at_sight';
+  validity_days?: number;
+  warranty_period_months?: number;
+}
+
+export interface RFQCreateInput {
+  title: string;
+  description: string;
+  category_id: number;
+  qty: number;
+  unit: string;
+  unit_id?: number;
+  material_grade?: string;
+  tolerance?: string;
+  color_finish?: string;
+  dimension_spec?: { L: number; W: number; H: number; unit: 'mm' | 'cm' | 'm' };
+  weight_target_g?: number;
+  packaging_spec?: string;
+  target_unit_price?: number;
+  target_lead_time_days?: number;
+  required_delivery_date?: string;
+  incoterms?: string;
+  payment_terms?: string;
+  address_id?: number;          // BE field name (required by API)
+  delivery_address_id?: number; // FE draft alias — remapped to address_id before send
+  shipping_method_id?: number;  // required — factory ต้องเห็นวิธีจัดส่งเพื่อออกใบเสนอราคา
+  certifications_required?: string[];
+  sample_required?: boolean;
+  sample_qty?: number;
+  inspection_type?: 'self' | 'third_party' | 'buyer_onsite';
+  tech_drawing_url?: string;
+  reference_images?: string[];
+  spec_sheet_url?: string;
+}
+
+export const quotationApi = {
+  preview: (body: Partial<QuotationCreateInput>) =>
+    api.post<QuotationBreakdown>('/quotations/preview', body),
+  create: (body: QuotationCreateInput) =>
+    api.post<Record<string, unknown>>('/quotations', body),
+  revision: (id: number, body: QuotationCreateInput) =>
+    api.post<Record<string, unknown>>(`/quotations/${id}/revision`, body),
+  get: (id: number) => api.get<Record<string, unknown>>(`/quotations/${id}`),
+  history: (id: number) => api.get<Record<string, unknown>[]>(`/quotations/${id}/history`),
+  accept: (id: number) => api.post(`/quotations/${id}/accept`),
+  reject: (id: number, reason?: string) =>
+    api.post(`/quotations/${id}/reject`, { reason }),
+  requestRevision: (
+    id: number,
+    body: { reason: string; fields?: string[] },
+  ) => api.post(`/quotations/${id}/revision-request`, body),
 };
 
 // ─── Addresses API ─────────────────────────────────────────────

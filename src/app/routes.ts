@@ -17,6 +17,8 @@ import { Notifications } from './pages/notifications';
 import { FactoriesList } from './pages/factories/FactoriesList';
 import { Login } from './pages/login';
 import { RegisterFactoryPage } from './pages/auth';
+import { QuoteBuilder, QuoteDetailCustomer } from './pages/quote';
+import { CommissionConfig } from './pages/admin';
 import { AuthGuard } from './components/AuthGuard';
 import { FactoryRoleGuard } from './components/factory/FactoryRoleGuard';
 import { FactoryVerifiedGuard } from './components/factory/FactoryVerifiedGuard';
@@ -67,6 +69,8 @@ export const router = createBrowserRouter([
           { path: 'profile', Component: Profile },
           { path: 'create-rfq', Component: CreateRfq },
           { path: 'notifications', Component: Notifications },
+          { path: 'quotations/:id', Component: QuoteDetailCustomer },
+          { path: 'admin/commission-config', Component: CommissionConfig },
           { path: 'rfqs/:id', Component: RFQDetail },
           { path: 'orders/:id', Component: OrderDetail },
           { path: 'messages/:id', Component: ChatRoom },
@@ -88,7 +92,9 @@ export const router = createBrowserRouter([
                       { path: 'showcases/:id/edit', Component: FactoryShowcaseEditPage },
                       { path: 'rfqs', Component: FactoryRfqBoardPage },
                       { path: 'rfqs/:id', Component: FactoryRfqDetailPage },
+                      { path: 'rfqs/:rfqId/quote-builder', Component: QuoteBuilder },
                       { path: 'quotations/:id/edit', Component: FactoryEditQuotationPage },
+                      { path: 'quotations/:id', Component: QuoteDetailCustomer },
                       { path: 'quotations', Component: FactoryQuotationsPage },
                       { path: 'orders', Component: FactoryOrdersPage },
                       { path: 'orders/:id', Component: FactoryOrderDetailPage },
