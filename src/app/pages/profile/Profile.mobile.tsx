@@ -22,6 +22,7 @@ import {
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { transactionsApi, addressesApi } from '../../services/api';
+import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
 
 const menuSections = [
   {
@@ -241,11 +242,13 @@ export function ProfileMobile() {
           <div className="absolute right-4 bottom-0 w-16 h-16 rounded-full opacity-15 bg-white" />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4">
-              <img
-                src={currentUser.avatar}
-                alt="avatar"
-                className="w-14 h-14 rounded-2xl object-cover border-2 border-white/30"
-              />
+              <div className="relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/30 bg-[#EFEAF7]">
+                <img
+                  src={HARDCODED_CUSTOMER_PROFILE_SRC}
+                  alt="avatar"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+              </div>
               <div>
                 <p className="text-white" style={{ fontWeight: 700 }}>
                   {currentUser.name}
