@@ -21,7 +21,8 @@ export function SubCategoryPickerModal({
   const { byCategory, isLoading, isError } = useSubCategoriesByCategories(
     categoryId != null ? [categoryId] : [],
   );
-  const subs = categoryId != null ? byCategory.get(categoryId) ?? [] : [];
+  const subs = (categoryId != null ? byCategory.get(categoryId) ?? [] : [])
+    .filter((s) => Number.isFinite(s.id) && s.id > 0);
   const [working, setWorking] = useState<number[]>(initialSelected);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export function SubCategoryPickerModal({
   if (!open || categoryId == null) return null;
 
   const toggle = (id: number) => {
+    if (!Number.isFinite(id) || id <= 0) return;
     setWorking((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id].sort((a, b) => a - b),
     );

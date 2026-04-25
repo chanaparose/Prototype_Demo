@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { z } from 'zod';
 import { useData } from '../../contexts/DataContext';
-import { masterApi } from '../../services/api';
+import { categoriesApi } from '../../services/api';
 import { useCreateRFQ } from './useCreateRFQ';
 import { useRFQDraft } from './useRFQDraft';
 import { Step1Basic } from './steps/Step1Basic';
@@ -15,7 +15,6 @@ const step1Schema = z.object({
   description: z.string().min(1),
   category_id: z.number().int().positive(),
   qty: z.number().positive(),
-  unit: z.string().regex(/^\d+$/),
 });
 
 const step2Schema = z.object({
@@ -40,27 +39,43 @@ export function RFQCreateWizard() {
   const { draft, setDraft, reset } = useRFQDraft();
   const create = useCreateRFQ();
   const [step, setStep] = React.useState(0);
-  const [units, setUnits] = React.useState<{ id: number; name: string }[]>([]);
+  const [subCategoriesLoading, setSubCategoriesLoading] = React.useState(false);
+  const [subCategories, setSubCategories] = React.useState<
+    { id: number; name: string; sortOrder?: number }[]
+  >([]);
 
   React.useEffect(() => {
-    let mounted = true;
-    void masterApi.units()
+    const cid = Number(draft.category_id ?? 0);
+    if (!Number.isFinite(cid) || cid <= 0) {
+      setSubCategories([]);
+      return;
+    }
+    let active = true;
+    setSubCategoriesLoading(true);
+    void categoriesApi
+      .subCategories(cid)
       .then((raw) => {
-        if (!mounted) return;
+        if (!active) return;
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         const mapped = arr
           .map((r) => ({
-            id: Number(r.unit_id ?? r.id ?? 0),
-            name: String(r.unit_name_th ?? r.name ?? '').trim(),
+            id: Number(r.sub_category_id ?? r.id ?? 0),
+            name: String(r.sub_category_name ?? r.name ?? r.name_th ?? '').trim(),
+            sortOrder: Number(r.sort_order ?? r.sortOrder ?? NaN),
           }))
-          .filter((u) => Number.isFinite(u.id) && u.id > 0 && u.name);
-        setUnits(mapped);
+          .filter((s) => Number.isFinite(s.id) && s.id > 0 && s.name);
+        setSubCategories(mapped);
       })
-      .catch(() => setUnits([]));
+      .catch(() => {
+        if (active) setSubCategories([]);
+      })
+      .finally(() => {
+        if (active) setSubCategoriesLoading(false);
+      });
     return () => {
-      mounted = false;
+      active = false;
     };
-  }, []);
+  }, [draft.category_id]);
 
   const isStepValid = React.useMemo(() => {
     if (step === 0) return step1Schema.safeParse(draft).success;
@@ -71,17 +86,15 @@ export function RFQCreateWizard() {
 
   const submit = async () => {
     if (!step1Schema.safeParse(draft).success) return;
-    const unitId = Number(draft.unit);
-    const unitName = units.find((u) => u.id === unitId)?.name ?? draft.unit;
-    if (!Number.isFinite(unitId) || unitId <= 0) return;
     await create.mutateAsync({
       ...draft,
       title: draft.title,
       description: draft.description,
       category_id: Number(draft.category_id),
       qty: Number(draft.qty),
-      unit: unitName,
-      unit_id: unitId,
+      unit: 'ชิ้น',
+      unit_id: undefined,
+      sub_category_id: draft.sub_category_id,
       // Domestic only — not shown to customer
       incoterms: undefined,
       // Payment: 100% upfront enforced by platform — not shown to customer
@@ -109,7 +122,15 @@ export function RFQCreateWizard() {
             </button>
           ))}
         </div>
-        {step === 0 ? <Step1Basic draft={draft} setDraft={setDraft} categories={categories} units={units} /> : null}
+        {step === 0 ? (
+          <Step1Basic
+            draft={draft}
+            setDraft={setDraft}
+            categories={categories}
+            subCategories={subCategories}
+            subCategoriesLoading={subCategoriesLoading}
+          />
+        ) : null}
         {step === 1 ? <Step2Specifications draft={draft} setDraft={setDraft} /> : null}
         {step === 2 ? <Step3Commercial draft={draft} setDraft={setDraft} /> : null}
         {step === 3 ? <Step4QualityReview draft={draft} setDraft={setDraft} /> : null}

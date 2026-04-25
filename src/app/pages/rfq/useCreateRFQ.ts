@@ -4,10 +4,6 @@ import { rfqsApi, type RFQCreateInput } from '../../services/api';
 export function useCreateRFQ() {
   return useMutation({
     mutationFn: async (payload: RFQCreateInput) => {
-      const unitId = Number(payload.unit_id ?? payload.unit);
-      if (!Number.isFinite(unitId) || unitId <= 0) {
-        throw new Error('unit_id ไม่ถูกต้อง กรุณาเลือกหน่วยจากรายการ');
-      }
       const addressId = payload.address_id ?? payload.delivery_address_id;
       if (!addressId || !Number.isFinite(Number(addressId)) || Number(addressId) <= 0) {
         throw new Error('กรุณาระบุที่อยู่จัดส่ง');
@@ -16,26 +12,48 @@ export function useCreateRFQ() {
       if (!shippingMethodId || !Number.isFinite(Number(shippingMethodId)) || Number(shippingMethodId) <= 0) {
         throw new Error('กรุณาเลือกวิธีจัดส่ง');
       }
-      // strip FE-only / hidden fields before sending to BE
-      const {
-        qty,
-        unit,
-        unit_id: _uid,
-        delivery_address_id: _da,
-        incoterms: _inc,      // domestic only — not sent
-        payment_terms: _pt,   // 100% upfront enforced by platform — not sent
-        ...rest
-      } = payload;
-
+      // backend handoff: allowlist only fields in docs/RFQ_FE_HANDOFF.md
       const body: Record<string, unknown> = {
-        ...rest,
-        quantity: qty,
-        unit_id: unitId,
+        title: payload.title,
+        description: payload.description,
+        details: payload.description,
+        category_id: Number(payload.category_id),
+        quantity: Number(payload.qty),
+        unit: payload.unit || 'ชิ้น',
+        target_unit_price:
+          payload.target_unit_price != null && Number.isFinite(Number(payload.target_unit_price))
+            ? Number(payload.target_unit_price)
+            : undefined,
+        material_grade: payload.material_grade?.trim() || undefined,
+        reference_images: Array.isArray(payload.reference_images)
+          ? payload.reference_images.filter((u) => typeof u === 'string' && u.trim().length > 0).slice(0, 5)
+          : [],
         address_id: Number(addressId),
+        delivery_address_id: Number(addressId),
         shipping_method_id: Number(shippingMethodId),
+        target_lead_time_days:
+          payload.target_lead_time_days != null &&
+          Number.isFinite(Number(payload.target_lead_time_days)) &&
+          Number(payload.target_lead_time_days) > 0
+            ? Number(payload.target_lead_time_days)
+            : undefined,
+        required_delivery_date: payload.required_delivery_date || undefined,
+        certifications_required: Array.isArray(payload.certifications_required)
+          ? payload.certifications_required.map(String).filter(Boolean)
+          : [],
+        sample_required: payload.sample_required === true,
+        sample_qty:
+          payload.sample_required === true &&
+          payload.sample_qty != null &&
+          Number.isFinite(Number(payload.sample_qty)) &&
+          Number(payload.sample_qty) > 0
+            ? Number(payload.sample_qty)
+            : undefined,
+        inspection_type: payload.inspection_type || undefined,
       };
-      // include unit name for display (BE may store it)
-      if (unit) body.unit = unit;
+      if (payload.sub_category_id != null && Number.isFinite(Number(payload.sub_category_id))) {
+        body.sub_category_id = Number(payload.sub_category_id);
+      }
 
       return rfqsApi.create(body);
     },

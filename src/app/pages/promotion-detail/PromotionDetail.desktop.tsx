@@ -19,6 +19,8 @@ import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
+import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
+import { useFavorites } from '../../hooks/useFavorites';
 
 const BRAND = {
   rose: '#E11D48',
@@ -77,6 +79,8 @@ export function PromotionDetailDesktop() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId, relatedShowcases } = usePromotionDetailShowcase();
+  const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
+  const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
@@ -120,6 +124,12 @@ export function PromotionDetailDesktop() {
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const promo = promoMeta(item.startDate, item.endDate);
   const priceText = formatTHB(item.promoPrice ?? item.basePrice) ?? 'สอบถามราคา';
+  const liked = item ? isLiked(item.id) : false;
+  const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
+  const summary = reviewSummaryQ.data;
+  const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
+  const reviewCount = Number(summary?.review_count ?? factory?.reviews ?? 0);
+  const breakdown = summary?.rating_breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
 
   const handleStartChat = () =>
     void startChat(item.factoryId, {
@@ -204,12 +214,19 @@ export function PromotionDetailDesktop() {
 
               <div className="flex items-center gap-4 py-3 mt-1 border-b border-gray-100 text-[13px] text-gray-500">
                 <span className="inline-flex items-center gap-1">
-                  <span className="border-b" style={{ color: BRAND.orange, borderColor: BRAND.orange }}>{Number(factory?.rating ?? 0).toFixed(1)}</span>
+                  <span className="border-b" style={{ color: BRAND.orange, borderColor: BRAND.orange }}>{avgRating.toFixed(1)}</span>
                   <Star className="w-3.5 h-3.5 fill-current" style={{ color: BRAND.orange }} />
                 </span>
-                <span>{factory?.reviews ?? 0} รีวิว</span>
+                <span>{reviewCount} รีวิว</span>
                 <span>•</span>
-                <span>{item.likes} คนสนใจ</span>
+                <button
+                  type="button"
+                  onClick={() => void toggleFavorite(item.id)}
+                  className="inline-flex items-center gap-1 active:opacity-70"
+                >
+                  <Heart className="w-3.5 h-3.5" style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }} />
+                  {likeCount} คนสนใจ
+                </button>
               </div>
 
               <div className="mt-4 px-4 py-3 rounded-md" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
@@ -267,8 +284,8 @@ export function PromotionDetailDesktop() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-6 text-[13px] flex-1">
-              <div><p className="text-gray-400 mb-1">เรตติ้งเฉลี่ย</p><p className="font-semibold" style={{ color: BRAND.orange }}>{Number(factory?.rating ?? 0).toFixed(1)}</p></div>
-              <div><p className="text-gray-400 mb-1">รีวิวทั้งหมด</p><p className="font-semibold" style={{ color: BRAND.orange }}>{factory?.reviews ?? 0}</p></div>
+              <div><p className="text-gray-400 mb-1">เรตติ้งเฉลี่ย</p><p className="font-semibold" style={{ color: BRAND.orange }}>{avgRating.toFixed(1)}</p></div>
+              <div><p className="text-gray-400 mb-1">รีวิวทั้งหมด</p><p className="font-semibold" style={{ color: BRAND.orange }}>{reviewCount}</p></div>
               <div><p className="text-gray-400 mb-1">ออเดอร์ที่เสร็จแล้ว</p><p className="font-semibold" style={{ color: BRAND.orange }}>{factory?.completedOrders ?? 0}</p></div>
             </div>
           </div>
@@ -279,8 +296,12 @@ export function PromotionDetailDesktop() {
             <p className="text-[14px] font-bold" style={{ color: BRAND.ink }}>รายละเอียดสินค้า (Markdown)</p>
           </div>
           <div className="p-6">
-            {markdown ? <MarkdownBody source={markdown} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
-          /> : <p className="text-[13px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>}
+            {markdown ? (
+              <>
+                <MarkdownBody source={markdown} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+                />
+              </>
+            ) : <p className="text-[13px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>}
           </div>
         </div>
 
@@ -291,13 +312,14 @@ export function PromotionDetailDesktop() {
           <div className="p-6">
             <div className="flex items-center gap-8">
               <div>
-                <p className="text-[34px] leading-none font-bold" style={{ color: BRAND.orange }}>{Number(factory?.rating ?? 0).toFixed(1)}</p>
-                <p className="text-[12px] text-gray-500 mt-1">จาก {factory?.reviews ?? 0} รีวิว</p>
+                <p className="text-[34px] leading-none font-bold" style={{ color: BRAND.orange }}>{avgRating.toFixed(1)}</p>
+                <p className="text-[12px] text-gray-500 mt-1">จาก {reviewCount} รีวิว</p>
               </div>
               <div className="flex-1 space-y-2">
                 {[5, 4, 3, 2, 1].map((star) => {
-                  const rating = Number(factory?.rating ?? 0);
-                  const intensity = Math.max(0, Math.min(100, ((rating - (star - 1)) / 1) * 100));
+                  const count = Number(breakdown[String(star)] ?? 0);
+                  const intensity =
+                    reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
                   return (
                     <div key={star} className="flex items-center gap-2">
                       <span className="w-10 text-[12px] text-gray-500">{star} ดาว</span>

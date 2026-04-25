@@ -268,7 +268,7 @@ export function Step3Commercial({ draft, setDraft }: Props) {
         min={1}
         value={draft.target_lead_time_days ?? ''}
         onChange={(e) => setDraft({ target_lead_time_days: Number(e.target.value) || undefined })}
-        placeholder="Lead time ที่ต้องการ (วัน)"
+        placeholder="ระยะเวลาผลิตที่ต้องการ (วัน)"
         className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
       />
 

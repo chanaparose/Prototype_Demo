@@ -11,6 +11,24 @@ interface Props {
 }
 
 type Row = Record<string, unknown>;
+type SubCategoryOption = { id: number; name: string; categoryId: number };
+
+function toSubCategoryOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
+  const id = Number(
+    r.sub_category_id ??
+      r.subCategoryId ??
+      r.subcategory_id ??
+      r.sub_id ??
+      r.subId ??
+      r.lbi_sub_category_id,
+  );
+  const categoryId = Number(r.category_id ?? r.parent_category_id ?? categoryIdHint);
+  const name = String(r.name ?? r.name_th ?? r.sub_category_name ?? '').trim();
+  if (!Number.isFinite(id) || id <= 0) return null;
+  if (!Number.isFinite(categoryId) || categoryId <= 0) return null;
+  if (!name) return null;
+  return { id, name, categoryId };
+}
 
 export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm }: Props) {
   const { data, isLoading, isError } = useProductCategories();
@@ -48,7 +66,15 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
             queryKey: ['master', 'sub-categories', cid] as const,
             queryFn: async () => {
               const raw = await categoriesApi.subCategories(cid);
-              return (Array.isArray(raw) ? raw : []) as Row[];
+              const arr = (Array.isArray(raw) ? raw : []) as Row[];
+              const normalized = arr
+                .map((r) => toSubCategoryOption(r, cid))
+                .filter((x): x is SubCategoryOption => x != null);
+              const uniq = new Map<number, SubCategoryOption>();
+              for (const item of normalized) {
+                if (!uniq.has(item.id)) uniq.set(item.id, item);
+              }
+              return [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
             },
             staleTime: 5 * 60_000,
           }),

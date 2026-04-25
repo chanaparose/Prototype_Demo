@@ -1,14 +1,27 @@
 import React from 'react';
 import type { RFQDraft } from '../useRFQDraft';
 
+type SubCategory = {
+  id: number;
+  name: string;
+  sortOrder?: number;
+};
+
 type Props = {
   draft: RFQDraft;
   setDraft: (next: Partial<RFQDraft>) => void;
   categories: { id: number; name: string }[];
-  units: { id: number; name: string }[];
+  subCategories: SubCategory[];
+  subCategoriesLoading?: boolean;
 };
 
-export function Step1Basic({ draft, setDraft, categories, units }: Props) {
+export function Step1Basic({
+  draft,
+  setDraft,
+  categories,
+  subCategories,
+  subCategoriesLoading = false,
+}: Props) {
   return (
     <div className="space-y-3">
       <input
@@ -27,13 +40,34 @@ export function Step1Basic({ draft, setDraft, categories, units }: Props) {
       <div className="grid grid-cols-3 gap-2">
         <select
           value={draft.category_id ?? ''}
-          onChange={(e) => setDraft({ category_id: Number(e.target.value) || null })}
+          onChange={(e) =>
+            setDraft({
+              category_id: Number(e.target.value) || null,
+              sub_category_id: undefined,
+            })
+          }
           className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
         >
           <option value="">หมวดหมู่ *</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={draft.sub_category_id ?? ''}
+          onChange={(e) => setDraft({ sub_category_id: Number(e.target.value) || undefined })}
+          disabled={!draft.category_id || subCategoriesLoading}
+          className="rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-100"
+        >
+          <option value="">
+            {subCategoriesLoading ? 'กำลังโหลดหมวดย่อย...' : 'หมวดย่อย (ไม่บังคับ)'}
+          </option>
+          {subCategories.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+              {s.sortOrder === 99 ? ' (ส่งทุกโรงงานในหมวดหลัก)' : ''}
             </option>
           ))}
         </select>
@@ -45,25 +79,13 @@ export function Step1Basic({ draft, setDraft, categories, units }: Props) {
           placeholder="จำนวน *"
           className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
         />
-        <select
-          value={draft.unit}
-          onChange={(e) => setDraft({ unit: e.target.value })}
-          className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
-        >
-          <option value="">หน่วย *</option>
-          {units.map((u) => (
-            <option key={u.id} value={String(u.id)}>
-              {u.name}
-            </option>
-          ))}
-        </select>
       </div>
       <input
         type="number"
         min={0}
         value={draft.target_unit_price ?? ''}
         onChange={(e) => setDraft({ target_unit_price: Number(e.target.value) || undefined })}
-        placeholder="ราคาเป้าหมาย"
+        placeholder="งบประมาณรวม"
         className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
       />
     </div>

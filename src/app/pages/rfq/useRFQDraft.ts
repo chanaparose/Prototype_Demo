@@ -6,8 +6,8 @@ export type RFQDraft = {
   title: string;
   description: string;
   category_id: number | null;
+  sub_category_id?: number;
   qty: number | null;
-  unit: string;
   material_grade: string;
   tolerance: string;
   color_finish: string;
@@ -35,7 +35,6 @@ const initialDraft: RFQDraft = {
   description: '',
   category_id: null,
   qty: null,
-  unit: '',
   material_grade: '',
   tolerance: '',
   color_finish: '',

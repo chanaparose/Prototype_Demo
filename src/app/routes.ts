@@ -27,6 +27,7 @@ import {
   FactoryDashboardPage,
   FactoryProfilePage,
   FactoryShowcasesPage,
+  FactoryShowcaseNewPage,
   FactoryRfqBoardPage,
   FactoryRfqDetailPage,
   FactoryOrdersPage,
@@ -89,6 +90,7 @@ export const router = createBrowserRouter([
                     Component: FactoryVerifiedGuard,
                     children: [
                       { path: 'showcases', Component: FactoryShowcasesPage },
+                      { path: 'showcases/new', Component: FactoryShowcaseNewPage },
                       { path: 'showcases/:id/edit', Component: FactoryShowcaseEditPage },
                       { path: 'rfqs', Component: FactoryRfqBoardPage },
                       { path: 'rfqs/:id', Component: FactoryRfqDetailPage },

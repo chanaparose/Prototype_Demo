@@ -69,9 +69,10 @@ type RawRfq = {
   category_id: number;
   title: string;
   quantity: number;
-  unit_id: number;
-  budget_per_piece: number;
-  details: string;
+  details?: string;
+  description?: string;
+  target_unit_price?: number;
+  budget_total?: number;
   address_id: number;
   status: string;
   created_at: string;
@@ -154,7 +155,14 @@ export function useRfqAndOrdersState(initial?: InitialState) {
 
       const mapped: Rfq[] = withQuotes.map(({ raw, quotes }) => {
         const catName = categoryMap.get(String(raw.category_id)) ?? '';
-        const budget = Math.round(raw.budget_per_piece * raw.quantity);
+        const totalBudget = Number(
+          raw.target_unit_price ?? raw.budget_total ?? (raw as Record<string, unknown>).total_budget ?? 0,
+        );
+        const legacyBudgetPerPiece = Number((raw as Record<string, unknown>).budget_per_piece ?? 0);
+        const budget = Math.round(
+          (Number.isFinite(totalBudget) && totalBudget > 0 ? totalBudget : 0) ||
+            (legacyBudgetPerPiece > 0 && raw.quantity > 0 ? legacyBudgetPerPiece * raw.quantity : 0),
+        );
         const status = mapRfqStatus(raw.status, quotes.length > 0);
         const createdDate = raw.created_at
           ? raw.created_at.split('T')[0]
@@ -172,7 +180,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
           material: '',
           deadline: '',
           createdAt: createdDate,
-          description: raw.details ?? '',
+          description: String(raw.details ?? raw.description ?? ''),
           offers: quotes.map((q) => ({
             id: String(q.quote_id),
             factoryId: String(q.factory_id),

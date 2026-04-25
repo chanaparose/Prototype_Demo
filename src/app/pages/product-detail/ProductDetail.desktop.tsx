@@ -19,6 +19,8 @@ import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
+import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
+import { useFavorites } from '../../hooks/useFavorites';
 
 const BRAND = {
   orange: '#E38844',
@@ -66,6 +68,8 @@ export function ProductDetailDesktop() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, isIdea, resolvedId, relatedProducts } = useProductDetailShowcase();
+  const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
+  const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
@@ -130,6 +134,12 @@ export function ProductDetailDesktop() {
 
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const priceText = formatTHB(item.basePrice) ?? (item.priceRange?.trim() || null);
+  const liked = item ? isLiked(item.id) : false;
+  const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
+  const summary = reviewSummaryQ.data;
+  const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
+  const reviewCount = Number(summary?.review_count ?? factory?.reviews ?? 0);
+  const breakdown = summary?.rating_breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
 
   // ── Spec rows for the specifications table ──
   const specRows: { label: string; value: React.ReactNode }[] = [];
@@ -250,9 +260,14 @@ export function ProductDetailDesktop() {
                 >
                   <Share2 className="w-4 h-4" /> แชร์สินค้านี้
                 </button>
-                <span className="inline-flex items-center gap-1.5">
-                  <Heart className="w-4 h-4" style={{ color: BRAND.orange }} /> {item.likes} สนใจ
-                </span>
+                <button
+                  type="button"
+                  onClick={() => void toggleFavorite(item.id)}
+                  className="inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors"
+                >
+                  <Heart className="w-4 h-4" style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }} />
+                  {likeCount} สนใจ
+                </button>
               </div>
             </div>
 
@@ -293,20 +308,20 @@ export function ProductDetailDesktop() {
                     className="border-b"
                     style={{ color: BRAND.orange, borderColor: BRAND.orange }}
                   >
-                    {Number(factory?.rating ?? 0).toFixed(1)}
+                    {avgRating.toFixed(1)}
                   </span>
                   <Star className="w-3.5 h-3.5 fill-current" style={{ color: BRAND.orange }} />
                 </span>
                 <span className="h-3 w-px bg-gray-200" />
                 <span>
                   <span className="text-gray-700 border-b border-gray-300">
-                    {factory?.reviews ?? 0}
+                    {reviewCount}
                   </span>
                   <span className="ml-1">รีวิว</span>
                 </span>
                 <span className="h-3 w-px bg-gray-200" />
                 <span>
-                  <span className="text-gray-700">{item.likes}</span>
+                  <span className="text-gray-700">{likeCount}</span>
                   <span className="ml-1">คนสนใจ</span>
                 </span>
                 <span className="h-3 w-px bg-gray-200" />
@@ -481,14 +496,14 @@ export function ProductDetailDesktop() {
               <div>
                 <p className="text-gray-400 mb-1">เรตติ้งเฉลี่ย</p>
                 <p className="font-semibold" style={{ color: BRAND.orange }}>
-                  {Number(factory?.rating ?? 0).toFixed(1)}{' '}
+                  {avgRating.toFixed(1)}{' '}
                   <span className="text-[11px] text-gray-400">/ 5.0</span>
                 </p>
               </div>
               <div>
                 <p className="text-gray-400 mb-1">รีวิวทั้งหมด</p>
                 <p className="font-semibold" style={{ color: BRAND.orange }}>
-                  {factory?.reviews ?? 0}
+                  {reviewCount}
                 </p>
               </div>
               <div>
@@ -559,10 +574,12 @@ export function ProductDetailDesktop() {
           </div>
           <div className="p-6">
             {markdown ? (
-              <MarkdownBody
-                source={markdown}
-                className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
-              />
+              <>
+                <MarkdownBody
+                  source={markdown}
+                  className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+                />
+              </>
             ) : (
               <p className="text-[13px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>
             )}
@@ -580,14 +597,15 @@ export function ProductDetailDesktop() {
             <div className="flex items-center gap-8">
               <div>
                 <p className="text-[34px] leading-none font-bold" style={{ color: BRAND.orange }}>
-                  {Number(factory?.rating ?? 0).toFixed(1)}
+                  {avgRating.toFixed(1)}
                 </p>
-                <p className="text-[12px] text-gray-500 mt-1">จาก {factory?.reviews ?? 0} รีวิว</p>
+                <p className="text-[12px] text-gray-500 mt-1">จาก {reviewCount} รีวิว</p>
               </div>
               <div className="flex-1 space-y-2">
                 {[5, 4, 3, 2, 1].map((star) => {
-                  const rating = Number(factory?.rating ?? 0);
-                  const intensity = Math.max(0, Math.min(100, ((rating - (star - 1)) / 1) * 100));
+                  const count = Number(breakdown[String(star)] ?? 0);
+                  const intensity =
+                    reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
                   return (
                     <div key={star} className="flex items-center gap-2">
                       <span className="w-10 text-[12px] text-gray-500">{star} ดาว</span>

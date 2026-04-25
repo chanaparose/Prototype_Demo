@@ -2,6 +2,7 @@ export { FactoryPortalLayout } from './FactoryPortalLayout';
 export { FactoryDashboardPage } from './FactoryDashboardPage';
 export { FactoryProfilePage } from './FactoryProfilePage';
 export { FactoryShowcasesPage } from './FactoryShowcasesPage';
+export { FactoryShowcaseNewPage } from './FactoryShowcaseNewPage';
 export { FactoryShowcaseEditPage } from './FactoryShowcaseEditPage';
 export { FactoryRfqBoardPage } from './FactoryRfqBoardPage';
 export { FactoryRfqDetailPage } from './FactoryRfqDetailPage';

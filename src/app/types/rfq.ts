@@ -5,26 +5,24 @@ export interface RfqListItem {
   sub_category_id?: number;
   title: string;
   quantity: number;
-  unit_id: number;
-  budget_per_piece: number;
-  details: string;
+  details?: string;
+  description?: string;
+  unit?: string;
   address_id: number;
+  delivery_address_id?: number;
   shipping_method_id?: number;
   status: 'OP' | 'CL' | 'CC';
   uploaded_at: string;
   created_at: string;
   updated_at: string;
-  image_urls: string[];
+  image_urls?: string[]; // backward compatibility
   reference_images?: string[];
   material_grade?: string;
-  tolerance?: string;
-  color_finish?: string;
-  packaging_spec?: string;
   target_unit_price?: number;
   target_lead_time_days?: number;
   required_delivery_date?: string;
   certifications_required?: string[];
-  sample_required: boolean;
+  sample_required?: boolean;
   sample_qty?: number;
   inspection_type?: 'self' | 'third_party' | 'buyer_onsite';
 }
@@ -59,4 +57,5 @@ export interface QuotationRow {
   factory_net_receivable: number;
   validity_days: number;
   revision_no: number;
+  image_urls?: string[];
 }

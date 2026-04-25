@@ -11,6 +11,7 @@ import {
   Timer,
   Truck,
 } from 'lucide-react';
+import { ImageWithFallback } from '../../shared';
 
 /** ใบเสนอราคา (BOQ) จากโรงงาน — ใช้กับ BOQ Explorer / เปรียบเทียบข้อเสนอ */
 export interface Quotation {
@@ -27,6 +28,7 @@ export interface Quotation {
   sample_cost: number;
   valid_until: string;
   certifications: string[];
+  image_urls?: string[];
 }
 
 const MIDNIGHT = '#2E2252';
@@ -113,6 +115,9 @@ export function quotationFromOfferSource(
     sample_cost: detail?.sample_cost ?? 0,
     valid_until: detail?.valid_until ?? '',
     certifications: detail?.certifications ?? [],
+    image_urls: Array.isArray(detail?.image_urls)
+      ? detail.image_urls.filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
+      : [],
   };
 }
 
@@ -280,6 +285,28 @@ export function QuotationBOQDetailsPanel({ quotation: q, className = '' }: Quota
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {Array.isArray(q.image_urls) && q.image_urls.length > 0 && (
+        <div>
+          <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold text-gray-500">
+            <Package size={14} className="text-[#7A4B94]" />
+            ภาพแนบจากใบเสนอราคา
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {q.image_urls.slice(0, 5).map((url, idx) => (
+              <a
+                key={`${url}-${idx}`}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-50"
+              >
+                <ImageWithFallback src={url} alt="" className="w-full h-full object-cover" />
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </div>

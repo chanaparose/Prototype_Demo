@@ -14,6 +14,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
   const ref = useRef<HTMLInputElement>(null);
 
   const uploadOne = async (f: File) => {
+    if (draft.reference_images.length >= 5) return;
     setUploading(true);
     try {
       const res = await mediaApi.upload(f);
@@ -77,10 +78,14 @@ export function Step2Specifications({ draft, setDraft }: Props) {
         <button
           type="button"
           onClick={() => ref.current?.click()}
-          disabled={uploading}
+          disabled={uploading || draft.reference_images.length >= 5}
           className="rounded-xl border border-dashed border-gray-300 px-3 py-2 text-sm w-full"
         >
-          {uploading ? 'กำลังอัปโหลด...' : 'อัปโหลดไฟล์อ้างอิง'}
+          {uploading
+            ? 'กำลังอัปโหลด...'
+            : draft.reference_images.length >= 5
+              ? 'อัปโหลดครบ 5 ไฟล์แล้ว'
+              : 'อัปโหลดไฟล์อ้างอิง (สูงสุด 5 ไฟล์)'}
         </button>
         {draft.reference_images.length > 0 ? (
           <div className="flex flex-wrap gap-2">

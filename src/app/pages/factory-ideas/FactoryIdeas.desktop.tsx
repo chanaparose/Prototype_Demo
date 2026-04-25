@@ -31,6 +31,7 @@ import {
 import { logFactoryIdeasCategory } from '../../utils/debugFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
+import { useFavorites } from '../../hooks/useFavorites';
 import { MapPin, Star } from 'lucide-react';
 
 const COLORS = {
@@ -118,6 +119,7 @@ export function FactoryIdeasDesktop() {
   /** หมวดทั้งหมดจาก GET /categories + GET /master/product-categories (Explore ยังคงแสดงแค่ 6 การ์ด) */
   const [apiCategoriesAll, setApiCategoriesAll] = useState<{ id: string; name: string }[]>([]);
   const data = useData();
+  const { isLiked, toggleFavorite } = useFavorites();
 
   const isFactoryTab = selectedType === 'factory';
   const showcaseApiType = isFactoryTab ? undefined : showcaseQueryTypeFromTab(selectedType);
@@ -784,10 +786,18 @@ export function FactoryIdeasDesktop() {
                           {item.minOrder}
                         </span>
                       </span>
-                      <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
-                        <Heart className="w-2.5 h-2.5 shrink-0" />
-                        {item.likes}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                        className="flex items-center gap-0.5 shrink-0 tabular-nums active:opacity-70"
+                        aria-label="ถูกใจ"
+                      >
+                        <Heart
+                          className="w-2.5 h-2.5 shrink-0"
+                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                        />
+                        {item.likes + (isLiked(item.id) ? 1 : 0)}
+                      </button>
                     </div>
                   </div>
                 </article>
@@ -846,10 +856,18 @@ export function FactoryIdeasDesktop() {
                             {item.minOrder}
                           </span>
                         </span>
-                        <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
-                          <Heart className="w-2.5 h-2.5 shrink-0" />
-                          {item.likes}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                          className="flex items-center gap-0.5 shrink-0 tabular-nums active:opacity-70"
+                          aria-label="ถูกใจ"
+                        >
+                          <Heart
+                            className="w-2.5 h-2.5 shrink-0"
+                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          />
+                          {item.likes + (isLiked(item.id) ? 1 : 0)}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -892,7 +910,18 @@ export function FactoryIdeasDesktop() {
                           <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">{item.excerpt}</p>
                         </div>
                         <div className="shrink-0 flex items-center gap-4 text-[11px] text-gray-400">
-                          <span className="flex items-center gap-1"><Heart className="w-3 h-3" />{item.likes}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                            className="flex items-center gap-1 active:opacity-70"
+                            aria-label="ถูกใจ"
+                          >
+                            <Heart
+                              className="w-3 h-3"
+                              style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                            />
+                            {item.likes + (isLiked(item.id) ? 1 : 0)}
+                          </button>
                           <span>MOQ <span className="font-semibold" style={{ color: COLORS.blue }}>{item.minOrder}</span></span>
                         </div>
                       </div>
@@ -1029,10 +1058,18 @@ export function FactoryIdeasDesktop() {
                             {item.minOrder}
                           </span>
                         </span>
-                        <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
-                          <Heart className="w-2.5 h-2.5 shrink-0" />
-                          {item.likes}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                          className="flex items-center gap-0.5 shrink-0 tabular-nums active:opacity-70"
+                          aria-label="ถูกใจ"
+                        >
+                          <Heart
+                            className="w-2.5 h-2.5 shrink-0"
+                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          />
+                          {item.likes + (isLiked(item.id) ? 1 : 0)}
+                        </button>
                       </div>
                     </div>
                   </article>

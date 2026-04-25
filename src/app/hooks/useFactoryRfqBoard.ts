@@ -111,16 +111,29 @@ export function useFactoryRfqBoard() {
 
         const title = String(inner.title ?? row.title ?? 'RFQ');
         const status = String(inner.status ?? row.status ?? '').toUpperCase();
-        const budgetPerPiece =
-          inner.budget_per_piece != null ? Number(inner.budget_per_piece) : null;
         const quantity = inner.quantity != null ? Number(inner.quantity) : null;
-        const revenueApprox =
-          budgetPerPiece != null &&
+        const totalBudgetRaw = Number(
+          inner.target_unit_price ?? inner.budget_total ?? inner.total_budget ?? 0,
+        );
+        const legacyBudgetPerPiece =
+          inner.budget_per_piece != null ? Number(inner.budget_per_piece) : null;
+        const budgetPerPiece =
+          Number.isFinite(totalBudgetRaw) &&
+          totalBudgetRaw > 0 &&
           quantity != null &&
-          Number.isFinite(budgetPerPiece) &&
-          Number.isFinite(quantity)
-            ? budgetPerPiece * quantity
-            : null;
+          Number.isFinite(quantity) &&
+          quantity > 0
+            ? totalBudgetRaw / quantity
+            : legacyBudgetPerPiece;
+        const revenueApprox =
+          Number.isFinite(totalBudgetRaw) && totalBudgetRaw > 0
+            ? totalBudgetRaw
+            : budgetPerPiece != null &&
+              quantity != null &&
+              Number.isFinite(budgetPerPiece) &&
+              Number.isFinite(quantity)
+              ? budgetPerPiece * quantity
+              : null;
 
         const categoryId = Number(inner.category_id ?? row.category_id ?? 0);
         const subCategoryId = Number(inner.sub_category_id ?? row.sub_category_id ?? 0);
@@ -140,7 +153,7 @@ export function useFactoryRfqBoard() {
           shippingMethodName = sm.get(shippingMethodId) ?? '';
         }
 
-        const urls = inner.image_urls;
+        const urls = inner.reference_images ?? inner.image_urls;
         let thumbUrl: string | null = null;
         if (Array.isArray(urls) && urls.length > 0) {
           const u0 = urls[0];
