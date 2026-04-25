@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getFactoryEntityId } from '../utils/factoryUser';
 import { daysUntilDeadline } from '../utils/rfqDeadline';
-import { summarizeRfqAddress } from '../utils/rfqAddressSummary';
-import { rfqsApi, factoriesApi, masterApi } from '../services/api';
+import { rfqsApi, factoriesApi, masterApi, categoriesApi, addressesApi } from '../services/api';
 import type { RfqCardModel } from '../components/factory/RfqCard';
 
 type QuoteRow = Record<string, unknown>;
@@ -43,6 +42,24 @@ export function useFactoryRfqBoard() {
         rfqsApi.matching(),
         masterApi.shippingMethods().catch(() => []),
       ]);
+      const catRaw = await categoriesApi.list().catch(() => []);
+      const cats = (Array.isArray(catRaw) ? catRaw : []) as Record<string, unknown>[];
+      const catNameById = new Map<number, string>();
+      for (const c of cats) {
+        const id = Number(c.category_id ?? c.id);
+        const name = String(c.category_name ?? c.name ?? '').trim();
+        if (Number.isFinite(id) && id > 0 && name) catNameById.set(id, name);
+      }
+      const addrRaw = await addressesApi.list().catch(() => []);
+      const addrRows = (Array.isArray(addrRaw) ? addrRaw : []) as Record<string, unknown>[];
+      const addrById = new Map<number, string>();
+      for (const a of addrRows) {
+        const aid = Number(a.address_id ?? a.id);
+        const detail = String(a.address_detail ?? '').trim();
+        const zip = String(a.zip_code ?? '').trim();
+        const text = [detail, zip].filter(Boolean).join(' ');
+        if (Number.isFinite(aid) && aid > 0 && text) addrById.set(aid, text);
+      }
       const shipArr = (Array.isArray(ships) ? ships : []) as Record<string, unknown>[];
       const sm = new Map<number, string>();
       for (const m of shipArr) {
@@ -68,6 +85,24 @@ export function useFactoryRfqBoard() {
 
       const arr = (Array.isArray(rawMatch) ? rawMatch : []) as Record<string, unknown>[];
       const bases: FactoryBoardRow[] = [];
+      const subNameByKey = new Map<string, string>();
+      const requestedCats = new Set<number>();
+      for (const row of arr) {
+        const inner = innerRfq(row);
+        const cid = Number(inner.category_id ?? 0);
+        if (Number.isFinite(cid) && cid > 0) requestedCats.add(cid);
+      }
+      await Promise.all(
+        [...requestedCats].map(async (cid) => {
+          const subsRaw = await categoriesApi.subCategories(cid).catch(() => []);
+          const subs = (Array.isArray(subsRaw) ? subsRaw : []) as Record<string, unknown>[];
+          for (const s of subs) {
+            const sid = Number(s.sub_category_id ?? s.id);
+            const sName = String(s.name ?? '').trim();
+            if (Number.isFinite(sid) && sid > 0 && sName) subNameByKey.set(`${cid}:${sid}`, sName);
+          }
+        }),
+      );
 
       for (const row of arr) {
         const inner = innerRfq(row);
@@ -87,13 +122,14 @@ export function useFactoryRfqBoard() {
             ? budgetPerPiece * quantity
             : null;
 
-        const categoryName = String(inner.category_name ?? row.category_name ?? '').trim();
-        const subCategoryName = String(inner.sub_category_name ?? row.sub_category_name ?? '').trim();
         const categoryId = Number(inner.category_id ?? row.category_id ?? 0);
+        const subCategoryId = Number(inner.sub_category_id ?? row.sub_category_id ?? 0);
+        const categoryName = String(inner.category_name ?? row.category_name ?? '').trim() || catNameById.get(categoryId) || '';
+        const subCategoryName =
+          String(inner.sub_category_name ?? row.sub_category_name ?? '').trim() ||
+          (Number.isFinite(subCategoryId) && subCategoryId > 0 ? subNameByKey.get(`${categoryId}:${subCategoryId}`) ?? '' : '');
 
-        const deadlineRaw = String(
-          inner.deadline ?? inner.target_date ?? inner.rfq_deadline ?? inner.expires_at ?? '',
-        ).trim();
+        const deadlineRaw = String(inner.required_delivery_date ?? '').trim();
         const deadlineIso = deadlineRaw || null;
         const dLeft = daysUntilDeadline(deadlineIso);
 
@@ -112,11 +148,7 @@ export function useFactoryRfqBoard() {
         }
 
         const leadTargetDaysRaw = Number(
-          inner.target_days ??
-            inner.lead_time_target ??
-            inner.customer_lead_days ??
-            inner.delivery_days ??
-            0,
+          inner.target_lead_time_days ?? 0,
         );
         const leadTargetDays =
           Number.isFinite(leadTargetDaysRaw) && leadTargetDaysRaw > 0 ? leadTargetDaysRaw : null;
@@ -124,7 +156,10 @@ export function useFactoryRfqBoard() {
         const created = String(inner.created_at ?? row.created_at ?? '').trim();
         const createdAtMs = created ? new Date(created).getTime() : 0;
 
-        const addressSummary = summarizeRfqAddress(inner);
+        const addressId = Number(inner.address_id ?? 0);
+        const addressSummary =
+          String(inner.address_summary ?? '').trim() ||
+          (Number.isFinite(addressId) && addressId > 0 ? addrById.get(addressId) ?? '' : '');
 
         bases.push({
           id,

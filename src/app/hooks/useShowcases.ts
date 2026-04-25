@@ -44,6 +44,49 @@ function parseImageUrls(raw: unknown): string[] {
     .slice(0, 5);
 }
 
+function firstImageFromUnknown(raw: unknown): string {
+  if (typeof raw === 'string') {
+    const s = raw.trim();
+    return s;
+  }
+  if (!raw || typeof raw !== 'object') return '';
+  const row = raw as Record<string, unknown>;
+
+  const direct = String(
+    row.image_url ??
+      row.image ??
+      row.url ??
+      row.public_url ??
+      row.thumbnail_url ??
+      row.cover_image_url ??
+      '',
+  ).trim();
+  if (direct) return direct;
+
+  const nested = parseImageUrls(row.images ?? row.image_urls ?? row.imageUrls);
+  return nested[0] ?? '';
+}
+
+function parseLinkedShowcasesFirstImage(raw: unknown): string {
+  const arr = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string' && raw.trim().startsWith('[')
+      ? (() => {
+          try {
+            const parsed = JSON.parse(raw) as unknown;
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
+  for (const item of arr) {
+    const url = firstImageFromUnknown(item);
+    if (url) return url;
+  }
+  return '';
+}
+
 export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
   const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
   const leadTime =
@@ -51,7 +94,14 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
       ? String(leadRaw)
       : '';
   const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
-  const firstImage = imageUrls[0] ?? String(r.image_url ?? r.image ?? '').trim();
+  const linkedFirstImage = parseLinkedShowcasesFirstImage(
+    r.linked_showcases ?? r.linkedShowcases,
+  );
+  const ctRaw = String(r.content_type ?? r.type ?? '').trim().toUpperCase();
+  const firstImage =
+    ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM'
+      ? linkedFirstImage || imageUrls[0] || String(r.image_url ?? r.image ?? '').trim()
+      : imageUrls[0] || linkedFirstImage || String(r.image_url ?? r.image ?? '').trim();
 
   const catIdRaw = r.category_id ?? r.categoryId;
   const categoryId =
@@ -78,14 +128,14 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
   const factoryVerified = Boolean(r.factory_verified ?? r.factoryVerified);
 
   return {
-    id: String(r.showcase_id ?? r.id ?? ''),
+    id: String(r.showcase_id ?? r.id ?? r.showcaseId ?? ''),
     factoryId: String(r.factory_id ?? r.factoryId ?? ''),
     factoryName: String(r.factory_name ?? r.factoryName ?? ''),
-    title: String(r.title ?? ''),
-    excerpt: String(r.excerpt ?? ''),
+    title: String(r.title ?? r.name ?? r.headline ?? ''),
+    excerpt: String(r.excerpt ?? r.summary ?? ''),
     image: firstImage,
     ...(imageUrls.length > 0 ? { imageUrls } : {}),
-    contentType: CT_MAP[String(r.type ?? r.content_type ?? '').trim()] ?? 'product',
+    contentType: CT_MAP[String(r.content_type ?? r.type ?? '').trim()] ?? 'product',
     category: String(r.category_name ?? r.category ?? ''),
     categoryId,
     sub_category_id,
@@ -101,10 +151,6 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
     ...(r.promo_price != null && Number.isFinite(Number(r.promo_price))
       ? { promoPrice: Number(r.promo_price) }
       : {}),
-    ...(r.production_capacity != null && Number.isFinite(Number(r.production_capacity))
-      ? { productionCapacity: Number(r.production_capacity) }
-      : {}),
-    ...(r.sample_available != null ? { sampleAvailable: Boolean(r.sample_available) } : {}),
     ...(r.start_date != null && String(r.start_date).trim() !== '' ? { startDate: String(r.start_date) } : {}),
     ...(r.end_date != null && String(r.end_date).trim() !== '' ? { endDate: String(r.end_date) } : {}),
     ...(r.status != null && String(r.status).trim() !== '' ? { status: String(r.status) } : {}),
@@ -134,6 +180,34 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
         }
       : {}),
   };
+}
+
+function unwrapShowcaseRow(raw: unknown): Record<string, unknown> | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const inner = o.showcase;
+  if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
+    return inner as Record<string, unknown>;
+  }
+  return o;
+}
+
+function extractShowcaseRows(raw: unknown): Record<string, unknown>[] {
+  const top = raw as Record<string, unknown> | null;
+  const rows: unknown[] = Array.isArray(raw)
+    ? raw
+    : Array.isArray((top as Record<string, unknown> | null)?.showcases)
+      ? (top as Record<string, unknown>).showcases as unknown[]
+      : Array.isArray((top as Record<string, unknown> | null)?.data)
+        ? (top as Record<string, unknown>).data as unknown[]
+        : Array.isArray((top as Record<string, unknown> | null)?.items)
+          ? (top as Record<string, unknown>).items as unknown[]
+          : Array.isArray((top as Record<string, unknown> | null)?.results)
+            ? (top as Record<string, unknown>).results as unknown[]
+            : [];
+  return rows
+    .map(unwrapShowcaseRow)
+    .filter((r): r is Record<string, unknown> => r != null);
 }
 
 type CacheEntry = { data: FactoryShowcase[]; ts: number };
@@ -185,7 +259,7 @@ export function useShowcases(options?: { type?: ShowcaseApiType }) {
       .list(type)
       .then((raw) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const arr = extractShowcaseRows(raw);
         const result = arr.map(normShowcase).filter((s) => s.id && s.title);
         cacheByKey.set(key, { data: result, ts: Date.now() });
         setShowcases(result);

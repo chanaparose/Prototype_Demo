@@ -24,7 +24,7 @@ export type RfqSummary = {
 };
 
 const STATUS_CONFIG: Record<string, { label: string }> = {
-  pending_payment: { label: 'รอชำระมัดจำ' },
+  pending_payment: { label: 'รอชำระเงิน' },
   in_production: { label: 'กำลังผลิต' },
   shipped: { label: 'จัดส่งแล้ว' },
   completed: { label: 'เสร็จสิ้น' },

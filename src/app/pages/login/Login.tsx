@@ -7,6 +7,7 @@ import { frontendApi } from '../../services/api';
 type Mode = 'login' | 'register';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
 
+// Use Vite proxy in dev and same-origin in production.
 const HEALTH_URL = '/health';
 
 export function Login() {

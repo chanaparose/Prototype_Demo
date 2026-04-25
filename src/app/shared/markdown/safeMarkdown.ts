@@ -2,7 +2,7 @@ import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 
 const md = new MarkdownIt({
-  html: false,
+  html: true,
   linkify: true,
   breaks: true,
   typographer: true,

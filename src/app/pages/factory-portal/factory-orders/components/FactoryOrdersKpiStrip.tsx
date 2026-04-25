@@ -15,7 +15,7 @@ export function FactoryOrdersKpiStrip({
       {[
         ['needs_action', 'ต้องดำเนินการ', false],
         ['in_production', 'กำลังผลิต', false],
-        ['shipped', 'พร้อมจัดส่ง / จัดส่งแล้ว', false],
+        ['shipped', 'จัดส่งแล้ว', false],
         ['overdue', 'ล่าช้า', true],
       ].map(([id, label, danger]) => (
         <button

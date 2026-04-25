@@ -19,6 +19,7 @@ import {
   isFactorySidebarNavActive,
 } from './factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '../factory/FactoryVerifiedGuard';
+import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -59,10 +60,11 @@ export function DesktopSidebar() {
       r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired',
   ).length;
 
-  const avatarSrc =
-    currentUser?.avatar && String(currentUser.avatar).trim() !== ''
+  const avatarSrc = isFactory
+    ? currentUser?.avatar && String(currentUser.avatar).trim() !== ''
       ? String(currentUser.avatar).trim()
-      : DEFAULT_USER_AVATAR_SRC;
+      : DEFAULT_USER_AVATAR_SRC
+    : HARDCODED_CUSTOMER_PROFILE_SRC;
 
   return (
     <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40">
@@ -227,11 +229,13 @@ export function DesktopSidebar() {
             onClick={() => navigate('/profile')}
             className="flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors"
           >
-            <img
-              src={avatarSrc}
-              alt={currentUser?.name ?? 'โปรไฟล์'}
-              className="w-8 h-8 rounded-xl object-cover shrink-0 bg-violet-50"
-            />
+            <span className="relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-[#EFEAF7]">
+              <img
+                src={avatarSrc}
+                alt={currentUser?.name ?? 'โปรไฟล์'}
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+            </span>
             <div className="flex-1 text-left min-w-0">
               <p className="text-xs font-semibold truncate" style={{ color: '#2D1B4E' }}>{currentUser?.name}</p>
               <p className="text-[10px] text-gray-400 truncate">{currentUser?.company}</p>

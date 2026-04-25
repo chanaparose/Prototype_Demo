@@ -53,7 +53,7 @@ function mapApiOrderToOrder(
     status: st,
     progress: guessOrderProgress(st),
     totalAmount: Number(row.total_amount ?? 0),
-    depositPaid: Number(row.deposit_amount ?? 0),
+    depositPaid: Number(row.total_amount ?? row.deposit_amount ?? 0),
     quantity: Number(row.quantity ?? 0),
     createdAt: String(row.created_at ?? '').split('T')[0] ?? '',
     estimatedDelivery: String(row.estimated_delivery ?? '').split('T')[0] ?? '',
@@ -140,6 +140,16 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       row.status_label_th != null ? String(row.status_label_th) : undefined,
     );
     const mappedOrder = mapApiOrderToOrder(row, factories);
+    const payableAmount = (() => {
+      const staged = paymentSchedule.find(
+        (s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT',
+      )?.amount;
+      if (Number.isFinite(staged) && Number(staged) > 0) return Number(staged);
+      if (nextAction?.amount != null && Number.isFinite(nextAction.amount) && nextAction.amount > 0) {
+        return nextAction.amount;
+      }
+      return mappedOrder.totalAmount;
+    })();
     const production: ProductionUpdatesBundle =
       prodQ.data ??
       ({
@@ -167,8 +177,8 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
     if (effectiveProductionLocked && !lockContextMerged.payment_url && nextAction?.cta_url) {
       lockContextMerged = { ...lockContextMerged, payment_url: nextAction.cta_url };
     }
-    if (effectiveProductionLocked && !lockContextMerged.deposit_amount && nextAction?.amount) {
-      lockContextMerged = { ...lockContextMerged, deposit_amount: nextAction.amount };
+    if (effectiveProductionLocked) {
+      lockContextMerged = { ...lockContextMerged, deposit_amount: payableAmount };
     }
     if (effectiveProductionLocked && !lockContextMerged.deposit_due_date && nextAction?.due_date) {
       lockContextMerged = { ...lockContextMerged, deposit_due_date: nextAction.due_date };

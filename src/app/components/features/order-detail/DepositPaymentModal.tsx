@@ -77,7 +77,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
         idempotency_key: idemRef.current || genIdempotencyKey(orderId),
       });
       if (method === 'WALLET') {
-        toast.success('ชำระมัดจำด้วย Wallet สำเร็จ');
+        toast.success('ชำระเงินด้วย Wallet สำเร็จ');
         await onSuccess?.();
         onClose();
       } else {
@@ -92,9 +92,9 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       if (code === 'INSUFFICIENT_WALLET_BALANCE') {
         toast.error(`ยอด Wallet ไม่พอ ขาดอีก ฿${Number(e.body?.shortfall ?? 0).toLocaleString('th-TH')}`);
       } else if (code === 'DEPOSIT_EXPIRED') {
-        toast.error('หมดกำหนดชำระมัดจำแล้ว');
+        toast.error('หมดกำหนดชำระเงินแล้ว');
       } else if (code === 'DEPOSIT_ALREADY_PAID') {
-        toast.error('คำสั่งซื้อนี้ชำระมัดจำแล้ว');
+        toast.error('คำสั่งซื้อนี้ชำระเงินแล้ว');
         await onSuccess?.();
         onClose();
       } else if (code === 'AMOUNT_MISMATCH') {
@@ -116,7 +116,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="เลือกวิธีชำระมัดจำ"
+      aria-label="เลือกวิธีชำระเงิน"
     >
       <div
         className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
@@ -124,7 +124,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       >
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <h2 className="text-base font-semibold" style={{ color: DEEP_PURPLE }}>
-            ชำระเงินมัดจำ
+            ชำระเงินเต็มจำนวน
           </h2>
           <button
             type="button"

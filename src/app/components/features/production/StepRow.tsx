@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, CheckCircle2, XCircle, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { Lock, CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react';
 import type { MergedProductionStep } from './types';
 import { STEP_VISUAL, type StepDerivedState } from './stepDerivedState';
 
@@ -81,13 +81,17 @@ export function StepRow({
   onPhotoClick,
 }: Props) {
   const { template, update } = merged;
+  const stepId = Number(template.step_id ?? 0);
+  // Business rule: step 6 is customer/system completion (confirm receive / auto-close),
+  // so factory should not manually update it from FE.
+  const factoryCanUpdateThisStep = Number.isFinite(stepId) && stepId > 0 && stepId <= 5;
   const st = update.status;
   const visual = STEP_VISUAL[derivedState];
   const isActive = derivedState === 'active';
   const isBlocked = derivedState === 'blocked';
 
   const ctaFactory =
-    st === 'IP' ? (
+    !factoryCanUpdateThisStep ? null : st === 'IP' ? (
       <button
         type="button"
         onClick={(e) => {
@@ -132,7 +136,7 @@ export function StepRow({
         className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
         style={{ background: '#A238FF' }}
       >
-        เริ่มขั้นนี้
+        เริ่มขั้นต่อไป
       </button>
     ) : null;
 
@@ -194,15 +198,6 @@ export function StepRow({
           {isCustomer ? ctaCustomer : null}
         </div>
       </div>
-
-      {showPayChip ? (
-        <div className="px-4 pb-2 -mt-1">
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg bg-violet-100 text-violet-900">
-            <Sparkles size={12} aria-hidden />
-            ขั้นนี้จะทริกเกอร์ชำระเงินงวดถัดไป
-          </span>
-        </div>
-      ) : null}
 
       {isBlocked ? (
         <div className="px-4 pb-3 -mt-1">

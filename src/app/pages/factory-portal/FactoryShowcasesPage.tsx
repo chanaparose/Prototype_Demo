@@ -97,12 +97,10 @@ function contextLine(row: Row): string {
   const moq = Number(row.moq ?? row.min_order ?? 0);
   const lead = Number(row.lead_time_days ?? 0);
   const basePrice = Number(row.base_price ?? 0);
-  const productionCapacity = Number(row.production_capacity ?? 0);
   const parts = [
     moq > 0 ? `MOQ ${moq}` : 'MOQ -',
     lead > 0 ? `Lead ${lead} วัน` : 'Lead -',
     basePrice > 0 ? `เริ่ม ฿${basePrice.toLocaleString('th-TH')}` : 'ราคา -',
-    productionCapacity > 0 ? `กำลังผลิต ${productionCapacity.toLocaleString('th-TH')}` : 'กำลังผลิต -',
   ];
   return parts.join(' · ');
 }
@@ -140,8 +138,6 @@ export function FactoryShowcasesPage() {
   const [moq, setMoq] = useState('');
   const [leadDays, setLeadDays] = useState('');
   const [basePrice, setBasePrice] = useState('');
-  const [productionCapacity, setProductionCapacity] = useState('');
-  const [sampleAvailable, setSampleAvailable] = useState(false);
   const [status, setStatus] = useState<ShowcaseStatus>('DR');
   const [uploading, setUploading] = useState(false);
   const [contentTab, setContentTab] = useState<EditorTab>('write');
@@ -254,8 +250,6 @@ export function FactoryShowcasesPage() {
     setMoq(r.moq != null ? String(r.moq) : r.min_order != null ? String(r.min_order) : '');
     setLeadDays(r.lead_time_days != null ? String(r.lead_time_days) : '');
     setBasePrice(r.base_price != null ? String(r.base_price) : '');
-    setProductionCapacity(r.production_capacity != null ? String(r.production_capacity) : '');
-    setSampleAvailable(Boolean(r.sample_available));
     const st = String(r.status ?? 'DR').toUpperCase();
     setStatus(st === 'AC' || st === 'HI' || st === 'AR' ? st : 'DR');
     setModal('edit');
@@ -293,20 +287,17 @@ export function FactoryShowcasesPage() {
 
   const buildPayload = (): Record<string, unknown> => {
     const payload: Record<string, unknown> = {
-      type: 'PD',
       content_type: 'PD',
       status,
       title: title.trim(),
       excerpt: excerpt.trim() || undefined,
       content: content.trim() || undefined,
-      images: imageUrls,
+      image_url: imageUrls[0] ?? undefined,
       category_id: categoryId ? Number(categoryId) : undefined,
       sub_category_id: subCategoryId ? Number(subCategoryId) : undefined,
       moq: moq ? Number(moq) : undefined,
       lead_time_days: leadDays ? Number(leadDays) : undefined,
       base_price: basePrice ? Number(basePrice) : undefined,
-      production_capacity: productionCapacity ? Number(productionCapacity) : undefined,
-      sample_available: sampleAvailable,
       linked_showcases: [],
     };
     return payload;
@@ -598,11 +589,6 @@ export function FactoryShowcasesPage() {
               </label>
 
               <label className="block">
-                <span className="text-xs text-gray-500">กำลังผลิต/เดือน (production_capacity)</span>
-                <input type="number" className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" value={productionCapacity} onChange={(e) => setProductionCapacity(e.target.value)} />
-              </label>
-
-              <label className="block">
                 <span className="text-xs text-gray-500">สถานะ</span>
                 <select className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value as ShowcaseStatus)}>
                   <option value="DR">Draft</option>
@@ -610,11 +596,6 @@ export function FactoryShowcasesPage() {
                   <option value="HI">Hidden</option>
                   <option value="AR">Archived</option>
                 </select>
-              </label>
-
-              <label className="flex items-center gap-2 text-sm mt-5">
-                <input type="checkbox" checked={sampleAvailable} onChange={(e) => setSampleAvailable(e.target.checked)} />
-                รองรับตัวอย่างสินค้า (sample_available)
               </label>
 
               <div className="sm:col-span-2 rounded-xl border border-gray-100 p-3">

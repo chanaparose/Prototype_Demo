@@ -3,6 +3,8 @@ import type { PaymentScheduleItem } from '../../../pages/order-detail/orderDetai
 
 function stageLabelTh(stage: string): string {
   switch (stage) {
+    case 'FULL_PAYMENT':
+      return 'ชำระเต็มจำนวน';
     case 'DEPOSIT':
       return 'มัดจำ';
     case 'PRODUCTION':
@@ -40,7 +42,7 @@ export function OrderPaymentScheduleCard({ schedule }: Props) {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
       <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>
-        💰 รายละเอียดการชำระ
+        💰 การชำระเงิน
       </p>
       <ul className="space-y-2.5">
         {schedule.map((row) => (

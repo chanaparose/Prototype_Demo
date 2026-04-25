@@ -229,28 +229,27 @@ export function FactoryProfileTabContent({
               โรงงานนี้ยังไม่มีบทความ
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="space-y-3">
               {articleShowcases.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => onIdeaClick(item.id)}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform min-w-0"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer active:scale-[0.99] transition-transform p-4 min-w-0"
                 >
-                  <div className="h-28 sm:h-32">
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-2.5 sm:p-3">
-                    <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
-                      {item.title}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
-                    <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1.5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-700 uppercase tracking-wide">
+                      Idea
+                    </span>
+                    <p className="text-[10px] text-gray-400 truncate">
                       {item.postedAt ? formatThaiDate(item.postedAt) : ''}
                     </p>
+                  </div>
+                  <p className="text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-3">{item.excerpt}</p>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <p className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</p>
                   </div>
                 </div>
               ))}

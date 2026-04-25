@@ -25,7 +25,6 @@ type Props = {
 export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: Props) {
   const [notes, setNotes] = useState('');
   const [urls, setUrls] = useState<string[]>([]);
-  const [payConfirm, setPayConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState('');
@@ -34,7 +33,6 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
     if (!open || !step) return;
     setNotes(String(step.update.description ?? '').slice(0, 500));
     setUrls([...(step.update.image_urls ?? [])].slice(0, 5));
-    setPayConfirm(false);
     setErr('');
   }, [open, step]);
 
@@ -47,7 +45,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const minPhotos = step?.template.min_photos ?? 0;
+  const minPhotos = 1;
   const isPayment = Boolean(step?.template.is_payment_trigger);
 
   const addFiles = useCallback(async (files: FileList | null) => {
@@ -58,7 +56,8 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
       const next = [...urls];
       for (let i = 0; i < files.length && next.length < 5; i++) {
         const up = await mediaApi.upload(files[i]);
-        if (up.url?.startsWith('https://')) next.push(up.url);
+        const raw = typeof up.url === 'string' ? up.url.trim() : '';
+        if (/^https?:\/\//i.test(raw)) next.push(raw);
       }
       setUrls(next.slice(0, 5));
     } catch (e) {
@@ -107,10 +106,6 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
     if (!step) return;
     if (urls.length < minPhotos) {
       setErr(`ต้องแนบภาพอย่างน้อย ${minPhotos} ภาพ`);
-      return;
-    }
-    if (isPayment && !payConfirm) {
-      setErr('กรุณายืนยันการชำระเงินงวดถัดไป');
       return;
     }
     setBusy(true);
@@ -251,17 +246,6 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
             {uploading ? <p className="text-xs text-gray-500">กำลังอัปโหลด…</p> : null}
           </div>
 
-          {isPayment ? (
-            <label className="flex items-start gap-2 text-sm text-gray-800">
-              <input
-                type="checkbox"
-                checked={payConfirm}
-                onChange={(e) => setPayConfirm(e.target.checked)}
-                className="mt-1"
-              />
-              <span>ฉันเข้าใจว่าการยืนยันขั้นนี้จะเรียกเก็บเงินงวดถัดไปโดยอัตโนมัติ</span>
-            </label>
-          ) : null}
         </div>
 
         <div className="shrink-0 border-t border-gray-100 p-4 space-y-2 bg-white">
@@ -277,8 +261,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
             type="button"
             disabled={
               busy ||
-              urls.length < minPhotos ||
-              (isPayment && !payConfirm)
+              urls.length < minPhotos
             }
             onClick={() => void confirmDone()}
             className="w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"

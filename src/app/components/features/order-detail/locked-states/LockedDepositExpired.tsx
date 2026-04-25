@@ -28,16 +28,16 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
       <div className="mb-3 sm:mb-4 text-4xl sm:text-5xl" aria-hidden>
         🔒
       </div>
-      <h2 className="text-lg font-semibold text-red-800">ครบกำหนดชำระมัดจำ</h2>
+      <h2 className="text-lg font-semibold text-red-800">ครบกำหนดชำระเงิน</h2>
       <p className="mt-2 text-sm text-gray-700">
-        กรุณาชำระมัดจำโดยเร็วเพื่อให้โรงงานเริ่มงานได้
+        กรุณาชำระเงินโดยเร็วเพื่อให้โรงงานเริ่มงานได้
       </p>
 
       <div
         className="mt-6 rounded-2xl border p-5 text-left"
         style={{ borderColor: 'rgba(220, 38, 38, 0.25)', background: '#FEF2F2' }}
       >
-        <p className="text-xs font-semibold text-red-700">💰 ยอดมัดจำที่ต้องชำระ</p>
+        <p className="text-xs font-semibold text-red-700">💰 ยอดที่ต้องชำระ</p>
         <p className="mt-1 text-3xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
           ฿{amount.toLocaleString('th-TH')}
         </p>
@@ -60,7 +60,7 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
         className="mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white"
         style={{ background: CTA_GRADIENT }}
       >
-        ชำระเงินมัดจำ →
+        ชำระเงิน →
       </button>
 
       <button

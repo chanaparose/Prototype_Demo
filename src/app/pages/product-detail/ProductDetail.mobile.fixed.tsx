@@ -128,15 +128,6 @@ export function ProductDetailMobile() {
   if (subName) specRows.push({ label: 'ประเภทย่อย', value: subName });
   specRows.push({ label: 'ขั้นต่ำผลิต (MOQ)', value: `${item.minOrder} ชิ้น` });
   if (item.leadTime) specRows.push({ label: 'ระยะเวลาผลิต', value: item.leadTime });
-  if (item.productionCapacity != null && item.productionCapacity > 0) {
-    specRows.push({
-      label: 'กำลังการผลิต',
-      value: `${item.productionCapacity.toLocaleString('th-TH')} ชิ้น/เดือน`,
-    });
-  }
-  if (item.sampleAvailable != null) {
-    specRows.push({ label: 'ตัวอย่างสินค้า', value: item.sampleAvailable ? 'มี' : 'ไม่มี' });
-  }
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
   if (Array.isArray(item.specs) && item.specs.length > 0) {
     const sorted = [...item.specs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -284,12 +275,6 @@ export function ProductDetailMobile() {
               <span className="text-[12px] text-right ml-4" style={{ color: BRAND.ink }}>{item.leadTime}</span>
             </div>
           ) : null}
-          <div className="flex items-start justify-between py-2.5 border-t" style={{ borderColor: BRAND.divider }}>
-            <span className="text-[12px] text-gray-500 shrink-0">ตัวอย่างสินค้า</span>
-            <span className="text-[12px] text-right ml-4" style={{ color: BRAND.ink }}>
-              {item.sampleAvailable ? 'ขอตัวอย่างก่อนผลิตได้' : 'สอบถามกับโรงงาน'}
-            </span>
-          </div>
           {factory?.location ? (
             <div className="flex items-start justify-between py-2.5 border-t" style={{ borderColor: BRAND.divider }}>
               <span className="text-[12px] text-gray-500 shrink-0">สถานที่ผลิต</span>

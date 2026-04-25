@@ -72,8 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
       }));
     } catch {
-      removeToken();
-      setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+      // request() already handles 401 (clear token + redirect).
+      // For transient/network errors, keep token so session is not lost unexpectedly.
+      const token = getToken();
+      setState((prev) => ({
+        ...prev,
+        token,
+        isAuthenticated: Boolean(token),
+        isLoading: false,
+      }));
     }
   }, []);
 
@@ -88,16 +95,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchUser]);
 
   const login = async (payload: LoginPayload) => {
-    const response = await authApi.login(payload);
+    const response = await authApi.login(payload) as Record<string, unknown>;
     console.log('[Auth] login response:', response);
 
     // API อาจ return { token, user } หรือ shape อื่น
-    const token = response.token;
+    const token = String(response.token ?? response.access_token ?? '').trim();
     if (!token) {
       throw new Error('เซิร์ฟเวอร์ไม่ได้ส่ง token กลับมา — กรุณาลองใหม่');
     }
 
-    const user = response.user || {};
+    const user = (response.user as Record<string, unknown> | undefined) || {};
     setToken(token);
     setState({
       user: user as unknown as User,
@@ -118,15 +125,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (payload: RegisterCustomerPayload | RegisterFactoryPayload) => {
-    const response = await authApi.register(payload);
+    const response = await authApi.register(payload) as Record<string, unknown>;
     console.log('[Auth] register response:', response);
 
-    const token = response.token;
+    const token = String(response.token ?? response.access_token ?? '').trim();
     if (!token) {
       throw new Error('เซิร์ฟเวอร์ไม่ได้ส่ง token กลับมา — กรุณาลองใหม่');
     }
 
-    const user = response.user || {};
+    const user = (response.user as Record<string, unknown> | undefined) || {};
     setToken(token);
     setState({
       user: user as unknown as User,

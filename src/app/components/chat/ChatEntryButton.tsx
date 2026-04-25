@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { MessageCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { openChatSession } from '../../utils/openChatSession';
-import { getCurrentUserId, initialMessageForReference, type ChatReference } from '../../utils/chatContract';
+import { getCurrentUserId, type ChatReference } from '../../utils/chatContract';
 
 type Props = {
   factoryId: number;
@@ -40,10 +40,7 @@ export function ChatEntryButton({
         await openChatSession(navigate, user, {
           customerUserId,
           factoryEntityId: factoryId,
-          firstMessage: {
-            content: initialMessageForReference(reference),
-            reference,
-          },
+          pendingReference: reference,
         });
       } else {
         await openChatSession(navigate, user, {

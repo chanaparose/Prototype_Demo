@@ -1,0 +1,298 @@
+/**
+ * Step 3 — ที่อยู่จัดส่ง + วิธีจัดส่ง + วันกำหนดส่ง
+ *
+ * - Payment terms: บังคับจ่าย 100% ล่วงหน้า (ไม่ให้ลูกค้าเลือก)
+ * - Incoterms: ค้าในประเทศเท่านั้น ไม่แสดง
+ * - Address: GET /addresses → เลือกจากรายการ / auto-select default / เพิ่มใหม่ผ่าน modal
+ * - Shipping method: GET /master/shipping-methods → เลือก 1 วิธี (required — factory ต้องเห็น)
+ */
+import React from 'react';
+import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
+import { addressesApi, masterApi } from '../../../services/api';
+import {
+  AddressFormModal,
+  type AddressFormPayload,
+} from '../../../components/factory/AddressFormModal';
+import type { RFQDraft } from '../useRFQDraft';
+
+/* ── Types ── */
+type Address = {
+  id: number;
+  addressDetail: string;
+  subDistrict: string;
+  district: string;
+  province: string;
+  zipCode: string;
+  isDefault: boolean;
+};
+
+type ShippingMethod = {
+  id: number;
+  name: string;
+};
+
+const SHIPPING_ICONS: Record<number, string> = {
+  1: '🏭',
+  2: '🚚',
+  3: '📦',
+  4: '🚛',
+};
+
+type Props = {
+  draft: RFQDraft;
+  setDraft: (next: Partial<RFQDraft>) => void;
+};
+
+/* ── Helpers ── */
+function mapAddress(r: Record<string, unknown>): Address {
+  return {
+    id: Number(r.address_id ?? r.id ?? 0),
+    addressDetail: String(r.address_detail ?? ''),
+    subDistrict: String(r.sub_district_name ?? r.sub_district ?? ''),
+    district: String(r.district_name ?? r.district ?? ''),
+    province: String(r.province_name ?? r.province ?? ''),
+    zipCode: String(r.zip_code ?? ''),
+    isDefault: Boolean(r.is_default ?? false),
+  };
+}
+
+const FALLBACK_SHIPPING: ShippingMethod[] = [
+  { id: 1, name: 'ลูกค้ารับเองที่โรงงาน' },
+  { id: 2, name: 'ขนส่งเอกชน' },
+  { id: 3, name: 'ขนส่งหมู่บ้าน / ไปรษณีย์' },
+  { id: 4, name: 'รถบรรทุกโรงงาน' },
+];
+
+/* ── Component ── */
+export function Step3Commercial({ draft, setDraft }: Props) {
+  /* addresses */
+  const [addresses, setAddresses] = React.useState<Address[]>([]);
+  const [addrLoading, setAddrLoading] = React.useState(true);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const autoSelected = React.useRef(false);
+
+  /* shipping methods */
+  const [shippingMethods, setShippingMethods] = React.useState<ShippingMethod[]>(FALLBACK_SHIPPING);
+
+  /* ── โหลดข้อมูล ── */
+  const loadAddresses = React.useCallback(async (): Promise<Address[]> => {
+    setAddrLoading(true);
+    try {
+      const raw = await addressesApi.list();
+      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const mapped = arr.map(mapAddress).filter((a) => a.id > 0);
+      setAddresses(mapped);
+      return mapped;
+    } catch {
+      setAddresses([]);
+      return [];
+    } finally {
+      setAddrLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    // โหลด addresses + auto-select default
+    void loadAddresses().then((mapped) => {
+      if (autoSelected.current || draft.delivery_address_id) return;
+      const def = mapped.find((a) => a.isDefault) ?? mapped[0];
+      if (def) {
+        setDraft({ delivery_address_id: def.id });
+        autoSelected.current = true;
+      }
+    });
+
+    // โหลด shipping methods
+    void masterApi.shippingMethods()
+      .then((raw) => {
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped: ShippingMethod[] = arr
+          .map((r) => ({
+            id: Number(r.shipping_method_id ?? r.id ?? 0),
+            name: String(r.method_name ?? r.name ?? '').trim(),
+          }))
+          .filter((m) => m.id > 0 && m.name);
+        if (mapped.length > 0) setShippingMethods(mapped);
+      })
+      .catch(() => {/* ใช้ fallback */});
+  }, [loadAddresses]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ── เพิ่มที่อยู่ใหม่ ── */
+  const handleAddAddress = React.useCallback(
+    async (payload: AddressFormPayload) => {
+      setSaving(true);
+      try {
+        const created = (await addressesApi.create(payload)) as Record<string, unknown>;
+        const createdId = Number(created.address_id ?? created.id ?? 0);
+        const latest = await loadAddresses();
+        const selectId =
+          (createdId > 0 ? createdId : null) ??
+          latest.find((a) => a.isDefault)?.id ??
+          latest[latest.length - 1]?.id ??
+          0;
+        if (selectId > 0) setDraft({ delivery_address_id: selectId });
+        setModalOpen(false);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [loadAddresses, setDraft],
+  );
+
+  /* ── Render ── */
+  return (
+    <div className="space-y-5">
+
+      {/* ══ 1. ที่อยู่จัดส่ง ══ */}
+      <div>
+        <p className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+          <MapPin size={14} className="text-violet-500" />
+          ที่อยู่จัดส่งสินค้า <span className="text-red-400 ml-0.5">*</span>
+        </p>
+
+        {addrLoading ? (
+          <div className="space-y-2">
+            <div className="h-14 rounded-xl bg-gray-100 animate-pulse" />
+            <div className="h-14 rounded-xl bg-gray-100 animate-pulse opacity-50" />
+          </div>
+        ) : addresses.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="w-full border-2 border-dashed border-gray-200 rounded-xl p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all"
+          >
+            <div className="w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center">
+              <Plus size={20} className="text-violet-500" />
+            </div>
+            <span className="text-[13px] font-semibold text-gray-600">เพิ่มที่อยู่จัดส่ง</span>
+            <span className="text-[10px] text-gray-400">จำเป็นต้องมีที่อยู่สำหรับจัดส่งสินค้า</span>
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {addresses.map((addr) => {
+              const active = draft.delivery_address_id === addr.id;
+              const label = [
+                addr.addressDetail,
+                addr.subDistrict,
+                addr.district,
+                addr.province,
+                addr.zipCode,
+              ]
+                .filter(Boolean)
+                .join(', ');
+              return (
+                <button
+                  key={addr.id}
+                  type="button"
+                  onClick={() => setDraft({ delivery_address_id: addr.id })}
+                  className={`w-full text-left p-3.5 rounded-xl border-2 transition-all ${
+                    active
+                      ? 'border-violet-500 bg-violet-50'
+                      : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 active:scale-[0.98]'
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <MapPin
+                      size={15}
+                      className={`shrink-0 mt-0.5 ${active ? 'text-violet-500' : 'text-gray-400'}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-[12px] leading-relaxed ${active ? 'text-violet-800 font-semibold' : 'text-gray-600'}`}>
+                        {label}
+                      </p>
+                      {addr.isDefault && (
+                        <span className="inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">
+                          ค่าเริ่มต้น
+                        </span>
+                      )}
+                    </div>
+                    {active && <CheckCircle2 size={17} className="text-violet-500 shrink-0 mt-0.5" />}
+                  </div>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all"
+            >
+              <Plus size={14} />
+              เพิ่มที่อยู่ใหม่
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ══ 2. วิธีจัดส่ง ══ */}
+      <div>
+        <p className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+          <Truck size={14} className="text-violet-500" />
+          วิธีจัดส่งที่ต้องการ <span className="text-red-400 ml-0.5">*</span>
+        </p>
+        <p className="text-[11px] text-gray-400 mb-2">
+          โรงงานจะเห็นข้อมูลนี้เพื่อออกใบเสนอราคาที่ถูกต้อง
+        </p>
+        <div className="flex flex-col gap-1.5">
+          {shippingMethods.map((method) => {
+            const active = draft.shipping_method_id === method.id;
+            return (
+              <button
+                key={method.id}
+                type="button"
+                onClick={() => setDraft({ shipping_method_id: method.id })}
+                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                  active
+                    ? 'border-violet-500 bg-violet-50'
+                    : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 active:scale-[0.98]'
+                }`}
+              >
+                <span className="text-lg leading-none shrink-0">
+                  {SHIPPING_ICONS[method.id] ?? '📦'}
+                </span>
+                <span className={`text-[13px] font-medium flex-1 ${active ? 'text-violet-800' : 'text-gray-600'}`}>
+                  {method.name}
+                </span>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-violet-500' : 'border-gray-300'}`}>
+                  {active && <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ══ 3. Lead time (optional) ══ */}
+      <input
+        type="number"
+        min={1}
+        value={draft.target_lead_time_days ?? ''}
+        onChange={(e) => setDraft({ target_lead_time_days: Number(e.target.value) || undefined })}
+        placeholder="Lead time ที่ต้องการ (วัน)"
+        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+      />
+
+      {/* ══ 4. วันที่ต้องการรับสินค้า (optional) ══ */}
+      <div>
+        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1 block">
+          วันที่ต้องการรับสินค้า
+        </label>
+        <input
+          type="date"
+          value={draft.required_delivery_date ?? ''}
+          onChange={(e) => setDraft({ required_delivery_date: e.target.value || undefined })}
+          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        />
+      </div>
+
+      {/* ── AddressFormModal ── */}
+      <AddressFormModal
+        open={modalOpen}
+        mode="create"
+        saving={saving}
+        onClose={() => { if (!saving) setModalOpen(false); }}
+        onSubmit={handleAddAddress}
+      />
+    </div>
+  );
+}

@@ -45,6 +45,15 @@ type OrderOverviewSectionProps = {
 export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOverviewSectionProps) {
   const { paymentSchedule, mappedOrder, refetchAll } = useOrderDetail();
   const showDepositPayment = mappedOrder.status === 'pending_payment';
+  const payableAmount = React.useMemo(() => {
+    const stagedAmount = paymentSchedule.find(
+      (s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT',
+    )?.amount;
+    if (Number.isFinite(stagedAmount) && Number(stagedAmount) > 0) return Number(stagedAmount);
+    if (Number.isFinite(mappedOrder.depositPaid) && mappedOrder.depositPaid > 0) return mappedOrder.depositPaid;
+    if (Number.isFinite(order.depositPaid) && order.depositPaid > 0) return order.depositPaid;
+    return 0;
+  }, [mappedOrder.depositPaid, order.depositPaid, paymentSchedule]);
 
   return (
     <div className="space-y-4">
@@ -53,7 +62,7 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
       {showDepositPayment ? (
         <OrderPendingPaymentSection
           orderId={mappedOrder.id}
-          depositAmount={mappedOrder.depositPaid}
+          depositAmount={payableAmount}
           totalAmount={mappedOrder.totalAmount}
           onVerified={() => void refetchAll()}
         />
@@ -61,10 +70,8 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
         <div className="bg-white rounded-2xl border border-gray-100 p-4 text-sm text-gray-600 space-y-2">
           <p className="font-semibold text-gray-900">สรุปการชำระเงิน</p>
           <p>
-            มัดจำ:{' '}
-            <span className="font-medium text-gray-900">
-              ฿{order.depositPaid.toLocaleString('th-TH')}
-            </span>
+            ยอดที่ชำระ/ต้องชำระ:{' '}
+            <span className="font-medium text-gray-900">฿{payableAmount.toLocaleString('th-TH')}</span>
           </p>
           <p>
             ยอดรวม:{' '}

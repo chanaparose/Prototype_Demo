@@ -1,27 +1,61 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, Loader2, Lock, Flag } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import type { QuoteNestedDTO, RfqNestedDTO } from '../../types/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
+import { ordersApi } from '../../services/api';
+import { RfqReferenceCard } from '../../components/features/order-detail';
+import { useProductionTemplate } from '../../hooks/production/useProductionTemplate';
+import { useOrderProductionUpdates } from '../../hooks/production/useOrderProductionUpdates';
+import { ProductionHeader } from '../../components/features/production/ProductionHeader';
+import { ProductionTimeline } from '../../components/features/production/ProductionTimeline';
+import { UpdateStepDrawer } from '../../components/features/production/UpdateStepDrawer';
 import {
-  ordersApi,
-  factoriesApi,
-  masterApi,
-  mediaApi,
-} from '../../services/api';
+  mergeTemplateWithUpdates,
+  type MergedProductionStep,
+} from '../../components/features/production/types';
+import { deriveStepStates } from '../../components/features/production/stepDerivedState';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
-
-const ORDER_CHAIN = ['PR', 'QC', 'SH'] as const;
-type OrderSt = (typeof ORDER_CHAIN)[number] | 'CP' | string;
 
 function unwrapOrder(raw: Record<string, unknown>): Record<string, unknown> {
   return (raw.order as Record<string, unknown>) ?? raw;
 }
 
-function sortSteps(steps: Record<string, unknown>[]) {
-  return [...steps].sort(
-    (a, b) => Number(a.sequence ?? 0) - Number(b.sequence ?? 0),
-  );
+function statusLabel(code: string): string {
+  const s = code.toUpperCase();
+  if (s === 'PP') return 'รอชำระเงิน';
+  if (s === 'PE') return 'หมดกำหนดชำระ';
+  if (s === 'PD') return 'ชำระแล้ว รอเริ่มผลิต';
+  if (s === 'PR') return 'กำลังผลิต';
+  if (s === 'QC') return 'ตรวจคุณภาพ';
+  if (s === 'SH') return 'จัดส่งแล้ว';
+  if (s === 'CP') return 'เสร็จสิ้น';
+  if (s === 'CN') return 'ยกเลิก';
+  return s || '-';
+}
+
+function getStepId(step: MergedProductionStep | null): number {
+  if (!step) return 0;
+  const n = Number(step.template.step_id ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function factoryCanUpdateStep(step: MergedProductionStep | null): boolean {
+  const n = getStepId(step);
+  return n > 0 && n <= 5;
+}
+
+function fmtDateTime(input: unknown): string {
+  const raw = String(input ?? '');
+  if (!raw) return '-';
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return raw;
+  return d.toLocaleString('th-TH', {
+    year: 'numeric', month: 'short', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  });
 }
 
 export function FactoryOrderDetailPage() {
@@ -29,260 +63,456 @@ export function FactoryOrderDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
-  const isDesktop = useIsDesktop();
+  const qc = useQueryClient();
+  const drawerWide = useIsDesktop(768);
 
+  // suppress unused warning
+  void fid;
+
+  /* ── Order header data ── */
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [order, setOrder] = useState<Record<string, unknown>>({});
-  const [updates, setUpdates] = useState<Record<string, unknown>[]>([]);
-  const [steps, setSteps] = useState<Record<string, unknown>[]>([]);
 
-  const [desc, setDesc] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const load = useCallback(async () => {
+  const loadOrder = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError('');
     try {
-      const [detail, prodUpdates, factoryRow] = await Promise.all([
-        ordersApi.get(id),
-        ordersApi.listProductionUpdates(id),
-        fid != null ? factoriesApi.get(fid) : Promise.resolve({}),
-      ]);
-      const o = unwrapOrder(detail as Record<string, unknown>);
-      setOrder(o);
-      setUpdates(Array.isArray(prodUpdates) ? (prodUpdates as Record<string, unknown>[]) : []);
-
-      const f = factoryRow as Record<string, unknown>;
-      const ftId = Number(f.factory_type_id ?? f.factory_typeId ?? 0);
-      const rawSteps = await masterApi.productionSteps(
-        Number.isFinite(ftId) && ftId > 0 ? ftId : undefined,
-      );
-      setSteps(
-        sortSteps(
-          (Array.isArray(rawSteps) ? rawSteps : []) as Record<string, unknown>[],
-        ),
-      );
+      const detail = await ordersApi.get(id);
+      setOrder(unwrapOrder(detail as Record<string, unknown>));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดออเดอร์ไม่สำเร็จ');
     } finally {
       setLoading(false);
     }
-  }, [id, fid]);
+  }, [id]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useEffect(() => { void loadOrder(); }, [loadOrder]);
 
-  const status = String(order.status ?? '').toUpperCase() as OrderSt;
-  const chainIndex = ORDER_CHAIN.indexOf(status as (typeof ORDER_CHAIN)[number]);
-  const nextStatus: (typeof ORDER_CHAIN)[number] | null =
-    chainIndex >= 0 && chainIndex < ORDER_CHAIN.length - 1
-      ? ORDER_CHAIN[chainIndex + 1]
-      : null;
-  const canAdvance = Boolean(nextStatus);
+  /* ── Production data via React Query ── */
+  const tplQ = useProductionTemplate();
+  const updQ = useOrderProductionUpdates(id);
 
-  const doneStepIds = new Set(
-    updates.map((u) => Number(u.step_id ?? u.stepId)).filter(Number.isFinite),
+  const merged = useMemo<MergedProductionStep[]>(() => {
+    if (!tplQ.data?.length || !updQ.data) return [];
+    return mergeTemplateWithUpdates(tplQ.data, updQ.data.updates);
+  }, [tplQ.data, updQ.data]);
+
+  const displayMerged = useMemo<MergedProductionStep[]>(
+    () =>
+      merged.map((m) => {
+        const stepId = Number(m.template.step_id ?? 0);
+        if (stepId === 5) {
+          return {
+            ...m,
+            template: {
+              ...m.template,
+              step_name_th: 'จัดส่งแล้ว',
+              description: 'บันทึกหลักฐานการจัดส่งสินค้า',
+            },
+          };
+        }
+        if (stepId === 6) {
+          return {
+            ...m,
+            template: {
+              ...m.template,
+              step_name_th: 'ออเดอร์นี้เสร็จสิ้นแล้ว',
+              description: 'รอลูกค้ายืนยันรับสินค้า หรือครบ 20 วันระบบจะปิดออเดอร์อัตโนมัติ',
+            },
+          };
+        }
+        return m;
+      }),
+    [merged],
   );
 
-  const nextStepRow =
-    steps.length > 0
-      ? steps.find((s) => !doneStepIds.has(Number(s.step_id ?? s.stepId)))
-      : null;
-  const nextStepId = nextStepRow
-    ? Number(nextStepRow.step_id ?? nextStepRow.stepId)
-    : chainIndex >= 0
-      ? chainIndex + 1
-      : 1;
+  const orderStatus = updQ.data?.order_status ?? String(order.status ?? '').toUpperCase();
 
-  const advance = async () => {
-    if (!id || !nextStatus) return;
-    if (!desc.trim()) {
-      setError('กรุณากรอกรายละเอียดความคืบหน้า');
-      return;
-    }
-    setBusy(true);
-    setError('');
-    try {
-      let imageUrl: string | undefined;
-      if (file) {
-        const up = await mediaApi.upload(file);
-        imageUrl = up.url;
+  const derivedStates = useMemo(
+    () => deriveStepStates(displayMerged, orderStatus),
+    [displayMerged, orderStatus],
+  );
+
+  /* ── Active / next step for sidebar ── */
+  const activeStepIdx = useMemo(
+    () => derivedStates.findIndex((d) => d === 'active' || d === 'blocked'),
+    [derivedStates],
+  );
+  const nextStepIdx = useMemo(() => {
+    if (activeStepIdx >= 0) return activeStepIdx;
+    // all done or no IP — find first PD
+    return derivedStates.findIndex((d) => d === 'upcoming');
+  }, [activeStepIdx, derivedStates]);
+
+  const activeStep = nextStepIdx >= 0 ? displayMerged[nextStepIdx] ?? null : null;
+  const activeState = nextStepIdx >= 0 ? derivedStates[nextStepIdx] : null;
+
+  /* ── Drawer state ── */
+  const [drawerStep, setDrawerStep] = useState<MergedProductionStep | null>(null);
+
+  const handleStepSubmit = useCallback(
+    async (
+      body: {
+        step_id: number;
+        status: 'IP' | 'CD';
+        description?: string;
+        image_urls: string[];
+        confirm_payment_trigger?: boolean;
+      },
+      opts?: { confirmPaymentTriggerHeader?: boolean },
+    ) => {
+      if (!id) return;
+      if (Number(body.step_id) > 5) {
+        throw new Error('ขั้นที่ 6 เป็นขั้นยืนยันรับสินค้าฝั่งลูกค้า/ระบบอัตโนมัติ');
       }
-      if (!Number.isFinite(nextStepId) || nextStepId < 1) {
-        throw new Error('ไม่พบขั้นตอนการผลิตจาก master — ตรวจสอบ factory_type_id');
-      }
-      await ordersApi.addProductionUpdate(id, {
-        step_id: nextStepId,
-        description: desc.trim(),
-        image_url: imageUrl,
-      });
-      await ordersApi.updateStatus(id, nextStatus);
-      setDesc('');
-      setFile(null);
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'อัปเดตไม่สำเร็จ');
-    } finally {
-      setBusy(false);
-    }
-  };
+      const headers =
+        opts?.confirmPaymentTriggerHeader && body.status === 'CD' && body.confirm_payment_trigger
+          ? { 'X-Confirm-Payment-Trigger': 'true' }
+          : undefined;
+      await ordersApi.postProductionUpdate(id, body, headers);
+      await qc.invalidateQueries({ queryKey: ['order', id, 'production-updates'] });
+      await qc.invalidateQueries({ queryKey: ['order', id] });
+      await loadOrder();
+    },
+    [id, qc, loadOrder],
+  );
+
+  /* ── Derived ── */
+  const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as RfqNestedDTO) : null;
+  const quotation =
+    order.quotation && typeof order.quotation === 'object'
+      ? (order.quotation as QuoteNestedDTO)
+      : null;
+  const title = String(
+    rfq?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id ?? ''}`,
+  );
+  const orderCode = String(order.order_no ?? order.order_id ?? id ?? '-');
+  const status = String(order.status ?? '').toUpperCase();
+  const isCompleted = status === 'CP' || status === 'CN';
+  const totalSteps = displayMerged.length;
+  const doneSteps = displayMerged.filter((m) => m.update.status === 'CD').length;
 
   if (!id) return null;
 
-  const rfqObj = (order.rfq && typeof order.rfq === 'object'
-    ? (order.rfq as Record<string, unknown>)
-    : null);
-  const title = String(
-    rfqObj?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id}`,
-  );
-
-  const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';
-
-  const idleMessage =
-    status === 'SH'
-      ? 'อยู่ในขั้นจัดส่ง — รอลูกค้ายืนยันรับสินค้า (CP)'
-      : 'ไม่มีขั้นตอนถัดไปสำหรับโรงงาน';
-
   return (
-    <div className="w-full min-w-0 max-w-lg lg:max-w-5xl mx-auto pb-24 pb-[max(6rem,env(safe-area-inset-bottom,0px))]">
-      <div className="flex items-center gap-3 mb-5 sm:mb-6 min-w-0">
+    <div className="w-full max-w-7xl mx-auto pb-24">
+      {/* ── Header ── */}
+      <div className="flex items-center gap-3 mb-5">
         <button
           type="button"
           onClick={() => navigate('/factory/orders')}
-          className="w-10 h-10 shrink-0 rounded-xl border border-gray-200 flex items-center justify-center bg-white"
+          className="w-10 h-10 rounded-xl border border-[#2A3158] flex items-center justify-center bg-[#1F2340] text-white"
         >
           <ChevronLeft size={22} />
         </button>
         <div className="min-w-0">
-          <p className="text-[10px] text-gray-400">ออเดอร์</p>
-          <h1 className="text-base sm:text-lg font-bold text-gray-900 truncate">{title}</h1>
+          <p className="text-[11px] text-white/50">Factory Order</p>
+          <h1 className="text-lg font-bold text-white truncate">{title}</h1>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-12">
+      {error ? (
+        <p className="text-sm text-red-400 bg-red-950/40 border border-red-800/50 rounded-xl px-4 py-3 mb-4">
+          {error}
+        </p>
+      ) : null}
+
+      {loading && !order.status ? (
+        <div className="flex justify-center py-16">
           <div
             className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+            style={{ borderColor: '#6D5EF8', borderTopColor: 'transparent' }}
           />
         </div>
-      ) : null}
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-4 lg:gap-5 items-start">
 
-      {error ? (
-        <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
-      ) : null}
+          {/* ════════ LEFT ════════ */}
+          <div className="space-y-4 min-w-0">
 
-      {!loading ? (
-        <div className={twoCol}>
-          <div className="space-y-4 mb-4 lg:mb-0 min-w-0">
-            <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4">
-              <p className="text-xs sm:text-sm text-gray-600 mb-3">
-                สถานะปัจจุบัน (ลำดับบังคับ PR → QC → SH)
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                {ORDER_CHAIN.map((code, i) => {
-                  const active = status === code;
-                  const past =
-                    ORDER_CHAIN.indexOf(status as (typeof ORDER_CHAIN)[number]) > i ||
-                    status === 'CP';
-                  return (
-                    <span
-                      key={code}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
-                        active
-                          ? 'text-white'
-                          : past
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-gray-100 text-gray-400'
-                      }`}
-                      style={active ? { background: '#A238FF' } : {}}
-                    >
-                      {code}
-                    </span>
-                  );
-                })}
-                {status === 'CP' ? (
-                  <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white">
-                    CP สำเร็จ
-                  </span>
-                ) : null}
+            {/* Order summary */}
+            <section className="rounded-2xl bg-[#1F2340] border border-[#2A3158] p-4 text-white">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] text-white/60">Order</p>
+                  <p className="text-base font-semibold truncate">#{orderCode}</p>
+                  <p className="text-[12px] text-white/70 mt-1">{statusLabel(status)}</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#6D5EF8]/30 text-[#CBC5FF]">
+                  {status || '-'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-4 text-xs">
+                <InfoCell
+                  label="มูลค่ารวม"
+                  value={`฿${Number(order.total_amount ?? 0).toLocaleString('th-TH')}`}
+                />
+                <InfoCell
+                  label="ชำระแล้ว"
+                  value={`฿${Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}`}
+                />
+                <InfoCell label="สร้างเมื่อ" value={fmtDateTime(order.created_at)} />
+                <InfoCell label="กำหนดส่ง" value={fmtDateTime(order.estimated_delivery)} />
               </div>
             </section>
 
-            <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4">
-              <h2 className="font-bold text-gray-900 mb-2">ประวัติความคืบหน้า</h2>
-              <ul className="space-y-2 text-sm break-words">
-                {updates.length === 0 ? (
-                  <li className="text-gray-400">ยังไม่มีรายการอัปเดต</li>
-                ) : (
-                  updates.map((u, idx) => (
-                    <li
-                      key={String(u.update_id ?? u.id ?? idx)}
-                      className="border-b border-gray-50 pb-2 last:border-0"
-                    >
-                      <p className="text-xs text-gray-400">
-                        Step {String(u.step_id ?? '—')} ·{' '}
-                        {String(u.created_at ?? '').slice(0, 16)}
-                      </p>
-                      <p className="text-gray-800">{String(u.description ?? '')}</p>
-                    </li>
-                  ))
-                )}
-              </ul>
+            {/* RFQ + Quotation spec */}
+            {rfq ? (
+              <RfqReferenceCard
+                rfq={rfq}
+                quotation={quotation}
+                variant="accordion"
+                defaultOpen={false}
+              />
+            ) : null}
+
+            {/* Production Timeline */}
+            <section className="space-y-3">
+              <div className="flex items-center gap-2 px-0.5">
+                <Flag size={14} className="text-[#6D5EF8]" />
+                <h2 className="text-sm font-bold text-white">ความคืบหน้าการผลิต</h2>
+              </div>
+
+              {tplQ.isLoading || updQ.isLoading ? (
+                <div className="flex items-center gap-2 py-6 justify-center text-white/60 text-sm">
+                  <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-[#6D5EF8]" />
+                  กำลังโหลด…
+                </div>
+              ) : merged.length === 0 ? (
+                <p className="text-sm text-white/50 px-1">ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
+              ) : (
+                <>
+                  <ProductionHeader merged={displayMerged} orderStatus={orderStatus} />
+                  <ProductionTimeline
+                    merged={displayMerged}
+                    orderStatus={orderStatus}
+                    isFactory={!isCompleted}
+                    isCustomer={false}
+                    onOpenDrawer={(m) => {
+                      if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
+                    }}
+                    onOpenReject={() => {/* factory ไม่ reject ตัวเอง */}}
+                    onPhotoClick={() => {/* TODO: lightbox */}}
+                  />
+                </>
+              )}
             </section>
           </div>
 
-          <div className="min-w-0">
-            {nextStatus && status !== 'CP' ? (
-              <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-3">
-                <h2 className="font-bold text-gray-900">ดำเนินการถัดไป → {nextStatus}</h2>
-                <p className="text-xs text-gray-500">
-                  ขั้นถัดไปใน master: step_id {nextStepId}
-                  {nextStepRow
-                    ? ` (${String(nextStepRow.step_name ?? '')})`
-                    : ' (สำรองจากลำดับสถานะ)'}
-                </p>
-                <label className="block">
-                  <span className="text-xs text-gray-500">รายละเอียด</span>
-                  <textarea
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]"
-                    value={desc}
-                    onChange={(e) => setDesc(e.target.value)}
-                    disabled={!canAdvance}
+          {/* ════════ RIGHT ════════ */}
+          <aside className="space-y-4 xl:sticky xl:top-4">
+
+            {/* ── Next action card ── */}
+            <section className="rounded-2xl bg-[#1F2340] border border-[#2A3158] p-4 text-white">
+              <h2 className="font-semibold mb-3">การดำเนินการ</h2>
+
+              {isCompleted ? (
+                <div className="rounded-xl bg-emerald-900/30 border border-emerald-700/40 px-3 py-3 text-sm text-emerald-300 text-center">
+                  ✓ ออเดอร์นี้เสร็จสิ้นแล้ว
+                </div>
+              ) : activeStep == null && totalSteps > 0 ? (
+                <div className="rounded-xl bg-[#252B4D] border border-[#303965] px-3 py-3 text-sm text-white/60 text-center">
+                  ทุกขั้นตอนเสร็จสิ้นแล้ว
+                </div>
+              ) : activeStep != null ? (
+                <div className="space-y-3">
+                  <div className="rounded-xl bg-[#252B4D] border border-[#303965] px-3 py-3">
+                    <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">
+                      ขั้นตอนถัดไป ({nextStepIdx + 1}/{totalSteps})
+                    </p>
+                    <p className="text-sm font-semibold text-white">
+                      {activeStep.template.step_name_th}
+                    </p>
+                    {activeStep.template.description ? (
+                      <p className="text-xs text-white/60 mt-0.5">
+                        {activeStep.template.description}
+                      </p>
+                    ) : null}
+                    <div className="mt-2">
+                      <StepStatusBadge state={activeState ?? 'upcoming'} />
+                    </div>
+                  </div>
+
+                  {factoryCanUpdateStep(activeStep) ? (
+                    <button
+                      type="button"
+                      onClick={() => setDrawerStep(activeStep)}
+                      className="w-full rounded-xl py-3 text-sm font-semibold text-white inline-flex items-center justify-center gap-2"
+                      style={{ background: 'linear-gradient(135deg, #6D5EF8 0%, #4C46D3 100%)' }}
+                    >
+                      {activeStep.update.status === 'IP'
+                        ? 'อัปเดตขั้นนี้'
+                        : activeStep.update.status === 'RJ'
+                          ? 'ส่งใหม่'
+                          : 'เริ่มขั้นต่อไป'}
+                    </button>
+                  ) : (
+                    <div className="rounded-xl bg-[#252B4D] border border-[#303965] px-3 py-3 text-xs text-white/70">
+                      ขั้นที่ 6 เป็นขั้นปิดงานฝั่งลูกค้า/ระบบอัตโนมัติ โรงงานไม่ต้องอัปเดตเอง
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-white/50">กำลังโหลดขั้นตอน…</p>
+              )}
+            </section>
+
+            {/* ── 6-step progress chain ── */}
+            {displayMerged.length > 0 ? (
+              <section className="rounded-2xl bg-[#1F2340] border border-[#2A3158] p-4 text-white">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-white/60">ความคืบหน้า</p>
+                  <p className="text-xs font-semibold text-[#CBC5FF]">
+                    {doneSteps}/{totalSteps} ขั้นตอน
+                  </p>
+                </div>
+
+                {/* Progress bar */}
+                <div className="h-1.5 bg-[#2A3158] rounded-full overflow-hidden mb-4">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: totalSteps > 0 ? `${Math.round((doneSteps / totalSteps) * 100)}%` : '0%',
+                      background: 'linear-gradient(90deg, #6D5EF8, #A238FF)',
+                    }}
                   />
-                </label>
-                <label className="block">
-                  <span className="text-xs text-gray-500">รูปประกอบ (ถ้ามี)</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="mt-1 text-sm max-w-full"
-                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                    disabled={!canAdvance}
-                  />
-                </label>
-                <button
-                  type="button"
-                  disabled={busy || !canAdvance}
-                  onClick={() => void advance()}
-                  className="w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
-                >
-                  {busy ? 'กำลังบันทึก...' : `บันทึกและเปลี่ยนเป็น ${nextStatus}`}
-                </button>
+                </div>
+
+                {/* Step chain */}
+                <ol className="space-y-0">
+                  {displayMerged.map((m, i) => {
+                    const state = derivedStates[i];
+                    const isLast = i === merged.length - 1;
+                    const isCurrent = i === nextStepIdx;
+                    return (
+                      <li key={m.template.step_code || m.template.step_id} className="flex gap-3">
+                        {/* Spine */}
+                        <div className="flex flex-col items-center">
+                          <StepDot state={state} />
+                          {!isLast ? (
+                            <div
+                              className={`w-0.5 flex-1 my-0.5 rounded-full min-h-[18px] ${
+                                state === 'completed' ? 'bg-emerald-600' : 'bg-[#2A3158]'
+                              }`}
+                            />
+                          ) : null}
+                        </div>
+                        {/* Label */}
+                        <div className={`pb-3 min-w-0 flex-1 ${isLast ? 'pb-0' : ''}`}>
+                          <p
+                            className={`text-xs leading-tight truncate font-medium ${
+                              isCurrent
+                                ? 'text-[#CBC5FF]'
+                                : state === 'completed'
+                                  ? 'text-emerald-400'
+                                  : 'text-white/35'
+                            }`}
+                          >
+                            {i + 1}. {m.template.step_name_th}
+                          </p>
+                          {isCurrent && m.update.status === 'IP' ? (
+                            <p className="text-[10px] text-[#6D5EF8] mt-0.5">กำลังดำเนินการ…</p>
+                          ) : null}
+                        </div>
+                        {/* CTA shortcut */}
+                        {isCurrent && !isCompleted ? (
+                          <button
+                            type="button"
+                        onClick={() => {
+                          if (!factoryCanUpdateStep(m)) return;
+                          setDrawerStep(m);
+                        }}
+                        className="shrink-0 self-start text-[11px] font-semibold text-[#6D5EF8] hover:text-[#A238FF] mt-0.5"
+                      >
+                        อัปเดต →
+                          </button>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ol>
               </section>
-            ) : (
-              <p className="text-sm text-gray-500 text-center lg:text-left py-4 lg:py-0 lg:px-1">
-                {idleMessage}
-              </p>
-            )}
-          </div>
+            ) : null}
+          </aside>
         </div>
-      ) : null}
+      )}
+
+      {/* ── Step Update Drawer ── */}
+      <UpdateStepDrawer
+        open={drawerStep != null}
+        placement={drawerWide ? 'right' : 'bottom'}
+        step={drawerStep}
+        onClose={() => setDrawerStep(null)}
+        onSubmit={handleStepSubmit}
+      />
     </div>
+  );
+}
+
+/* ── Sub-components ── */
+
+function InfoCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-[#303965] bg-[#252B4D] px-3 py-2">
+      <p className="text-[10px] text-white/60">{label}</p>
+      <p className="text-sm font-semibold mt-0.5 text-white truncate">{value}</p>
+    </div>
+  );
+}
+
+type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
+
+function StepDot({ state }: { state: StepState }) {
+  if (state === 'completed') {
+    return (
+      <div className="w-5 h-5 shrink-0 rounded-full bg-emerald-600 flex items-center justify-center">
+        <CheckCircle2 size={12} className="text-white" />
+      </div>
+    );
+  }
+  if (state === 'active') {
+    return (
+      <div className="w-5 h-5 shrink-0 rounded-full bg-[#6D5EF8] flex items-center justify-center">
+        <Loader2 size={11} className="text-white animate-spin" style={{ animationDuration: '1.6s' }} />
+      </div>
+    );
+  }
+  if (state === 'blocked') {
+    return (
+      <div className="w-5 h-5 shrink-0 rounded-full bg-amber-600 flex items-center justify-center">
+        <span className="text-white text-[9px] font-bold">!</span>
+      </div>
+    );
+  }
+  if (state === 'rejected') {
+    return (
+      <div className="w-5 h-5 shrink-0 rounded-full bg-red-700 flex items-center justify-center">
+        <span className="text-white text-[9px] font-bold">✕</span>
+      </div>
+    );
+  }
+  // upcoming
+  return (
+    <div className="w-5 h-5 shrink-0 rounded-full border border-[#3A4475] bg-[#252B4D] flex items-center justify-center">
+      <Lock size={9} className="text-white/30" />
+    </div>
+  );
+}
+
+function StepStatusBadge({ state }: { state: StepState }) {
+  const map: Record<StepState, { label: string; cls: string }> = {
+    completed: { label: 'เสร็จสิ้น', cls: 'bg-emerald-900/40 text-emerald-400 border-emerald-700/40' },
+    active:    { label: 'กำลังดำเนินการ', cls: 'bg-[#6D5EF8]/20 text-[#CBC5FF] border-[#6D5EF8]/40' },
+    blocked:   { label: 'รอดำเนินการ', cls: 'bg-amber-900/30 text-amber-400 border-amber-700/40' },
+    rejected:  { label: 'ต้องแก้ไข', cls: 'bg-red-900/30 text-red-400 border-red-700/40' },
+    upcoming:  { label: 'ยังไม่เริ่ม', cls: 'bg-[#2A3158] text-white/50 border-[#3A4475]' },
+  };
+  const { label, cls } = map[state];
+  return (
+    <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+      {label}
+    </span>
   );
 }

@@ -27,16 +27,16 @@ export function OrderActionBanner({
   onPayDeposit,
 }: Props) {
   const navigate = useNavigate();
-  const dep = paymentSchedule.find((s) => s.stage === 'DEPOSIT');
-  const amount = nextAction?.amount ?? dep?.amount ?? 0;
-  const due = nextAction?.due_date ?? dep?.due_date ?? '';
+  const pay = paymentSchedule.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');
+  const amount = nextAction?.amount ?? pay?.amount ?? 0;
+  const due = nextAction?.due_date ?? pay?.due_date ?? '';
   const daysLeft = diffDaysFromNow(due);
   const urgencyBg = daysLeft <= 1 ? '#FEE2E2' : PEACH_MIST;
   const ctaUrl = (nextAction?.cta_url || fallbackCtaUrl || '').trim();
-  const ctaLabel = nextAction?.cta_label_th ?? 'ชำระเงินมัดจำ';
+  const ctaLabel = nextAction?.cta_label_th ?? 'ชำระเงินเต็มจำนวน';
 
   const headline =
-    variant === 'deposit_expired' ? 'หมดกำหนดชำระมัดจำ' : 'ขั้นต่อไป: ชำระมัดจำ';
+    variant === 'deposit_expired' ? 'หมดกำหนดชำระเงิน' : 'ขั้นต่อไป: ชำระเงินเต็มจำนวน';
 
   const onCta = () => {
     if (onPayDeposit) {

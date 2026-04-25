@@ -1,0 +1,1 @@
+export { CommissionConfig } from './CommissionConfig';

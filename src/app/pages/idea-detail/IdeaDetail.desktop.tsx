@@ -6,7 +6,6 @@ import {
   BadgeCheck,
   CalendarDays,
   Heart,
-  Lightbulb,
   MapPin,
   MessageCircle,
 } from 'lucide-react';
@@ -93,129 +92,135 @@ export function IdeaDetailDesktop() {
 
   return (
     <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F8F6FA' }}>
-      <div className="relative h-72 overflow-hidden bg-gray-200">
-        <ImageWithFallback src={item.image} alt={item.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-
-        <button type="button" onClick={handleBack} className="absolute top-5 left-8 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/15 border border-white/20 text-white text-[13px] font-medium">
-          <ArrowLeft className="w-4 h-4" /> กลับ
-        </button>
-
-        {canChat ? (
-          <button
-            type="button"
-            onClick={() => void startChat(item.factoryId, { type: 'ID', id: Number(resolvedId), title: item.title })}
-            disabled={starting}
-            className="absolute top-5 right-8 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-[13px] font-bold shadow-md disabled:opacity-70"
-            style={{ color: '#7A4B94' }}
-          >
-            {starting ? <span className="w-4 h-4 border-2 border-[#7A4B94] border-t-transparent rounded-full animate-spin" /> : <MessageCircle className="w-4 h-4" />} แชทกับโรงงาน
-          </button>
-        ) : null}
-
-        <div className="absolute bottom-0 left-0 right-0 px-8 pb-7">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-white mb-3" style={{ background: 'rgba(122,75,148,0.90)' }}>
-            <Lightbulb className="w-3 h-3" /> บทความไอเดีย
-          </span>
-          <h1 className="text-[26px] font-bold text-white leading-snug max-w-3xl">{item.title}</h1>
-          <div className="flex items-center gap-4 mt-2 text-white/75 text-[12px]">
-            <span className="flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5" /> เผยแพร่ {formatThaiDate(item.postedAt)}</span>
-            <span className="inline-flex items-center rounded-full border border-white/40 bg-white/15 text-white text-[11px] font-semibold px-2.5 py-0.5">{item.category}</span>
-          </div>
-        </div>
-      </div>
-
       <div className="px-8 py-8">
         <div className="mx-auto max-w-4xl space-y-6">
-          <article className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-400 mb-3">บทความ</p>
-            <MarkdownBody source={item.content || ''} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
-              />
-          </article>
-
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <p className="text-[10px] font-semibold tracking-[0.1em] uppercase mb-3" style={{ color: '#9D77B2' }}>โรงงานที่โพสต์</p>
-            <div className="flex items-center justify-between gap-4">
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium"
+              style={{ color: '#7A4B94' }}
+            >
+              <ArrowLeft className="w-4 h-4" /> กลับ
+            </button>
+            <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 shrink-0">
-                  <ImageWithFallback src={factory?.image ?? ''} alt={item.factoryName} className="w-full h-full object-cover" />
+                <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 bg-gray-100 shrink-0">
+                  <ImageWithFallback
+                    src={factory?.image ?? ''}
+                    alt={item.factoryName}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-[14px] font-bold truncate" style={{ color: '#2E2252' }}>{item.factoryName}</p>
+                    <p className="text-[14px] font-bold truncate" style={{ color: '#2E2252' }}>
+                      {item.factoryName}
+                    </p>
                     {factory?.verified && <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: '#7A4B94' }} />}
                   </div>
-                  <p className="text-[12px] text-gray-500 truncate mt-0.5">{factory?.specialization}</p>
-                  <p className="text-[12px] text-gray-500 mt-1 inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {factory?.location ?? '-'}</p>
+                  <p className="text-[12px] text-gray-500 truncate mt-0.5">{factory?.specialization || 'โรงงานผู้ผลิต'}</p>
+                  <p className="text-[12px] text-gray-500 mt-1 inline-flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" /> {factory?.location ?? '-'}
+                  </p>
                 </div>
               </div>
-              <button type="button" onClick={() => navigate(`/factories/${item.factoryId}`)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold border" style={{ borderColor: 'rgba(122,75,148,0.30)', color: '#7A4B94' }}>
-                ดูโปรไฟล์โรงงาน <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                {canChat ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void startChat(item.factoryId, { type: 'ID', id: Number(resolvedId), title: item.title })
+                    }
+                    disabled={starting}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-bold text-white disabled:opacity-70"
+                    style={{ background: '#7A4B94' }}
+                  >
+                    {starting ? (
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <MessageCircle className="w-4 h-4" />
+                    )}{' '}
+                    แชทกับโรงงาน
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => navigate(`/factories/${item.factoryId}`)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold border"
+                  style={{ borderColor: 'rgba(122,75,148,0.30)', color: '#7A4B94' }}
+                >
+                  ดูโปรไฟล์โรงงาน <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <h1 className="mt-5 text-[30px] leading-tight font-bold" style={{ color: '#2E2252' }}>
+              {item.title}
+            </h1>
+            <div className="mt-2 flex items-center gap-3 text-[12px] text-gray-500">
+              <span className="inline-flex items-center gap-1.5">
+                <CalendarDays className="w-3.5 h-3.5" /> เผยแพร่ {formatThaiDate(item.postedAt)}
+              </span>
+              <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-600 font-semibold px-2.5 py-0.5">
+                {item.category || 'บทความไอเดีย'}
+              </span>
             </div>
           </section>
 
+          <article className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
+            <MarkdownBody
+              source={item.content || ''}
+              className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+            />
+          </article>
+
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-[16px] font-bold mb-4" style={{ color: '#2E2252' }}>บทความที่น่าสนใจให้อ่านต่อ</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {relatedIdeas.map((next) => {
                 const relFactory = data.factories.find((f) => f.id === next.factoryId);
                 const excerpt = next.excerpt || next.description || '';
                 return (
                   <article
                     key={next.id}
-                    className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                    className="group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4"
                     onClick={() => navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)}
                   >
-                    <div className="relative h-36 overflow-hidden bg-gray-100">
-                      <ImageWithFallback
-                        src={next.image}
-                        alt={next.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                      <div className="absolute top-2 left-2">
-                        <span
-                          className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white"
-                          style={{ backgroundColor: CARD.purple }}
-                        >
-                          ไอเดีย
-                        </span>
-                      </div>
-                      <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ArrowUpRight size={11} className="text-white" />
-                      </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: CARD.purple }}>
+                        ไอเดีย
+                      </span>
+                      <span className="text-[10px] text-gray-400 truncate">{next.factoryName}</span>
                     </div>
-                    <div className="p-3 flex flex-col gap-2 min-h-0">
-                      <div className="min-w-0">
-                        <h3 className="text-[12px] font-bold line-clamp-2 leading-snug" style={{ color: CARD.blue }}>{next.title}</h3>
-                        <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2">{excerpt || ' '}</p>
-                      </div>
-                      <div className="pt-2 border-t border-gray-100 space-y-1.5">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/factories/${next.factoryId}`);
-                          }}
-                          className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
-                          style={{ color: CARD.blue }}
-                        >
-                          <span className="truncate">{next.factoryName}</span>
-                          {relFactory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: CARD.purple }} />}
-                        </button>
-                        <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                          <span className="min-w-0 truncate">
-                            MOQ{' '}
-                            <span className="font-semibold tabular-nums" style={{ color: CARD.blue }}>
-                              {next.minOrder}
-                            </span>
+                    <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors" style={{ color: CARD.blue }}>
+                      {next.title}
+                    </h3>
+                    <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{excerpt || ' '}</p>
+                    <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/factories/${next.factoryId}`);
+                        }}
+                        className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
+                        style={{ color: CARD.blue }}
+                      >
+                        <span className="truncate">{next.factoryName}</span>
+                        {relFactory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: CARD.purple }} />}
+                      </button>
+                      <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
+                        <span className="min-w-0 truncate">
+                          MOQ{' '}
+                          <span className="font-semibold tabular-nums" style={{ color: CARD.blue }}>
+                            {next.minOrder}
                           </span>
-                          <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
-                            <Heart className="w-2.5 h-2.5 shrink-0" />
-                            {next.likes}
-                          </span>
-                        </div>
+                        </span>
+                        <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
+                          <Heart className="w-2.5 h-2.5 shrink-0" />
+                          {next.likes}
+                        </span>
                       </div>
                     </div>
                   </article>

@@ -47,12 +47,10 @@ function normalizeMarkdownContent(raw: string): string {
 
 interface ShowcaseFormValues {
   content_type: ContentType;
-  type: ContentType;
   title: string;
   excerpt: string;
   content: string;
   image_url: string;
-  images: string[];
   category_id: number | null;
   sub_category_id: number | null;
   moq: number | null;
@@ -60,8 +58,6 @@ interface ShowcaseFormValues {
   base_price: number | null;
   unit_id: number | null;
   promo_price: number | null;
-  production_capacity: number | null;
-  sample_available: boolean;
   start_date: string;
   end_date: string;
   status: 'DR' | 'AC' | 'HI' | 'AR';
@@ -69,12 +65,10 @@ interface ShowcaseFormValues {
 
 const DEFAULTS: ShowcaseFormValues = {
   content_type: 'PD',
-  type: 'PD',
   title: '',
   excerpt: '',
   content: '',
   image_url: '',
-  images: [],
   category_id: null,
   sub_category_id: null,
   moq: null,
@@ -82,8 +76,6 @@ const DEFAULTS: ShowcaseFormValues = {
   base_price: null,
   unit_id: null,
   promo_price: null,
-  production_capacity: null,
-  sample_available: false,
   start_date: '',
   end_date: '',
   status: 'DR',
@@ -132,17 +124,14 @@ function parseImageUrls(raw: unknown): string[] {
 
 function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
   const r = raw ?? {};
-  const ct = String(r.type ?? r.content_type ?? 'PD').toUpperCase();
-  const images = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
-  const image_url = images[0] ?? String(r.image_url ?? '').trim();
+  const ct = String(r.content_type ?? 'PD').toUpperCase();
+  const image_url = String(r.image_url ?? '').trim();
   return {
     content_type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ContentType,
-    type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ContentType,
     title: String(r.title ?? '').trim(),
     excerpt: String(r.excerpt ?? '').trim(),
-    content: String(r.content ?? r.description ?? '').trim(),
+    content: String(r.content ?? '').trim(),
     image_url,
-    images,
     category_id: numOrNull(r.category_id),
     sub_category_id: numOrNull(r.sub_category_id),
     moq: numOrNull(r.moq ?? r.min_order),
@@ -150,8 +139,6 @@ function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
     base_price: numOrNull(r.base_price ?? r.price),
     unit_id: numOrNull(r.unit_id),
     promo_price: numOrNull(r.promo_price ?? r.special_price),
-    production_capacity: numOrNull(r.production_capacity),
-    sample_available: Boolean(r.sample_available),
     start_date: String(r.start_date ?? '').slice(0, 10),
     end_date: String(r.end_date ?? '').slice(0, 10),
     status: (['DR', 'AC', 'HI', 'AR'].includes(String(r.status))
@@ -219,12 +206,10 @@ export function FactoryShowcaseEditPage() {
     setError('');
 
     const payload: Record<string, unknown> = {
-      type: v.content_type,
       content_type: v.content_type,
       title: v.title.trim(),
       excerpt: v.excerpt.trim() || undefined,
       content: v.content.trim() || undefined,
-      images: [v.image_url.trim()].filter((u) => u !== ''),
       image_url: v.image_url.trim() || undefined,
       category_id: v.category_id ?? undefined,
       sub_category_id: v.sub_category_id ?? undefined,
@@ -234,8 +219,6 @@ export function FactoryShowcaseEditPage() {
       payload.moq = v.moq ?? undefined;
       payload.lead_time_days = v.lead_time_days ?? undefined;
       payload.base_price = v.base_price ?? undefined;
-      payload.production_capacity = v.production_capacity ?? undefined;
-      payload.sample_available = v.sample_available;
       payload.unit_id = v.unit_id ?? undefined;
     }
     if (v.content_type === 'PM') {

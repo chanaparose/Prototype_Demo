@@ -57,16 +57,63 @@ function parseImageUrls(raw: unknown): string[] {
     .slice(0, 5);
 }
 
+function firstImageFromUnknown(raw: unknown): string {
+  if (typeof raw === 'string') {
+    return raw.trim();
+  }
+  if (!raw || typeof raw !== 'object') return '';
+  const row = raw as Record<string, unknown>;
+  const direct = String(
+    row.image_url ??
+      row.image ??
+      row.url ??
+      row.public_url ??
+      row.thumbnail_url ??
+      row.cover_image_url ??
+      '',
+  ).trim();
+  if (direct) return direct;
+  const nested = parseImageUrls(row.images ?? row.image_urls ?? row.imageUrls);
+  return nested[0] ?? '';
+}
+
+function parseLinkedShowcasesFirstImage(raw: unknown): string {
+  const arr = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string' && raw.trim().startsWith('[')
+      ? (() => {
+          try {
+            const parsed = JSON.parse(raw) as unknown;
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
+  for (const item of arr) {
+    const u = firstImageFromUnknown(item);
+    if (u) return u;
+  }
+  return '';
+}
+
 function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
   const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
+  const linkedFirstImage = parseLinkedShowcasesFirstImage(
+    r.linked_showcases ?? r.linkedShowcases,
+  );
+  const ctRaw = String(r.content_type ?? r.type ?? '').trim().toUpperCase();
   return {
     id: String(r.showcase_id ?? r.id ?? ''),
     factoryId: String(r.factory_id ?? ''),
     factoryName: String(r.factory_name ?? r.factoryName ?? ''),
     title: String(r.title ?? ''),
     excerpt: String(r.excerpt ?? ''),
-    image: imageUrls[0] ?? String(r.image_url ?? r.image ?? ''),
-    contentType: CT_MAP[String(r.type ?? r.content_type ?? '')] ?? 'product',
+    image:
+      ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM'
+        ? linkedFirstImage || imageUrls[0] || String(r.image_url ?? r.image ?? '')
+        : imageUrls[0] || linkedFirstImage || String(r.image_url ?? r.image ?? ''),
+    contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
     category: String(r.category_name ?? r.category ?? ''),
     subCategoryName: String(r.sub_category_name ?? r.subCategoryName ?? ''),
     postedAt: String(r.created_at ?? r.postedAt ?? ''),
