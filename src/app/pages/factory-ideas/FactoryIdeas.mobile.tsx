@@ -16,7 +16,7 @@ import {
 import { useData } from '../../contexts/DataContext';
 import type { Factory } from '../../contexts/DataContext';
 import { ImageWithFallback } from '../../components/shared';
-import { masterApi, favoritesApi, factoriesApi } from '../../services/api';
+import { masterApi, factoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
 import {
   loadSubCategories,
@@ -31,6 +31,7 @@ import {
 import { logFactoryIdeasCategory } from '../../utils/debugFactoryIdeasCategory';
 import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
 import { useShowcases, showcaseQueryTypeFromTab } from '../../hooks/useShowcases';
+import { useFavorites } from '../../hooks/useFavorites';
 import { MapPin, Star } from 'lucide-react';
 
 const COLORS = {
@@ -110,8 +111,7 @@ export function FactoryIdeasMobile() {
   >([]);
   const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
-  // Optimistic favorites: Set of showcase IDs that this session has liked
-  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const { isLiked, toggleFavorite } = useFavorites();
   const data = useData();
 
   useEffect(() => {
@@ -147,28 +147,6 @@ export function FactoryIdeasMobile() {
       .finally(() => { if (!cancelled) setFactoriesLoading(false); });
     return () => { cancelled = true; };
   }, [selectedType]);
-
-  const toggleFavorite = useCallback(async (showcaseId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const numId = Number(showcaseId);
-    const wasLiked = likedIds.has(showcaseId);
-    setLikedIds((prev) => {
-      const next = new Set(prev);
-      if (wasLiked) next.delete(showcaseId); else next.add(showcaseId);
-      return next;
-    });
-    try {
-      if (wasLiked) await favoritesApi.remove(numId);
-      else await favoritesApi.add(numId);
-    } catch {
-      // revert
-      setLikedIds((prev) => {
-        const next = new Set(prev);
-        if (wasLiked) next.add(showcaseId); else next.delete(showcaseId);
-        return next;
-      });
-    }
-  }, [likedIds]);
 
   useEffect(() => {
     let cancelled = false;
@@ -818,16 +796,16 @@ export function FactoryIdeasMobile() {
                       </span>
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id, e); }}
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
                         className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400 active:opacity-70"
                         aria-label="ถูกใจ"
                       >
                         <Heart
                           className="w-3 h-3 shrink-0"
-                          style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
                         />
                         <span className="tabular-nums font-medium text-gray-500">
-                          {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                          {item.likes + (isLiked(item.id) ? 1 : 0)}
                         </span>
                       </button>
                     </div>
@@ -909,16 +887,16 @@ export function FactoryIdeasMobile() {
                         </span>
                         <button
                           type="button"
-                          onClick={(e) => toggleFavorite(item.id, e)}
+                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
                           className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400 active:opacity-70"
                           aria-label="ถูกใจ"
                         >
                           <Heart
                             className="w-3 h-3 shrink-0"
-                            style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
                           />
                           <span className="tabular-nums font-medium text-gray-500">
-                            {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                            {item.likes + (isLiked(item.id) ? 1 : 0)}
                           </span>
                         </button>
                       </div>
@@ -993,16 +971,16 @@ export function FactoryIdeasMobile() {
                     <div className="w-[40px] shrink-0 flex flex-col items-center justify-center border-l border-gray-100 pl-2">
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id, e); }}
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
                         className="flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-gray-400 active:opacity-70"
                         aria-label="ถูกใจ"
                       >
                         <Heart
                           className="w-4 h-4 shrink-0"
-                          style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
                         />
                         <span className="text-[9px] font-medium tabular-nums leading-none">
-                          {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                          {item.likes + (isLiked(item.id) ? 1 : 0)}
                         </span>
                       </button>
                     </div>
@@ -1131,16 +1109,16 @@ export function FactoryIdeasMobile() {
                         </span>
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); toggleFavorite(item.id, e); }}
+                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
                           className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400 active:opacity-70"
                           aria-label="ถูกใจ"
                         >
                           <Heart
                             className="w-3 h-3 shrink-0"
-                            style={likedIds.has(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
                           />
                           <span className="tabular-nums font-medium text-gray-500">
-                            {item.likes + (likedIds.has(item.id) ? 1 : 0)}
+                            {item.likes + (isLiked(item.id) ? 1 : 0)}
                           </span>
                         </button>
                       </div>

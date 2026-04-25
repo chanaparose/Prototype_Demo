@@ -2,23 +2,26 @@ import React, { useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
-import { ChevronLeft, Save } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
+import { ChevronLeft, Plus, X, Camera } from 'lucide-react';
 
-import { showcasesApi } from '../../services/api';
+import { mediaApi, showcasesApi } from '../../services/api';
 import { useEditForm } from '../../hooks/forms/useEditForm';
 import { useBeforeUnload } from '../../hooks/forms/useBeforeUnload';
 import { FormSkeleton } from '../../components/common/FormSkeleton';
 import { LookupSelect } from '../../components/common/LookupSelect';
+import { MarkdownEditor } from '../../components/common/MarkdownEditor';
+import { type ShowcaseType } from '../../components/factory/showcase/ShowcaseTypeSelector';
 import { useProductCategories } from '../../hooks/master/useProductCategories';
 import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
-import { useUnits } from '../../hooks/master/useUnits';
+import { useAuth } from '../../contexts/AuthContext';
+import { getFactoryEntityId } from '../../utils/factoryUser';
 
-type ContentType = 'PD' | 'PM' | 'ID';
-type EditorTab = 'write' | 'preview';
+/* ── Type badge metadata ── */
+const TYPE_META = {
+  PD: { icon: '🏷', label: 'สินค้า', sub: 'Product Design', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
+  PM: { icon: '🎁', label: 'โปรโมชัน', sub: 'Promotion', cls: 'bg-purple-50 text-purple-700 border-purple-200' },
+  ID: { icon: '💡', label: 'ไอเดีย', sub: 'Industrial Design', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+} as const;
 
 const PRODUCT_MARKDOWN_TEMPLATE = `> รับผลิต OEM พร้อมช่วยปรับสูตร เริ่ม MOQ 500 ถุง เหมาะสำหรับเริ่มทำแบรนด์
 
@@ -38,25 +41,31 @@ const PRODUCT_MARKDOWN_TEMPLATE = `> รับผลิต OEM พร้อม�
 4. มาตรฐานหรือเอกสารที่ต้องใช้ เช่น อย., Halal, GMP
 `;
 
-function normalizeMarkdownContent(raw: string): string {
-  return raw
-    .replace(/\\r\\n/g, '\n')
-    .replace(/\\n/g, '\n')
-    .trim();
-}
+const ID_TEMPLATE = `## ที่มาของไอเดีย
+
+อธิบายแรงบันดาลใจและปัญหาที่ต้องการแก้ไข...
+
+## แนวทางการออกแบบ
+
+---
+
+## ผลลัพธ์และสิ่งที่ทำได้
+
+- จุดที่ 1
+- จุดที่ 2`;
 
 interface ShowcaseFormValues {
-  content_type: ContentType;
+  content_type: ShowcaseType;
   title: string;
   excerpt: string;
   content: string;
   image_url: string;
+  image_urls: string[];
   category_id: number | null;
   sub_category_id: number | null;
   moq: number | null;
   lead_time_days: number | null;
   base_price: number | null;
-  unit_id: number | null;
   promo_price: number | null;
   start_date: string;
   end_date: string;
@@ -69,12 +78,12 @@ const DEFAULTS: ShowcaseFormValues = {
   excerpt: '',
   content: '',
   image_url: '',
+  image_urls: [],
   category_id: null,
   sub_category_id: null,
   moq: null,
   lead_time_days: null,
   base_price: null,
-  unit_id: null,
   promo_price: null,
   start_date: '',
   end_date: '',
@@ -125,19 +134,20 @@ function parseImageUrls(raw: unknown): string[] {
 function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
   const r = raw ?? {};
   const ct = String(r.content_type ?? 'PD').toUpperCase();
-  const image_url = String(r.image_url ?? '').trim();
+  const image_urls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
+  const image_url = image_urls[0] ?? String(r.image_url ?? '').trim();
   return {
-    content_type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ContentType,
+    content_type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ShowcaseType,
     title: String(r.title ?? '').trim(),
     excerpt: String(r.excerpt ?? '').trim(),
     content: String(r.content ?? '').trim(),
     image_url,
+    image_urls,
     category_id: numOrNull(r.category_id),
     sub_category_id: numOrNull(r.sub_category_id),
     moq: numOrNull(r.moq ?? r.min_order),
     lead_time_days: numOrNull(r.lead_time_days),
     base_price: numOrNull(r.base_price ?? r.price),
-    unit_id: numOrNull(r.unit_id),
     promo_price: numOrNull(r.promo_price ?? r.special_price),
     start_date: String(r.start_date ?? '').slice(0, 10),
     end_date: String(r.end_date ?? '').slice(0, 10),
@@ -151,6 +161,12 @@ export function FactoryShowcaseEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const fid = getFactoryEntityId(user);
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [uploading, setUploading] = React.useState(false);
+  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
 
   const { form, isLoading, isError, refetch } = useEditForm<ShowcaseFormValues, Raw>({
     queryKey: ['showcase', id] as const,
@@ -161,13 +177,20 @@ export function FactoryShowcaseEditPage() {
     },
     mapper: mapShowcaseToForm,
     defaults: DEFAULTS,
+    onReady: (values) => {
+      const next = values.image_urls?.length
+        ? values.image_urls
+        : values.image_url
+          ? [values.image_url]
+          : [];
+      setImageUrls(next.slice(0, 5));
+    },
     enabled: Boolean(id),
   });
 
   useBeforeUnload(form.formState.isDirty);
 
   const categoriesQ = useProductCategories();
-  const unitsQ = useUnits();
 
   const selectedCategoryId = form.watch('category_id');
   const contentType = form.watch('content_type');
@@ -180,12 +203,7 @@ export function FactoryShowcaseEditPage() {
   const subOptions =
     selectedCategoryId != null ? subsResult.byCategory.get(selectedCategoryId) ?? [] : [];
 
-  const [saving, setSaving] = React.useState(false);
-  const [error, setError] = React.useState('');
-  const [contentTab, setContentTab] = React.useState<EditorTab>('write');
-  const markdownContent = normalizeMarkdownContent(form.watch('content') || '');
-
-  const save = useCallback(async () => {
+  const save = useCallback(async (submitStatus: 'DR' | 'AC') => {
     if (!id) return;
     const v = form.getValues();
     if (!v.title.trim()) {
@@ -204,45 +222,77 @@ export function FactoryShowcaseEditPage() {
     }
     setSaving(true);
     setError('');
-
-    const payload: Record<string, unknown> = {
+    const galleryJson = imageUrls.map((url, idx) => ({
+      image_url: url,
+      sort_order: idx + 1,
+      is_cover: idx === 0,
+    }));
+    const base = {
       content_type: v.content_type,
+      status: submitStatus,
       title: v.title.trim(),
-      excerpt: v.excerpt.trim() || undefined,
+      excerpt: v.content_type === 'ID' ? undefined : v.excerpt.trim() || undefined,
       content: v.content.trim() || undefined,
-      image_url: v.image_url.trim() || undefined,
+      image_url: undefined,
       category_id: v.category_id ?? undefined,
       sub_category_id: v.sub_category_id ?? undefined,
-      status: v.status,
+      lead_time_days: v.lead_time_days ?? undefined,
+      linked_showcases: galleryJson,
     };
-    if (v.content_type === 'PD' || v.content_type === 'PM') {
-      payload.moq = v.moq ?? undefined;
-      payload.lead_time_days = v.lead_time_days ?? undefined;
-      payload.base_price = v.base_price ?? undefined;
-      payload.unit_id = v.unit_id ?? undefined;
-    }
-    if (v.content_type === 'PM') {
-      payload.promo_price = v.promo_price ?? undefined;
-      payload.start_date = v.start_date;
-      payload.end_date = v.end_date;
-    }
+
+    const payload: Record<string, unknown> =
+      v.content_type === 'ID'
+        ? base
+        : v.content_type === 'PM'
+          ? {
+              ...base,
+              moq: v.moq ?? undefined,
+              base_price: v.base_price ?? undefined,
+              promo_price: v.promo_price ?? undefined,
+              start_date: v.start_date || undefined,
+              end_date: v.end_date || undefined,
+            }
+          : {
+              ...base,
+              moq: v.moq ?? undefined,
+              base_price: v.base_price ?? undefined,
+            };
 
     try {
       await showcasesApi.update(id, payload);
-      form.reset(v);
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['showcase', id] }),
         qc.invalidateQueries({ queryKey: ['showcases'] }),
       ]);
-      navigate('/factory/showcases');
+      /* navigate back to list after save */
+      navigate('/factory/showcases', { replace: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ');
     } finally {
       setSaving(false);
     }
-  }, [id, form, qc, navigate]);
+  }, [id, form, qc, imageUrls, navigate]);
 
-  if (!id) return null;
+  const onPickImage = async (file: File | null) => {
+    if (!file || imageUrls.length >= 5) return;
+    setUploading(true);
+    setError('');
+    try {
+      const up = await mediaApi.upload(file);
+      const url = String(up.url ?? '').trim();
+      if (!url) return;
+      setImageUrls((prev) => [...prev, url].slice(0, 5));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  /* content_type is read-only on edit — derived from loaded data */
+  const typeMeta = TYPE_META[contentType] ?? TYPE_META.PD;
+
+  if (!id || fid == null) return null;
   if (isError) {
     return (
       <div className="py-12 text-center">
@@ -260,289 +310,282 @@ export function FactoryShowcaseEditPage() {
   if (isLoading) return <FormSkeleton sections={4} />;
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        void save();
-      }}
-      className="max-w-3xl mx-auto w-full min-w-0 pb-28 space-y-5"
-    >
-      <div className="flex items-center gap-3">
+    <form className="max-w-3xl mx-auto w-full min-w-0 pb-28">
+
+      {/* ── Sticky top bar ── */}
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3">
         <button
           type="button"
-          onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center"
+          onClick={() => navigate('/factory/showcases')}
+          className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
         >
-          <ChevronLeft size={22} />
+          <ChevronLeft size={18} /> กลับ
         </button>
-        <h1 className="text-lg font-bold">แก้ไข Showcase #{id}</h1>
+
+        {/* Fixed type badge — not editable */}
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${typeMeta.cls}`}>
+          {typeMeta.icon} {typeMeta.label}
+          <span className="opacity-60 hidden sm:inline">· {typeMeta.sub}</span>
+        </span>
+
+        <button
+          type="button"
+          onClick={() => void save('DR')}
+          disabled={saving}
+          className="text-sm text-gray-600 font-medium hover:text-gray-900 disabled:opacity-40 transition-colors whitespace-nowrap"
+        >
+          บันทึกร่าง
+        </button>
       </div>
 
-      {error ? (
-        <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
-      ) : null}
+      <div className="px-4 py-5 space-y-5">
+        {error ? (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
+        ) : null}
 
-      <section className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Controller
-            control={form.control}
-            name="content_type"
-            render={({ field }) => (
-              <label className="block">
-                <span className="text-xs text-gray-500">ประเภท *</span>
-                <select
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        {/* ── Cover image (hero) ── */}
+        <section>
+          <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors">
+            {imageUrls[0] ? (
+              <>
+                <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setImageUrls((prev) => prev.filter((_, i) => i !== 0))}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                  aria-label="ลบภาพปก"
                 >
-                  <option value="PD">Product — สินค้า</option>
-                  <option value="PM">Promotion — โปรโมชัน</option>
-                  <option value="ID">Idea — ไอเดีย</option>
-                </select>
+                  <X size={16} />
+                </button>
+              </>
+            ) : (
+              <label className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors">
+                <Camera size={36} strokeWidth={1.5} />
+                <span className="text-sm font-medium">
+                  {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
+                </span>
+                <span className="text-xs opacity-70">PNG, JPG, WEBP · สูงสุด 5 รูป</span>
+                <input
+                  type="file" accept="image/*" className="hidden" disabled={uploading}
+                  onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
+                />
               </label>
             )}
-          />
-          <Controller
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <label className="block">
-                <span className="text-xs text-gray-500">สถานะ</span>
-                <select
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                >
-                  <option value="DR">ร่าง</option>
-                  <option value="AC">Active</option>
-                  <option value="HI">Hidden</option>
-                  <option value="AR">เก็บเข้าคลัง</option>
-                </select>
-              </label>
-            )}
-          />
-        </div>
+          </div>
 
-        <label className="block">
-          <span className="text-xs text-gray-500">ชื่อเรื่อง *</span>
+          {/* Additional images */}
+          {imageUrls.length > 0 ? (
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {imageUrls.slice(1).map((url, idx) => (
+                <div key={`${url}-${idx}`} className="relative w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shrink-0">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImageUrls((prev) => prev.filter((_, i) => i !== idx + 1))}
+                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
+              ))}
+              {imageUrls.length < 5 ? (
+                <label className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
+                  <Plus size={16} />
+                  <span className="text-[9px] mt-0.5">เพิ่ม</span>
+                  <input
+                    type="file" accept="image/*" className="hidden" disabled={uploading}
+                    onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
+                  />
+                </label>
+              ) : null}
+            </div>
+          ) : null}
+        </section>
+
+        {/* ── Title & excerpt ── */}
+        <section className="space-y-3">
           <input
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            className="w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 border-b-2 border-transparent focus:border-orange-400 focus:outline-none pb-1.5 bg-transparent transition-colors"
+            placeholder="ชื่อ *"
             {...form.register('title', { required: true })}
           />
-        </label>
 
-        <label className="block">
-          <span className="text-xs text-gray-500">คำโปรย (excerpt)</span>
-          <input
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-            {...form.register('excerpt')}
-          />
-        </label>
-
-        <label className="block">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-gray-500">รายละเอียด (Markdown)</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className={`px-2 py-1 text-xs rounded-md border ${contentTab === 'write' ? 'bg-orange-50 border-orange-200 text-orange-700' : 'border-gray-200 text-gray-600'}`}
-                onClick={() => setContentTab('write')}
-              >
-                Write
-              </button>
-              <button
-                type="button"
-                className={`px-2 py-1 text-xs rounded-md border ${contentTab === 'preview' ? 'bg-orange-50 border-orange-200 text-orange-700' : 'border-gray-200 text-gray-600'}`}
-                onClick={() => setContentTab('preview')}
-              >
-                Preview
-              </button>
-              <button
-                type="button"
-                className="px-2 py-1 text-xs rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50"
-                onClick={() => {
-                  const current = form.getValues('content') ?? '';
-                  if (!current.trim()) {
-                    form.setValue('content', PRODUCT_MARKDOWN_TEMPLATE, { shouldDirty: true });
-                  }
-                }}
-              >
-                ใช้ตัวอย่าง
-              </button>
-            </div>
-          </div>
-          {contentTab === 'write' ? (
-            <textarea
-              rows={8}
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-mono"
-              {...form.register('content')}
-            />
-          ) : (
-            <div className="mt-1 rounded-xl border border-gray-200 bg-white px-4 py-3 min-h-[180px]">
-              {markdownContent ? (
-                <div className="prose prose-sm max-w-none prose-p:text-[13px] prose-li:text-[13px] prose-headings:text-[15px] prose-strong:text-inherit prose-strong:font-semibold">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>
-                    {markdownContent}
-                  </ReactMarkdown>
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400">ยังไม่มีเนื้อหาให้แสดงตัวอย่าง</p>
-              )}
-            </div>
-          )}
-        </label>
-
-        <label className="block">
-          <span className="text-xs text-gray-500">URL รูปปก</span>
-          <input
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-            placeholder="https://…"
-            {...form.register('image_url')}
-          />
-        </label>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Controller
-            control={form.control}
-            name="category_id"
-            render={({ field }) => (
-              <LookupSelect
-                label="หมวดหมู่"
-                value={field.value}
-                onChange={(v) => {
-                  field.onChange(v);
-                  form.setValue('sub_category_id', null, { shouldDirty: true });
-                }}
-                queryResult={categoriesQ}
-                getId={(o) => o.id}
-                getLabel={(o) => o.name}
-                placeholder="เลือกหมวดหมู่"
-              />
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="sub_category_id"
-            render={({ field }) => (
-              <label className="block">
-                <span className="text-xs text-gray-500">หมวดหมู่ย่อย</span>
-                <select
-                  disabled={selectedCategoryId == null || subsResult.isLoading}
-                  value={field.value != null ? String(field.value) : ''}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    field.onChange(v ? Number(v) : null);
-                  }}
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
-                >
-                  <option value="">
-                    {selectedCategoryId == null
-                      ? '— เลือกหมวดหมู่ก่อน —'
-                      : subsResult.isLoading
-                        ? 'กำลังโหลด…'
-                        : '— เลือกหมวดหมู่ย่อย —'}
-                  </option>
-                  {subOptions.map((o) => (
-                    <option key={o.id} value={String(o.id)}>
-                      {o.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-          />
-        </div>
-      </section>
-
-      {(contentType === 'PD' || contentType === 'PM') && (
-        <section className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-          <h2 className="text-sm font-bold text-gray-900">ข้อมูลสินค้า</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+          {contentType !== 'ID' ? (
             <label className="block">
-              <span className="text-xs text-gray-500">ราคา</span>
+              <span className="text-xs text-gray-500">คำโปรย (excerpt)</span>
               <input
-                type="number"
-                step="0.01"
                 className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('base_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                {...form.register('excerpt')}
               />
             </label>
+          ) : null}
+
+          <div className="grid gap-4 sm:grid-cols-3">
             <Controller
               control={form.control}
-              name="unit_id"
+              name="category_id"
               render={({ field }) => (
                 <LookupSelect
-                  label="หน่วย"
+                  label="หมวดหมู่"
                   value={field.value}
-                  onChange={field.onChange}
-                  queryResult={unitsQ}
+                  onChange={(v) => {
+                    field.onChange(v);
+                    form.setValue('sub_category_id', null, { shouldDirty: true });
+                  }}
+                  queryResult={categoriesQ}
                   getId={(o) => o.id}
-                  getLabel={(o) => o.label}
-                  placeholder="เลือกหน่วย"
+                  getLabel={(o) => o.name}
+                  placeholder="เลือกหมวดหมู่"
                 />
               )}
             />
-            <label className="block">
-              <span className="text-xs text-gray-500">MOQ (ขั้นต่ำ)</span>
-              <input
-                type="number"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('moq', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs text-gray-500">Lead time (วัน)</span>
-              <input
-                type="number"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('lead_time_days', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-              />
-            </label>
+            <Controller
+              control={form.control}
+              name="sub_category_id"
+              render={({ field }) => (
+                <label className="block">
+                  <span className="text-xs text-gray-500">หมวดหมู่ย่อย</span>
+                  <select
+                    disabled={selectedCategoryId == null || subsResult.isLoading}
+                    value={field.value != null ? String(field.value) : ''}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      field.onChange(v ? Number(v) : null);
+                    }}
+                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
+                  >
+                    <option value="">
+                      {selectedCategoryId == null
+                        ? '— เลือกหมวดหมู่ก่อน —'
+                        : subsResult.isLoading
+                          ? 'กำลังโหลด…'
+                          : '— เลือกหมวดหมู่ย่อย —'}
+                    </option>
+                    {subOptions.map((o) => (
+                      <option key={o.id} value={String(o.id)}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <label className="block">
+                  <span className="text-xs text-gray-500">สถานะ</span>
+                  <select
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  >
+                    <option value="DR">ร่าง</option>
+                    <option value="AC">Active</option>
+                    <option value="HI">Hidden</option>
+                    <option value="AR">เก็บเข้าคลัง</option>
+                  </select>
+                </label>
+              )}
+            />
           </div>
-        </section>
-      )}
 
-      {contentType === 'PM' && (
-        <section className="bg-white rounded-2xl border border-amber-100 bg-amber-50/30 p-5 space-y-4">
-          <h2 className="text-sm font-bold text-amber-900">พารามิเตอร์โปรโมชัน (Flash Sale)</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-xs text-gray-500">ราคาโปรโมชัน</span>
-              <input
-                type="number"
-                step="0.01"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('promo_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs text-gray-500">วันเริ่ม *</span>
-              <input
-                type="date"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('start_date')}
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs text-gray-500">วันสิ้นสุด *</span>
-              <input
-                type="date"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-                {...form.register('end_date')}
-              />
-            </label>
-          </div>
-        </section>
-      )}
+          {contentType !== 'ID' && (
+            <div className="grid gap-4 sm:grid-cols-3">
+              <label className="block">
+                <span className="text-xs text-gray-500">MOQ</span>
+                <input
+                  type="number"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  {...form.register('moq', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-500">Lead time (วัน)</span>
+                <input
+                  type="number"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  {...form.register('lead_time_days', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-500">ราคา (฿)</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  {...form.register('base_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                />
+              </label>
+            </div>
+          )}
 
-      <div className="flex justify-end">
+          {contentType === 'PM' && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label className="block">
+                <span className="text-xs text-gray-500">ราคาโปรโมชัน (฿)</span>
+                <input
+                  type="number"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  {...form.register('promo_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                  placeholder="0.00"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-500">วันที่เริ่มโปร</span>
+                <input
+                  type="date"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  {...form.register('start_date')}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs text-gray-500">วันที่สิ้นสุดโปร</span>
+                <input
+                  type="date"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  {...form.register('end_date')}
+                />
+              </label>
+            </div>
+          )}
+
+          <Controller
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <MarkdownEditor
+                label="รายละเอียด (Markdown)"
+                value={field.value ?? ''}
+                onChange={field.onChange}
+                minHeight={300}
+                templateContent={contentType === 'ID' ? ID_TEMPLATE : PRODUCT_MARKDOWN_TEMPLATE}
+                disabled={form.getValues('status') === 'AR'}
+              />
+            )}
+          />
+        </section>
+
+      </div>
+
+      <div className="sticky bottom-0 z-10 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
         <button
-          type="submit"
-          disabled={saving || !form.formState.isDirty}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
-          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+          type="button"
+          onClick={() => void save('DR')}
+          disabled={saving}
+          className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50"
         >
-          <Save size={14} /> {saving ? 'กำลังบันทึก…' : 'บันทึก'}
+          บันทึกร่าง
+        </button>
+        <button
+          type="button"
+          onClick={() => void save('AC')}
+          disabled={saving}
+          className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)' }}
+        >
+          เผยแพร่
         </button>
       </div>
     </form>

@@ -66,7 +66,8 @@ export function renderMarkdown(source: string): string {
   return DOMPurify.sanitize(rawHtml, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
-    ALLOWED_URI_REGEXP: /^(https?:|mailto:|tel:)/i,
+    // Allow absolute URLs and relative app/media paths (e.g. /uploads/..., ./img.png).
+    ALLOWED_URI_REGEXP: /^(https?:|mailto:|tel:|\/|\.\/|\.\.\/|#)/i,
     FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick'],
     FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'svg'],
   });

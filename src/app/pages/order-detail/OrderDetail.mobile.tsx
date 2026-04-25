@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, MessageCircle } from 'lucide-react';
+import { ChevronLeft, MessageCircle, Star, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,6 +17,22 @@ import {
 } from '../../components/features/order-detail';
 import { OrderProductionTab } from '../../components/features/production/OrderProductionTab';
 import { useOrderDetail } from './OrderDetailContext';
+
+type OrderReviewState = {
+  order_id: number;
+  factory_id: number;
+  factory_name?: string;
+  eligible: boolean;
+  already_reviewed: boolean;
+  reason?: string;
+  review?: {
+    review_id: number;
+    rating: number;
+    comment: string;
+    created_at?: string;
+    updated_at?: string;
+  } | null;
+};
 
 function OrderDetailMobileBody() {
   const navigate = useNavigate();
@@ -40,6 +56,12 @@ function OrderDetailMobileBody() {
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [confirmingReceive, setConfirmingReceive] = useState(false);
   const [receiveForbidden, setReceiveForbidden] = useState(false);
+  const [reviewState, setReviewState] = useState<OrderReviewState | null>(null);
+  const [reviewStateLoading, setReviewStateLoading] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   const depositAmount =
     nextAction?.amount ??
@@ -75,6 +97,39 @@ function OrderDetailMobileBody() {
 
   const showFloatingAction = order.status === 'shipped' || order.status === 'completed';
 
+  const loadReviewState = React.useCallback(async () => {
+    setReviewStateLoading(true);
+    try {
+      const raw = (await ordersApi.getReviewState(order.id)) as Record<string, unknown>;
+      setReviewState({
+        order_id: Number(raw.order_id ?? order.id),
+        factory_id: Number(raw.factory_id ?? order.factoryId ?? 0),
+        factory_name: String(raw.factory_name ?? order.factoryName ?? ''),
+        eligible: Boolean(raw.eligible),
+        already_reviewed: Boolean(raw.already_reviewed),
+        reason: String(raw.reason ?? '').trim() || undefined,
+        review:
+          raw.review && typeof raw.review === 'object'
+            ? ({
+                review_id: Number((raw.review as Record<string, unknown>).review_id ?? 0),
+                rating: Number((raw.review as Record<string, unknown>).rating ?? 0),
+                comment: String((raw.review as Record<string, unknown>).comment ?? ''),
+                created_at: String((raw.review as Record<string, unknown>).created_at ?? ''),
+                updated_at: String((raw.review as Record<string, unknown>).updated_at ?? ''),
+              } as OrderReviewState['review'])
+            : null,
+      });
+    } catch {
+      setReviewState(null);
+    } finally {
+      setReviewStateLoading(false);
+    }
+  }, [order.status, order.id, order.factoryId, order.factoryName]);
+
+  React.useEffect(() => {
+    void loadReviewState();
+  }, [loadReviewState]);
+
   const onConfirmReceive = async () => {
     if (confirmingReceive) return;
     if (order.status !== 'shipped') return;
@@ -106,6 +161,68 @@ function OrderDetailMobileBody() {
       }
     } finally {
       setConfirmingReceive(false);
+    }
+  };
+
+  const onOpenReview = () => {
+    if (order.status !== 'completed') {
+      toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
+      return;
+    }
+    if (reviewState?.reason === 'order_not_completed') {
+      toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
+      return;
+    }
+    if (reviewState?.already_reviewed) {
+      setReviewModalOpen(true);
+      return;
+    }
+    if (reviewState && !reviewState.eligible) {
+      toast.error('ยังไม่สามารถรีวิวคำสั่งซื้อนี้ได้');
+      return;
+    }
+    setReviewModalOpen(true);
+  };
+
+  const onSubmitReview = async () => {
+    if (reviewSubmitting) return;
+    if (order.status !== 'completed') {
+      toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
+      return;
+    }
+    if (!Number.isFinite(reviewRating) || reviewRating < 1 || reviewRating > 5) {
+      toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
+      return;
+    }
+    const comment = reviewComment.trim();
+    if (!comment) {
+      toast.error('กรุณาเขียนรีวิว');
+      return;
+    }
+    if (comment.length > 1000) {
+      toast.error('คอมเมนต์ยาวเกิน 1000 ตัวอักษร');
+      return;
+    }
+    setReviewSubmitting(true);
+    try {
+      await ordersApi.createReview(order.id, { rating: reviewRating, comment });
+      toast.success('ส่งรีวิวสำเร็จ');
+      setReviewModalOpen(false);
+      setReviewComment('');
+      await Promise.all([loadReviewState(), refetchAll()]);
+    } catch (e) {
+      if (e instanceof ApiHttpError) {
+        const m = String(e.message ?? '').toLowerCase();
+        if (m.includes('review already exists')) toast.error('คุณรีวิวคำสั่งซื้อนี้ไปแล้ว');
+        else if (m.includes('order must be completed')) toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
+        else if (m.includes('rating must be between')) toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
+        else if (m.includes('comment must be')) toast.error('กรุณาเขียนรีวิว');
+        else toast.error(e.message || 'ส่งรีวิวไม่สำเร็จ');
+      } else {
+        toast.error(e instanceof Error ? e.message : 'ส่งรีวิวไม่สำเร็จ');
+      }
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -228,6 +345,8 @@ function OrderDetailMobileBody() {
               onClick={() => {
                 if (order.status === 'shipped') {
                   void onConfirmReceive();
+                } else if (order.status === 'completed') {
+                  onOpenReview();
                 }
               }}
               disabled={order.status === 'shipped' ? confirmingReceive : false}
@@ -242,7 +361,9 @@ function OrderDetailMobileBody() {
                 ? confirmingReceive
                   ? 'กำลังยืนยันการรับสินค้า...'
                   : '✓ ยืนยันการรับสินค้า'
-                : '⭐ ให้คะแนนและรีวิว'}
+                : reviewState?.already_reviewed
+                  ? '✓ คุณรีวิวรายการนี้แล้ว'
+                  : '⭐ ให้คะแนนและรีวิว'}
             </button>
           </div>
         )}
@@ -257,6 +378,91 @@ function OrderDetailMobileBody() {
         amount={depositAmount}
         onSuccess={refetchAll}
       />
+
+      {reviewModalOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white border border-gray-100 shadow-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-gray-900">
+                {reviewState?.already_reviewed ? 'รีวิวของคุณ' : 'ให้คะแนนและรีวิว'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setReviewModalOpen(false)}
+                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {reviewStateLoading ? (
+              <p className="text-sm text-gray-500 py-4">กำลังโหลด...</p>
+            ) : reviewState?.already_reviewed && reviewState.review ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      size={18}
+                      className={
+                        s <= Number(reviewState.review?.rating ?? 0)
+                          ? 'text-amber-400 fill-amber-400'
+                          : 'text-gray-300'
+                      }
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  {reviewState.review.comment}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setReviewModalOpen(false)}
+                  className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700"
+                >
+                  ปิด
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setReviewRating(s)}
+                      className="p-0.5"
+                      aria-label={`${s} ดาว`}
+                    >
+                      <Star
+                        size={20}
+                        className={s <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  maxLength={1000}
+                  rows={4}
+                  placeholder="แบ่งปันประสบการณ์ของคุณ"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <button
+                  type="button"
+                  onClick={() => void onSubmitReview()}
+                  disabled={reviewSubmitting}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-60"
+                  style={{ background: '#6C47FF' }}
+                >
+                  {reviewSubmitting ? 'กำลังส่งรีวิว...' : 'ส่งรีวิว'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

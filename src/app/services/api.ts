@@ -325,10 +325,10 @@ export const rfqsApi = {
   },
   /** RFQ ที่ match หมวดของโรงงานตาม JWT */
   matching: () => api.get<RfqListItem[] | null>('/rfqs/matching'),
-  /** รูปอยู่ที่ rfq.image_urls — ไม่มี top-level images (FACTORY_UI_SPEC §1.2) */
+  /** รูป RFQ หลักอยู่ที่ rfq.reference_images (image_urls รองรับเฉพาะ backward compatibility) */
   get: (id: string | number) => api.get<RfqDetailResponse>(`/rfqs/${id}`),
-  /** ส่ง image_urls ใน body เดียว (สูงสุด 5 URL) — ไม่เรียก POST /rfqs/:id/images */
-  create: (data: Record<string, unknown> & { image_urls?: string[] }) =>
+  /** ส่ง reference_images ใน body เดียว (สูงสุด 5 URL) */
+  create: (data: Record<string, unknown> & { reference_images?: string[] }) =>
     api.post<Record<string, unknown>>('/rfqs', data),
   cancel: (rfqId: string | number) => api.patch(`/rfqs/${rfqId}/cancel`),
   createQuotation: (rfqId: string | number, data: Record<string, unknown>) =>
@@ -384,6 +384,14 @@ export const ordersApi = {
   ) => api.post<Record<string, unknown>>(`/orders/${id}/ship`, data),
   /** GET /orders/:id/activity — activity timeline */
   activity: (id: string | number) => api.get<unknown[]>(`/orders/${id}/activity`),
+  /** GET /orders/:id/review — review state for this order */
+  getReviewState: (id: string | number) =>
+    api.get<Record<string, unknown>>(`/orders/${id}/review`),
+  /** POST /orders/:id/review — create review for completed order */
+  createReview: (
+    id: string | number,
+    data: { rating: number; comment: string },
+  ) => api.post<Record<string, unknown>>(`/orders/${id}/review`, data),
   /** POST /orders/:id/production-updates — tracking (IP/CD, image_urls[], payment confirm header optional) */
   postProductionUpdate: (
     orderId: string | number,
@@ -710,6 +718,8 @@ export const favoritesApi = {
 export const reviewsApi = {
   listByFactory: (factoryId: number | string) =>
     api.get<unknown[]>(`/factories/${factoryId}/reviews`),
+  summaryByFactory: (factoryId: number | string) =>
+    api.get<Record<string, unknown>>(`/factories/${factoryId}/reviews/summary`),
   create: (factoryId: number | string, data: { rating: number; comment: string }) =>
     api.post<Record<string, unknown>>(`/factories/${factoryId}/reviews`, data),
   reply: (reviewId: number | string, data: { reply: string }) =>
@@ -817,6 +827,7 @@ export interface RFQCreateInput {
   title: string;
   description: string;
   category_id: number;
+  sub_category_id?: number;
   qty: number;
   unit: string;
   unit_id?: number;

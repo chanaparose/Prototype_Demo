@@ -30,7 +30,7 @@ export function RFQDetailMobile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { rfq, relatedOrder, loading, error, refetch } = useRfqDetail(id);
-  const [specsOpen, setSpecsOpen] = useState(false);
+  const [specsOpen, setSpecsOpen] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
 

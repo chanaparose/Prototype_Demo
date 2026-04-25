@@ -133,7 +133,7 @@ export function FactoryRfqDetailPage() {
   );
 
   const imageUrls = useMemo(() => {
-    const urls = Array.isArray(rfqBody.image_urls) ? rfqBody.image_urls : rfqBody.reference_images;
+    const urls = Array.isArray(rfqBody.reference_images) ? rfqBody.reference_images : rfqBody.image_urls;
     const out: string[] = [];
     if (Array.isArray(urls)) {
       for (const u of urls) {
@@ -144,8 +144,15 @@ export function FactoryRfqDetailPage() {
   }, [rfqBody]);
 
   const budgetPerPiece = useMemo(() => {
-    const n = Number(rfqBody.budget_per_piece ?? 0);
-    return Number.isFinite(n) ? n : null;
+    const totalBudget = Number(
+      rfqBody.target_unit_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
+    );
+    const qty = Number(rfqBody.quantity ?? 0);
+    if (Number.isFinite(totalBudget) && totalBudget > 0 && Number.isFinite(qty) && qty > 0) {
+      return totalBudget / qty;
+    }
+    const legacy = Number(rfqBody.budget_per_piece ?? 0);
+    return Number.isFinite(legacy) && legacy > 0 ? legacy : null;
   }, [rfqBody]);
 
   const quantity = useMemo(() => {
@@ -154,9 +161,13 @@ export function FactoryRfqDetailPage() {
   }, [rfqBody]);
 
   const revenueApprox = useMemo(() => {
+    const totalBudget = Number(
+      rfqBody.target_unit_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
+    );
+    if (Number.isFinite(totalBudget) && totalBudget > 0) return totalBudget;
     if (budgetPerPiece == null || quantity == null) return null;
     return budgetPerPiece * quantity;
-  }, [budgetPerPiece, quantity]);
+  }, [rfqBody, budgetPerPiece, quantity]);
 
   const competitorCount = useMemo(() => {
     if (fid == null) return quotes.length;
@@ -415,12 +426,9 @@ export function FactoryRfqDetailPage() {
                 <span className="text-gray-500">วัสดุ/เกรด: </span>
                 {String(rfqBody.material_grade ?? '-')}
               </p>
+              
               <p>
-                <span className="text-gray-500">สเปกบรรจุภัณฑ์: </span>
-                {String(rfqBody.packaging_spec ?? '-')}
-              </p>
-              <p>
-                <span className="text-gray-500">ราคาเป้าหมาย/ชิ้น: </span>
+                <span className="text-gray-500">งบประมาณรวม: </span>
                 {rfqBody.target_unit_price != null ? `${Number(rfqBody.target_unit_price).toLocaleString('th-TH')} บาท` : '-'}
               </p>
               <p>

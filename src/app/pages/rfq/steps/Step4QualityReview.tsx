@@ -55,16 +55,16 @@ export function Step4QualityReview({ draft, setDraft }: Props) {
         className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
       >
         <option value="">รูปแบบตรวจคุณภาพ</option>
-        <option value="self">Self inspection</option>
-        <option value="third_party">Third-party inspection</option>
-        <option value="buyer_onsite">Buyer on-site inspection</option>
+        <option value="self">ตรวจสอบโดยโรงงาน</option>
+        <option value="third_party">ตรวจสอบโดยหน่วยงานภายนอก</option>
+        <option value="buyer_onsite">ผู้ซื้อเข้าตรวจที่โรงงาน</option>
       </select>
 
       <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 space-y-1">
         <p className="font-semibold text-gray-800">สรุปข้อมูลก่อนส่ง</p>
         <p>หัวข้อ: {draft.title || '-'}</p>
         <p>หมวด: {draft.category_id ?? '-'}</p>
-        <p>จำนวน: {draft.qty ?? '-'} {draft.unit || ''}</p>
+        <p>จำนวน: {draft.qty ?? '-'}</p>
         <p>กำหนดส่ง: {draft.required_delivery_date || '-'}</p>
       </div>
     </div>

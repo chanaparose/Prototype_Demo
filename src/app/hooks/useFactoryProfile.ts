@@ -9,7 +9,7 @@ import type {
   IdeaArticle,
 } from '../contexts/DataContext';
 import type { TabId } from '../components/features/factory-profile';
-import { conversationsApi, factoriesApi, frontendApi, showcasesApi } from '../services/api';
+import { conversationsApi, factoriesApi, frontendApi, reviewsApi, showcasesApi } from '../services/api';
 import { normShowcase } from './useShowcases';
 
 function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: Factory | null): Factory {
@@ -124,9 +124,10 @@ export function useFactoryProfile() {
     };
 
     (async () => {
-      const [factRes, frontRes] = await Promise.allSettled([
+      const [factRes, frontRes, summaryRes] = await Promise.allSettled([
         factoriesApi.get(fid),
         frontendApi.getFactory(id),
+        reviewsApi.summaryByFactory(fid),
       ]);
 
       if (cancelled) return;
@@ -264,6 +265,14 @@ export function useFactoryProfile() {
       if (!factory) {
         if (!cancelled) setApi({ status: 'error' });
         return;
+      }
+
+      if (summaryRes.status === 'fulfilled' && summaryRes.value) {
+        const s = summaryRes.value as Record<string, unknown>;
+        const avg = Number(s.average_rating);
+        const count = Number(s.review_count);
+        if (Number.isFinite(avg) && avg >= 0) factory.rating = avg;
+        if (Number.isFinite(count) && count >= 0) factory.reviews = count;
       }
 
       if (!cancelled) {

@@ -17,6 +17,8 @@ import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
+import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
+import { useFavorites } from '../../hooks/useFavorites';
 
 const BRAND = {
   rose: '#E11D48',
@@ -76,6 +78,8 @@ export function PromotionDetailMobile() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId, relatedShowcases } = usePromotionDetailShowcase();
+  const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
+  const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
@@ -118,6 +122,12 @@ export function PromotionDetailMobile() {
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const promo = promoMeta(item.startDate, item.endDate);
   const priceText = formatTHB(item.promoPrice ?? item.basePrice) ?? 'สอบถามราคา';
+  const liked = item ? isLiked(item.id) : false;
+  const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
+  const summary = reviewSummaryQ.data;
+  const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
+  const reviewCount = Number(summary?.review_count ?? factory?.reviews ?? 0);
+  const breakdown = summary?.rating_breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
 
   const handleStartChat = () =>
     void startChat(item.factoryId, {
@@ -163,10 +173,17 @@ export function PromotionDetailMobile() {
         ) : null}
         <h1 className="mt-2 text-[15px] font-medium leading-snug" style={{ color: BRAND.ink }}>{item.title}</h1>
         <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-500">
-          <span className="inline-flex items-center gap-1"><Star className="w-3 h-3 fill-current" style={{ color: BRAND.orange }} /> {Number(factory?.rating ?? 0).toFixed(1)}</span>
-          <span>{factory?.reviews ?? 0} รีวิว</span>
+          <span className="inline-flex items-center gap-1"><Star className="w-3 h-3 fill-current" style={{ color: BRAND.orange }} /> {avgRating.toFixed(1)}</span>
+          <span>{reviewCount} รีวิว</span>
           <span>•</span>
-          <span>{item.likes} คนสนใจ</span>
+          <button
+            type="button"
+            onClick={() => void toggleFavorite(item.id)}
+            className="inline-flex items-center gap-1 active:opacity-70"
+          >
+            <Heart className="w-3 h-3" style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }} />
+            {likeCount} คนสนใจ
+          </button>
         </div>
       </div>
 
@@ -216,8 +233,12 @@ export function PromotionDetailMobile() {
 
       <div className="bg-white px-4 py-3">
         <p className="text-[13px] font-bold mb-2" style={{ color: BRAND.ink }}>รายละเอียดสินค้า (Markdown)</p>
-        {markdown ? <MarkdownBody source={markdown} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
-          /> : <p className="text-[12px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>}
+        {markdown ? (
+          <>
+            <MarkdownBody source={markdown} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+            />
+          </>
+        ) : <p className="text-[12px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>}
       </div>
 
       <div className="h-2" style={{ background: '#F5F5F5' }} />
@@ -226,13 +247,14 @@ export function PromotionDetailMobile() {
         <p className="text-[13px] font-bold mb-2" style={{ color: BRAND.ink }}>คะแนนรีวิว</p>
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-[28px] leading-none font-bold" style={{ color: BRAND.orange }}>{Number(factory?.rating ?? 0).toFixed(1)}</p>
-            <p className="text-[11px] text-gray-500 mt-1">{factory?.reviews ?? 0} รีวิว</p>
+            <p className="text-[28px] leading-none font-bold" style={{ color: BRAND.orange }}>{avgRating.toFixed(1)}</p>
+            <p className="text-[11px] text-gray-500 mt-1">{reviewCount} รีวิว</p>
           </div>
           <div className="flex-1 space-y-1.5">
             {[5, 4, 3, 2, 1].map((star) => {
-              const rating = Number(factory?.rating ?? 0);
-              const intensity = Math.max(0, Math.min(100, ((rating - (star - 1)) / 1) * 100));
+              const count = Number(breakdown[String(star)] ?? 0);
+              const intensity =
+                reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
               return (
                 <div key={star} className="flex items-center gap-2">
                   <span className="w-8 text-[10px] text-gray-500">{star}★</span>

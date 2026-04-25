@@ -39,6 +39,110 @@ const guessCategoryIcon = (name: string) => {
   return '📋';
 };
 
+function collectUrlsFromUnknown(input: unknown): string[] {
+  if (input == null) return [];
+  // JSON text support
+  if (typeof input === 'string') {
+    const raw = input.trim();
+    if (!raw) return [];
+    if (raw.startsWith('[') || raw.startsWith('{')) {
+      try {
+        return collectUrlsFromUnknown(JSON.parse(raw));
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+  if (Array.isArray(input)) {
+    const out: string[] = [];
+    for (const item of input) {
+      if (typeof item === 'string') {
+        const u = item.trim();
+        if (u) out.push(u);
+        continue;
+      }
+      if (item && typeof item === 'object') {
+        const o = item as Record<string, unknown>;
+        const u = String(o.url ?? o.image_url ?? o.public_url ?? '').trim();
+        if (u) out.push(u);
+      }
+    }
+    return out;
+  }
+  if (typeof input === 'object') {
+    // sometimes BE may wrap as { images: [...] } or { reference_images: [...] }
+    const o = input as Record<string, unknown>;
+    return [
+      ...collectUrlsFromUnknown(o.images),
+      ...collectUrlsFromUnknown(o.image_urls),
+      ...collectUrlsFromUnknown(o.reference_images),
+    ];
+  }
+  return [];
+}
+
+function numberOrNull(...candidates: unknown[]): number | null {
+  for (const candidate of candidates) {
+    if (candidate == null) continue;
+    const n = Number(candidate);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+function firstNonEmptyString(...candidates: unknown[]): string {
+  for (const candidate of candidates) {
+    const s = String(candidate ?? '').trim();
+    if (s) return s;
+  }
+  return '';
+}
+
+function collectStringArrayFromUnknown(input: unknown): string[] {
+  if (input == null) return [];
+  if (typeof input === 'string') {
+    const raw = input.trim();
+    if (!raw) return [];
+    if (raw.startsWith('[') || raw.startsWith('{')) {
+      try {
+        return collectStringArrayFromUnknown(JSON.parse(raw));
+      } catch {
+        return [raw];
+      }
+    }
+    return [raw];
+  }
+  if (Array.isArray(input)) {
+    return input
+      .map((x) => String(x ?? '').trim())
+      .filter(Boolean);
+  }
+  if (typeof input === 'object') {
+    const o = input as Record<string, unknown>;
+    return [
+      ...collectStringArrayFromUnknown(o.items),
+      ...collectStringArrayFromUnknown(o.values),
+      ...collectStringArrayFromUnknown(o.certifications_required),
+    ];
+  }
+  return [];
+}
+
+function formatDimensionSpec(input: unknown): string {
+  if (!input) return '';
+  if (typeof input === 'string') return input.trim();
+  if (typeof input === 'object') {
+    const o = input as Record<string, unknown>;
+    const l = numberOrNull(o.L, o.l, o.length);
+    const w = numberOrNull(o.W, o.w, o.width);
+    const h = numberOrNull(o.H, o.h, o.height);
+    const u = firstNonEmptyString(o.unit, 'mm');
+    if (l != null && w != null && h != null) return `${l} x ${w} x ${h} ${u}`;
+  }
+  return '';
+}
+
 type RawRfqDetail = {
   images?: unknown[];
   rfq: {
@@ -47,9 +151,11 @@ type RawRfqDetail = {
     category_id: number;
     title: string;
     quantity: number;
-    unit_id: number;
-    budget_per_piece: number;
-    details: string;
+    unit?: string;
+    budget_per_piece?: number; // backward compatibility
+    target_unit_price?: number;
+    details?: string;
+    description?: string;
     address_id: number;
     status: string;
     created_at: string;
@@ -112,6 +218,11 @@ type RawQuotation = {
   shipping_method_id: number;
   status: string;
   create_time: string;
+  validity_days?: number;
+  image_urls?: unknown;
+  shipping_cost?: number;
+  packaging_cost?: number;
+  tooling_mold_cost?: number;
   [key: string]: unknown;
 };
 
@@ -184,12 +295,21 @@ export function useRfqDetail(rfqId: string | undefined) {
       }
 
       // Map to FE type
+      const rExtra = rawRfq as Record<string, unknown>;
+      const quantity = Math.max(0, Math.round(numberOrNull(rawRfq.quantity, rExtra.qty) ?? 0));
+      const budgetPerPiece = numberOrNull(rawRfq.budget_per_piece, rExtra.budgetPerPiece);
+      const budgetTotalExplicit = numberOrNull(
+        rExtra.total_budget,
+        rExtra.target_total_budget,
+        rExtra.budget_total,
+        rExtra.target_unit_price, // FE currently uses this field for "งบประมาณรวม"
+      );
+      const budgetFallback = budgetPerPiece != null ? budgetPerPiece * quantity : 0;
+      const budget = Math.max(0, Math.round(budgetTotalExplicit ?? budgetFallback ?? 0));
       const catName = categoryMap.get(String(rawRfq.category_id)) ?? '';
-      const budget = Math.round(rawRfq.budget_per_piece * rawRfq.quantity);
       const status = mapRfqStatus(rawRfq.status, quotes.length > 0);
       const createdDate = rawRfq.created_at ? rawRfq.created_at.split('T')[0] : '';
 
-      const rExtra = rawRfq as Record<string, unknown>;
       const deadlineRaw = String(
         rExtra.deadline ?? rExtra.target_date ?? rExtra.delivery_deadline ?? '',
       ).trim();
@@ -221,23 +341,64 @@ export function useRfqDetail(rfqId: string | undefined) {
         }
       }
 
-      const imageUrls: string[] = [];
-      const rfqUrls = rawRfq.image_urls;
-      if (Array.isArray(rfqUrls)) {
-        for (const u of rfqUrls) {
-          if (typeof u === 'string' && u.trim()) imageUrls.push(u.trim());
-        }
-      }
-      if (imageUrls.length === 0 && detailPayload && Array.isArray(detailPayload.images)) {
-        for (const img of detailPayload.images) {
-          if (typeof img === 'string' && img) imageUrls.push(img);
-          else if (img && typeof img === 'object') {
-            const o = img as Record<string, unknown>;
-            const u = String(o.url ?? o.image_url ?? '').trim();
-            if (u) imageUrls.push(u);
-          }
-        }
-      }
+      const imageUrls = Array.from(
+        new Set(
+          [
+            ...collectUrlsFromUnknown(rawRecord.reference_images),
+            ...collectUrlsFromUnknown(rawRecord.image_urls),
+            ...collectUrlsFromUnknown(rawRecord.images),
+            ...collectUrlsFromUnknown(payloadRecord?.reference_images),
+            ...collectUrlsFromUnknown(payloadRecord?.image_urls),
+            ...collectUrlsFromUnknown(payloadRecord?.images),
+            ...collectUrlsFromUnknown(payloadRecord?.rfq),
+          ].filter((u) => typeof u === 'string' && u.trim() !== ''),
+        ),
+      ).slice(0, 5);
+
+      const materialGrade = firstNonEmptyString(rExtra.material_grade, rExtra.materialGrade);
+      const tolerance = firstNonEmptyString(rExtra.tolerance);
+      const colorFinish = firstNonEmptyString(rExtra.color_finish, rExtra.colorFinish);
+      const dimensionSpec = formatDimensionSpec(rExtra.dimension_spec ?? rExtra.dimensionSpec);
+      const weightTargetG = numberOrNull(rExtra.weight_target_g, rExtra.weightTargetG);
+      const packagingSpec = firstNonEmptyString(rExtra.packaging_spec, rExtra.packagingSpec);
+      const targetLeadTimeDaysRaw = numberOrNull(
+        rExtra.target_lead_time_days,
+        rExtra.target_days,
+        rExtra.lead_time_target,
+        rExtra.customer_lead_days,
+        rExtra.delivery_days,
+      );
+      const targetLeadTimeDays =
+        targetLeadTimeDaysRaw != null && targetLeadTimeDaysRaw > 0
+          ? Math.round(targetLeadTimeDaysRaw)
+          : undefined;
+      const requiredDeliveryDate = firstNonEmptyString(
+        rExtra.required_delivery_date,
+        rExtra.requiredDeliveryDate,
+        rExtra.target_date,
+        rExtra.delivery_deadline,
+      );
+      const normalizedRequiredDeliveryDate =
+        requiredDeliveryDate && requiredDeliveryDate.includes('T')
+          ? requiredDeliveryDate.split('T')[0]
+          : requiredDeliveryDate;
+      const description = firstNonEmptyString(rExtra.details, rExtra.description);
+      const certificationsRequired = Array.from(
+        new Set(
+          collectStringArrayFromUnknown(
+            rExtra.certifications_required ?? rExtra.certificationsRequired,
+          ),
+        ),
+      );
+      const sampleRequired = Boolean(rExtra.sample_required ?? rExtra.sampleRequired);
+      const sampleQtyRaw = numberOrNull(rExtra.sample_qty, rExtra.sampleQty);
+      const sampleQty =
+        sampleQtyRaw != null && sampleQtyRaw > 0 ? Math.round(sampleQtyRaw) : undefined;
+      const inspectionType = firstNonEmptyString(
+        rExtra.inspection_type,
+        rExtra.inspectionType,
+      );
+      const deliveryAddress = summarizeRfqAddress(rawRecord);
 
       const offers: RfqOffer[] = quotes.map((q) => ({
         id: String(q.quote_id),
@@ -258,10 +419,29 @@ export function useRfqDetail(rfqId: string | undefined) {
         quotationDetail: {
           quote_id: q.quote_id,
           price_per_piece: q.price_per_piece,
-          mold_cost: q.mold_cost,
+          mold_cost: Number(q.tooling_mold_cost ?? q.mold_cost ?? 0),
           lead_time_days: q.lead_time_days,
-          shipping_method: String(q.shipping_method_id),
+          shipping_method:
+            shippingMethodName || `วิธีจัดส่ง #${String(q.shipping_method_id ?? '-')}`,
+          image_urls: collectUrlsFromUnknown(q.image_urls),
+          sample_cost: 0,
           status: q.status === 'AC' ? 'Accepted' : q.status === 'RJ' ? 'Rejected' : 'Pending',
+          valid_until:
+            Number.isFinite(Number(q.validity_days)) &&
+            Number(q.validity_days) > 0 &&
+            String(q.create_time ?? '').trim()
+              ? (() => {
+                  const d = new Date(String(q.create_time));
+                  if (Number.isNaN(d.getTime())) return '';
+                  d.setDate(d.getDate() + Number(q.validity_days));
+                  return d.toISOString().slice(0, 10);
+                })()
+              : '',
+          payment_condition:
+            'ชำระตาม milestone ที่ตกลงกับโรงงาน',
+          material_detail:
+            'ดูรายละเอียดวัสดุใน RFQ/ใบเสนอราคา',
+          certifications: [],
         },
       }));
 
@@ -287,21 +467,35 @@ export function useRfqDetail(rfqId: string | undefined) {
         status,
         offerCount: quotes.length,
         budget,
-        quantity: rawRfq.quantity,
-        material: '',
+        quantity,
+        material: materialGrade || '',
         deadline: deadline || '',
         createdAt: createdDate,
-        description: rawRfq.details ?? '',
+        description,
         imageUrls,
         offers,
         subCategoryName: subCategoryName || undefined,
         subCategoryId,
         shippingMethodName: shippingMethodName || undefined,
+        deliveryAddress: deliveryAddress || undefined,
+        materialGrade: materialGrade || undefined,
+        tolerance: tolerance || undefined,
+        colorFinish: colorFinish || undefined,
+        dimensionSpec: dimensionSpec || undefined,
+        weightTargetG: weightTargetG != null && weightTargetG > 0 ? weightTargetG : undefined,
+        packagingSpec: packagingSpec || undefined,
+        targetLeadTimeDays,
+        requiredDeliveryDate: normalizedRequiredDeliveryDate || undefined,
+        certificationsRequired:
+          certificationsRequired.length > 0 ? certificationsRequired : undefined,
+        sampleRequired,
+        sampleQty,
+        inspectionType: inspectionType || undefined,
       };
 
       const shipIdNum = Number(shipIdRaw ?? 0);
       setShippingMethodId(Number.isFinite(shipIdNum) && shipIdNum > 0 ? shipIdNum : null);
-      setAddressSummary(summarizeRfqAddress(rawRecord));
+      setAddressSummary(deliveryAddress);
       const td = Number(
         rExtra.target_days ??
           rExtra.lead_time_target ??

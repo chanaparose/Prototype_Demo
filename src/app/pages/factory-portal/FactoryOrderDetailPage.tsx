@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ChevronLeft, CheckCircle2, Loader2, Lock, Flag } from 'lucide-react';
+import { ChevronLeft, Flag } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { QuoteNestedDTO, RfqNestedDTO } from '../../types/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -192,7 +192,6 @@ export function FactoryOrderDetailPage() {
   const status = String(order.status ?? '').toUpperCase();
   const isCompleted = status === 'CP' || status === 'CN';
   const totalSteps = displayMerged.length;
-  const doneSteps = displayMerged.filter((m) => m.update.status === 'CD').length;
 
   if (!id) return null;
 
@@ -358,83 +357,6 @@ export function FactoryOrderDetailPage() {
                 <p className="text-sm text-white/50">กำลังโหลดขั้นตอน…</p>
               )}
             </section>
-
-            {/* ── 6-step progress chain ── */}
-            {displayMerged.length > 0 ? (
-              <section className="rounded-2xl bg-[#1F2340] border border-[#2A3158] p-4 text-white">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs text-white/60">ความคืบหน้า</p>
-                  <p className="text-xs font-semibold text-[#CBC5FF]">
-                    {doneSteps}/{totalSteps} ขั้นตอน
-                  </p>
-                </div>
-
-                {/* Progress bar */}
-                <div className="h-1.5 bg-[#2A3158] rounded-full overflow-hidden mb-4">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: totalSteps > 0 ? `${Math.round((doneSteps / totalSteps) * 100)}%` : '0%',
-                      background: 'linear-gradient(90deg, #6D5EF8, #A238FF)',
-                    }}
-                  />
-                </div>
-
-                {/* Step chain */}
-                <ol className="space-y-0">
-                  {displayMerged.map((m, i) => {
-                    const state = derivedStates[i];
-                    const isLast = i === merged.length - 1;
-                    const isCurrent = i === nextStepIdx;
-                    return (
-                      <li key={m.template.step_code || m.template.step_id} className="flex gap-3">
-                        {/* Spine */}
-                        <div className="flex flex-col items-center">
-                          <StepDot state={state} />
-                          {!isLast ? (
-                            <div
-                              className={`w-0.5 flex-1 my-0.5 rounded-full min-h-[18px] ${
-                                state === 'completed' ? 'bg-emerald-600' : 'bg-[#2A3158]'
-                              }`}
-                            />
-                          ) : null}
-                        </div>
-                        {/* Label */}
-                        <div className={`pb-3 min-w-0 flex-1 ${isLast ? 'pb-0' : ''}`}>
-                          <p
-                            className={`text-xs leading-tight truncate font-medium ${
-                              isCurrent
-                                ? 'text-[#CBC5FF]'
-                                : state === 'completed'
-                                  ? 'text-emerald-400'
-                                  : 'text-white/35'
-                            }`}
-                          >
-                            {i + 1}. {m.template.step_name_th}
-                          </p>
-                          {isCurrent && m.update.status === 'IP' ? (
-                            <p className="text-[10px] text-[#6D5EF8] mt-0.5">กำลังดำเนินการ…</p>
-                          ) : null}
-                        </div>
-                        {/* CTA shortcut */}
-                        {isCurrent && !isCompleted ? (
-                          <button
-                            type="button"
-                        onClick={() => {
-                          if (!factoryCanUpdateStep(m)) return;
-                          setDrawerStep(m);
-                        }}
-                        className="shrink-0 self-start text-[11px] font-semibold text-[#6D5EF8] hover:text-[#A238FF] mt-0.5"
-                      >
-                        อัปเดต →
-                          </button>
-                        ) : null}
-                      </li>
-                    );
-                  })}
-                </ol>
-              </section>
-            ) : null}
           </aside>
         </div>
       )}
@@ -463,43 +385,6 @@ function InfoCell({ label, value }: { label: string; value: string }) {
 }
 
 type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
-
-function StepDot({ state }: { state: StepState }) {
-  if (state === 'completed') {
-    return (
-      <div className="w-5 h-5 shrink-0 rounded-full bg-emerald-600 flex items-center justify-center">
-        <CheckCircle2 size={12} className="text-white" />
-      </div>
-    );
-  }
-  if (state === 'active') {
-    return (
-      <div className="w-5 h-5 shrink-0 rounded-full bg-[#6D5EF8] flex items-center justify-center">
-        <Loader2 size={11} className="text-white animate-spin" style={{ animationDuration: '1.6s' }} />
-      </div>
-    );
-  }
-  if (state === 'blocked') {
-    return (
-      <div className="w-5 h-5 shrink-0 rounded-full bg-amber-600 flex items-center justify-center">
-        <span className="text-white text-[9px] font-bold">!</span>
-      </div>
-    );
-  }
-  if (state === 'rejected') {
-    return (
-      <div className="w-5 h-5 shrink-0 rounded-full bg-red-700 flex items-center justify-center">
-        <span className="text-white text-[9px] font-bold">✕</span>
-      </div>
-    );
-  }
-  // upcoming
-  return (
-    <div className="w-5 h-5 shrink-0 rounded-full border border-[#3A4475] bg-[#252B4D] flex items-center justify-center">
-      <Lock size={9} className="text-white/30" />
-    </div>
-  );
-}
 
 function StepStatusBadge({ state }: { state: StepState }) {
   const map: Record<StepState, { label: string; cls: string }> = {

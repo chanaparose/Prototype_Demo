@@ -45,7 +45,17 @@ export function useSubCategoriesByCategories(categoryIds: number[]) {
   const isError = queries.some((q) => q.isError);
 
   queries.forEach((q, idx) => {
-    if (q.data) byCategory.set(categoryIds[idx], q.data);
+    if (!q.data) return;
+    const cid = categoryIds[idx];
+    const raw = (Array.isArray(q.data) ? q.data : []) as unknown[];
+    const normalized = raw
+      .map((r) => toOption((r ?? {}) as Row, cid))
+      .filter((x): x is SubCategoryOption => x != null);
+    const uniq = new Map<number, SubCategoryOption>();
+    for (const item of normalized) {
+      if (!uniq.has(item.id)) uniq.set(item.id, item);
+    }
+    byCategory.set(cid, [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th')));
   });
 
   const flat: SubCategoryOption[] = [];

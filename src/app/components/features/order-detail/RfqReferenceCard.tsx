@@ -26,7 +26,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props)
         <dl className="grid grid-cols-2 gap-2 text-xs">
           <MetaRow icon={<Package size={12} />} label="จำนวน" value={`${rfq.quantity.toLocaleString()} ${rfq.unit_name}`} />
           <MetaRow icon={<Tag size={12} />} label="หมวดหมู่" value={rfq.category_name} />
-          <MetaRow icon={<DollarSign size={12} />} label="งบประมาณ/ชิ้น" value={`฿${rfq.budget_per_piece.toFixed(2)}`} />
+          
           {rfq.deadline_date ? (
             <MetaRow
               icon={<Calendar size={12} />}

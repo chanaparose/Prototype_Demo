@@ -169,6 +169,22 @@ export type Rfq = {
   subCategoryId?: number;
   /** จาก rfqs.shipping_method_name หรือ master */
   shippingMethodName?: string;
+  /** สรุปที่อยู่จัดส่งจาก rfq.address หรือฟิลด์ summary */
+  deliveryAddress?: string;
+  /** สเปกจาก create-rfq step 2 */
+  materialGrade?: string;
+  tolerance?: string;
+  colorFinish?: string;
+  dimensionSpec?: string;
+  weightTargetG?: number;
+  packagingSpec?: string;
+  /** สเปกเชิงพาณิชย์ / quality */
+  targetLeadTimeDays?: number;
+  requiredDeliveryDate?: string;
+  certificationsRequired?: string[];
+  sampleRequired?: boolean;
+  sampleQty?: number;
+  inspectionType?: 'self' | 'third_party' | 'buyer_onsite' | string;
 };
 
 export type OrderTimeline = {
@@ -376,7 +392,17 @@ function extractRfqImageUrls(apiRoot: Record<string, unknown>, row: Record<strin
     apiRoot.rfq && typeof apiRoot.rfq === 'object' && !Array.isArray(apiRoot.rfq)
       ? (apiRoot.rfq as Record<string, unknown>)
       : null;
-  for (const src of [row.images, apiRoot.images, nested?.images]) {
+  for (const src of [
+    row.reference_images,
+    nested?.reference_images,
+    apiRoot.reference_images,
+    row.image_urls, // backward compatibility
+    nested?.image_urls,
+    apiRoot.image_urls,
+    row.images,
+    apiRoot.images,
+    nested?.images,
+  ]) {
     const urls = parseRfqImageList(src);
     if (urls.length > 0) return urls;
   }
@@ -402,9 +428,12 @@ export function normalizeRfqRecord(
   const offerCount = Number(row.offer_count ?? row.offerCount ?? offers.length);
   const effCount = Math.max(offerCount, offers.length);
   const status = mapApiRfqStatus(String(row.status ?? ''), effCount);
-  const budgetPerPiece = Number(row.budget_per_piece ?? 0);
+  const totalBudget = Number(
+    row.target_unit_price ?? row.budget_total ?? row.total_budget ?? row.budget ?? 0,
+  );
+  const budgetPerPiece = Number(row.budget_per_piece ?? 0); // backward compatibility
   const budget =
-    Number(row.budget ?? row.total_budget ?? 0) ||
+    (Number.isFinite(totalBudget) && totalBudget > 0 ? totalBudget : 0) ||
     (budgetPerPiece > 0 && qty > 0 ? budgetPerPiece * qty : 0);
   return {
     id: String(row.rfq_id ?? row.id ?? ''),
