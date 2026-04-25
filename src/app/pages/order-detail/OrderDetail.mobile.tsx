@@ -29,6 +29,7 @@ function OrderDetailMobileBody() {
     lockContextMerged,
     rfqSummary,
     rfq,
+    quotation,
     refetchAll,
   } = useOrderDetail();
 
@@ -146,7 +147,7 @@ function OrderDetailMobileBody() {
 
           {activeSection === 'overview' && (
             <>
-              {rfq ? <RfqReferenceCard rfq={rfq} variant="accordion" /> : null}
+              {rfq ? <RfqReferenceCard rfq={rfq} variant="accordion" quotation={quotation} /> : null}
               <OrderOverviewSection
                 order={{
                   totalAmount: order.totalAmount,

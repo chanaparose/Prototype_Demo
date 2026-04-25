@@ -23,9 +23,9 @@ export type PaymentScheduleItem = {
 };
 
 export const ORDER_API_STATUS_LABEL_TH: Record<string, string> = {
-  PP: 'รอชำระมัดจำ',
+  PP: 'รอชำระเงิน',
   PE: 'หมดกำหนดชำระ',
-  PD: 'ชำระมัดจำแล้ว',
+  PD: 'ชำระเงินแล้ว รอเริ่มผลิต',
   PR: 'กำลังผลิต',
   QC: 'ตรวจสอบคุณภาพ',
   SH: 'จัดส่งแล้ว',
@@ -59,43 +59,23 @@ export function parsePaymentSchedule(row: Record<string, unknown>): PaymentSched
   }
 
   const total = Number(row.total_amount ?? 0);
-  const dep = Number(row.deposit_amount ?? 0);
   if (!Number.isFinite(total) || total <= 0) return [];
 
   const apiSt = String(row.status ?? '').toUpperCase();
-  const depositPaid = apiSt !== 'PP' && apiSt !== 'PE';
-  const d1 = dep > 0 ? dep : Math.round(total * 0.3);
-  const d2 = Math.max(0, Math.round((total - d1) * (40 / 70)));
-  const d3 = Math.max(0, total - d1 - d2);
+  const paid = apiSt !== 'PP' && apiSt !== 'PE';
+  const overdue = apiSt === 'PE';
   const due = row.deposit_due_date != null ? String(row.deposit_due_date) : null;
 
+  // Business rule: 100% upfront payment — single FULL_PAYMENT stage.
   return [
     {
-      stage: 'DEPOSIT',
-      percent: Math.round((d1 / total) * 100) || 30,
-      amount: d1,
-      status: depositPaid ? 'PAID' : 'PENDING',
+      stage: 'FULL_PAYMENT',
+      percent: 100,
+      amount: total,
+      status: overdue ? 'OVERDUE' : paid ? 'PAID' : 'PENDING',
       due_date: due,
-      paid_at: depositPaid ? String(row.updated_at ?? row.created_at ?? '') || null : null,
+      paid_at: paid ? String(row.updated_at ?? row.created_at ?? '') || null : null,
       triggered_by_step: null,
-    },
-    {
-      stage: 'PRODUCTION',
-      percent: Math.round((d2 / total) * 100) || 40,
-      amount: d2,
-      status: 'LOCKED',
-      due_date: null,
-      paid_at: null,
-      triggered_by_step: 'PRODUCTION',
-    },
-    {
-      stage: 'DELIVERY',
-      percent: Math.round((d3 / total) * 100) || 30,
-      amount: d3,
-      status: 'LOCKED',
-      due_date: null,
-      paid_at: null,
-      triggered_by_step: 'READY_TO_SHIP',
     },
   ];
 }
@@ -123,17 +103,17 @@ export function parseNextAction(
   const u = String(apiStatus ?? '').toUpperCase();
   if (u !== 'PP' && u !== 'PE') return null;
   const sched = parsePaymentSchedule(row);
-  const dep = sched.find((s) => s.stage === 'DEPOSIT');
-  if (!dep) return null;
-  const due = dep.due_date ?? '';
+  const fullPay = sched.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');
+  if (!fullPay) return null;
+  const due = fullPay.due_date ?? '';
   return {
     actor: 'CUSTOMER',
-    type: 'PAY_DEPOSIT',
-    amount: dep.amount,
+    type: 'PAY_FULL_AMOUNT',
+    amount: fullPay.amount,
     currency: 'THB',
     due_date: due,
-    cta_url: `/orders/${orderId}/payment?stage=deposit`,
-    cta_label_th: 'ชำระเงินมัดจำ',
+    cta_url: `/orders/${orderId}/payment?stage=full`,
+    cta_label_th: 'ชำระเงินเต็มจำนวน',
   };
 }
 
@@ -142,16 +122,16 @@ export function buildFallbackLockContext(
   row: Record<string, unknown>,
   schedule: PaymentScheduleItem[],
 ): ProductionLockContext {
-  const dep = schedule.find((s) => s.stage === 'DEPOSIT');
-  const amount = (dep?.amount ?? Number(row.deposit_amount ?? 0)) || 0;
+  const fullPay = schedule.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');
+  const amount = (fullPay?.amount ?? Number(row.total_amount ?? row.deposit_amount ?? 0)) || 0;
   const deposit_due_date =
-    (dep?.due_date ?? (row.deposit_due_date != null ? String(row.deposit_due_date) : '')) || '';
+    (fullPay?.due_date ?? (row.deposit_due_date != null ? String(row.deposit_due_date) : '')) || '';
   return {
     deposit_amount: amount,
     deposit_currency: 'THB',
     deposit_due_date: deposit_due_date || undefined,
-    deposit_percent: dep?.percent,
-    payment_url: `/orders/${orderId}/payment?stage=deposit`,
+    deposit_percent: fullPay?.percent ?? 100,
+    payment_url: `/orders/${orderId}/payment?stage=full`,
   };
 }
 

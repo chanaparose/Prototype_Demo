@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Package, Tag, DollarSign, Calendar, Clock, Wrench } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import {
@@ -136,6 +136,9 @@ export function FactoryOrderDetailPage() {
   const rfqObj = (order.rfq && typeof order.rfq === 'object'
     ? (order.rfq as Record<string, unknown>)
     : null);
+  const quoteObj = (order.quotation && typeof order.quotation === 'object'
+    ? (order.quotation as Record<string, unknown>)
+    : null);
   const title = String(
     rfqObj?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id}`,
   );
@@ -179,6 +182,51 @@ export function FactoryOrderDetailPage() {
       {!loading ? (
         <div className={twoCol}>
           <div className="space-y-4 mb-4 lg:mb-0 min-w-0">
+
+            {/* RFQ Spec */}
+            {rfqObj ? (
+              <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-3">
+                <h2 className="font-bold text-gray-900 text-sm">รายละเอียดใบขอราคา</h2>
+                {rfqObj.details ? (
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{String(rfqObj.details)}</p>
+                ) : null}
+                <dl className="grid grid-cols-2 gap-2 text-xs">
+                  <SpecRow icon={<Package size={12} />} label="จำนวน"
+                    value={`${Number(rfqObj.quantity ?? 0).toLocaleString('th-TH')} ${String(rfqObj.unit_name ?? 'ชิ้น')}`} />
+                  <SpecRow icon={<Tag size={12} />} label="หมวดหมู่"
+                    value={String(rfqObj.category_name ?? '—')} />
+                  <SpecRow icon={<DollarSign size={12} />} label="งบประมาณ/ชิ้น"
+                    value={`฿${Number(rfqObj.budget_per_piece ?? 0).toFixed(2)}`} />
+                  {rfqObj.deadline_date ? (
+                    <SpecRow icon={<Calendar size={12} />} label="กำหนดส่ง"
+                      value={new Date(String(rfqObj.deadline_date)).toLocaleDateString('th-TH')} />
+                  ) : null}
+                </dl>
+              </section>
+            ) : null}
+
+            {/* Quotation Spec */}
+            {quoteObj ? (
+              <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-3">
+                <h2 className="font-bold text-gray-900 text-sm">รายละเอียดใบเสนอราคา (ที่คุณส่ง)</h2>
+                <dl className="grid grid-cols-2 gap-2 text-xs">
+                  <SpecRow icon={<DollarSign size={12} />} label="ราคา/ชิ้น"
+                    value={`฿${Number(quoteObj.price_per_piece ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}`} />
+                  {Number(quoteObj.mold_cost ?? 0) > 0 ? (
+                    <SpecRow icon={<Wrench size={12} />} label="ค่าแม่พิมพ์"
+                      value={`฿${Number(quoteObj.mold_cost).toLocaleString('th-TH')}`} />
+                  ) : null}
+                  <SpecRow icon={<Clock size={12} />} label="ระยะเวลาผลิต"
+                    value={`${Number(quoteObj.lead_time_days ?? 0)} วัน`} />
+                  {rfqObj ? (
+                    <SpecRow icon={<DollarSign size={12} />} label="มูลค่ารวม"
+                      value={`฿${(Number(quoteObj.price_per_piece ?? 0) * Number(rfqObj.quantity ?? 0)).toLocaleString('th-TH', { minimumFractionDigits: 2 })}`} />
+                  ) : null}
+                </dl>
+              </section>
+            ) : null}
+
+            {/* Order status */}
             <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4">
               <p className="text-xs sm:text-sm text-gray-600 mb-3">
                 สถานะปัจจุบัน (ลำดับบังคับ PR → QC → SH)
@@ -283,6 +331,15 @@ export function FactoryOrderDetailPage() {
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function SpecRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-gray-50 border border-gray-100 px-2.5 py-2">
+      <dt className="text-[10px] text-gray-400 flex items-center gap-1 mb-0.5">{icon}{label}</dt>
+      <dd className="text-gray-900 font-semibold text-xs truncate">{value}</dd>
     </div>
   );
 }
