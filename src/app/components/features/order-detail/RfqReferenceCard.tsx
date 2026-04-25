@@ -5,14 +5,14 @@ import { OrderPhotoGallery } from './OrderPhotoGallery';
 
 interface Props {
   rfq: RfqNestedDTO;
-  variant: 'accordion' | 'panel';
+  variant?: 'accordion';
   defaultOpen?: boolean;
   /** Optional quotation details to show alongside the RFQ spec */
   quotation?: QuoteNestedDTO | null;
 }
 
-export function RfqReferenceCard({ rfq, variant, defaultOpen = false, quotation }: Props) {
-  const [open, setOpen] = useState(variant === 'panel' ? true : defaultOpen);
+export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props) {
+  const [open, setOpen] = useState(defaultOpen);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   const body = (
@@ -89,17 +89,6 @@ export function RfqReferenceCard({ rfq, variant, defaultOpen = false, quotation 
       <OrderPhotoGallery photoUrl={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
-
-  if (variant === 'panel') {
-    return (
-      <section className="rounded-2xl border border-gray-100 bg-white p-4 sticky top-4">
-        <h3 className="text-sm text-gray-900 mb-3" style={{ fontWeight: 700 }}>
-          ใบขอราคาต้นทาง
-        </h3>
-        {body}
-      </section>
-    );
-  }
 
   return (
     <section className="rounded-2xl border border-gray-100 bg-white">

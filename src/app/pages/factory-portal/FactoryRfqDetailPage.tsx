@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
+import type { QuotationRow } from '../../types/rfq';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { rfqsApi, quotationsApi, conversationsApi, messagesApi, categoriesApi } from '../../services/api';
 import { findOrCreateConversation, openChatSession } from '../../utils/openChatSession';
@@ -14,7 +15,11 @@ import { ShippingMethodLockedField } from '../../components/factory/ShippingMeth
 import { QuotationCreateForm, type QuotationCreateFormHandle } from '../../components/factory/QuotationCreateForm';
 import { summarizeRfqAddress } from '../../utils/rfqAddressSummary';
 
-type QuoteRow = Record<string, unknown>;
+type QuoteRow = QuotationRow & {
+  factoryId?: number | string;
+  id?: number | string;
+  mold_cost?: number | string;
+};
 
 function quoteFid(q: QuoteRow): number | null {
   const n = Number(q.factory_id ?? q.factoryId);
@@ -56,7 +61,7 @@ export function FactoryRfqDetailPage() {
       const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
       setRfqTitle(String(rfq.title ?? ''));
       setRfqBody(rfq);
-      setQuotes(Array.isArray(qList) ? (qList as QuoteRow[]) : []);
+      setQuotes(Array.isArray(qList) ? qList : []);
       const sidCheck = Number(rfq.shipping_method_id ?? 0);
       if (!Number.isFinite(sidCheck) || sidCheck <= 0) {
         console.warn('[FactoryRfqDetail] RFQ missing shipping_method_id', { rfq_id: rfq.rfq_id ?? id });
@@ -474,12 +479,21 @@ export function FactoryRfqDetailPage() {
                   myQuote
                     ? {
                         price_per_piece: String(myQuote.price_per_piece ?? ''),
-                        tooling_mold_cost: String(myQuote.tooling_mold_cost ?? (myQuote as Record<string, unknown>).mold_cost ?? ''),
+                        tooling_mold_cost: String(myQuote.tooling_mold_cost ?? myQuote.mold_cost ?? ''),
                         shipping_cost: String(myQuote.shipping_cost ?? ''),
                         packaging_cost: String(myQuote.packaging_cost ?? ''),
                         lead_time_days: String(myQuote.lead_time_days ?? ''),
                         validity_days: String(myQuote.validity_days ?? '14'),
                       }
+                    : undefined
+                }
+                initialImageUrls={
+                  myQuote
+                    ? (() => {
+                        const urls = (myQuote as Record<string, unknown>).image_urls;
+                        if (Array.isArray(urls)) return urls.filter((u): u is string => typeof u === 'string');
+                        return [];
+                      })()
                     : undefined
                 }
                 submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}

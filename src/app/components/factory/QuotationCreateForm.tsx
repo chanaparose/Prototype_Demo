@@ -1,8 +1,8 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { Send, Save, Loader2 } from 'lucide-react';
+import { Send, Save, Loader2, ImagePlus, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
-import { rfqsApi, quotationsApi, quotationApi } from '../../services/api';
+import { rfqsApi, quotationsApi, quotationApi, mediaApi } from '../../services/api';
 import type { QuotationBreakdown } from '../../services/api';
 import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { ShippingMethodLockedField } from './ShippingMethodLockedField';
@@ -37,6 +37,7 @@ interface Props {
   lockedShippingMethodId: number;
   rfqQuantity?: number | null;        // จำนวนที่ลูกค้าขอ — ใช้คำนวณ preview
   initial?: Partial<QuotationCreateFormValues>;
+  initialImageUrls?: string[];        // รูปภาพที่บันทึกไว้แล้ว (pre-fill)
   patchQuotationId?: string | null;   // PATCH mode
   submitLabel?: string;
   onSubmitted?: () => void | Promise<void>;
@@ -61,6 +62,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       lockedShippingMethodId,
       rfqQuantity = null,
       initial,
+      initialImageUrls,
       patchQuotationId,
       submitLabel = 'ส่งใบเสนอราคา',
       onSubmitted,
@@ -153,6 +155,38 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       };
     }, [priceWatch, shippingWatch, packagingWatch, moldWatch, rfqId, rfqQuantity]);
 
+    /* ── Image upload ── */
+    const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      setImageUrls(initialImageUrls ?? []);
+    }, [initialImageUrls]);
+
+    const handleImageFiles = useCallback(async (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      setUploadingImage(true);
+      try {
+        const uploaded = await Promise.all(
+          Array.from(files).map((f) => mediaApi.upload(f).then((r) => r.url as string)),
+        );
+        setImageUrls((prev) => [...prev, ...uploaded]);
+        // mark form dirty so submit button enables
+        form.setValue('price_per_piece', form.getValues('price_per_piece'), { shouldDirty: true });
+      } catch {
+        // ignore upload errors silently — user sees nothing uploaded
+      } finally {
+        setUploadingImage(false);
+        if (imageInputRef.current) imageInputRef.current.value = '';
+      }
+    }, [form]);
+
+    const removeImage = useCallback((url: string) => {
+      setImageUrls((prev) => prev.filter((u) => u !== url));
+      form.setValue('price_per_piece', form.getValues('price_per_piece'), { shouldDirty: true });
+    }, [form]);
+
     /* ── Submit ── */
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -188,6 +222,8 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           lead_time_days: leadN,
           validity_days: Number(v.validity_days) || 14,
           shipping_method_id: lockedShippingMethodId,
+          image_urls: imageUrls,
+          reason: 'อัปเดตใบเสนอราคา', // required by PATCH endpoint
         };
         if (patchQuotationId) {
           await quotationsApi.patch(patchQuotationId, body);
@@ -203,7 +239,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       } finally {
         setSaving(false);
       }
-    }, [readOnly, form, rfqId, factoryId, lockedShippingMethodId, patchQuotationId, qc, onSubmitted]);
+    }, [readOnly, form, rfqId, factoryId, lockedShippingMethodId, patchQuotationId, qc, onSubmitted, imageUrls]);
 
     /* ── Render ── */
     return (
@@ -322,7 +358,62 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           hint="วิธีส่งถูกล็อกตาม RFQ ของลูกค้า"
         />
 
-        {/* ── 5. Live Breakdown ── */}
+        {/* ── 5. รูปภาพประกอบใบเสนอราคา ── */}
+        {!readOnly ? (
+          <div>
+            <p className="text-xs font-semibold text-gray-600 mb-2">รูปภาพประกอบ (ถ้ามี)</p>
+            {/* Preview grid */}
+            {imageUrls.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                {imageUrls.map((url) => (
+                  <div key={url} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(url)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
+                    >
+                      <XIcon size={10} className="text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => void handleImageFiles(e.target.files)}
+            />
+            <button
+              type="button"
+              disabled={uploadingImage}
+              onClick={() => imageInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 hover:border-violet-400 hover:text-violet-600 disabled:opacity-50"
+            >
+              {uploadingImage ? (
+                <><Loader2 size={13} className="animate-spin" />กำลังอัปโหลด…</>
+              ) : (
+                <><ImagePlus size={13} />เพิ่มรูปภาพ</>
+              )}
+            </button>
+          </div>
+        ) : imageUrls.length > 0 ? (
+          <div>
+            <p className="text-xs font-semibold text-gray-600 mb-2">รูปภาพประกอบ</p>
+            <div className="grid grid-cols-3 gap-2">
+              {imageUrls.map((url) => (
+                <div key={url} className="aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {/* ── 7. Live Breakdown ── */}
         {(preview || previewLoading) && rfqQuantity && rfqQuantity > 0 ? (
           <div className="rounded-xl border border-violet-100 bg-violet-50/60 p-3 space-y-1.5">
             <div className="flex items-center justify-between mb-1">
@@ -345,7 +436,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 {preview.tooling_mold_cost > 0 && (
                   <Row label="ค่าแม่พิมพ์" value={`฿${fmt(preview.tooling_mold_cost)}`} />
                 )}
-                <Row label={`VAT ${(preview.vat_rate * 100).toFixed(0)}%`} value={`฿${fmt(preview.vat_amount)}`} />
+                <Row label={`VAT ${preview.vat_rate.toFixed(0)}%`} value={`฿${fmt(preview.vat_amount)}`} />
                 <div className="border-t border-violet-200 pt-1.5 mt-1.5 space-y-1">
                   <Row label="รวมทั้งหมด" value={`฿${fmt(preview.grand_total)}`} bold />
                   <Row
@@ -354,7 +445,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                     highlight
                   />
                   <p className="text-[10px] text-violet-500 text-right">
-                    ค่าบริการแพลตฟอร์ม {(preview.platform_commission_rate * 100).toFixed(1)}%
+                    ค่าบริการแพลตฟอร์ม {preview.platform_commission_rate.toFixed(1)}%
                   </p>
                 </div>
               </>
@@ -366,7 +457,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         ) : null}
 
-        {/* ── 6. Warnings ── */}
+        {/* ── 8. Warnings ── */}
         {formWarnings.length > 0 ? (
           <ul className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 space-y-1">
             {formWarnings.map((w) => (
@@ -375,7 +466,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </ul>
         ) : null}
 
-        {/* ── 7. Submit ── */}
+        {/* ── 9. Submit ── */}
         {!readOnly ? (
           <button
             type="submit"

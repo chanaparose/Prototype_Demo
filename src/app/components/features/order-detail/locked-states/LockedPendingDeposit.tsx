@@ -46,15 +46,13 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
       <h2 className="text-lg font-semibold" style={{ color: DEEP_PURPLE }}>
         การผลิตยังไม่เริ่มต้น
       </h2>
-      <p className="mt-2 text-sm text-gray-600">โรงงานจะเริ่มผลิตหลังได้รับการชำระมัดจำ</p>
+      <p className="mt-2 text-sm text-gray-600">โรงงานจะเริ่มผลิตหลังได้รับการชำระเงิน</p>
 
       <div
         className="mt-6 rounded-2xl border p-5 text-left"
         style={{ borderColor: BORDER_WARM, background: PEACH_MIST }}
       >
-        <p className="text-xs" style={{ color: ACCENT_ORANGE_DEEP }}>
-          💰 ยอดมัดจำที่ต้องชำระ
-        </p>
+        <p className="text-xs" style={{ color: ACCENT_ORANGE_DEEP }}>💰 ยอดที่ต้องชำระ</p>
         <p className="mt-1 text-3xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
           ฿{amount.toLocaleString('th-TH')}
         </p>
@@ -71,7 +69,7 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
         className="mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white"
         style={{ background: CTA_GRADIENT }}
       >
-        ชำระเงินมัดจำ →
+        ชำระเงิน →
       </button>
 
       <button

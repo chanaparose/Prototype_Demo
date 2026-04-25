@@ -95,8 +95,8 @@ export function parseNextAction(
       amount: Number(o.amount ?? 0) || 0,
       currency: String(o.currency ?? 'THB'),
       due_date: String(o.due_date ?? ''),
-      cta_url: String(o.cta_url ?? `/orders/${orderId}/payment?stage=deposit`),
-      cta_label_th: String(o.cta_label_th ?? 'ชำระเงินมัดจำ'),
+      cta_url: String(o.cta_url ?? `/orders/${orderId}/payment?stage=full`),
+      cta_label_th: String(o.cta_label_th ?? 'ชำระเงินเต็มจำนวน'),
     };
   }
 

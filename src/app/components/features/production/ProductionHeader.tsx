@@ -6,7 +6,7 @@ function orderStatusLabel(code: string): string {
   const u = code.toUpperCase();
   if (u === 'PR') return 'กำลังผลิต';
   if (u === 'QC') return 'ตรวจสอบคุณภาพ';
-  if (u === 'SH') return 'พร้อมจัดส่ง';
+  if (u === 'SH') return 'จัดส่งแล้ว';
   if (u === 'CP') return 'เสร็จสิ้น';
   if (u === 'WF' || u === 'PE' || u === 'PP') return 'รอดำเนินการ';
   return code || '—';

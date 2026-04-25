@@ -7,7 +7,8 @@ import { frontendApi } from '../../services/api';
 type Mode = 'login' | 'register';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
 
-const HEALTH_URL = 'https://wemake-server.onrender.com/health';
+// Use Vite proxy in dev and same-origin in production.
+const HEALTH_URL = '/health';
 
 export function Login() {
   const { login, register } = useAuth();

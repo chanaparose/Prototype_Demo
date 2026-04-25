@@ -365,6 +365,15 @@ export const ordersApi = {
     api.post<Record<string, unknown>>(`/orders/${orderId}/payments/${txId}/verify`, {}),
   updateStatus: (id: string | number, status: string) =>
     api.patch(`/orders/${id}/status`, { status }),
+  /** POST /orders/:id/confirm-receipt — customer confirms goods received.
+   * Expected BE effect:
+   * 1) create step_id=6 completion record
+   * 2) set orders.status = CP
+   * 3) run settlement: factory wallet pending_fund -> good_fund */
+  confirmReceipt: (
+    id: string | number,
+    body?: { note?: string; received_at?: string },
+  ) => api.post<Record<string, unknown>>(`/orders/${id}/confirm-receipt`, body ?? {}),
   /** PATCH /orders/:id/cancel — customer cancels (only allowed at PE/PP/PR/WF) */
   cancel: (id: string | number, reason?: string) =>
     api.patch<Record<string, unknown>>(`/orders/${id}/cancel`, reason ? { reason } : undefined),
