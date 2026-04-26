@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, { bg: string; color: string }> = {
-  PD: { bg: 'rgba(162,56,255,0.12)', color: '#7A4B94' },
+  PD: { bg: 'rgba(162,56,255,0.12)', color: '#4F46E5' },
   AC: { bg: 'rgba(16,185,129,0.12)', color: '#059669' },
   RJ: { bg: 'rgba(239,68,68,0.10)', color: '#DC2626' },
 };
@@ -60,7 +60,7 @@ export function FactoryQuotationsPage() {
         <div className="flex justify-center items-start pt-8">
         <div
           className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }}
+          style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
         />
         </div>
       </div>
@@ -93,7 +93,7 @@ export function FactoryQuotationsPage() {
             to="/factory/rfqs"
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{
-              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
               boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
             }}
           >
@@ -133,7 +133,7 @@ export function FactoryQuotationsPage() {
                       to={`/factory/quotations/${id}/edit`}
                       className="shrink-0 inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-xl text-white"
                       style={{
-                        background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+                        background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
                         boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                       }}
                     >

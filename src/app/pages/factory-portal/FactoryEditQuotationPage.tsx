@@ -175,7 +175,7 @@ export function FactoryEditQuotationPage() {
           type="button"
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ color: '#7A4B94' }}
+          style={{ color: '#4F46E5' }}
         >
           <ChevronLeft size={22} />
         </button>
@@ -237,7 +237,7 @@ export function FactoryEditQuotationPage() {
                   type="number"
                   step="0.01"
                   disabled={isLocked}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#7A4B94] focus:ring-1 focus:ring-purple-200 outline-none transition-colors disabled:bg-gray-50"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50"
                   {...form.register('price_per_piece')}
                 />
               </label>
@@ -250,7 +250,7 @@ export function FactoryEditQuotationPage() {
                 <input
                   type="number"
                   disabled={isLocked}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#7A4B94] focus:ring-1 focus:ring-purple-200 outline-none transition-colors disabled:bg-gray-50"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50"
                   {...form.register('mold_cost')}
                 />
               </label>
@@ -263,7 +263,7 @@ export function FactoryEditQuotationPage() {
                 <input
                   type="number"
                   disabled={isLocked}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#7A4B94] focus:ring-1 focus:ring-purple-200 outline-none transition-colors disabled:bg-gray-50"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50"
                   {...form.register('lead_time_days')}
                 />
               </label>
@@ -313,7 +313,7 @@ export function FactoryEditQuotationPage() {
               <textarea
                 disabled={isLocked}
                 rows={3}
-                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#7A4B94] focus:ring-1 focus:ring-purple-200 outline-none transition-colors disabled:bg-gray-50 resize-none"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50 resize-none"
                 placeholder="เช่น ปรับลดราคาตามเจรจาลูกค้า"
                 {...form.register('reason')}
               />
@@ -327,7 +327,7 @@ export function FactoryEditQuotationPage() {
             className="font-bold flex items-center gap-2 mb-3 text-sm"
             style={{ color: '#2E2252' }}
           >
-            <History size={16} style={{ color: '#7A4B94' }} /> ประวัติการแก้ไข
+            <History size={16} style={{ color: '#4F46E5' }} /> ประวัติการแก้ไข
           </h2>
           {historyQ.isLoading ? (
             <p className="text-sm text-gray-400">กำลังโหลดประวัติ…</p>
@@ -339,7 +339,7 @@ export function FactoryEditQuotationPage() {
                 <li
                   key={String(h.history_id ?? i)}
                   className="border-l-2 pl-3 py-1"
-                  style={{ borderColor: '#7A4B94' }}
+                  style={{ borderColor: '#4F46E5' }}
                 >
                   <div className="font-medium" style={{ color: '#2E2252' }}>
                     v{String(h.version ?? '?')} · {String(h.change_type ?? '')}
@@ -365,7 +365,7 @@ export function FactoryEditQuotationPage() {
             disabled={isLocked || saving}
             onClick={() => void save()}
             className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2"
-            style={{ borderColor: '#7A4B94', color: '#7A4B94' }}
+            style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
           >
             <Save size={14} /> บันทึกร่าง
           </button>
@@ -375,7 +375,7 @@ export function FactoryEditQuotationPage() {
             onClick={() => void save()}
             className="flex-1 py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2"
             style={{
-              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
               boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
             }}
           >

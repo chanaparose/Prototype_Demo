@@ -72,15 +72,17 @@ export function DesktopSidebar() {
       <div className="flex items-center h-16 px-5 border-b border-gray-100 shrink-0">
         <Link to="/" className="flex items-center gap-2.5 w-full">
           <div
-            className="h-8 px-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm"
-            style={{ background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
+            className={`h-8 px-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm ${
+              isFactory ? 'bg-indigo-50 border-indigo-200' : ''
+            }`}
+            style={isFactory ? undefined : { background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
           >
-            <Factory className="shrink-0" size={15} strokeWidth={2.5} style={{ color: '#A238FF' }} />
-            <span className="text-xs font-bold leading-none whitespace-nowrap" style={{ color: '#A238FF' }}>
+            <Factory className="shrink-0" size={15} strokeWidth={2.5} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
+            <span className="text-xs font-bold leading-none whitespace-nowrap" style={{ color: isFactory ? '#4F46E5' : '#A238FF' }}>
               WeMake
             </span>
           </div>
-          <span className="text-sm font-semibold" style={{ color: '#2D1B4E' }}>Manufacturing</span>
+          <span className="text-sm font-semibold" style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}>Manufacturing</span>
         </Link>
       </div>
 
@@ -102,17 +104,17 @@ export function DesktopSidebar() {
                   }}
                   className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150 ${
                     locked ? 'cursor-not-allowed opacity-60' : ''
-                  }`}
+                  } ${active ? 'border-l-4 border-indigo-600 pl-3' : 'border-l-4 border-transparent'}`}
                   style={{
-                    color: active ? '#A238FF' : '#6B7280',
-                    background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
+                    color: active ? '#4338CA' : '#475569',
+                    background: active ? '#EEF2FF' : 'transparent',
                     fontWeight: active ? 600 : 500,
                   }}
                 >
                   <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                   <span className="flex-1 text-left">{item.label}</span>
                   {locked ? (
-                    <Lock size={16} className="shrink-0 text-violet-500" strokeWidth={2} aria-hidden />
+                    <Lock size={16} className="shrink-0 text-slate-500" strokeWidth={2} aria-hidden />
                   ) : null}
                   {item.badge === 'unread-messages' && unreadMessages > 0 ? (
                     <span
@@ -170,23 +172,22 @@ export function DesktopSidebar() {
       {isFactory ? (
         <Link
           to="/factory/wallet"
-          className="mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden block text-left transition-opacity hover:opacity-95 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2"
-          style={{ background: '#F8F5FF', borderColor: 'rgba(162,56,255,0.20)' }}
+          className="mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden block text-left transition-opacity hover:opacity-95 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 bg-slate-50 border-slate-200"
         >
-          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl" style={{ background: 'rgba(162,56,255,0.10)' }}></div>
+          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl" style={{ background: 'rgba(79,70,229,0.10)' }}></div>
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <div className="flex items-center gap-1.5">
-              <Wallet size={13} style={{ color: '#F28A2E' }} />
+              <Wallet size={13} style={{ color: '#4F46E5' }} />
               <span className="text-[11px] font-medium text-gray-500">กระเป๋าเงิน</span>
             </div>
-            <span className="text-[10px] font-semibold shrink-0" style={{ color: '#A238FF' }}>
+            <span className="text-[10px] font-semibold shrink-0" style={{ color: '#4F46E5' }}>
               ดูรายละเอียด →
             </span>
           </div>
-          <p className="text-base font-bold" style={{ color: '#2D1B4E' }}>
+          <p className="text-base font-bold" style={{ color: '#0F172A' }}>
             ฿{currentUser?.walletBalance.toLocaleString()}
           </p>
-          <p className="text-[10px] mt-0.5 font-medium" style={{ color: '#A238FF' }}>
+          <p className="text-[10px] mt-0.5 font-medium" style={{ color: '#4F46E5' }}>
             รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
           </p>
         </Link>
@@ -237,7 +238,7 @@ export function DesktopSidebar() {
               />
             </span>
             <div className="flex-1 text-left min-w-0">
-              <p className="text-xs font-semibold truncate" style={{ color: '#2D1B4E' }}>{currentUser?.name}</p>
+              <p className="text-xs font-semibold truncate" style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}>{currentUser?.name}</p>
               <p className="text-[10px] text-gray-400 truncate">{currentUser?.company}</p>
             </div>
           </button>
@@ -245,7 +246,7 @@ export function DesktopSidebar() {
             to="/notifications"
             className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0"
           >
-            <Bell size={17} style={{ color: '#A238FF' }} />
+            <Bell size={17} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
             {unreadNotifications > 0 ? (
               <span
                 className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold border-2 border-white tabular-nums"

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { ChevronRight, ImageIcon } from 'lucide-react';
 import { DeadlineBadge } from './DeadlineBadge';
 
@@ -27,6 +27,7 @@ function formatBaht(n: number): string {
 }
 
 export function RfqCard({ row }: { row: RfqCardModel }) {
+  const location = useLocation();
   const breadcrumb =
     row.categoryName && row.subCategoryName
       ? `${row.categoryName} › ${row.subCategoryName}`
@@ -58,6 +59,7 @@ export function RfqCard({ row }: { row: RfqCardModel }) {
   return (
     <Link
       to={`/factory/rfqs/${row.id}`}
+      state={{ from: `${location.pathname}${location.search}` }}
       className="flex gap-3 sm:gap-4 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 hover:shadow-md transition-shadow min-w-0 text-left"
     >
       <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">

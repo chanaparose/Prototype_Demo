@@ -18,6 +18,7 @@ import {
 } from '../../components/features/production/types';
 import { deriveStepStates } from '../../components/features/production/stepDerivedState';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 function unwrapOrder(raw: Record<string, unknown>): Record<string, unknown> {
   return (raw.order as Record<string, unknown>) ?? raw;
@@ -34,16 +35,6 @@ function statusLabel(code: string): string {
   if (s === 'CP') return 'เสร็จสิ้น';
   if (s === 'CN') return 'ยกเลิก';
   return s || '-';
-}
-
-function orderStatusGradient(code: string): string {
-  const s = code.toUpperCase();
-  if (s === 'CP') return 'linear-gradient(135deg, #065F46 0%, #059669 100%)';
-  if (s === 'CN' || s === 'PE') return 'linear-gradient(135deg, #7F1D1D 0%, #DC2626 100%)';
-  if (s === 'PR' || s === 'QC' || s === 'SH') return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
-  if (s === 'PP') return 'linear-gradient(135deg, #78350F 0%, #D97706 100%)';
-  if (s === 'PD') return 'linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%)';
-  return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
 }
 
 function getStepId(step: MergedProductionStep | null): number {
@@ -206,24 +197,29 @@ export function FactoryOrderDetailPage() {
   if (!id) return null;
 
   return (
-    <div style={{ backgroundColor: '#F8F6FA' }} className="min-h-screen pb-24">
+    <div className="space-y-4 pb-24">
+      <FactoryPageHeader
+        title={title}
+        subtitle={`คำสั่งซื้อ #${orderCode}`}
+        icon={Flag}
+        count={statusLabel(status)}
+      />
       {/* Sticky top bar */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-y border-slate-200 px-4 h-14 flex items-center gap-3 rounded-xl">
         <button
           type="button"
           onClick={() => navigate('/factory/orders')}
-          className="flex items-center gap-1 text-sm font-medium"
-          style={{ color: '#7A4B94' }}
+          className="flex items-center gap-1 text-sm font-medium text-indigo-700"
         >
           <ChevronLeft size={18} /> กลับ
         </button>
-        <span className="flex-1 text-center text-sm font-bold" style={{ color: '#2E2252' }}>
+        <span className="flex-1 text-center text-sm font-bold text-slate-900">
           รายละเอียดคำสั่งซื้อ
         </span>
         <span className="text-xs font-medium text-gray-400">#{orderCode}</span>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4 pt-4">
+      <div className="w-full max-w-7xl mx-auto">
         {error ? (
           <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
         ) : null}
@@ -232,7 +228,7 @@ export function FactoryOrderDetailPage() {
           <div className="flex justify-center py-16">
             <div
               className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }}
+              style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
             />
           </div>
         ) : (
@@ -241,46 +237,33 @@ export function FactoryOrderDetailPage() {
             {/* ════════ LEFT ════════ */}
             <div className="space-y-4 min-w-0">
 
-              {/* Status hero card */}
-              <div
-                className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
-                style={{ background: orderStatusGradient(status) }}
-              >
-                <div
-                  className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-30 blur-2xl"
-                  style={{ backgroundColor: '#FF7A00' }}
-                />
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-2">
-                    <span
-                      className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-                    >
-                      {statusLabel(status)}
-                    </span>
-                    <span className="text-xs opacity-70">#{orderCode}</span>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                    {statusLabel(status)}
+                  </span>
+                  <span className="text-xs text-slate-400">#{orderCode}</span>
+                </div>
+                <h2 className="text-base font-bold mb-3 text-slate-900">{title}</h2>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">มูลค่ารวม</p>
+                    <p className="font-semibold text-slate-900">฿{Number(order.total_amount ?? 0).toLocaleString('th-TH')}</p>
                   </div>
-                  <h2 className="text-base font-bold mb-3">{title}</h2>
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div>
-                      <p className="text-[10px] opacity-60 uppercase tracking-wide">มูลค่ารวม</p>
-                      <p className="font-semibold">฿{Number(order.total_amount ?? 0).toLocaleString('th-TH')}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] opacity-60 uppercase tracking-wide">ชำระแล้ว</p>
-                      <p className="font-semibold">฿{Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] opacity-60 uppercase tracking-wide">กำหนดส่ง</p>
-                      <p className="font-semibold">{fmtDateTime(order.estimated_delivery)}</p>
-                    </div>
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">ชำระแล้ว</p>
+                    <p className="font-semibold text-slate-900">฿{Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">กำหนดส่ง</p>
+                    <p className="font-semibold text-slate-900">{fmtDateTime(order.estimated_delivery)}</p>
                   </div>
                 </div>
               </div>
 
               {/* Order info */}
-              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">ข้อมูลคำสั่งซื้อ</p>
+              <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3">
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-3">ข้อมูลคำสั่งซื้อ</p>
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-xs text-gray-500">สร้างเมื่อ</span>
                   <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>{fmtDateTime(order.created_at)}</span>
@@ -316,13 +299,13 @@ export function FactoryOrderDetailPage() {
               {/* Production Timeline */}
               <section className="space-y-3">
                 <div className="flex items-center gap-2 px-0.5">
-                  <Flag size={14} style={{ color: '#7A4B94' }} />
-                  <h2 className="text-sm font-bold" style={{ color: '#2E2252' }}>ความคืบหน้าการผลิต</h2>
+                  <Flag size={14} className="text-indigo-600" />
+                  <h2 className="text-sm font-bold text-slate-900">ความคืบหน้าการผลิต</h2>
                 </div>
 
                 {tplQ.isLoading || updQ.isLoading ? (
                   <div className="flex items-center gap-2 py-6 justify-center text-gray-500 text-sm">
-                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }} />
+                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }} />
                     กำลังโหลด…
                   </div>
                 ) : merged.length === 0 ? (
@@ -350,8 +333,8 @@ export function FactoryOrderDetailPage() {
             <aside className="space-y-4 xl:sticky xl:top-20">
 
               {/* Next action card */}
-              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">การดำเนินการ</p>
+              <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4">
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-3">การดำเนินการ</p>
 
                 {isCompleted ? (
                   <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-sm text-emerald-800 text-center">
@@ -363,7 +346,7 @@ export function FactoryOrderDetailPage() {
                   </div>
                 ) : activeStep != null ? (
                   <div className="space-y-3">
-                    <div className="rounded-xl bg-purple-50 border border-purple-100 px-3 py-3">
+                    <div className="rounded-xl bg-indigo-50 border border-indigo-100 px-3 py-3">
                       <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">
                         ขั้นตอนถัดไป ({nextStepIdx + 1}/{totalSteps})
                       </p>
@@ -385,7 +368,7 @@ export function FactoryOrderDetailPage() {
                         type="button"
                         onClick={() => setDrawerStep(activeStep)}
                         className="w-full rounded-xl py-3 text-sm font-semibold text-white inline-flex items-center justify-center gap-2 shadow-sm"
-                        style={{ background: 'linear-gradient(135deg, #E38844 0%, #D4722E 100%)' }}
+                        style={{ background: '#4F46E5' }}
                       >
                         {activeStep.update.status === 'IP'
                           ? 'อัปเดตขั้นนี้'

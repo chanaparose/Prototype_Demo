@@ -11,7 +11,7 @@ import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategorie
 /* ── Type metadata ── */
 const TYPE_META = {
   PD: { icon: '🏷', label: 'สินค้า', sub: 'Product Design', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
-  PM: { icon: '🎁', label: 'โปรโมชัน', sub: 'Promotion', cls: 'bg-purple-50 text-purple-700 border-purple-200' },
+  PM: { icon: '🎁', label: 'โปรโมชัน', sub: 'Promotion', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   ID: { icon: '💡', label: 'ไอเดีย', sub: 'Industrial Design', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
 } as const;
 
@@ -339,21 +339,21 @@ export function FactoryShowcaseNewPage() {
           {contentType === 'PM' ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-dashed border-purple-100">
               <label className="block">
-                <span className="text-xs font-medium text-purple-600">ราคาโปรโมชัน (฿) *</span>
+                <span className="text-xs font-medium text-indigo-600">ราคาโปรโมชัน (฿) *</span>
                 <input type="number" step="0.01" placeholder="0.00"
-                  className="mt-1 w-full rounded-xl border border-purple-200 px-3 py-2 text-sm focus:ring-1 focus:ring-purple-300 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none"
                   value={form.promo_price} onChange={(e) => setField('promo_price', e.target.value)} />
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-purple-600">วันที่เริ่มโปร *</span>
+                <span className="text-xs font-medium text-indigo-600">วันที่เริ่มโปร *</span>
                 <input type="date"
-                  className="mt-1 w-full rounded-xl border border-purple-200 px-3 py-2 text-sm focus:ring-1 focus:ring-purple-300 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none"
                   value={form.start_date} onChange={(e) => setField('start_date', e.target.value)} />
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-purple-600">วันที่สิ้นสุดโปร *</span>
+                <span className="text-xs font-medium text-indigo-600">วันที่สิ้นสุดโปร *</span>
                 <input type="date"
-                  className="mt-1 w-full rounded-xl border border-purple-200 px-3 py-2 text-sm focus:ring-1 focus:ring-purple-300 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none"
                   value={form.end_date} onChange={(e) => setField('end_date', e.target.value)} />
               </label>
             </div>
@@ -387,7 +387,7 @@ export function FactoryShowcaseNewPage() {
           onClick={() => void onSubmit('AC')}
           disabled={saving}
           className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm active:scale-95 transition-all"
-          style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
         >
           {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
         </button>
