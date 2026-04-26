@@ -35,6 +35,8 @@ export type Factory = {
   minOrder: number;
   leadTime: string;
   image: string;
+  /** แถบพื้นหลังด้านบน (ถ้า API ส่งมา) — คนละฟิลด์กับรูปโปรไฟล์ */
+  coverImageUrl?: string;
   verified: boolean;
   completedOrders: number;
   priceRange: string;

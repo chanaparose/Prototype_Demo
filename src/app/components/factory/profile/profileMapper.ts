@@ -8,9 +8,17 @@ export interface ProfileRawBundle {
   subCategoryIds: number[];
 }
 
+function pickCoverUrl(f: Row): string {
+  return String(
+    f.cover_image_url ?? f.banner_url ?? f.background_image_url ?? f.hero_image_url ?? '',
+  ).trim();
+}
+
 export function mapProfileRawToForm(raw: ProfileRawBundle): ProfileFormValues {
   const f = raw.factory;
   return {
+    image_url: String(f.image_url ?? '').trim(),
+    cover_image_url: pickCoverUrl(f),
     factory_name: String(f.factory_name ?? f.name ?? '').trim(),
     tax_id: String(f.tax_id ?? '').trim(),
     description: String(f.description ?? '').trim(),

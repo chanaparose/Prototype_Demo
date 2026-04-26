@@ -92,13 +92,15 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
-      <FactoryProfileHero
-        factory={factory}
-        onBack={handleBack}
-        onChat={handleChat}
-        chatLoading={starting}
-        showChat={canChat}
-      />
+      <div className="px-4 pt-4">
+        <FactoryProfileHero
+          factory={factory}
+          onBack={handleBack}
+          onChat={handleChat}
+          chatLoading={starting}
+          showChat={canChat}
+        />
+      </div>
 
       <div className="space-y-3 px-4 pt-4">
         <div className="grid grid-cols-4 gap-2">
