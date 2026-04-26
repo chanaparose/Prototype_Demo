@@ -197,6 +197,32 @@ export const api = {
   patch: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PATCH', body }),
   put: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PUT', body }),
   delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
+  postForm: async <T>(endpoint: string, formData: FormData) => {
+    const token = getToken();
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const url = endpoint.startsWith('/admin/')
+      ? `/api${endpoint}`
+      : endpoint.startsWith('/api/')
+      ? endpoint
+      : `${BASE_URL}${endpoint}`;
+    const res = await fetch(url, { method: 'POST', headers, body: formData });
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new ApiHttpError(
+        extractErrorMessage(errorData, `API Error: ${res.status} ${res.statusText}`),
+        res.status,
+        errorData,
+      );
+    }
+    if (res.status === 204) return {} as T;
+    return res.json() as Promise<T>;
+  },
 };
 
 // ─── Auth API ───────────────────────────────────────────────────
@@ -708,10 +734,64 @@ export const conversationsApi = {
 
 // ─── Notifications API ─────────────────────────────────────────
 export const notificationsApi = {
-  list: () => api.get<unknown[]>('/notifications'),
+  list: (params?: { page?: number; limit?: number; unread?: boolean }) => {
+    if (!params) return api.get<unknown[]>('/notifications');
+    const qs = new URLSearchParams();
+    if (params.page != null) qs.set('page', String(params.page));
+    if (params.limit != null) qs.set('limit', String(params.limit));
+    if (params.unread != null) qs.set('unread', String(params.unread));
+    const q = qs.toString();
+    return api.get<Record<string, unknown>>(`/notifications${q ? `?${q}` : ''}`);
+  },
+  unreadCount: () => api.get<{ count: number }>('/notifications/unread-count'),
   markAsRead: (notiId: number | string) =>
     api.patch<Record<string, unknown>>(`/notifications/${notiId}/read`),
-  markAllAsRead: () => api.patch('/notifications/read-all'),
+  markAllAsRead: () => api.put<{ updated: number }>('/notifications/read-all'),
+  delete: (notiId: number | string) => api.delete(`/notifications/${notiId}`),
+};
+
+// ─── Profile Activity API ──────────────────────────────────────
+export const profileApi = {
+  get: () => api.get<Record<string, unknown>>('/profile'),
+  update: (body: Record<string, unknown>) => api.put<Record<string, unknown>>('/profile', body),
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.postForm<{ avatar_url: string }>('/profile/avatar', formData);
+  },
+  changePassword: (body: {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+  }) => api.put<Record<string, unknown>>('/profile/change-password', body),
+  summary: () => api.get<Record<string, unknown>>('/profile/summary'),
+  transactions: (params?: { page?: number; limit?: number; type?: string; status?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.limit != null) qs.set('limit', String(params.limit));
+    if (params?.type) qs.set('type', params.type);
+    if (params?.status) qs.set('status', params.status);
+    const q = qs.toString();
+    return api.get<Record<string, unknown>>(`/profile/transactions${q ? `?${q}` : ''}`);
+  },
+  myReviews: (params?: { page?: number; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.limit != null) qs.set('limit', String(params.limit));
+    const q = qs.toString();
+    return api.get<Record<string, unknown>>(`/profile/reviews${q ? `?${q}` : ''}`);
+  },
+  receivedReviews: (params?: { page?: number; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.limit != null) qs.set('limit', String(params.limit));
+    const q = qs.toString();
+    return api.get<Record<string, unknown>>(`/profile/reviews/received${q ? `?${q}` : ''}`);
+  },
+  notificationPreferences: () =>
+    api.get<Record<string, unknown>>('/profile/notification-preferences'),
+  updateNotificationPreferences: (body: Record<string, unknown>) =>
+    api.put<Record<string, unknown>>('/profile/notification-preferences', body),
 };
 
 // ─── Favorites API ─────────────────────────────────────────────
@@ -731,6 +811,9 @@ export const reviewsApi = {
     api.post<Record<string, unknown>>(`/factories/${factoryId}/reviews`, data),
   reply: (reviewId: number | string, data: { reply: string }) =>
     api.post<Record<string, unknown>>(`/reviews/${reviewId}/reply`, data),
+  update: (reviewId: number | string, data: { rating: number; comment: string }) =>
+    api.put<Record<string, unknown>>(`/reviews/${reviewId}`, data),
+  delete: (reviewId: number | string) => api.delete(`/reviews/${reviewId}`),
 };
 
 // ─── Certificates API ──────────────────────────────────────────
