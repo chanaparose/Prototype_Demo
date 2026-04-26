@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Package } from 'lucide-react';
 import { ordersApi } from '../../services/api';
 import { useFactoryOrdersData } from './factory-orders/useFactoryOrdersData';
 import { deriveOrderCardState } from './factory-orders/deriveOrderCardState';
@@ -10,6 +10,7 @@ import { FactoryOrdersKpiStrip } from './factory-orders/components/FactoryOrders
 import { FactoryOrdersFilterBar } from './factory-orders/components/FactoryOrdersFilterBar';
 import { FactoryOrderCard } from './factory-orders/components/FactoryOrderCard';
 import { FactoryOrdersEmptyState } from './factory-orders/components/FactoryOrdersEmptyState';
+import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 export function FactoryOrdersPage() {
   const { data: rows = [], isLoading, isError, refetch, error } = useFactoryOrdersData();
@@ -35,6 +36,7 @@ export function FactoryOrdersPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
+        <FactoryPageHeader title="คำสั่งซื้อ" subtitle="Factory Portal" icon={Package} />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-20 rounded-2xl border border-gray-100 bg-white animate-pulse" />
@@ -50,13 +52,19 @@ export function FactoryOrdersPage() {
   }
 
   return (
-    <div className="space-y-4 w-full min-w-0 pb-6 sm:pb-8">
-      <div className="min-w-0">
-        <p className="text-[10px] text-gray-400 uppercase tracking-wide">คำสั่งซื้อ</p>
-        <h1 className="text-lg sm:text-xl font-bold text-gray-900">ออเดอร์ของโรงงาน</h1>
-      </div>
+    <div className="space-y-4">
+      <FactoryPageHeader
+        title="คำสั่งซื้อ"
+        subtitle="Factory Portal"
+        icon={Package}
+        count={`${rows.length} รายการ`}
+      />
+
       {isError ? (
-        <div role="alert" className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+        <div
+          role="alert"
+          className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+        >
           <span>{error instanceof Error ? error.message : 'โหลดออเดอร์ไม่สำเร็จ'}</span>
           <button
             type="button"
@@ -67,6 +75,7 @@ export function FactoryOrdersPage() {
           </button>
         </div>
       ) : null}
+
       <FactoryOrdersKpiStrip
         kpi={kpis}
         onSelectKpi={(key) => {
@@ -78,6 +87,7 @@ export function FactoryOrdersPage() {
           setStatusTab(key === 'needs_action' ? 'needs_action' : key === 'in_production' ? 'in_production' : 'shipped');
         }}
       />
+
       <FactoryOrdersFilterBar
         tabId={statusTab}
         onTabChange={setStatusTab}
@@ -93,7 +103,10 @@ export function FactoryOrdersPage() {
           <FactoryOrdersEmptyState hasAnyRows={rows.length > 0} tabId={statusTab} onResetTab={() => setStatusTab('all')} />
         ) : (
           filteredRows.map(({ row, derived }) => (
-            <li key={row.order_id}>
+            <li
+              key={row.order_id}
+              className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+            >
               <FactoryOrderCard
                 row={row}
                 derived={derived}
@@ -112,13 +125,15 @@ export function FactoryOrdersPage() {
           <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setUpdateModal(null)} />
           <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-gray-900">อัปเดตขั้น {updateModal.row.production_summary?.current_step_name_th}</h2>
+              <h2 className="font-bold" style={{ color: '#2E2252' }}>
+                อัปเดตขั้น {updateModal.row.production_summary?.current_step_name_th}
+              </h2>
               <button type="button" onClick={() => setUpdateModal(null)} className="p-1 rounded-lg hover:bg-gray-100">
                 <X size={18} />
               </button>
             </div>
             <textarea
-              className="w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm"
+              className="w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#7A4B94]"
               placeholder="รายละเอียดความคืบหน้า"
               value={updateModal.notes}
               onChange={(e) => setUpdateModal((prev) => (prev ? { ...prev, notes: e.target.value } : prev))}
@@ -156,19 +171,21 @@ export function FactoryOrdersPage() {
           <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setShipModal(null)} />
           <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-gray-900">บันทึกจัดส่ง #{shipModal.row.order_id}</h2>
+              <h2 className="font-bold" style={{ color: '#2E2252' }}>
+                บันทึกจัดส่ง #{shipModal.row.order_id}
+              </h2>
               <button type="button" onClick={() => setShipModal(null)} className="p-1 rounded-lg hover:bg-gray-100">
                 <X size={18} />
               </button>
             </div>
             <input
-              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#7A4B94]"
               placeholder="เลขพัสดุ"
               value={shipModal.tracking}
               onChange={(e) => setShipModal((prev) => (prev ? { ...prev, tracking: e.target.value } : prev))}
             />
             <textarea
-              className="w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm"
+              className="w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#7A4B94]"
               placeholder="หมายเหตุ (ไม่บังคับ)"
               value={shipModal.note}
               onChange={(e) => setShipModal((prev) => (prev ? { ...prev, note: e.target.value } : prev))}
@@ -176,7 +193,11 @@ export function FactoryOrdersPage() {
             <button
               type="button"
               disabled={shipModal.busy || !shipModal.tracking.trim()}
-              className="w-full py-2.5 rounded-xl text-white font-semibold bg-sky-600 disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+                boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+              }}
               onClick={async () => {
                 setShipModal((prev) => (prev ? { ...prev, busy: true } : prev));
                 try {

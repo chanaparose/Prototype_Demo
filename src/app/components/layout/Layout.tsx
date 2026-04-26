@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, useNavigate, useLocation, Link } from 'react-router';
+import { Outlet, useNavigate, useLocation, Link, Navigate } from 'react-router';
 import {
   Home,
   ClipboardList,
@@ -42,8 +42,14 @@ export function Layout() {
   const unreadNotifications = data.notifications.filter((n) => !n.read).length;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isFactory = isFactoryRole(user);
+  const userRole = String(user?.role ?? '').toUpperCase();
+  const isAdminRole = userRole === 'AM' || userRole === 'AD' || userRole === 'SA';
   const navLinks: MobileNavItem[] = isFactory ? FACTORY_SIDEBAR_NAV : customerNavLinks;
   const factoryApproved = factoryVerifyStatus(user) === 'AP';
+
+  if (isAdminRole && !location.pathname.startsWith('/admin')) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
 
   const isActive = (path: string) =>
     path === '/'

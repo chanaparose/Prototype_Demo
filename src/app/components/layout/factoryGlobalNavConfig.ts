@@ -6,7 +6,6 @@ import {
   Images,
   ClipboardList,
   Package,
-  FileText,
   Wallet,
 } from 'lucide-react';
 
@@ -22,6 +21,8 @@ export type FactorySidebarNavItem = {
   badge?: 'unread-messages';
   activeMatch: 'exact' | 'prefix' | 'pathname';
   activePath: string;
+  /** เส้นทางเพิ่มเติมที่ถือว่า active ในเมนูเดียวกัน */
+  extraActivePaths?: string[];
   /** ต้องอนุมัติ (AP) ก่อนเข้าได้ */
   requiresApproval?: boolean;
 };
@@ -54,20 +55,12 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   },
   {
     key: 'factory-rfqs',
-    label: 'กระดาน RFQ',
+    label: 'RFQ & ใบเสนอราคา',
     icon: ClipboardList,
     href: '/factory/rfqs',
     activeMatch: 'prefix',
     activePath: '/factory/rfqs',
-    requiresApproval: true,
-  },
-  {
-    key: 'factory-quotations',
-    label: 'ใบเสนอราคา',
-    icon: FileText,
-    href: '/factory/quotations',
-    activeMatch: 'prefix',
-    activePath: '/factory/quotations',
+    extraActivePaths: ['/factory/quotations'],
     requiresApproval: true,
   },
   {
@@ -102,6 +95,12 @@ export function isFactorySidebarNavActive(
   pathname: string,
   item: FactorySidebarNavItem,
 ): boolean {
+  if (Array.isArray(item.extraActivePaths)) {
+    const hit = item.extraActivePaths.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    );
+    if (hit) return true;
+  }
   if (item.activeMatch === 'exact') {
     return pathname === item.activePath;
   }

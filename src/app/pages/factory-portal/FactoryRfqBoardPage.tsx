@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, FileText } from 'lucide-react';
 import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
+import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 type TabKey = 'all' | 'open' | 'quoted' | 'closing';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
@@ -152,24 +153,27 @@ export function FactoryRfqBoardPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-16">
+      <div className="space-y-4">
+        <FactoryPageHeader title="RFQ ที่ตรงหมวดโรงงาน" subtitle="Factory Portal" icon={FileText} />
+        <div className="flex justify-center items-start pt-8">
         <div
           className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+          style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }}
         />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 w-full min-w-0 pb-6 sm:pb-8">
-      <div className="min-w-0">
-        <p className="text-[10px] text-gray-400 uppercase tracking-wide">กระดาน RFQ</p>
-        <h1 className="text-lg sm:text-xl font-bold text-gray-900">RFQ ที่ match กับโรงงานคุณ</h1>
-      </div>
-      <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
-        จาก <code className="text-[11px] bg-gray-100 px-1 rounded">GET /rfqs/matching</code> — กรองและดูสถานะใบเสนอราคาของคุณได้จากที่นี่
-      </p>
+    <div className="space-y-4">
+      <FactoryPageHeader
+        title="RFQ ที่ตรงหมวดโรงงาน"
+        subtitle="Factory Portal"
+        icon={FileText}
+        count={`${counts.all} รายการ`}
+        action={{ label: 'ดูใบเสนอราคา', to: '/factory/quotations' }}
+      />
 
       {error ? (
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -191,7 +195,10 @@ export function FactoryRfqBoardPage() {
           <Link
             to="/factory/profile"
             className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+            style={{
+              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+            }}
           >
             ไปที่ข้อมูลโรงงาน
           </Link>
@@ -199,12 +206,19 @@ export function FactoryRfqBoardPage() {
       ) : null}
 
       {!noFactoryCategories && rows.length === 0 ? (
-        <div className="rounded-2xl border border-gray-100 bg-white px-4 py-6 text-center space-y-3">
-          <p className="text-sm text-gray-700 font-medium">ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ</p>
+        <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4">
+          <div className="text-5xl">📋</div>
+          <p className="text-base font-bold" style={{ color: '#2E2252' }}>
+            ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ
+          </p>
+          <p className="text-sm text-gray-500">ปรับหมวดหมู่เพื่อรับ RFQ ที่ตรงกับโรงงาน</p>
           <Link
             to="/factory/profile"
-            className="inline-flex text-sm font-semibold"
-            style={{ color: '#A238FF' }}
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{
+              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+            }}
           >
             ปรับหมวดหมู่ในโปรไฟล์
           </Link>
@@ -213,73 +227,7 @@ export function FactoryRfqBoardPage() {
 
       {!noFactoryCategories && rows.length > 0 ? (
         <>
-          {/* Filters: pills on mobile scroll */}
-          <div className="flex flex-col gap-3">
-            <div className="relative">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                size={16}
-              />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="ค้นหา ชื่อ / เลข RFQ"
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm"
-              />
-            </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible">
-              <span className="inline-flex items-center gap-1 text-xs text-gray-500 shrink-0 sm:hidden">
-                <SlidersHorizontal size={14} /> กรอง
-              </span>
-              <select
-                value={filterCat}
-                onChange={(e) => setFilterCat(e.target.value)}
-                className="shrink-0 rounded-xl border border-gray-200 px-2 py-2 text-xs sm:text-sm min-w-[7rem]"
-              >
-                <option value="">หมวดหมู่ทั้งหมด</option>
-                {categoryOptions.map(([cid, name]) => (
-                  <option key={cid} value={String(cid)}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={filterRfqStatus}
-                onChange={(e) => setFilterRfqStatus(e.target.value)}
-                className="shrink-0 rounded-xl border border-gray-200 px-2 py-2 text-xs sm:text-sm min-w-[6.5rem]"
-              >
-                <option value="">สถานะ RFQ</option>
-                <option value="OP">เปิดรับ (OP)</option>
-                <option value="CL">ปิดแล้ว (CL)</option>
-                <option value="CC">ยกเลิก (CC)</option>
-              </select>
-              <select
-                value={filterShip}
-                onChange={(e) => setFilterShip(e.target.value)}
-                className="shrink-0 rounded-xl border border-gray-200 px-2 py-2 text-xs sm:text-sm min-w-[7rem]"
-              >
-                <option value="">วิธีส่งทั้งหมด</option>
-                {shipOptions.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as SortKey)}
-                className="shrink-0 rounded-xl border border-gray-200 px-2 py-2 text-xs sm:text-sm min-w-[8rem]"
-              >
-                <option value="new">เรียง: ใหม่ล่าสุด</option>
-                <option value="deadline">เรียง: ใกล้ปิด</option>
-                <option value="budget">เรียง: งบสูงสุด</option>
-                <option value="qty">เรียง: จำนวนมากสุด</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Tabs */}
+          {/* Tab bar */}
           {narrowTabs ? (
             <div className="flex items-center gap-2">
               <label className="text-xs text-gray-500 shrink-0">ชุดรายการ</label>
@@ -297,7 +245,8 @@ export function FactoryRfqBoardPage() {
             </div>
           ) : (
             <div
-              className="flex flex-wrap gap-2 p-1 rounded-2xl bg-gray-100/90"
+              className="flex items-center gap-1 p-1 rounded-xl"
+              style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
               role="tablist"
               aria-label="สถานะใบเสนอราคา"
             >
@@ -310,17 +259,16 @@ export function FactoryRfqBoardPage() {
                     role="tab"
                     aria-selected={on}
                     onClick={() => setTab(t.key)}
-                    className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
-                      on ? 'text-white shadow-md' : 'text-gray-600 hover:bg-white/70'
-                    }`}
-                    style={
-                      on
-                        ? { background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }
-                        : undefined
-                    }
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all"
+                    style={{
+                      backgroundColor: on ? '#E38844' : 'transparent',
+                      color: on ? '#fff' : '#2E2252',
+                      fontWeight: on ? 700 : 500,
+                      boxShadow: on ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
+                    }}
                   >
-                    {t.label}{' '}
-                    <span className="tabular-nums opacity-90">{t.count}</span>
+                    {t.label}
+                    <span className="text-[11px] opacity-80">({t.count})</span>
                     {t.warn && t.key === 'closing' ? ' ⚠' : ''}
                   </button>
                 );
@@ -328,15 +276,99 @@ export function FactoryRfqBoardPage() {
             </div>
           )}
 
+          {/* Search + Sort row */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                size={16}
+              />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="ค้นหา ชื่อ / เลข RFQ"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#7A4B94]"
+              />
+            </div>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+            >
+              <option value="new">เรียง: ใหม่ล่าสุด</option>
+              <option value="deadline">เรียง: ใกล้ปิด</option>
+              <option value="budget">เรียง: งบสูงสุด</option>
+              <option value="qty">เรียง: จำนวนมากสุด</option>
+            </select>
+          </div>
+
+          {/* Additional filters */}
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible">
+            <span className="inline-flex items-center gap-1 text-xs text-gray-500 shrink-0 sm:hidden">
+              <SlidersHorizontal size={14} /> กรอง
+            </span>
+            <select
+              value={filterCat}
+              onChange={(e) => setFilterCat(e.target.value)}
+              className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-xs sm:text-sm min-w-[7rem] focus:outline-none focus:ring-2 focus:ring-purple-300"
+            >
+              <option value="">หมวดหมู่ทั้งหมด</option>
+              {categoryOptions.map(([cid, name]) => (
+                <option key={cid} value={String(cid)}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filterRfqStatus}
+              onChange={(e) => setFilterRfqStatus(e.target.value)}
+              className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-xs sm:text-sm min-w-[6.5rem] focus:outline-none focus:ring-2 focus:ring-purple-300"
+            >
+              <option value="">สถานะ RFQ</option>
+              <option value="OP">เปิดรับ (OP)</option>
+              <option value="CL">ปิดแล้ว (CL)</option>
+              <option value="CC">ยกเลิก (CC)</option>
+            </select>
+            <select
+              value={filterShip}
+              onChange={(e) => setFilterShip(e.target.value)}
+              className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-xs sm:text-sm min-w-[7rem] focus:outline-none focus:ring-2 focus:ring-purple-300"
+            >
+              <option value="">วิธีส่งทั้งหมด</option>
+              {shipOptions.map((s) => (
+                <option key={s.id} value={String(s.id)}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+            {hasFilters ? (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="shrink-0 px-3 py-2 rounded-full text-xs font-semibold border border-purple-200 bg-purple-50 text-purple-700"
+              >
+                ล้างตัวกรอง ✕
+              </button>
+            ) : null}
+          </div>
+
           {pipeline.length === 0 ? (
-            <div className="rounded-2xl border border-gray-100 bg-white px-4 py-6 text-center space-y-3">
-              <p className="text-sm text-gray-600">ไม่พบ RFQ ตามเงื่อนไข</p>
+            <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4">
+              <div className="text-5xl">🔍</div>
+              <p className="text-base font-bold" style={{ color: '#2E2252' }}>
+                ไม่พบ RFQ ตามเงื่อนไข
+              </p>
+              <p className="text-sm text-gray-400">ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง</p>
               {hasFilters ? (
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="text-sm font-semibold underline underline-offset-2"
-                  style={{ color: '#A238FF' }}
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+                    boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+                  }}
                 >
                   ล้างตัวกรอง
                 </button>
@@ -345,7 +377,10 @@ export function FactoryRfqBoardPage() {
           ) : (
             <ul className="space-y-3">
               {pipeline.map((r) => (
-                <li key={r.id}>
+                <li
+                  key={r.id}
+                  className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                >
                   <RfqCard row={r as RfqCardModel} />
                 </li>
               ))}

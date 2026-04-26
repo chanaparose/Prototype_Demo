@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, Trash2, ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon, Sparkles } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi } from '../../services/api';
@@ -15,11 +15,11 @@ const TAB_META = {
   ID: { icon: '💡', label: 'ไอเดีย', btnLabel: 'เพิ่มไอเดีย', empty: 'ยังไม่มีไอเดีย' },
 } as const;
 
-const STATUS_META: Record<ShowcaseStatus, { label: string; cls: string }> = {
-  DR: { label: 'ร่าง', cls: 'bg-gray-100 text-gray-600' },
-  AC: { label: 'Active', cls: 'bg-emerald-100 text-emerald-700' },
-  HI: { label: 'ซ่อน', cls: 'bg-amber-100 text-amber-700' },
-  AR: { label: 'Archived', cls: 'bg-gray-200 text-gray-500' },
+const STATUS_META: Record<ShowcaseStatus, { label: string; bg: string; color: string }> = {
+  DR: { label: 'ร่าง', bg: 'rgba(107,114,128,0.12)', color: '#6B7280' },
+  AC: { label: 'Active', bg: 'rgba(16,185,129,0.12)', color: '#059669' },
+  HI: { label: 'ซ่อน', bg: 'rgba(245,158,11,0.12)', color: '#D97706' },
+  AR: { label: 'Archived', bg: 'rgba(107,114,128,0.10)', color: '#9CA3AF' },
 };
 
 function rowId(r: Row): string {
@@ -113,26 +113,64 @@ export function FactoryShowcasesPage() {
   const { btnLabel, empty, icon } = TAB_META[activeType];
 
   return (
-    <div className="space-y-5 pb-12">
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">โชว์เคส</h2>
-          <p className="text-xs text-gray-500 mt-0.5">จัดการสินค้า โปรโมชัน และไอเดียของคุณ</p>
+    <div
+      style={{ backgroundColor: '#F8F6FA' }}
+      className="min-h-screen -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 py-5 space-y-5"
+    >
+      {/* Hero Banner */}
+      <div
+        className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
+        style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
+      >
+        <div
+          className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-40 blur-2xl mix-blend-screen"
+          style={{ backgroundColor: '#FF7A00' }}
+        />
+        <div
+          className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-60 transform translate-x-8"
+          style={{ backgroundColor: '#A238FF' }}
+        />
+        <div
+          className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full opacity-30 blur-xl mix-blend-screen"
+          style={{ backgroundColor: '#A238FF' }}
+        />
+        <div className="relative z-10 flex items-center gap-4">
+          <div
+            className="p-2.5 rounded-full shrink-0"
+            style={{
+              backgroundColor: 'rgba(162,56,255,0.30)',
+              border: '1px solid rgba(162,56,255,0.50)',
+            }}
+          >
+            <Sparkles size={20} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium mb-0.5" style={{ color: '#EBD3FF' }}>
+              ระบบจัดการโรงงาน
+            </p>
+            <h2 className="text-base font-bold">โชว์เคสของฉัน</h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold shrink-0 active:scale-95 transition-transform"
+            style={{
+              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+              color: '#fff',
+            }}
+          >
+            <Plus size={15} />
+            {btnLabel}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shrink-0 shadow-sm active:scale-95 transition-transform"
-          style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)' }}
-        >
-          <Plus size={16} />
-          {btnLabel}
-        </button>
       </div>
 
-      {/* ── Tab bar ── */}
-      <div className="flex gap-0.5 bg-gray-100 rounded-xl p-1">
+      {/* Tab bar */}
+      <div
+        className="flex items-center gap-1 p-1 rounded-xl"
+        style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
+      >
         {(['PD', 'PM', 'ID'] as ShowcaseType[]).map((type) => {
           const meta = TAB_META[type];
           const active = activeType === type;
@@ -141,9 +179,13 @@ export function FactoryShowcasesPage() {
               key={type}
               type="button"
               onClick={() => changeType(type)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                active ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all"
+              style={{
+                backgroundColor: active ? '#E38844' : 'transparent',
+                color: active ? '#fff' : '#2E2252',
+                fontWeight: active ? 700 : 500,
+                boxShadow: active ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
+              }}
             >
               <span>{meta.icon}</span>
               <span>{meta.label}</span>
@@ -152,12 +194,12 @@ export function FactoryShowcasesPage() {
         })}
       </div>
 
-      {/* ── Error ── */}
+      {/* Error */}
       {error ? (
         <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
       ) : null}
 
-      {/* ── Skeleton ── */}
+      {/* Skeleton */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
@@ -172,29 +214,32 @@ export function FactoryShowcasesPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        /* ── Empty state ── */
-        <div className="flex flex-col items-center justify-center py-20 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/60">
-          <span className="text-5xl mb-3">{icon}</span>
-          <p className="text-sm font-semibold text-gray-700">{empty}</p>
-          <p className="text-xs text-gray-400 mt-1 mb-5">กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
+        /* Empty state */
+        <div className="rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4">
+          <div className="text-5xl">{icon}</div>
+          <p className="text-base font-bold" style={{ color: '#2E2252' }}>{empty}</p>
+          <p className="text-sm text-gray-400">กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
           <button
             type="button"
             onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm"
-            style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)' }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold"
+            style={{
+              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
+              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+            }}
           >
             <Plus size={15} />
             {btnLabel}
           </button>
         </div>
       ) : (
-        /* ── Card grid ── */
+        /* Card grid */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rows.map((r) => {
             const id = rowId(r);
             const img = firstImage(r);
             const statusKey = String(r.status ?? 'DR').toUpperCase() as ShowcaseStatus;
-            const { label: statusLabel, cls: statusCls } = STATUS_META[statusKey] ?? STATUS_META.DR;
+            const { label: statusLabel, bg: statusBg, color: statusColor } = STATUS_META[statusKey] ?? STATUS_META.DR;
             const ctx = contextLine(r, activeType);
             const catLine = [r.category_name, r.sub_category_name].filter(Boolean).join(' › ');
             const isDeleting = deletingId === id;
@@ -202,7 +247,7 @@ export function FactoryShowcasesPage() {
             return (
               <article
                 key={id}
-                className="group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                className="group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
               >
                 {/* Cover */}
                 <div className="aspect-video bg-gray-100 relative overflow-hidden">
@@ -218,18 +263,21 @@ export function FactoryShowcasesPage() {
                       <span className="text-[10px]">ไม่มีภาพ</span>
                     </div>
                   )}
-                  <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${statusCls}`}>
+                  <span
+                    className="absolute top-2 left-2 rounded-full text-[11px] font-semibold px-2.5 py-0.5"
+                    style={{ backgroundColor: statusBg, color: statusColor }}
+                  >
                     {statusLabel}
                   </span>
                 </div>
 
                 {/* Info */}
                 <div className="px-3 pt-3 pb-2">
-                  <p className="font-semibold text-gray-900 text-sm line-clamp-2 min-h-[40px] leading-snug">
+                  <p className="font-semibold text-sm line-clamp-2 min-h-[40px] leading-snug" style={{ color: '#2E2252' }}>
                     {String(r.title ?? '—')}
                   </p>
                   {ctx ? (
-                    <p className="text-[11px] text-orange-600 font-medium mt-1.5">{ctx}</p>
+                    <p className="text-[11px] font-medium mt-1.5" style={{ color: '#E38844' }}>{ctx}</p>
                   ) : null}
                   {catLine ? (
                     <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{catLine}</p>
@@ -241,7 +289,8 @@ export function FactoryShowcasesPage() {
                   <button
                     type="button"
                     onClick={() => navigate(`/factory/showcases/${id}/edit`)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-orange-50 text-orange-700 text-xs font-semibold hover:bg-orange-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors"
+                    style={{ backgroundColor: 'rgba(227,136,68,0.10)', color: '#C96D1A' }}
                   >
                     <Pencil size={13} />
                     แก้ไข

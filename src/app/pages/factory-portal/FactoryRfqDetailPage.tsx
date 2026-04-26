@@ -19,6 +19,7 @@ type QuoteRow = QuotationRow & {
   factoryId?: number | string;
   id?: number | string;
   mold_cost?: number | string;
+  image_urls?: unknown;
 };
 
 function quoteFid(q: QuoteRow): number | null {
@@ -28,6 +29,25 @@ function quoteFid(q: QuoteRow): number | null {
 
 function quoteIdOf(q: QuoteRow): string {
   return String(q.quote_id ?? q.id ?? '');
+}
+
+function rfqStatusGradient(status: string): string {
+  const s = status.toUpperCase();
+  if (s === 'OP' || s === 'OPEN') return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
+  if (s === 'CL' || s === 'CLOSED' || s === 'CN' || s === 'CANCELLED') return 'linear-gradient(135deg, #7F1D1D 0%, #DC2626 100%)';
+  if (s === 'CP' || s === 'COMPLETED') return 'linear-gradient(135deg, #065F46 0%, #059669 100%)';
+  if (s === 'PD' || s === 'PENDING') return 'linear-gradient(135deg, #78350F 0%, #D97706 100%)';
+  return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
+}
+
+function rfqStatusLabel(status: string): string {
+  const s = status.toUpperCase();
+  if (s === 'OP' || s === 'OPEN') return 'เปิดรับใบเสนอราคา';
+  if (s === 'CL' || s === 'CLOSED') return 'ปิดแล้ว';
+  if (s === 'CN' || s === 'CANCELLED') return 'ยกเลิก';
+  if (s === 'CP' || s === 'COMPLETED') return 'เสร็จสิ้น';
+  if (s === 'PD' || s === 'PENDING') return 'รออนุมัติ';
+  return status || '—';
 }
 
 export function FactoryRfqDetailPage() {
@@ -284,287 +304,374 @@ export function FactoryRfqDetailPage() {
   }
 
   return (
-    <div className="w-full min-w-0 max-w-lg lg:max-w-5xl mx-auto pb-24 pb-[max(6rem,env(safe-area-inset-bottom,0px))]">
-      <div className="flex items-center gap-3 mb-5 sm:mb-6 min-w-0">
+    <div style={{ backgroundColor: '#F8F6FA' }} className="min-h-screen pb-24">
+      {/* Sticky top bar */}
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate('/factory/rfqs')}
-          className="w-10 h-10 shrink-0 rounded-xl border border-gray-200 flex items-center justify-center bg-white"
+          className="flex items-center gap-1 text-sm font-medium"
+          style={{ color: '#7A4B94' }}
         >
-          <ChevronLeft size={22} />
+          <ChevronLeft size={18} /> กลับ
         </button>
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] text-gray-400">RFQ</p>
-          <h1 className="text-base sm:text-lg font-bold text-gray-900 break-words">
-            #{id} · {rfqTitle || '—'}
-          </h1>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-700">
-              {rfqStatus || '—'}
-            </span>
-            {deadlineIso ? <DeadlineBadge deadlineIso={deadlineIso} /> : null}
-          </div>
-        </div>
+        <span className="flex-1 text-center text-sm font-bold" style={{ color: '#2E2252' }}>
+          รายละเอียด RFQ
+        </span>
+        <span className="text-xs font-medium text-gray-400">#{id}</span>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div
-            className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
-          />
-        </div>
-      ) : null}
+      <div className="w-full max-w-lg lg:max-w-5xl mx-auto px-4 pt-4">
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div
+              className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }}
+            />
+          </div>
+        ) : null}
 
-      {error ? (
-        <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
-      ) : null}
+        {error ? (
+          <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
+        ) : null}
 
-      {!loading ? (
-        <div className={twoCol}>
-          <div className="space-y-4 mb-4 lg:mb-0 min-w-0">
-            {myQuote ? (
+        {!loading ? (
+          <div className="space-y-4">
+            {/* Status hero card */}
+            <div
+              className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
+              style={{ background: rfqStatusGradient(rfqStatus) }}
+            >
               <div
-                className={`rounded-2xl border px-4 py-3 text-sm ${
-                  myStatus === 'PD'
-                    ? 'border-violet-200 bg-violet-50/80 text-violet-950'
-                    : myStatus === 'AC'
-                      ? 'border-emerald-200 bg-emerald-50/80 text-emerald-900'
-                      : 'border-gray-200 bg-gray-50 text-gray-800'
-                }`}
-              >
-                <p className="font-bold">สถานะใบเสนอราคาของคุณ</p>
-                <p className="mt-1">
-                  {myStatus === 'PD'
-                    ? 'รอลูกค้าตัดสินใจ'
-                    : myStatus === 'AC'
-                      ? 'ลูกค้ารับแล้ว'
-                      : myStatus === 'RJ'
-                        ? 'ปิด / ถูกปฏิเสธ'
-                        : myStatus}
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950">
-                คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้
-              </div>
-            )}
-
-            {imageUrls.length > 0 ? (
-              <section className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
-                <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">รูปอ้างอิง</h2>
-                <div className="flex flex-wrap gap-2">
-                  {imageUrls.slice(0, 5).map((url, i) => (
-                    <button
-                      key={url}
-                      type="button"
-                      onClick={() => setLightbox(i)}
-                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
-                    >
-                      <img src={url} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                  {imageUrls.length > 5 ? (
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500">
-                      +{imageUrls.length - 5}
+                className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-30 blur-2xl"
+                style={{ backgroundColor: '#FF7A00' }}
+              />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-2">
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                  >
+                    {rfqStatusLabel(rfqStatus)}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {deadlineIso ? <DeadlineBadge deadlineIso={deadlineIso} /> : null}
+                    <span className="text-xs opacity-70">#{id}</span>
+                  </div>
+                </div>
+                <h2 className="text-base font-bold mb-3">{rfqTitle || '—'}</h2>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {budgetPerPiece != null ? (
+                    <div>
+                      <p className="text-[10px] opacity-60 uppercase tracking-wide">งบ/ชิ้น</p>
+                      <p className="font-semibold">฿{budgetPerPiece.toLocaleString('th-TH')}</p>
+                    </div>
+                  ) : null}
+                  {quantity != null ? (
+                    <div>
+                      <p className="text-[10px] opacity-60 uppercase tracking-wide">จำนวน</p>
+                      <p className="font-semibold">{quantity.toLocaleString('th-TH')} ชิ้น</p>
+                    </div>
+                  ) : null}
+                  {revenueApprox != null ? (
+                    <div>
+                      <p className="text-[10px] opacity-60 uppercase tracking-wide">รวมประเมิน</p>
+                      <p className="font-semibold">≈ ฿{Math.round(revenueApprox).toLocaleString('th-TH')}</p>
                     </div>
                   ) : null}
                 </div>
+              </div>
+            </div>
+
+            {/* My quote status banner */}
+            {myQuote ? (
+              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">สถานะใบเสนอราคาของคุณ</p>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{
+                      backgroundColor:
+                        myStatus === 'AC' ? '#D1FAE5' :
+                        myStatus === 'PD' ? '#EDE9FE' :
+                        '#F3F4F6',
+                      color:
+                        myStatus === 'AC' ? '#065F46' :
+                        myStatus === 'PD' ? '#5B21B6' :
+                        '#374151',
+                    }}
+                  >
+                    {myStatus === 'PD'
+                      ? 'รอลูกค้าตัดสินใจ'
+                      : myStatus === 'AC'
+                        ? 'ลูกค้ารับแล้ว'
+                        : myStatus === 'RJ'
+                          ? 'ปิด / ถูกปฏิเสธ'
+                          : myStatus}
+                  </span>
+                </div>
+              </section>
+            ) : (
+              <section className="rounded-2xl bg-white border border-amber-100 shadow-sm p-4">
+                <p className="text-sm text-amber-800">คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
+              </section>
+            )}
+
+            <div className={twoCol}>
+              <div className="space-y-4 mb-4 lg:mb-0 min-w-0">
+                {/* Reference images */}
+                {imageUrls.length > 0 ? (
+                  <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">รูปอ้างอิง</p>
+                    <div className="flex flex-wrap gap-2">
+                      {imageUrls.slice(0, 5).map((url, i) => (
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => setLightbox(i)}
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none"
+                          style={{ outlineColor: '#7A4B94' }}
+                        >
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                      {imageUrls.length > 5 ? (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500">
+                          +{imageUrls.length - 5}
+                        </div>
+                      ) : null}
+                    </div>
+                  </section>
+                ) : null}
+
+                {/* Product / requirements info */}
+                <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">รายละเอียดสินค้า</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-gray-500">หมวดหมู่</span>
+                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>{breadcrumb}</span>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-gray-500">จำนวน</span>
+                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                      {quantity != null ? `${quantity.toLocaleString('th-TH')} ชิ้น` : '—'}
+                    </span>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-gray-500">วัสดุ/เกรด</span>
+                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                      {String(rfqBody.material_grade ?? '-')}
+                    </span>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-gray-500">ต้องการตัวอย่าง</span>
+                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                      {Boolean(rfqBody.sample_required) ? `ใช่${rfqBody.sample_qty ? ` (${String(rfqBody.sample_qty)} ชิ้น)` : ''}` : 'ไม่'}
+                    </span>
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-gray-500">ประเภทการตรวจสอบ</span>
+                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                      {String(rfqBody.inspection_type ?? '-')}
+                    </span>
+                  </div>
+                  {Array.isArray(rfqBody.certifications_required) && rfqBody.certifications_required.length > 0 ? (
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs text-gray-500">ใบรับรองที่ต้องการ</span>
+                      <div className="flex flex-wrap justify-end gap-1">
+                        {rfqBody.certifications_required.map((c) => (
+                          <span
+                            key={String(c)}
+                            className="text-[11px] px-2 py-0.5 rounded-full border"
+                            style={{ backgroundColor: '#F3E8FF', color: '#6B21A8', borderColor: '#E9D5FF' }}
+                          >
+                            {String(c)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {rfqBody.details ?? rfqBody.description ? (
+                    <div className="pt-1 border-t border-gray-50">
+                      <p className="text-xs text-gray-500 mb-1">รายละเอียดเพิ่มเติม</p>
+                      <p className="text-sm break-words" style={{ color: '#2E2252' }}>
+                        {String(rfqBody.details ?? rfqBody.description ?? '—')}
+                      </p>
+                    </div>
+                  ) : null}
+                </section>
+
+                {/* Buyer requirements */}
+                <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">เงื่อนไขลูกค้า</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-gray-500">งบประมาณรวม</span>
+                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                      {rfqBody.target_unit_price != null ? `${Number(rfqBody.target_unit_price).toLocaleString('th-TH')} บาท` : '-'}
+                    </span>
+                  </div>
+                  {targetDaysCustomer != null ? (
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs text-gray-500">Lead time ที่ต้องการ</span>
+                      <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                        {targetDaysCustomer} วัน
+                      </span>
+                    </div>
+                  ) : null}
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-xs text-gray-500">วันที่ต้องการรับสินค้า</span>
+                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                      {deadlineIso ? new Date(deadlineIso).toLocaleDateString('th-TH') : '-'}
+                    </span>
+                  </div>
+                  <div className="pt-1">
+                    <ShippingMethodLockedField
+                      label="วิธีจัดส่ง (ลูกค้าเลือก)"
+                      methodName={customerShipLabel || '—'}
+                      hint="ล็อกตาม RFQ — โรงงานเปลี่ยนไม่ได้"
+                      emptyFallback="—"
+                    />
+                  </div>
+                  {addressSummary ? (
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs text-gray-500">ที่อยู่ปลายทาง</span>
+                      <span className="text-sm font-medium text-right break-words" style={{ color: '#2E2252' }}>
+                        {addressSummary}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs text-gray-500">ที่อยู่ปลายทาง</span>
+                      <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>—</span>
+                    </div>
+                  )}
+                </section>
+
+                {/* Competitor count */}
+                <div
+                  className="rounded-2xl bg-white border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between"
+                >
+                  <span className="text-xs text-gray-500">คู่แข่งที่เสนอราคา</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold" style={{ color: '#2E2252' }}>{competitorCount} ราย</span>
+                    <span className="text-[11px] text-gray-400">(ซ่อนราคา)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quote form section */}
+              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3 min-w-0">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                  {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ดูใบเสนอราคา' : 'ส่งใบเสนอราคา'}
+                </p>
+                <h2 className="font-bold" style={{ color: '#2E2252' }}>
+                  {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ใบเสนอราคาของคุณ' : 'กรอกใบเสนอราคา'}
+                </h2>
+
+                {rfqShipId == null ? (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 text-rose-900 text-sm px-3 py-2">
+                    RFQ นี้ยังไม่ระบุวิธีจัดส่ง — ไม่สามารถเสนอราคาได้ กรุณาติดต่อลูกค้า
+                  </div>
+                ) : null}
+
+                {fid != null && rfqShipId != null ? (
+                  <QuotationCreateForm
+                    key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
+                    ref={quoteFormRef}
+                    rfqId={id}
+                    factoryId={fid}
+                    lockedShippingMethodId={rfqShipId}
+                    rfqQuantity={quantity}
+                    patchQuotationId={
+                      myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
+                    }
+                    initial={
+                      myQuote
+                        ? {
+                            price_per_piece: String(myQuote.price_per_piece ?? ''),
+                            tooling_mold_cost: String(myQuote.tooling_mold_cost ?? myQuote.mold_cost ?? ''),
+                            shipping_cost: String(myQuote.shipping_cost ?? ''),
+                            packaging_cost: String(myQuote.packaging_cost ?? ''),
+                            lead_time_days: String(myQuote.lead_time_days ?? ''),
+                            validity_days: String(myQuote.validity_days ?? '14'),
+                          }
+                        : undefined
+                    }
+                    initialImageUrls={
+                      myQuote
+                        ? (() => {
+                            const urls = myQuote.image_urls;
+                            if (Array.isArray(urls)) return urls.filter((u): u is string => typeof u === 'string');
+                            return [];
+                          })()
+                        : undefined
+                    }
+                    submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
+                    readOnly={Boolean(myQuote && !canEdit)}
+                    showHeading={false}
+                    budgetPerPiece={budgetPerPiece}
+                    targetDaysCustomer={targetDaysCustomer}
+                    deadlineIso={deadlineIso}
+                    onSubmitted={async () => {
+                      if (customerId > 0 && fid != null) {
+                        try {
+                          await conversationsApi.create({ customer_id: customerId, factory_id: fid });
+                        } catch {
+                          /* ห้องสนทนาอาจมีอยู่แล้ว */
+                        }
+                      }
+                      await load();
+                    }}
+                  />
+                ) : null}
+
+                {canEdit && rfqShipId != null ? (
+                  <button
+                    type="button"
+                    disabled={cancelBusy}
+                    onClick={() => void cancelQuote()}
+                    className="w-full py-3 rounded-xl border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50"
+                  >
+                    ถอนใบเสนอราคา
+                  </button>
+                ) : null}
+              </section>
+            </div>
+
+            {/* Contact customer */}
+            {customerId > 0 && fid != null ? (
+              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">ติดต่อลูกค้า</p>
+                <h2 className="text-sm font-bold" style={{ color: '#2E2252' }}>ส่งข้อความ</h2>
+                <p className="text-xs text-gray-500">
+                  เปิดห้องแชทกับลูกค้า — ข้อความแรกจากโรงงานจะแนบบริบท RFQ ตามสเปก
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    disabled={chatBusy}
+                    onClick={() => void openChatToCustomer()}
+                    className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm disabled:opacity-50"
+                  >
+                    ส่งข้อความหาลูกค้า
+                  </button>
+                  <button
+                    type="button"
+                    disabled={chatBusy}
+                    onClick={() => void sendQuoteMessageToCustomer()}
+                    className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm"
+                    style={{ background: 'linear-gradient(135deg, #E38844 0%, #D4722E 100%)' }}
+                  >
+                    ส่งใบเสนอราคาในแชท (QT)
+                  </button>
+                </div>
               </section>
             ) : null}
-
-            <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-2 text-sm break-words">
-              <p>
-                <span className="text-gray-500">หมวดหมู่: </span>
-                {breadcrumb}
-              </p>
-              <p>
-                <span className="text-gray-500">จำนวน: </span>
-                {quantity != null ? `${quantity.toLocaleString('th-TH')} ชิ้น` : '—'}
-              </p>
-              <p>
-                <span className="text-gray-500">งบ/ชิ้น: </span>
-                {budgetPerPiece != null
-                  ? `${budgetPerPiece.toLocaleString('th-TH')} บาท`
-                  : '—'}
-              </p>
-              {revenueApprox != null ? (
-                <p>
-                  <span className="text-gray-500">รวมประเมิน: </span>≈ ฿
-                  {Math.round(revenueApprox).toLocaleString('th-TH')}
-                </p>
-              ) : null}
-              {targetDaysCustomer != null ? (
-                <p>
-                  <span className="text-gray-500">Lead time ที่ลูกค้าต้องการ: </span>
-                  {targetDaysCustomer} วัน
-                </p>
-              ) : null}
-              <div className="pt-1">
-                <ShippingMethodLockedField
-                  label="วิธีจัดส่ง (ลูกค้าเลือก)"
-                  methodName={customerShipLabel || '—'}
-                  hint="ล็อกตาม RFQ — โรงงานเปลี่ยนไม่ได้"
-                  emptyFallback="—"
-                />
-              </div>
-              {addressSummary ? (
-                <p>
-                  <span className="text-gray-500">📍 ที่อยู่ปลายทาง: </span>
-                  {addressSummary}
-                </p>
-              ) : (
-                <p>
-                  <span className="text-gray-500">📍 ที่อยู่ปลายทาง: </span>—
-                </p>
-              )}
-              <p>
-                <span className="text-gray-500">รายละเอียด: </span>
-                {String(rfqBody.details ?? rfqBody.description ?? '—')}
-              </p>
-              <p>
-                <span className="text-gray-500">วัสดุ/เกรด: </span>
-                {String(rfqBody.material_grade ?? '-')}
-              </p>
-              
-              <p>
-                <span className="text-gray-500">งบประมาณรวม: </span>
-                {rfqBody.target_unit_price != null ? `${Number(rfqBody.target_unit_price).toLocaleString('th-TH')} บาท` : '-'}
-              </p>
-              <p>
-                <span className="text-gray-500">วันที่ต้องการรับสินค้า: </span>
-                {deadlineIso ? new Date(deadlineIso).toLocaleDateString('th-TH') : '-'}
-              </p>
-              <p>
-                <span className="text-gray-500">ต้องการตัวอย่าง: </span>
-                {Boolean(rfqBody.sample_required) ? `ใช่${rfqBody.sample_qty ? ` (${String(rfqBody.sample_qty)} ชิ้น)` : ''}` : 'ไม่'}
-              </p>
-              <p>
-                <span className="text-gray-500">ประเภทการตรวจสอบ: </span>
-                {String(rfqBody.inspection_type ?? '-')}
-              </p>
-              {Array.isArray(rfqBody.certifications_required) && rfqBody.certifications_required.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-gray-500">ใบรับรองที่ต้องการ:</span>
-                  {rfqBody.certifications_required.map((c) => (
-                    <span key={String(c)} className="text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
-                      {String(c)}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </section>
-
-            <p className="text-sm text-gray-700 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2">
-              คู่แข่งที่เสนอราคา: <strong>{competitorCount}</strong> ราย
-              <span className="text-gray-500"> (ไม่แสดงราคาของคู่แข่ง)</span>
-            </p>
           </div>
+        ) : null}
+      </div>
 
-          <section className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 space-y-3 min-w-0">
-            <h2 className="font-bold text-gray-900">
-              {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ดูใบเสนอราคา' : 'ส่งใบเสนอราคา'}
-            </h2>
-
-            {rfqShipId == null ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 text-rose-900 text-sm px-3 py-2">
-                RFQ นี้ยังไม่ระบุวิธีจัดส่ง — ไม่สามารถเสนอราคาได้ กรุณาติดต่อลูกค้า
-              </div>
-            ) : null}
-
-            {fid != null && rfqShipId != null ? (
-              <QuotationCreateForm
-                key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
-                ref={quoteFormRef}
-                rfqId={id}
-                factoryId={fid}
-                lockedShippingMethodId={rfqShipId}
-                rfqQuantity={quantity}
-                patchQuotationId={
-                  myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
-                }
-                initial={
-                  myQuote
-                    ? {
-                        price_per_piece: String(myQuote.price_per_piece ?? ''),
-                        tooling_mold_cost: String(myQuote.tooling_mold_cost ?? myQuote.mold_cost ?? ''),
-                        shipping_cost: String(myQuote.shipping_cost ?? ''),
-                        packaging_cost: String(myQuote.packaging_cost ?? ''),
-                        lead_time_days: String(myQuote.lead_time_days ?? ''),
-                        validity_days: String(myQuote.validity_days ?? '14'),
-                      }
-                    : undefined
-                }
-                initialImageUrls={
-                  myQuote
-                    ? (() => {
-                        const urls = (myQuote as Record<string, unknown>).image_urls;
-                        if (Array.isArray(urls)) return urls.filter((u): u is string => typeof u === 'string');
-                        return [];
-                      })()
-                    : undefined
-                }
-                submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
-                readOnly={Boolean(myQuote && !canEdit)}
-                showHeading={false}
-                budgetPerPiece={budgetPerPiece}
-                targetDaysCustomer={targetDaysCustomer}
-                deadlineIso={deadlineIso}
-                onSubmitted={async () => {
-                  if (customerId > 0 && fid != null) {
-                    try {
-                      await conversationsApi.create({ customer_id: customerId, factory_id: fid });
-                    } catch {
-                      /* ห้องสนทนาอาจมีอยู่แล้ว */
-                    }
-                  }
-                  await load();
-                }}
-              />
-            ) : null}
-
-            {canEdit && rfqShipId != null ? (
-              <button
-                type="button"
-                disabled={cancelBusy}
-                onClick={() => void cancelQuote()}
-                className="w-full py-3 rounded-xl border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50"
-              >
-                ถอนใบเสนอราคา
-              </button>
-            ) : null}
-          </section>
-        </div>
-      ) : null}
-
-      {customerId > 0 && fid != null ? (
-        <section className="w-full min-w-0 max-w-lg lg:max-w-5xl mx-auto mt-6 rounded-2xl border border-gray-100 bg-white p-4 space-y-3">
-          <h2 className="text-sm font-bold text-gray-900">ติดต่อลูกค้า</h2>
-          <p className="text-xs text-gray-500">
-            เปิดห้องแชทกับลูกค้า — ข้อความแรกจากโรงงานจะแนบบริบท RFQ ตามสเปก
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <button
-              type="button"
-              disabled={chatBusy}
-              onClick={() => void openChatToCustomer()}
-              className="flex-1 py-3 rounded-xl border border-violet-200 text-violet-800 text-sm font-semibold disabled:opacity-50"
-            >
-              ส่งข้อความหาลูกค้า
-            </button>
-            <button
-              type="button"
-              disabled={chatBusy}
-              onClick={() => void sendQuoteMessageToCustomer()}
-              className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #0D9488 0%, #14B8A6 100%)' }}
-            >
-              ส่งใบเสนอราคาในแชท (QT)
-            </button>
-          </div>
-        </section>
-      ) : null}
-
+      {/* Lightbox */}
       {lightbox != null && imageUrls[lightbox] ? (
         <div
           role="presentation"
