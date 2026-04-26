@@ -21,10 +21,20 @@ import {
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { transactionsApi, addressesApi } from '../../services/api';
+import { profileApi, addressesApi } from '../../services/api';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
 
-const menuSections = [
+type ProfileMenuItem = {
+  icon: typeof User;
+  label: string;
+  sub: string;
+  color: string;
+  bg: string;
+  /** customer app route (relative to site root) */
+  to?: string;
+};
+
+const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
   {
     items: [
       {
@@ -33,6 +43,7 @@ const menuSections = [
         sub: 'แก้ไขโปรไฟล์',
         color: '#6C47FF',
         bg: '#EDE9FF',
+        to: '/profile/edit',
       },
       {
         icon: Star,
@@ -40,6 +51,7 @@ const menuSections = [
         sub: 'รีวิวที่ให้กับโรงงาน',
         color: '#F59E0B',
         bg: '#FEF3C7',
+        to: '/profile/reviews',
       },
       {
         icon: Bell,
@@ -47,6 +59,7 @@ const menuSections = [
         sub: 'จัดการการแจ้งเตือน',
         color: '#3B82F6',
         bg: '#DBEAFE',
+        to: '/notifications',
       },
     ],
   },
@@ -55,25 +68,13 @@ const menuSections = [
     items: [
       {
         icon: FileText,
-        label: 'RFQ ทั้งหมด',
+        label: 'RFQ & คำสั่งซื้อ ทั้งหมด',
         sub: 'ดูประวัติการขอใบเสนอราคา',
         color: '#8B5CF6',
         bg: '#EDE9FF',
+        to: '/orders',
       },
-      {
-        icon: Package,
-        label: 'คำสั่งซื้อ',
-        sub: 'ประวัติการสั่งซื้อทั้งหมด',
-        color: '#22C55E',
-        bg: '#DCFCE7',
-      },
-      {
-        icon: TrendingUp,
-        label: 'รายงาน',
-        sub: 'สรุปการใช้จ่าย',
-        color: '#F97316',
-        bg: '#FEF3C7',
-      },
+      
     ],
   },
   {
@@ -114,9 +115,15 @@ type WalletTransaction = {
 
 function normTransaction(r: Record<string, unknown>): WalletTransaction {
   const amount = Number(r.amount ?? 0);
-  const txType = String(r.transaction_type ?? r.type ?? '');
-  const type: 'credit' | 'debit' =
-    txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
+  const direction = String(r.direction ?? '').toLowerCase();
+  let type: 'credit' | 'debit';
+  if (direction === 'in') type = 'credit';
+  else if (direction === 'out') type = 'debit';
+  else {
+    const txType = String(r.transaction_type ?? r.type ?? '');
+    type =
+      txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
+  }
   const rawDate = String(r.created_at ?? r.date ?? '');
   let date = rawDate;
   if (rawDate && !Number.isNaN(Date.parse(rawDate))) {
@@ -125,8 +132,8 @@ function normTransaction(r: Record<string, unknown>): WalletTransaction {
     });
   }
   return {
-    id: String(r.transaction_id ?? r.id ?? ''),
-    label: String(r.description ?? r.label ?? r.note ?? 'รายการ'),
+    id: String(r.tx_id ?? r.transaction_id ?? r.id ?? ''),
+    label: String(r.description ?? r.type_label ?? r.label ?? r.note ?? 'รายการ'),
     amount: Math.abs(amount),
     date,
     type,
@@ -202,15 +209,20 @@ export function ProfileMobile() {
   useEffect(() => {
     let cancelled = false;
     setTxLoading(true);
-    transactionsApi.list()
+    profileApi
+      .transactions({ page: 1, limit: 20, type: 'all' })
       .then((raw) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        setWalletTransactions(arr.map(normTransaction).filter((t) => t.id).slice(0, 5));
+        const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
+        setWalletTransactions(data.map(normTransaction).filter((t) => t.id).slice(0, 5));
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setTxLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setTxLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (!currentUser) {
@@ -338,6 +350,7 @@ export function ProfileMobile() {
               <button
                 type="button"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]"
+                onClick={() => navigate('/profile/transactions')}
               >
                 ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
               </button>
@@ -400,12 +413,11 @@ export function ProfileMobile() {
             {section.items.map((item, idx) => (
               <button
                 key={item.label}
+                type="button"
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
                 style={{ borderTop: idx > 0 ? '1px solid #F9FAFB' : 'none' }}
                 onClick={() => {
-                  if (item.label === 'การแจ้งเตือน') navigate('/notifications');
-                  if (item.label === 'คำสั่งซื้อ') navigate('/orders');
-                  if (item.label === 'RFQ ทั้งหมด') navigate('/orders');
+                  if (item.to) navigate(item.to);
                 }}
               >
                 <div className="flex items-center gap-3">

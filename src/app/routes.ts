@@ -9,6 +9,10 @@ import { IdeaDetail } from './pages/idea-detail';
 import { RfqAndOrders } from './pages/rfq-and-orders';
 import { Messages } from './pages/messages';
 import { Profile } from './pages/profile';
+import { EditProfilePage } from './pages/profile/EditProfilePage';
+import { ChangePasswordPage } from './pages/profile/ChangePasswordPage';
+import { TransactionHistoryPage } from './pages/profile/TransactionHistoryPage';
+import { MyReviewsPage } from './pages/profile/MyReviewsPage';
 import { CreateRfq } from './pages/create-rfq';
 import { RFQDetail } from './pages/rfq-detail';
 import { OrderDetail } from './pages/order-detail';
@@ -77,6 +81,10 @@ export const router = createBrowserRouter([
           { path: 'orders', Component: RfqAndOrders },
           { path: 'messages', Component: Messages },
           { path: 'profile', Component: Profile },
+          { path: 'profile/edit', Component: EditProfilePage },
+          { path: 'profile/change-password', Component: ChangePasswordPage },
+          { path: 'profile/transactions', Component: TransactionHistoryPage },
+          { path: 'profile/reviews', Component: MyReviewsPage },
           { path: 'create-rfq', Component: CreateRfq },
           { path: 'notifications', Component: Notifications },
           { path: 'quotations/:id', Component: QuoteDetailCustomer },
