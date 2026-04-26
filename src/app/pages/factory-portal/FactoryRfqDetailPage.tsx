@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
@@ -31,15 +31,6 @@ function quoteIdOf(q: QuoteRow): string {
   return String(q.quote_id ?? q.id ?? '');
 }
 
-function rfqStatusGradient(status: string): string {
-  const s = status.toUpperCase();
-  if (s === 'OP' || s === 'OPEN') return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
-  if (s === 'CL' || s === 'CLOSED' || s === 'CN' || s === 'CANCELLED') return 'linear-gradient(135deg, #7F1D1D 0%, #DC2626 100%)';
-  if (s === 'CP' || s === 'COMPLETED') return 'linear-gradient(135deg, #065F46 0%, #059669 100%)';
-  if (s === 'PD' || s === 'PENDING') return 'linear-gradient(135deg, #78350F 0%, #D97706 100%)';
-  return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
-}
-
 function rfqStatusLabel(status: string): string {
   const s = status.toUpperCase();
   if (s === 'OP' || s === 'OPEN') return 'เปิดรับใบเสนอราคา';
@@ -53,6 +44,7 @@ function rfqStatusLabel(status: string): string {
 export function FactoryRfqDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const data = useData();
   const fid = getFactoryEntityId(user);
@@ -195,6 +187,11 @@ export function FactoryRfqDetailPage() {
   }, [quotes, fid]);
 
   const rfqStatus = String(rfqBody.status ?? '').toUpperCase();
+  const backPath = useMemo(() => {
+    const from = (location.state as { from?: string } | null)?.from;
+    if (typeof from === 'string' && from.startsWith('/factory/rfqs')) return from;
+    return '/factory/rfqs';
+  }, [location.state]);
 
   const customerId = useMemo(
     () => Number(rfqBody.customer_id ?? rfqBody.user_id ?? rfqBody.customer_user_id ?? 0),
@@ -309,9 +306,9 @@ export function FactoryRfqDetailPage() {
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3">
         <button
           type="button"
-          onClick={() => navigate('/factory/rfqs')}
+          onClick={() => navigate(backPath)}
           className="flex items-center gap-1 text-sm font-medium"
-          style={{ color: '#7A4B94' }}
+          style={{ color: '#4338CA' }}
         >
           <ChevronLeft size={18} /> กลับ
         </button>
@@ -326,7 +323,7 @@ export function FactoryRfqDetailPage() {
           <div className="flex justify-center py-12">
             <div
               className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }}
+              style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
             />
           </div>
         ) : null}
@@ -337,49 +334,37 @@ export function FactoryRfqDetailPage() {
 
         {!loading ? (
           <div className="space-y-4">
-            {/* Status hero card */}
-            <div
-              className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
-              style={{ background: rfqStatusGradient(rfqStatus) }}
-            >
-              <div
-                className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-30 blur-2xl"
-                style={{ backgroundColor: '#FF7A00' }}
-              />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-2">
-                  <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-                  >
-                    {rfqStatusLabel(rfqStatus)}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    {deadlineIso ? <DeadlineBadge deadlineIso={deadlineIso} /> : null}
-                    <span className="text-xs opacity-70">#{id}</span>
+            {/* Summary card */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  {rfqStatusLabel(rfqStatus)}
+                </span>
+                <div className="flex items-center gap-2">
+                  {deadlineIso ? <DeadlineBadge deadlineIso={deadlineIso} /> : null}
+                  <span className="text-xs text-slate-400">#{id}</span>
+                </div>
+              </div>
+              <h2 className="text-base font-bold mb-3 text-slate-900">{rfqTitle || '—'}</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                {budgetPerPiece != null ? (
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">งบ/ชิ้น</p>
+                    <p className="font-semibold text-slate-900">฿{budgetPerPiece.toLocaleString('th-TH')}</p>
                   </div>
-                </div>
-                <h2 className="text-base font-bold mb-3">{rfqTitle || '—'}</h2>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  {budgetPerPiece != null ? (
-                    <div>
-                      <p className="text-[10px] opacity-60 uppercase tracking-wide">งบ/ชิ้น</p>
-                      <p className="font-semibold">฿{budgetPerPiece.toLocaleString('th-TH')}</p>
-                    </div>
-                  ) : null}
-                  {quantity != null ? (
-                    <div>
-                      <p className="text-[10px] opacity-60 uppercase tracking-wide">จำนวน</p>
-                      <p className="font-semibold">{quantity.toLocaleString('th-TH')} ชิ้น</p>
-                    </div>
-                  ) : null}
-                  {revenueApprox != null ? (
-                    <div>
-                      <p className="text-[10px] opacity-60 uppercase tracking-wide">รวมประเมิน</p>
-                      <p className="font-semibold">≈ ฿{Math.round(revenueApprox).toLocaleString('th-TH')}</p>
-                    </div>
-                  ) : null}
-                </div>
+                ) : null}
+                {quantity != null ? (
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">จำนวน</p>
+                    <p className="font-semibold text-slate-900">{quantity.toLocaleString('th-TH')} ชิ้น</p>
+                  </div>
+                ) : null}
+                {revenueApprox != null ? (
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">รวมประเมิน</p>
+                    <p className="font-semibold text-slate-900">≈ ฿{Math.round(revenueApprox).toLocaleString('th-TH')}</p>
+                  </div>
+                ) : null}
               </div>
             </div>
 
@@ -430,7 +415,7 @@ export function FactoryRfqDetailPage() {
                           type="button"
                           onClick={() => setLightbox(i)}
                           className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none"
-                          style={{ outlineColor: '#7A4B94' }}
+                          style={{ outlineColor: '#4F46E5' }}
                         >
                           <img src={url} alt="" className="w-full h-full object-cover" />
                         </button>
@@ -560,7 +545,7 @@ export function FactoryRfqDetailPage() {
               </div>
 
               {/* Quote form section */}
-              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3 min-w-0">
+              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3 min-w-0 lg:sticky lg:top-20">
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">
                   {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ดูใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                 </p>
@@ -660,13 +645,46 @@ export function FactoryRfqDetailPage() {
                     disabled={chatBusy}
                     onClick={() => void sendQuoteMessageToCustomer()}
                     className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm"
-                    style={{ background: 'linear-gradient(135deg, #E38844 0%, #D4722E 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
                   >
                     ส่งใบเสนอราคาในแชท (QT)
                   </button>
                 </div>
               </section>
             ) : null}
+
+            <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">ประวัติการเสนอราคา</p>
+              {quotes.length === 0 ? (
+                <p className="text-sm text-gray-500">ยังไม่มีใบเสนอราคา</p>
+              ) : (
+                <ul className="space-y-2">
+                  {quotes
+                    .slice()
+                    .sort(
+                      (a, b) =>
+                        new Date(String(b.create_time ?? '')).getTime() -
+                        new Date(String(a.create_time ?? '')).getTime(),
+                    )
+                    .slice(0, 5)
+                    .map((q) => (
+                      <li key={quoteIdOf(q)} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-800">
+                            ฿{Number(q.price_per_piece ?? 0).toLocaleString('th-TH')} / ชิ้น
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            {String(q.status ?? 'PD')} · {String(q.lead_time_days ?? '-')} วัน
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-slate-500 shrink-0">
+                          {q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}
+                        </p>
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </section>
           </div>
         ) : null}
       </div>

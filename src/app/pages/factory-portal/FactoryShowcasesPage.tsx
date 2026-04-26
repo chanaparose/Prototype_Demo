@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Plus, Pencil, Trash2, ImageIcon, Sparkles } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi } from '../../services/api';
+import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID';
@@ -57,6 +58,7 @@ export function FactoryShowcasesPage() {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialType = ((): ShowcaseType => {
@@ -113,64 +115,17 @@ export function FactoryShowcasesPage() {
   const { btnLabel, empty, icon } = TAB_META[activeType];
 
   return (
-    <div
-      style={{ backgroundColor: '#F8F6FA' }}
-      className="min-h-screen -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 py-5 space-y-5"
-    >
-      {/* Hero Banner */}
-      <div
-        className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
-        style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
-      >
-        <div
-          className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-40 blur-2xl mix-blend-screen"
-          style={{ backgroundColor: '#FF7A00' }}
-        />
-        <div
-          className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-60 transform translate-x-8"
-          style={{ backgroundColor: '#A238FF' }}
-        />
-        <div
-          className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full opacity-30 blur-xl mix-blend-screen"
-          style={{ backgroundColor: '#A238FF' }}
-        />
-        <div className="relative z-10 flex items-center gap-4">
-          <div
-            className="p-2.5 rounded-full shrink-0"
-            style={{
-              backgroundColor: 'rgba(162,56,255,0.30)',
-              border: '1px solid rgba(162,56,255,0.50)',
-            }}
-          >
-            <Sparkles size={20} className="text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium mb-0.5" style={{ color: '#EBD3FF' }}>
-              ระบบจัดการโรงงาน
-            </p>
-            <h2 className="text-base font-bold">โชว์เคสของฉัน</h2>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold shrink-0 active:scale-95 transition-transform"
-            style={{
-              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
-              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
-              color: '#fff',
-            }}
-          >
-            <Plus size={15} />
-            {btnLabel}
-          </button>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <FactoryPageHeader
+        title="โชว์เคสของฉัน"
+        subtitle="Factory Portal"
+        icon={Sparkles}
+        count={`${rows.length} รายการ`}
+        action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
+      />
 
       {/* Tab bar */}
-      <div
-        className="flex items-center gap-1 p-1 rounded-xl"
-        style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
-      >
+      <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200">
         {(['PD', 'PM', 'ID'] as ShowcaseType[]).map((type) => {
           const meta = TAB_META[type];
           const active = activeType === type;
@@ -181,10 +136,10 @@ export function FactoryShowcasesPage() {
               onClick={() => changeType(type)}
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all"
               style={{
-                backgroundColor: active ? '#E38844' : 'transparent',
-                color: active ? '#fff' : '#2E2252',
+                backgroundColor: active ? '#4F46E5' : 'transparent',
+                color: active ? '#fff' : '#334155',
                 fontWeight: active ? 700 : 500,
-                boxShadow: active ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
+                boxShadow: active ? '0 2px 8px rgba(79,70,229,0.25)' : 'none',
               }}
             >
               <span>{meta.icon}</span>
@@ -222,11 +177,7 @@ export function FactoryShowcasesPage() {
           <button
             type="button"
             onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold"
-            style={{
-              background: 'linear-gradient(135deg, #E38844 0%, #C96D1A 100%)',
-              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
-            }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors"
           >
             <Plus size={15} />
             {btnLabel}
@@ -273,11 +224,11 @@ export function FactoryShowcasesPage() {
 
                 {/* Info */}
                 <div className="px-3 pt-3 pb-2">
-                  <p className="font-semibold text-sm line-clamp-2 min-h-[40px] leading-snug" style={{ color: '#2E2252' }}>
+                  <p className="font-semibold text-sm line-clamp-2 min-h-[40px] leading-snug text-slate-900">
                     {String(r.title ?? '—')}
                   </p>
                   {ctx ? (
-                    <p className="text-[11px] font-medium mt-1.5" style={{ color: '#E38844' }}>{ctx}</p>
+                    <p className="text-[11px] font-medium mt-1.5 text-indigo-600">{ctx}</p>
                   ) : null}
                   {catLine ? (
                     <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{catLine}</p>
@@ -288,9 +239,13 @@ export function FactoryShowcasesPage() {
                 <div className="flex gap-2 px-3 pb-3">
                   <button
                     type="button"
-                    onClick={() => navigate(`/factory/showcases/${id}/edit`)}
+                    onClick={() =>
+                      navigate(`/factory/showcases/${id}/edit`, {
+                        state: { from: `${location.pathname}${location.search}` },
+                      })
+                    }
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors"
-                    style={{ backgroundColor: 'rgba(227,136,68,0.10)', color: '#C96D1A' }}
+                    style={{ backgroundColor: '#EEF2FF', color: '#4338CA' }}
                   >
                     <Pencil size={13} />
                     แก้ไข

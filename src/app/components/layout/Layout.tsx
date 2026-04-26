@@ -70,11 +70,13 @@ export function Layout() {
               {/* Logo */}
               <Link to="/" className="flex items-center gap-2 shrink-0">
                 <div
-                  className="h-7 pl-1.5 pr-2 sm:h-8 sm:pl-2 sm:pr-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm"
-                  style={{ background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
+                  className={`h-7 pl-1.5 pr-2 sm:h-8 sm:pl-2 sm:pr-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm ${
+                    isFactory ? 'bg-indigo-50 border-indigo-200' : ''
+                  }`}
+                  style={isFactory ? undefined : { background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
                 >
-                  <Factory className="shrink-0" size={14} strokeWidth={2.5} style={{ color: '#A238FF' }} />
-                  <span className="text-[10px] sm:text-xs font-bold leading-none whitespace-nowrap" style={{ color: '#A238FF' }}>
+                  <Factory className="shrink-0" size={14} strokeWidth={2.5} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
+                  <span className="text-[10px] sm:text-xs font-bold leading-none whitespace-nowrap" style={{ color: isFactory ? '#4F46E5' : '#A238FF' }}>
                     WeMake
                   </span>
                 </div>
@@ -100,14 +102,14 @@ export function Layout() {
                           locked ? 'cursor-not-allowed opacity-60' : ''
                         }`}
                         style={{
-                          color: active ? '#A238FF' : '#6B7280',
-                          background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
+                          color: active ? '#4338CA' : '#475569',
+                          background: active ? '#EEF2FF' : 'transparent',
                           fontWeight: active ? 600 : 500,
                         }}
                       >
                         <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
                         {item.label}
-                        {locked ? <Lock size={14} className="shrink-0 text-violet-500" aria-hidden /> : null}
+                        {locked ? <Lock size={14} className="shrink-0 text-slate-500" aria-hidden /> : null}
                       </button>
                     );
                   }
@@ -137,11 +139,11 @@ export function Layout() {
                 {isFactory ? (
                   <Link
                     to="/factory/wallet"
-                    className="lg:hidden flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-violet-50 transition-colors border border-violet-100/80"
+                    className="lg:hidden flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-indigo-50 transition-colors border border-indigo-100/80"
                     title="กระเป๋าเงิน"
                   >
-                    <Wallet size={18} style={{ color: '#F28A2E' }} />
-                    <span className="text-xs font-bold tabular-nums max-w-[4.5rem] truncate" style={{ color: '#2D1B4E' }}>
+                    <Wallet size={18} style={{ color: '#4F46E5' }} />
+                    <span className="text-xs font-bold tabular-nums max-w-[4.5rem] truncate" style={{ color: '#0F172A' }}>
                       ฿{(data.currentUser?.walletBalance ?? 0).toLocaleString()}
                     </span>
                   </Link>
@@ -150,7 +152,7 @@ export function Layout() {
                   to="/notifications"
                   className="relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
                 >
-                  <Bell size={20} style={{ color: '#A238FF' }} />
+                  <Bell size={20} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
                   {unreadNotifications > 0 ? (
                     <span
                       className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white flex items-center justify-center text-[9px] border-2 border-white tabular-nums"
@@ -210,14 +212,14 @@ export function Layout() {
                           locked ? 'cursor-not-allowed opacity-60' : ''
                         }`}
                         style={{
-                          color: active ? '#A238FF' : '#374151',
-                          background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
+                          color: active ? '#4338CA' : '#334155',
+                          background: active ? '#EEF2FF' : 'transparent',
                           fontWeight: active ? 600 : 500,
                         }}
                       >
                         <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                         {item.label}
-                        {locked ? <Lock size={16} className="shrink-0 text-violet-500 ml-auto" aria-hidden /> : null}
+                        {locked ? <Lock size={16} className="shrink-0 text-slate-500 ml-auto" aria-hidden /> : null}
                       </button>
                     );
                   }
