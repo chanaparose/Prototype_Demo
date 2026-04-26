@@ -10,6 +10,7 @@ import type {
 } from '../contexts/DataContext';
 import type { TabId } from '../components/features/factory-profile';
 import { conversationsApi, factoriesApi, frontendApi, reviewsApi, showcasesApi } from '../services/api';
+import { normalizeReviewImageUrls } from '../utils/reviewImageUrls';
 import { normShowcase } from './useShowcases';
 
 function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: Factory | null): Factory {
@@ -57,6 +58,7 @@ function mapProfileFromApi(
 function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): FactoryReview | null {
   const rid = String(r.id ?? r.review_id ?? '');
   if (!rid) return null;
+  const imageUrls = normalizeReviewImageUrls(r.image_urls);
   return {
     id: rid,
     factoryId,
@@ -64,6 +66,7 @@ function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): Factor
     rating: Number(r.rating ?? 0),
     comment: String(r.comment ?? r.text ?? ''),
     date: String(r.created_at ?? r.date ?? ''),
+    ...(imageUrls.length > 0 ? { imageUrls } : {}),
   };
 }
 

@@ -29,11 +29,11 @@ export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props)
       setRfqError('');
       try {
         const res = await rfqsApi.get(rfqId);
-        const payload = (res as Record<string, unknown>)?.rfq;
-        const row =
+        const payload = res.rfq;
+        const row: Record<string, unknown> =
           payload && typeof payload === 'object'
-            ? (payload as Record<string, unknown>)
-            : (res as Record<string, unknown>);
+            ? (payload as unknown as Record<string, unknown>)
+            : (res as unknown as Record<string, unknown>);
         if (!mounted) return;
         setRfqDetail(row);
       } catch (e) {

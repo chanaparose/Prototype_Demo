@@ -423,7 +423,7 @@ export const ordersApi = {
   /** POST /orders/:id/review — create review for completed order */
   createReview: (
     id: string | number,
-    data: { rating: number; comment: string },
+    data: { rating: number; comment: string; image_urls?: string[] },
   ) => api.post<Record<string, unknown>>(`/orders/${id}/review`, data),
   /** POST /orders/:id/production-updates — tracking (IP/CD, image_urls[], payment confirm header optional) */
   postProductionUpdate: (
@@ -807,12 +807,14 @@ export const reviewsApi = {
     api.get<unknown[]>(`/factories/${factoryId}/reviews`),
   summaryByFactory: (factoryId: number | string) =>
     api.get<Record<string, unknown>>(`/factories/${factoryId}/reviews/summary`),
-  create: (factoryId: number | string, data: { rating: number; comment: string }) =>
+  create: (factoryId: number | string, data: { rating: number; comment: string; image_urls?: string[] }) =>
     api.post<Record<string, unknown>>(`/factories/${factoryId}/reviews`, data),
   reply: (reviewId: number | string, data: { reply: string }) =>
     api.post<Record<string, unknown>>(`/reviews/${reviewId}/reply`, data),
-  update: (reviewId: number | string, data: { rating: number; comment: string }) =>
-    api.put<Record<string, unknown>>(`/reviews/${reviewId}`, data),
+  update: (
+    reviewId: number | string,
+    data: { rating: number; comment: string; image_urls?: string[] },
+  ) => api.put<Record<string, unknown>>(`/reviews/${reviewId}`, data),
   delete: (reviewId: number | string) => api.delete(`/reviews/${reviewId}`),
 };
 

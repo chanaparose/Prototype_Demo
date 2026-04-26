@@ -56,6 +56,8 @@ export type FactoryReview = {
   rating: number;
   comment: string;
   date: string;
+  /** Review photos from API `image_urls` */
+  imageUrls?: string[];
 };
 
 export type IdeaArticle = {

@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Star, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { profileApi, reviewsApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { ReviewImageAttachments } from '../../components/features/reviews/ReviewImageAttachments';
+import { normalizeReviewImageUrls } from '../../utils/reviewImageUrls';
 
 type ReviewItem = {
   review_id: number;
@@ -11,6 +14,7 @@ type ReviewItem = {
   comment: string;
   created_at: string;
   is_editable?: boolean;
+  image_urls: string[];
 };
 
 export function MyReviewsPage() {
@@ -18,6 +22,13 @@ export function MyReviewsPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editReviewId, setEditReviewId] = useState(0);
+  const [editRating, setEditRating] = useState(5);
+  const [editComment, setEditComment] = useState('');
+  const [editImages, setEditImages] = useState<string[]>([]);
+  const [editSaving, setEditSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -36,6 +47,7 @@ export function MyReviewsPage() {
           comment: String(row.comment ?? ''),
           created_at: String(row.created_at ?? ''),
           is_editable: Boolean(row.is_editable),
+          image_urls: normalizeReviewImageUrls(row.image_urls),
         })).filter((r) => Number.isFinite(r.review_id) && r.review_id > 0),
       );
     } finally {
@@ -46,6 +58,44 @@ export function MyReviewsPage() {
   useEffect(() => {
     void load();
   }, [user?.role]);
+
+  const openEdit = (r: ReviewItem) => {
+    setEditReviewId(r.review_id);
+    setEditRating(r.rating);
+    setEditComment(r.comment);
+    setEditImages([...r.image_urls]);
+    setEditOpen(true);
+  };
+
+  const saveEdit = async () => {
+    const text = editComment.trim();
+    if (!text) {
+      toast.error('กรุณาเขียนรีวิว');
+      return;
+    }
+    if (!Number.isFinite(editRating) || editRating < 1 || editRating > 5) {
+      toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
+      return;
+    }
+    setEditSaving(true);
+    try {
+      await reviewsApi.update(editReviewId, {
+        rating: editRating,
+        comment: text,
+        image_urls: normalizeReviewImageUrls(editImages),
+      });
+      toast.success('บันทึกรีวิวแล้ว');
+      setEditOpen(false);
+      await load();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
+      const m = msg.toLowerCase();
+      if (m.includes('image_urls') && m.includes('5')) toast.error('แนบรูปได้ไม่เกิน 5 รูป');
+      else toast.error(msg);
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-4 pb-24">
@@ -67,16 +117,15 @@ export function MyReviewsPage() {
                 </div>
                 <p className="text-[12px] text-amber-500">{'★'.repeat(Math.max(1, Math.min(5, r.rating)))}</p>
                 <p className="text-sm text-slate-700">{r.comment || '-'}</p>
+                <ReviewImageAttachments
+                  urls={r.image_urls}
+                  onPreviewUrl={(u) => window.open(u, '_blank', 'noopener,noreferrer')}
+                />
                 {r.is_editable ? (
                   <div className="mt-2 flex gap-2">
                     <button
                       type="button"
-                      onClick={async () => {
-                        const next = window.prompt('แก้ไขข้อความรีวิว', r.comment) ?? r.comment;
-                        if (!next.trim()) return;
-                        await reviewsApi.update(r.review_id, { rating: r.rating, comment: next.trim() });
-                        await load();
-                      }}
+                      onClick={() => openEdit(r)}
                       className="px-2.5 py-1 rounded-lg border border-slate-200 text-xs text-slate-700"
                     >
                       แก้ไข
@@ -99,6 +148,61 @@ export function MyReviewsPage() {
           </ul>
         )}
       </div>
+
+      {editOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-slate-900">แก้ไขรีวิว</p>
+              <button
+                type="button"
+                onClick={() => setEditOpen(false)}
+                className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500"
+                aria-label="ปิด"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setEditRating(s)}
+                  className="p-0.5"
+                  aria-label={`${s} ดาว`}
+                >
+                  <Star
+                    size={20}
+                    className={s <= editRating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}
+                  />
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={editComment}
+              onChange={(e) => setEditComment(e.target.value)}
+              maxLength={1000}
+              rows={4}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300"
+            />
+            <ReviewImageAttachments
+              urls={editImages}
+              onChange={setEditImages}
+              onUploadError={(msg) => toast.error(msg)}
+            />
+            <button
+              type="button"
+              disabled={editSaving}
+              onClick={() => void saveEdit()}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-60"
+              style={{ background: '#6C47FF' }}
+            >
+              {editSaving ? 'กำลังบันทึก…' : 'บันทึก'}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
