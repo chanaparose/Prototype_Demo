@@ -295,38 +295,6 @@ export function FactoryOrderDetailPage() {
                   defaultOpen={false}
                 />
               ) : null}
-
-              {/* Production Timeline */}
-              <section className="space-y-3">
-                <div className="flex items-center gap-2 px-0.5">
-                  <Flag size={14} className="text-indigo-600" />
-                  <h2 className="text-sm font-bold text-slate-900">ความคืบหน้าการผลิต</h2>
-                </div>
-
-                {tplQ.isLoading || updQ.isLoading ? (
-                  <div className="flex items-center gap-2 py-6 justify-center text-gray-500 text-sm">
-                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }} />
-                    กำลังโหลด…
-                  </div>
-                ) : merged.length === 0 ? (
-                  <p className="text-sm text-gray-400 px-1">ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
-                ) : (
-                  <>
-                    <ProductionHeader merged={displayMerged} orderStatus={orderStatus} />
-                    <ProductionTimeline
-                      merged={displayMerged}
-                      orderStatus={orderStatus}
-                      isFactory={!isCompleted}
-                      isCustomer={false}
-                      onOpenDrawer={(m) => {
-                        if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
-                      }}
-                      onOpenReject={() => {/* factory ไม่ reject ตัวเอง */}}
-                      onPhotoClick={() => {/* TODO: lightbox */}}
-                    />
-                  </>
-                )}
-              </section>
             </div>
 
             {/* ════════ RIGHT ════════ */}
@@ -384,6 +352,38 @@ export function FactoryOrderDetailPage() {
                   </div>
                 ) : (
                   <p className="text-sm text-gray-400">กำลังโหลดขั้นตอน…</p>
+                )}
+              </section>
+
+              {/* Production Timeline */}
+              <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3">
+                <div className="flex items-center gap-2 px-0.5">
+                  <Flag size={14} className="text-indigo-600" />
+                  <h2 className="text-sm font-bold text-slate-900">ความคืบหน้าการผลิต</h2>
+                </div>
+
+                {tplQ.isLoading || updQ.isLoading ? (
+                  <div className="flex items-center gap-2 py-6 justify-center text-gray-500 text-sm">
+                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }} />
+                    กำลังโหลด…
+                  </div>
+                ) : merged.length === 0 ? (
+                  <p className="text-sm text-gray-400 px-1">ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
+                ) : (
+                  <>
+                    <ProductionHeader merged={displayMerged} orderStatus={orderStatus} />
+                    <ProductionTimeline
+                      merged={displayMerged}
+                      orderStatus={orderStatus}
+                      isFactory={!isCompleted}
+                      isCustomer={false}
+                      onOpenDrawer={(m) => {
+                        if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
+                      }}
+                      onOpenReject={() => {/* factory ไม่ reject ตัวเอง */}}
+                      onPhotoClick={() => {/* TODO: lightbox */}}
+                    />
+                  </>
                 )}
               </section>
             </aside>

@@ -35,6 +35,8 @@ export type Factory = {
   minOrder: number;
   leadTime: string;
   image: string;
+  /** แถบพื้นหลังด้านบน (ถ้า API ส่งมา) — คนละฟิลด์กับรูปโปรไฟล์ */
+  coverImageUrl?: string;
   verified: boolean;
   completedOrders: number;
   priceRange: string;
@@ -56,6 +58,8 @@ export type FactoryReview = {
   rating: number;
   comment: string;
   date: string;
+  /** Review photos from API `image_urls` */
+  imageUrls?: string[];
 };
 
 export type IdeaArticle = {

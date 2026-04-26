@@ -102,7 +102,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
   return (
     <div className="hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex">
-      <div className="bg-white shadow-sm">
+      <div className="px-8 pt-6">
         <FactoryProfileHero
           factory={factory}
           onBack={handleBack}
@@ -114,24 +114,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
       <div className="border-b border-gray-100 bg-white px-8 py-4">
         <div className="flex flex-wrap items-center gap-6">
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-gray-100">
-              <ImageWithFallback
-                src={factory.image}
-                alt={factory.name}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-[13px] font-bold text-gray-900">{factory.name}</p>
-                {factory.verified && <ShieldCheck size={13} className="text-purple-500" />}
-              </div>
-              <p className="text-[11px] text-gray-400">{factory.specialization}</p>
-            </div>
-          </div>
-
-           
+          
 
           <div className="h-8 w-px shrink-0 bg-gray-100" />
 

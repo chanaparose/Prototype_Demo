@@ -10,6 +10,7 @@ import {
   Star,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
+import { ReviewImageAttachments } from '../reviews/ReviewImageAttachments';
 import { formatThaiDate } from './utils';
 
 export type TabId = 'products' | 'promotions' | 'articles' | 'about';
@@ -55,6 +56,7 @@ export type ReviewItem = {
   date: string;
   rating: number;
   comment: string;
+  imageUrls?: string[];
 };
 
 const TABS: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -353,6 +355,14 @@ export function FactoryProfileTabContent({
                     </div>
                     <p className="text-[11px] text-amber-600 mb-1">★ {review.rating}</p>
                     <p className="text-xs text-gray-600">{review.comment}</p>
+                    {review.imageUrls && review.imageUrls.length > 0 ? (
+                      <div className="mt-2">
+                        <ReviewImageAttachments
+                          urls={review.imageUrls}
+                          onPreviewUrl={(u) => window.open(u, '_blank', 'noopener,noreferrer')}
+                        />
+                      </div>
+                    ) : null}
                   </div>
                 ))
               )}

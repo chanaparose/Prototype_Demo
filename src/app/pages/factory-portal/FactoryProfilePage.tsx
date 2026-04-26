@@ -13,10 +13,14 @@ import {
   ShieldCheck,
   Clock,
   XCircle,
+  Upload,
+  Trash2,
+  ImageIcon,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { factoriesApi } from '../../services/api';
+import { factoriesApi, mediaApi } from '../../services/api';
 
 import { useMyFactory } from '../../hooks/factory/useMyFactory';
 import { useFactoryCategories } from '../../hooks/factory/useFactoryCategories';
@@ -159,68 +163,272 @@ function SectionCard({ icon: Icon, title, iconColor, iconBg, badge, children }: 
   );
 }
 
-// ── Hero card ─────────────────────────────────────────────────────────────
+function pickCoverFromFactoryRaw(raw: Record<string, unknown>): string {
+  return String(
+    raw.cover_image_url ?? raw.banner_url ?? raw.background_image_url ?? raw.hero_image_url ?? '',
+  ).trim();
+}
+
+// ── Hero card: รูปพื้นหลัง (cover) + รูปโปรไฟล์ — UX อัปโหลดแยกกันแบบเดียวกัน ──
 function FactoryHeroCard({
   factoryName,
   verifyStatus,
+  imageUrl,
+  coverImageUrl,
+  uploadingImage,
+  uploadingCover,
+  onPickImage,
+  onRemoveImage,
+  onPickCover,
+  onRemoveCover,
 }: {
   factoryName: string;
   verifyStatus: string;
+  imageUrl: string;
+  coverImageUrl: string;
+  uploadingImage: boolean;
+  uploadingCover: boolean;
+  onPickImage: (file: File) => void;
+  onRemoveImage: () => void;
+  onPickCover: (file: File) => void;
+  onRemoveCover: () => void;
 }) {
   const isVerified = verifyStatus === 'AP';
   const isRejected = verifyStatus === 'RJ';
   const isPending = !isVerified && !isRejected;
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [profileDragOver, setProfileDragOver] = useState(false);
+  const [coverDragOver, setCoverDragOver] = useState(false);
+
+  const busy = uploadingImage || uploadingCover;
+
+  const acceptProfile = (file: File | undefined) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    onPickImage(file);
+  };
+  const acceptCover = (file: File | undefined) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    onPickCover(file);
+  };
 
   return (
-    <div
-      className="rounded-2xl p-6 relative overflow-hidden text-white shadow-md"
-      style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
-    >
-      {/* Decorative blur */}
-      <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-20 blur-3xl" style={{ backgroundColor: COLORS.orange }} />
-      <div className="absolute -left-6 bottom-0 w-32 h-32 rounded-full opacity-10 blur-2xl" style={{ backgroundColor: '#FFFFFF' }} />
+    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+      {/* พื้นหลังโรงงาน — โซนอัปโหลดแยก (เหมือนโปรไฟล์: คลิก / ลากวาง / ลบ) */}
+      <div
+        className={`relative h-28 sm:h-36 transition-[box-shadow] ${
+          coverDragOver ? 'ring-2 ring-inset ring-indigo-400' : ''
+        }`}
+        style={
+          coverImageUrl
+            ? {
+                backgroundImage: `url(${coverImageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
+        onDragOver={(e) => {
+          e.preventDefault();
+          setCoverDragOver(true);
+        }}
+        onDragLeave={() => setCoverDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setCoverDragOver(false);
+          acceptCover(e.dataTransfer.files?.[0]);
+        }}
+      >
+        {!coverImageUrl ? (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-violet-50 to-indigo-50" aria-hidden />
+        ) : null}
+        <div className="absolute inset-0 bg-slate-900/25 pointer-events-none" aria-hidden />
 
-      <div className="relative z-10 flex items-center gap-4">
-        {/* Factory avatar */}
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 text-2xl font-bold"
-          style={{ backgroundColor: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)' }}
-        >
-          {factoryName.charAt(0).toUpperCase()}
+        {coverDragOver ? (
+          <div className="absolute inset-0 z-[5] flex items-center justify-center bg-indigo-500/15 backdrop-blur-[1px]">
+            <p className="text-xs font-semibold text-indigo-900 px-3 py-1.5 rounded-full bg-white/95 shadow">
+              ปล่อยเพื่ออัปโหลดพื้นหลัง
+            </p>
+          </div>
+        ) : null}
+
+        {uploadingCover ? (
+          <div className="absolute inset-0 z-[6] bg-black/45 flex items-center justify-center">
+            <Loader2 size={32} className="text-white animate-spin" />
+          </div>
+        ) : null}
+
+        <label className="absolute inset-0 z-[1] cursor-pointer group flex flex-col items-center justify-center text-center px-4">
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            disabled={busy}
+            onChange={(e) => {
+              acceptCover(e.target.files?.[0]);
+              e.currentTarget.value = '';
+            }}
+          />
+          {!coverImageUrl && !uploadingCover ? (
+            <>
+              <ImageIcon size={28} className="text-indigo-500 mb-1" strokeWidth={1.5} />
+              <span className="text-[11px] font-semibold text-slate-800">รูปพื้นหลังโรงงาน</span>
+              <span className="text-[10px] text-slate-600 mt-0.5 max-w-[240px]">
+                คลิกหรือลากไฟล์มาวาง · JPG, PNG, WebP
+              </span>
+            </>
+          ) : null}
+          {coverImageUrl && !uploadingCover ? (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <Upload size={26} className="text-white drop-shadow-md" />
+            </div>
+          ) : null}
+        </label>
+
+        {coverImageUrl ? (
+          <button
+            type="button"
+            disabled={busy}
+            className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-white/95 text-red-600 border border-red-100 shadow-sm hover:bg-red-50 disabled:opacity-50"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemoveCover();
+            }}
+          >
+            <Trash2 size={11} />
+            ลบพื้นหลัง
+          </button>
+        ) : null}
+      </div>
+
+      <div className="px-5 pb-5 -mt-11 sm:-mt-12 relative z-[2]">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div
+            className={`rounded-2xl shrink-0 w-fit transition-[box-shadow] ${
+              profileDragOver ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-white' : ''
+            }`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setProfileDragOver(true);
+            }}
+            onDragLeave={() => setProfileDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setProfileDragOver(false);
+              acceptProfile(e.dataTransfer.files?.[0]);
+            }}
+          >
+            <label
+              className={`relative block w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-md cursor-pointer bg-violet-50 text-indigo-700 ring-4 ring-white group border-2 ${
+                imageUrl ? 'border-white' : 'border-dashed border-indigo-200'
+              } ${uploadingImage ? 'pointer-events-none opacity-90' : 'hover:ring-indigo-100'}`}
+            >
+              {imageUrl ? (
+                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="w-full h-full flex flex-col items-center justify-center gap-1.5 p-2 text-center">
+                  <ImageIcon size={28} className="text-indigo-400 group-hover:text-indigo-500" strokeWidth={1.5} />
+                  <span className="text-[10px] font-semibold text-indigo-600 leading-tight">โปรไฟล์</span>
+                </span>
+              )}
+              {uploadingImage ? (
+                <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
+                  <Loader2 size={28} className="text-white animate-spin" />
+                </div>
+              ) : (
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <Upload size={22} className="text-white drop-shadow-md" />
+                </div>
+              )}
+              <input
+                ref={profileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                disabled={busy}
+                onChange={(e) => {
+                  acceptProfile(e.target.files?.[0]);
+                  e.currentTarget.value = '';
+                }}
+              />
+            </label>
+          </div>
+
+          <div className="min-w-0 flex-1 pt-1 sm:pb-0.5">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">โรงงานของคุณ</p>
+            <h1 className="text-lg sm:text-xl font-bold mt-0.5 leading-snug truncate" style={{ color: COLORS.navy }}>
+              {factoryName}
+            </h1>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {isVerified && (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100">
+                  <ShieldCheck size={12} className="text-emerald-600" />
+                  ยืนยันแล้ว — พร้อมรับ RFQ
+                </span>
+              )}
+              {isRejected && (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-800 border border-red-100">
+                  <XCircle size={12} className="text-red-600" />
+                  ไม่ผ่านการตรวจสอบ
+                </span>
+              )}
+              {isPending && (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-100">
+                  <Clock size={12} className="text-amber-600" />
+                  รอการอนุมัติจากแอดมิน
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="min-w-0 flex-1">
-          <p className="text-xs opacity-60 font-medium">โรงงานของคุณ</p>
-          <h1 className="text-xl font-bold mt-0.5 leading-snug truncate">{factoryName}</h1>
-          <div className="mt-2">
-            {isVerified && (
-              <span
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
-                style={{ backgroundColor: 'rgba(16,185,129,0.25)', border: '1px solid rgba(16,185,129,0.35)' }}
-              >
-                <ShieldCheck size={12} className="text-emerald-300" />
-                ยืนยันแล้ว — พร้อมรับ RFQ
-              </span>
-            )}
-            {isRejected && (
-              <span
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
-                style={{ backgroundColor: 'rgba(239,68,68,0.25)', border: '1px solid rgba(239,68,68,0.35)' }}
-              >
-                <XCircle size={12} className="text-red-300" />
-                ไม่ผ่านการตรวจสอบ
-              </span>
-            )}
-            {isPending && (
-              <span
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full"
-                style={{ backgroundColor: 'rgba(227,136,68,0.25)', border: '1px solid rgba(227,136,68,0.35)' }}
-              >
-                <Clock size={12} className="text-orange-300" />
-                รอการอนุมัติจากแอดมิน
-              </span>
-            )}
-          </div>
+        <p className="text-[11px] text-gray-500 mt-3">
+          อัปโหลดแยกกัน: พื้นหลังแถบบน และรูปโปรไฟล์สี่เหลี่ยม — บันทึกทันทีหลังอัปโหลด (รองรับ JPG, PNG, WebP)
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => coverInputRef.current?.click()}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 shadow-sm disabled:opacity-50"
+          >
+            <Upload size={14} className="text-indigo-600" />
+            เลือกรูปพื้นหลัง
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => profileInputRef.current?.click()}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 shadow-sm disabled:opacity-50"
+          >
+            <Upload size={14} className="text-violet-600" />
+            เลือกรูปโปรไฟล์
+          </button>
+          {coverImageUrl ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onRemoveCover}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-amber-100 bg-white text-amber-900 hover:bg-amber-50 shadow-sm disabled:opacity-50"
+            >
+              <Trash2 size={12} />
+              ลบพื้นหลัง
+            </button>
+          ) : null}
+          {imageUrl ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onRemoveImage}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-red-100 bg-white text-red-600 hover:bg-red-50 shadow-sm disabled:opacity-50"
+            >
+              <Trash2 size={12} />
+              ลบโปรไฟล์
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
@@ -249,6 +457,8 @@ export function FactoryProfilePage() {
 
   const initialValues = useMemo<ProfileFormValues>(
     () => ({
+      image_url: String((factoryRaw as Record<string, unknown>).image_url ?? '').trim(),
+      cover_image_url: pickCoverFromFactoryRaw(factoryRaw as Record<string, unknown>),
       factory_name: String(
         (factoryRaw as Record<string, unknown>).factory_name ??
           (factoryRaw as Record<string, unknown>).name ??
@@ -272,6 +482,8 @@ export function FactoryProfilePage() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [error, setError] = useState('');
   const [okMsg, setOkMsg] = useState('');
 
@@ -326,7 +538,9 @@ export function FactoryProfilePage() {
     let subCategoryVerifyWarning = '';
 
     try {
-      await factoriesApi.update(fid, {
+      await factoriesApi.patch(fid, {
+        image_url: String(v.image_url ?? ''),
+        cover_image_url: String(v.cover_image_url ?? ''),
         factory_name: v.factory_name.trim(),
         tax_id: v.tax_id.trim() || undefined,
         description: v.description.trim() || undefined,
@@ -389,6 +603,96 @@ export function FactoryProfilePage() {
     }
   }, [fid, form, qc, refreshUser]);
 
+  const handleUploadImage = useCallback(
+    async (file: File) => {
+      if (!file || !fid) return;
+      setUploadingImage(true);
+      setError('');
+      setOkMsg('');
+      try {
+        const up = await mediaApi.upload(file);
+        const url = String(up?.url ?? '').trim();
+        if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+        await factoriesApi.patch(fid, { image_url: url });
+        form.setValue('image_url', url, { shouldDirty: false });
+        lastPrefillKeyRef.current = '';
+        setOkMsg('อัปโหลดและบันทึกรูปโปรไฟล์โรงงานแล้ว');
+        await refreshUser();
+        await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'อัปโหลดหรือบันทึกรูปไม่สำเร็จ');
+      } finally {
+        setUploadingImage(false);
+      }
+    },
+    [fid, form, qc, refreshUser],
+  );
+
+  const handleRemoveImage = useCallback(async () => {
+    if (!fid) return;
+    if (!window.confirm('ลบรูปโปรไฟล์โรงงานออกจากระบบ?')) return;
+    setUploadingImage(true);
+    setError('');
+    setOkMsg('');
+    try {
+      await factoriesApi.patch(fid, { image_url: '' });
+      form.setValue('image_url', '', { shouldDirty: false });
+      lastPrefillKeyRef.current = '';
+      setOkMsg('ลบรูปโปรไฟล์แล้ว');
+      await refreshUser();
+      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
+    } finally {
+      setUploadingImage(false);
+    }
+  }, [fid, form, qc, refreshUser]);
+
+  const handleUploadCover = useCallback(
+    async (file: File) => {
+      if (!file || !fid) return;
+      setUploadingCover(true);
+      setError('');
+      setOkMsg('');
+      try {
+        const up = await mediaApi.upload(file);
+        const url = String(up?.url ?? '').trim();
+        if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+        await factoriesApi.patch(fid, { cover_image_url: url });
+        form.setValue('cover_image_url', url, { shouldDirty: false });
+        lastPrefillKeyRef.current = '';
+        setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
+        await refreshUser();
+        await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'อัปโหลดหรือบันทึกพื้นหลังไม่สำเร็จ');
+      } finally {
+        setUploadingCover(false);
+      }
+    },
+    [fid, form, qc, refreshUser],
+  );
+
+  const handleRemoveCover = useCallback(async () => {
+    if (!fid) return;
+    if (!window.confirm('ลบรูปพื้นหลังโรงงานออกจากระบบ?')) return;
+    setUploadingCover(true);
+    setError('');
+    setOkMsg('');
+    try {
+      await factoriesApi.patch(fid, { cover_image_url: '' });
+      form.setValue('cover_image_url', '', { shouldDirty: false });
+      lastPrefillKeyRef.current = '';
+      setOkMsg('ลบรูปพื้นหลังแล้ว');
+      await refreshUser();
+      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ลบพื้นหลังไม่สำเร็จ');
+    } finally {
+      setUploadingCover(false);
+    }
+  }, [fid, form, qc, refreshUser]);
+
   if (fid == null) {
     return <p className="text-sm text-red-600">บัญชีนี้ไม่ใช่โรงงาน หรือไม่มีรหัสโรงงานในระบบ</p>;
   }
@@ -445,6 +749,23 @@ export function FactoryProfilePage() {
         title="ข้อมูลโรงงาน"
         subtitle={isVerified ? 'ยืนยันแล้ว' : 'ตั้งค่าโปรไฟล์โรงงาน'}
         icon={Building2}
+      />
+
+      <FactoryHeroCard
+        factoryName={String(watched.factory_name || initialValues.factory_name || 'โรงงานของคุณ')}
+        verifyStatus={verifyStatus}
+        imageUrl={String(watched.image_url ?? '').trim()}
+        coverImageUrl={String(watched.cover_image_url ?? '').trim()}
+        uploadingImage={uploadingImage}
+        uploadingCover={uploadingCover}
+        onPickImage={(file) => {
+          void handleUploadImage(file);
+        }}
+        onRemoveImage={() => void handleRemoveImage()}
+        onPickCover={(file) => {
+          void handleUploadCover(file);
+        }}
+        onRemoveCover={() => void handleRemoveCover()}
       />
 
       {/* Verification stepper (show if not fully verified) */}

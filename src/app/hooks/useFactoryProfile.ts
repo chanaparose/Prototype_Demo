@@ -10,11 +10,17 @@ import type {
 } from '../contexts/DataContext';
 import type { TabId } from '../components/features/factory-profile';
 import { conversationsApi, factoriesApi, frontendApi, reviewsApi, showcasesApi } from '../services/api';
+import { normalizeReviewImageUrls } from '../utils/reviewImageUrls';
 import { normShowcase } from './useShowcases';
+import { pickFactoryCoverUrl } from '../utils/normalizeFactoryRow';
 
 function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: Factory | null): Factory {
   const b = fallback ?? undefined;
   const ftn = String(row.factory_type_name ?? row.factoryTypeName ?? '').trim();
+  const coverImageUrl = pickFactoryCoverUrl(row) || String(b?.coverImageUrl ?? '').trim();
+  let image = String(row.image_url ?? row.image ?? row.logo_url ?? '').trim();
+  if (!image) image = String(b?.image ?? '').trim();
+  if (!image && coverImageUrl) image = coverImageUrl;
   return {
     id: String(row.id ?? row.factory_id ?? id),
     name: String(row.name ?? row.factory_name ?? b?.name ?? ''),
@@ -25,7 +31,8 @@ function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: 
     tags: Array.isArray(row.tags) ? row.tags.map(String) : (b?.tags ?? []),
     minOrder: Number(row.min_order ?? row.minOrder ?? b?.minOrder ?? 0),
     leadTime: String(row.lead_time ?? row.leadTime ?? b?.leadTime ?? ''),
-    image: String(row.image_url ?? row.image ?? row.logo_url ?? row.cover_url ?? b?.image ?? ''),
+    image,
+    ...(coverImageUrl ? { coverImageUrl } : {}),
     verified: Boolean(row.is_verified ?? row.verified ?? b?.verified ?? false),
     completedOrders: Number(row.completed_orders ?? row.completedOrders ?? b?.completedOrders ?? 0),
     priceRange: String(row.price_range ?? row.priceRange ?? b?.priceRange ?? ''),
@@ -57,6 +64,7 @@ function mapProfileFromApi(
 function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): FactoryReview | null {
   const rid = String(r.id ?? r.review_id ?? '');
   if (!rid) return null;
+  const imageUrls = normalizeReviewImageUrls(r.image_urls);
   return {
     id: rid,
     factoryId,
@@ -64,6 +72,7 @@ function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): Factor
     rating: Number(r.rating ?? 0),
     comment: String(r.comment ?? r.text ?? ''),
     date: String(r.created_at ?? r.date ?? ''),
+    ...(imageUrls.length > 0 ? { imageUrls } : {}),
   };
 }
 

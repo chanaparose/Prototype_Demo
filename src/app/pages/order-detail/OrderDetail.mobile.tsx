@@ -14,7 +14,10 @@ import {
   OrderActionBanner,
   DepositPaymentModal,
   RfqReferenceCard,
+  formatDateTh,
 } from '../../components/features/order-detail';
+import { ReviewImageAttachments } from '../../components/features/reviews/ReviewImageAttachments';
+import { normalizeReviewImageUrls } from '../../utils/reviewImageUrls';
 import { OrderProductionTab } from '../../components/features/production/OrderProductionTab';
 import { useOrderDetail } from './OrderDetailContext';
 
@@ -29,6 +32,7 @@ type OrderReviewState = {
     review_id: number;
     rating: number;
     comment: string;
+    image_urls?: string[];
     created_at?: string;
     updated_at?: string;
   } | null;
@@ -61,6 +65,7 @@ function OrderDetailMobileBody() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
+  const [reviewImageUrls, setReviewImageUrls] = useState<string[]>([]);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   const depositAmount =
@@ -114,6 +119,9 @@ function OrderDetailMobileBody() {
                 review_id: Number((raw.review as Record<string, unknown>).review_id ?? 0),
                 rating: Number((raw.review as Record<string, unknown>).rating ?? 0),
                 comment: String((raw.review as Record<string, unknown>).comment ?? ''),
+                image_urls: normalizeReviewImageUrls(
+                  (raw.review as Record<string, unknown>).image_urls,
+                ),
                 created_at: String((raw.review as Record<string, unknown>).created_at ?? ''),
                 updated_at: String((raw.review as Record<string, unknown>).updated_at ?? ''),
               } as OrderReviewState['review'])
@@ -181,6 +189,7 @@ function OrderDetailMobileBody() {
       toast.error('ยังไม่สามารถรีวิวคำสั่งซื้อนี้ได้');
       return;
     }
+    setReviewImageUrls([]);
     setReviewModalOpen(true);
   };
 
@@ -205,10 +214,12 @@ function OrderDetailMobileBody() {
     }
     setReviewSubmitting(true);
     try {
-      await ordersApi.createReview(order.id, { rating: reviewRating, comment });
+      const image_urls = normalizeReviewImageUrls(reviewImageUrls);
+      await ordersApi.createReview(order.id, { rating: reviewRating, comment, image_urls });
       toast.success('ส่งรีวิวสำเร็จ');
       setReviewModalOpen(false);
       setReviewComment('');
+      setReviewImageUrls([]);
       await Promise.all([loadReviewState(), refetchAll()]);
     } catch (e) {
       if (e instanceof ApiHttpError) {
@@ -217,6 +228,7 @@ function OrderDetailMobileBody() {
         else if (m.includes('order must be completed')) toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
         else if (m.includes('rating must be between')) toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
         else if (m.includes('comment must be')) toast.error('กรุณาเขียนรีวิว');
+        else if (m.includes('image_urls') && m.includes('5')) toast.error('แนบรูปได้ไม่เกิน 5 รูป');
         else toast.error(e.message || 'ส่งรีวิวไม่สำเร็จ');
       } else {
         toast.error(e instanceof Error ? e.message : 'ส่งรีวิวไม่สำเร็จ');
@@ -228,7 +240,16 @@ function OrderDetailMobileBody() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="flex items-center justify-between px-4 pt-5 pb-4">
+      <header className="hidden lg:block px-0 pt-1 pb-3">
+        <h1 className="text-xl text-gray-900" style={{ fontWeight: 700 }}>
+          {rfq?.title ?? order.projectName}
+        </h1>
+        <p className="text-xs text-gray-500">
+          คำสั่งซื้อ #{order.id} · สร้างเมื่อ {formatDateTh(order.createdAt)}
+        </p>
+      </header>
+
+      <div className="flex lg:hidden items-center justify-between px-4 pt-5 pb-4">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -415,6 +436,10 @@ function OrderDetailMobileBody() {
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">
                   {reviewState.review.comment}
                 </p>
+                <ReviewImageAttachments
+                  urls={normalizeReviewImageUrls(reviewState.review.image_urls)}
+                  onPreviewUrl={(u) => setSelectedPhoto(u)}
+                />
                 <button
                   type="button"
                   onClick={() => setReviewModalOpen(false)}
@@ -448,6 +473,11 @@ function OrderDetailMobileBody() {
                   rows={4}
                   placeholder="แบ่งปันประสบการณ์ของคุณ"
                   className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <ReviewImageAttachments
+                  urls={reviewImageUrls}
+                  onChange={setReviewImageUrls}
+                  onUploadError={(msg) => toast.error(msg)}
                 />
                 <button
                   type="button"

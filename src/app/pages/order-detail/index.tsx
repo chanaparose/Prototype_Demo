@@ -2,8 +2,8 @@ import React from 'react';
 import { useParams } from 'react-router';
 import { useData } from '../../contexts/DataContext';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
-import { OrderDetailMobile } from './OrderDetail.mobile.tsx';
-import { OrderDetailDesktop } from './OrderDetail.desktop.tsx';
+import { OrderDetailMobile } from './OrderDetail.mobile';
+import { OrderDetailDesktop } from './OrderDetail.desktop';
 import { OrderDetailProvider } from './OrderDetailContext';
 
 export function OrderDetail() {
