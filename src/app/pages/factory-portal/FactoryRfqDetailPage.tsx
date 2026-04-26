@@ -19,6 +19,7 @@ type QuoteRow = QuotationRow & {
   factoryId?: number | string;
   id?: number | string;
   mold_cost?: number | string;
+  image_urls?: unknown;
 };
 
 function quoteFid(q: QuoteRow): number | null {
@@ -498,7 +499,7 @@ export function FactoryRfqDetailPage() {
                 initialImageUrls={
                   myQuote
                     ? (() => {
-                        const urls = (myQuote as Record<string, unknown>).image_urls;
+                        const urls = myQuote.image_urls;
                         if (Array.isArray(urls)) return urls.filter((u): u is string => typeof u === 'string');
                         return [];
                       })()

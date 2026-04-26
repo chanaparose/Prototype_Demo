@@ -18,7 +18,16 @@ import { FactoriesList } from './pages/factories/FactoriesList';
 import { Login } from './pages/login';
 import { RegisterFactoryPage } from './pages/auth';
 import { QuoteBuilder, QuoteDetailCustomer } from './pages/quote';
-import { CommissionConfig } from './pages/admin';
+import {
+  CommissionConfig,
+  AdminLayout,
+  AdminDashboardPage,
+  AdminFactoriesPage,
+  AdminFactoryDetailPage,
+  AdminRFQsPage,
+  AdminOrdersPage,
+  AdminConfigPage,
+} from './pages/admin';
 import { AuthGuard } from './components/AuthGuard';
 import { FactoryRoleGuard } from './components/factory/FactoryRoleGuard';
 import { FactoryVerifiedGuard } from './components/factory/FactoryVerifiedGuard';
@@ -71,7 +80,6 @@ export const router = createBrowserRouter([
           { path: 'create-rfq', Component: CreateRfq },
           { path: 'notifications', Component: Notifications },
           { path: 'quotations/:id', Component: QuoteDetailCustomer },
-          { path: 'admin/commission-config', Component: CommissionConfig },
           { path: 'rfqs/:id', Component: RFQDetail },
           { path: 'orders/:id', Component: OrderDetail },
           { path: 'messages/:id', Component: ChatRoom },
@@ -106,6 +114,20 @@ export const router = createBrowserRouter([
               },
             ],
           },
+        ],
+      },
+      {
+        path: 'admin',
+        Component: AdminLayout,
+        children: [
+          { index: true, loader: () => redirect('/admin/dashboard'), Component: () => null },
+          { path: 'dashboard', Component: AdminDashboardPage },
+          { path: 'factories', Component: AdminFactoriesPage },
+          { path: 'factories/:id', Component: AdminFactoryDetailPage },
+          { path: 'rfqs', Component: AdminRFQsPage },
+          { path: 'orders', Component: AdminOrdersPage },
+          { path: 'config', Component: AdminConfigPage },
+          { path: 'commission-config', Component: CommissionConfig },
         ],
       },
     ],

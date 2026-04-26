@@ -31,17 +31,30 @@ import {
 } from './hooks/useFactoryDashboard';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 
+// ── Design tokens ──────────────────────────────────────────────────────────
+const COLORS = {
+  purple: '#7A4B94',
+  purpleLight: '#9D77B2',
+  orange: '#E38844',
+  blue: '#2E2252',
+  lightPurpleBg: '#F8F6FA',
+  teal: '#0D9488',
+  white: '#FFFFFF',
+};
+
 const TIMEFRAMES: { id: AnalyticsTimeframe; label: string }[] = [
   { id: 'daily', label: 'วัน' },
   { id: 'weekly', label: 'สัปดาห์' },
   { id: 'monthly', label: 'เดือน' },
 ];
 
-const PURPLE = '#A238FF';
-const ORANGE = '#F28A2E';
+// Chart palette
+const PURPLE = '#7A4B94';
+const ORANGE = '#E38844';
 const GREEN = '#059669';
 const SLATE = '#94A3B8';
 
+// ── Formatters ─────────────────────────────────────────────────────────────
 function formatBaht(n: number): string {
   return `฿${n.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
 }
@@ -57,6 +70,7 @@ function rfqReplyRatePct(summary: AnalyticsSummary): number {
   return Math.round((summary.rfq_replies_total / summary.rfq_received_total) * 100);
 }
 
+// ── Tooltip components ─────────────────────────────────────────────────────
 type ChartTooltipProps = {
   active?: boolean;
   payload?: Array<{ name?: string; value?: number; color?: string; dataKey?: string }>;
@@ -105,6 +119,7 @@ function CountTooltip({ active, payload, label }: ChartTooltipProps) {
   );
 }
 
+// ── KPI Card ───────────────────────────────────────────────────────────────
 function KpiCard({
   title,
   value,
@@ -119,22 +134,25 @@ function KpiCard({
   accent: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+    <div
+      className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 cursor-pointer"
+    >
       <div className="flex items-start justify-between gap-2">
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: `${accent}18` }}
+          className="rounded-xl p-2.5 flex items-center justify-center shrink-0"
+          style={{ backgroundColor: `${accent}1F` }}
         >
           <Icon size={20} style={{ color: accent }} strokeWidth={2} aria-hidden />
         </div>
       </div>
-      <p className="mt-3 text-[11px] font-medium text-gray-500 uppercase tracking-wide">{title}</p>
-      <p className="mt-1 text-base sm:text-lg font-bold text-gray-900 tabular-nums break-words">{value}</p>
+      <p className="mt-3 text-[11px] font-medium uppercase tracking-wide" style={{ color: '#6B7280' }}>{title}</p>
+      <p className="mt-1 text-2xl font-bold tabular-nums break-words" style={{ color: COLORS.blue }}>{value}</p>
       {sub ? <p className="mt-0.5 text-[11px] text-gray-400">{sub}</p> : null}
     </div>
   );
 }
 
+// ── KPI rows builder ───────────────────────────────────────────────────────
 function kpiRows(summary: AnalyticsSummary) {
   return [
     {
@@ -167,7 +185,7 @@ function kpiRows(summary: AnalyticsSummary) {
       value: summary.total_orders_total.toLocaleString('th-TH'),
       sub: 'ทั้งหมดในช่วง',
       icon: Package,
-      accent: '#7C3AED',
+      accent: COLORS.purple,
     },
     {
       key: 'rfq',
@@ -180,6 +198,21 @@ function kpiRows(summary: AnalyticsSummary) {
   ] as const;
 }
 
+// ── Section header ─────────────────────────────────────────────────────────
+function SectionHeader({ title, sub }: { title: string; sub?: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-1">
+      <span
+        className="inline-block w-2 h-2 rounded-full shrink-0"
+        style={{ backgroundColor: COLORS.orange }}
+      />
+      <h2 className="text-base font-bold" style={{ color: COLORS.blue }}>{title}</h2>
+      {sub ? <p className="text-xs text-gray-500 ml-1">{sub}</p> : null}
+    </div>
+  );
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────
 export function FactoryDashboardPage() {
   const { user } = useAuth();
   const verifySt = factoryVerifyStatus(user);
@@ -204,10 +237,13 @@ export function FactoryDashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-3">
+      <div
+        style={{ backgroundColor: COLORS.lightPurpleBg }}
+        className="min-h-screen flex flex-col items-center justify-center py-24 gap-3"
+      >
         <div
-          className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+          className="w-10 h-10 border-[3px] border-t-transparent rounded-full animate-spin"
+          style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
         />
         <p className="text-sm text-gray-500">กำลังโหลดแดชบอร์ด…</p>
       </div>
@@ -215,64 +251,148 @@ export function FactoryDashboardPage() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6 pb-8 sm:pb-10 w-full min-w-0">
+    <div
+      style={{ backgroundColor: COLORS.lightPurpleBg }}
+      className="min-h-screen -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 py-5 space-y-5"
+    >
+      {/* ── Hero banner ── */}
+      <div
+        className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
+        style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
+      >
+        <div
+          className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-40 blur-2xl mix-blend-screen"
+          style={{ backgroundColor: '#FF7A00' }}
+        />
+        <div
+          className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-60 transform translate-x-8"
+          style={{ backgroundColor: '#A238FF' }}
+        />
+        <div
+          className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full opacity-30 blur-xl mix-blend-screen"
+          style={{ backgroundColor: '#A238FF' }}
+        />
+        <div className="relative z-10 flex items-center gap-4">
+          <div
+            className="p-2.5 rounded-full shrink-0"
+            style={{
+              backgroundColor: 'rgba(162,56,255,0.30)',
+              border: '1px solid rgba(162,56,255,0.50)',
+            }}
+          >
+            <TrendingUp size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-0.5" style={{ color: '#EBD3FF' }}>
+              ภาพรวมโรงงานของคุณ
+            </p>
+            <h2 className="text-base font-bold">แดชบอร์ดวิเคราะห์ธุรกิจ</h2>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Verify guard banner ── */}
       {verifySt !== 'AP' ? (
         <div
-          className={`rounded-2xl border px-4 py-3 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-start gap-3 ${
-            verifySt === 'RJ'
-              ? 'border-rose-200 bg-rose-50/90 text-rose-950'
-              : 'border-amber-200 bg-amber-50/90 text-amber-950'
-          }`}
+          className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
+          style={{
+            background:
+              verifySt === 'RJ'
+                ? 'linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%)'
+                : 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)',
+          }}
           role="status"
         >
-          <AlertTriangle
-            className={`w-5 h-5 shrink-0 mt-0.5 ${verifySt === 'RJ' ? 'text-rose-600' : 'text-amber-600'}`}
-            strokeWidth={2}
-            aria-hidden
+          {/* decorative blur */}
+          <div
+            className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-30 blur-2xl"
+            style={{ backgroundColor: verifySt === 'RJ' ? '#FF5555' : '#FF7A00' }}
           />
-          <div className="flex-1 min-w-0 text-sm leading-relaxed">
-            <p className="font-bold">
-              {verifySt === 'RJ' ? 'บัญชีโรงงานไม่ผ่านการตรวจสอบ' : 'โรงงานอยู่ระหว่างตรวจสอบ'}
-            </p>
-            <p className="mt-1 opacity-95">
-              {verifySt === 'RJ'
-                ? verifyReason || 'กรุณาปรับข้อมูลและส่งตรวจสอบใหม่จากหน้าโปรไฟล์'
-                : 'เมื่อแอดมินอนุมัติแล้ว คุณจะเข้า Showcase, กระดาน RFQ, ใบเสนอราคา และออเดอร์ได้'}
-            </p>
-            <Link
-              to="/factory/profile"
-              className="inline-block mt-3 text-sm font-semibold underline underline-offset-2 hover:opacity-90"
+          <div className="relative z-10 flex items-start gap-3">
+            <div
+              className="p-2 rounded-full shrink-0 mt-0.5"
+              style={{
+                backgroundColor:
+                  verifySt === 'RJ'
+                    ? 'rgba(255,100,100,0.25)'
+                    : 'rgba(227,136,68,0.25)',
+                border:
+                  verifySt === 'RJ'
+                    ? '1px solid rgba(255,100,100,0.40)'
+                    : '1px solid rgba(227,136,68,0.40)',
+              }}
             >
-              ไปที่ข้อมูลโรงงาน →
-            </Link>
+              <AlertTriangle size={16} className="text-white" strokeWidth={2} aria-hidden />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm">
+                {verifySt === 'RJ' ? 'บัญชีโรงงานไม่ผ่านการตรวจสอบ' : 'โรงงานอยู่ระหว่างตรวจสอบ'}
+              </p>
+              <p className="mt-1 text-sm opacity-90 leading-relaxed">
+                {verifySt === 'RJ'
+                  ? verifyReason || 'กรุณาปรับข้อมูลและส่งตรวจสอบใหม่จากหน้าโปรไฟล์'
+                  : 'เมื่อแอดมินอนุมัติแล้ว คุณจะเข้า Showcase, กระดาน RFQ, ใบเสนอราคา และออเดอร์ได้'}
+              </p>
+              <Link
+                to="/factory/profile"
+                className="inline-block mt-3 text-sm font-semibold rounded-xl px-4 py-1.5 transition-opacity hover:opacity-90"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.30)',
+                }}
+              >
+                ไปที่ข้อมูลโรงงาน →
+              </Link>
+            </div>
           </div>
         </div>
       ) : null}
+
+      {/* ── Error banner ── */}
       {error ? (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
           <p className="flex-1">{error}</p>
           <button
             type="button"
             onClick={() => void reload()}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-semibold text-white shrink-0"
-            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white shrink-0 transition-opacity hover:opacity-90"
+            style={{
+              backgroundColor: COLORS.orange,
+              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+            }}
           >
             <RefreshCw size={16} />
             ลองอีกครั้ง
           </button>
         </div>
       ) : null}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+      {/* ── Timeframe tabs ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider">วิเคราะห์ธุรกิจ</p>
-          <h1 className="text-lg sm:text-xl font-bold text-gray-900">แดชบอร์ดโรงงาน</h1>
+          <p className="text-[10px] uppercase tracking-wider" style={{ color: COLORS.purpleLight }}>
+            วิเคราะห์ธุรกิจ
+          </p>
+          <h1 className="text-lg sm:text-xl font-bold" style={{ color: COLORS.blue }}>
+            แดชบอร์ดโรงงาน
+          </h1>
           <p className="text-xs text-gray-500 mt-1 max-w-xl">
-            KPI หลักจาก <code className="text-[10px] bg-gray-100 px-1 rounded">GET /factories/me/analytics</code> และ{' '}
-            <code className="text-[10px] bg-gray-100 px-1 rounded">GET /factories/me/dashboard</code> (ถ้า API ล้มเหลวจะใช้ค่าที่คำนวณจากออเดอร์/RFQ ฝั่ง client); กราฟยังคำนวณจากออเดอร์ตามช่วงเวลา
+            KPI หลักจาก{' '}
+            <code className="text-[10px] bg-white px-1 rounded border border-gray-200">
+              GET /factories/me/analytics
+            </code>{' '}
+            และ{' '}
+            <code className="text-[10px] bg-white px-1 rounded border border-gray-200">
+              GET /factories/me/dashboard
+            </code>{' '}
+            (ถ้า API ล้มเหลวจะใช้ค่าที่คำนวณจากออเดอร์/RFQ ฝั่ง client); กราฟยังคำนวณจากออเดอร์ตามช่วงเวลา
           </p>
         </div>
+
+        {/* Tab bar */}
         <div
-          className="flex p-1 rounded-2xl bg-gray-100 w-fit max-w-full flex-wrap shrink-0"
+          className="flex p-1 rounded-xl w-fit max-w-full flex-wrap shrink-0"
+          style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
           role="tablist"
           aria-label="ช่วงเวลา"
         >
@@ -285,13 +405,20 @@ export function FactoryDashboardPage() {
                 role="tab"
                 aria-selected={on}
                 onClick={() => setTimeframe(id)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                  on ? 'text-white shadow-md' : 'text-gray-600 hover:bg-white/80'
-                }`}
+                className="px-4 py-2 rounded-lg text-sm transition-all"
                 style={
                   on
-                    ? { background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }
-                    : undefined
+                    ? {
+                        backgroundColor: COLORS.orange,
+                        color: COLORS.white,
+                        fontWeight: 700,
+                        boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+                      }
+                    : {
+                        backgroundColor: 'transparent',
+                        color: COLORS.blue,
+                        fontWeight: 500,
+                      }
                 }
               >
                 {label}
@@ -301,6 +428,7 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
+      {/* ── KPI grid ── */}
       <div className="grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
         {kpis.map((k) => (
           <KpiCard
@@ -314,11 +442,13 @@ export function FactoryDashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-1">
+      {/* ── Charts ── */}
+      <div className="grid gap-5 lg:grid-cols-1">
+
+        {/* Revenue line chart */}
         <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-gray-900 mb-1">รายได้และมัดจำ</h2>
-          <p className="text-xs text-gray-500 mb-4">เปรียบเทียบตามช่วงเวลา</p>
-          <div className="w-full min-w-0" style={{ height: lineChartHeight }}>
+          <SectionHeader title="รายได้และมัดจำ" sub="เปรียบเทียบตามช่วงเวลา" />
+          <div className="w-full min-w-0 mt-4" style={{ height: lineChartHeight }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData}
@@ -356,11 +486,11 @@ export function FactoryDashboardPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
+          {/* Orders bar chart */}
           <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm min-w-0">
-            <h2 className="text-sm font-bold text-gray-900 mb-1">ออเดอร์</h2>
-            <p className="text-xs text-gray-500 mb-4">ทั้งหมดและปิดสำเร็จ</p>
-            <div className="w-full min-w-0" style={{ height: barChartHeight }}>
+            <SectionHeader title="ออเดอร์" sub="ทั้งหมดและปิดสำเร็จ" />
+            <div className="w-full min-w-0 mt-4" style={{ height: barChartHeight }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
@@ -378,9 +508,10 @@ export function FactoryDashboardPage() {
             </div>
           </div>
 
+          {/* RFQ bar chart */}
           <div className="rounded-2xl border border-gray-100 bg-white p-4 sm:p-5 shadow-sm">
-            <h2 className="text-sm font-bold text-gray-900 mb-1">RFQ ที่ได้รับ vs การตอบกลับ</h2>
-            <p className="text-xs text-gray-500 mb-4">
+            <SectionHeader title="RFQ ที่ได้รับ vs การตอบกลับ" />
+            <p className="text-xs text-gray-500 mb-4 mt-0.5">
               ช่วงเวลาอิงจากวันที่สร้าง (ถ้า API ไม่ส่งวันที่ จะกระจายค่าโดยประมาณเพื่อให้เห็นแนวโน้ม)
             </p>
             <div className="w-full min-w-0" style={{ height: barChartHeight }}>

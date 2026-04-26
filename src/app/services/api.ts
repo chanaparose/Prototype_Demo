@@ -129,9 +129,16 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     config.body = JSON.stringify(body);
   }
 
+  // Admin routes are served under /api/admin (not /api/v1/admin).
+  const url = endpoint.startsWith('/admin/')
+    ? `/api${endpoint}`
+    : endpoint.startsWith('/api/')
+    ? endpoint
+    : `${BASE_URL}${endpoint}`;
+
   let res: Response;
   try {
-    res = await fetch(`${BASE_URL}${endpoint}`, config);
+    res = await fetch(url, config);
   } catch (err) {
     clearTimeout(timer);
     if (err instanceof DOMException && err.name === 'AbortError') {
@@ -776,6 +783,223 @@ export const platformConfigApi = {
   create: (body: Partial<PlatformConfig>) =>
     api.post<PlatformConfig>('/admin/platform-config', body),
   history: () => api.get<PlatformConfig[]>('/admin/platform-config/history'),
+};
+
+function qs(params: Record<string, string | number | boolean | undefined | null>): string {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null || v === '') return;
+    search.set(k, String(v));
+  });
+  const s = search.toString();
+  return s ? `?${s}` : '';
+}
+
+export interface AdminDashboardSummary {
+  gross_order_value?: number;
+  vat_collected?: number;
+  platform_commission?: number;
+  total_orders?: number;
+  total_rfqs?: number;
+  pending_factory_approvals?: number;
+  [key: string]: unknown;
+}
+
+export interface AdminFactoryRow {
+  factory_id: number;
+  factory_name?: string;
+  owner_name?: string;
+  owner_email?: string;
+  owner_phone?: string;
+  approval_status?: string;
+  is_verified?: boolean;
+  submitted_at?: string;
+  registered_at?: string;
+  created_at?: string;
+  province_name?: string;
+  business_type_name?: string;
+  rejection_reason?: string;
+  [key: string]: unknown;
+}
+
+export interface AdminRfqRow {
+  rfq_id: number;
+  title?: string;
+  user_id?: number;
+  customer_name?: string;
+  customer_email?: string;
+  category_name?: string;
+  sub_category_name?: string;
+  quantity?: number;
+  status?: string;
+  quotation_count?: number;
+  target_unit_price?: number;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
+export interface AdminOrderRow {
+  order_id: number;
+  quote_id?: number;
+  rfq_id?: number;
+  rfq_title?: string;
+  factory_id?: number;
+  factory_name?: string;
+  user_id?: number;
+  customer_name?: string;
+  status?: string;
+  total_amount?: number;
+  platform_commission_amount?: number;
+  vat_amount?: number;
+  factory_net_receivable?: number;
+  payment_type?: string;
+  estimated_delivery?: string;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
+export interface AdminCommissionRule {
+  rule_id: number;
+  factory_id: number;
+  factory_name?: string;
+  commission_rate: number;
+  effective_from?: string;
+  effective_to?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AdminCommissionExemption {
+  exemption_id: number;
+  factory_id: number;
+  factory_name?: string;
+  reason?: string;
+  expires_at?: string | null;
+  added_by?: number | string;
+  revoked_at?: string | null;
+  [key: string]: unknown;
+}
+
+export const adminApi = {
+  dashboardSummary: () =>
+    api.get<AdminDashboardSummary>('/admin/dashboard/summary'),
+  dashboardRevenueChart: () =>
+    api.get<unknown[]>('/admin/dashboard/revenue-chart'),
+  dashboardTopFactories: () =>
+    api.get<unknown[]>('/admin/dashboard/top-factories'),
+
+  listFactories: (params?: {
+    approval_status?: string;
+    search?: string;
+    page?: number;
+    page_size?: number;
+    is_verified?: boolean;
+  }) =>
+    api.get<AdminFactoryRow[]>(
+      `/admin/factories${qs({
+        approval_status: params?.approval_status,
+        search: params?.search,
+        page: params?.page,
+        page_size: params?.page_size,
+        is_verified: params?.is_verified,
+      })}`,
+    ),
+  getFactory: (factoryId: number | string) =>
+    api.get<Record<string, unknown>>(`/admin/factories/${factoryId}`),
+  approveFactory: (factoryId: number | string) =>
+    api.post<Record<string, unknown>>(`/admin/factories/${factoryId}/approve`),
+  rejectFactory: (factoryId: number | string, reason: string) =>
+    api.post<Record<string, unknown>>(`/admin/factories/${factoryId}/reject`, { reason }),
+  suspendFactory: (factoryId: number | string, reason?: string) =>
+    api.post<Record<string, unknown>>(`/admin/factories/${factoryId}/suspend`, reason ? { reason } : {}),
+  unsuspendFactory: (factoryId: number | string) =>
+    api.post<Record<string, unknown>>(`/admin/factories/${factoryId}/unsuspend`),
+  updateFactoryVerification: (factoryId: number | string, isVerified: boolean) =>
+    api.patch<Record<string, unknown>>(`/admin/factories/${factoryId}/verification`, {
+      is_verified: isVerified,
+    }),
+
+  listRfqs: (params?: {
+    status?: string;
+    user_id?: number;
+    category_id?: number;
+    date_from?: string;
+    date_to?: string;
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }) =>
+    api.get<AdminRfqRow[]>(
+      `/admin/rfqs${qs({
+        status: params?.status,
+        user_id: params?.user_id,
+        category_id: params?.category_id,
+        date_from: params?.date_from,
+        date_to: params?.date_to,
+        search: params?.search,
+        page: params?.page,
+        page_size: params?.page_size,
+      })}`,
+    ),
+  getRfq: (rfqId: number | string) =>
+    api.get<Record<string, unknown>>(`/admin/rfqs/${rfqId}`),
+  updateRfqStatus: (rfqId: number | string, status: string) =>
+    api.patch<Record<string, unknown>>(`/admin/rfqs/${rfqId}/status`, { status }),
+
+  listOrders: (params?: {
+    status?: string;
+    factory_id?: number;
+    user_id?: number;
+    date_from?: string;
+    date_to?: string;
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }) =>
+    api.get<AdminOrderRow[]>(
+      `/admin/orders${qs({
+        status: params?.status,
+        factory_id: params?.factory_id,
+        user_id: params?.user_id,
+        date_from: params?.date_from,
+        date_to: params?.date_to,
+        search: params?.search,
+        page: params?.page,
+        page_size: params?.page_size,
+      })}`,
+    ),
+  getOrder: (orderId: number | string) =>
+    api.get<Record<string, unknown>>(`/admin/orders/${orderId}`),
+  updateOrderStatus: (orderId: number | string, status: string) =>
+    api.patch<Record<string, unknown>>(`/admin/orders/${orderId}/status`, { status }),
+
+  listCommissionRules: (params?: { factory_id?: number; active_only?: boolean }) =>
+    api.get<AdminCommissionRule[]>(
+      `/admin/commission-rules${qs({
+        factory_id: params?.factory_id,
+        active_only: params?.active_only,
+      })}`,
+    ),
+  createCommissionRule: (body: {
+    factory_id: number;
+    commission_rate: number;
+    effective_from?: string;
+  }) => api.post<AdminCommissionRule>('/admin/commission-rules', body),
+  deleteCommissionRule: (ruleId: number | string) =>
+    api.delete(`/admin/commission-rules/${ruleId}`),
+
+  listCommissionExemptions: (params?: { active_only?: boolean }) =>
+    api.get<AdminCommissionExemption[]>(
+      `/admin/commission-exemptions${qs({
+        active_only: params?.active_only,
+      })}`,
+    ),
+  createCommissionExemption: (body: {
+    factory_id: number;
+    reason: string;
+    expires_at?: string;
+  }) => api.post<AdminCommissionExemption>('/admin/commission-exemptions', body),
+  deleteCommissionExemption: (exemptionId: number | string) =>
+    api.delete(`/admin/commission-exemptions/${exemptionId}`),
 };
 
 // ─── Quotation Builder API (extended) ──────────────────────────
