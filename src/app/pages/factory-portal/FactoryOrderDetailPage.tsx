@@ -36,6 +36,16 @@ function statusLabel(code: string): string {
   return s || '-';
 }
 
+function orderStatusGradient(code: string): string {
+  const s = code.toUpperCase();
+  if (s === 'CP') return 'linear-gradient(135deg, #065F46 0%, #059669 100%)';
+  if (s === 'CN' || s === 'PE') return 'linear-gradient(135deg, #7F1D1D 0%, #DC2626 100%)';
+  if (s === 'PR' || s === 'QC' || s === 'SH') return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
+  if (s === 'PP') return 'linear-gradient(135deg, #78350F 0%, #D97706 100%)';
+  if (s === 'PD') return 'linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%)';
+  return 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)';
+}
+
 function getStepId(step: MergedProductionStep | null): number {
   if (!step) return 0;
   const n = Number(step.template.step_id ?? 0);
@@ -196,172 +206,209 @@ export function FactoryOrderDetailPage() {
   if (!id) return null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-24">
-      {/* ── Header ── */}
-      <div className="flex items-center gap-3 mb-5">
+    <div style={{ backgroundColor: '#F8F6FA' }} className="min-h-screen pb-24">
+      {/* Sticky top bar */}
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate('/factory/orders')}
-          className="w-10 h-10 rounded-xl border border-[#2A3158] flex items-center justify-center bg-[#1F2340] text-white"
+          className="flex items-center gap-1 text-sm font-medium"
+          style={{ color: '#7A4B94' }}
         >
-          <ChevronLeft size={22} />
+          <ChevronLeft size={18} /> กลับ
         </button>
-        <div className="min-w-0">
-          <p className="text-[11px] text-white/50">Factory Order</p>
-          <h1 className="text-lg font-bold text-white truncate">{title}</h1>
-        </div>
+        <span className="flex-1 text-center text-sm font-bold" style={{ color: '#2E2252' }}>
+          รายละเอียดคำสั่งซื้อ
+        </span>
+        <span className="text-xs font-medium text-gray-400">#{orderCode}</span>
       </div>
 
-      {error ? (
-        <p className="text-sm text-red-400 bg-red-950/40 border border-red-800/50 rounded-xl px-4 py-3 mb-4">
-          {error}
-        </p>
-      ) : null}
+      <div className="w-full max-w-7xl mx-auto px-4 pt-4">
+        {error ? (
+          <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
+        ) : null}
 
-      {loading && !order.status ? (
-        <div className="flex justify-center py-16">
-          <div
-            className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: '#6D5EF8', borderTopColor: 'transparent' }}
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-4 lg:gap-5 items-start">
-
-          {/* ════════ LEFT ════════ */}
-          <div className="space-y-4 min-w-0">
-
-            {/* Order summary */}
-            <section className="rounded-2xl bg-[#1F2340] border border-[#2A3158] p-4 text-white">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[11px] text-white/60">Order</p>
-                  <p className="text-base font-semibold truncate">#{orderCode}</p>
-                  <p className="text-[12px] text-white/70 mt-1">{statusLabel(status)}</p>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#6D5EF8]/30 text-[#CBC5FF]">
-                  {status || '-'}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-4 text-xs">
-                <InfoCell
-                  label="มูลค่ารวม"
-                  value={`฿${Number(order.total_amount ?? 0).toLocaleString('th-TH')}`}
-                />
-                <InfoCell
-                  label="ชำระแล้ว"
-                  value={`฿${Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}`}
-                />
-                <InfoCell label="สร้างเมื่อ" value={fmtDateTime(order.created_at)} />
-                <InfoCell label="กำหนดส่ง" value={fmtDateTime(order.estimated_delivery)} />
-              </div>
-            </section>
-
-            {/* RFQ + Quotation spec */}
-            {rfq ? (
-              <RfqReferenceCard
-                rfq={rfq}
-                quotation={quotation}
-                variant="accordion"
-                defaultOpen={false}
-              />
-            ) : null}
-
-            {/* Production Timeline */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2 px-0.5">
-                <Flag size={14} className="text-[#6D5EF8]" />
-                <h2 className="text-sm font-bold text-white">ความคืบหน้าการผลิต</h2>
-              </div>
-
-              {tplQ.isLoading || updQ.isLoading ? (
-                <div className="flex items-center gap-2 py-6 justify-center text-white/60 text-sm">
-                  <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-[#6D5EF8]" />
-                  กำลังโหลด…
-                </div>
-              ) : merged.length === 0 ? (
-                <p className="text-sm text-white/50 px-1">ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
-              ) : (
-                <>
-                  <ProductionHeader merged={displayMerged} orderStatus={orderStatus} />
-                  <ProductionTimeline
-                    merged={displayMerged}
-                    orderStatus={orderStatus}
-                    isFactory={!isCompleted}
-                    isCustomer={false}
-                    onOpenDrawer={(m) => {
-                      if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
-                    }}
-                    onOpenReject={() => {/* factory ไม่ reject ตัวเอง */}}
-                    onPhotoClick={() => {/* TODO: lightbox */}}
-                  />
-                </>
-              )}
-            </section>
+        {loading && !order.status ? (
+          <div className="flex justify-center py-16">
+            <div
+              className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }}
+            />
           </div>
+        ) : (
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-4 lg:gap-5 items-start">
 
-          {/* ════════ RIGHT ════════ */}
-          <aside className="space-y-4 xl:sticky xl:top-4">
+            {/* ════════ LEFT ════════ */}
+            <div className="space-y-4 min-w-0">
 
-            {/* ── Next action card ── */}
-            <section className="rounded-2xl bg-[#1F2340] border border-[#2A3158] p-4 text-white">
-              <h2 className="font-semibold mb-3">การดำเนินการ</h2>
-
-              {isCompleted ? (
-                <div className="rounded-xl bg-emerald-900/30 border border-emerald-700/40 px-3 py-3 text-sm text-emerald-300 text-center">
-                  ✓ ออเดอร์นี้เสร็จสิ้นแล้ว
-                </div>
-              ) : activeStep == null && totalSteps > 0 ? (
-                <div className="rounded-xl bg-[#252B4D] border border-[#303965] px-3 py-3 text-sm text-white/60 text-center">
-                  ทุกขั้นตอนเสร็จสิ้นแล้ว
-                </div>
-              ) : activeStep != null ? (
-                <div className="space-y-3">
-                  <div className="rounded-xl bg-[#252B4D] border border-[#303965] px-3 py-3">
-                    <p className="text-[10px] text-white/50 uppercase tracking-wide mb-1">
-                      ขั้นตอนถัดไป ({nextStepIdx + 1}/{totalSteps})
-                    </p>
-                    <p className="text-sm font-semibold text-white">
-                      {activeStep.template.step_name_th}
-                    </p>
-                    {activeStep.template.description ? (
-                      <p className="text-xs text-white/60 mt-0.5">
-                        {activeStep.template.description}
-                      </p>
-                    ) : null}
-                    <div className="mt-2">
-                      <StepStatusBadge state={activeState ?? 'upcoming'} />
+              {/* Status hero card */}
+              <div
+                className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
+                style={{ background: orderStatusGradient(status) }}
+              >
+                <div
+                  className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-30 blur-2xl"
+                  style={{ backgroundColor: '#FF7A00' }}
+                />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                    >
+                      {statusLabel(status)}
+                    </span>
+                    <span className="text-xs opacity-70">#{orderCode}</span>
+                  </div>
+                  <h2 className="text-base font-bold mb-3">{title}</h2>
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <div>
+                      <p className="text-[10px] opacity-60 uppercase tracking-wide">มูลค่ารวม</p>
+                      <p className="font-semibold">฿{Number(order.total_amount ?? 0).toLocaleString('th-TH')}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] opacity-60 uppercase tracking-wide">ชำระแล้ว</p>
+                      <p className="font-semibold">฿{Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] opacity-60 uppercase tracking-wide">กำหนดส่ง</p>
+                      <p className="font-semibold">{fmtDateTime(order.estimated_delivery)}</p>
                     </div>
                   </div>
-
-                  {factoryCanUpdateStep(activeStep) ? (
-                    <button
-                      type="button"
-                      onClick={() => setDrawerStep(activeStep)}
-                      className="w-full rounded-xl py-3 text-sm font-semibold text-white inline-flex items-center justify-center gap-2"
-                      style={{ background: 'linear-gradient(135deg, #6D5EF8 0%, #4C46D3 100%)' }}
-                    >
-                      {activeStep.update.status === 'IP'
-                        ? 'อัปเดตขั้นนี้'
-                        : activeStep.update.status === 'RJ'
-                          ? 'ส่งใหม่'
-                          : 'เริ่มขั้นต่อไป'}
-                    </button>
-                  ) : (
-                    <div className="rounded-xl bg-[#252B4D] border border-[#303965] px-3 py-3 text-xs text-white/70">
-                      ขั้นที่ 6 เป็นขั้นปิดงานฝั่งลูกค้า/ระบบอัตโนมัติ โรงงานไม่ต้องอัปเดตเอง
-                    </div>
-                  )}
                 </div>
-              ) : (
-                <p className="text-sm text-white/50">กำลังโหลดขั้นตอน…</p>
-              )}
-            </section>
-          </aside>
-        </div>
-      )}
+              </div>
 
-      {/* ── Step Update Drawer ── */}
+              {/* Order info */}
+              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">ข้อมูลคำสั่งซื้อ</p>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-xs text-gray-500">สร้างเมื่อ</span>
+                  <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>{fmtDateTime(order.created_at)}</span>
+                </div>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-xs text-gray-500">กำหนดส่ง</span>
+                  <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>{fmtDateTime(order.estimated_delivery)}</span>
+                </div>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-xs text-gray-500">มูลค่ารวม</span>
+                  <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                    ฿{Number(order.total_amount ?? 0).toLocaleString('th-TH')}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-xs text-gray-500">ชำระแล้ว</span>
+                  <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
+                    ฿{Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}
+                  </span>
+                </div>
+              </section>
+
+              {/* RFQ + Quotation spec */}
+              {rfq ? (
+                <RfqReferenceCard
+                  rfq={rfq}
+                  quotation={quotation}
+                  variant="accordion"
+                  defaultOpen={false}
+                />
+              ) : null}
+
+              {/* Production Timeline */}
+              <section className="space-y-3">
+                <div className="flex items-center gap-2 px-0.5">
+                  <Flag size={14} style={{ color: '#7A4B94' }} />
+                  <h2 className="text-sm font-bold" style={{ color: '#2E2252' }}>ความคืบหน้าการผลิต</h2>
+                </div>
+
+                {tplQ.isLoading || updQ.isLoading ? (
+                  <div className="flex items-center gap-2 py-6 justify-center text-gray-500 text-sm">
+                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }} />
+                    กำลังโหลด…
+                  </div>
+                ) : merged.length === 0 ? (
+                  <p className="text-sm text-gray-400 px-1">ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
+                ) : (
+                  <>
+                    <ProductionHeader merged={displayMerged} orderStatus={orderStatus} />
+                    <ProductionTimeline
+                      merged={displayMerged}
+                      orderStatus={orderStatus}
+                      isFactory={!isCompleted}
+                      isCustomer={false}
+                      onOpenDrawer={(m) => {
+                        if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
+                      }}
+                      onOpenReject={() => {/* factory ไม่ reject ตัวเอง */}}
+                      onPhotoClick={() => {/* TODO: lightbox */}}
+                    />
+                  </>
+                )}
+              </section>
+            </div>
+
+            {/* ════════ RIGHT ════════ */}
+            <aside className="space-y-4 xl:sticky xl:top-20">
+
+              {/* Next action card */}
+              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">การดำเนินการ</p>
+
+                {isCompleted ? (
+                  <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-sm text-emerald-800 text-center">
+                    ออเดอร์นี้เสร็จสิ้นแล้ว
+                  </div>
+                ) : activeStep == null && totalSteps > 0 ? (
+                  <div className="rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 text-sm text-gray-500 text-center">
+                    ทุกขั้นตอนเสร็จสิ้นแล้ว
+                  </div>
+                ) : activeStep != null ? (
+                  <div className="space-y-3">
+                    <div className="rounded-xl bg-purple-50 border border-purple-100 px-3 py-3">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">
+                        ขั้นตอนถัดไป ({nextStepIdx + 1}/{totalSteps})
+                      </p>
+                      <p className="text-sm font-semibold" style={{ color: '#2E2252' }}>
+                        {activeStep.template.step_name_th}
+                      </p>
+                      {activeStep.template.description ? (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {activeStep.template.description}
+                        </p>
+                      ) : null}
+                      <div className="mt-2">
+                        <StepStatusBadge state={activeState ?? 'upcoming'} />
+                      </div>
+                    </div>
+
+                    {factoryCanUpdateStep(activeStep) ? (
+                      <button
+                        type="button"
+                        onClick={() => setDrawerStep(activeStep)}
+                        className="w-full rounded-xl py-3 text-sm font-semibold text-white inline-flex items-center justify-center gap-2 shadow-sm"
+                        style={{ background: 'linear-gradient(135deg, #E38844 0%, #D4722E 100%)' }}
+                      >
+                        {activeStep.update.status === 'IP'
+                          ? 'อัปเดตขั้นนี้'
+                          : activeStep.update.status === 'RJ'
+                            ? 'ส่งใหม่'
+                            : 'เริ่มขั้นต่อไป'}
+                      </button>
+                    ) : (
+                      <div className="rounded-xl bg-gray-50 border border-gray-100 px-3 py-3 text-xs text-gray-500">
+                        ขั้นที่ 6 เป็นขั้นปิดงานฝั่งลูกค้า/ระบบอัตโนมัติ โรงงานไม่ต้องอัปเดตเอง
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400">กำลังโหลดขั้นตอน…</p>
+                )}
+              </section>
+            </aside>
+          </div>
+        )}
+      </div>
+
+      {/* Step Update Drawer */}
       <UpdateStepDrawer
         open={drawerStep != null}
         placement={drawerWide ? 'right' : 'bottom'}
@@ -375,28 +422,22 @@ export function FactoryOrderDetailPage() {
 
 /* ── Sub-components ── */
 
-function InfoCell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-[#303965] bg-[#252B4D] px-3 py-2">
-      <p className="text-[10px] text-white/60">{label}</p>
-      <p className="text-sm font-semibold mt-0.5 text-white truncate">{value}</p>
-    </div>
-  );
-}
-
 type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
 function StepStatusBadge({ state }: { state: StepState }) {
-  const map: Record<StepState, { label: string; cls: string }> = {
-    completed: { label: 'เสร็จสิ้น', cls: 'bg-emerald-900/40 text-emerald-400 border-emerald-700/40' },
-    active:    { label: 'กำลังดำเนินการ', cls: 'bg-[#6D5EF8]/20 text-[#CBC5FF] border-[#6D5EF8]/40' },
-    blocked:   { label: 'รอดำเนินการ', cls: 'bg-amber-900/30 text-amber-400 border-amber-700/40' },
-    rejected:  { label: 'ต้องแก้ไข', cls: 'bg-red-900/30 text-red-400 border-red-700/40' },
-    upcoming:  { label: 'ยังไม่เริ่ม', cls: 'bg-[#2A3158] text-white/50 border-[#3A4475]' },
+  const map: Record<StepState, { label: string; bg: string; color: string; border: string }> = {
+    completed: { label: 'เสร็จสิ้น', bg: '#D1FAE5', color: '#065F46', border: '#A7F3D0' },
+    active:    { label: 'กำลังดำเนินการ', bg: '#EDE9FE', color: '#5B21B6', border: '#DDD6FE' },
+    blocked:   { label: 'รอดำเนินการ', bg: '#FEF3C7', color: '#92400E', border: '#FDE68A' },
+    rejected:  { label: 'ต้องแก้ไข', bg: '#FEE2E2', color: '#991B1B', border: '#FECACA' },
+    upcoming:  { label: 'ยังไม่เริ่ม', bg: '#F3F4F6', color: '#6B7280', border: '#E5E7EB' },
   };
-  const { label, cls } = map[state];
+  const { label, bg, color, border } = map[state];
   return (
-    <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+    <span
+      className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border"
+      style={{ backgroundColor: bg, color, borderColor: border }}
+    >
       {label}
     </span>
   );

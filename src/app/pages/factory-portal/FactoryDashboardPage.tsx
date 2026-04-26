@@ -30,6 +30,7 @@ import {
   type AnalyticsSeriesPoint,
 } from './hooks/useFactoryDashboard';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const COLORS = {
@@ -237,59 +238,22 @@ export function FactoryDashboardPage() {
 
   if (loading) {
     return (
-      <div
-        style={{ backgroundColor: COLORS.lightPurpleBg }}
-        className="min-h-screen flex flex-col items-center justify-center py-24 gap-3"
-      >
+      <div className="space-y-4">
+        <FactoryPageHeader title="แดชบอร์ดวิเคราะห์ธุรกิจ" subtitle="Factory Portal" icon={TrendingUp} />
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
         <div
           className="w-10 h-10 border-[3px] border-t-transparent rounded-full animate-spin"
           style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
         />
         <p className="text-sm text-gray-500">กำลังโหลดแดชบอร์ด…</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{ backgroundColor: COLORS.lightPurpleBg }}
-      className="min-h-screen -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 py-5 space-y-5"
-    >
-      {/* ── Hero banner ── */}
-      <div
-        className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
-        style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
-      >
-        <div
-          className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-40 blur-2xl mix-blend-screen"
-          style={{ backgroundColor: '#FF7A00' }}
-        />
-        <div
-          className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-60 transform translate-x-8"
-          style={{ backgroundColor: '#A238FF' }}
-        />
-        <div
-          className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full opacity-30 blur-xl mix-blend-screen"
-          style={{ backgroundColor: '#A238FF' }}
-        />
-        <div className="relative z-10 flex items-center gap-4">
-          <div
-            className="p-2.5 rounded-full shrink-0"
-            style={{
-              backgroundColor: 'rgba(162,56,255,0.30)',
-              border: '1px solid rgba(162,56,255,0.50)',
-            }}
-          >
-            <TrendingUp size={20} className="text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-medium mb-0.5" style={{ color: '#EBD3FF' }}>
-              ภาพรวมโรงงานของคุณ
-            </p>
-            <h2 className="text-base font-bold">แดชบอร์ดวิเคราะห์ธุรกิจ</h2>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <FactoryPageHeader title="แดชบอร์ดวิเคราะห์ธุรกิจ" subtitle="ภาพรวมโรงงานของคุณ" icon={TrendingUp} />
 
       {/* ── Verify guard banner ── */}
       {verifySt !== 'AP' ? (

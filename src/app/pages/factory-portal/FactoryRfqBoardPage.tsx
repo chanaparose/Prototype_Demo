@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Search, SlidersHorizontal, FileText } from 'lucide-react';
 import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
+import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 type TabKey = 'all' | 'open' | 'quoted' | 'closing';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
@@ -152,61 +153,27 @@ export function FactoryRfqBoardPage() {
 
   if (loading) {
     return (
-      <div
-        style={{ backgroundColor: '#F8F6FA' }}
-        className="min-h-screen -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 py-5 flex justify-center items-start pt-16"
-      >
+      <div className="space-y-4">
+        <FactoryPageHeader title="RFQ ที่ตรงหมวดโรงงาน" subtitle="Factory Portal" icon={FileText} />
+        <div className="flex justify-center items-start pt-8">
         <div
           className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
           style={{ borderColor: '#7A4B94', borderTopColor: 'transparent' }}
         />
+        </div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{ backgroundColor: '#F8F6FA' }}
-      className="min-h-screen -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 px-3 sm:px-4 md:px-6 lg:px-8 py-5 space-y-5"
-    >
-      {/* Hero Banner */}
-      <div
-        className="rounded-2xl p-5 relative overflow-hidden text-white shadow-md"
-        style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
-      >
-        <div
-          className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-40 blur-2xl mix-blend-screen"
-          style={{ backgroundColor: '#FF7A00' }}
-        />
-        <div
-          className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-60 transform translate-x-8"
-          style={{ backgroundColor: '#A238FF' }}
-        />
-        <div
-          className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full opacity-30 blur-xl mix-blend-screen"
-          style={{ backgroundColor: '#A238FF' }}
-        />
-        <div className="relative z-10 flex items-center gap-4">
-          <div
-            className="p-2.5 rounded-full shrink-0"
-            style={{
-              backgroundColor: 'rgba(162,56,255,0.30)',
-              border: '1px solid rgba(162,56,255,0.50)',
-            }}
-          >
-            <FileText size={22} className="text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium mb-0.5" style={{ color: '#EBD3FF' }}>
-              ระบบจัดการโรงงาน
-            </p>
-            <h2 className="text-base font-bold">กระดาน RFQ — คำขอจากลูกค้า</h2>
-          </div>
-          <span className="text-sm font-semibold shrink-0" style={{ color: '#EBD3FF' }}>
-            {counts.all} รายการ
-          </span>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <FactoryPageHeader
+        title="RFQ ที่ตรงหมวดโรงงาน"
+        subtitle="Factory Portal"
+        icon={FileText}
+        count={`${counts.all} รายการ`}
+        action={{ label: 'ดูใบเสนอราคา', to: '/factory/quotations' }}
+      />
 
       {error ? (
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -321,7 +288,7 @@ export function FactoryRfqBoardPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="ค้นหา ชื่อ / เลข RFQ"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-400"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#7A4B94]"
               />
             </div>
             <select
