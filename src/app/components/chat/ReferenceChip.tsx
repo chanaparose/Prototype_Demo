@@ -4,7 +4,7 @@ import type { ChatReference } from '../../utils/chatContract';
 
 type Props = {
   reference: ChatReference;
-  /** When missing, chip shows `#id` */
+  /** When missing, chip shows generic label (never show raw id) */
   titleFallback?: string;
 };
 
@@ -27,7 +27,7 @@ function hrefFor(ref: ChatReference): string {
 }
 
 function labelFor(ref: ChatReference, titleFallback?: string): string {
-  const t = ref.title?.trim() || titleFallback || `#${ref.id}`;
+  const t = ref.title?.trim() || titleFallback?.trim() || 'รายการอ้างอิง';
   switch (ref.type) {
     case 'PD':
       return `สินค้า: ${t}`;

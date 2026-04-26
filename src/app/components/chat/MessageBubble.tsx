@@ -1,24 +1,50 @@
 import React from 'react';
-import { CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { ArrowRight, Check, CreditCard, FileText, X } from 'lucide-react';
 import { ImageWithFallback } from '../shared';
 import type { ChatReference, ChatReferenceType } from '../../utils/chatContract';
 import { ReferenceChip } from './ReferenceChip';
+import { normalizeIso } from '../../pages/messages/selectors';
+import { formatChatTime } from '../../utils/chatTime';
+
+/** Tiny inline spinner for the "sending" status on optimistic bubbles. */
+function SendingSpinner({ color }: { color: string }) {
+  return (
+    <svg
+      width={10}
+      height={10}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={3}
+      className="animate-spin shrink-0"
+      aria-label="กำลังส่ง"
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export type RoomMessage = {
   key: string;
   sender_id: number;
   receiver_id: number;
   content: string;
-  /** ISO8601 UTC from API (or optimistic). */
   created_at: string;
-  /** HH:mm for display */
   display_time: string;
-  message_type: 'TX' | 'QT' | 'IM';
+  message_type: 'TX' | 'QT' | 'IM' | 'rfq_card' | 'quotation_card' | 'system';
   reference_type: '' | ChatReferenceType;
   reference_id: number;
-  quoteData?: { price: number; leadTime: number; validUntil: string };
+  reference_title?: string;
+  quoteData?: {
+    quotationId?: number;
+    price: number;
+    leadTime: number;
+    validUntil: string;
+    status?: 'pending' | 'accepted' | 'rejected' | 'expired' | string;
+  };
   imageUrl?: string;
-  /** optimistic / failed send */
+  is_read?: boolean;
   status?: 'sending' | 'ok' | 'error';
 };
 
@@ -26,21 +52,36 @@ type Props = {
   msg: RoomMessage;
   currentUserId: number;
   peerAvatarUrl: string;
+  viewerRole: 'CT' | 'FT';
+  quotationLoadingId?: number | null;
+  onAcceptQuotation?: (quotationId: number) => void;
+  onRejectQuotation?: (quotationId: number) => void;
 };
 
-function parseQuoteData(raw: string | null | undefined): RoomMessage['quoteData'] | undefined {
-  if (raw == null || String(raw).trim() === '') return undefined;
-  try {
-    const q = JSON.parse(String(raw)) as Record<string, unknown>;
-    if (!q || typeof q !== 'object') return undefined;
-    return {
-      price: Number(q.price ?? 0),
-      leadTime: Number(q.lead_time ?? q.leadTime ?? 0),
-      validUntil: String(q.valid_until ?? q.validUntil ?? ''),
-    };
-  } catch {
-    return undefined;
+function parseQuoteData(raw: unknown): RoomMessage['quoteData'] | undefined {
+  if (raw == null) return undefined;
+  let q: Record<string, unknown> | null = null;
+  if (typeof raw === 'string') {
+    const s = raw.trim();
+    if (!s) return undefined;
+    try {
+      q = JSON.parse(s) as Record<string, unknown>;
+    } catch {
+      return undefined;
+    }
+  } else if (typeof raw === 'object') {
+    q = raw as Record<string, unknown>;
   }
+  if (!q) return undefined;
+
+  const quotationId = Number(q.quotation_id ?? q.quotationId ?? q.quote_id ?? q.quoteId ?? 0);
+  return {
+    quotationId: Number.isFinite(quotationId) && quotationId > 0 ? quotationId : undefined,
+    price: Number(q.price ?? q.total ?? 0),
+    leadTime: Number(q.lead_time ?? q.leadTime ?? q.lead_time_days ?? 0),
+    validUntil: String(q.valid_until ?? q.validUntil ?? ''),
+    status: String(q.status ?? 'pending').toLowerCase(),
+  };
 }
 
 function pickImageUrl(r: Record<string, unknown>, mt: RoomMessage['message_type']): string | undefined {
@@ -54,100 +95,202 @@ function pickImageUrl(r: Record<string, unknown>, mt: RoomMessage['message_type'
   return u || undefined;
 }
 
+/**
+ * Format a chat timestamp as `HH:mm` in Bangkok time.
+ * Delegates to {@link formatChatTime} which handles the BE bug where
+ * Bangkok wall-clock timestamps are stamped with `Z` (see chatTime.ts).
+ */
+export function formatDisplayTimeFromIso(isoRaw: string): string {
+  return formatChatTime(isoRaw);
+}
+
 export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null {
   const message_id = String(r.message_id ?? r.id ?? '');
   const content = String(r.content ?? r.text ?? r.body ?? '');
-  const message_type = String(r.message_type ?? r.type ?? 'TX').toUpperCase() as RoomMessage['message_type'];
+  const rawMessageType = String(r.message_type ?? r.type ?? 'TX');
+  const message_type = rawMessageType === rawMessageType.toUpperCase() ? rawMessageType : rawMessageType.toLowerCase();
   const sender_id = Number(r.sender_id ?? r.senderId ?? 0);
   const receiver_id = Number(r.receiver_id ?? r.receiverId ?? 0);
   if (!Number.isFinite(sender_id)) return null;
 
   const refType = String(r.reference_type ?? '').toUpperCase() as RoomMessage['reference_type'];
   const reference_id = Number(r.reference_id ?? 0);
+  const reference_title = String(
+    r.reference_title ??
+      r.ref_title ??
+      r.rfq_title ??
+      r.showcase_title ??
+      r.order_title ??
+      '',
+  ).trim();
 
   const createdAtRaw = String(r.created_at ?? r.sent_at ?? '');
-  const d = createdAtRaw ? new Date(createdAtRaw) : null;
-  const display_time =
-    d && !Number.isNaN(d.getTime())
-      ? d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
-      : '';
+  // normalizeIso strips Go nanoseconds (>3 fractional digits) and guards
+  // against Go zero time "0001-01-01…" — both cause NaN in Safari.
+  const createdAtNorm = normalizeIso(createdAtRaw);
+  const display_time = formatDisplayTimeFromIso(createdAtNorm || createdAtRaw);
 
-  const mt: RoomMessage['message_type'] =
-    message_type === 'QT' || message_type === 'IM' ? message_type : 'TX';
-
-  let qd =
-    mt === 'QT'
-      ? parseQuoteData(
-          typeof r.quote_data === 'string' ? r.quote_data : typeof r.quoteData === 'string' ? r.quoteData : null,
-        )
-      : undefined;
-  let effectiveType: RoomMessage['message_type'] = mt;
-  if (mt === 'QT' && !qd) {
-    effectiveType = 'TX';
-    qd = undefined;
+  let mt: RoomMessage['message_type'];
+  if (
+    message_type === 'QT' ||
+    message_type === 'IM' ||
+    message_type === 'TX' ||
+    message_type === 'rfq_card' ||
+    message_type === 'quotation_card' ||
+    message_type === 'system'
+  ) {
+    mt = message_type;
+  } else {
+    mt = 'TX';
   }
 
-  const imageUrl = pickImageUrl(r, effectiveType);
+  let qd = mt === 'QT' || mt === 'quotation_card' ? parseQuoteData(r.quote_data ?? r.quoteData) : undefined;
+  if ((mt === 'QT' || mt === 'quotation_card') && !qd) {
+    qd = parseQuoteData((r as Record<string, unknown>).quote);
+  }
 
-  const hasBody = content.trim() !== '' || effectiveType === 'QT' || (effectiveType === 'IM' && Boolean(imageUrl));
+  const imageUrl = pickImageUrl(r, mt);
+  const hasBody =
+    content.trim() !== '' ||
+    mt === 'QT' ||
+    mt === 'quotation_card' ||
+    mt === 'rfq_card' ||
+    mt === 'system' ||
+    (mt === 'IM' && Boolean(imageUrl));
 
   if (!hasBody) return null;
 
   return {
-    key: message_id || `k-${sender_id}-${createdAtRaw}-${content.slice(0, 6)}`,
+    key: message_id || `k-${sender_id}-${createdAtNorm || createdAtRaw}-${content.slice(0, 6)}`,
     sender_id,
     receiver_id: Number.isFinite(receiver_id) ? receiver_id : 0,
-    content: content || (effectiveType === 'QT' ? 'ใบเสนอราคา' : effectiveType === 'IM' ? '' : ''),
-    created_at: createdAtRaw,
+    content: content || (mt === 'QT' || mt === 'quotation_card' ? 'ใบเสนอราคา' : mt === 'rfq_card' ? 'คำขอ RFQ' : ''),
+    // Store the normalized ISO (ms-precision) so date comparisons and sorting
+    // work correctly in all browsers (Safari rejects >3 fractional digits).
+    created_at: createdAtNorm || createdAtRaw,
     display_time,
-    message_type: effectiveType,
+    message_type: mt,
     reference_type:
       refType === 'PD' || refType === 'PM' || refType === 'ID' || refType === 'RQ' || refType === 'OD'
         ? refType
         : '',
     reference_id: Number.isFinite(reference_id) ? reference_id : 0,
+    reference_title: reference_title || undefined,
     quoteData: qd,
     imageUrl,
+    is_read: Boolean(r.is_read ?? false),
     status: 'ok',
   };
 }
 
-export function MessageBubble({ msg, currentUserId, peerAvatarUrl }: Props) {
+export function MessageBubble({
+  msg,
+  currentUserId,
+  peerAvatarUrl,
+  viewerRole,
+  quotationLoadingId,
+  onAcceptQuotation,
+  onRejectQuotation,
+}: Props) {
+  const navigate = useNavigate();
   const isMine = Number(msg.sender_id) === currentUserId;
 
-  if (msg.message_type === 'QT' && msg.quoteData) {
-    const q = msg.quoteData;
+  if (msg.message_type === 'system') {
     return (
       <div className="flex justify-center">
-        <div
-          className="w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm"
-          style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
-        >
+        <span className="text-[11px] text-gray-600 bg-gray-100 px-3 py-1 rounded-full">{msg.content}</span>
+      </div>
+    );
+  }
+
+  if (msg.message_type === 'rfq_card') {
+    const rfqId = Number(msg.reference_id ?? 0);
+    return (
+      <div className="flex justify-center">
+        <div className="bg-white border-l-4 border-[#7A4B94] rounded-2xl p-4 shadow-sm max-w-[320px] w-full">
+          <p className="text-[10px] font-semibold text-[#7A4B94] uppercase tracking-wide mb-1">คำขอ RFQ</p>
+          <p className="text-sm font-bold text-gray-900">{msg.content || `RFQ #${rfqId}`}</p>
+          <div className="border-t border-gray-100 my-3" />
+          <button
+            type="button"
+            className="text-sm font-semibold text-[#7A4B94] flex items-center gap-1 hover:underline"
+            onClick={() => {
+              if (!Number.isFinite(rfqId) || rfqId <= 0) return;
+              navigate(viewerRole === 'FT' ? `/factory/rfqs/${rfqId}` : `/rfqs/${rfqId}`);
+            }}
+          >
+            {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'} <ArrowRight size={14} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if ((msg.message_type === 'quotation_card' || msg.message_type === 'QT') && msg.quoteData) {
+    const q = msg.quoteData;
+    const qId = Number(q.quotationId ?? 0);
+    const qStatus = String(q.status ?? 'pending').toLowerCase();
+    const isBuyer = viewerRole === 'CT';
+    const pending = qStatus === 'pending' || qStatus === 'pd';
+    const loading = Number.isFinite(qId) && qId > 0 && quotationLoadingId === qId;
+
+    return (
+      <div className="flex justify-center">
+        <div className="w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm" style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}>
           <div className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <CreditCard size={16} className="text-yellow-300" />
-              <span className="text-white text-xs" style={{ fontWeight: 700 }}>
-                ใบเสนอราคาทางการ
-              </span>
+              <span className="text-white text-xs" style={{ fontWeight: 700 }}>ใบเสนอราคาทางการ</span>
             </div>
             <div className="flex gap-3 mb-4">
               <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>
-                  ฿{q.price.toLocaleString()}
-                </p>
+                <p className="text-white" style={{ fontWeight: 700 }}>฿{q.price.toLocaleString('th-TH')}</p>
                 <p className="text-white/70 text-[9px]">ราคารวม</p>
               </div>
               <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>
-                  {q.leadTime} วัน
-                </p>
+                <p className="text-white" style={{ fontWeight: 700 }}>{q.leadTime} วัน</p>
                 <p className="text-white/70 text-[9px]">lead time</p>
               </div>
             </div>
-            <p className="text-white/60 text-[10px] text-center">ใช้ได้ถึง {q.validUntil}</p>
-            {msg.display_time ? (
-              <p className="text-white/40 text-[9px] text-center mt-2">{msg.display_time}</p>
-            ) : null}
+            <p className="text-white/60 text-[10px] text-center">ใช้ได้ถึง {q.validUntil || '-'}</p>
+
+            {isBuyer && pending ? (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={loading || !(qId > 0)}
+                  onClick={() => qId > 0 && onAcceptQuotation?.(qId)}
+                  className="bg-white text-[#4A267D] text-xs font-semibold py-2 rounded-xl disabled:opacity-60"
+                >
+                  {loading ? 'กำลังยืนยัน...' : 'ยืนยัน'}
+                </button>
+                <button
+                  type="button"
+                  disabled={loading || !(qId > 0)}
+                  onClick={() => qId > 0 && onRejectQuotation?.(qId)}
+                  className="bg-white/15 border border-white/30 text-white text-xs font-semibold py-2 rounded-xl disabled:opacity-60"
+                >
+                  ปฏิเสธ
+                </button>
+              </div>
+            ) : (
+              <div className="mt-3 flex justify-center">
+                <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-white inline-flex items-center gap-1">
+                  {qStatus === 'accepted' || qStatus === 'ac' ? (
+                    <><Check size={12} /> ยืนยันแล้ว</>
+                  ) : qStatus === 'rejected' || qStatus === 'rj' ? (
+                    <><X size={12} /> ปฏิเสธแล้ว</>
+                  ) : qStatus === 'expired' ? (
+                    'หมดอายุ'
+                  ) : viewerRole === 'FT' ? (
+                    'รอลูกค้ายืนยัน'
+                  ) : (
+                    'สถานะใบเสนอราคา'
+                  )}
+                </span>
+              </div>
+            )}
+            {msg.display_time ? <p className="text-white/40 text-[9px] text-center mt-2">{msg.display_time}</p> : null}
           </div>
         </div>
       </div>
@@ -158,41 +301,26 @@ export function MessageBubble({ msg, currentUserId, peerAvatarUrl }: Props) {
     return (
       <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} gap-2`}>
         {!isMine && (
-          <ImageWithFallback
-            src={peerAvatarUrl}
-            alt=""
-            className="w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100"
-          />
+          <ImageWithFallback src={peerAvatarUrl} alt="" className="w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100" />
         )}
         <div className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
           <div
-            className={`rounded-2xl overflow-hidden ${isMine ? 'rounded-br-md' : 'rounded-bl-md'}`}
+            className={`rounded-2xl overflow-hidden ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
             style={{ background: isMine ? '#7A4B94' : '#F3F4F6' }}
           >
-            <ImageWithFallback
-              src={msg.imageUrl}
-              alt=""
-              className="max-w-full max-h-64 object-cover block"
-            />
+            <ImageWithFallback src={msg.imageUrl} alt="" className="max-w-full max-h-64 object-cover block" />
             {msg.content.trim() ? (
-              <p
-                className="text-sm px-4 py-2 whitespace-pre-wrap break-words"
-                style={{ color: isMine ? '#fff' : '#1F2937' }}
-              >
+              <p className="text-sm px-4 py-2 whitespace-pre-wrap break-words" style={{ color: isMine ? '#fff' : '#1F2937' }}>
                 {msg.content}
               </p>
             ) : null}
-            <p
-              className="text-[10px] px-4 pb-2"
-              style={{
-                color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
-                textAlign: isMine ? 'right' : 'left',
-              }}
-            >
-              {msg.display_time}
-              {msg.status === 'sending' ? <span className="ml-1 opacity-70">…</span> : null}
+            <p className="text-[10px] px-4 pb-2 flex items-center gap-1" style={{ color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+              {msg.status === 'sending' ? (
+                <SendingSpinner color={isMine ? '#fff' : '#9CA3AF'} />
+              ) : null}
+              <span>{msg.display_time}</span>
               {msg.status === 'error' ? <span className="ml-1 text-red-200">!</span> : null}
-              {isMine && msg.status === 'ok' ? <span className="ml-1">✓✓</span> : null}
+              {isMine && msg.status === 'ok' && msg.is_read ? <span className="ml-1">อ่านแล้ว</span> : null}
             </p>
           </div>
         </div>
@@ -201,45 +329,31 @@ export function MessageBubble({ msg, currentUserId, peerAvatarUrl }: Props) {
   }
 
   const refChip =
-    msg.reference_type &&
-    ['PD', 'PM', 'ID', 'RQ', 'OD'].includes(msg.reference_type) &&
-    msg.reference_id > 0 ? (
+    msg.reference_type && ['PD', 'PM', 'ID', 'RQ', 'OD'].includes(msg.reference_type) && msg.reference_id > 0 ? (
       <ReferenceChip
-        reference={{ type: msg.reference_type, id: msg.reference_id }}
-        titleFallback={`#${msg.reference_id}`}
+        reference={{ type: msg.reference_type, id: msg.reference_id } as ChatReference}
+        titleFallback={msg.reference_title || msg.content || undefined}
       />
     ) : null;
 
   return (
     <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} gap-2`}>
       {!isMine && (
-        <ImageWithFallback
-          src={peerAvatarUrl}
-          alt=""
-          className="w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100"
-        />
+        <ImageWithFallback src={peerAvatarUrl} alt="" className="w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100" />
       )}
       <div className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
         <div
-          className={`px-4 py-2.5 rounded-2xl ${isMine ? 'rounded-br-md' : 'rounded-bl-md'}`}
-          style={{
-            background: isMine ? '#7A4B94' : '#F3F4F6',
-          }}
+          className={`px-4 py-2.5 rounded-2xl ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
+          style={{ background: isMine ? '#7A4B94' : '#F3F4F6' }}
         >
-          <p className="text-sm whitespace-pre-wrap break-words" style={{ color: isMine ? '#fff' : '#1F2937' }}>
-            {msg.content}
-          </p>
-          <p
-            className="text-[10px] mt-0.5"
-            style={{
-              color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
-              textAlign: isMine ? 'right' : 'left',
-            }}
-          >
-            {msg.display_time}
-            {msg.status === 'sending' ? <span className="ml-1 opacity-70">…</span> : null}
+          <p className="text-sm whitespace-pre-wrap break-words" style={{ color: isMine ? '#fff' : '#1F2937' }}>{msg.content}</p>
+          <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+            {msg.status === 'sending' ? (
+              <SendingSpinner color={isMine ? '#fff' : '#9CA3AF'} />
+            ) : null}
+            <span>{msg.display_time}</span>
             {msg.status === 'error' ? <span className="ml-1 text-red-200">!</span> : null}
-            {isMine && msg.status === 'ok' ? <span className="ml-1">✓✓</span> : null}
+            {isMine && msg.status === 'ok' && msg.is_read ? <span className="ml-1">อ่านแล้ว</span> : null}
           </p>
         </div>
         {refChip}

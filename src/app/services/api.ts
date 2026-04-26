@@ -730,6 +730,8 @@ export const conversationsApi = {
   get: (convId: number | string) => api.get<Record<string, unknown>>(`/conversations/${convId}`),
   create: (data: { customer_id: number; factory_id: number }) =>
     api.post<Record<string, unknown>>('/conversations', data),
+  shareRfq: (convId: number | string, rfqId: number) =>
+    api.post<Record<string, unknown>>(`/conversations/${convId}/share-rfq`, { rfq_id: rfqId }),
   /** PATCH /conversations/:id/read — typically 204 No Content */
   markAsRead: (convId: number | string) => api.patch<void>(`/conversations/${convId}/read`),
 };
@@ -848,6 +850,10 @@ export const quotationsApi = {
   /** Partial update — ใช้เมื่อ backend รองรับ PATCH body (เช่น แก้ราคาก่อนลูกค้ารับ) */
   patch: (quotationId: number | string, data: Record<string, unknown>) =>
     api.patch<Record<string, unknown>>(`/quotations/${quotationId}`, data),
+  accept: (quotationId: number | string) =>
+    api.post<Record<string, unknown>>(`/quotations/${quotationId}/accept`),
+  reject: (quotationId: number | string, reason?: string) =>
+    api.post<Record<string, unknown>>(`/quotations/${quotationId}/reject`, reason ? { reason } : {}),
   delete: (quotationId: number | string) => api.delete(`/quotations/${quotationId}`),
 };
 
