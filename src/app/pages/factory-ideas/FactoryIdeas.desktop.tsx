@@ -769,23 +769,17 @@ export function FactoryIdeasDesktop() {
                     {item.title}
                   </h3>
                   <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
-                  <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                      className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
-                      style={{ color: COLORS.blue }}
-                    >
-                      <span className="truncate">{item.factoryName}</span>
-                      {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
-                    </button>
+                  <div className="pt-2 mt-3 border-t border-gray-100">
                     <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                      <span className="min-w-0 truncate">
-                        MOQ{' '}
-                        <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
-                          {item.minOrder}
-                        </span>
-                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
+                        className="flex items-center gap-1 min-w-0 flex-1 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
+                        style={{ color: COLORS.blue }}
+                      >
+                        <span className="truncate">{item.factoryName}</span>
+                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
@@ -796,7 +790,9 @@ export function FactoryIdeasDesktop() {
                           className="w-2.5 h-2.5 shrink-0"
                           style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
                         />
-                        {item.likes + (isLiked(item.id) ? 1 : 0)}
+                        <span className="text-[10px] leading-none">
+                          {item.likes + (isLiked(item.id) ? 1 : 0)}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -849,13 +845,7 @@ export function FactoryIdeasDesktop() {
                         <span className="truncate">{item.factoryName}</span>
                         {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
                       </button>
-                      <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                        <span className="min-w-0 truncate">
-                          MOQ{' '}
-                          <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
-                            {item.minOrder}
-                          </span>
-                        </span>
+                      <div className="flex items-center justify-end gap-2 text-[10px] text-gray-400">
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
@@ -866,7 +856,9 @@ export function FactoryIdeasDesktop() {
                             className="w-2.5 h-2.5 shrink-0"
                             style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
                           />
-                          {item.likes + (isLiked(item.id) ? 1 : 0)}
+                          <span className="text-[10px] leading-none">
+                            {item.likes + (isLiked(item.id) ? 1 : 0)}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -1042,22 +1034,16 @@ export function FactoryIdeasDesktop() {
                     </h3>
                     <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
                     <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                        className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
-                        style={{ color: COLORS.blue }}
-                      >
-                        <span className="truncate">{item.factoryName}</span>
-                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
-                      </button>
                       <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                        <span className="min-w-0 truncate">
-                          MOQ{' '}
-                          <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
-                            {item.minOrder}
-                          </span>
-                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
+                          className="flex items-center gap-1 min-w-0 flex-1 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
+                          style={{ color: COLORS.blue }}
+                        >
+                          <span className="truncate">{item.factoryName}</span>
+                          {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
+                        </button>
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
