@@ -43,7 +43,7 @@ export function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const data = useData();
-  const { user: authUser } = useAuth();
+  const { user: authUser, isAuthenticated } = useAuth();
   const currentUser = data.currentUser;
   const isFactory = isFactoryRole(authUser);
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
@@ -191,7 +191,7 @@ export function DesktopSidebar() {
             รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
           </p>
         </Link>
-      ) : (
+      ) : isAuthenticated ? (
         <div className="mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden" style={{ background: '#F8F5FF', borderColor: 'rgba(162,56,255,0.20)' }}>
           <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl" style={{ background: 'rgba(162,56,255,0.10)' }}></div>
           <div className="flex items-center gap-1.5 mb-1.5">
@@ -205,10 +205,37 @@ export function DesktopSidebar() {
             รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
           </p>
         </div>
+      ) : (
+        <div className="mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden" style={{ background: '#F8F5FF', borderColor: 'rgba(162,56,255,0.20)' }}>
+          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl" style={{ background: 'rgba(162,56,255,0.10)' }}></div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Wallet size={13} style={{ color: '#F28A2E' }} />
+            <span className="text-[11px] font-medium text-gray-500">กระเป๋าเงิน</span>
+          </div>
+          <p className="text-xs text-gray-500 mb-2">Guest View: เข้าสู่ระบบเพื่อใช้งานกระเป๋าเงิน</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="flex-1 rounded-lg bg-white border border-[#A238FF]/25 px-2 py-1.5 text-[11px] font-semibold"
+              style={{ color: '#A238FF' }}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)' }}
+            >
+              Register
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Create RFQ — เฉพาะลูกค้า */}
-      {!isFactory ? (
+      {!isFactory && isAuthenticated ? (
         <div className="px-3 pb-3">
           <button
             type="button"
@@ -224,39 +251,59 @@ export function DesktopSidebar() {
 
       {/* Profile + การแจ้งเตือน — รูปแบบเดียวกับลูกค้า (ไม่อยู่ในรายการเมนูหลัก) */}
       <div className="border-t border-gray-100 px-3 py-3 shrink-0">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => navigate('/profile')}
-            className="flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            <span className="relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-[#EFEAF7]">
-              <img
-                src={avatarSrc}
-                alt={currentUser?.name ?? 'โปรไฟล์'}
-                className="absolute inset-0 w-full h-full object-cover object-center"
-              />
-            </span>
-            <div className="flex-1 text-left min-w-0">
-              <p className="text-xs font-semibold truncate" style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}>{currentUser?.name}</p>
-              <p className="text-[10px] text-gray-400 truncate">{currentUser?.company}</p>
-            </div>
-          </button>
-          <Link
-            to="/notifications"
-            className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0"
-          >
-            <Bell size={17} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
-            {unreadNotifications > 0 ? (
-              <span
-                className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold border-2 border-white tabular-nums"
-                style={{ background: '#F28A2E' }}
-              >
-                {unreadNotifications > 99 ? '99+' : unreadNotifications}
+        {isAuthenticated ? (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/profile')}
+              className="flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              <span className="relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-[#EFEAF7]">
+                <img
+                  src={avatarSrc}
+                  alt={currentUser?.name ?? 'โปรไฟล์'}
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                />
               </span>
-            ) : null}
-          </Link>
-        </div>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-xs font-semibold truncate" style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}>{currentUser?.name}</p>
+                <p className="text-[10px] text-gray-400 truncate">{currentUser?.company}</p>
+              </div>
+            </button>
+            <Link
+              to="/notifications"
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0"
+            >
+              <Bell size={17} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
+              {unreadNotifications > 0 ? (
+                <span
+                  className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold border-2 border-white tabular-nums"
+                  style={{ background: '#F28A2E' }}
+                >
+                  {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                </span>
+              ) : null}
+            </Link>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-gray-50">
+            <span className="relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-[#EFEAF7]">
+              <img src={DEFAULT_USER_AVATAR_SRC} alt="Guest View" className="absolute inset-0 w-full h-full object-cover object-center" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold truncate" style={{ color: '#2D1B4E' }}>Guest View</p>
+              <p className="text-[10px] text-gray-400 truncate">ดูข้อมูลได้โดยยังไม่ต้องเข้าสู่ระบบ</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-[#A238FF]/25 bg-white"
+              style={{ color: '#A238FF' }}
+            >
+              Login
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

@@ -8,6 +8,7 @@
  * ข้อมูล category name / factory name ดึงจาก DataContext (bootstrap) สำหรับ enrich
  */
 import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useData, type Rfq, type Order } from '../contexts/DataContext';
 import { rfqsApi, ordersApi } from '../services/api';
 import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
@@ -105,6 +106,7 @@ type RawQuotation = {
 };
 
 export function useRfqAndOrdersState(initial?: InitialState) {
+  const { isAuthenticated } = useAuth();
   // DataContext ใช้สำหรับ lookup category name / factory name
   const dataCtx = useData();
   const categoryMap = React.useMemo(() => {
@@ -270,18 +272,26 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const isMounted = React.useRef(false);
 
   React.useEffect(() => {
+    if (!isAuthenticated) {
+      setRfqs([]);
+      setOrders([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     if (isMounted.current) return;
     isMounted.current = true;
     setLoading(true);
     fetchRfqs().finally(() => setLoading(false));
-  }, [fetchRfqs]);
+  }, [fetchRfqs, isAuthenticated]);
 
   // Fetch orders after rfqs are loaded (need rfqs for project name lookup)
   React.useEffect(() => {
+    if (!isAuthenticated) return;
     if (rfqs.length > 0 || !loading) {
       fetchOrders();
     }
-  }, [rfqs, loading, fetchOrders]);
+  }, [rfqs, loading, fetchOrders, isAuthenticated]);
 
   // ─── Derived data ────────────────────────────────────────────
   const filteredRfqs = React.useMemo(() => {
@@ -341,6 +351,13 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     error,
     /** Force-refresh ทั้ง RFQ + Order จาก CRUD endpoint */
     refetch: async () => {
+      if (!isAuthenticated) {
+        setRfqs([]);
+        setOrders([]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       await fetchRfqs();
       await fetchOrders();

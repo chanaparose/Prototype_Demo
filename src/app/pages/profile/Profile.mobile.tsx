@@ -8,6 +8,7 @@ import {
   HelpCircle,
   LogOut,
   Star,
+  Heart,
   Package,
   FileText,
   Settings,
@@ -74,7 +75,14 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
         bg: '#EDE9FF',
         to: '/orders',
       },
-      
+      {
+        icon: Heart,
+        label: 'รายการโปรด',
+        sub: 'สินค้า / โปรโมชัน / ไอเดีย ที่บันทึกไว้',
+        color: '#EC4899',
+        bg: '#FCE7F3',
+        to: '/profile/favorites',
+      },
     ],
   },
   {
@@ -515,4 +523,3 @@ export function ProfileMobile() {
     </div>
   );
 }
-

@@ -37,7 +37,7 @@ type MobileNavItem =
 export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const data = useData();
   const unreadNotifications = data.notifications.filter((n) => !n.read).length;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -164,12 +164,12 @@ export function Layout() {
                 </Link>
 
                 <button
-                  onClick={() => navigate('/profile')}
+                  onClick={() => navigate(isAuthenticated ? '/profile' : '/login')}
                   className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <User size={20} style={{ color: '#6B7280' }} />
                   <span className="text-sm" style={{ color: '#374151', fontWeight: 500 }}>
-                    โปรไฟล์
+                    {isAuthenticated ? 'โปรไฟล์' : 'Guest View'}
                   </span>
                 </button>
 
@@ -248,18 +248,18 @@ export function Layout() {
                 <button
                   type="button"
                   onClick={() => {
-                    navigate('/profile');
+                    navigate(isAuthenticated ? '/profile' : '/login');
                     setMobileMenuOpen(false);
                   }}
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm sm:hidden transition-colors duration-150"
                   style={{
-                    color: isActive('/profile') ? '#A238FF' : '#374151',
-                    background: isActive('/profile') ? 'rgba(162,56,255,0.08)' : 'transparent',
-                    fontWeight: isActive('/profile') ? 600 : 500,
+                    color: isAuthenticated && isActive('/profile') ? '#A238FF' : '#374151',
+                    background: isAuthenticated && isActive('/profile') ? 'rgba(162,56,255,0.08)' : 'transparent',
+                    fontWeight: isAuthenticated && isActive('/profile') ? 600 : 500,
                   }}
                 >
-                  <User size={20} strokeWidth={isActive('/profile') ? 2.2 : 1.8} />
-                  โปรไฟล์
+                  <User size={20} strokeWidth={isAuthenticated && isActive('/profile') ? 2.2 : 1.8} />
+                  {isAuthenticated ? 'โปรไฟล์' : 'Guest View'}
                 </button>
               </div>
             </div>
