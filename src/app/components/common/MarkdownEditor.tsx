@@ -232,7 +232,7 @@ export function MarkdownEditor({
             {value.trim() ? (
               <MarkdownBody
                 source={normalizeMarkdownContent(value)}
-                className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+                className="max-w-none text-gray-700"
               />
             ) : (
               <p className="text-[13px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>
