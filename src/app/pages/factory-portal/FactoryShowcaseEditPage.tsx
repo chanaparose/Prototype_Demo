@@ -15,6 +15,8 @@ import { useProductCategories } from '../../hooks/master/useProductCategories';
 import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
+import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
+import { mapLinkedShowcasesErrorToThai, partitionLinkedShowcases } from '../../utils/linkedShowcases';
 
 /* ── Type badge metadata ── */
 const TYPE_META = {
@@ -70,6 +72,7 @@ interface ShowcaseFormValues {
   start_date: string;
   end_date: string;
   status: 'DR' | 'AC' | 'HI' | 'AR';
+  related_showcase_ids: number[];
 }
 
 const DEFAULTS: ShowcaseFormValues = {
@@ -88,6 +91,7 @@ const DEFAULTS: ShowcaseFormValues = {
   start_date: '',
   end_date: '',
   status: 'DR',
+  related_showcase_ids: [],
 };
 
 type Raw = Record<string, unknown>;
@@ -107,7 +111,15 @@ function numOrNull(v: unknown): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function parseImageUrls(raw: unknown): string[] {
+/**
+ * One image entry — `id` is present when the image already exists in the
+ * `factory_showcase_images` table (loaded from server). Newly added images
+ * uploaded in this session start with `id: undefined` until they're persisted
+ * via `addImage` (or saved as part of the `linked_showcases` legacy storage).
+ */
+type ImageEntry = { url: string; id?: number };
+
+function parseImageEntries(raw: unknown): ImageEntry[] {
   const src = Array.isArray(raw)
     ? raw
     : typeof raw === 'string' && raw.trim().startsWith('[')
@@ -121,28 +133,43 @@ function parseImageUrls(raw: unknown): string[] {
         })()
       : [];
   return src
-    .map((item) => {
-      if (typeof item === 'string') return item.trim();
-      if (!item || typeof item !== 'object') return '';
+    .map((item): ImageEntry | null => {
+      if (typeof item === 'string') {
+        const url = item.trim();
+        return url ? { url } : null;
+      }
+      if (!item || typeof item !== 'object') return null;
       const row = item as Record<string, unknown>;
-      return String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
+      const url = String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
+      if (!url) return null;
+      const idRaw = row.image_id ?? row.id;
+      const idNum = idRaw != null ? Number(idRaw) : NaN;
+      return Number.isFinite(idNum) && idNum > 0 ? { url, id: idNum } : { url };
     })
-    .filter((u) => u !== '')
+    .filter((e): e is ImageEntry => e != null)
     .slice(0, 5);
+}
+
+/** Backward-compat helper for places that only need URL strings. */
+function parseImageUrls(raw: unknown): string[] {
+  return parseImageEntries(raw).map((e) => e.url);
 }
 
 function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
   const r = raw ?? {};
   const ct = String(r.content_type ?? 'PD').toUpperCase();
-  const image_urls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
-  const image_url = image_urls[0] ?? String(r.image_url ?? '').trim();
+  const image_entries = parseImageEntries(r.images ?? r.image_urls ?? r.imageUrls);
+  const linked = partitionLinkedShowcases(r.linked_showcases ?? r.linkedShowcases);
+  const mergedImageUrls =
+    image_entries.length > 0 ? image_entries.map((e) => e.url) : linked.imageUrls;
+  const image_url = mergedImageUrls[0] ?? String(r.image_url ?? '').trim();
   return {
     content_type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ShowcaseType,
     title: String(r.title ?? '').trim(),
     excerpt: String(r.excerpt ?? '').trim(),
     content: String(r.content ?? '').trim(),
     image_url,
-    image_urls,
+    image_urls: mergedImageUrls,
     category_id: numOrNull(r.category_id),
     sub_category_id: numOrNull(r.sub_category_id),
     moq: numOrNull(r.moq ?? r.min_order),
@@ -154,6 +181,7 @@ function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
     status: (['DR', 'AC', 'HI', 'AR'].includes(String(r.status))
       ? String(r.status)
       : 'DR') as ShowcaseFormValues['status'],
+    related_showcase_ids: linked.showcaseIds.slice(0, 5),
   };
 }
 
@@ -168,6 +196,17 @@ export function FactoryShowcaseEditPage() {
   const [error, setError] = React.useState('');
   const [uploading, setUploading] = React.useState(false);
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
+  const [selectedShowcaseIds, setSelectedShowcaseIds] = React.useState<number[]>([]);
+  const [linkedShowcaseError, setLinkedShowcaseError] = React.useState('');
+  const didHydrateFromServerRef = React.useRef(false);
+
+  React.useEffect(() => {
+    didHydrateFromServerRef.current = false;
+  }, [id]);
+
+  const removeImage = useCallback((urlToRemove: string) => {
+    setImageUrls((prev) => prev.filter((u) => u !== urlToRemove));
+  }, []);
 
   const { form, isLoading, isError, refetch } = useEditForm<ShowcaseFormValues, Raw>({
     queryKey: ['showcase', id] as const,
@@ -179,12 +218,15 @@ export function FactoryShowcaseEditPage() {
     mapper: mapShowcaseToForm,
     defaults: DEFAULTS,
     onReady: (values) => {
+      if (didHydrateFromServerRef.current) return;
+      didHydrateFromServerRef.current = true;
       const next = values.image_urls?.length
         ? values.image_urls
         : values.image_url
           ? [values.image_url]
           : [];
       setImageUrls(next.slice(0, 5));
+      setSelectedShowcaseIds((values.related_showcase_ids ?? []).slice(0, 5));
     },
     enabled: Boolean(id),
   });
@@ -228,22 +270,19 @@ export function FactoryShowcaseEditPage() {
     }
     setSaving(true);
     setError('');
-    const galleryJson = imageUrls.map((url, idx) => ({
-      image_url: url,
-      sort_order: idx + 1,
-      is_cover: idx === 0,
-    }));
+    setLinkedShowcaseError('');
+    const coverUrl = imageUrls[0] ?? '';
     const base = {
       content_type: v.content_type,
       status: submitStatus,
       title: v.title.trim(),
       excerpt: v.content_type === 'ID' ? undefined : v.excerpt.trim() || undefined,
       content: v.content.trim() || undefined,
-      image_url: undefined,
+      image_url: coverUrl || undefined,
       category_id: v.category_id ?? undefined,
       sub_category_id: v.sub_category_id ?? undefined,
       lead_time_days: v.lead_time_days ?? undefined,
-      linked_showcases: galleryJson,
+      linked_showcases: [...imageUrls, ...selectedShowcaseIds],
     };
 
     const payload: Record<string, unknown> =
@@ -266,17 +305,76 @@ export function FactoryShowcaseEditPage() {
 
     try {
       await showcasesApi.update(id, payload);
+      const existingRaw = await showcasesApi.listImages(id).catch(() => []);
+      const existing = (Array.isArray(existingRaw) ? existingRaw : [])
+        .map((r) => {
+          const row = (r ?? {}) as Record<string, unknown>;
+          const imageId = Number(row.image_id ?? row.id ?? 0);
+          const imageUrl = String(row.image_url ?? row.url ?? '').trim();
+          const sortOrder = Number(row.sort_order ?? 0);
+          if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
+          return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
+        })
+        .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
+
+      const desiredUrls = imageUrls.slice(0, 5);
+      const desiredSet = new Set(desiredUrls);
+      const existingSet = new Set(existing.map((x) => x.imageUrl));
+
+      await Promise.all(
+        existing
+          .filter((x) => !desiredSet.has(x.imageUrl))
+          .map((x) => showcasesApi.deleteImage(id, x.imageId).catch(() => undefined)),
+      );
+
+      await Promise.all(
+        desiredUrls
+          .filter((url) => !existingSet.has(url))
+          .map((url, idx) =>
+            showcasesApi
+              .addImage(id, { image_url: url, sort_order: idx + 1 })
+              .catch(() => undefined),
+          ),
+      );
+
+      const refreshedRaw = await showcasesApi.listImages(id).catch(() => []);
+      const refreshed = (Array.isArray(refreshedRaw) ? refreshedRaw : [])
+        .map((r) => {
+          const row = (r ?? {}) as Record<string, unknown>;
+          const imageId = Number(row.image_id ?? row.id ?? 0);
+          const imageUrl = String(row.image_url ?? row.url ?? '').trim();
+          const sortOrder = Number(row.sort_order ?? 0);
+          if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
+          return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
+        })
+        .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
+
+      await Promise.all(
+        desiredUrls.map((url, idx) => {
+          const row = refreshed.find((x) => x.imageUrl === url);
+          if (!row) return Promise.resolve();
+          const nextSort = idx + 1;
+          if (row.sortOrder === nextSort) return Promise.resolve();
+          return showcasesApi
+            .updateImage(id, row.imageId, { sort_order: nextSort })
+            .catch(() => undefined);
+        }),
+      );
+
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['showcase', id] }),
         qc.invalidateQueries({ queryKey: ['showcases'] }),
       ]);
       navigate('/factory/showcases', { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ');
+      const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
+      const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
+      if (linkedMsg) setLinkedShowcaseError(linkedMsg);
+      setError(msg);
     } finally {
       setSaving(false);
     }
-  }, [id, form, qc, imageUrls, navigate, backPath]);
+  }, [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath]);
 
   const onBack = useCallback(() => {
     if (form.formState.isDirty) {
@@ -358,61 +456,66 @@ export function FactoryShowcaseEditPage() {
           <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
         ) : null}
 
-        {/* ── Cover image hero ── */}
-        <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors">
-          {imageUrls[0] ? (
-            <>
-              <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={() => setImageUrls((prev) => prev.filter((_, i) => i !== 0))}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                aria-label="ลบภาพปก"
-              >
-                <X size={16} />
-              </button>
-            </>
-          ) : (
-            <label className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors">
-              <Camera size={36} strokeWidth={1.5} />
-              <span className="text-sm font-medium">
-                {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
-              </span>
-              <span className="text-xs opacity-70">PNG, JPG, WEBP · สูงสุด 5 รูป</span>
-              <input
-                type="file" accept="image/*" className="hidden" disabled={uploading}
-                onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
-              />
-            </label>
-          )}
-        </div>
-
-        {/* ── Additional images row ── */}
-        {imageUrls.length > 0 ? (
-          <div className="flex gap-2 flex-wrap">
-            {imageUrls.slice(1).map((url, idx) => (
-              <div key={`${url}-${idx}`} className="relative w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shrink-0">
-                <img src={url} alt="" className="w-full h-full object-cover" />
+        {/* ── Cover image (hero) ── */}
+        {contentType !== 'ID' ? (
+          <section>
+            <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors cursor-pointer">
+            {imageUrls[0] ? (
+              <>
+                <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  onClick={() => setImageUrls((prev) => prev.filter((_, i) => i !== idx + 1))}
-                  className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
+                  onClick={() => removeImage(imageUrls[0])}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors z-10"
+                  aria-label="ลบภาพปก"
                 >
-                  <X size={10} />
+                  <X size={16} />
                 </button>
-              </div>
-            ))}
-            {imageUrls.length < 5 ? (
-              <label className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
-                <Plus size={16} />
-                <span className="text-[9px] mt-0.5">เพิ่ม</span>
+              </>
+            ) : (
+              <label className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors">
+                <Camera size={36} strokeWidth={1.5} />
+                <span className="text-sm font-medium">
+                  {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
+                </span>
+                <span className="text-xs opacity-70">PNG, JPG, WEBP · สูงสุด 5 รูป</span>
                 <input
                   type="file" accept="image/*" className="hidden" disabled={uploading}
                   onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
                 />
               </label>
+            )}
+            </div>
+
+            {/* Additional images */}
+            {imageUrls.length > 0 ? (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {imageUrls.slice(1).map((url, i) => (
+                  <div key={`${url}-${i}`} className="relative w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shrink-0">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(url)}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center z-10"
+                      aria-label="ลบภาพ"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+                {imageUrls.length < 5 ? (
+                  <label className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
+                    <Plus size={16} />
+                    <span className="text-[9px] mt-0.5">เพิ่ม</span>
+                    <input
+                      type="file" accept="image/*" className="hidden" disabled={uploading}
+                      onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
+                    />
+                  </label>
+                ) : null}
+              </div>
             ) : null}
-          </div>
+          </section>
         ) : null}
 
         {/* ── Title (large borderless) ── */}
@@ -588,6 +691,25 @@ export function FactoryShowcaseEditPage() {
             )}
           />
         </section>
+
+        {contentType === 'ID' ? (
+          <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+            <label className="block text-sm font-semibold text-[#2E2252]">
+              อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
+            </label>
+            <p className="text-xs text-gray-500">
+              เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
+            </p>
+            <RelatedShowcasePicker
+              factoryId={fid}
+              value={selectedShowcaseIds}
+              onChange={setSelectedShowcaseIds}
+              max={5}
+              disabled={saving}
+              errorText={linkedShowcaseError}
+            />
+          </section>
+        ) : null}
       </div>
 
       {/* ── Sticky bottom bar ── */}

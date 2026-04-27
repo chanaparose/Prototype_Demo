@@ -133,6 +133,7 @@ export type FactoryShowcase = {
   sections?: ShowcaseSection[];
   images?: ShowcaseImageRow[];
   specs?: ShowcaseSpecRow[];
+  linkedShowcases?: (string | number)[];
 };
 
 export type RfqOffer = {

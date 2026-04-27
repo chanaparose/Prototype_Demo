@@ -7,6 +7,10 @@ import { MarkdownEditor } from '../../components/common/MarkdownEditor';
 import { type ShowcaseType } from '../../components/factory/showcase/ShowcaseTypeSelector';
 import { useProductCategories } from '../../hooks/master/useProductCategories';
 import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
+import { useAuth } from '../../contexts/AuthContext';
+import { getFactoryEntityId } from '../../utils/factoryUser';
+import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
+import { mapLinkedShowcasesErrorToThai } from '../../utils/linkedShowcases';
 
 /* ── Type metadata ── */
 const TYPE_META = {
@@ -66,6 +70,8 @@ const EMPTY: FormValues = {
 export function FactoryShowcaseNewPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const myFactoryId = getFactoryEntityId(user);
 
   /* content_type is FIXED from URL — cannot be changed on this page */
   const contentType: ShowcaseType = (() => {
@@ -75,9 +81,11 @@ export function FactoryShowcaseNewPage() {
 
   const [form, setForm] = useState<FormValues>(EMPTY);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedShowcaseIds, setSelectedShowcaseIds] = useState<number[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
 
   const categoriesQ = useProductCategories();
   const selectedCategoryId = Number(form.category_id);
@@ -99,6 +107,7 @@ export function FactoryShowcaseNewPage() {
     if (!file || imageUrls.length >= 5) return;
     setUploading(true);
     setError('');
+    setLinkedShowcaseError('');
     try {
       const up = await mediaApi.upload(file);
       const url = String(up.url ?? '').trim();
@@ -125,8 +134,8 @@ export function FactoryShowcaseNewPage() {
       sub_category_id: form.sub_category_id ? Number(form.sub_category_id) : undefined,
       lead_time_days: form.lead_time_days ? Number(form.lead_time_days) : undefined,
       linked_showcases: imageUrls
-        .slice(1)
-        .map((url, i) => ({ image_url: url, sort_order: i + 2, is_cover: false })),
+        .map((url) => url)
+        .concat(selectedShowcaseIds),
     };
     if (contentType === 'ID') return base;
     const withPrice = {
@@ -154,12 +163,16 @@ export function FactoryShowcaseNewPage() {
     }
     setSaving(true);
     setError('');
+    setLinkedShowcaseError('');
     try {
       await showcasesApi.create(buildPayload(status) as Parameters<typeof showcasesApi.create>[0]);
       /* always navigate back to list after create */
       navigate('/factory/showcases', { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'สร้างไม่สำเร็จ');
+      const msg = e instanceof Error ? e.message : 'สร้างไม่สำเร็จ';
+      const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
+      if (linkedMsg) setLinkedShowcaseError(linkedMsg);
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -204,8 +217,9 @@ export function FactoryShowcaseNewPage() {
         ) : null}
 
         {/* ── Cover image (hero) ── */}
-        <section>
-          <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors cursor-pointer">
+        {contentType !== 'ID' ? (
+          <section>
+            <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors cursor-pointer">
             {imageUrls[0] ? (
               <>
                 <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
@@ -231,36 +245,37 @@ export function FactoryShowcaseNewPage() {
                 />
               </label>
             )}
-          </div>
-
-          {/* Additional images */}
-          {imageUrls.length > 0 ? (
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {imageUrls.slice(1).map((url, i) => (
-                <div key={`${url}-${i}`} className="relative w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shrink-0">
-                  <img src={url} alt="" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(i + 1)}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
-                  >
-                    <X size={10} />
-                  </button>
-                </div>
-              ))}
-              {imageUrls.length < 5 ? (
-                <label className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
-                  <Plus size={16} />
-                  <span className="text-[9px] mt-0.5">เพิ่ม</span>
-                  <input
-                    type="file" accept="image/*" className="hidden" disabled={uploading}
-                    onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
-                  />
-                </label>
-              ) : null}
             </div>
-          ) : null}
-        </section>
+
+            {/* Additional images */}
+            {imageUrls.length > 0 ? (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {imageUrls.slice(1).map((url, i) => (
+                  <div key={`${url}-${i}`} className="relative w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shrink-0">
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i + 1)}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+                {imageUrls.length < 5 ? (
+                  <label className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
+                    <Plus size={16} />
+                    <span className="text-[9px] mt-0.5">เพิ่ม</span>
+                    <input
+                      type="file" accept="image/*" className="hidden" disabled={uploading}
+                      onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
+                    />
+                  </label>
+                ) : null}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         {/* ── Title & excerpt ── */}
         <section className="space-y-3">
@@ -370,6 +385,25 @@ export function FactoryShowcaseNewPage() {
             templateContent={contentType === 'ID' ? ID_TEMPLATE : PRODUCT_TEMPLATE}
           />
         </section>
+
+        {contentType === 'ID' && myFactoryId != null ? (
+          <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+            <label className="block text-sm font-semibold text-[#2E2252]">
+              อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
+            </label>
+            <p className="text-xs text-gray-500">
+              เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
+            </p>
+            <RelatedShowcasePicker
+              factoryId={myFactoryId}
+              value={selectedShowcaseIds}
+              onChange={setSelectedShowcaseIds}
+              max={5}
+              disabled={saving}
+              errorText={linkedShowcaseError}
+            />
+          </section>
+        ) : null}
       </div>
 
       {/* ── Sticky bottom bar ── */}

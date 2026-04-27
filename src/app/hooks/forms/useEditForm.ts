@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm, type DefaultValues, type FieldValues, type UseFormReturn } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 
@@ -30,7 +30,10 @@ export function useEditForm<T extends FieldValues, Raw = unknown>(
     refetchOnWindowFocus: false,
   });
 
-  const values = query.data !== undefined ? options.mapper(query.data) : undefined;
+  const values = useMemo(
+    () => (query.data !== undefined ? options.mapper(query.data) : undefined),
+    [query.data, options.mapper],
+  );
 
   const form = useForm<T>({
     defaultValues: options.defaults,

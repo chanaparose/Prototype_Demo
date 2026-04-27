@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi } from '../../services/api';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
+import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID';
@@ -203,7 +204,7 @@ export function FactoryShowcasesPage() {
                 {/* Cover */}
                 <div className="aspect-video bg-gray-100 relative overflow-hidden">
                   {img ? (
-                    <img
+                    <ImageWithFallback
                       src={img}
                       alt={String(r.title ?? '')}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

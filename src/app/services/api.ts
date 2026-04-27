@@ -679,7 +679,7 @@ export const showcasesApi = {
     promo_price?: number;
     start_date?: string;
     end_date?: string;
-    linked_showcases?: number[];
+    linked_showcases?: (string | number)[];
     status?: string;
   }) => api.post<Record<string, unknown>>('/showcases', data),
   update: (showcaseId: number | string, data: Record<string, unknown>) =>
