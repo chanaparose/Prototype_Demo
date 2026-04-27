@@ -517,7 +517,7 @@ const INITIAL_STATE: DataState = {
   orders: [],
   conversations: [],
   notifications: [],
-  isLoading: true,
+  isLoading: false,
   error: null,
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { favoritesApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 type FavoriteRow = Record<string, unknown>;
 
@@ -10,10 +11,16 @@ function extractShowcaseId(row: FavoriteRow): string {
 }
 
 export function useFavorites() {
+  const { isAuthenticated } = useAuth();
   const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
   const [loading, setLoading] = React.useState(false);
 
   const load = React.useCallback(async () => {
+    if (!isAuthenticated) {
+      setLikedIds(new Set());
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const raw = await favoritesApi.list();
@@ -29,7 +36,7 @@ export function useFavorites() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   React.useEffect(() => {
     void load();
@@ -42,6 +49,7 @@ export function useFavorites() {
 
   const toggleFavorite = React.useCallback(
     async (showcaseId: string | number) => {
+      if (!isAuthenticated) return false;
       const key = String(showcaseId);
       const numId = Number(showcaseId);
       if (!key || !Number.isFinite(numId) || numId <= 0) return false;
@@ -68,7 +76,7 @@ export function useFavorites() {
         return false;
       }
     },
-    [likedIds],
+    [isAuthenticated, likedIds],
   );
 
   return {

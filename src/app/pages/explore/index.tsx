@@ -4,6 +4,7 @@ import { useExploreData } from '../../hooks/useExploreData';
 import { useManualApiPageGate } from '../../hooks/useManualApiPageGate';
 import { ManualApiDevGate } from '../../components/shared/ManualApiDevGate';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
 import { ExploreMobile } from './Explore.mobile';
 import { ExploreDesktop } from './Explore.desktop';
@@ -12,6 +13,7 @@ export function Explore() {
   const isDesktop = useIsDesktop();
   const { showGate, pageApisReady, setPageApisReady } = useManualApiPageGate();
   const data = useData();
+  const { isAuthenticated } = useAuth();
   const {
     searchText,
     setSearchText,
@@ -27,6 +29,7 @@ export function Explore() {
     exploreCategoriesLoading,
     exploreCategoriesError,
     reloadExploreCategories,
+    isLoading,
   } = useExploreData({ enablePageApis: pageApisReady });
 
   /** การ์ดโรงงาน — จาก GET /frontend/bootstrap (DataContext) เท่านั้น */
@@ -49,21 +52,60 @@ export function Explore() {
     return <ManualApiDevGate pageLabel="Explore" onLoad={() => setPageApisReady(true)} />;
   }
 
+  const guestLoading = !isAuthenticated && isLoading;
+  const connectBanner = guestLoading ? (
+    <div className="mx-4 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+      <span
+        className="mt-0.5 inline-block h-4 w-4 rounded-full border-2 border-amber-500 border-t-transparent animate-spin"
+        aria-hidden
+      />
+      <div>
+        <p className="text-sm font-semibold text-amber-700">Guest View กำลังเชื่อมต่อเซิร์ฟเวอร์</p>
+        <p className="text-xs text-amber-700/80">รอสักครู่ก่อน คุณสามารถดูแท็บต่าง ๆ เช่น แนะนำโรงงานได้ทันทีเมื่อโหลดเสร็จ</p>
+      </div>
+    </div>
+  ) : null;
+
   if (isDesktop) {
     return (
-      <ExploreDesktop
+      <>
+        {connectBanner}
+        <ExploreDesktop
+          searchText={searchText}
+          setSearchText={setSearchText}
+          copiedId={copiedId}
+          setCopiedId={setCopiedId}
+          categories={categories as any}
+          exploreCategoriesMerged={exploreCategoriesMerged as any}
+          exploreCategoriesLoading={exploreCategoriesLoading}
+          exploreCategoriesError={exploreCategoriesError}
+          reloadExploreCategories={reloadExploreCategories}
+          factories={factories as any}
+          activeRFQs={[]}
+          recentOrders={[]}
+          ideaArticles={ideaArticles as any}
+          factoryShowcases={showcases as any}
+          exploreProducts={productShowcases as any}
+          explorePromotions={promotionShowcases as any}
+          explorePromoCodes={[]}
+          promoSlides={promoSlides as any}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {connectBanner}
+      <ExploreMobile
         searchText={searchText}
         setSearchText={setSearchText}
-        copiedId={copiedId}
-        setCopiedId={setCopiedId}
         categories={categories as any}
         exploreCategoriesMerged={exploreCategoriesMerged as any}
         exploreCategoriesLoading={exploreCategoriesLoading}
         exploreCategoriesError={exploreCategoriesError}
         reloadExploreCategories={reloadExploreCategories}
         factories={factories as any}
-        activeRFQs={[]}
-        recentOrders={[]}
         ideaArticles={ideaArticles as any}
         factoryShowcases={showcases as any}
         exploreProducts={productShowcases as any}
@@ -71,26 +113,6 @@ export function Explore() {
         explorePromoCodes={[]}
         promoSlides={promoSlides as any}
       />
-    );
-  }
-
-  return (
-    <ExploreMobile
-      searchText={searchText}
-      setSearchText={setSearchText}
-      categories={categories as any}
-      exploreCategoriesMerged={exploreCategoriesMerged as any}
-      exploreCategoriesLoading={exploreCategoriesLoading}
-      exploreCategoriesError={exploreCategoriesError}
-      reloadExploreCategories={reloadExploreCategories}
-      factories={factories as any}
-      ideaArticles={ideaArticles as any}
-      factoryShowcases={showcases as any}
-      exploreProducts={productShowcases as any}
-      explorePromotions={promotionShowcases as any}
-      explorePromoCodes={[]}
-      promoSlides={promoSlides as any}
-    />
+    </>
   );
 }
-

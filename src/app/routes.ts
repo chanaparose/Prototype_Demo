@@ -13,6 +13,7 @@ import { EditProfilePage } from './pages/profile/EditProfilePage';
 import { ChangePasswordPage } from './pages/profile/ChangePasswordPage';
 import { TransactionHistoryPage } from './pages/profile/TransactionHistoryPage';
 import { MyReviewsPage } from './pages/profile/MyReviewsPage';
+import { FavoriteShowcasesPage } from './pages/profile/FavoriteShowcasesPage';
 import { CreateRfq } from './pages/create-rfq';
 import { RFQDetail } from './pages/rfq-detail';
 import { OrderDetail } from './pages/order-detail';
@@ -33,6 +34,7 @@ import {
   AdminConfigPage,
 } from './pages/admin';
 import { AuthGuard } from './components/AuthGuard';
+import { PublicDataOutlet } from './components/PublicDataOutlet';
 import { FactoryRoleGuard } from './components/factory/FactoryRoleGuard';
 import { FactoryVerifiedGuard } from './components/factory/FactoryVerifiedGuard';
 import {
@@ -62,7 +64,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/',
-    Component: AuthGuard,
+    Component: PublicDataOutlet,
     children: [
       {
         Component: Layout,
@@ -77,45 +79,51 @@ export const router = createBrowserRouter([
           { path: 'factory-ideas/products/:id', Component: ProductDetail },
           { path: 'factory-ideas/promotions/:id', Component: PromotionDetail },
           { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
-          { path: 'rfqs', loader: () => redirect('/rfqs/rfq1'), Component: () => null },
           { path: 'orders', Component: RfqAndOrders },
           { path: 'messages', Component: Messages },
-          { path: 'profile', Component: Profile },
-          { path: 'profile/edit', Component: EditProfilePage },
-          { path: 'profile/change-password', Component: ChangePasswordPage },
-          { path: 'profile/transactions', Component: TransactionHistoryPage },
-          { path: 'profile/reviews', Component: MyReviewsPage },
-          { path: 'create-rfq', Component: CreateRfq },
-          { path: 'notifications', Component: Notifications },
-          { path: 'quotations/:id', Component: QuoteDetailCustomer },
-          { path: 'rfqs/:id', Component: RFQDetail },
-          { path: 'orders/:id', Component: OrderDetail },
-          { path: 'messages/:id', Component: ChatRoom },
-          { path: 'chat-room/:id', Component: ChatRoom },
           {
-            path: 'factory',
-            Component: FactoryRoleGuard,
+            Component: AuthGuard,
             children: [
+              { path: 'rfqs', loader: () => redirect('/rfqs/rfq1'), Component: () => null },
+              { path: 'profile', Component: Profile },
+              { path: 'profile/edit', Component: EditProfilePage },
+              { path: 'profile/change-password', Component: ChangePasswordPage },
+              { path: 'profile/transactions', Component: TransactionHistoryPage },
+              { path: 'profile/reviews', Component: MyReviewsPage },
+              { path: 'profile/favorites', Component: FavoriteShowcasesPage },
+              { path: 'create-rfq', Component: CreateRfq },
+              { path: 'notifications', Component: Notifications },
+              { path: 'quotations/:id', Component: QuoteDetailCustomer },
+              { path: 'rfqs/:id', Component: RFQDetail },
+              { path: 'orders/:id', Component: OrderDetail },
+              { path: 'messages/:id', Component: ChatRoom },
+              { path: 'chat-room/:id', Component: ChatRoom },
               {
-                Component: FactoryPortalLayout,
+                path: 'factory',
+                Component: FactoryRoleGuard,
                 children: [
-                  { index: true, Component: FactoryDashboardPage },
-                  { path: 'profile', Component: FactoryProfilePage },
-                  { path: 'wallet', Component: FactoryWalletPage },
                   {
-                    Component: FactoryVerifiedGuard,
+                    Component: FactoryPortalLayout,
                     children: [
-                      { path: 'showcases', Component: FactoryShowcasesPage },
-                      { path: 'showcases/new', Component: FactoryShowcaseNewPage },
-                      { path: 'showcases/:id/edit', Component: FactoryShowcaseEditPage },
-                      { path: 'rfqs', Component: FactoryRfqBoardPage },
-                      { path: 'rfqs/:id', Component: FactoryRfqDetailPage },
-                      { path: 'rfqs/:rfqId/quote-builder', Component: QuoteBuilder },
-                      { path: 'quotations/:id/edit', Component: FactoryEditQuotationPage },
-                      { path: 'quotations/:id', Component: QuoteDetailCustomer },
-                      { path: 'quotations', Component: FactoryQuotationsPage },
-                      { path: 'orders', Component: FactoryOrdersPage },
-                      { path: 'orders/:id', Component: FactoryOrderDetailPage },
+                      { index: true, Component: FactoryDashboardPage },
+                      { path: 'profile', Component: FactoryProfilePage },
+                      { path: 'wallet', Component: FactoryWalletPage },
+                      {
+                        Component: FactoryVerifiedGuard,
+                        children: [
+                          { path: 'showcases', Component: FactoryShowcasesPage },
+                          { path: 'showcases/new', Component: FactoryShowcaseNewPage },
+                          { path: 'showcases/:id/edit', Component: FactoryShowcaseEditPage },
+                          { path: 'rfqs', Component: FactoryRfqBoardPage },
+                          { path: 'rfqs/:id', Component: FactoryRfqDetailPage },
+                          { path: 'rfqs/:rfqId/quote-builder', Component: QuoteBuilder },
+                          { path: 'quotations/:id/edit', Component: FactoryEditQuotationPage },
+                          { path: 'quotations/:id', Component: QuoteDetailCustomer },
+                          { path: 'quotations', Component: FactoryQuotationsPage },
+                          { path: 'orders', Component: FactoryOrdersPage },
+                          { path: 'orders/:id', Component: FactoryOrderDetailPage },
+                        ],
+                      },
                     ],
                   },
                 ],
@@ -125,17 +133,22 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        path: 'admin',
-        Component: AdminLayout,
+        Component: AuthGuard,
         children: [
-          { index: true, loader: () => redirect('/admin/dashboard'), Component: () => null },
-          { path: 'dashboard', Component: AdminDashboardPage },
-          { path: 'factories', Component: AdminFactoriesPage },
-          { path: 'factories/:id', Component: AdminFactoryDetailPage },
-          { path: 'rfqs', Component: AdminRFQsPage },
-          { path: 'orders', Component: AdminOrdersPage },
-          { path: 'config', Component: AdminConfigPage },
-          { path: 'commission-config', Component: CommissionConfig },
+          {
+            path: 'admin',
+            Component: AdminLayout,
+            children: [
+              { index: true, loader: () => redirect('/admin/dashboard'), Component: () => null },
+              { path: 'dashboard', Component: AdminDashboardPage },
+              { path: 'factories', Component: AdminFactoriesPage },
+              { path: 'factories/:id', Component: AdminFactoryDetailPage },
+              { path: 'rfqs', Component: AdminRFQsPage },
+              { path: 'orders', Component: AdminOrdersPage },
+              { path: 'config', Component: AdminConfigPage },
+              { path: 'commission-config', Component: CommissionConfig },
+            ],
+          },
         ],
       },
     ],

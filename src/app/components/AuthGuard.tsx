@@ -1,7 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
-import { DataProvider } from '../contexts/DataContext';
 
 export function AuthGuard() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -24,9 +23,5 @@ export function AuthGuard() {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <DataProvider>
-      <Outlet />
-    </DataProvider>
-  );
+  return <Outlet />;
 }

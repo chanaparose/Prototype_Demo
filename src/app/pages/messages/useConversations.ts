@@ -41,7 +41,7 @@ function rowToConversation(r: Record<string, unknown>): ConversationDTO | null {
 }
 
 export function useConversations() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const currentUserId = getCurrentUserId(user);
 
   const [items, setItems] = useState<UiConversation[]>([]);
@@ -49,15 +49,17 @@ export function useConversations() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!isAuthenticated || currentUserId == null) {
+      setItems([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const raw = await conversationsApi.list();
       const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-      if (currentUserId == null) {
-        setItems([]);
-        return;
-      }
       const mapped = sortConversations(
         arr
           .map(rowToConversation)
@@ -84,7 +86,7 @@ export function useConversations() {
     } finally {
       setLoading(false);
     }
-  }, [currentUserId]);
+  }, [currentUserId, isAuthenticated]);
 
   useEffect(() => {
     void load();
