@@ -1,9 +1,36 @@
 import type { RoomMessage } from '../../components/chat/MessageBubble';
 import type { UiConversation } from './types';
+import { parseBangkokWallClock } from '../../utils/chatTime';
 
+/**
+ * Normalize an ISO-8601 / RFC-3339 timestamp so JavaScript's Date parser
+ * handles it reliably across all browsers (Safari is strict about fractional
+ * seconds — it only accepts up to 3 digits).  Go's time.Time marshals with
+ * up to 9 nanosecond digits; truncate the excess here.
+ */
+export function normalizeIso(iso: string): string {
+  if (!iso) return '';
+  // Guard: Go zero time "0001-01-01T..." is meaningless on the frontend.
+  if (iso.startsWith('0001-01-01')) return '';
+  // Truncate fractional seconds to at most 3 digits (milliseconds).
+  return iso.replace(/(\.\d{1,3})\d+/, '$1');
+}
+
+/**
+ * Sort key for chat messages. Uses {@link parseBangkokWallClock} so that
+ * sort order, date-separator grouping, and `HH:mm` formatting all interpret
+ * the BE's "Bangkok wall-clock stamped as Z" timestamps the same way.
+ *
+ * Without this, `new Date(iso).getTime()` interprets the bogus `Z` as UTC
+ * while the date-key util interprets it as Bangkok wall-clock — a 7-hour
+ * disagreement that causes messages near midnight to flicker between days
+ * during the 4-second poll refresh.
+ */
 function messageTimeMs(iso: string): number {
-  const t = new Date(iso || 0).getTime();
-  return Number.isFinite(t) ? t : 0;
+  const d = parseBangkokWallClock(iso);
+  if (!d) return 0;
+  const t = d.getTime();
+  return Number.isFinite(t) && t > 0 ? t : 0;
 }
 
 /** Sort by created_at ASC, tiebreak by key (message_id). */

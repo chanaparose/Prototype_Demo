@@ -319,6 +319,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
       inProduction: orders.filter((o) => o.status === 'in_production').length,
       shipped: orders.filter((o) => o.status === 'shipped').length,
       completed: orders.filter((o) => o.status === 'completed').length,
+      cancelledExpired: orders.filter((o) => o.status === 'cancelled_expired').length,
     }),
     [orders],
   );

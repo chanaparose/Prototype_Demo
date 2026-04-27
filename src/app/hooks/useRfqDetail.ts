@@ -401,25 +401,58 @@ export function useRfqDetail(rfqId: string | undefined) {
       const deliveryAddress = summarizeRfqAddress(rawRecord);
 
       const offers: RfqOffer[] = quotes.map((q) => ({
+        ...(() => {
+          const qty = Math.max(0, Number(rawRfq!.quantity ?? 0));
+          const pricePerPiece = Number(q.price_per_piece ?? 0);
+          const subtotalRaw = Number(q.subtotal ?? 0);
+          const subtotal = subtotalRaw > 0 ? subtotalRaw : Math.max(0, pricePerPiece * qty);
+          const shippingCost = Number(q.shipping_cost ?? 0);
+          const packagingCost = Number(q.packaging_cost ?? 0);
+          const toolingMoldCost = Number(q.tooling_mold_cost ?? q.mold_cost ?? 0);
+          const discountAmount = Number(q.discount_amount ?? 0);
+          const vatRate = Number(q.vat_rate ?? 0);
+          const vatAmountRaw = Number(q.vat_amount ?? 0);
+          const vatAmount =
+            vatAmountRaw > 0
+              ? vatAmountRaw
+              : Math.max(0, ((subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost) * vatRate) / 100);
+          const computedGrandTotal = Math.max(
+            0,
+            subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost + vatAmount,
+          );
+          const grandTotal =
+            Number(q.grand_total ?? 0) > 0 ? Number(q.grand_total ?? 0) : computedGrandTotal;
+          const platformCommissionRate = Number(q.platform_commission_rate ?? 0);
+          const platformCommissionAmountRaw = Number(q.platform_commission_amount ?? 0);
+          const platformCommissionAmount =
+            platformCommissionAmountRaw > 0
+              ? platformCommissionAmountRaw
+              : Math.max(0, (grandTotal * platformCommissionRate) / 100);
+          const factoryNet =
+            Number(q.factory_net_receivable ?? 0) > 0
+              ? Number(q.factory_net_receivable ?? 0)
+              : Math.max(0, grandTotal - platformCommissionAmount);
+
+          return {
         id: String(q.quote_id),
         factoryId: String(q.factory_id),
         factoryName: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
-        price: Math.round(q.price_per_piece * rawRfq!.quantity + (q.mold_cost ?? 0)),
+        price: Math.round(grandTotal),
         leadTime: q.lead_time_days,
         rating: 0,
         verified: true,
         recommended: false,
-        aiReason: q.mold_cost > 0
-          ? `รวมค่าแม่พิมพ์ ฿${q.mold_cost.toLocaleString()}`
-          : 'ไม่มีค่าแม่พิมพ์',
+        aiReason: `เสนอราคาเมื่อ ${q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}`,
         completedOrders: 0,
         responseTime: '',
         // Extra fields for BOQ
         quoteStatus: q.status,
         quotationDetail: {
           quote_id: q.quote_id,
+          factory_name: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
           price_per_piece: q.price_per_piece,
-          mold_cost: Number(q.tooling_mold_cost ?? q.mold_cost ?? 0),
+          mold_cost: toolingMoldCost,
+          moq: qty > 0 ? qty : undefined,
           lead_time_days: q.lead_time_days,
           shipping_method:
             shippingMethodName || `วิธีจัดส่ง #${String(q.shipping_method_id ?? '-')}`,
@@ -437,12 +470,22 @@ export function useRfqDetail(rfqId: string | undefined) {
                   return d.toISOString().slice(0, 10);
                 })()
               : '',
-          payment_condition:
-            'ชำระตาม milestone ที่ตกลงกับโรงงาน',
-          material_detail:
-            'ดูรายละเอียดวัสดุใน RFQ/ใบเสนอราคา',
+          validity_days: Number.isFinite(Number(q.validity_days)) ? Number(q.validity_days) : 0,
+          subtotal,
+          discount_amount: discountAmount,
+          shipping_cost: shippingCost,
+          packaging_cost: packagingCost,
+          tooling_mold_cost: toolingMoldCost,
+          vat_rate: vatRate,
+          vat_amount: vatAmount,
+          grand_total: grandTotal,
+          platform_commission_rate: platformCommissionRate,
+          platform_commission_amount: platformCommissionAmount,
+          factory_net_receivable: factoryNet,
           certifications: [],
         },
+      };
+        })(),
       }));
 
       // Mark the best value as recommended

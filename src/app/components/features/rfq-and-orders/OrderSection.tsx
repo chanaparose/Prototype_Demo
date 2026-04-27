@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Package, ChevronRight, Calendar, CheckCircle2, Truck, Banknote } from 'lucide-react';
+import { Package, ChevronRight, Calendar, CheckCircle2, Truck, Banknote, OctagonX } from 'lucide-react';
 import {
   ACCENT_ORANGE,
   ACCENT_ORANGE_BG,
@@ -29,6 +29,7 @@ type OrderTagCounts = {
   inProduction: number;
   shipped: number;
   completed: number;
+  cancelledExpired: number;
 };
 
 type OrderSectionProps = {
@@ -43,6 +44,7 @@ const ORDER_TABS: { id: OrderFilterId; label: string; icon: typeof Package }[] =
   { id: 'in_production', label: 'กำลังผลิต', icon: Package },
   { id: 'shipped', label: 'จัดส่งแล้ว', icon: Truck },
   { id: 'completed', label: 'เสร็จสิ้น', icon: CheckCircle2 },
+  { id: 'cancelled_expired', label: 'ยกเลิก/หมดอายุ', icon: OctagonX },
 ];
 
 const ORDER_TAB_ICONS: Record<
@@ -53,6 +55,7 @@ const ORDER_TAB_ICONS: Record<
   in_production: Package,
   shipped: Truck,
   completed: CheckCircle2,
+  cancelled_expired: OctagonX,
 };
 
 export function OrderSection({
@@ -80,7 +83,9 @@ export function OrderSection({
                 ? orderTagCounts.inProduction
                 : tab.id === 'shipped'
                   ? orderTagCounts.shipped
-                  : orderTagCounts.completed;
+                  : tab.id === 'completed'
+                    ? orderTagCounts.completed
+                    : orderTagCounts.cancelledExpired;
           return (
             <button
               key={tab.id}

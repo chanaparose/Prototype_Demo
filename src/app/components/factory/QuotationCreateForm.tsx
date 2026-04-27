@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { Send, Save, Loader2, ImagePlus, X as XIcon } from 'lucide-react';
+import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { rfqsApi, quotationsApi, quotationApi, mediaApi } from '../../services/api';
@@ -7,6 +7,10 @@ import type { QuotationBreakdown } from '../../services/api';
 import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { ShippingMethodLockedField } from './ShippingMethodLockedField';
 import { hoursUntilDeadline } from '../../utils/rfqDeadline';
+
+/* ── Constants ──────────────────────────────────────────────────── */
+/** ค่า payment_terms ที่ล็อคไว้ตามข้อกำหนดล่าสุด */
+const LOCKED_PAYMENT_TERMS = 'lc_at_sight';
 
 /* ── Types ─────────────────────────────────────────────────────── */
 export interface QuotationCreateFormValues {
@@ -34,7 +38,7 @@ export type QuotationCreateFormHandle = {
 interface Props {
   rfqId: string;
   factoryId: number;
-  lockedShippingMethodId: number;
+  lockedShippingMethodId?: number;   // optional — 0 or undefined = ไม่มีวิธีจัดส่งจาก RFQ
   rfqQuantity?: number | null;        // จำนวนที่ลูกค้าขอ — ใช้คำนวณ preview
   initial?: Partial<QuotationCreateFormValues>;
   initialImageUrls?: string[];        // รูปภาพที่บันทึกไว้แล้ว (pre-fill)
@@ -76,9 +80,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
   ) {
     const qc = useQueryClient();
     const shippingMethodsQ = useShippingMethods();
+    const shipId = lockedShippingMethodId ?? 0;
     const shipLabel =
-      shippingMethodsQ.data?.find((m) => m.id === lockedShippingMethodId)?.label ??
-      (lockedShippingMethodId > 0 ? `#${lockedShippingMethodId}` : '—');
+      shippingMethodsQ.data?.find((m) => m.id === shipId)?.label ??
+      (shipId > 0 ? `#${shipId}` : '—');
 
     const form = useForm<QuotationCreateFormValues>({
       defaultValues: DEFAULTS,
@@ -205,14 +210,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         setError('Lead time ต้องมากกว่า 0');
         return;
       }
-      if (lockedShippingMethodId <= 0) {
-        setError('RFQ นี้ไม่มีวิธีจัดส่ง — ไม่สามารถออกใบเสนอราคาได้');
-        return;
-      }
 
       setSaving(true);
       setError('');
       try {
+        const shipId = lockedShippingMethodId ?? 0;
         const body: Record<string, unknown> = {
           factory_id: factoryId,
           price_per_piece: priceN,
@@ -221,10 +223,13 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           packaging_cost: Number(v.packaging_cost) || 0,
           lead_time_days: leadN,
           validity_days: Number(v.validity_days) || 14,
-          shipping_method_id: lockedShippingMethodId,
           image_urls: imageUrls,
-          reason: 'อัปเดตใบเสนอราคา', // required by PATCH endpoint
+          reason: 'อัปเดตใบเสนอราคา',
         };
+        // ส่ง shipping_method_id เฉพาะเมื่อมีค่า (BE ต้องรับ optional)
+        if (shipId > 0) body.shipping_method_id = shipId;
+        // payment_terms ล็อคที่ "lc_at_sight" เสมอ
+        body.payment_terms = LOCKED_PAYMENT_TERMS;
         if (patchQuotationId) {
           await quotationsApi.patch(patchQuotationId, body);
         } else {
@@ -239,7 +244,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       } finally {
         setSaving(false);
       }
-    }, [readOnly, form, rfqId, factoryId, lockedShippingMethodId, patchQuotationId, qc, onSubmitted, imageUrls]);
+    }, [readOnly, form, rfqId, factoryId, lockedShippingMethodId, patchQuotationId, qc, onSubmitted, imageUrls]); // eslint-disable-line react-hooks/exhaustive-deps
 
     /* ── Render ── */
     return (
@@ -352,13 +357,25 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </label>
         </div>
 
-        {/* ── 4. วิธีจัดส่ง (ล็อก) ── */}
-        <ShippingMethodLockedField
-          methodName={shipLabel}
-          hint="วิธีส่งถูกล็อกตาม RFQ ของลูกค้า"
-        />
+        {/* ── 4. เงื่อนไขการชำระเงิน (ล็อค) ── */}
+        <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="text-xs font-medium text-gray-500">เงื่อนไขการชำระเงิน</span>
+            <Lock size={14} className="text-gray-400 shrink-0" aria-hidden />
+          </div>
+          <p className="text-sm font-semibold text-gray-800">ชำระเต็ม 100% ก่อนเริ่มผลิต</p>
+          <p className="text-[11px] text-gray-500 mt-1">นโยบายแพลตฟอร์ม — ลูกค้าชำระครบก่อนโรงงานรับงาน</p>
+        </div>
 
-        {/* ── 5. รูปภาพประกอบใบเสนอราคา ── */}
+        {/* ── 5. วิธีจัดส่ง (ล็อก) ── */}
+        {shipId > 0 ? (
+          <ShippingMethodLockedField
+            methodName={shipLabel}
+            hint="วิธีส่งถูกล็อกตาม RFQ ของลูกค้า"
+          />
+        ) : null}
+
+        {/* ── 6. รูปภาพประกอบใบเสนอราคา ── */}
         {!readOnly ? (
           <div>
             <p className="text-xs font-semibold text-gray-600 mb-2">รูปภาพประกอบ (ถ้ามี)</p>

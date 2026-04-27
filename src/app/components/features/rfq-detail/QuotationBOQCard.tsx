@@ -3,11 +3,9 @@ import {
   BadgeCheck,
   Calendar,
   ChevronDown,
-  CreditCard,
   Factory,
   Package,
   Shield,
-  Sparkles,
   Timer,
   Truck,
 } from 'lucide-react';
@@ -27,7 +25,19 @@ export interface Quotation {
   payment_condition: string;
   sample_cost: number;
   valid_until: string;
+  validity_days?: number;
   certifications: string[];
+  subtotal?: number;
+  discount_amount?: number;
+  shipping_cost?: number;
+  packaging_cost?: number;
+  tooling_mold_cost?: number;
+  vat_rate?: number;
+  vat_amount?: number;
+  grand_total?: number;
+  platform_commission_rate?: number;
+  platform_commission_amount?: number;
+  factory_net_receivable?: number;
   image_urls?: string[];
 }
 
@@ -114,7 +124,19 @@ export function quotationFromOfferSource(
       detail?.payment_condition ?? 'มัดจำ / งวดงาน ตามข้อตกลงกับโรงงาน',
     sample_cost: detail?.sample_cost ?? 0,
     valid_until: detail?.valid_until ?? '',
+    validity_days: detail?.validity_days,
     certifications: detail?.certifications ?? [],
+    subtotal: detail?.subtotal,
+    discount_amount: detail?.discount_amount,
+    shipping_cost: detail?.shipping_cost,
+    packaging_cost: detail?.packaging_cost,
+    tooling_mold_cost: detail?.tooling_mold_cost,
+    vat_rate: detail?.vat_rate,
+    vat_amount: detail?.vat_amount,
+    grand_total: detail?.grand_total,
+    platform_commission_rate: detail?.platform_commission_rate,
+    platform_commission_amount: detail?.platform_commission_amount,
+    factory_net_receivable: detail?.factory_net_receivable,
     image_urls: Array.isArray(detail?.image_urls)
       ? detail.image_urls.filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
       : [],
@@ -251,9 +273,7 @@ export function QuotationBOQDetailsPanel({ quotation: q, className = '' }: Quota
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <DetailRow icon={<Sparkles size={14} />} label="วัสดุ & สเปก" value={q.material_detail} />
         <DetailRow icon={<Truck size={14} />} label="การจัดส่ง" value={q.shipping_method} />
-        <DetailRow icon={<CreditCard size={14} />} label="เงื่อนไขการชำระ" value={q.payment_condition} />
         <DetailRow
           icon={<Calendar size={14} />}
           label="ใบเสนอราคาถึง"
@@ -263,7 +283,6 @@ export function QuotationBOQDetailsPanel({ quotation: q, className = '' }: Quota
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <MetricTile label="ค่าแม่พิมพ์" value={formatTHB(q.mold_cost)} />
-        <MetricTile label="ค่าตัวอย่าง" value={formatTHB(q.sample_cost)} />
         <MetricTile label="MOQ" value={`${q.moq.toLocaleString('th-TH')} ชิ้น`} />
         <MetricTile label="Lead time" value={`${q.lead_time_days} วัน`} />
       </div>

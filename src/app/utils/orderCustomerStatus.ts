@@ -8,6 +8,7 @@ export function mapOrderStatusFromApi(code: string): string {
   if (u === 'PR' || u === 'QC' || u === 'WF') return 'in_production';
   if (u === 'SH') return 'shipped';
   if (u === 'CP') return 'completed';
+  if (u === 'CC' || u === 'CN' || u === 'EX') return 'cancelled_expired';
   return u.toLowerCase() || 'pending';
 }
 

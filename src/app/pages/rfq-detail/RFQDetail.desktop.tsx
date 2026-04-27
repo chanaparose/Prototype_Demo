@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
@@ -29,6 +29,7 @@ const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']
 
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { rfq, relatedOrder, loading, error, refetch } = useRfqDetail(id);
@@ -36,6 +37,21 @@ export function RFQDetailDesktop() {
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
   const [cancelling, setCancelling] = React.useState(false);
+  const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
+  const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
+
+  React.useEffect(() => {
+    if (!rfq?.offers?.length) return;
+    if (selectedOffer) return;
+    const byQuote = requestedQuoteId
+      ? rfq.offers.find((o) => String(o.id) === requestedQuoteId)
+      : undefined;
+    const byFactory = !byQuote && requestedFactoryId
+      ? rfq.offers.find((o) => String(o.factoryId) === requestedFactoryId)
+      : undefined;
+    const matched = byQuote ?? byFactory;
+    if (matched?.id) setSelectedOffer(String(matched.id));
+  }, [rfq?.offers, requestedQuoteId, requestedFactoryId, selectedOffer]);
 
   const handleChatWithOffer = useCallback(
     async (offer: OfferItem) => {

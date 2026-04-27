@@ -13,7 +13,7 @@ export type ApiMessage = {
   sender_id: number;
   receiver_id: number;
   content: string;
-  message_type: 'TX' | 'QT' | 'IM';
+  message_type: 'TX' | 'QT' | 'IM' | 'rfq_card' | 'quotation_card' | 'system';
   reference_type: '' | ChatReferenceType;
   reference_id: number;
   created_at: string;
@@ -43,7 +43,7 @@ export type MessagesSendBody = {
   conv_id: number;
   receiver_id: number;
   content: string;
-  message_type: 'TX' | 'QT' | 'IM';
+  message_type: 'TX' | 'QT' | 'IM' | 'rfq_card' | 'quotation_card' | 'system';
   reference_type?: ChatReferenceType;
   reference_id?: number;
   quote_data?: string;
@@ -66,7 +66,7 @@ export function buildSendPayload(params: {
   currentUserId: number;
   content: string;
   reference?: ChatReference | null;
-  messageType?: 'TX' | 'QT' | 'IM';
+  messageType?: 'TX' | 'QT' | 'IM' | 'rfq_card' | 'quotation_card' | 'system';
   quoteData?: string;
 }): MessagesSendBody {
   const { conv, currentUserId, content, reference, messageType = 'TX', quoteData } = params;

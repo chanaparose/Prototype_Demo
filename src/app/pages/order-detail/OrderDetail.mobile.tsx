@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, MessageCircle, Star, X } from 'lucide-react';
+import { ChevronLeft, MessageCircle, Star, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,6 +14,7 @@ import {
   OrderActionBanner,
   DepositPaymentModal,
   RfqReferenceCard,
+  OrderBOQCard,
   formatDateTh,
 } from '../../components/features/order-detail';
 import { ReviewImageAttachments } from '../../components/features/reviews/ReviewImageAttachments';
@@ -44,6 +45,7 @@ function OrderDetailMobileBody() {
   const data = useData();
   const {
     mappedOrder: order,
+    apiStatus,
     uiMode,
     nextAction,
     paymentSchedule,
@@ -67,6 +69,12 @@ function OrderDetailMobileBody() {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewImageUrls, setReviewImageUrls] = useState<string[]>([]);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancellingOrder, setCancellingOrder] = useState(false);
+
+  // PP / PE / PR / WF — statuses the backend allows cancellation
+  const CANCELLABLE_STATUSES = ['PP', 'PE', 'PR', 'WF'];
+  const isCancellable = CANCELLABLE_STATUSES.includes(apiStatus);
 
   const depositAmount =
     nextAction?.amount ??
@@ -172,6 +180,27 @@ function OrderDetailMobileBody() {
     }
   };
 
+  const onCancelOrder = async () => {
+    if (cancellingOrder) return;
+    setCancellingOrder(true);
+    try {
+      await ordersApi.cancel(order.id);
+      toast.success('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
+      setCancelModalOpen(false);
+      await refetchAll();
+    } catch (e) {
+      if (e instanceof ApiHttpError) {
+        if (e.status === 400) toast.error(e.message || 'ไม่สามารถยกเลิกคำสั่งซื้อในสถานะนี้ได้');
+        else if (e.status === 404) toast.error('ไม่พบคำสั่งซื้อนี้');
+        else toast.error(e.message || 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
+      } else {
+        toast.error(e instanceof Error ? e.message : 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
+      }
+    } finally {
+      setCancellingOrder(false);
+    }
+  };
+
   const onOpenReview = () => {
     if (order.status !== 'completed') {
       toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
@@ -241,6 +270,14 @@ function OrderDetailMobileBody() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <header className="hidden lg:block px-0 pt-1 pb-3">
+        <button
+          type="button"
+          onClick={() => navigate('/orders')}
+          className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+        >
+          <ChevronLeft size={16} />
+          กลับไปรายการคำสั่งซื้อ
+        </button>
         <h1 className="text-xl text-gray-900" style={{ fontWeight: 700 }}>
           {rfq?.title ?? order.projectName}
         </h1>
@@ -335,6 +372,12 @@ function OrderDetailMobileBody() {
 
           {activeSection === 'overview' && (
             <>
+              <OrderBOQCard
+                rfqId={rfq?.rfq_id ?? 0}
+                quoteId={quotation?.quote_id ?? 0}
+                factoryId={order.factoryId}
+                factoryName={order.factoryName}
+              />
               {rfq ? <RfqReferenceCard rfq={rfq} variant="accordion" quotation={quotation} /> : null}
               <OrderOverviewSection
                 order={{
@@ -346,6 +389,20 @@ function OrderDetailMobileBody() {
                 relatedRfq={relatedRfq ?? undefined}
                 rfqOffers={rfqOffers}
               />
+
+              {isCancellable ? (
+                <div className="pt-2 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setCancelModalOpen(true)}
+                    className="w-full py-3 rounded-2xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                    style={{ borderColor: '#FCA5A5', color: '#DC2626', backgroundColor: '#FFF5F5' }}
+                  >
+                    <X size={16} />
+                    ยกเลิกคำสั่งซื้อ
+                  </button>
+                </div>
+              ) : null}
             </>
           )}
 
@@ -399,6 +456,49 @@ function OrderDetailMobileBody() {
         amount={depositAmount}
         onSuccess={refetchAll}
       />
+
+      {cancelModalOpen ? (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white shadow-xl overflow-hidden">
+            <div className="px-5 pt-6 pb-2 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+                <AlertTriangle size={24} className="text-red-500" />
+              </div>
+              <h3 className="text-base font-bold text-gray-900">ยืนยันการยกเลิกคำสั่งซื้อ?</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                คำสั่งซื้อ <span className="font-semibold text-gray-700">#{order.id}</span> จะถูกยกเลิก
+                <br />การดำเนินการนี้ไม่สามารถย้อนกลับได้
+              </p>
+            </div>
+            <div className="px-5 pt-3 pb-6 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setCancelModalOpen(false)}
+                disabled={cancellingOrder}
+                className="py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
+              >
+                ไม่ยกเลิก
+              </button>
+              <button
+                type="button"
+                onClick={() => void onCancelOrder()}
+                disabled={cancellingOrder}
+                className="py-3 rounded-2xl text-sm font-semibold text-white disabled:opacity-60 flex items-center justify-center gap-1.5"
+                style={{ background: cancellingOrder ? '#F87171' : '#DC2626' }}
+              >
+                {cancellingOrder ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    กำลังยกเลิก...
+                  </>
+                ) : (
+                  'ยืนยันยกเลิก'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {reviewModalOpen ? (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
