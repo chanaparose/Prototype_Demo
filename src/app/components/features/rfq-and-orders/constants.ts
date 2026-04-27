@@ -48,7 +48,7 @@ export const PROGRESS_COMPLETED =
   'linear-gradient(90deg, #2D1B4E 0%, #6D28D9 100%)';
 
 export type RfqFilterId = 'pending' | 'has_quote' | 'cancelled_expired';
-export type OrderFilterId = 'pending_payment' | 'in_production' | 'shipped' | 'completed';
+export type OrderFilterId = 'pending_payment' | 'in_production' | 'shipped' | 'completed' | 'cancelled_expired';
 
 /** ธีมแท็บกรอง RFQ — แยกสีตามแท็บ */
 export const RFQ_FILTER_THEME: Record<
@@ -97,6 +97,11 @@ export const ORDER_MOBILE_TAB_THEME: Record<
     activeColor: DEEP_PURPLE,
     badgeInactive: ORCHID,
   },
+  cancelled_expired: {
+    activeBg: LILAC_MUTED,
+    activeColor: DEEP_PURPLE,
+    badgeInactive: '#7C6F9E',
+  },
 };
 
 export const RFQ_STATUS_DISPLAY: Record<string, { label: string; color: string; bg: string }> = {
@@ -136,6 +141,12 @@ export const ORDER_STATUS_CONFIG: Record<
     color: DEEP_PURPLE,
     bg: CREAM,
     dot: ORCHID,
+  },
+  cancelled_expired: {
+    label: 'ยกเลิก/หมดอายุ',
+    color: '#5B5470',
+    bg: LILAC_MUTED,
+    dot: '#7C6F9E',
   },
   pending: {
     label: 'รอดำเนินการ',

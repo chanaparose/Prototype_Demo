@@ -440,6 +440,14 @@ export function RfqAndOrders() {
                     color: ORDER_STATUS_CONFIG.completed.color,
                     bg: ORDER_STATUS_CONFIG.completed.bg,
                   },
+                  {
+                    id: 'cancelled_expired' as OrderFilterId,
+                    label: 'ยกเลิก/หมดอายุ',
+                    icon: OctagonX,
+                    count: orderTagCounts.cancelledExpired,
+                    color: ORDER_STATUS_CONFIG.cancelled_expired.color,
+                    bg: ORDER_STATUS_CONFIG.cancelled_expired.bg,
+                  },
                 ].map((tab) => {
                   const isActive = desktopOrderFilter === tab.id;
                   return (
@@ -569,4 +577,3 @@ export function RfqAndOrders() {
     </>
   );
 }
-

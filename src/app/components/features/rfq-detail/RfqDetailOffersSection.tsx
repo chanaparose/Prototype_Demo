@@ -382,7 +382,6 @@ export function RfqDetailOffersSection({
                 asNumber(qd.grand_total) > 0
                   ? asNumber(qd.grand_total)
                   : Math.max(0, subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost + vatAmount);
-              const factoryNet = asNumber(qd.factory_net_receivable);
               const validityDays = Math.max(0, asNumber(qd.validity_days));
               return (
               <div
@@ -529,12 +528,6 @@ export function RfqDetailOffersSection({
                     <span className="font-semibold text-[#2E2252]">รวมทั้งหมด</span>
                     <span className="font-bold text-[#7A4B94]">{formatTHB(grandTotal)}</span>
                   </div>
-                  {factoryNet > 0 ? (
-                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
-                      <span>โรงงานได้รับสุทธิ</span>
-                      <span className="font-semibold text-[#2E2252]">{formatTHB(factoryNet)}</span>
-                    </div>
-                  ) : null}
                 </div>
                 <p className="text-[10px] text-gray-500 mb-3">
                   {boq.valid_until ? `ใบเสนอราคาถึง ${boq.valid_until}` : offer.aiReason}

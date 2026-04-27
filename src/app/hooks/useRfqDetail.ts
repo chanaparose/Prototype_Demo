@@ -482,10 +482,6 @@ export function useRfqDetail(rfqId: string | undefined) {
           platform_commission_rate: platformCommissionRate,
           platform_commission_amount: platformCommissionAmount,
           factory_net_receivable: factoryNet,
-          payment_condition:
-            'ชำระตาม milestone ที่ตกลงกับโรงงาน',
-          material_detail:
-            'ดูรายละเอียดวัสดุใน RFQ/ใบเสนอราคา',
           certifications: [],
         },
       };

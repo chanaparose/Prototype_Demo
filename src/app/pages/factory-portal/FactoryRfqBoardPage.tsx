@@ -207,13 +207,13 @@ export function FactoryRfqBoardPage() {
       {noFactoryCategories ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-5 text-center space-y-3">
           <p className="text-sm font-semibold text-amber-950">เลือกหมวดหมู่ที่โรงงานรับผลิตก่อน</p>
-          <p className="text-xs text-amber-900/90">จะมี RFQ match เมื่อมีหมวดหมู่ในโปรไฟล์แล้ว</p>
+          <p className="text-xs text-amber-900/90">กระดานนี้แสดง RFQ ที่ตรงกับหมวดหมู่ของโรงงาน — ตั้งค่าโปรไฟล์เพื่อรับ RFQ ที่เหมาะสม</p>
           <Link
             to="/factory/profile"
             className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{
               background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
-              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+              boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
             }}
           >
             ไปที่ข้อมูลโรงงาน
@@ -221,7 +221,7 @@ export function FactoryRfqBoardPage() {
         </div>
       ) : null}
 
-      {!noFactoryCategories && rows.length === 0 ? (
+      {!noFactoryCategories && rows.length === 0 && !loading ? (
         <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4">
           <div className="text-5xl">📋</div>
           <p className="text-base font-bold" style={{ color: '#2E2252' }}>
@@ -233,7 +233,7 @@ export function FactoryRfqBoardPage() {
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{
               background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
-              boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
+              boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
             }}
           >
             ปรับหมวดหมู่ในโปรไฟล์

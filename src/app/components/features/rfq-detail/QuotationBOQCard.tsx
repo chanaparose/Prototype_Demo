@@ -3,11 +3,9 @@ import {
   BadgeCheck,
   Calendar,
   ChevronDown,
-  CreditCard,
   Factory,
   Package,
   Shield,
-  Sparkles,
   Timer,
   Truck,
 } from 'lucide-react';
@@ -275,9 +273,7 @@ export function QuotationBOQDetailsPanel({ quotation: q, className = '' }: Quota
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <DetailRow icon={<Sparkles size={14} />} label="วัสดุ & สเปก" value={q.material_detail} />
         <DetailRow icon={<Truck size={14} />} label="การจัดส่ง" value={q.shipping_method} />
-        <DetailRow icon={<CreditCard size={14} />} label="เงื่อนไขการชำระ" value={q.payment_condition} />
         <DetailRow
           icon={<Calendar size={14} />}
           label="ใบเสนอราคาถึง"
@@ -287,7 +283,6 @@ export function QuotationBOQDetailsPanel({ quotation: q, className = '' }: Quota
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <MetricTile label="ค่าแม่พิมพ์" value={formatTHB(q.mold_cost)} />
-        <MetricTile label="ค่าตัวอย่าง" value={formatTHB(q.sample_cost)} />
         <MetricTile label="MOQ" value={`${q.moq.toLocaleString('th-TH')} ชิ้น`} />
         <MetricTile label="Lead time" value={`${q.lead_time_days} วัน`} />
       </div>
