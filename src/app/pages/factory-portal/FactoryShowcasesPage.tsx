@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, Trash2, ImageIcon, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi } from '../../services/api';
@@ -53,6 +53,11 @@ function contextLine(r: Row, type: ShowcaseType): string {
   else if (price > 0) parts.push(`฿${price.toLocaleString('th-TH')}`);
   if (lead > 0 && type !== 'ID') parts.push(`${lead} วัน`);
   return parts.join(' · ');
+}
+
+function asPositiveInt(v: unknown): number {
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
 }
 
 export function FactoryShowcasesPage() {
@@ -195,46 +200,79 @@ export function FactoryShowcasesPage() {
             const ctx = contextLine(r, activeType);
             const catLine = [r.category_name, r.sub_category_name].filter(Boolean).join(' › ');
             const isDeleting = deletingId === id;
+            const isIdea = activeType === 'ID';
+            const likes = asPositiveInt(r.like_count ?? r.likes ?? r.likes_count);
 
             return (
               <article
                 key={id}
                 className="group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
               >
-                {/* Cover */}
-                <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                  {img ? (
-                    <ImageWithFallback
-                      src={img}
-                      alt={String(r.title ?? '')}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-300">
-                      <ImageIcon size={28} strokeWidth={1.5} />
-                      <span className="text-[10px]">ไม่มีภาพ</span>
+                {!isIdea ? (
+                  <>
+                    {/* Cover */}
+                    <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                      {img ? (
+                        <ImageWithFallback
+                          src={img}
+                          alt={String(r.title ?? '')}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-300">
+                          <ImageIcon size={28} strokeWidth={1.5} />
+                          <span className="text-[10px]">ไม่มีภาพ</span>
+                        </div>
+                      )}
+                      <span
+                        className="absolute top-2 left-2 rounded-full text-[11px] font-semibold px-2.5 py-0.5"
+                        style={{ backgroundColor: statusBg, color: statusColor }}
+                      >
+                        {statusLabel}
+                      </span>
                     </div>
-                  )}
-                  <span
-                    className="absolute top-2 left-2 rounded-full text-[11px] font-semibold px-2.5 py-0.5"
-                    style={{ backgroundColor: statusBg, color: statusColor }}
-                  >
-                    {statusLabel}
-                  </span>
-                </div>
-
-                {/* Info */}
-                <div className="px-3 pt-3 pb-2">
-                  <p className="font-semibold text-sm line-clamp-2 min-h-[40px] leading-snug text-slate-900">
-                    {String(r.title ?? '—')}
-                  </p>
-                  {ctx ? (
-                    <p className="text-[11px] font-medium mt-1.5 text-indigo-600">{ctx}</p>
-                  ) : null}
-                  {catLine ? (
-                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{catLine}</p>
-                  ) : null}
-                </div>
+                    {/* Info */}
+                    <div className="px-3 pt-3 pb-2">
+                      <p className="font-semibold text-sm line-clamp-2 min-h-[40px] leading-snug text-slate-900">
+                        {String(r.title ?? '—')}
+                      </p>
+                      {ctx ? (
+                        <p className="text-[11px] font-medium mt-1.5 text-indigo-600">{ctx}</p>
+                      ) : null}
+                      {catLine ? (
+                        <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{catLine}</p>
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <div className="px-3 pt-3 pb-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white bg-violet-600">
+                        ไอเดีย
+                      </span>
+                      <span
+                        className="rounded-full text-[10px] font-semibold px-2 py-0.5"
+                        style={{ backgroundColor: statusBg, color: statusColor }}
+                      >
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <p className="font-semibold text-sm line-clamp-2 leading-snug text-slate-900 min-h-[40px]">
+                      {String(r.title ?? '—')}
+                    </p>
+                    <div className="border-t border-gray-100 mt-3 pt-2">
+                      <div className="flex items-center justify-between gap-2 text-[11px] text-gray-500">
+                        <p className="min-w-0 flex-1 text-xs font-semibold text-[#2E2252] line-clamp-1">
+                          {String(r.factory_name ?? user?.factory_name ?? user?.name ?? 'โรงงานของคุณ')}
+                        </p>
+                        <span className="inline-flex items-center gap-1 shrink-0">
+                          <Heart size={12} />
+                          <span className="font-semibold text-[#64748B]">{likes}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex gap-2 px-3 pb-3">

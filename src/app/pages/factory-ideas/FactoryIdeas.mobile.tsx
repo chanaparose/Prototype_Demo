@@ -787,13 +787,7 @@ export function FactoryIdeasMobile() {
                         </button>
                       ) : null}
                     </div>
-                    <div className="flex items-center justify-between min-w-0">
-                      <span className="text-[10px] text-gray-400 shrink-0">
-                        MOQ{' '}
-                        <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
-                          {item.minOrder}
-                        </span>
-                      </span>
+                    <div className="flex items-center justify-end min-w-0">
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
@@ -878,13 +872,7 @@ export function FactoryIdeasMobile() {
                       </div>
 
                       {/* MOQ + Heart — ตำแหน่งตรงกันเสมอ */}
-                      <div className="flex items-center justify-between min-w-0">
-                        <span className="text-[10px] text-gray-400 shrink-0">
-                          MOQ{' '}
-                          <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>
-                            {item.minOrder}
-                          </span>
-                        </span>
+                      <div className="flex items-center justify-end min-w-0">
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
