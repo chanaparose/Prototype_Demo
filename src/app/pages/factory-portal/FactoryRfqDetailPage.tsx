@@ -553,19 +553,13 @@ export function FactoryRfqDetailPage() {
                   {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ใบเสนอราคาของคุณ' : 'กรอกใบเสนอราคา'}
                 </h2>
 
-                {rfqShipId == null ? (
-                  <div className="rounded-xl border border-rose-200 bg-rose-50 text-rose-900 text-sm px-3 py-2">
-                    RFQ นี้ยังไม่ระบุวิธีจัดส่ง — ไม่สามารถเสนอราคาได้ กรุณาติดต่อลูกค้า
-                  </div>
-                ) : null}
-
-                {fid != null && rfqShipId != null ? (
+                {fid != null ? (
                   <QuotationCreateForm
                     key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
                     ref={quoteFormRef}
                     rfqId={id}
                     factoryId={fid}
-                    lockedShippingMethodId={rfqShipId}
+                    lockedShippingMethodId={rfqShipId ?? 0}
                     rfqQuantity={quantity}
                     patchQuotationId={
                       myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
@@ -610,7 +604,7 @@ export function FactoryRfqDetailPage() {
                   />
                 ) : null}
 
-                {canEdit && rfqShipId != null ? (
+                {canEdit ? (
                   <button
                     type="button"
                     disabled={cancelBusy}
@@ -667,21 +661,55 @@ export function FactoryRfqDetailPage() {
                         new Date(String(a.create_time ?? '')).getTime(),
                     )
                     .slice(0, 5)
-                    .map((q) => (
-                      <li key={quoteIdOf(q)} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-800">
-                            ฿{Number(q.price_per_piece ?? 0).toLocaleString('th-TH')} / ชิ้น
-                          </p>
-                          <p className="text-[11px] text-slate-500">
-                            {String(q.status ?? 'PD')} · {String(q.lead_time_days ?? '-')} วัน
-                          </p>
-                        </div>
-                        <p className="text-[11px] text-slate-500 shrink-0">
-                          {q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}
-                        </p>
-                      </li>
-                    ))}
+                    .map((q) => {
+                      const grandTotal = Number(q.grand_total ?? 0);
+                      const vatAmt = Number(q.vat_amount ?? 0);
+                      const netAmt = Number(q.factory_net_receivable ?? 0);
+                      const hasBreakdown = grandTotal > 0;
+                      return (
+                        <li key={quoteIdOf(q)} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 space-y-1.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-slate-800">
+                                ฿{Number(q.price_per_piece ?? 0).toLocaleString('th-TH')} / ชิ้น
+                              </p>
+                              <p className="text-[11px] text-slate-500">
+                                {String(q.status ?? 'PD')} · Lead {String(q.lead_time_days ?? '-')} วัน
+                              </p>
+                            </div>
+                            <p className="text-[11px] text-slate-500 shrink-0">
+                              {q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}
+                            </p>
+                          </div>
+                          {hasBreakdown ? (
+                            <div className="rounded-lg bg-violet-50 border border-violet-100 px-2.5 py-2 space-y-1">
+                              <div className="flex justify-between text-[11px]">
+                                <span className="text-slate-500">รวม VAT {Number(q.vat_rate ?? 7).toFixed(0)}%</span>
+                                <span className="font-semibold text-slate-700">฿{grandTotal.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                              </div>
+                              {vatAmt > 0 ? (
+                                <div className="flex justify-between text-[11px] text-slate-400">
+                                  <span>VAT</span>
+                                  <span>฿{vatAmt.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                              ) : null}
+                              {netAmt > 0 ? (
+                                <div className="flex justify-between text-[11px]">
+                                  <span className="text-violet-700">โรงงานได้รับ (หลังค่าบริการ)</span>
+                                  <span className="font-semibold text-violet-700">฿{netAmt.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                              ) : null}
+                              {q.payment_terms ? (
+                                <div className="flex justify-between text-[11px] text-slate-400">
+                                  <span>การชำระเงิน</span>
+                                  <span>{q.payment_terms}</span>
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </li>
+                      );
+                    })}
                 </ul>
               )}
             </section>

@@ -57,6 +57,18 @@ type RfqDetailOffersSectionProps = {
   rfqQuantity?: number;
 };
 
+function formatTHB(n: number): string {
+  return `฿${n.toLocaleString('th-TH', {
+    minimumFractionDigits: n % 1 !== 0 ? 2 : 0,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function asNumber(v: unknown): number {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function RfqDetailOffersSection({
   rfqStatus,
   offers,
@@ -353,7 +365,25 @@ export function RfqDetailOffersSection({
               const qSt = (offer.quoteStatus ?? 'PD').toUpperCase();
               const isAccepted = qSt === 'AC';
               const isRejected = qSt === 'RJ';
-              const boqOpen = expandedBoqOfferId === offer.id;
+              const boqOpen = expandedBoqOfferId === offer.id || selectedOfferId === offer.id;
+              const boq = quotationFromOfferSource(offer, rfqQuantity);
+              const qd = (offer.quotationDetail ?? {}) as Partial<Quotation> & Record<string, unknown>;
+              const shippingCost = asNumber(qd.shipping_cost);
+              const packagingCost = asNumber(qd.packaging_cost);
+              const toolingMoldCost = asNumber(qd.tooling_mold_cost ?? qd.mold_cost ?? boq.mold_cost);
+              const discountAmount = asNumber(qd.discount_amount);
+              const subtotal =
+                asNumber(qd.subtotal) > 0
+                  ? asNumber(qd.subtotal)
+                  : Math.max(0, boq.price_per_piece * (rfqQuantity > 0 ? rfqQuantity : boq.moq));
+              const vatRate = asNumber(qd.vat_rate);
+              const vatAmount = asNumber(qd.vat_amount);
+              const grandTotal =
+                asNumber(qd.grand_total) > 0
+                  ? asNumber(qd.grand_total)
+                  : Math.max(0, subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost + vatAmount);
+              const factoryNet = asNumber(qd.factory_net_receivable);
+              const validityDays = Math.max(0, asNumber(qd.validity_days));
               return (
               <div
                 key={offer.id}
@@ -361,14 +391,24 @@ export function RfqDetailOffersSection({
                 tabIndex={0}
                 aria-expanded={boqOpen}
                 onClick={() => {
-                  setExpandedBoqOfferId((prev) => (prev === offer.id ? null : offer.id));
-                  onSelectOffer(offer.id);
+                  if (boqOpen) {
+                    setExpandedBoqOfferId(null);
+                    onSelectOffer(null);
+                  } else {
+                    setExpandedBoqOfferId(offer.id);
+                    onSelectOffer(offer.id);
+                  }
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    setExpandedBoqOfferId((prev) => (prev === offer.id ? null : offer.id));
-                    onSelectOffer(offer.id);
+                    if (boqOpen) {
+                      setExpandedBoqOfferId(null);
+                      onSelectOffer(null);
+                    } else {
+                      setExpandedBoqOfferId(offer.id);
+                      onSelectOffer(offer.id);
+                    }
                   }
                 }}
                 className="bg-white rounded-2xl p-4 shadow-sm border-2 cursor-pointer transition-all"
@@ -426,30 +466,79 @@ export function RfqDetailOffersSection({
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
-                    <p
-                      className="text-sm text-[#2E2252]"
-                      style={{ fontWeight: 700, color: '#7A4B94' }}
-                    >
-                      ฿{(offer.price / 1000).toFixed(0)}K
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700, color: '#7A4B94' }}>
+                      {formatTHB(boq.price_per_piece)}
                     </p>
-                    <p className="text-[9px] text-gray-500">ราคารวม</p>
+                    <p className="text-[9px] text-gray-500">ราคาต่อชิ้น</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
                     <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
-                      {offer.leadTime}
+                      {boq.lead_time_days}
                     </p>
-                    <p className="text-[9px] text-gray-500">วัน</p>
+                    <p className="text-[9px] text-gray-500">Lead time (วัน)</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2.5 text-center">
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700, color: '#7A4B94' }}>
+                      {formatTHB(grandTotal)}
+                    </p>
+                    <p className="text-[9px] text-gray-500">ราคารวมเสนอ</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
                     <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
-                      {offer.responseTime}
+                      {validityDays > 0 ? `${validityDays}` : '-'}
                     </p>
-                    <p className="text-[9px] text-gray-500">ตอบกลับ</p>
+                    <p className="text-[9px] text-gray-500">อายุใบเสนอราคา (วัน)</p>
                   </div>
                 </div>
-                <p className="text-[10px] text-gray-500 mb-3">{offer.aiReason}</p>
+                <div className="rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 mb-3">
+                  <div className="flex items-center justify-between text-[11px] text-gray-600">
+                    <span>ค่าสินค้ารวม</span>
+                    <span className="font-semibold text-[#2E2252]">{formatTHB(subtotal)}</span>
+                  </div>
+                  {shippingCost > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ค่าขนส่ง</span>
+                      <span className="font-semibold text-[#2E2252]">{formatTHB(shippingCost)}</span>
+                    </div>
+                  ) : null}
+                  {packagingCost > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ค่าบรรจุภัณฑ์</span>
+                      <span className="font-semibold text-[#2E2252]">{formatTHB(packagingCost)}</span>
+                    </div>
+                  ) : null}
+                  {toolingMoldCost > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ค่าแม่พิมพ์</span>
+                      <span className="font-semibold text-[#2E2252]">{formatTHB(toolingMoldCost)}</span>
+                    </div>
+                  ) : null}
+                  {discountAmount > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ส่วนลด</span>
+                      <span className="font-semibold text-emerald-700">-{formatTHB(discountAmount)}</span>
+                    </div>
+                  ) : null}
+                  <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                    <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
+                    <span className="font-semibold text-[#2E2252]">{formatTHB(vatAmount)}</span>
+                  </div>
+                  <div className="border-t border-gray-200 mt-2 pt-2 flex items-center justify-between text-[12px]">
+                    <span className="font-semibold text-[#2E2252]">รวมทั้งหมด</span>
+                    <span className="font-bold text-[#7A4B94]">{formatTHB(grandTotal)}</span>
+                  </div>
+                  {factoryNet > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>โรงงานได้รับสุทธิ</span>
+                      <span className="font-semibold text-[#2E2252]">{formatTHB(factoryNet)}</span>
+                    </div>
+                  ) : null}
+                </div>
+                <p className="text-[10px] text-gray-500 mb-3">
+                  {boq.valid_until ? `ใบเสนอราคาถึง ${boq.valid_until}` : offer.aiReason}
+                </p>
                 {(isAccepted || isRejected) && (
                   <p
                     className="text-[10px] font-semibold mb-2"
@@ -466,10 +555,7 @@ export function RfqDetailOffersSection({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="overflow-hidden min-h-0">
-                    <QuotationBOQDetailsPanel
-                      quotation={quotationFromOfferSource(offer, rfqQuantity)}
-                      className="-mx-4 border-gray-100 px-4 pb-3 pt-2"
-                    />
+                    <QuotationBOQDetailsPanel quotation={boq} className="-mx-4 border-gray-100 px-4 pb-3 pt-2" />
                   </div>
                 </div>
                 <div className="flex gap-2">

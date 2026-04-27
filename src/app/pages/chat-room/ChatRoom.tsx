@@ -391,11 +391,9 @@ function ChatRoomBody({
     prevMessagesCountRef.current = curCount;
     if (curCount === 0) return;
 
-    const last = messages[curCount - 1];
-    const isMine = currentUserId != null && last?.sender_id === currentUserId;
     const grew = curCount > prevCount;
 
-    if (justSentRef.current || isMine) {
+    if (justSentRef.current) {
       // I just sent a message — always pin to bottom.
       justSentRef.current = false;
       scrollToBottom(false);
@@ -410,7 +408,7 @@ function ChatRoomBody({
         setUnseenNewCount((n) => n + (curCount - prevCount));
       }
     }
-  }, [messages, currentUserId, isNearBottom, scrollToBottom]);
+  }, [messages, isNearBottom, scrollToBottom]);
 
   useEffect(() => {
     seedConsumedRef.current = false;

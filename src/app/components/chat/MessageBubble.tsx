@@ -38,6 +38,8 @@ export type RoomMessage = {
   reference_title?: string;
   quoteData?: {
     quotationId?: number;
+    rfqId?: number;
+    factoryId?: number;
     price: number;
     leadTime: number;
     validUntil: string;
@@ -75,8 +77,12 @@ function parseQuoteData(raw: unknown): RoomMessage['quoteData'] | undefined {
   if (!q) return undefined;
 
   const quotationId = Number(q.quotation_id ?? q.quotationId ?? q.quote_id ?? q.quoteId ?? 0);
+  const rfqId = Number(q.rfq_id ?? q.rfqId ?? q.request_id ?? q.requestId ?? 0);
+  const factoryId = Number(q.factory_id ?? q.factoryId ?? 0);
   return {
     quotationId: Number.isFinite(quotationId) && quotationId > 0 ? quotationId : undefined,
+    rfqId: Number.isFinite(rfqId) && rfqId > 0 ? rfqId : undefined,
+    factoryId: Number.isFinite(factoryId) && factoryId > 0 ? factoryId : undefined,
     price: Number(q.price ?? q.total ?? 0),
     leadTime: Number(q.lead_time ?? q.leadTime ?? q.lead_time_days ?? 0),
     validUntil: String(q.valid_until ?? q.validUntil ?? ''),
@@ -228,19 +234,75 @@ export function MessageBubble({
 
   if ((msg.message_type === 'quotation_card' || msg.message_type === 'QT') && msg.quoteData) {
     const q = msg.quoteData;
-    const qId = Number(q.quotationId ?? 0);
+    const qId = Number(q.quotationId ?? msg.reference_id ?? 0);
+    const rfqId =
+      Number(
+        (msg.reference_type === 'RQ' ? msg.reference_id : 0) ??
+          q.rfqId ??
+          0,
+      ) || Number(q.rfqId ?? 0);
+    const factoryId = Number(q.factoryId ?? 0);
     const qStatus = String(q.status ?? 'pending').toLowerCase();
-    const isBuyer = viewerRole === 'CT';
-    const pending = qStatus === 'pending' || qStatus === 'pd';
-    const loading = Number.isFinite(qId) && qId > 0 && quotationLoadingId === qId;
+    const canOpen = qId > 0;
+    const quotationPath = viewerRole === 'FT' ? `/factory/quotations/${qId}` : `/quotations/${qId}`;
+
+    const statusPill = (() => {
+      if (qStatus === 'accepted' || qStatus === 'ac') {
+        return (
+          <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-50 inline-flex items-center gap-1">
+            <Check size={12} /> ยืนยันแล้ว
+          </span>
+        );
+      }
+      if (qStatus === 'rejected' || qStatus === 'rj') {
+        return (
+          <span className="text-[11px] px-2.5 py-1 rounded-full bg-red-400/20 text-red-50 inline-flex items-center gap-1">
+            <X size={12} /> ปฏิเสธแล้ว
+          </span>
+        );
+      }
+      if (qStatus === 'expired') {
+        return (
+          <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/15 text-white/80">
+            หมดอายุ
+          </span>
+        );
+      }
+      // pending / pd
+      return (
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-white">
+          {viewerRole === 'FT' ? 'รอลูกค้ายืนยัน' : 'รอตรวจสอบ'}
+        </span>
+      );
+    })();
 
     return (
       <div className="flex justify-center">
-        <div className="w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm" style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}>
+        <button
+          type="button"
+          disabled={viewerRole === 'CT' ? rfqId <= 0 : !canOpen}
+          onClick={() => {
+            if (viewerRole === 'CT' && rfqId > 0) {
+              const qs = new URLSearchParams();
+              if (qId > 0) qs.set('quote_id', String(qId));
+              if (factoryId > 0) qs.set('factory_id', String(factoryId));
+              const suffix = qs.toString();
+              navigate(`/rfqs/${rfqId}${suffix ? `?${suffix}` : ''}`);
+              return;
+            }
+            if (canOpen) navigate(quotationPath);
+          }}
+          className="w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm text-left disabled:cursor-default enabled:hover:shadow-md enabled:active:scale-[0.99] transition-all"
+          style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+          aria-label="ดูรายละเอียดใบเสนอราคา"
+        >
           <div className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <CreditCard size={16} className="text-yellow-300" />
-              <span className="text-white text-xs" style={{ fontWeight: 700 }}>ใบเสนอราคาทางการ</span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <CreditCard size={16} className="text-yellow-300" />
+                <span className="text-white text-xs" style={{ fontWeight: 700 }}>ใบเสนอราคาทางการ</span>
+              </div>
+              {statusPill}
             </div>
             <div className="flex gap-3 mb-4">
               <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
@@ -253,46 +315,17 @@ export function MessageBubble({
               </div>
             </div>
             <p className="text-white/60 text-[10px] text-center">ใช้ได้ถึง {q.validUntil || '-'}</p>
-
-            {isBuyer && pending ? (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  disabled={loading || !(qId > 0)}
-                  onClick={() => qId > 0 && onAcceptQuotation?.(qId)}
-                  className="bg-white text-[#4A267D] text-xs font-semibold py-2 rounded-xl disabled:opacity-60"
-                >
-                  {loading ? 'กำลังยืนยัน...' : 'ยืนยัน'}
-                </button>
-                <button
-                  type="button"
-                  disabled={loading || !(qId > 0)}
-                  onClick={() => qId > 0 && onRejectQuotation?.(qId)}
-                  className="bg-white/15 border border-white/30 text-white text-xs font-semibold py-2 rounded-xl disabled:opacity-60"
-                >
-                  ปฏิเสธ
-                </button>
+            {canOpen ? (
+              <div className="mt-3 flex items-center justify-center gap-1 text-[11px] text-white/90 font-semibold">
+                <span>ดูรายละเอียด</span>
+                <ArrowRight size={12} />
               </div>
-            ) : (
-              <div className="mt-3 flex justify-center">
-                <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-white inline-flex items-center gap-1">
-                  {qStatus === 'accepted' || qStatus === 'ac' ? (
-                    <><Check size={12} /> ยืนยันแล้ว</>
-                  ) : qStatus === 'rejected' || qStatus === 'rj' ? (
-                    <><X size={12} /> ปฏิเสธแล้ว</>
-                  ) : qStatus === 'expired' ? (
-                    'หมดอายุ'
-                  ) : viewerRole === 'FT' ? (
-                    'รอลูกค้ายืนยัน'
-                  ) : (
-                    'สถานะใบเสนอราคา'
-                  )}
-                </span>
-              </div>
-            )}
-            {msg.display_time ? <p className="text-white/40 text-[9px] text-center mt-2">{msg.display_time}</p> : null}
+            ) : null}
+            {msg.display_time ? (
+              <p className="text-white/40 text-[9px] text-center mt-2">{msg.display_time}</p>
+            ) : null}
           </div>
-        </div>
+        </button>
       </div>
     );
   }

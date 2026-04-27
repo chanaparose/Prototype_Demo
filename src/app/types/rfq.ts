@@ -58,4 +58,5 @@ export interface QuotationRow {
   validity_days: number;
   revision_no: number;
   image_urls?: string[];
+  payment_terms?: string | null;
 }
