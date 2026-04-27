@@ -6,6 +6,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { showcasesApi } from '../services/api';
 import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '../contexts/DataContext';
+import { partitionLinkedShowcases } from '../utils/linkedShowcases';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID';
 
@@ -44,49 +45,6 @@ function parseImageUrls(raw: unknown): string[] {
     .slice(0, 5);
 }
 
-function firstImageFromUnknown(raw: unknown): string {
-  if (typeof raw === 'string') {
-    const s = raw.trim();
-    return s;
-  }
-  if (!raw || typeof raw !== 'object') return '';
-  const row = raw as Record<string, unknown>;
-
-  const direct = String(
-    row.image_url ??
-      row.image ??
-      row.url ??
-      row.public_url ??
-      row.thumbnail_url ??
-      row.cover_image_url ??
-      '',
-  ).trim();
-  if (direct) return direct;
-
-  const nested = parseImageUrls(row.images ?? row.image_urls ?? row.imageUrls);
-  return nested[0] ?? '';
-}
-
-function parseLinkedShowcasesFirstImage(raw: unknown): string {
-  const arr = Array.isArray(raw)
-    ? raw
-    : typeof raw === 'string' && raw.trim().startsWith('[')
-      ? (() => {
-          try {
-            const parsed = JSON.parse(raw) as unknown;
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
-          }
-        })()
-      : [];
-  for (const item of arr) {
-    const url = firstImageFromUnknown(item);
-    if (url) return url;
-  }
-  return '';
-}
-
 export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
   const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
   const leadTime =
@@ -94,9 +52,10 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
       ? String(leadRaw)
       : '';
   const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
-  const linkedFirstImage = parseLinkedShowcasesFirstImage(
+  const { imageUrls: linkedImageUrls, showcaseIds } = partitionLinkedShowcases(
     r.linked_showcases ?? r.linkedShowcases,
   );
+  const linkedFirstImage = linkedImageUrls[0] ?? '';
   const ctRaw = String(r.content_type ?? r.type ?? '').trim().toUpperCase();
   const firstImage =
     ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM'
@@ -178,6 +137,9 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
             sort_order: Number(sp.sort_order ?? 0),
           })) as ShowcaseSpecRow[],
         }
+      : {}),
+    ...((linkedImageUrls.length > 0 || showcaseIds.length > 0)
+      ? { linkedShowcases: [...linkedImageUrls, ...showcaseIds] }
       : {}),
   };
 }

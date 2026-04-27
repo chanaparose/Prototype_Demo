@@ -17,6 +17,7 @@ import { useData, type FactoryShowcase } from '../../contexts/DataContext';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { showcasesApi } from '../../services/api';
 import { normShowcase } from '../../hooks/useShowcases';
+import { RelatedShowcasesSection } from '../../components/features/idea-detail/RelatedShowcasesSection';
 
 const CARD = {
   purple: '#7A4B94',
@@ -146,6 +147,17 @@ export function IdeaDetailMobile() {
             className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
           />
         </article>
+
+        <RelatedShowcasesSection
+          linkedShowcases={item.linkedShowcases}
+          onItemClick={(s) =>
+            navigate(
+              s.contentType === 'promotion'
+                ? `/factory-ideas/promotions/${s.id}`
+                : `/factory-ideas/products/${s.id}`,
+            )
+          }
+        />
 
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
           <h2 className="text-[14px] font-bold mb-3" style={{ color: '#2E2252' }}>บทความที่น่าสนใจให้อ่านต่อ</h2>
