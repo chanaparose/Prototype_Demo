@@ -6,6 +6,7 @@ export { OrderOverviewSection } from './OrderOverviewSection';
 export { OrderTimelineSection } from './OrderTimelineSection';
 export { OrderPhotoGallery } from './OrderPhotoGallery';
 export { RfqReferenceCard } from './RfqReferenceCard';
+export { OrderBOQCard } from './OrderBOQCard';
 export { formatDateTh } from './utils';
 export type { OrderSummary } from './OrderSummaryCard';
 export type {

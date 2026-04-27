@@ -14,6 +14,7 @@ import {
   OrderActionBanner,
   DepositPaymentModal,
   RfqReferenceCard,
+  OrderBOQCard,
   formatDateTh,
 } from '../../components/features/order-detail';
 import { ReviewImageAttachments } from '../../components/features/reviews/ReviewImageAttachments';
@@ -371,6 +372,12 @@ function OrderDetailMobileBody() {
 
           {activeSection === 'overview' && (
             <>
+              <OrderBOQCard
+                rfqId={rfq?.rfq_id ?? 0}
+                quoteId={quotation?.quote_id ?? 0}
+                factoryId={order.factoryId}
+                factoryName={order.factoryName}
+              />
               {rfq ? <RfqReferenceCard rfq={rfq} variant="accordion" quotation={quotation} /> : null}
               <OrderOverviewSection
                 order={{
