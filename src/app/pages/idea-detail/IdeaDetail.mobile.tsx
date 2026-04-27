@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   CalendarDays,
   Heart,
+  Share2,
   MapPin,
   MessageCircle,
 } from 'lucide-react';
@@ -23,6 +24,14 @@ const CARD = {
   purple: '#7A4B94',
   blue: '#2E2252',
 } as const;
+const BRAND = {
+  orange: '#E38844',
+  purple: '#7A4B94',
+  purpleSoft: '#F8F6FA',
+  ink: '#2E2252',
+  border: '#EDE7F1',
+  divider: '#F2F2F2',
+} as const;
 
 function formatThaiDate(date: string): string {
   const d = new Date(date);
@@ -37,6 +46,14 @@ export function IdeaDetailMobile() {
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
   const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
+  const gallery = useMemo(() => {
+    const urls = Array.isArray(item?.imageUrls)
+      ? item.imageUrls.filter((u) => String(u).trim() !== '')
+      : [];
+    if (urls.length > 0) return urls.slice(0, 8);
+    return item?.image ? [item.image] : [];
+  }, [item?.image, item?.imageUrls]);
+  const [activeImage, setActiveImage] = useState(0);
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -66,6 +83,10 @@ export function IdeaDetailMobile() {
     };
   }, [item?.id]);
 
+  useEffect(() => {
+    setActiveImage(0);
+  }, [item?.id]);
+
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8">
@@ -87,66 +108,101 @@ export function IdeaDetailMobile() {
 
   const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
   const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
+  const markdown = String(item.content ?? '').trim();
 
   return (
-    <div className="pb-8">
-      <div className="px-4 pt-4">
-        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <button type="button" onClick={handleBack} className="mb-3 inline-flex items-center gap-1 text-sm" style={{ color: '#7A4B94' }}>
-            <ArrowLeft className="w-4 h-4" /> กลับ
+    <div className="min-h-screen bg-[#F5F5F5] pb-[72px]">
+      <div className="bg-white px-4 pt-4 pb-3 border-b" style={{ borderColor: BRAND.divider }}>
+        <div className="flex items-start">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shrink-0"
+            aria-label="กลับ"
+          >
+            <ArrowLeft className="w-4 h-4 text-gray-700" />
           </button>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0">
-                <ImageWithFallback src={factory?.image ?? ''} alt={item.factoryName} className="w-full h-full object-cover" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[13px] font-bold truncate" style={{ color: '#2E2252' }}>{item.factoryName}</p>
-                  {factory?.verified && <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: '#7A4B94' }} />}
-                </div>
-                <p className="text-[11px] text-gray-500 mt-0.5 inline-flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {factory?.location ?? '-'}
-                </p>
-              </div>
+
+          <div className="ml-[15px] min-w-0 flex-1">
+            <h1 className="text-[16px] font-semibold leading-snug" style={{ color: BRAND.ink }}>
+              {item.title}
+            </h1>
+            <div className="mt-1.5 text-[11px] text-gray-500 inline-flex items-center gap-1.5">
+              <CalendarDays className="w-3 h-3" /> เผยแพร่ {formatThaiDate(item.postedAt)}
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              {canChat ? (
-                <button
-                  type="button"
-                  onClick={() => void startChat(item.factoryId, { type: 'ID', id: Number(resolvedId), title: item.title })}
-                  disabled={starting}
-                  className="w-10 h-10 rounded-xl text-white flex items-center justify-center disabled:opacity-70"
-                  style={{ background: '#7A4B94' }}
-                  aria-label="แชทกับโรงงาน"
-                >
-                  {starting ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <MessageCircle className="w-5 h-5" />}
-                </button>
-              ) : null}
-              <button type="button" onClick={() => navigate(`/factories/${item.factoryId}`)} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold border" style={{ borderColor: 'rgba(122,75,148,0.30)', color: '#7A4B94' }}>
-                โปรไฟล์ <ArrowUpRight className="w-3 h-3" />
-              </button>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[9px] font-semibold" style={{ background: BRAND.purpleSoft, color: BRAND.purple }}>
+                บทความไอเดีย
+              </span>
+              {item.category ? <span className="text-[10px] text-gray-500">{item.category}</span> : null}
             </div>
           </div>
-          <h1 className="text-[21px] leading-tight mt-4" style={{ fontWeight: 700, color: '#2E2252' }}>{item.title}</h1>
-          <div className="mt-2 text-[11px] text-gray-500 inline-flex items-center gap-1.5">
-            <CalendarDays className="w-3 h-3" /> เผยแพร่ {formatThaiDate(item.postedAt)}
-          </div>
-          <div className="mt-1">
-            <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-600 text-[10px] font-semibold px-2 py-0.5">
-              {item.category || 'บทความไอเดีย'}
-            </span>
-          </div>
-        </section>
+
+          <button
+            type="button"
+            className="ml-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shrink-0"
+            aria-label="แชร์"
+            onClick={() => {
+              if (typeof navigator !== 'undefined' && navigator.share) {
+                void navigator.share({ title: item.title, url: window.location.href });
+              } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                void navigator.clipboard.writeText(window.location.href);
+              }
+            }}
+          >
+            <Share2 className="w-4 h-4 text-gray-700" />
+          </button>
+        </div>
       </div>
 
       <div className="px-4 pt-4 space-y-3">
         <article className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <MarkdownBody
-            source={item.content || ''}
-            className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
-          />
+          <MarkdownBody source={markdown} className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+                />
         </article>
+
+        <div className="bg-white px-4 py-3 border rounded-2xl shadow-sm" style={{ borderColor: BRAND.divider }}>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+              <ImageWithFallback src={factory?.image ?? ''} alt={item.factoryName} className="w-full h-full object-cover" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[13px] font-bold truncate" style={{ color: BRAND.ink }}>{item.factoryName}</p>
+                {factory?.verified && <BadgeCheck className="w-4 h-4 shrink-0" style={{ color: BRAND.purple }} />}
+              </div>
+              <p className="text-[11px] text-gray-500 mt-0.5 inline-flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> {factory?.location ?? '-'}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
+              <Heart className="w-3 h-3" style={{ color: BRAND.orange }} />
+              {item.likes}
+            </span>
+          </div>
+          <div className="mt-3 flex gap-2">
+            {canChat ? (
+              <button
+                type="button"
+                onClick={() => void startChat(item.factoryId, { type: 'ID', id: Number(resolvedId), title: item.title })}
+                disabled={starting}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-[12px] font-bold text-white disabled:opacity-70"
+                style={{ background: BRAND.purple }}
+              >
+                {starting ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <MessageCircle className="w-4 h-4" />}
+                แชทกับโรงงาน
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => navigate(`/factories/${item.factoryId}`)}
+              className={`inline-flex items-center justify-center gap-1 rounded-lg px-2.5 py-2.5 text-[11px] font-semibold border ${canChat ? '' : 'flex-1'}`}
+              style={{ borderColor: 'rgba(122,75,148,0.30)', color: BRAND.purple }}
+            >
+              โปรไฟล์ <ArrowUpRight className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
 
         <RelatedShowcasesSection
           linkedShowcases={item.linkedShowcases}
