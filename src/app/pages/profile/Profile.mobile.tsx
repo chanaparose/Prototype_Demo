@@ -121,14 +121,18 @@ type WalletTransaction = {
   type: 'credit' | 'debit';
 };
 
-function normTransaction(r: Record<string, unknown>): WalletTransaction {
+function normTransaction(r: Record<string, unknown>, isCustomer: boolean): WalletTransaction {
   const amount = Number(r.amount ?? 0);
   const direction = String(r.direction ?? '').toLowerCase();
+  const txTypeRaw = String(r.transaction_type ?? r.type ?? '').toUpperCase();
   let type: 'credit' | 'debit';
-  if (direction === 'in') type = 'credit';
+  if (amount < 0) type = 'debit';
+  else if (amount > 0) type = 'credit';
+  else if (isCustomer && txTypeRaw === 'BU') type = 'debit';
+  else if (direction === 'in') type = 'credit';
   else if (direction === 'out') type = 'debit';
   else {
-    const txType = String(r.transaction_type ?? r.type ?? '');
+    const txType = String(r.transaction_type ?? r.type ?? '').toLowerCase();
     type =
       txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
   }
@@ -153,6 +157,8 @@ export function ProfileMobile() {
   const data = useData();
   const { logout } = useAuth();
   const currentUser = data.currentUser;
+  const role = String((currentUser as { role?: unknown; user_type?: unknown } | null)?.role ?? (currentUser as { user_type?: unknown } | null)?.user_type ?? '').toUpperCase();
+  const isCustomer = role === 'CT' || role === 'CUSTOMER';
   const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
   const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
 
@@ -222,7 +228,7 @@ export function ProfileMobile() {
       .then((raw) => {
         if (cancelled) return;
         const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
-        setWalletTransactions(data.map(normTransaction).filter((t) => t.id).slice(0, 5));
+        setWalletTransactions(data.map((row) => normTransaction(row, isCustomer)).filter((t) => t.id).slice(0, 5));
       })
       .catch(() => {})
       .finally(() => {
@@ -231,7 +237,7 @@ export function ProfileMobile() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isCustomer]);
 
   if (!currentUser) {
     return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-400 text-sm">กำลังโหลด...</p></div>;
