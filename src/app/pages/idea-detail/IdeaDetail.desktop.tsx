@@ -164,7 +164,12 @@ export function IdeaDetailDesktop() {
         <div className="rounded-xl border border-gray-200 p-3 bg-white">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-14 h-14 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
-              <ImageWithFallback src={factory?.image ?? ''} alt={item.factoryName} className="w-full h-full object-cover" />
+              <ImageWithFallback
+                src={factory?.image ?? ''}
+                fallbackSrc={item.factoryImageUrl ?? ''}
+                alt={item.factoryName}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">

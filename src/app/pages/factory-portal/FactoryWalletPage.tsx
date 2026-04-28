@@ -22,13 +22,15 @@ const TEAL = '#0D9488';
 type TxRow = Record<string, unknown>;
 
 function normTx(r: TxRow) {
+  const rawAmount = Number(r.amount ?? 0);
+  const normalizedAmount = Number.isFinite(rawAmount) ? Math.abs(rawAmount) : 0;
   return {
-    id: String(r.transaction_id ?? r.id ?? ''),
-    type: String(r.type ?? r.transaction_type ?? ''),
-    amount: Number(r.amount ?? 0),
-    status: String(r.status ?? ''),
-    date: String(r.created_at ?? r.date ?? ''),
-    description: String(r.description ?? r.type ?? r.transaction_type ?? ''),
+    id: String(r.tx_id ?? r.transaction_id ?? r.id ?? ''),
+    type: String(r.type ?? r.transaction_type ?? '').toUpperCase(),
+    amount: normalizedAmount,
+    status: String(r.status ?? '').toUpperCase(),
+    date: String(r.created_at ?? r.uploaded_at ?? r.date ?? ''),
+    description: String(r.description ?? ''),
     reference: String(r.reference ?? r.order_id ?? r.rfq_id ?? ''),
   };
 }
@@ -36,95 +38,43 @@ function normTx(r: TxRow) {
 type NormTx = ReturnType<typeof normTx>;
 
 function isCredit(type: string): boolean {
-  const t = type.toLowerCase();
-  return !(t.includes('withdraw') || t.includes('out') || t.includes('debit'));
+  const t = String(type ?? '').toUpperCase();
+  // Business mapping:
+  // DP=Deposit(out), WD=Withdraw(out), BU=Buy(in), SC=Settlement/Receive(in), RF=Refund(in)
+  if (t === 'BU' || t === 'SC' || t === 'RF') return true;
+  if (t === 'DP' || t === 'WD') return false;
+  return true;
 }
 
 function txLabel(type: string): string {
-  const t = type.toLowerCase();
-  if (t.includes('withdraw')) return 'ถอนเงิน';
-  if (t.includes('commission')) return 'ค่าคอมมิชชัน';
-  if (t.includes('refund')) return 'คืนเงิน';
-  if (t.includes('payment') || t.includes('order')) return 'รับชำระจากออเดอร์';
-  if (type) return type;
+  const t = String(type ?? '').toUpperCase();
+  if (t === 'DP') return 'ชำระมัดจำ';
+  if (t === 'WD') return 'ถอนเงิน';
+  if (t === 'BU') return 'รับชำระจากออเดอร์';
+  if (t === 'SC') return 'รับโอนจากระบบ (Settlement)';
+  if (t === 'RF') return 'คืนเงิน';
+  if (t) return t;
   return 'ธุรกรรม';
 }
 
 function statusBadgeCls(status: string) {
-  const s = status.toLowerCase();
-  if (s === 'completed' || s === 'success' || s === 'cm') return 'bg-emerald-100 text-emerald-700';
-  if (s === 'pending' || s === 'processing') return 'bg-amber-100 text-amber-700';
-  if (s === 'failed' || s === 'cancelled') return 'bg-red-100 text-red-600';
+  const s = String(status ?? '').toUpperCase();
+  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED') return 'bg-emerald-100 text-emerald-700';
+  if (s === 'PT' || s === 'PENDING' || s === 'PROCESSING') return 'bg-amber-100 text-amber-700';
+  if (s === 'RJ' || s === 'FL' || s === 'FAILED' || s === 'CN' || s === 'CANCELLED') return 'bg-red-100 text-red-600';
   return 'bg-gray-100 text-gray-500';
 }
 
 function statusLabel(status: string) {
-  const s = status.toLowerCase();
-  if (s === 'completed' || s === 'success' || s === 'cm') return 'สำเร็จ';
-  if (s === 'pending') return 'รอดำเนินการ';
-  if (s === 'processing') return 'กำลังดำเนินการ';
-  if (s === 'failed') return 'ล้มเหลว';
-  if (s === 'cancelled' || s === 'cn') return 'ยกเลิก';
+  const s = String(status ?? '').toUpperCase();
+  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED') return 'สำเร็จ';
+  if (s === 'PT' || s === 'PENDING') return 'รอดำเนินการ';
+  if (s === 'PROCESSING') return 'กำลังดำเนินการ';
+  if (s === 'RJ') return 'ถูกปฏิเสธ';
+  if (s === 'FL' || s === 'FAILED') return 'ล้มเหลว';
+  if (s === 'CN' || s === 'CANCELLED') return 'ยกเลิก';
   return status || '-';
 }
-
-// TODO: wire to API when ready — mock transaction data for display
-const MOCK_TX: NormTx[] = [
-  {
-    id: 'mock-1',
-    type: 'payment',
-    amount: 25000,
-    status: 'completed',
-    date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    description: 'รับชำระจากออเดอร์',
-    reference: 'ORD-1042',
-  },
-  {
-    id: 'mock-2',
-    type: 'payment',
-    amount: 12500,
-    status: 'completed',
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    description: 'รับชำระจากออเดอร์',
-    reference: 'ORD-1038',
-  },
-  {
-    id: 'mock-3',
-    type: 'withdraw',
-    amount: 15000,
-    status: 'completed',
-    date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-    description: 'ถอนเงิน',
-    reference: 'WD-0091',
-  },
-  {
-    id: 'mock-4',
-    type: 'payment',
-    amount: 8800,
-    status: 'pending',
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    description: 'รับชำระจากออเดอร์',
-    reference: 'ORD-1031',
-  },
-  {
-    id: 'mock-5',
-    type: 'commission',
-    amount: 1250,
-    status: 'completed',
-    date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-    description: 'ค่าคอมมิชชัน',
-    reference: 'ORD-1031',
-  },
-  {
-    id: 'mock-6',
-    type: 'withdraw',
-    amount: 10000,
-    status: 'pending',
-    date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    description: 'ถอนเงินรอดำเนินการ',
-    reference: 'WD-0089',
-  },
-];
 
 /* ─── Sub-components ─────────────────────────────────────────────── */
 function StatCard({
@@ -156,7 +106,7 @@ function StatCard({
 
 function TxRow({ t }: { t: NormTx }) {
   const credit = isCredit(t.type);
-  const desc = t.description || txLabel(t.type);
+  const desc = txLabel(t.type);
   const dateStr = t.date
     ? new Date(t.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
     : '-';
@@ -233,13 +183,11 @@ export function FactoryWalletPage() {
       }
       const arr = (Array.isArray(raw) ? raw : []) as TxRow[];
       const apiTx = arr.map(normTx).filter((t) => t.id).slice(0, 30);
-      // Use API data if available, otherwise show mock data for display
-      setTx(apiTx.length > 0 ? apiTx : MOCK_TX);
+      setTx(apiTx);
       setLastRefreshedAt(new Date());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดกระเป๋าไม่สำเร็จ');
-      // Still show mock data on error so UI isn't empty
-      setTx(MOCK_TX);
+      setTx([]);
     } finally {
       setLoading(false);
     }
@@ -268,7 +216,7 @@ export function FactoryWalletPage() {
   const totalWithdrawn = useMemo(
     () =>
       tx
-        .filter((t) => !isCredit(t.type) && t.type.toLowerCase().includes('withdraw'))
+        .filter((t) => !isCredit(t.type))
         .reduce((s, t) => s + t.amount, 0),
     [tx],
   );
@@ -277,8 +225,7 @@ export function FactoryWalletPage() {
       tx.filter(
         (t) =>
           !isCredit(t.type) &&
-          t.type.toLowerCase().includes('withdraw') &&
-          t.status.toLowerCase() === 'pending',
+          (String(t.status).toUpperCase() === 'PT' || String(t.status).toUpperCase() === 'PENDING'),
       ),
     [tx],
   );

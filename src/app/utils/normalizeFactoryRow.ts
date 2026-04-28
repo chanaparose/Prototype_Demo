@@ -1,11 +1,11 @@
 import type { Factory } from '../contexts/DataContext';
 
-/** พื้นหลังแถบบน (แยกจากรูปโปรไฟล์) — สอดคล้องกับ factory profile / PATCH cover_image_url */
+/** พื้นหลังแถบบน (แยกจากรูปโปรไฟล์) — ใช้ background_image_url เป็นหลัก */
 export function pickFactoryCoverUrl(row: Record<string, unknown>): string {
   return String(
-    row.cover_image_url ??
+    row.background_image_url ??
+      row.cover_image_url ??
       row.banner_url ??
-      row.background_image_url ??
       row.hero_image_url ??
       row.cover_url ??
       '',

@@ -11,6 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
 import { mapLinkedShowcasesErrorToThai } from '../../utils/linkedShowcases';
+import { ImageCropModal } from '../../components/common/ImageCropModal';
 
 /* ── Type metadata ── */
 const TYPE_META = {
@@ -83,6 +84,7 @@ export function FactoryShowcaseNewPage() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedShowcaseIds, setSelectedShowcaseIds] = useState<number[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
@@ -105,18 +107,7 @@ export function FactoryShowcaseNewPage() {
   /* ── Image upload ── */
   const onPickImage = async (file: File | null) => {
     if (!file || imageUrls.length >= 5) return;
-    setUploading(true);
-    setError('');
-    setLinkedShowcaseError('');
-    try {
-      const up = await mediaApi.upload(file);
-      const url = String(up.url ?? '').trim();
-      if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
-    } finally {
-      setUploading(false);
-    }
+    setCropFile(file);
   };
 
   const removeImage = (idx: number) => setImageUrls((prev) => prev.filter((_, i) => i !== idx));
@@ -211,6 +202,31 @@ export function FactoryShowcaseNewPage() {
       </div>
 
       <div className="px-4 py-5 space-y-5">
+        <ImageCropModal
+          open={cropFile != null}
+          file={cropFile}
+          title="จัดตำแหน่งภาพ Showcase"
+          // PD/PM แสดงเป็น aspect-square (1:1) บนหน้า customer detail
+          // → crop ที่ 1:1; ID เป็นบทความ → 16:9 banner
+          aspect={contentType === 'ID' ? 16 / 9 : 1}
+          outputWidth={contentType === 'ID' ? 1800 : 1200}
+          onCancel={() => setCropFile(null)}
+          onConfirm={async (file) => {
+            setUploading(true);
+            setError('');
+            setLinkedShowcaseError('');
+            try {
+              const up = await mediaApi.upload(file);
+              const url = String(up.url ?? '').trim();
+              if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
+            } finally {
+              setUploading(false);
+              setCropFile(null);
+            }
+          }}
+        />
 
         {error ? (
           <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>

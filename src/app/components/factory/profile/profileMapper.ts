@@ -10,7 +10,7 @@ export interface ProfileRawBundle {
 
 function pickCoverUrl(f: Row): string {
   return String(
-    f.cover_image_url ?? f.banner_url ?? f.background_image_url ?? f.hero_image_url ?? '',
+    f.background_image_url ?? f.cover_image_url ?? f.banner_url ?? f.hero_image_url ?? '',
   ).trim();
 }
 
