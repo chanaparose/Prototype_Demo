@@ -97,6 +97,7 @@ export const router = createBrowserRouter([
               { path: 'rfqs/:id', Component: RFQDetail },
               { path: 'orders/:id', Component: OrderDetail },
               { path: 'messages/:id', Component: ChatRoom },
+              { path: 'chat-room', Component: ChatRoom },
               { path: 'chat-room/:id', Component: ChatRoom },
               {
                 path: 'factory',

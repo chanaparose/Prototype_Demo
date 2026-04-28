@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../../contexts/AuthContext';
 import { rfqsApi } from '../../services/api';
 import { openChatSession } from '../../utils/openChatSession';
-import { getCurrentUserId, initialMessageForReference } from '../../utils/chatContract';
+import { getCurrentUserId } from '../../utils/chatContract';
 import type { OfferItem } from '../../components/features/rfq-detail/RfqDetailOffersSection';
 import { ChevronLeft } from 'lucide-react';
 import { useRfqDetail } from '../../hooks/useRfqDetail';
@@ -61,10 +61,7 @@ export function RFQDetailMobile() {
       await openChatSession(navigate, user, {
         customerUserId: my,
         factoryEntityId: fid,
-        firstMessage: {
-          content: initialMessageForReference(ref),
-          reference: ref,
-        },
+        pendingReference: ref,
       });
     },
     [user, navigate, id, rfq?.projectName],
