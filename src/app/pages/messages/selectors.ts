@@ -1,6 +1,6 @@
 import type { RoomMessage } from '../../components/chat/MessageBubble';
 import type { UiConversation } from './types';
-import { parseBangkokWallClock } from '../../utils/chatTime';
+import { parseChatInstant } from '../../utils/chatTime';
 
 /**
  * Normalize an ISO-8601 / RFC-3339 timestamp so JavaScript's Date parser
@@ -17,17 +17,11 @@ export function normalizeIso(iso: string): string {
 }
 
 /**
- * Sort key for chat messages. Uses {@link parseBangkokWallClock} so that
- * sort order, date-separator grouping, and `HH:mm` formatting all interpret
- * the BE's "Bangkok wall-clock stamped as Z" timestamps the same way.
- *
- * Without this, `new Date(iso).getTime()` interprets the bogus `Z` as UTC
- * while the date-key util interprets it as Bangkok wall-clock — a 7-hour
- * disagreement that causes messages near midnight to flicker between days
- * during the 4-second poll refresh.
+ * Sort key for chat messages. Uses the shared parser so date sorting,
+ * date-group separators, and `HH:mm` rendering all interpret the same instant.
  */
 function messageTimeMs(iso: string): number {
-  const d = parseBangkokWallClock(iso);
+  const d = parseChatInstant(iso);
   if (!d) return 0;
   const t = d.getTime();
   return Number.isFinite(t) && t > 0 ? t : 0;

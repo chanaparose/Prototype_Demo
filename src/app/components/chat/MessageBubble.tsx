@@ -101,11 +101,7 @@ function pickImageUrl(r: Record<string, unknown>, mt: RoomMessage['message_type'
   return u || undefined;
 }
 
-/**
- * Format a chat timestamp as `HH:mm` in Bangkok time.
- * Delegates to {@link formatChatTime} which handles the BE bug where
- * Bangkok wall-clock timestamps are stamped with `Z` (see chatTime.ts).
- */
+/** Format a chat timestamp as `HH:mm` in Bangkok time. */
 export function formatDisplayTimeFromIso(isoRaw: string): string {
   return formatChatTime(isoRaw);
 }

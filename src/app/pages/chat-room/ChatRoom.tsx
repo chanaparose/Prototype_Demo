@@ -32,7 +32,7 @@ import { RFQPicker } from '../../components/chat/RFQPicker';
 import { ReferenceChip } from '../../components/chat/ReferenceChip';
 import { sortMessagesByCreatedAt, insertMessageSorted, dedupeByKey, normalizeIso } from '../messages/selectors';
 import {
-  bangkokWallClockNow,
+  chatNowIso,
   bangkokDateKey as bangkokDateKeyUtil,
   formatChatDateLabel,
 } from '../../utils/chatTime';
@@ -85,7 +85,6 @@ function referenceLabel(ref: ChatReference): string {
   }
 }
 
-// Use shared util that handles BE's "Bangkok wall-clock stamped as Z" bug.
 const bangkokDateKey = bangkokDateKeyUtil;
 const formatBangkokDateLabel = formatChatDateLabel;
 
@@ -481,9 +480,7 @@ function ChatRoomBody({
     setSending(true);
     justSentRef.current = true;
     const tempKey = `tmp-${Date.now()}`;
-    // Mimic BE's timestamp shape (Bangkok wall-clock stamped as Z) so
-    // optimistic + server-echo entries sort and display identically.
-    const nowIso = bangkokWallClockNow();
+    const nowIso = chatNowIso();
     const attachOnce = pendingRef;
     const optimistic: RoomMessage = {
       key: tempKey,
@@ -858,12 +855,12 @@ function ChatRoomBody({
               // Ensure created_at is always a valid ms-precision ISO string.
               // The share-rfq API returns Go RFC3339Nano (nanoseconds) which
               // Safari's Date parser cannot handle; also guard against Go zero
-              // time "0001-01-01…".
+              // time "0001-01-01…". Fall back to a local optimistic UTC stamp.
               const ca = String(sharedMessage.created_at ?? '');
               const caNorm = normalizeIso(ca);
               const isInvalid = !caNorm || Number.isNaN(new Date(caNorm).getTime());
               const enriched: Record<string, unknown> = isInvalid
-                ? { ...sharedMessage, created_at: bangkokWallClockNow() }
+                ? { ...sharedMessage, created_at: chatNowIso() }
                 : sharedMessage;
               const row = rowToRoomMessage(enriched);
               if (row) setMessages((prev) => insertMessageSorted(prev, row));
