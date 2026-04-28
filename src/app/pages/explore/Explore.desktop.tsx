@@ -424,13 +424,16 @@ export function ExploreDesktop({
 
           <div className="relative z-10 px-10 py-6 text-white max-w-2xl">
             <span className="inline-block px-2.5 py-0.5 mb-2 rounded-full text-[11px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
-              AMERICA'S FIRST HOLISTIC
+              READY TO START YOUR PRODUCT?
             </span>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2 leading-snug drop-shadow-md" style={{ fontFamily: 'serif' }}>
-              Solid Gold <br /> <span style={{ color: '#FFB870' }}>Manufacturing</span>
+            <h1
+              className="font-brand-display text-[2.7rem] md:text-[3.35rem] font-semibold mb-2 leading-[0.9] tracking-[0.01em] drop-shadow-md"
+              style={{ textWrap: 'balance' }}
+            >
+              ค้นหาโรงงานที่ใช่
             </h1>
             <p className="text-sm mb-4 max-w-md font-medium leading-relaxed" style={{ color: '#E2DCE6' }}>
-              ค้นหาโรงงานผลิตสินค้าสัตว์เลี้ยงระดับพรีเมียม ตอบโจทย์ทุกแบรนด์
+              เริ่มผลิตกับพาร์ตเนอร์ที่เชื่อถือได้
             </p>
             <button
               onClick={() => navigate('/create-rfq')}

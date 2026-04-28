@@ -74,13 +74,16 @@ export function ExploreMobile({
 
         <div className="relative z-10 px-6 py-5 text-white">
           <span className="inline-block px-2 py-0.5 mb-2 rounded-full text-[10px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
-            AMERICA'S FIRST HOLISTIC
+            READY TO START YOUR PRODUCT?
           </span>
-          <h1 className="text-xl font-bold mb-1 leading-tight drop-shadow-md" style={{ fontFamily: 'serif' }}>
-            Solid Gold <span style={{ color: '#FFB870' }}>Manufacturing</span>
+          <h1
+            className="font-brand-display text-[1.9rem] font-semibold mb-1 leading-[0.92] tracking-[0.01em] drop-shadow-md"
+            style={{ textWrap: 'balance' }}
+          >
+            ค้นหาโรงงานที่ใช่
           </h1>
           <p className="text-xs max-w-[240px] font-medium" style={{ color: '#E2DCE6' }}>
-            ค้นหาโรงงานผลิตสินค้าสัตว์เลี้ยงระดับพรีเมียม
+            เริ่มผลิตกับพาร์ตเนอร์ที่เชื่อถือได้
           </p>
         </div>
       </div>
