@@ -230,18 +230,8 @@ export function FactoryWalletPage() {
     [tx],
   );
 
-  /* ── Month earnings (current month) ── */
-  const thisMonthEarned = useMemo(() => {
-    const now = new Date();
-    return tx
-      .filter((t) => {
-        if (!isCredit(t.type)) return false;
-        if (!t.date) return false;
-        const d = new Date(t.date);
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-      })
-      .reduce((s, t) => s + t.amount, 0);
-  }, [tx]);
+  /* ── Month earnings (UI rule): balance + pending ── */
+  const thisMonthEarned = useMemo(() => (good ?? 0) + (pending ?? 0), [good, pending]);
 
   /* ─── Loading state ─────────────────────────────────────────────── */
   if (loading) {
