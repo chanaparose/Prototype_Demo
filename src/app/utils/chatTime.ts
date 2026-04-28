@@ -20,27 +20,16 @@ export function parseBangkokWallClock(iso: string | null | undefined): Date | nu
   if (!trimmed) return null;
   if (trimmed.startsWith('0001-01-01')) return null;
 
-  // Truncate fractional seconds to 3 digits (Safari max).
-  const normalized = trimmed.replace(/(\.\d{1,3})\d+/, '$1');
-  const hasZ = /Z$/i.test(normalized);
-  const hasNumericOffset = /[+-]\d{2}:?\d{2}$/i.test(normalized);
-
-  // Chat BE quirk: values ending with Z are already Bangkok wall-clock.
-  // Strip timezone markers then reinterpret as +07:00.
-  if (hasZ) {
-    const naive = normalized.replace(/Z$/i, '');
-    const d = new Date(naive + '+07:00');
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-
-  // Standard path for explicit numeric offsets.
-  if (hasNumericOffset) {
-    const d = new Date(normalized);
-    if (!Number.isNaN(d.getTime())) return d;
-  }
-
-  // Legacy fallback: no timezone -> assume Bangkok wall-clock.
-  const d = new Date(normalized + '+07:00');
+  // Truncate fractional seconds to 3 digits (Safari max), strip trailing
+  // Z or +HH:MM / -HHMM / +HHMM offsets.
+  const naive = trimmed
+    .replace(/(\.\d{3})\d+/, '$1')
+    .replace(/Z$/i, '')
+    .replace(/[+-]\d{2}:?\d{2}$/, '');
+  // Treat remaining wall-clock as Bangkok local time.
+  // This mirrors the known chat timestamp behavior in current BE.
+  // eslint-disable-next-line no-restricted-syntax
+  const d = new Date(naive + '+07:00');
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
