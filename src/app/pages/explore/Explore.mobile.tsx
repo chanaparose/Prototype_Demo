@@ -77,7 +77,7 @@ export function ExploreMobile({
             READY TO START YOUR PRODUCT?
           </span>
           <h1
-            className="font-brand-display text-[1.9rem] font-semibold mb-1 leading-[0.92] tracking-[0.01em] drop-shadow-md"
+            className="font-brand-display text-[1.4rem] font-semibold mb-1 leading-[0.98] tracking-[0.01em] drop-shadow-md"
             style={{ textWrap: 'balance' }}
           >
             ค้นหาโรงงานที่ใช่

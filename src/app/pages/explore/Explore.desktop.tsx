@@ -427,7 +427,7 @@ export function ExploreDesktop({
               READY TO START YOUR PRODUCT?
             </span>
             <h1
-              className="font-brand-display text-[2.7rem] md:text-[3.35rem] font-semibold mb-2 leading-[0.9] tracking-[0.01em] drop-shadow-md"
+              className="font-brand-display text-[2rem] md:text-[2.45rem] font-semibold mb-2 leading-[0.96] tracking-[0.01em] drop-shadow-md"
               style={{ textWrap: 'balance' }}
             >
               ค้นหาโรงงานที่ใช่
