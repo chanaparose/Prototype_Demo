@@ -28,6 +28,7 @@ import { useFactorySubCategories } from '../../hooks/factory/useFactorySubCatego
 import { useBeforeUnload } from '../../hooks/forms/useBeforeUnload';
 
 import { FormSkeleton } from '../../components/common/FormSkeleton';
+import { ImageCropModal } from '../../components/common/ImageCropModal';
 import { VerifyStatusBanner } from '../../components/factory/profile/VerifyStatusBanner';
 import { BusinessInfoSection } from '../../components/factory/profile/BusinessInfoSection';
 import { CategoriesSection } from '../../components/factory/profile/CategoriesSection';
@@ -165,7 +166,7 @@ function SectionCard({ icon: Icon, title, iconColor, iconBg, badge, children }: 
 
 function pickCoverFromFactoryRaw(raw: Record<string, unknown>): string {
   return String(
-    raw.cover_image_url ?? raw.banner_url ?? raw.background_image_url ?? raw.hero_image_url ?? '',
+    raw.background_image_url ?? raw.cover_image_url ?? raw.banner_url ?? raw.hero_image_url ?? '',
   ).trim();
 }
 
@@ -484,6 +485,8 @@ export function FactoryProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [cropTarget, setCropTarget] = useState<'profile' | 'cover' | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [okMsg, setOkMsg] = useState('');
 
@@ -540,7 +543,7 @@ export function FactoryProfilePage() {
     try {
       await factoriesApi.patch(fid, {
         image_url: String(v.image_url ?? ''),
-        cover_image_url: String(v.cover_image_url ?? ''),
+        background_image_url: String(v.cover_image_url ?? ''),
         factory_name: v.factory_name.trim(),
         tax_id: v.tax_id.trim() || undefined,
         description: v.description.trim() || undefined,
@@ -658,7 +661,7 @@ export function FactoryProfilePage() {
         const up = await mediaApi.upload(file);
         const url = String(up?.url ?? '').trim();
         if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
-        await factoriesApi.patch(fid, { cover_image_url: url });
+        await factoriesApi.patch(fid, { background_image_url: url });
         form.setValue('cover_image_url', url, { shouldDirty: false });
         lastPrefillKeyRef.current = '';
         setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
@@ -680,7 +683,7 @@ export function FactoryProfilePage() {
     setError('');
     setOkMsg('');
     try {
-      await factoriesApi.patch(fid, { cover_image_url: '' });
+      await factoriesApi.patch(fid, { background_image_url: '' });
       form.setValue('cover_image_url', '', { shouldDirty: false });
       lastPrefillKeyRef.current = '';
       setOkMsg('ลบรูปพื้นหลังแล้ว');
@@ -692,6 +695,17 @@ export function FactoryProfilePage() {
       setUploadingCover(false);
     }
   }, [fid, form, qc, refreshUser]);
+
+  const openCropper = useCallback((target: 'profile' | 'cover', file: File) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    setCropTarget(target);
+    setCropFile(file);
+  }, []);
+
+  const closeCropper = useCallback(() => {
+    setCropTarget(null);
+    setCropFile(null);
+  }, []);
 
   if (fid == null) {
     return <p className="text-sm text-red-600">บัญชีนี้ไม่ใช่โรงงาน หรือไม่มีรหัสโรงงานในระบบ</p>;
@@ -759,13 +773,33 @@ export function FactoryProfilePage() {
         uploadingImage={uploadingImage}
         uploadingCover={uploadingCover}
         onPickImage={(file) => {
-          void handleUploadImage(file);
+          openCropper('profile', file);
         }}
         onRemoveImage={() => void handleRemoveImage()}
         onPickCover={(file) => {
-          void handleUploadCover(file);
+          openCropper('cover', file);
         }}
         onRemoveCover={() => void handleRemoveCover()}
+      />
+
+      <ImageCropModal
+        open={cropTarget != null && cropFile != null}
+        file={cropFile}
+        title={cropTarget === 'profile' ? 'ครอปรูปโปรไฟล์โรงงาน' : 'ครอปรูปพื้นหลังโรงงาน'}
+        aspect={cropTarget === 'profile' ? 1 : 16 / 9}
+        outputWidth={cropTarget === 'profile' ? 900 : 1800}
+        onCancel={closeCropper}
+        onConfirm={async (file) => {
+          try {
+            if (cropTarget === 'profile') {
+              await handleUploadImage(file);
+            } else if (cropTarget === 'cover') {
+              await handleUploadCover(file);
+            }
+          } finally {
+            closeCropper();
+          }
+        }}
       />
 
       {/* Verification stepper (show if not fully verified) */}

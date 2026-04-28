@@ -164,7 +164,12 @@ export function IdeaDetailMobile() {
         <div className="bg-white px-4 py-3 border rounded-2xl shadow-sm" style={{ borderColor: BRAND.divider }}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0">
-              <ImageWithFallback src={factory?.image ?? ''} alt={item.factoryName} className="w-full h-full object-cover" />
+              <ImageWithFallback
+                src={factory?.image ?? ''}
+                fallbackSrc={item.factoryImageUrl ?? ''}
+                alt={item.factoryName}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
