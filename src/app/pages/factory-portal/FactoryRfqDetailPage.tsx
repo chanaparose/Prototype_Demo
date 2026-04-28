@@ -6,8 +6,8 @@ import { useData } from '../../contexts/DataContext';
 import type { QuotationRow } from '../../types/rfq';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { rfqsApi, quotationsApi, conversationsApi, messagesApi, categoriesApi } from '../../services/api';
-import { findOrCreateConversation, openChatSession } from '../../utils/openChatSession';
 import { buildSendPayload, chatRoomPath, getCurrentUserId } from '../../utils/chatContract';
+import type { ApiConversation } from '../../utils/chatContract';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { DeadlineBadge } from '../../components/factory/DeadlineBadge';
@@ -198,6 +198,108 @@ export function FactoryRfqDetailPage() {
     [rfqBody],
   );
 
+  /**
+   * Find an existing conversation between this factory and the customer.
+   * Factory role cannot POST /conversations (buyer-only), so we list only.
+   * Returns the conv_id, or null if none exists yet.
+   */
+  const findExistingConvId = async (): Promise<number | null> => {
+    const convsRaw = await conversationsApi.list();
+    const convs = (() => {
+      if (Array.isArray(convsRaw)) return convsRaw as Array<Record<string, unknown>>;
+      if (convsRaw && typeof convsRaw === 'object') {
+        const root = convsRaw as Record<string, unknown>;
+        const c1 = root.conversations;
+        if (Array.isArray(c1)) return c1 as Array<Record<string, unknown>>;
+        const c2 = root.data;
+        if (Array.isArray(c2)) return c2 as Array<Record<string, unknown>>;
+        const c3 = root.items;
+        if (Array.isArray(c3)) return c3 as Array<Record<string, unknown>>;
+        const c4 = root.results;
+        if (Array.isArray(c4)) return c4 as Array<Record<string, unknown>>;
+      }
+      return [] as Array<Record<string, unknown>>;
+    })();
+
+    // Helper to extract nested user_id from customer/factory party objects
+    const customerIdOf = (c: Record<string, unknown>): number =>
+      Number(
+        c.customer_id ??
+        c.customerId ??
+        (c.customer as Record<string, unknown> | undefined)?.user_id ??
+        0,
+      );
+    const factoryIdOf = (c: Record<string, unknown>): number =>
+      Number(
+        c.factory_id ??
+        c.factoryId ??
+        (c.factory as Record<string, unknown> | undefined)?.user_id ??
+        0,
+      );
+
+    // Primary: exact match by both customer_id + factory_id
+    let hit = convs.find((c) => customerIdOf(c) === customerId && factoryIdOf(c) === fid);
+
+    // Fallback: match by customer_id only (every conv in this list belongs to this factory)
+    if (!hit && customerId > 0) {
+      hit = convs.find((c) => customerIdOf(c) === customerId);
+    }
+
+    const convId = Number(hit?.conv_id ?? hit?.conversation_id ?? hit?.id ?? 0);
+
+    if (import.meta.env.DEV) {
+      const snapshot = convs.slice(0, 20).map((c) => ({
+        conv_id: c.conv_id ?? c.conversation_id ?? c.id ?? null,
+        customer_id: c.customer_id ?? c.customerId ?? (c.customer as Record<string, unknown> | undefined)?.user_id ?? null,
+        factory_id: c.factory_id ?? c.factoryId ?? (c.factory as Record<string, unknown> | undefined)?.user_id ?? null,
+        updated_at: c.updated_at ?? c.last_message_at ?? c.created_at ?? null,
+      }));
+      console.groupCollapsed('[FactoryRfqDetail][findExistingConvId]');
+      console.debug('target', { customerId, fid, rows: convs.length, rawType: typeof convsRaw });
+      console.debug('rows(snapshot<=20)', snapshot);
+      console.debug('hit', {
+        conv_id: hit?.conv_id ?? hit?.conversation_id ?? hit?.id ?? null,
+        customer_id: hit ? customerIdOf(hit) : null,
+        factory_id: hit ? factoryIdOf(hit) : null,
+      });
+      console.debug('convId(parsed)', convId);
+      console.groupEnd();
+    }
+
+    return Number.isFinite(convId) && convId > 0 ? convId : null;
+  };
+
+  const ensureConversationId = async (): Promise<number> => {
+    const existing = await findExistingConvId();
+    if (existing) return existing;
+
+    const created = await conversationsApi.create({
+      customer_id: customerId,
+      factory_id: fid as number,
+    });
+
+    const root = (created && typeof created === 'object' ? created : {}) as Record<string, unknown>;
+    const row =
+      (root.data && typeof root.data === 'object' ? root.data : null) as Record<string, unknown> | null;
+    const convId = Number(
+      root.conv_id ??
+      root.conversation_id ??
+      root.id ??
+      row?.conv_id ??
+      row?.conversation_id ??
+      row?.id ??
+      0,
+    );
+    if (!Number.isFinite(convId) || convId <= 0) {
+      throw new Error('สร้างห้องแชทไม่สำเร็จ (ไม่พบ conv_id)');
+    }
+
+    if (import.meta.env.DEV) {
+      console.debug('[FactoryRfqDetail][ensureConversationId] created', { convId, customerId, fid });
+    }
+    return convId;
+  };
+
   const openChatToCustomer = async () => {
     if (fid == null || !Number.isFinite(customerId) || customerId <= 0) {
       setError('ไม่พบรหัสลูกค้าใน RFQ');
@@ -206,13 +308,16 @@ export function FactoryRfqDetailPage() {
     setChatBusy(true);
     setError('');
     try {
-      await openChatSession(navigate, user, {
-        customerUserId: customerId,
-        factoryEntityId: fid,
-        pendingReference: {
-          type: 'RQ',
-          id: Number(id),
-          title: rfqTitle || `RFQ #${id}`,
+      const convId = await ensureConversationId();
+      if (import.meta.env.DEV) {
+        console.debug('[FactoryRfqDetail][openChatToCustomer] navigate', {
+          to: chatRoomPath(convId),
+          reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
+        });
+      }
+      navigate(chatRoomPath(convId), {
+        state: {
+          reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
         },
       });
     } catch (e) {
@@ -245,11 +350,16 @@ export function FactoryRfqDetailPage() {
     setChatBusy(true);
     setError('');
     try {
-      const conv = await findOrCreateConversation(customerId, fid);
-      if (!conv) throw new Error('สร้างห้องแชทไม่สำเร็จ');
+      const convId = await ensureConversationId();
+      // Build minimal ApiConversation from known IDs so buildSendPayload can resolve receiver
+      const apiConv: ApiConversation = {
+        conv_id: convId,
+        customer_id: customerId,
+        factory_id: fid,
+      };
       await messagesApi.send(
         buildSendPayload({
-          conv,
+          conv: apiConv,
           currentUserId: uid,
           content: 'ใบเสนอราคา',
           messageType: 'QT',
@@ -257,7 +367,7 @@ export function FactoryRfqDetailPage() {
           quoteData,
         }),
       );
-      navigate(chatRoomPath(conv.conv_id));
+      navigate(chatRoomPath(convId));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ส่งใบเสนอราคาในแชทไม่สำเร็จ');
     } finally {
@@ -592,13 +702,6 @@ export function FactoryRfqDetailPage() {
                     targetDaysCustomer={targetDaysCustomer}
                     deadlineIso={deadlineIso}
                     onSubmitted={async () => {
-                      if (customerId > 0 && fid != null) {
-                        try {
-                          await conversationsApi.create({ customer_id: customerId, factory_id: fid });
-                        } catch {
-                          /* ห้องสนทนาอาจมีอยู่แล้ว */
-                        }
-                      }
                       await load();
                     }}
                   />
@@ -623,7 +726,7 @@ export function FactoryRfqDetailPage() {
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">ติดต่อลูกค้า</p>
                 <h2 className="text-sm font-bold" style={{ color: '#2E2252' }}>ส่งข้อความ</h2>
                 <p className="text-xs text-gray-500">
-                  เปิดห้องแชทกับลูกค้า — ข้อความแรกจากโรงงานจะแนบบริบท RFQ ตามสเปก
+                  เปิดห้องแชทเดิมพร้อม prefill ข้อความ (ยังไม่ส่งทันที) และแนบบริบท RFQ
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button

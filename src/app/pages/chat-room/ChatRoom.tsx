@@ -247,7 +247,11 @@ export function ChatRoom() {
   const navigate = useNavigate();
   const location = useLocation();
   const data = useData();
-  const seedReference = (location.state as { reference?: ChatReference } | null)?.reference ?? null;
+  const state = location.state as
+    | { reference?: ChatReference; pendingChat?: { customerId?: number; factoryId?: number; note?: string } }
+    | null;
+  const seedReference = state?.reference ?? null;
+  const pendingChat = state?.pendingChat ?? null;
   const fromCtx = id ? data.conversations.find((c) => c.id === id) : undefined;
   const preview: ChatRoomPreview | undefined = fromCtx
     ? {
@@ -262,8 +266,36 @@ export function ChatRoom() {
   const { conv, apiConv, messages, setMessages, msgLoading, refetchConversations } = useChatThread(id ?? '', preview);
 
   if (!id) {
+    const customerId = Number(pendingChat?.customerId ?? 0);
+    const factoryId = Number(pendingChat?.factoryId ?? 0);
+    const fallbackConv: Conversation = {
+      id: 'pending',
+      factoryId: Number.isFinite(factoryId) && factoryId > 0 ? String(factoryId) : '',
+      rfqId: '',
+      factoryName: Number.isFinite(factoryId) && factoryId > 0 ? `โรงงาน #${factoryId}` : 'โรงงาน',
+      factoryAvatar: '',
+      rfqName: Number.isFinite(customerId) && customerId > 0 ? `ลูกค้า #${customerId}` : '',
+      lastMessage: '',
+      time: '',
+      unread: 0,
+      hasQuote: false,
+      messages: [],
+    };
     return (
-      <div className="p-8 text-center text-gray-500 text-sm">ไม่พบการสนทนา</div>
+      <ChatRoomBody
+        conv={fallbackConv}
+        apiConv={null}
+        messages={[]}
+        setMessages={() => undefined}
+        onBack={() => navigate(-1)}
+        variant="full"
+        msgLoading={false}
+        seedReference={seedReference}
+        clearSeedReference={() => {
+          navigate(location.pathname, { replace: true, state: null });
+        }}
+        pendingChatNote={pendingChat?.note}
+      />
     );
   }
 
@@ -281,6 +313,7 @@ export function ChatRoom() {
       clearSeedReference={() => {
         navigate(location.pathname, { replace: true, state: null });
       }}
+      pendingChatNote={undefined}
     />
   );
 }
@@ -296,6 +329,7 @@ type ChatRoomBodyProps = {
   refetchConversations?: () => Promise<void>;
   seedReference?: ChatReference | null;
   clearSeedReference?: () => void;
+  pendingChatNote?: string;
 };
 
 export function ChatRoomEmbedded({
@@ -333,6 +367,7 @@ function ChatRoomBody({
   refetchConversations,
   seedReference,
   clearSeedReference,
+  pendingChatNote,
 }: ChatRoomBodyProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -721,7 +756,7 @@ function ChatRoomBody({
       >
         {!apiConv && (
           <p className="text-center text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
-            กำลังโหลดข้อมูลห้องแชท… รอสักครู่ก่อนส่งข้อความ
+            {pendingChatNote?.trim() || 'กำลังโหลดข้อมูลห้องแชท… รอสักครู่ก่อนส่งข้อความ'}
           </p>
         )}
         {msgLoading && messages.length === 0 && (

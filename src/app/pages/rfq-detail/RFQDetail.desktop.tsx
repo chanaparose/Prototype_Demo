@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRfqDetail } from '../../hooks/useRfqDetail';
 import { rfqsApi } from '../../services/api';
 import { openChatSession } from '../../utils/openChatSession';
-import { getCurrentUserId, initialMessageForReference } from '../../utils/chatContract';
+import { getCurrentUserId } from '../../utils/chatContract';
 import type { OfferItem } from '../../components/features/rfq-detail/RfqDetailOffersSection';
 import {
   HISTORY_STATUSES,
@@ -64,10 +64,7 @@ export function RFQDetailDesktop() {
       await openChatSession(navigate, user, {
         customerUserId: my,
         factoryEntityId: fid,
-        firstMessage: {
-          content: initialMessageForReference(ref),
-          reference: ref,
-        },
+        pendingReference: ref,
       });
     },
     [user, navigate, id, rfq?.projectName],
