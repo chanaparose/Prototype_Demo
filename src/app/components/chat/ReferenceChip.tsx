@@ -27,13 +27,7 @@ function hrefFor(ref: ChatReference): string {
 }
 
 function labelFor(ref: ChatReference, titleFallback?: string): string {
-  const rawTitle = ref.title?.trim() || '';
-  const rawFallback = titleFallback?.trim() || '';
-  const idText = String(ref.id);
-  const looksLikeId = (v: string) => v === idText || v === `#${idText}` || v.toUpperCase() === `RFQ #${idText}`;
-  const safeTitle = rawTitle && !looksLikeId(rawTitle) ? rawTitle : '';
-  const safeFallback = rawFallback && !looksLikeId(rawFallback) ? rawFallback : '';
-  const t = safeTitle || safeFallback || 'รายการอ้างอิง';
+  const t = ref.title?.trim() || titleFallback?.trim() || 'รายการอ้างอิง';
   switch (ref.type) {
     case 'PD':
       return `สินค้า: ${t}`;
@@ -42,7 +36,7 @@ function labelFor(ref: ChatReference, titleFallback?: string): string {
     case 'ID':
       return `ไอเดีย: ${t}`;
     case 'RQ':
-      return `RFQ: ${safeTitle || safeFallback || 'คำขอราคา'}`;
+      return `RFQ: ${t}`;
     case 'OD':
       return `Order: ${t}`;
     default:
