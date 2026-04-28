@@ -522,11 +522,11 @@ export const paymentSchedulesApi = {
 };
 
 export const messagesApi = {
-  send: (data: MessagesSendBody) => api.post('/messages/', data),
+  send: (data: MessagesSendBody) => api.post('/messages', data),
   list: (referenceType: string, referenceId: string) =>
-    api.get<unknown[]>(`/messages/?reference_type=${referenceType}&reference_id=${referenceId}`),
+    api.get<unknown[]>(`/messages?reference_type=${referenceType}&reference_id=${referenceId}`),
   listByConversation: (convId: number | string) =>
-    api.get<unknown[]>(`/messages/?conv_id=${convId}`),
+    api.get<unknown[]>(`/messages?conv_id=${convId}`),
   threads: () => api.get<unknown[]>('/messages/threads'),
 };
 
