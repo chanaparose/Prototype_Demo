@@ -64,11 +64,25 @@ function mapProfileFromApi(
 function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): FactoryReview | null {
   const rid = String(r.id ?? r.review_id ?? '');
   if (!rid) return null;
+  const userId = Number(r.user_id ?? r.userId ?? 0);
+  const firstName = String(r.first_name ?? r.firstName ?? '').trim();
+  const lastName = String(r.last_name ?? r.lastName ?? '').trim();
+  const fullName = `${firstName} ${lastName}`.trim();
+  const fallbackByUserId = Number.isFinite(userId) && userId > 0 ? `ผู้ใช้ #${userId}` : '';
+  const reviewer = String(
+    fullName ||
+      r.reviewer_name ||
+      r.reviewer ||
+      r.user_name ||
+      r.display_name ||
+      fallbackByUserId ||
+      'ลูกค้า',
+  ).trim();
   const imageUrls = normalizeReviewImageUrls(r.image_urls);
   return {
     id: rid,
     factoryId,
-    reviewer: String(r.reviewer_name ?? r.reviewer ?? r.user_name ?? ''),
+    reviewer,
     rating: Number(r.rating ?? 0),
     comment: String(r.comment ?? r.text ?? ''),
     date: String(r.created_at ?? r.date ?? ''),

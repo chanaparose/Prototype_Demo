@@ -75,6 +75,7 @@ function OrderDetailMobileBody() {
   // PP / PE / PR / WF — statuses the backend allows cancellation
   const CANCELLABLE_STATUSES = ['PP', 'PE', 'PR', 'WF'];
   const isCancellable = CANCELLABLE_STATUSES.includes(apiStatus);
+  const canShowCancelButton = isCancellable && !Boolean(order.depositPaid);
 
   const depositAmount =
     nextAction?.amount ??
@@ -390,7 +391,7 @@ function OrderDetailMobileBody() {
                 rfqOffers={rfqOffers}
               />
 
-              {isCancellable ? (
+              {canShowCancelButton ? (
                 <div className="pt-2 pb-1">
                   <button
                     type="button"
