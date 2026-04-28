@@ -82,9 +82,6 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
   const vatRate = Number(q.vat_rate ?? 0);
   const vatAmount = Number(q.vat_amount ?? 0);
   const grandTotal = Number(q.grand_total ?? 0);
-  const factoryNet = Number(q.factory_net_receivable ?? 0);
-  const commRate = Number(q.platform_commission_rate ?? 0);
-  const commAmount = Number(q.platform_commission_amount ?? 0);
   const validityDays = Number(q.validity_days ?? 0);
   const validUntil = String(q.valid_until ?? '').split('T')[0];
   const paymentTerms = String(q.payment_terms ?? '');
@@ -179,15 +176,6 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
               />
             </div>
 
-            {(commRate > 0 || commAmount > 0) && (
-              <div className="mt-1 pt-1.5 border-t border-dashed border-gray-200 space-y-1.5">
-                <p className="text-[9px] text-gray-400 font-semibold uppercase tracking-wide">
-                  Commission Platform
-                </p>
-                {commRate > 0 && <Row label={`Commission ${commRate}%`} value={`฿${fmt(commAmount)}`} muted />}
-                {factoryNet > 0 && <Row label="โรงงานได้รับสุทธิ" value={`฿${fmt(factoryNet)}`} muted />}
-              </div>
-            )}
           </div>
 
           {/* Meta info */}
