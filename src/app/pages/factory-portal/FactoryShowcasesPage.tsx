@@ -265,10 +265,7 @@ export function FactoryShowcasesPage() {
                         <p className="min-w-0 flex-1 text-xs font-semibold text-[#2E2252] line-clamp-1">
                           {String(r.factory_name ?? user?.factory_name ?? user?.name ?? 'โรงงานของคุณ')}
                         </p>
-                        <span className="inline-flex items-center gap-1 shrink-0">
-                          <Heart size={12} />
-                          <span className="font-semibold text-[#64748B]">{likes}</span>
-                        </span>
+                         
                       </div>
                     </div>
                   </div>
