@@ -301,14 +301,6 @@ export function FactoryShowcaseNewPage() {
             value={form.title}
             onChange={(e) => setField('title', e.target.value)}
           />
-          {contentType !== 'ID' ? (
-            <input
-              className="w-full text-sm text-gray-500 placeholder-gray-300 border-0 border-b border-gray-100 focus:border-orange-300 focus:outline-none pb-1.5 bg-transparent transition-colors"
-              placeholder="คำโปรย — ประโยคสั้นที่บอกจุดเด่น"
-              value={form.excerpt}
-              onChange={(e) => setField('excerpt', e.target.value)}
-            />
-          ) : null}
         </section>
 
         {/* ── Info bar ── */}

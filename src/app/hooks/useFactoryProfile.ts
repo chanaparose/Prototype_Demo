@@ -24,7 +24,7 @@ function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: 
   return {
     id: String(row.id ?? row.factory_id ?? id),
     name: String(row.name ?? row.factory_name ?? b?.name ?? ''),
-    location: String(row.province_name ?? row.location ?? row.city ?? b?.location ?? ''),
+    location: String(row.location ?? row.province_name ?? row.city ?? b?.location ?? ''),
     rating: Number(row.avg_rating ?? row.rating ?? b?.rating ?? 0),
     reviews: Number(row.review_count ?? row.reviews ?? b?.reviews ?? 0),
     specialization: String(row.specialization ?? row.description ?? b?.specialization ?? ''),

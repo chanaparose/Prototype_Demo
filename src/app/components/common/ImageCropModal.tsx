@@ -180,9 +180,16 @@ export function ImageCropModal({
   useEffect(() => {
     if (!natural.width || !natural.height || !viewport.width || !viewport.height) return;
     if (didInitForSourceRef.current) return;
-    // Do not auto-fit image into crop frame.
-    // Start at the image's natural display scale and let user control zoom manually.
-    setBaseScale(1);
+    // Scale image to COVER the crop viewport (object-fit: cover behaviour).
+    // This ensures:
+    //   • The crop frame is always filled — no empty/squeezed areas.
+    //   • The canvas render uses the same baseScale, so the output exactly
+    //     matches what the user sees in the preview.
+    const scaleToFill = Math.max(
+      viewport.width / natural.width,
+      viewport.height / natural.height,
+    );
+    setBaseScale(scaleToFill);
     setZoom(1);
     setOffset({ x: 0, y: 0 });
     didInitForSourceRef.current = true;
@@ -220,7 +227,7 @@ export function ImageCropModal({
 
   return (
     <div className="fixed inset-0 z-[120] bg-black/55 backdrop-blur-[1px] p-4 flex items-center justify-center">
-      <div className="w-full max-w-3xl rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
+      <div className="w-full max-w-3xl max-h-[92vh] rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <p className="text-sm font-semibold text-slate-900">{title}</p>
           <button
@@ -234,11 +241,18 @@ export function ImageCropModal({
           </button>
         </div>
 
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 overflow-y-auto">
           <div
             ref={stageRef}
             className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 select-none touch-none"
-            style={{ aspectRatio: `${aspect}` }}
+            style={{
+              // Keep crop stage stable and never exceed viewport.
+              // Width remains responsive; height is clamped to screen.
+              aspectRatio: `${aspect}`,
+              maxHeight: 'calc(92vh - 220px)',
+              height: 'min(calc((100vw - 64px) / var(--crop-aspect)), calc(92vh - 220px))',
+              ['--crop-aspect' as string]: String(aspect),
+            }}
             onPointerDown={(e) => {
               if (!canRender || submitting) return;
               setDragging(true);

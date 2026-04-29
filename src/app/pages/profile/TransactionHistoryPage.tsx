@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { profileApi } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 type TxItem = {
   id: string;
@@ -14,6 +15,9 @@ type TxItem = {
 
 export function TransactionHistoryPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const role = String((user as { role?: unknown; user_type?: unknown } | null)?.role ?? (user as { user_type?: unknown } | null)?.user_type ?? '').toUpperCase();
+  const isCustomer = role === 'CT' || role === 'CUSTOMER';
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<TxItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,21 +30,35 @@ export function TransactionHistoryPage() {
       if (!mounted) return;
       const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
       setItems(
-        data.map((row) => ({
-          id: String(row.tx_id ?? row.transaction_id ?? row.id ?? ''),
-          description: String(row.description ?? row.type_label ?? row.type ?? 'รายการ'),
-          amount: Number(row.amount ?? 0),
-          direction: String(row.direction ?? '').toLowerCase() === 'in' ? 'in' : 'out',
-          status_label: String(row.status_label ?? row.status ?? '-'),
-          created_at: String(row.created_at ?? row.date ?? ''),
-        })).filter((r) => r.id),
+        data.map((row) => {
+          // Customer BU is spending (negative) even if API direction says "in".
+          const txType = String(row.type ?? '').toUpperCase();
+          const apiDir = String(row.direction ?? '').toLowerCase();
+          const amount = Number(row.amount ?? 0);
+          const effectiveDirection: 'in' | 'out' =
+            amount < 0
+              ? 'out'
+              : amount > 0
+                ? 'in'
+                : isCustomer && txType === 'BU'
+              ? 'out'
+              : (apiDir === 'in' ? 'in' : 'out');
+          return {
+            id: String(row.tx_id ?? row.transaction_id ?? row.id ?? ''),
+            description: String(row.description ?? row.type_label ?? row.type ?? 'รายการ'),
+            amount,
+            direction: effectiveDirection,
+            status_label: String(row.status_label ?? row.status ?? '-'),
+            created_at: String(row.created_at ?? row.date ?? ''),
+          };
+        }).filter((r) => r.id),
       );
       setSummary((raw.summary as Record<string, number>) ?? {});
     }).finally(() => mounted && setLoading(false));
     return () => {
       mounted = false;
     };
-  }, [page]);
+  }, [page, isCustomer]);
 
   return (
     <div className="space-y-4 pb-24">

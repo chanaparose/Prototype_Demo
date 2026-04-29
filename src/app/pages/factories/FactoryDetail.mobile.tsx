@@ -125,19 +125,6 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
             <span className="text-[10px] text-gray-400">{factory.specialization}</span>
           </div>
 
-          <div className="space-y-2 px-4 py-3">
-            <div className="flex items-center gap-2 text-[12px] text-gray-600">
-              <MapPin size={13} className="shrink-0 text-gray-400" />
-              <span>{factory.location}</span>
-            </div>
-            {profile?.address && (
-              <div className="flex items-center gap-2 text-[12px] text-gray-600">
-                <Mail size={13} className="shrink-0 text-gray-400" />
-                <span className="truncate">{profile.address}</span>
-              </div>
-            )}
-          </div>
-
           {profile && (profile.certificates ?? []).length > 0 && (
             <div className="border-t border-gray-50 px-4 pb-3 pt-1">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-400">ใบรับรอง</p>
