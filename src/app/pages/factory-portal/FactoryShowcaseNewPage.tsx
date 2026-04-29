@@ -124,9 +124,7 @@ export function FactoryShowcaseNewPage() {
       category_id: form.category_id ? Number(form.category_id) : undefined,
       sub_category_id: form.sub_category_id ? Number(form.sub_category_id) : undefined,
       lead_time_days: form.lead_time_days ? Number(form.lead_time_days) : undefined,
-      linked_showcases: imageUrls
-        .map((url) => url)
-        .concat(selectedShowcaseIds),
+      linked_showcases: [...imageUrls, ...selectedShowcaseIds],
     };
     if (contentType === 'ID') return base;
     const withPrice = {
