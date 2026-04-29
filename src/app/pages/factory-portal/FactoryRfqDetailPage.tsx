@@ -356,6 +356,10 @@ export function FactoryRfqDetailPage() {
         conv_id: convId,
         customer_id: customerId,
         factory_id: fid,
+        unread_customer: 0,
+        unread_factory: 0,
+        has_quote: false,
+        updated_at: new Date().toISOString(),
       };
       await messagesApi.send(
         buildSendPayload({
