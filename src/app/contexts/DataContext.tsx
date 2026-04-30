@@ -536,7 +536,42 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const fetchAll = useCallback(async () => {
     if (!isAuthenticated) {
-      setState(INITIAL_STATE);
+      // Guest mode: keep public bootstrap data (factories/categories) so
+      // Explore can render "โรงงานแนะนำ" without login.
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+      try {
+        const boot = await frontendApi.getBootstrap();
+        const factoryList: Factory[] = (() => {
+          const raw = boot?.factories;
+          if (!Array.isArray(raw)) return [];
+          return (raw as Record<string, unknown>[])
+            .map((row) => normalizeFactoryRow(row))
+            .filter((f) => f.id && f.name);
+        })();
+        const categories: Category[] = (() => {
+          const raw = boot?.categories;
+          if (!Array.isArray(raw) || raw.length === 0) return [];
+          return (raw as Record<string, unknown>[]).map((c) => {
+            const name = String(c.name ?? '');
+            return {
+              id: String(c.id ?? c.category_id ?? ''),
+              name,
+              icon: String(c.icon ?? '') || guessCategoryIcon(name),
+              color: String(c.color ?? '#7C3AED'),
+            } as Category;
+          });
+        })();
+        setState({
+          ...INITIAL_STATE,
+          categories,
+          factories: factoryList,
+          isLoading: false,
+          error: null,
+        });
+      } catch {
+        // keep graceful empty guest state if public bootstrap fails
+        setState({ ...INITIAL_STATE, isLoading: false, error: null });
+      }
       return;
     }
 

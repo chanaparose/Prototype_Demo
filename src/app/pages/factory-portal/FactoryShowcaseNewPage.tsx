@@ -146,7 +146,25 @@ export function FactoryShowcaseNewPage() {
   /* ── Submit ── */
   const onSubmit = async (status: 'DR' | 'AC') => {
     if (!form.title.trim()) { setError('กรุณากรอกชื่อ'); return; }
+    if (contentType !== 'ID' && status === 'AC') {
+      if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
+        setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
+        return;
+      }
+      if (!form.base_price || Number(form.base_price) <= 0) {
+        setError('กรุณากรอกราคา (฿) ให้มากกว่า 0');
+        return;
+      }
+    }
     if (contentType === 'PM' && status === 'AC') {
+      if (!form.promo_price || Number(form.promo_price) <= 0) {
+        setError('กรุณากรอกราคาโปรโมชัน (฿) ให้มากกว่า 0');
+        return;
+      }
+      if (Number(form.promo_price) > Number(form.base_price || 0)) {
+        setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
+        return;
+      }
       if (!form.start_date || !form.end_date) { setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด'); return; }
       if (form.end_date < form.start_date) { setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม'); return; }
     }

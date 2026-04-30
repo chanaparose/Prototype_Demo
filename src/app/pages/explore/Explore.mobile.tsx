@@ -334,7 +334,7 @@ export function ExploreMobile({
         </div>
         <div className="relative z-10 p-5 text-center">
           <h3 className="text-lg font-bold text-[#2D1B4E] mb-1">
-            ลงทะเบียนกับ <span className="text-[#A238FF]">WeMake</span>
+            ลงทะเบียนกับ <span className="text-[#A238FF]">BaoWu</span>
           </h3>
           <p className="text-gray-600 text-sm mb-4 font-medium">สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!</p>
           <div className="flex flex-col gap-2">

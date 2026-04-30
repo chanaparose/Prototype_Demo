@@ -268,7 +268,8 @@ export function ProductDetailMobile() {
             className="inline-flex items-center gap-1 active:opacity-70"
           >
             <Heart className="w-3 h-3" style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }} />
-            {likeCount} สนใจ
+            <span className="text-[11px]">{likeCount}</span>
+            <span className="text-[11px]">สนใจ</span>
           </button>
         </div>
       </div>

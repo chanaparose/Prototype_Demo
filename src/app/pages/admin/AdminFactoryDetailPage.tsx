@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, Link } from 'react-router';
 import {
   ChevronLeft,
   Building2,
@@ -17,7 +17,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { adminApi } from '../../services/api';
+import { adminApi, adminSettlementApi, type AdminSettlementListItem } from '../../services/api';
 import type { FactoryApprovalStatus } from './AdminFactoriesPage';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
@@ -211,6 +211,7 @@ export function AdminFactoryDetailPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'info' | 'settlements'>('info');
 
   const canEditCommissionRule = role === 'AD' || role === 'SA';
   const canEditExemption = role === 'SA';
@@ -403,7 +404,33 @@ export function AdminFactoryDetailPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* Tabs */}
+      <div className="flex gap-0 border-b border-slate-200">
+        {([
+          { key: 'info',        label: 'ข้อมูลโรงงาน' },
+          { key: 'settlements', label: 'Settlement' },
+        ] as const).map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setActiveTab(t.key)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === t.key
+                ? 'border-indigo-600 text-indigo-700'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'settlements' && factory.factory_id ? (
+        <FactorySettlementsTab factoryId={factory.factory_id} />
+      ) : null}
+
+      {activeTab === 'info' && (
+      <><div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h3 className="text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100">ข้อมูลโรงงาน</h3>
@@ -620,6 +647,7 @@ export function AdminFactoryDetailPage() {
       </div>
 
       {loading ? <div className="text-sm text-slate-500">กำลังโหลดข้อมูล...</div> : null}
+      </>)}
     </div>
   );
 }
@@ -632,6 +660,137 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label:
         <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{label}</p>
         <p className="text-sm text-slate-900 font-medium">{value || '-'}</p>
       </div>
+    </div>
+  );
+}
+
+// ─── Settlements Tab ──────────────────────────────────────────────────────────
+
+const SETTLEMENT_STATUS: Record<string, { label: string; cls: string }> = {
+  PE: { label: 'รอโอน',          cls: 'bg-amber-50 text-amber-700' },
+  PR: { label: 'กำลังประมวลผล', cls: 'bg-blue-50 text-blue-700' },
+  CP: { label: 'โอนแล้ว',       cls: 'bg-emerald-50 text-emerald-700' },
+  FL: { label: 'ล้มเหลว',       cls: 'bg-red-50 text-red-700' },
+};
+
+const SETTLE_LIMIT = 20;
+
+function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
+  const [settlements, setSettlements] = useState<AdminSettlementListItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!factoryId) return;
+    setLoading(true);
+    adminSettlementApi
+      .listByFactory(factoryId, { limit: SETTLE_LIMIT, offset: page * SETTLE_LIMIT })
+      .then((res) => {
+        const data = res as unknown as { settlements: AdminSettlementListItem[]; total: number };
+        setSettlements(data.settlements ?? []);
+        setTotal(data.total ?? 0);
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'โหลด settlement ไม่สำเร็จ'))
+      .finally(() => setLoading(false));
+  }, [factoryId, page]);
+
+  const totalPages = Math.ceil(total / SETTLE_LIMIT);
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+        <AlertTriangle size={14} />
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Settlement ID</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Order</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500">จำนวน</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500">สถานะ</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">วันที่</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <tr key={i}>
+                    {Array.from({ length: 5 }).map((__, j) => (
+                      <td key={j} className="px-4 py-3">
+                        <div className="h-4 bg-slate-100 rounded animate-pulse" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : settlements.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">
+                    ยังไม่มี Settlement
+                  </td>
+                </tr>
+              ) : (
+                settlements.map((s) => {
+                  const st = SETTLEMENT_STATUS[s.status] ?? { label: s.status, cls: 'bg-slate-100 text-slate-500' };
+                  return (
+                    <tr key={s.settlement_id}>
+                      <td className="px-4 py-3 text-xs text-slate-400 font-mono">#{s.settlement_id}</td>
+                      <td className="px-4 py-3">
+                        <Link
+                          to={`/admin/orders/${s.order_id}`}
+                          className="text-indigo-600 font-semibold text-xs hover:underline"
+                        >
+                          #{s.order_id}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold tabular-nums">
+                        ฿{Number(s.amount || 0).toLocaleString('th-TH')}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${st.cls}`}>
+                          {st.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-400">
+                        {s.created_at ? new Date(s.created_at).toLocaleDateString('th-TH') : '—'}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            disabled={page === 0 || loading}
+            onClick={() => setPage((p) => p - 1)}
+            className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50"
+          >
+            ← ก่อนหน้า
+          </button>
+          <span className="text-sm text-slate-500">หน้า {page + 1} / {totalPages}</span>
+          <button
+            disabled={page + 1 >= totalPages || loading}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50"
+          >
+            ถัดไป →
+          </button>
+        </div>
+      )}
     </div>
   );
 }

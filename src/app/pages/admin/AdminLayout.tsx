@@ -3,12 +3,12 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router';
 import {
   LayoutDashboard,
   Factory,
+  Users,
   ClipboardList,
   ShoppingCart,
   Settings,
   Menu,
   X,
-  ChevronDown,
   LogOut,
   Shield,
   Bell,
@@ -32,22 +32,26 @@ const ROLE_COLORS: Record<string, string> = {
   SA: 'bg-purple-100 text-purple-700',
 };
 
+const ROLE_RANK: Record<string, number> = { AM: 1, AD: 2, SA: 3 };
+
 // ─── Nav config ─────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { path: '/admin/dashboard', icon: LayoutDashboard, label: 'แดชบอร์ด' },
-  { path: '/admin/factories', icon: Factory, label: 'โรงงาน' },
-  { path: '/admin/rfqs', icon: ClipboardList, label: 'RFQ' },
-  { path: '/admin/orders', icon: ShoppingCart, label: 'คำสั่งซื้อ' },
-  { path: '/admin/config', icon: Settings, label: 'ตั้งค่า' },
-] as const;
+  { path: '/admin/dashboard', icon: LayoutDashboard, label: 'แดชบอร์ด', minRank: 1 },
+  { path: '/admin/factories', icon: Factory,         label: 'โรงงาน',   minRank: 1 },
+  { path: '/admin/customers', icon: Users,            label: 'ลูกค้า',   minRank: 2 },
+  { path: '/admin/rfqs',      icon: ClipboardList,   label: 'RFQ',       minRank: 1 },
+  { path: '/admin/orders',    icon: ShoppingCart,     label: 'คำสั่งซื้อ', minRank: 1 },
+  { path: '/admin/config',    icon: Settings,         label: 'ตั้งค่า',  minRank: 2 },
+];
 
 // ─── Page title map ──────────────────────────────────────────────
 const PAGE_TITLES: Record<string, string> = {
-  '/admin/dashboard': 'แดชบอร์ด',
-  '/admin/factories': 'จัดการโรงงาน',
-  '/admin/rfqs': 'จัดการ RFQ',
-  '/admin/orders': 'จัดการคำสั่งซื้อ',
-  '/admin/config': 'ตั้งค่าระบบ',
+  '/admin/dashboard':  'แดชบอร์ด',
+  '/admin/factories':  'จัดการโรงงาน',
+  '/admin/customers':  'จัดการลูกค้า',
+  '/admin/rfqs':       'จัดการ RFQ',
+  '/admin/orders':     'จัดการคำสั่งซื้อ',
+  '/admin/config':     'ตั้งค่าระบบ',
 };
 
 function getPageTitle(pathname: string): string {
@@ -63,9 +67,10 @@ function getBreadcrumb(pathname: string): string {
   const map: Record<string, string> = {
     dashboard: 'แดชบอร์ด',
     factories: 'โรงงาน',
-    rfqs: 'RFQ',
-    orders: 'คำสั่งซื้อ',
-    config: 'ตั้งค่า',
+    customers: 'ลูกค้า',
+    rfqs:      'RFQ',
+    orders:    'คำสั่งซื้อ',
+    config:    'ตั้งค่า',
   };
   const labels = parts.slice(1).map((part) => map[part] ?? part);
   return ['Admin', ...labels].join(' / ');
@@ -94,7 +99,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             <Shield size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-900 leading-none">WeMake</p>
+            <p className="text-sm font-bold text-slate-900 leading-none">BaoWu</p>
             <p className="text-[10px] text-indigo-600 font-medium mt-0.5">Admin Panel</p>
           </div>
         </div>
@@ -111,7 +116,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
-        {NAV_ITEMS.map(({ path, icon: Icon, label }) => (
+        {NAV_ITEMS.filter(item => (ROLE_RANK[role] ?? 0) >= item.minRank).map(({ path, icon: Icon, label }) => (
           <NavLink
             key={path}
             to={path}

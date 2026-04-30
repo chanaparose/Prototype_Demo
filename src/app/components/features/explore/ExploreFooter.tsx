@@ -107,7 +107,7 @@ export function ExploreFooter() {
       {/* Bottom Purple Bar */}
       <div className="bg-[#292259] text-white py-4 text-sm mt-4">
         <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>&copy; 2026 WeMake Shopping. By Digital Media Advertising Co., Ltd.</div>
+          <div>&copy; 2026 baowu Shopping. By Digital Media Advertising Co., Ltd.</div>
           <div className="flex items-center gap-6">
             <a href="#" className="hover:underline">เงื่อนไขในการให้บริการ</a>
             <a href="#" className="hover:underline">นโยบายความปลอดภัย</a>

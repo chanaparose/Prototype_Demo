@@ -75,7 +75,7 @@ export function AdminConfigPage() {
   const [error, setError] = useState('');
 
   const [general, setGeneral] = useState<GeneralConfig>({
-    platform_name: 'WeMake B2B Manufacturing',
+    platform_name: 'BaoWu B2B Manufacturing',
     contact_email: 'support@wemake.co.th',
     support_phone: '-',
   });

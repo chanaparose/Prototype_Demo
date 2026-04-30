@@ -260,7 +260,27 @@ export function FactoryShowcaseEditPage() {
       setError('กรุณากรอกชื่อรายการ');
       return;
     }
+    if (submitStatus === 'AC' && v.content_type !== 'ID') {
+      if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
+        setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
+        return;
+      }
+      if (v.base_price == null || Number(v.base_price) <= 0) {
+        setError('กรุณากรอกราคาปกติให้มากกว่า 0');
+        return;
+      }
+    }
     if (v.content_type === 'PM') {
+      if (submitStatus === 'AC') {
+        if (v.promo_price == null || Number(v.promo_price) <= 0) {
+          setError('กรุณากรอกราคาโปรโมชันให้มากกว่า 0');
+          return;
+        }
+        if (Number(v.promo_price) > Number(v.base_price ?? 0)) {
+          setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
+          return;
+        }
+      }
       if (!v.start_date || !v.end_date) {
         setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
         return;
