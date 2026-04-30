@@ -755,7 +755,7 @@ export function ExploreDesktop({
           </div>
           <div className="relative z-10 flex-1 text-center md:text-left mb-6 md:mb-0">
             <h2 className="text-2xl md:text-3xl font-bold text-[#2D1B4E] mb-2 flex items-center justify-center md:justify-start gap-2">
-              ลงทะเบียนข้อมูลธุรกิจกับ <span className="text-[#A238FF]">BaoWu</span>
+              ลงทะเบียนข้อมูลธุรกิจกับ <span className="text-[#A238FF]">Tryly</span>
             </h2>
             <p className="text-gray-600 font-medium md:text-lg">
               สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!

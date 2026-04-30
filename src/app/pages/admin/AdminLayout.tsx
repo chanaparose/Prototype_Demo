@@ -99,7 +99,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             <Shield size={16} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-900 leading-none">BaoWu</p>
+            <p className="text-sm font-bold text-slate-900 leading-none">Tryly</p>
             <p className="text-[10px] text-indigo-600 font-medium mt-0.5">Admin Panel</p>
           </div>
         </div>
