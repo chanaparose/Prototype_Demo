@@ -123,7 +123,7 @@ export function Login() {
             style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
           >
             <Factory className="text-white" size={20} strokeWidth={2.5} />
-            <span className="text-white text-lg font-bold">WeMake</span>
+            <span className="text-white text-lg font-bold">BaoWu</span>
           </div>
           <p className="text-gray-500 text-sm">Manufacturing Platform</p>
         </div>
@@ -384,7 +384,7 @@ export function Login() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-5">
-          WeMake Manufacturing Platform v1.0
+          BaoWu Manufacturing Platform v1.0
         </p>
       </div>
     </div>

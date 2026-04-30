@@ -21,6 +21,8 @@ function resolveApiBase(): string {
 }
 
 const BASE_URL = resolveApiBase();
+const TOKEN_ISSUED_AT_KEY = 'auth_token_issued_at';
+const TOKEN_MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 // ─── Token helpers ───────────────────────────────────────────────
 function normalizeToken(raw: unknown): string {
@@ -41,6 +43,17 @@ export function getToken(): string | null {
   const raw = localStorage.getItem('auth_token');
   const normalized = normalizeToken(raw);
   if (!normalized) return null;
+  const issuedAtRaw = localStorage.getItem(TOKEN_ISSUED_AT_KEY);
+  const issuedAt = Number(issuedAtRaw ?? 0);
+  if (Number.isFinite(issuedAt) && issuedAt > 0 && Date.now() - issuedAt > TOKEN_MAX_AGE_MS) {
+    removeToken();
+    try {
+      sessionStorage.setItem('auth_token_expired', '1');
+    } catch {
+      // ignore storage availability issues
+    }
+    return null;
+  }
   // Self-heal old/incorrect persisted values like "Bearer xxx"
   if (raw !== normalized) localStorage.setItem('auth_token', normalized);
   return normalized;
@@ -50,8 +63,10 @@ export function setToken(token: string) {
   const normalized = normalizeToken(token);
   if (!normalized) return;
   localStorage.setItem('auth_token', normalized);
+  localStorage.setItem(TOKEN_ISSUED_AT_KEY, String(Date.now()));
   try {
     sessionStorage.setItem('auth_login_at', String(Date.now()));
+    sessionStorage.removeItem('auth_token_expired');
   } catch {
     // ignore storage availability issues
   }
@@ -59,6 +74,12 @@ export function setToken(token: string) {
 
 export function removeToken() {
   localStorage.removeItem('auth_token');
+  localStorage.removeItem(TOKEN_ISSUED_AT_KEY);
+  try {
+    sessionStorage.removeItem('auth_login_at');
+  } catch {
+    // ignore storage availability issues
+  }
 }
 
 // ─── Generic fetch wrapper ──────────────────────────────────────
@@ -898,6 +919,31 @@ export interface AdminDashboardSummary {
   [key: string]: unknown;
 }
 
+export interface AdminRevenueChartPoint {
+  date: string;
+  gross_order_value: number;
+  platform_commission: number;
+  vat_collected: number;
+  order_count: number;
+  [key: string]: unknown;
+}
+
+export interface AdminRevenueChartResponse {
+  granularity?: 'day' | 'week' | 'month' | string;
+  data: AdminRevenueChartPoint[];
+  [key: string]: unknown;
+}
+
+export interface AdminTopFactoryRow {
+  factory_id?: number;
+  factory_name?: string;
+  gross_order_value?: number;
+  platform_commission?: number;
+  vat_collected?: number;
+  order_count?: number;
+  [key: string]: unknown;
+}
+
 export interface AdminFactoryRow {
   factory_id: number;
   factory_name?: string;
@@ -975,10 +1021,30 @@ export interface AdminCommissionExemption {
 export const adminApi = {
   dashboardSummary: () =>
     api.get<AdminDashboardSummary>('/admin/dashboard/summary'),
-  dashboardRevenueChart: () =>
-    api.get<unknown[]>('/admin/dashboard/revenue-chart'),
-  dashboardTopFactories: () =>
-    api.get<unknown[]>('/admin/dashboard/top-factories'),
+  dashboardRevenueChart: (params?: {
+    date_from?: string;
+    date_to?: string;
+    granularity?: 'day' | 'week' | 'month';
+  }) =>
+    api.get<AdminRevenueChartResponse>(
+      `/admin/dashboard/revenue-chart${qs({
+        date_from: params?.date_from,
+        date_to: params?.date_to,
+        granularity: params?.granularity,
+      })}`,
+    ),
+  dashboardTopFactories: (params?: {
+    date_from?: string;
+    date_to?: string;
+    limit?: number;
+  }) =>
+    api.get<AdminTopFactoryRow[] | { data?: AdminTopFactoryRow[]; items?: AdminTopFactoryRow[]; rows?: AdminTopFactoryRow[] }>(
+      `/admin/dashboard/top-factories${qs({
+        date_from: params?.date_from,
+        date_to: params?.date_to,
+        limit: params?.limit,
+      })}`,
+    ),
 
   listFactories: (params?: {
     approval_status?: string;
@@ -1093,6 +1159,124 @@ export const adminApi = {
   }) => api.post<AdminCommissionExemption>('/admin/commission-exemptions', body),
   deleteCommissionExemption: (exemptionId: number | string) =>
     api.delete(`/admin/commission-exemptions/${exemptionId}`),
+};
+
+// ─── Admin Customer & Settlement Types ────────────────────────────────────────
+
+export interface AdminCustomerListItem {
+  user_id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  is_active: boolean;
+  total_orders: number;
+  total_spend: number;
+  wallet_balance: number;
+  created_at: string;
+}
+
+export interface AdminCustomerDetail {
+  user_id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  address?: string;
+  is_active: boolean;
+  total_orders: number;
+  total_spend: number;
+  created_at: string;
+  wallet_id?: number;
+  good_fund: number;
+  pending_fund: number;
+}
+
+export interface AdminWalletTxItem {
+  tx_id: string;
+  wallet_id: number;
+  order_id?: number;
+  type: string;   // DP | WD | BU | SC | RF
+  amount: number;
+  status: string; // ST | PT | RJ
+  created_at: string;
+}
+
+export interface AdminCustomerWallet {
+  wallet_id?: number;
+  user_id: number;
+  good_fund: number;
+  pending_fund: number;
+  total: number;
+  transactions: AdminWalletTxItem[];
+}
+
+export interface AdminTopCustomer {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  total_orders: number;
+  total_spend: number;
+}
+
+export interface AdminSettlementListItem {
+  settlement_id: number;
+  factory_id: number;
+  order_id: number;
+  amount: number;
+  status: string; // PE | PR | CP | FL
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface AdminCustomerOrderItem {
+  order_id: number;
+  rfq_id: number;
+  factory_id: number;
+  factory_name: string;
+  grand_total: number;
+  status: string;
+  created_at: string;
+}
+
+// ─── Admin Customer API ────────────────────────────────────────────────────────
+
+export const adminCustomerApi = {
+  list: (params?: {
+    search?: string;
+    is_active?: boolean;
+    limit?: number;
+    offset?: number;
+  }) =>
+    api.get<{ customers: AdminCustomerListItem[]; total: number; limit: number; offset: number }>(
+      `/admin/customers${qs({ search: params?.search, is_active: params?.is_active, limit: params?.limit, offset: params?.offset })}`,
+    ),
+
+  getDetail: (userId: number) =>
+    api.get<AdminCustomerDetail>(`/admin/customers/${userId}`),
+
+  getWallet: (userId: number) =>
+    api.get<AdminCustomerWallet>(`/admin/customers/${userId}/wallet`),
+
+  getOrders: (userId: number, params?: { limit?: number; offset?: number }) =>
+    api.get<{ orders: AdminCustomerOrderItem[]; total: number; limit: number; offset: number }>(
+      `/admin/customers/${userId}/orders${qs({ limit: params?.limit, offset: params?.offset })}`,
+    ),
+
+  topCustomers: (limit = 5) =>
+    api.get<{ top_customers: AdminTopCustomer[] }>(
+      `/admin/dashboard/top-customers${qs({ limit })}`,
+    ),
+};
+
+// ─── Admin Settlement API ──────────────────────────────────────────────────────
+
+export const adminSettlementApi = {
+  listByFactory: (factoryId: number, params?: { limit?: number; offset?: number }) =>
+    api.get<{ settlements: AdminSettlementListItem[]; total: number; limit: number; offset: number }>(
+      `/admin/factories/${factoryId}/settlements${qs({ limit: params?.limit, offset: params?.offset })}`,
+    ),
 };
 
 // ─── Quotation Builder API (extended) ──────────────────────────

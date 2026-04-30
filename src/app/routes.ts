@@ -32,6 +32,8 @@ import {
   AdminRFQsPage,
   AdminOrdersPage,
   AdminConfigPage,
+  AdminCustomersPage,
+  AdminCustomerDetailPage,
 } from './pages/admin';
 import { AuthGuard } from './components/AuthGuard';
 import { PublicDataOutlet } from './components/PublicDataOutlet';
@@ -144,6 +146,8 @@ export const router = createBrowserRouter([
               { path: 'dashboard', Component: AdminDashboardPage },
               { path: 'factories', Component: AdminFactoriesPage },
               { path: 'factories/:id', Component: AdminFactoryDetailPage },
+              { path: 'customers', Component: AdminCustomersPage },
+              { path: 'customers/:id', Component: AdminCustomerDetailPage },
               { path: 'rfqs', Component: AdminRFQsPage },
               { path: 'orders', Component: AdminOrdersPage },
               { path: 'config', Component: AdminConfigPage },

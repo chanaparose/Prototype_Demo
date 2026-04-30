@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import {
   TrendingUp,
   BadgePercent,
@@ -22,7 +23,14 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { adminApi, type AdminOrderRow, type AdminRfqRow } from '../../services/api';
+import {
+  adminApi,
+  adminCustomerApi,
+  type AdminOrderRow,
+  type AdminRfqRow,
+  type AdminRevenueChartResponse,
+  type AdminTopCustomer,
+} from '../../services/api';
 
 interface KpiCard {
   label: string;
@@ -89,6 +97,73 @@ function StatusBadge({ label, cls }: { label: string; cls: string }) {
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
 }
 
+function TopCustomersWidget() {
+  const [topCustomers, setTopCustomers] = useState<AdminTopCustomer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    adminCustomerApi
+      .topCustomers(5)
+      .then((res) => {
+        const data = res as unknown as { top_customers: AdminTopCustomer[] };
+        setTopCustomers(data.top_customers ?? []);
+      })
+      .catch(() => {/* silent — non-critical widget */})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Top 5 ลูกค้า</h3>
+          <p className="text-xs text-slate-400 mt-0.5">ยอดซื้อสูงสุด</p>
+        </div>
+        <Link to="/admin/customers" className="text-xs text-indigo-600 hover:underline font-medium">
+          ดูทั้งหมด →
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="w-5 h-4 bg-slate-100 rounded animate-pulse" />
+              <div className="flex-1 h-4 bg-slate-100 rounded animate-pulse" />
+              <div className="w-20 h-4 bg-slate-100 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      ) : topCustomers.length === 0 ? (
+        <p className="text-sm text-slate-400 text-center py-6">ยังไม่มีข้อมูล</p>
+      ) : (
+        <ol className="space-y-3">
+          {topCustomers.map((c, i) => (
+            <li key={c.user_id} className="flex items-center gap-3">
+              <span className="w-5 text-center text-xs font-bold text-slate-400 shrink-0">{i + 1}</span>
+              <Link
+                to={`/admin/customers/${c.user_id}`}
+                className="flex-1 min-w-0 hover:text-indigo-600 transition-colors"
+              >
+                <p className="text-sm font-medium text-slate-900 truncate">
+                  {c.first_name} {c.last_name}
+                </p>
+                <p className="text-xs text-slate-400 truncate">{c.email}</p>
+              </Link>
+              <div className="text-right shrink-0">
+                <p className="text-sm font-semibold text-indigo-700">
+                  ฿{Number(c.total_spend || 0).toLocaleString('th-TH')}
+                </p>
+                <p className="text-xs text-slate-400">{c.total_orders} ออเดอร์</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 export function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -113,10 +188,17 @@ export function AdminDashboardPage() {
 
         setSummary(summaryRaw as Record<string, unknown>);
 
-        const chartRows = parseRows<Record<string, unknown>>(revenueRaw).map((r) => ({
-          month: String(r.month ?? r.period ?? r.label ?? '-'),
-          revenue: Number(r.revenue ?? r.gross_order_value ?? 0),
-          commission: Number(r.commission ?? r.platform_commission ?? 0),
+        const revenueObj = (revenueRaw && typeof revenueRaw === 'object'
+          ? (revenueRaw as AdminRevenueChartResponse)
+          : null);
+        const sourceRows =
+          revenueObj && Array.isArray(revenueObj.data)
+            ? revenueObj.data
+            : parseRows<Record<string, unknown>>(revenueRaw);
+        const chartRows = sourceRows.map((r) => ({
+          month: String((r as Record<string, unknown>).month ?? (r as Record<string, unknown>).date ?? (r as Record<string, unknown>).period ?? (r as Record<string, unknown>).label ?? '-'),
+          revenue: Number((r as Record<string, unknown>).revenue ?? (r as Record<string, unknown>).gross_order_value ?? 0),
+          commission: Number((r as Record<string, unknown>).commission ?? (r as Record<string, unknown>).platform_commission ?? 0),
         }));
         setRevenueRows(chartRows.slice(-6));
 
@@ -247,6 +329,11 @@ export function AdminDashboardPage() {
             </PieChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Top factories + top customers */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <TopCustomersWidget />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

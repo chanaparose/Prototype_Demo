@@ -77,7 +77,7 @@ export function Layout() {
                 >
                   <Factory className="shrink-0" size={14} strokeWidth={2.5} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
                   <span className="text-[10px] sm:text-xs font-bold leading-none whitespace-nowrap" style={{ color: isFactory ? '#4F46E5' : '#A238FF' }}>
-                    WeMake
+                    BaoWu
                   </span>
                 </div>
               </Link>

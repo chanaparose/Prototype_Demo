@@ -77,7 +77,7 @@ export function RegisterFactoryPage() {
               <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-sm">
                 <Factory className="text-white" size={32} strokeWidth={2} />
               </div>
-              <span className="text-2xl font-bold tracking-tight">WeMake</span>
+              <span className="text-2xl font-bold tracking-tight">BaoWu</span>
             </div>
             <h1 className="text-4xl font-bold mb-4 leading-tight">
               ขยายโอกาสธุรกิจ <br/> รับออเดอร์ทั่วประเทศ

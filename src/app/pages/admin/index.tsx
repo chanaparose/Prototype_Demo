@@ -6,3 +6,5 @@ export { AdminFactoryDetailPage } from './AdminFactoryDetailPage';
 export { AdminRFQsPage } from './AdminRFQsPage';
 export { AdminOrdersPage } from './AdminOrdersPage';
 export { AdminConfigPage } from './AdminConfigPage';
+export { AdminCustomersPage } from './AdminCustomersPage';
+export { AdminCustomerDetailPage } from './AdminCustomerDetailPage';

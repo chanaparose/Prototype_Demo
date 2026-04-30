@@ -79,7 +79,7 @@ export function DesktopSidebar() {
           >
             <Factory className="shrink-0" size={15} strokeWidth={2.5} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
             <span className="text-xs font-bold leading-none whitespace-nowrap" style={{ color: isFactory ? '#4F46E5' : '#A238FF' }}>
-              WeMake
+              BaoWu
             </span>
           </div>
           <span className="text-sm font-semibold" style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}>Manufacturing</span>

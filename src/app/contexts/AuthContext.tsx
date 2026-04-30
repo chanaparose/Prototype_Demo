@@ -90,6 +90,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       fetchUser();
     } else {
+      try {
+        if (sessionStorage.getItem('auth_token_expired') === '1' && window.location.pathname !== '/login') {
+          sessionStorage.removeItem('auth_token_expired');
+          window.location.href = '/login';
+          return;
+        }
+      } catch {
+        // ignore storage availability issues
+      }
       setState((prev) => ({ ...prev, isLoading: false }));
     }
   }, [fetchUser]);
