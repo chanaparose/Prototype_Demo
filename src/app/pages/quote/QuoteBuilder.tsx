@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
-import { platformConfigApi, quotationApi } from '../../services/api';
+import { quotationApi } from '../../services/api';
 import { useQuoteBuilder } from './useQuoteBuilder';
 import { usePreviewBreakdown } from './usePreviewBreakdown';
 import { RFQReferencePanel } from './components/RFQReferencePanel';
@@ -16,12 +16,7 @@ export function QuoteBuilder() {
   const rid = Number(rfqId ?? 0);
   const { state, setPartial } = useQuoteBuilder(rid);
   const { loading, error, breakdown } = usePreviewBreakdown(state);
-  const [config, setConfig] = React.useState<Awaited<ReturnType<typeof platformConfigApi.getActive>> | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
-
-  React.useEffect(() => {
-    platformConfigApi.getActive().then(setConfig).catch(() => setConfig(null));
-  }, []);
 
   React.useEffect(() => {
     if (error) toast.error(error);
@@ -49,7 +44,7 @@ export function QuoteBuilder() {
             validity_days={state.validity_days}
             onChange={(next) => setPartial(next)}
           />
-          <BreakdownCard loading={loading} breakdown={breakdown} platformConfig={config} />
+          <BreakdownCard loading={loading} breakdown={breakdown} />
           <button
             type="button"
             disabled={submitting}

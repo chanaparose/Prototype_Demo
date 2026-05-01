@@ -28,6 +28,8 @@ export type Factory = {
   id: string;
   name: string;
   location: string;
+  /** ชื่อจังหวัดจาก API (`province_name` / `provinceName`) */
+  provinceName?: string;
   rating: number;
   reviews: number;
   specialization: string;

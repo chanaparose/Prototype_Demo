@@ -9,15 +9,20 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Percent,
   Save,
   FileText,
-  ToggleLeft,
-  ToggleRight,
   AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { adminApi, adminSettlementApi, type AdminSettlementListItem } from '../../services/api';
+import {
+  adminApi,
+  adminConfigApi,
+  adminFactoryConfigApi,
+  adminSettlementApi,
+  type AdminSettlementListItem,
+  type FactoryConfigResponse,
+  type PlatformConfigItem,
+} from '../../services/api';
 import type { FactoryApprovalStatus } from './AdminFactoriesPage';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
@@ -44,12 +49,6 @@ interface AdminFactoryDetailState {
   website?: string;
   documents: { name: string; status: 'uploaded' | 'missing' | 'verified'; url?: string }[];
   timeline: TimelineRow[];
-  commission_rate?: number;
-  commission_exemption: boolean;
-  exemption_reason?: string;
-  commission_effective_from?: string;
-  active_rule_id?: number;
-  active_exemption_id?: number;
   is_verified: boolean;
 }
 
@@ -68,12 +67,6 @@ const EMPTY_DETAIL: AdminFactoryDetailState = {
   tax_id: '-',
   documents: [],
   timeline: [],
-  commission_rate: undefined,
-  commission_exemption: false,
-  exemption_reason: '',
-  commission_effective_from: '',
-  active_rule_id: undefined,
-  active_exemption_id: undefined,
   is_verified: false,
 };
 
@@ -123,7 +116,6 @@ function mapDetail(raw: Record<string, unknown>): AdminFactoryDetailState {
   const stats = (raw.stats ?? {}) as Record<string, unknown>;
   const docs = getArray(raw, 'certificates');
   const categories = getArray(raw, 'categories');
-  const commissionOverride = (raw.commission_override ?? {}) as Record<string, unknown>;
 
   const factoryId = Number(factory.factory_id ?? factory.id ?? raw.factory_id ?? 0);
   const approvalStatus = toLocalStatus(factory.approval_status);
@@ -144,10 +136,6 @@ function mapDetail(raw: Record<string, unknown>): AdminFactoryDetailState {
           : 'รอการตรวจสอบจากทีม Admin',
     },
   ].filter((r) => r.timestamp);
-
-  const commissionRate = Number(
-    commissionOverride.commission_rate ?? commissionOverride.custom_rate ?? Number.NaN,
-  );
 
   return {
     id: String(factoryId || ''),
@@ -187,15 +175,6 @@ function mapDetail(raw: Record<string, unknown>): AdminFactoryDetailState {
             },
           ],
     timeline,
-    commission_rate: Number.isFinite(commissionRate) ? commissionRate : undefined,
-    commission_exemption: Boolean(raw.is_commission_exempt ?? false),
-    exemption_reason: String((raw.active_exemption as Record<string, unknown> | undefined)?.reason ?? ''),
-    commission_effective_from: String(
-      commissionOverride.effective_from ?? (raw.active_exemption as Record<string, unknown> | undefined)?.created_at ?? '',
-    ),
-    active_rule_id: Number(commissionOverride.rule_id ?? 0) || undefined,
-    active_exemption_id:
-      Number((raw.active_exemption as Record<string, unknown> | undefined)?.exemption_id ?? 0) || undefined,
     is_verified: Boolean(factory.is_verified ?? false),
   };
 }
@@ -209,12 +188,23 @@ export function AdminFactoryDetailPage() {
   const [factory, setFactory] = useState<AdminFactoryDetailState>(EMPTY_DETAIL);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'info' | 'settlements'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'config' | 'settlements'>('info');
 
-  const canEditCommissionRule = role === 'AD' || role === 'SA';
-  const canEditExemption = role === 'SA';
+  const [configList, setConfigList] = useState<PlatformConfigItem[]>([]);
+  const [currentConfig, setCurrentConfig] = useState<FactoryConfigResponse | null>(null);
+  /** ค่า '' = ยังไม่โหลด / ยังไม่เลือก; 0 = reset กลับ default ตาม BE (`config_id: 0`) */
+  const [selectedConfigId, setSelectedConfigId] = useState<number | ''>('');
+  const [configNote, setConfigNote] = useState('');
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [savedConfig, setSavedConfig] = useState(false);
+
+  const defaultPlatformConfigId = useMemo(
+    () => (configList.length ? configList[0].config_id : undefined),
+    [configList],
+  );
+
+  const canAssignConfig = role === 'AD' || role === 'SA';
   const canApprove = role === 'AD' || role === 'SA';
   const canSuspend = role === 'SA';
 
@@ -223,30 +213,10 @@ export function AdminFactoryDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const [rawFactory, ruleRows, exemptionRows] = await Promise.all([
-        adminApi.getFactory(id),
-        adminApi.listCommissionRules({ factory_id: Number(id), active_only: true }),
-        adminApi.listCommissionExemptions({ active_only: true }),
-      ]);
+      const rawFactory = await adminApi.getFactory(id);
 
       const mapped = mapDetail(rawFactory);
-      const rules = Array.isArray(ruleRows) ? ruleRows : [];
-      const activeRule = rules.find((r) => Number(r.factory_id) === mapped.factory_id);
-
-      const exemptions = Array.isArray(exemptionRows) ? exemptionRows : [];
-      const activeEx = exemptions.find((e) => Number(e.factory_id) === mapped.factory_id);
-
-      setFactory({
-        ...mapped,
-        commission_rate: activeRule ? Number(activeRule.commission_rate) : mapped.commission_rate,
-        commission_effective_from: String(
-          activeRule?.effective_from ?? activeEx?.expires_at ?? mapped.commission_effective_from ?? '',
-        ),
-        commission_exemption: Boolean(activeEx) || mapped.commission_exemption,
-        exemption_reason: String(activeEx?.reason ?? mapped.exemption_reason ?? ''),
-        active_rule_id: activeRule?.rule_id ?? mapped.active_rule_id,
-        active_exemption_id: activeEx?.exemption_id ?? mapped.active_exemption_id,
-      });
+      setFactory(mapped);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดรายละเอียดโรงงานไม่สำเร็จ');
     } finally {
@@ -258,51 +228,58 @@ export function AdminFactoryDetailPage() {
     void loadDetail();
   }, [id]);
 
-  const saveToast = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+  const loadFactoryConfig = async () => {
+    if (!id) return;
+    try {
+      const fid = Number(id);
+      if (!Number.isFinite(fid) || fid <= 0) return;
+      const [configRes, listRes] = await Promise.all([
+        adminFactoryConfigApi.getFactoryConfig(fid),
+        adminConfigApi.listConfigs(),
+      ]);
+      setCurrentConfig(configRes);
+      setSelectedConfigId(configRes.config_id);
+      setConfigList((listRes.configs ?? []).slice().sort((a, b) => a.config_id - b.config_id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'โหลด config ของโรงงานไม่สำเร็จ');
+    }
   };
 
-  const handleSaveCommission = async () => {
-    if (!factory.factory_id) return;
-    setSaving(true);
+  useEffect(() => {
+    void loadFactoryConfig();
+  }, [id]);
+
+  const isFactoryConfigSelectionUnchanged = useMemo(() => {
+    if (selectedConfigId === '' || !currentConfig) return true;
+    if (selectedConfigId === currentConfig.config_id) return true;
+    if (
+      selectedConfigId === 0 &&
+      defaultPlatformConfigId != null &&
+      currentConfig.config_id === defaultPlatformConfigId
+    ) {
+      return true;
+    }
+    return false;
+  }, [selectedConfigId, currentConfig, defaultPlatformConfigId]);
+
+  const handleSaveFactoryConfig = async () => {
+    if (!factory.factory_id || selectedConfigId === '' || isFactoryConfigSelectionUnchanged) return;
+    setSavingConfig(true);
     setError('');
     try {
-      if (factory.commission_exemption) {
-        if (!canEditExemption) throw new Error('สิทธิ์ไม่เพียงพอสำหรับยกเว้นค่าคอมมิชชัน');
-
-        if (factory.active_rule_id) {
-          await adminApi.deleteCommissionRule(factory.active_rule_id);
-        }
-        if (!factory.active_exemption_id) {
-          await adminApi.createCommissionExemption({
-            factory_id: factory.factory_id,
-            reason: String(factory.exemption_reason ?? '').trim() || 'ยกเว้นค่าคอมโดยผู้ดูแล',
-            expires_at: factory.commission_effective_from || undefined,
-          });
-        }
-      } else {
-        if (!canEditCommissionRule) throw new Error('สิทธิ์ไม่เพียงพอสำหรับกำหนดค่าคอมมิชชัน');
-
-        if (factory.active_exemption_id) {
-          await adminApi.deleteCommissionExemption(factory.active_exemption_id);
-        }
-
-        if (typeof factory.commission_rate === 'number' && Number.isFinite(factory.commission_rate)) {
-          await adminApi.createCommissionRule({
-            factory_id: factory.factory_id,
-            commission_rate: Number(factory.commission_rate),
-            effective_from: factory.commission_effective_from || undefined,
-          });
-        }
-      }
-
-      await loadDetail();
-      saveToast();
+      const res = await adminFactoryConfigApi.assignConfig(factory.factory_id, {
+        config_id: selectedConfigId,
+        note: configNote.trim(),
+      });
+      setCurrentConfig(res);
+      setSelectedConfigId(res.config_id);
+      setConfigNote('');
+      setSavedConfig(true);
+      setTimeout(() => setSavedConfig(false), 2200);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'บันทึกค่าคอมมิชชันไม่สำเร็จ');
+      setError(e instanceof Error ? e.message : 'บันทึก config โรงงานไม่สำเร็จ');
     } finally {
-      setSaving(false);
+      setSavingConfig(false);
     }
   };
 
@@ -408,6 +385,7 @@ export function AdminFactoryDetailPage() {
       <div className="flex gap-0 border-b border-slate-200">
         {([
           { key: 'info',        label: 'ข้อมูลโรงงาน' },
+          { key: 'config',      label: 'Config' },
           { key: 'settlements', label: 'Settlement' },
         ] as const).map((t) => (
           <button
@@ -427,6 +405,70 @@ export function AdminFactoryDetailPage() {
 
       {activeTab === 'settlements' && factory.factory_id ? (
         <FactorySettlementsTab factoryId={factory.factory_id} />
+      ) : null}
+
+      {activeTab === 'config' && factory.factory_id ? (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Config ค่าคอมมิชชัน</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              การเปลี่ยน config มีผลกับ quotation ที่สร้างใหม่เท่านั้น
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 p-4 bg-slate-50">
+            <p className="text-xs text-slate-500 mb-2">Config ปัจจุบัน</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+              <p className="text-slate-700 font-medium">ชื่อ: {currentConfig?.label ?? '-'}</p>
+              <p className="text-slate-700">คอม: {currentConfig?.default_commission_rate ?? 0}%</p>
+              <p className="text-slate-700">VAT: {currentConfig?.vat_rate ?? 0}%</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">เปลี่ยน Config</label>
+              <select
+                value={selectedConfigId === '' ? '' : String(selectedConfigId)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === '') setSelectedConfigId('');
+                  else setSelectedConfigId(Number(v));
+                }}
+                disabled={!canAssignConfig}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50"
+              >
+                <option value="">เลือก Config Package</option>
+                <option value="0">กลับเป็นมาตรฐาน (ใช้ default จากระบบ)</option>
+                {configList.map((cfg) => (
+                  <option key={cfg.config_id} value={cfg.config_id}>
+                    [{cfg.config_id}] {cfg.label ?? `Commission ${cfg.default_commission_rate}% / VAT ${cfg.vat_rate}%`} — คอม {cfg.default_commission_rate}%
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">หมายเหตุ</label>
+              <input
+                value={configNote}
+                onChange={(e) => setConfigNote(e.target.value)}
+                disabled={!canAssignConfig}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50"
+                placeholder="ระบุเหตุผลการเปลี่ยน config"
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveFactoryConfig}
+            disabled={!canAssignConfig || savingConfig || isFactoryConfigSelectionUnchanged}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60"
+          >
+            <Save size={14} />
+            {savingConfig ? 'กำลังบันทึก...' : savedConfig ? 'บันทึกแล้ว ✓' : 'บันทึก'}
+          </button>
+        </div>
       ) : null}
 
       {activeTab === 'info' && (
@@ -483,83 +525,6 @@ export function AdminFactoryDetailPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-900 mb-1">ค่าคอมมิชชัน</h3>
-            <p className="text-xs text-slate-400 mb-5">กำหนด override จาก global rate สำหรับโรงงานนี้</p>
-
-            <div className="flex items-center justify-between py-3 border border-slate-200 rounded-lg px-4 mb-4">
-              <div>
-                <p className="text-sm font-semibold text-slate-900">ยกเว้นค่าคอมมิชชัน</p>
-                <p className="text-xs text-slate-400 mt-0.5">โรงงานนี้ไม่ต้องเสียค่าคอม</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFactory((p) => ({ ...p, commission_exemption: !p.commission_exemption }))}
-                className="text-indigo-600"
-                disabled={!canEditCommissionRule}
-              >
-                {factory.commission_exemption ? (
-                  <ToggleRight size={32} className="text-indigo-600" />
-                ) : (
-                  <ToggleLeft size={32} className="text-slate-300" />
-                )}
-              </button>
-            </div>
-
-            {factory.commission_exemption ? (
-              <div className="mb-4">
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">เหตุผลการยกเว้น</label>
-                <textarea
-                  rows={2}
-                  value={factory.exemption_reason ?? ''}
-                  onChange={(e) => setFactory((p) => ({ ...p, exemption_reason: e.target.value }))}
-                  placeholder="ระบุเหตุผล..."
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  disabled={!canEditExemption}
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">อัตราค่าคอม (%) — override</label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step={0.1}
-                      value={factory.commission_rate ?? ''}
-                      onChange={(e) => setFactory((p) => ({ ...p, commission_rate: parseFloat(e.target.value) || undefined }))}
-                      placeholder="ค่าเริ่มต้นจาก Global"
-                      className="w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      disabled={!canEditCommissionRule}
-                    />
-                    <Percent size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">มีผลตั้งแต่วันที่</label>
-                  <input
-                    type="date"
-                    value={factory.commission_effective_from ? factory.commission_effective_from.slice(0, 10) : ''}
-                    onChange={(e) => setFactory((p) => ({ ...p, commission_effective_from: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    disabled={!canEditCommissionRule}
-                  />
-                </div>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleSaveCommission}
-              disabled={saving || !canEditCommissionRule}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60"
-            >
-              <Save size={14} />
-              {saving ? 'กำลังบันทึก...' : saved ? 'บันทึกแล้ว ✓' : 'บันทึก'}
-            </button>
-          </div>
         </div>
 
         <div className="space-y-6">

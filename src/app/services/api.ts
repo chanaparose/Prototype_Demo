@@ -881,6 +881,7 @@ export const quotationsApi = {
 // ─── Platform Config API (admin) ───────────────────────────────
 export interface PlatformConfig {
   config_id: number;
+  label?: string | null;
   default_commission_rate: number;
   promo_commission_rate?: number | null;
   promo_start_at?: string | null;
@@ -892,11 +893,66 @@ export interface PlatformConfig {
   effective_to?: string | null;
 }
 
+export interface PlatformConfigItem {
+  config_id: number;
+  label: string | null;
+  default_commission_rate: number;
+  vat_rate: number;
+  currency_code: string;
+  effective_from: string;
+  effective_to: string | null;
+  created_at: string;
+}
+
+export interface FactoryConfigResponse {
+  factory_id: number;
+  config_id: number;
+  label: string;
+  default_commission_rate: number;
+  vat_rate: number;
+}
+
+export interface UpdatePlatformConfigRequest {
+  label: string;
+  default_commission_rate: number;
+  vat_rate: number;
+}
+
+export interface CreatePlatformConfigRequest {
+  label: string;
+  default_commission_rate: number;
+  vat_rate: number;
+  currency_code?: string;
+  effective_to?: string | null;
+}
+
+export interface AssignFactoryConfigRequest {
+  config_id: number;
+  note: string;
+}
+
 export const platformConfigApi = {
   getActive: () => api.get<PlatformConfig>('/admin/platform-config'),
   create: (body: Partial<PlatformConfig>) =>
     api.post<PlatformConfig>('/admin/platform-config', body),
   history: () => api.get<PlatformConfig[]>('/admin/platform-config/history'),
+};
+
+export const adminConfigApi = {
+  listConfigs: () =>
+    api.get<{ configs: PlatformConfigItem[]; total: number }>('/admin/platform-configs'),
+  updateConfig: (configId: number, data: UpdatePlatformConfigRequest) =>
+    api.patch<PlatformConfigItem>(`/admin/platform-configs/${configId}`, data),
+  createConfig: (data: CreatePlatformConfigRequest) =>
+    api.post<PlatformConfigItem>('/admin/platform-configs', data),
+  deleteConfig: (configId: number) => api.delete(`/admin/platform-configs/${configId}`),
+};
+
+export const adminFactoryConfigApi = {
+  getFactoryConfig: (factoryId: number) =>
+    api.get<FactoryConfigResponse>(`/admin/factories/${factoryId}/config`),
+  assignConfig: (factoryId: number, data: AssignFactoryConfigRequest) =>
+    api.patch<FactoryConfigResponse>(`/admin/factories/${factoryId}/config`, data),
 };
 
 function qs(params: Record<string, string | number | boolean | undefined | null>): string {

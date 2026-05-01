@@ -23,10 +23,11 @@ export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = '
   const coverImageUrl = pickFactoryCoverUrl(row);
   let image = pickFactoryAvatarUrl(row);
   if (!image && coverImageUrl) image = coverImageUrl;
+  const provinceName = String(row.province_name ?? row.provinceName ?? '').trim();
   return {
     id,
     name: String(row.name ?? row.factory_name ?? ''),
-    location: String(row.province_name ?? row.location ?? row.city ?? ''),
+    location: provinceName || String(row.location ?? row.city ?? ''),
     rating: Number(row.avg_rating ?? row.rating ?? 0),
     reviews: Number(row.review_count ?? row.reviews ?? 0),
     specialization: String(row.specialization ?? row.description ?? ''),
@@ -39,5 +40,6 @@ export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = '
     completedOrders: Number(row.completed_orders ?? row.completedOrders ?? 0),
     priceRange: String(row.price_range ?? row.priceRange ?? ''),
     ...(ftn ? { factoryTypeName: ftn } : {}),
+    ...(provinceName ? { provinceName } : {}),
   };
 }

@@ -131,7 +131,7 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
             {[
               { label: 'ราคาต่อชิ้น', value: `฿${fmt(Number(q.price_per_piece ?? 0))}`, accent: true },
               { label: 'Lead time (วัน)', value: String(q.lead_time_days ?? '-'), accent: false },
-              { label: 'ราคารวม (ก่อน VAT+Comm)', value: `฿${fmt(subtotal)}`, accent: false },
+              { label: 'ค่าสินค้ารวม (ก่อน VAT)', value: `฿${fmt(subtotal)}`, accent: false },
               { label: 'อายุใบเสนอ', value: validityDays > 0 ? `${validityDays} วัน` : '-', accent: false },
             ].map((tile) => (
               <div key={tile.label} className="bg-gray-50 rounded-xl p-2.5 text-center">
