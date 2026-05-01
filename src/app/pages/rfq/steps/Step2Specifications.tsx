@@ -11,6 +11,7 @@ type Props = {
 export function Step2Specifications({ draft, setDraft }: Props) {
   const [advanced, setAdvanced] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
   const ref = useRef<HTMLInputElement>(null);
 
   const uploadOne = async (f: File) => {
@@ -22,6 +23,10 @@ export function Step2Specifications({ draft, setDraft }: Props) {
     } finally {
       setUploading(false);
     }
+  };
+
+  const removeReference = (index: number) => {
+    setDraft({ reference_images: draft.reference_images.filter((_, i) => i !== index) });
   };
 
   return (
@@ -88,11 +93,30 @@ export function Step2Specifications({ draft, setDraft }: Props) {
               : 'อัปโหลดไฟล์อ้างอิง (สูงสุด 5 ไฟล์)'}
         </button>
         {draft.reference_images.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {draft.reference_images.map((u, idx) => (
-              <span key={u + idx} className="text-[11px] px-2 py-1 rounded bg-gray-100">
-                ไฟล์ {idx + 1}
-              </span>
+              <div key={u + idx} className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                {!brokenImages[idx] ? (
+                  <img
+                    src={u}
+                    alt={`reference-${idx + 1}`}
+                    className="w-full h-24 object-cover"
+                    onError={() => setBrokenImages((prev) => ({ ...prev, [idx]: true }))}
+                  />
+                ) : (
+                  <div className="h-24 px-2 flex items-center justify-center text-[11px] text-gray-600 text-center">
+                    เอกสารอ้างอิง #{idx + 1}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeReference(idx)}
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-xs leading-none"
+                  aria-label={`ลบไฟล์อ้างอิง ${idx + 1}`}
+                >
+                  ×
+                </button>
+              </div>
             ))}
           </div>
         ) : null}

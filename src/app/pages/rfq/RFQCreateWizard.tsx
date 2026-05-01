@@ -31,7 +31,7 @@ const step4Schema = z.object({
   sample_required: z.boolean(),
 });
 
-const STEPS = ['Basic', 'Specs', 'Commercial', 'Review'];
+const STEPS = ['กรอกข้อมูล', 'สรุปข้อมูล'];
 
 export function RFQCreateWizard() {
   const navigate = useNavigate();
@@ -77,12 +77,40 @@ export function RFQCreateWizard() {
     };
   }, [draft.category_id]);
 
-  const isStepValid = React.useMemo(() => {
-    if (step === 0) return step1Schema.safeParse(draft).success;
-    if (step === 1) return step2Schema.safeParse(draft).success;
-    if (step === 2) return step3Schema.safeParse(draft).success;
-    return step4Schema.safeParse(draft).success;
-  }, [step, draft]);
+  const isFormValid = React.useMemo(() => {
+    return (
+      step1Schema.safeParse(draft).success &&
+      step2Schema.safeParse(draft).success &&
+      step3Schema.safeParse(draft).success &&
+      step4Schema.safeParse(draft).success
+    );
+  }, [draft]);
+
+  const categoryName = React.useMemo(() => {
+    const id = Number(draft.category_id ?? 0);
+    if (!id) return '-';
+    return categories.find((c) => c.id === id)?.name ?? String(id);
+  }, [categories, draft.category_id]);
+
+  const subCategoryName = React.useMemo(() => {
+    const id = Number(draft.sub_category_id ?? 0);
+    if (!id) return '-';
+    return subCategories.find((s) => s.id === id)?.name ?? String(id);
+  }, [subCategories, draft.sub_category_id]);
+
+  const optionalMissing = React.useMemo(() => {
+    const missing: string[] = [];
+    if (!draft.sub_category_id) missing.push('หมวดย่อย');
+    if (!draft.material_grade?.trim()) missing.push('Material grade');
+    if (!draft.target_unit_price) missing.push('งบประมาณรวม');
+    if (!draft.target_lead_time_days) missing.push('ระยะเวลาผลิต');
+    if (!draft.required_delivery_date) missing.push('วันที่ต้องการรับสินค้า');
+    if (!draft.certifications_required.length) missing.push('Certification');
+    if (!draft.reference_images.length) missing.push('รูปอ้างอิง');
+    if (!draft.inspection_type) missing.push('รูปแบบตรวจคุณภาพ');
+    if (!draft.sample_required) missing.push('ตัวอย่างสินค้า');
+    return missing;
+  }, [draft]);
 
   const submit = async () => {
     if (!step1Schema.safeParse(draft).success) return;
@@ -105,64 +133,144 @@ export function RFQCreateWizard() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          {STEPS.map((s, i) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStep(i)}
-              aria-current={step === i ? 'step' : undefined}
-              className={`px-3 py-1 rounded-full text-xs ${
-                step === i ? 'bg-violet-100 text-violet-700 font-semibold' : 'text-gray-500'
-              }`}
-            >
-              {i + 1}. {s}
-            </button>
-          ))}
-        </div>
-        {step === 0 ? (
-          <Step1Basic
-            draft={draft}
-            setDraft={setDraft}
-            categories={categories}
-            subCategories={subCategories}
-            subCategoriesLoading={subCategoriesLoading}
-          />
-        ) : null}
-        {step === 1 ? <Step2Specifications draft={draft} setDraft={setDraft} /> : null}
-        {step === 2 ? <Step3Commercial draft={draft} setDraft={setDraft} /> : null}
-        {step === 3 ? <Step4QualityReview draft={draft} setDraft={setDraft} /> : null}
+    <div className="max-w-5xl mx-auto px-4 py-6 pb-28">
+      <div className="mb-4">
+        <h1 className="text-xl font-bold text-[#2E2252]">สร้างคำขอใบเสนอราคา (RFQ)</h1>
+        <p className="text-sm text-gray-500 mt-1">{step === 0 ? 'กรอกรายละเอียดที่โรงงานต้องรู้' : 'ตรวจสอบข้อมูลก่อนส่ง'}</p>
       </div>
 
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
-          className="px-4 py-2 rounded-xl border border-gray-200 text-sm"
-        >
-          Back
-        </button>
-        {step < STEPS.length - 1 ? (
-          <button
-            type="button"
-            onClick={() => setStep(step + 1)}
-            disabled={!isStepValid}
-            className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm disabled:opacity-50"
-          >
-            Next
-          </button>
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            {STEPS.map((s, i) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  if (i === 0 || isFormValid) setStep(i);
+                }}
+                aria-current={step === i ? 'step' : undefined}
+                className={`px-3 py-1 rounded-full text-xs ${
+                  step === i ? 'bg-violet-600 text-white font-semibold' : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                {i + 1}. {s}
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full bg-violet-600 transition-all" style={{ width: `${((step + 1) / 2) * 100}%` }} />
+          </div>
+        </div>
+
+        {step === 0 ? (
+          <div className="space-y-4">
+            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
+              <p className="text-sm font-semibold text-[#2E2252] mb-3">ข้อมูลโปรเจกต์</p>
+              <Step1Basic
+                draft={draft}
+                setDraft={setDraft}
+                categories={categories}
+                subCategories={subCategories}
+                subCategoriesLoading={subCategoriesLoading}
+              />
+            </section>
+
+            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
+              <p className="text-sm font-semibold text-[#2E2252] mb-3">สเปกเพิ่มเติม</p>
+              <Step2Specifications draft={draft} setDraft={setDraft} />
+            </section>
+
+            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
+              <p className="text-sm font-semibold text-[#2E2252] mb-3">เงื่อนไขส่งมอบ</p>
+              <Step3Commercial draft={draft} setDraft={setDraft} />
+            </section>
+
+            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
+              <p className="text-sm font-semibold text-[#2E2252] mb-3">เงื่อนไขคุณภาพ</p>
+              <Step4QualityReview draft={draft} setDraft={setDraft} />
+            </section>
+          </div>
         ) : (
+          <div className="space-y-4 text-sm">
+            <section className="rounded-xl border border-gray-100 p-4">
+              <p className="font-semibold text-[#2E2252] mb-3">ข้อมูลโปรเจกต์</p>
+              <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
+                <p><span className="text-gray-500">ชื่อโปรเจกต์:</span> {draft.title || '-'}</p>
+                <p><span className="text-gray-500">หมวดหมู่:</span> {categoryName}</p>
+                <p><span className="text-gray-500">หมวดย่อย:</span> {subCategoryName}</p>
+                <p><span className="text-gray-500">จำนวน:</span> {draft.qty ?? '-'}</p>
+              </div>
+              <p className="mt-2"><span className="text-gray-500">รายละเอียด:</span> {draft.description || '-'}</p>
+            </section>
+
+            <section className="rounded-xl border border-gray-100 p-4">
+              <p className="font-semibold text-[#2E2252] mb-3">เงื่อนไขส่งมอบและงบ</p>
+              <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
+                <p><span className="text-gray-500">งบประมาณรวม:</span> {draft.target_unit_price ?? '-'}</p>
+                <p><span className="text-gray-500">ระยะเวลาผลิต:</span> {draft.target_lead_time_days ?? '-'} วัน</p>
+                <p><span className="text-gray-500">วันที่ต้องการรับ:</span> {draft.required_delivery_date || '-'}</p>
+                <p><span className="text-gray-500">ที่อยู่จัดส่ง:</span> {draft.delivery_address_id ?? '-'}</p>
+                <p><span className="text-gray-500">วิธีจัดส่ง:</span> {draft.shipping_method_id ?? '-'}</p>
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-gray-100 p-4">
+              <p className="font-semibold text-[#2E2252] mb-3">สเปกและคุณภาพ</p>
+              <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
+                <p><span className="text-gray-500">Material grade:</span> {draft.material_grade || '-'}</p>
+                <p><span className="text-gray-500">Certifications:</span> {draft.certifications_required.join(', ') || '-'}</p>
+                <p><span className="text-gray-500">ต้องการตัวอย่าง:</span> {draft.sample_required ? `ใช่ (${draft.sample_qty ?? '-'})` : 'ไม่'}</p>
+                <p><span className="text-gray-500">รูปแบบตรวจคุณภาพ:</span> {draft.inspection_type || '-'}</p>
+              </div>
+              <p className="mt-2 text-gray-500">รูปอ้างอิง: {draft.reference_images.length} รูป</p>
+            </section>
+
+            {optionalMissing.length > 0 ? (
+              <section className="rounded-xl border border-dashed border-gray-200 p-4">
+                <p className="font-semibold text-[#2E2252] mb-2">ข้อมูลที่ยังไม่ได้กรอก (ไม่บังคับ)</p>
+                <div className="flex flex-wrap gap-2">
+                  {optionalMissing.map((m) => (
+                    <span key={m} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 z-30">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <button
             type="button"
-            onClick={() => void submit()}
-            disabled={!isStepValid || create.isPending}
-            className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm disabled:opacity-50"
+            onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
+            className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium"
           >
-            {create.isPending ? 'Submitting...' : 'Submit'}
+            {step === 0 ? 'ย้อนกลับ' : 'ย้อนกลับแก้ไข'}
           </button>
-        )}
+          {step === 0 ? (
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              disabled={!isFormValid}
+              className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50"
+            >
+              ถัดไป: ตรวจสอบข้อมูล
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void submit()}
+              disabled={!isFormValid || create.isPending}
+              className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50"
+            >
+              {create.isPending ? 'กำลังส่ง...' : 'ส่งคำขอราคา'}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
