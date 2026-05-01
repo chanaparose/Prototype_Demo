@@ -56,6 +56,8 @@ export interface QuotationRow {
   grand_total: number;
   factory_net_receivable: number;
   validity_days: number;
+  /** วันหมดอายุใบเสนอราคา (RFC3339 จาก API) */
+  valid_until?: string | null;
   revision_no: number;
   image_urls?: string[];
   payment_terms?: string | null;
