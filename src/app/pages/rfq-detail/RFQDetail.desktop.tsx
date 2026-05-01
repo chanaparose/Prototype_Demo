@@ -114,7 +114,7 @@ export function RFQDetailDesktop() {
                 style={{ color: COLORS.purple }}
                 onClick={() => navigate('/orders')}
               >
-                กลับไป RFQ & คำสั่งซื้อ
+                กลับไป คำขอราคา & คำสั่งซื้อ
               </button>
             </>
           )}

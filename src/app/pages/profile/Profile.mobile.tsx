@@ -69,7 +69,7 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
     items: [
       {
         icon: FileText,
-        label: 'RFQ & คำสั่งซื้อ ทั้งหมด',
+        label: 'คำขอราคา & คำสั่งซื้อ ทั้งหมด',
         sub: 'ดูประวัติการขอใบเสนอราคา',
         color: '#8B5CF6',
         bg: '#EDE9FF',

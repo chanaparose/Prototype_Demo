@@ -117,7 +117,7 @@ export function RfqAndOrders() {
                 คำขอ
               </p>
               <h1 className="text-[#2D1B4E]" style={{ fontWeight: 700 }}>
-                RFQ & คำสั่งซื้อ
+                คำขอราคา & คำสั่งซื้อ
               </h1>
             </div>
           </div>
@@ -192,7 +192,7 @@ export function RfqAndOrders() {
               คำขอและคำสั่งซื้อ
             </p>
             <h1 className="text-2xl font-bold text-[#2D1B4E]">
-              RFQ & คำสั่งซื้อ
+              คำขอราคา & คำสั่งซื้อ
             </h1>
           </div>
           <div className="flex items-center gap-2">

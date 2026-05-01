@@ -1,5 +1,5 @@
 /**
- * แมปรหัสสถานะออเดอร์จาก API → ค่า UI ในลูกค้า (RFQ & คำสั่งซื้อ / order detail)
+ * แมปรหัสสถานะออเดอร์จาก API → ค่า UI ในลูกค้า (คำขอราคา & คำสั่งซื้อ / order detail)
  * PP = รอชำระมัดจำ (FE_ORDER_PAYMENT_ALIGNMENT / PAYMENT_ORDER_FLOW)
  */
 export function mapOrderStatusFromApi(code: string): string {
