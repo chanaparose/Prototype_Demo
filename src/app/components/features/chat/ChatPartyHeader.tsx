@@ -12,6 +12,7 @@ interface Props {
 
 export function ChatPartyHeader({ view, density = 'row', trailing, onClick }: Props) {
   const size = density === 'header' ? 40 : 44;
+  const frameClass = density === 'header' ? 'h-10 w-10' : 'h-11 w-11';
   return (
     <button type="button" onClick={onClick} className="w-full flex items-center gap-3 text-left">
       <img
@@ -19,7 +20,7 @@ export function ChatPartyHeader({ view, density = 'row', trailing, onClick }: Pr
         alt={view.title}
         width={size}
         height={size}
-        className="rounded-full object-cover bg-gray-100 shrink-0"
+        className={`${frameClass} shrink-0 overflow-hidden rounded-full bg-gray-100 object-cover`}
         onError={(e) => {
           e.currentTarget.src = FACTORY_FALLBACK_AVATAR;
         }}
