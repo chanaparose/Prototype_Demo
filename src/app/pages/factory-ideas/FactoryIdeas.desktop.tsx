@@ -704,7 +704,7 @@ export function FactoryIdeasDesktop() {
           </div>
         ) : isFactoryTab ? (
           /* ━━━ Factory-only Grid ━━━ */
-          <div className="grid grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {visibleFactories.map((factory) => (
               <article
                 key={factory.id}
@@ -746,7 +746,7 @@ export function FactoryIdeasDesktop() {
             ))}
           </div>
         ) : selectedType === 'idea' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {visibleIdeaItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               return (
@@ -797,7 +797,7 @@ export function FactoryIdeasDesktop() {
             })}
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
@@ -934,7 +934,7 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleFactories.length})
               </button>
             </div>
-            <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               {visibleFactories.slice(0, 5).map((factory) => (
                 <div
                   key={`fac-${factory.id}`}
@@ -998,7 +998,7 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleIdeaItems.length})
               </button>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {visibleIdeaItems.slice(0, 6).map((item) => {
                 const factory = data.factories.find((f) => f.id === item.factoryId);
                 return (

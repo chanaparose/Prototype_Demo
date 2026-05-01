@@ -703,7 +703,7 @@ export function FactoryIdeasMobile() {
 
         ) : isFactoryTab ? (
           /* ━━━ Factory-only Grid ━━━ */
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {visibleFactories.map((factory) => (
               <article
                 key={factory.id}
@@ -747,7 +747,7 @@ export function FactoryIdeasMobile() {
             ))}
           </div>
         ) : selectedType === 'idea' ? (
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
             {visibleIdeaItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               return (
@@ -810,7 +810,7 @@ export function FactoryIdeasMobile() {
           /* ━━━ Grid View ━━━
              Rule: grid + items-stretch → ทุกการ์ดในแถวเดียวกันสูงเท่ากัน
              Rule: h-full + flex flex-col → การ์ดยืดเต็ม Grid Track */
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
@@ -973,7 +973,7 @@ export function FactoryIdeasMobile() {
                 ดูทั้งหมด ({visibleFactories.length})
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {visibleFactories.slice(0, 4).map((factory) => (
                 <div
                   key={`fac-${factory.id}`}
@@ -1037,7 +1037,7 @@ export function FactoryIdeasMobile() {
                 ดูทั้งหมด ({visibleIdeaItems.length})
               </button>
             </div>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
               {visibleIdeaItems.slice(0, 4).map((item) => {
                 const factory = data.factories.find((f) => f.id === item.factoryId);
                 return (

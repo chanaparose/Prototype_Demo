@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   CalendarClock,
   Heart,
+  ImageIcon,
   MapPin,
   MessageCircle,
   Star,
@@ -16,6 +17,7 @@ import { ImageWithFallback } from '../../components/shared';
 import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../contexts/DataContext';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
@@ -78,6 +80,7 @@ export function PromotionDetailMobile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
+  const data = useData();
   const { item, loading, error, factory, resolvedId, relatedShowcases } = usePromotionDetailShowcase();
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
@@ -141,12 +144,24 @@ export function PromotionDetailMobile() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] pb-[72px]">
-      <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
-        <ImageWithFallback src={gallery[activeImage] ?? item.image} alt={item.title} className="w-full h-full object-cover" />
+      <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative h-full max-h-full max-w-full aspect-square">
+            <ImageWithFallback
+              src={gallery[activeImage] ?? item.image}
+              alt={item.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+        </div>
         <button type="button" onClick={handleBack} className="absolute top-3 left-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
           <ArrowLeft className="w-5 h-5 text-white" />
         </button>
-        <span className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-bold text-white" style={{ background: 'rgba(225,29,72,0.86)' }}>
+        <span
+          className="absolute bottom-3 left-3 z-[2] inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold text-white shadow-md"
+          style={{ background: 'rgba(225,29,72,0.9)' }}
+        >
+          <TicketPercent className="w-3 h-3" />
           โปรโมชัน
         </span>
       </div>
@@ -216,8 +231,21 @@ export function PromotionDetailMobile() {
 
       <button type="button" onClick={() => navigate(`/factories/${item.factoryId}`)} className="block w-full text-left bg-white px-4 py-4 active:opacity-90">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-full overflow-hidden border shrink-0" style={{ borderColor: BRAND.border }}>
-            <ImageWithFallback src={factory?.image ?? ''} alt={item.factoryName} className="w-full h-full object-cover" />
+          <div className="w-fit shrink-0 rounded-2xl">
+            <div
+              className={`relative block h-17 w-17 overflow-hidden rounded-2xl border-2 shadow-md ring-1 ring-white ${
+                factory?.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
+              }`}
+            >
+              {factory?.image ? (
+                <ImageWithFallback src={factory.image} alt={item.factoryName} className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex h-full w-full flex-col items-center justify-center gap-0.5 p-1 text-center">
+                  <ImageIcon size={22} className="text-indigo-400" strokeWidth={1.5} />
+                  <span className="text-[9px] font-semibold leading-tight text-indigo-600">โปรไฟล์</span>
+                </span>
+              )}
+            </div>
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1">
@@ -292,31 +320,58 @@ export function PromotionDetailMobile() {
       <div className="bg-white px-4 py-3">
         <p className="text-[13px] font-bold mb-2" style={{ color: BRAND.ink }}>สินค้าที่ใกล้เคียง</p>
         {relatedShowcases.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2">
-            {relatedShowcases.slice(0, 4).map((rp) => (
-              <button
-                key={rp.id}
-                type="button"
-                onClick={() => navigate(`/promotion-detail?showcase_id=${rp.id}`)}
-                className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer text-left"
-              >
-                <div className="relative h-[150px] shrink-0 bg-gray-100">
-                  <ImageWithFallback src={rp.image} alt={rp.title} className="w-full h-full object-cover" />
-                  <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: BRAND.rose }}>โปรโมชัน</span>
-                </div>
-                <div className="p-3 flex flex-col flex-1 min-w-0">
-                  <h3 className="text-xs font-bold leading-[18px] line-clamp-2 min-h-[36px]" style={{ color: BRAND.ink }}>{rp.title}</h3>
-                  <p className="text-[10px] leading-[14px] text-gray-400 mt-1 line-clamp-2 min-h-[28px]">{rp.excerpt || 'รายละเอียดสินค้า'}</p>
-                  <div className="mt-auto pt-2 border-t border-gray-100">
-                    <p className="text-[10px] font-semibold truncate" style={{ color: BRAND.ink }}>{rp.factoryName}</p>
-                    <div className="flex items-center justify-between min-w-0 mt-1">
-                      <span className="text-[10px] text-gray-400">MOQ <span className="font-semibold" style={{ color: BRAND.ink }}>{rp.minOrder || '-'}</span></span>
-                      <span className="text-[10px] text-gray-400 inline-flex items-center gap-1"><Heart className="w-3 h-3" />{rp.likes}</span>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {relatedShowcases.map((rp) => {
+              const rf = data.factories.find((f) => f.id === rp.factoryId);
+              const rating = Number(rf?.rating ?? rp.factoryRating ?? 0);
+              const reviews = Number(rf?.reviews ?? 0);
+              const isPromo = rp.contentType === 'promotion';
+              return (
+                <button
+                  key={rp.id}
+                  type="button"
+                  onClick={() => navigate(`/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`)}
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col h-full w-full text-left active:scale-[0.98]"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 shrink-0">
+                    <ImageWithFallback
+                      src={rp.image}
+                      alt={rp.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span
+                      className="absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
+                      style={{ backgroundColor: isPromo ? BRAND.orange : '#2563EB' }}
+                    >
+                      {isPromo ? 'โปรโมชัน' : 'สินค้า'}
+                    </span>
+                  </div>
+                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5 min-w-0">
+                    <div>
+                      <h3 className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
+                        {rp.title}
+                      </h3>
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[10px] truncate">
+                          {(rf?.provinceName ?? rf?.location ?? '').trim() || '—'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-auto pt-1 border-t border-gray-50">
+                      <div className="flex items-center justify-between min-w-0">
+                        <div className="flex items-center gap-0.5 min-w-0">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                          <span className="text-gray-700 text-[10px] font-semibold">{rating}</span>
+                          <span className="text-gray-400 text-[9px] truncate">({reviews})</span>
+                        </div>
+                        <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {rp.minOrder}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         ) : (
           <p className="text-center text-xs text-gray-400 py-4">ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้</p>

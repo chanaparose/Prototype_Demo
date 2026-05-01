@@ -128,9 +128,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         const detailRaw = await showcasesApi.get(resolvedId).catch(() => ({}));
         const detailRow = unwrapShowcaseDetailPayload((detailRaw as Record<string, unknown>) ?? {});
         const detail = item ?? normShowcase(detailRow);
-        const apiType = kind === 'promotion' ? 'PM' : 'PD';
-        const targetContentType: FactoryShowcase['contentType'] =
-          kind === 'promotion' ? 'promotion' : 'product';
+        const apiTypes: Array<'PD' | 'PM'> = ['PD', 'PM'];
 
         const subIdFromDetail = detail.sub_category_id ?? Number(detailRow.sub_category_id ?? NaN);
         const catIdFromDetail =
@@ -141,33 +139,48 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         const buckets: FactoryShowcase[] = [];
 
         if (Number.isFinite(Number(subIdFromDetail)) && Number(subIdFromDetail) > 0) {
-          const rawSub = await showcasesApi.listFiltered({
-            type: apiType,
-            sub_category_id: Number(subIdFromDetail),
-          }).catch(() => []);
-          const subRows = (Array.isArray(rawSub) ? rawSub : []) as Record<string, unknown>[];
-          buckets.push(...subRows.map(normShowcase));
+          const subLists = await Promise.all(
+            apiTypes.map((type) =>
+              showcasesApi
+                .listFiltered({ type, sub_category_id: Number(subIdFromDetail) })
+                .catch(() => []),
+            ),
+          );
+          for (const rawSub of subLists) {
+            const subRows = (Array.isArray(rawSub) ? rawSub : []) as Record<string, unknown>[];
+            buckets.push(...subRows.map(normShowcase));
+          }
         }
 
         if (Number.isFinite(Number(catIdFromDetail)) && Number(catIdFromDetail) > 0) {
-          const rawCat = await showcasesApi.listFiltered({
-            type: apiType,
-            category_id: Number(catIdFromDetail),
-          }).catch(() => []);
-          const catRows = (Array.isArray(rawCat) ? rawCat : []) as Record<string, unknown>[];
-          buckets.push(...catRows.map(normShowcase));
+          const catLists = await Promise.all(
+            apiTypes.map((type) =>
+              showcasesApi
+                .listFiltered({ type, category_id: Number(catIdFromDetail) })
+                .catch(() => []),
+            ),
+          );
+          for (const rawCat of catLists) {
+            const catRows = (Array.isArray(rawCat) ? rawCat : []) as Record<string, unknown>[];
+            buckets.push(...catRows.map(normShowcase));
+          }
         }
 
         if (buckets.length === 0) {
-          const rawAll = await showcasesApi.listFiltered({ type: apiType }).catch(() => []);
-          const allRows = (Array.isArray(rawAll) ? rawAll : []) as Record<string, unknown>[];
-          buckets.push(...allRows.map(normShowcase));
+          const allLists = await Promise.all(
+            apiTypes.map((type) => showcasesApi.listFiltered({ type }).catch(() => [])),
+          );
+          for (const rawAll of allLists) {
+            const allRows = (Array.isArray(rawAll) ? rawAll : []) as Record<string, unknown>[];
+            buckets.push(...allRows.map(normShowcase));
+          }
         }
 
         const currentId = detail.id || String(resolvedId);
         const uniq = new Map<string, FactoryShowcase>();
         for (const row of buckets) {
-          if (!row.id || row.id === currentId || row.contentType !== targetContentType) continue;
+          if (!row.id || row.id === currentId) continue;
+          if (!(row.contentType === 'product' || row.contentType === 'promotion')) continue;
           if (!uniq.has(row.id)) uniq.set(row.id, row);
         }
         if (!cancelled) setRelatedApiShowcases([...uniq.values()].slice(0, 8));
@@ -182,10 +195,8 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
 
   const relatedShowcases = useMemo(() => {
     if (!item || kind === 'idea') return [] as FactoryShowcase[];
-    const targetContentType: FactoryShowcase['contentType'] =
-      kind === 'promotion' ? 'promotion' : 'product';
     const allByType = data.factoryShowcases.filter(
-      (s) => s.contentType === targetContentType && s.id !== item.id,
+      (s) => (s.contentType === 'product' || s.contentType === 'promotion') && s.id !== item.id,
     );
     const sameSub = allByType.filter((s) => {
       if (item.sub_category_id == null || s.sub_category_id == null) return false;

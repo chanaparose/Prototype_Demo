@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronRight as Chevron,
   Heart,
+  ImageIcon,
   MapPin,
   MessageCircle,
   Share2,
@@ -18,6 +19,7 @@ import { ImageWithFallback } from '../../components/shared';
 import { useProductDetailShowcase } from '../../hooks/useProductDetailShowcase';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../contexts/DataContext';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
@@ -68,6 +70,7 @@ export function ProductDetailDesktop() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
+  const data = useData();
   const { item, loading, error, factory, isIdea, resolvedId, relatedProducts } = useProductDetailShowcase();
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
@@ -195,7 +198,7 @@ export function ProductDetailDesktop() {
             {/* ── Left: Gallery ── */}
             <div className="w-[450px] shrink-0">
               <div
-                className="relative aspect-square rounded-xl overflow-hidden border"
+                className="relative aspect-[4/3] rounded-xl overflow-hidden border"
                 style={{ borderColor: BRAND.border, background: '#F5F5F5' }}
               >
                 <ImageWithFallback
@@ -443,15 +446,25 @@ export function ProductDetailDesktop() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-4 min-w-0">
-              <div
-                className="w-20 h-20 rounded-full overflow-hidden border shrink-0"
-                style={{ borderColor: BRAND.border }}
-              >
-                <ImageWithFallback
-                  src={factory?.image ?? ''}
-                  alt={item.factoryName}
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-fit shrink-0 rounded-2xl">
+                <div
+                  className={`relative block h-17 w-17 overflow-hidden rounded-2xl border-2 shadow-md ring-1 ring-white ${
+                    factory?.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
+                  }`}
+                >
+                  {factory?.image ? (
+                    <ImageWithFallback
+                      src={factory.image}
+                      alt={item.factoryName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-full w-full flex-col items-center justify-center gap-0.5 p-1 text-center">
+                      <ImageIcon size={20} className="text-indigo-400" strokeWidth={1.5} />
+                      <span className="text-[9px] font-semibold leading-tight text-indigo-600">โปรไฟล์</span>
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -686,56 +699,58 @@ export function ProductDetailDesktop() {
             </p>
           </div>
           {relatedProducts.length > 0 ? (
-            <div className="p-6 grid grid-cols-4 gap-4">
-              {relatedProducts.map((rp) => (
-                <button
-                  key={rp.id}
-                  type="button"
-                  onClick={() => navigate(`/product-detail?showcase_id=${rp.id}`)}
-                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
-                >
-                  <div className="relative h-36 overflow-hidden bg-gray-100">
-                    <ImageWithFallback
-                      src={rp.image}
-                      alt={rp.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                    <div className="absolute top-2 left-2">
+            <div className="p-6 grid grid-cols-4 gap-3">
+              {relatedProducts.map((rp) => {
+                const rf = data.factories.find((f) => f.id === rp.factoryId);
+                const rating = Number(rf?.rating ?? rp.factoryRating ?? 0);
+                const reviews = Number(rf?.reviews ?? 0);
+                const isPromo = rp.contentType === 'promotion';
+                return (
+                  <button
+                    key={rp.id}
+                    type="button"
+                    onClick={() => navigate(`/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`)}
+                    className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col w-full text-left"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                      <ImageWithFallback
+                        src={rp.image}
+                        alt={rp.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                       <span
-                        className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white"
-                        style={{ backgroundColor: BRAND.orange }}
+                        className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
+                        style={{ backgroundColor: isPromo ? BRAND.orange : '#2563EB' }}
                       >
-                        สินค้า
+                        {isPromo ? 'โปรโมชัน' : 'สินค้า'}
                       </span>
                     </div>
-                  </div>
-                  <div className="p-3 flex flex-col gap-2 min-h-0">
-                    <div className="min-w-0">
-                      <h3 className="text-[12px] font-bold line-clamp-2 leading-snug min-h-[36px]" style={{ color: BRAND.ink }}>
-                        {rp.title}
-                      </h3>
-                      <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2 min-h-[28px]">
-                        {rp.excerpt || 'รายละเอียดสินค้า'}
-                      </p>
-                    </div>
-                    <div className="pt-2 border-t border-gray-100 space-y-1.5">
-                      <p className="text-[10px] font-semibold truncate" style={{ color: BRAND.ink }}>
-                        {rp.factoryName}
-                      </p>
-                      <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                        <span className="min-w-0 truncate">
-                          MOQ <span className="font-semibold tabular-nums" style={{ color: BRAND.ink }}>{rp.minOrder || '-'}</span>
-                        </span>
-                        <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
-                          <Heart className="w-2.5 h-2.5 shrink-0" />
-                          {rp.likes}
-                        </span>
+                    <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                      <div>
+                        <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
+                          {rp.title}
+                        </p>
+                        <div className="flex items-center gap-0.5 mt-0.5">
+                          <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                          <span className="text-gray-500 text-[10px] truncate">
+                            {(rf?.provinceName ?? rf?.location ?? '').trim() || '—'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-auto pt-1 border-t border-gray-50">
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center gap-0.5 min-w-0">
+                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                            <span className="text-gray-700 text-[10px] font-semibold">{rating}</span>
+                            <span className="text-gray-400 text-[9px] truncate">({reviews})</span>
+                          </div>
+                          <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {rp.minOrder}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="p-8 text-center text-sm text-gray-400">ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้</div>
