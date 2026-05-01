@@ -95,16 +95,19 @@ export function Step2Specifications({ draft, setDraft }: Props) {
         {draft.reference_images.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {draft.reference_images.map((u, idx) => (
-              <div key={u + idx} className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+              <div
+                key={u + idx}
+                className="relative aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-100"
+              >
                 {!brokenImages[idx] ? (
                   <img
                     src={u}
                     alt={`reference-${idx + 1}`}
-                    className="w-full h-24 object-cover"
+                    className="w-full h-full object-cover"
                     onError={() => setBrokenImages((prev) => ({ ...prev, [idx]: true }))}
                   />
                 ) : (
-                  <div className="h-24 px-2 flex items-center justify-center text-[11px] text-gray-600 text-center">
+                  <div className="w-full h-full px-2 flex items-center justify-center text-[11px] text-gray-600 text-center">
                     เอกสารอ้างอิง #{idx + 1}
                   </div>
                 )}
