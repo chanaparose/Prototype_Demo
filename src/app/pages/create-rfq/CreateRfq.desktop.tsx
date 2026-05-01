@@ -54,7 +54,7 @@ export function CreateRfqDesktop({ state }: CreateRfqDesktopProps) {
               <p className="text-[10px] font-semibold tracking-[0.12em] text-slate-400 uppercase mb-0.5">
                 คำขอใบเสนอราคา
               </p>
-              <h1 className="text-[20px] font-bold text-slate-900">สร้าง RFQ ใหม่</h1>
+              <h1 className="text-[20px] font-bold text-slate-900">สร้างคำขอราคาใหม่</h1>
             </div>
           </div>
 

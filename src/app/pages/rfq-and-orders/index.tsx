@@ -144,7 +144,7 @@ export function RfqAndOrders() {
                     : 'none',
               }}
             >
-              RFQ ของฉัน
+              คำขอราคา
             </button>
             <button
               onClick={() => setPrimaryTab('orders')}
@@ -203,7 +203,7 @@ export function RfqAndOrders() {
               style={{ background: CTA_GRADIENT, boxShadow: '0 6px 20px rgba(162,56,255,0.35)' }}
             >
               <Plus size={16} />
-              สร้าง RFQ ใหม่
+              สร้างคำขอราคา
             </Link>
           </div>
         </div>
@@ -225,7 +225,7 @@ export function RfqAndOrders() {
                     <FileText size={15} style={{ color: PRIMARY_COLOR }} />
                   </div>
                   <h2 className="font-bold" style={{ color: DEEP_PURPLE }}>
-                    RFQ ของฉัน
+                    คำขอราคา
                   </h2>
                   <span
                     className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
@@ -297,14 +297,14 @@ export function RfqAndOrders() {
                     >
                       <FileText size={28} style={{ color: PRIMARY_COLOR }} />
                     </div>
-                    <p className="text-gray-700 font-semibold text-sm mb-1">ยังไม่มี RFQ</p>
-                    <p className="text-xs text-gray-400 mb-4">สร้าง RFQ ใหม่เพื่อรับใบเสนอราคา</p>
+                    <p className="text-gray-700 font-semibold text-sm mb-1">ยังไม่มีคำขอราคา</p>
+                    <p className="text-xs text-gray-400 mb-4">สร้างคำขอราคาเพื่อรับใบเสนอราคา</p>
                     <Link
                       to="/create-rfq"
                       className="py-2 px-5 rounded-xl text-white font-semibold text-sm"
                       style={{ background: PRIMARY_COLOR }}
                     >
-                      สร้าง RFQ ใหม่
+                      สร้างคำขอราคา
                     </Link>
                   </div>
                 ) : (

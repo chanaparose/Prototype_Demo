@@ -137,10 +137,10 @@ export function RfqSection({
               <FileText size={36} style={{ color: PRIMARY_COLOR }} />
             </div>
             <p className="text-gray-900 mb-1" style={{ fontWeight: 600 }}>
-              ยังไม่มี RFQ
+              ยังไม่มีคำขอราคา
             </p>
             <p className="text-sm text-gray-500 max-w-[220px] mb-4">
-              สร้าง RFQ ใหม่เพื่อรับใบเสนอราคาจากโรงงาน
+              สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน
             </p>
             <Link
               to="/create-rfq"
@@ -150,7 +150,7 @@ export function RfqSection({
                 boxShadow: '0 6px 18px rgba(162,56,255,0.3)',
               }}
             >
-              สร้าง RFQ ใหม่
+              สร้างคำขอราคา
             </Link>
           </div>
         ) : (

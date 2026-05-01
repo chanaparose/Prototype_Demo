@@ -333,7 +333,7 @@ export function RFQDetailDesktop() {
                   style={{ color: COLORS.purple }}
                   onClick={() => navigate('/create-rfq')}
                 >
-                  + สร้าง RFQ ใหม่
+                  + สร้างคำขอราคา
                 </button>
               </div>
             </div>

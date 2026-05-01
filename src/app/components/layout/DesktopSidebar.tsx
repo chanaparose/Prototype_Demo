@@ -244,7 +244,7 @@ export function DesktopSidebar() {
             style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
           >
             <Plus size={18} />
-            สร้าง RFQ ใหม่
+            สร้างคำขอราคา
           </button>
         </div>
       ) : null}

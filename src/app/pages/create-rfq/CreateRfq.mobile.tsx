@@ -48,7 +48,7 @@ export function CreateRfqMobile({ state }: CreateRfqMobileProps) {
           </button>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">คำขอใบเสนอราคา</p>
-            <h1 className="text-[17px] font-bold text-gray-900">สร้าง RFQ ใหม่</h1>
+            <h1 className="text-[17px] font-bold text-gray-900">สร้างคำขอราคาใหม่</h1>
           </div>
           <span className="text-[11px] font-semibold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full border border-violet-100 shrink-0">
             {currentStep}/{STEPS.length}

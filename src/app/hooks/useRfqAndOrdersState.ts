@@ -1,7 +1,7 @@
 /**
  * useRfqAndOrdersState — ดึงข้อมูลจาก CRUD endpoint ตรงๆ
  *
- * - Tab "RFQ ของฉัน"   → GET /api/v1/rfqs/       (auth: Bearer token)
+ * - Tab "คำขอราคา"   → GET /api/v1/rfqs/       (auth: Bearer token)
  * - Tab "คำสั่งซื้อ"    → GET /api/v1/orders      (auth: Bearer token)
  *
  * Token ถูกแนบอัตโนมัติผ่าน api.ts wrapper (Authorization: Bearer <token>)

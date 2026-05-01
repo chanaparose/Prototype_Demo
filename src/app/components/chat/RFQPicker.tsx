@@ -158,7 +158,7 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
               }}
               className="w-full px-4 py-4 text-sm text-[#7A4B94] font-medium flex items-center gap-1 hover:bg-violet-50"
             >
-              <Plus size={14} /> สร้าง RFQ ใหม่
+              <Plus size={14} /> สร้างคำขอราคา
             </button>
           </div>
         </div>

@@ -440,7 +440,7 @@ export function ExploreDesktop({
               className="text-white text-sm px-6 py-2.5 rounded-full font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-1.5 shadow-lg"
               style={{ background: '#A238FF', boxShadow: '0 8px 24px rgba(162,56,255,0.40)' }}
             >
-              เริ่มสร้าง RFQ <ChevronRight size={16} />
+              เริ่มสร้างคำขอราคา <ChevronRight size={16} />
             </button>
           </div>
         </section>
