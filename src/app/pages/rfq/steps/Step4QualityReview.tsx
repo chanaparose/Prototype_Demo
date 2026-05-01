@@ -60,13 +60,7 @@ export function Step4QualityReview({ draft, setDraft }: Props) {
         <option value="buyer_onsite">ผู้ซื้อเข้าตรวจที่โรงงาน</option>
       </select>
 
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 space-y-1">
-        <p className="font-semibold text-gray-800">สรุปข้อมูลก่อนส่ง</p>
-        <p>หัวข้อ: {draft.title || '-'}</p>
-        <p>หมวด: {draft.category_id ?? '-'}</p>
-        <p>จำนวน: {draft.qty ?? '-'}</p>
-        <p>กำหนดส่ง: {draft.required_delivery_date || '-'}</p>
-      </div>
+      
     </div>
   );
 }
