@@ -14,6 +14,8 @@ import {
 import { useData } from '../../contexts/DataContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
+import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
+import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
 import { ImageWithFallback } from '../../components/shared';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { getSectionsByType, getIcon, interpolate } from '../../utils/showcaseSections';
@@ -34,15 +36,20 @@ export function ProductDetailMobile() {
   const data = useData();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
-
   const item = data.factoryShowcases.find(
     (entry) => entry.id === id && entry.contentType === 'product',
   );
   const factory = item ? data.factories.find((f) => f.id === item.factoryId) : null;
+  const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
+  const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
 
   const subName = item?.sub_category_name?.trim();
   const isSelfFactory = String(user?.id ?? '') === String(item?.factoryId ?? '');
   const canChat = Boolean(item) && !isSelfFactory && String(item?.factoryId ?? '').trim() !== '';
+  const summary = reviewSummaryQ.data;
+  const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
+  const reviewCount = Number(summary?.review_count ?? factory?.reviews ?? 0);
+  const latestReviews = reviewListQ.data ?? [];
 
   if (!item) {
     return (
@@ -190,6 +197,47 @@ export function ProductDetailMobile() {
                 <Heart className="w-3 h-3" /> {item.likes}
               </p>
             </div>
+          </div>
+        </div>
+
+        <div className="bg-white px-4 py-3 rounded-2xl border border-gray-100 shadow-sm">
+          <p className="text-[13px] font-bold mb-2" style={{ color: '#2E2252' }}>คะแนนรีวิว</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="text-[28px] leading-none font-bold" style={{ color: '#E38844' }}>{avgRating.toFixed(1)}</p>
+              <p className="text-[11px] text-gray-500 mt-1">{reviewCount} รีวิว</p>
+            </div>
+            <div className="flex-1 space-y-1.5">
+              {[5, 4, 3, 2, 1].map((star) => {
+                const count = Number(summary?.rating_breakdown?.[String(star)] ?? 0);
+                const intensity =
+                  reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
+                return (
+                  <div key={star} className="flex items-center gap-2">
+                    <span className="w-8 text-[10px] text-gray-500">{star}★</span>
+                    <div className="h-1.5 flex-1 rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${intensity}%`, background: '#E38844' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="mt-3 border-t border-gray-100 pt-3 space-y-2">
+            <p className="text-[12px] font-semibold" style={{ color: '#2E2252' }}>รีวิวล่าสุดจากลูกค้า</p>
+            {latestReviews.length === 0 ? (
+              <p className="text-[11px] text-gray-400">ยังไม่มีรีวิว</p>
+            ) : (
+              latestReviews.slice(0, 2).map((r) => (
+                <div key={r.id} className="rounded-xl border border-gray-100 p-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-gray-700 truncate">{r.reviewer}</p>
+                    <p className="text-[11px] text-amber-600">★ {Number(r.rating || 0).toFixed(1)}</p>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">{r.comment || '-'}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

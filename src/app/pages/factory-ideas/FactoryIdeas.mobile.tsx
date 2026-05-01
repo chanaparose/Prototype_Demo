@@ -703,49 +703,43 @@ export function FactoryIdeasMobile() {
 
         ) : isFactoryTab ? (
           /* ━━━ Factory-only Grid ━━━ */
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             {visibleFactories.map((factory) => (
               <article
                 key={factory.id}
-                className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]"
                 onClick={() => navigate(`/factories/${factory.id}`)}
               >
                 {/* Image */}
-                <div className="relative h-[150px] shrink-0 bg-gray-100">
-                  <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
-                  <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: COLORS.teal }}>
-                    โรงงาน
-                  </span>
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                  <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   {factory.verified && (
-                    <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                      <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
-                      <span className="text-[8px] font-semibold" style={{ color: '#A238FF' }}>ยืนยัน</span>
+                    <div className="absolute top-1 left-1 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                      <BadgeCheck className="w-2.5 h-2.5 shrink-0" style={{ color: '#A238FF' }} />
+                      <span className="font-medium text-[8px]" style={{ color: '#A238FF' }}>ยืนยัน</span>
                     </div>
                   )}
                 </div>
                 {/* Body */}
-                <div className="p-3 flex flex-col flex-1 min-w-0">
-                  <h3 className="text-xs font-bold leading-[18px] line-clamp-2 min-h-[36px]" style={{ color: COLORS.blue }}>
+                <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                  <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
                     {factory.name}
-                  </h3>
-                  <div className="flex items-center gap-1 mt-1 min-w-0">
-                    <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
-                    <span className="text-[10px] text-gray-400 truncate">
+                  </p>
+                  <div className="flex items-center gap-0.5">
+                    <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                    <span className="text-gray-500 text-[10px] truncate">
                       {(factory.provinceName ?? factory.location).trim() || '—'}
                     </span>
                   </div>
                   {/* Footer */}
-                  <div className="mt-auto pt-2 border-t border-gray-100">
+                  <div className="mt-auto pt-1 border-t border-gray-50">
                     <div className="flex items-center justify-between min-w-0">
                       <div className="flex items-center gap-0.5 shrink-0">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
-                        <span className="text-[10px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
-                        <span className="text-[9px] text-gray-400">({factory.reviews})</span>
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
+                        <span className="text-gray-400 text-[9px]">({factory.reviews})</span>
                       </div>
-                      <span className="text-[9px] text-gray-400 shrink-0">
-                        MOQ <span className="font-semibold tabular-nums" style={{ color: COLORS.blue }}>{factory.minOrder}</span>
-                      </span>
+                      <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {factory.minOrder}</span>
                     </div>
                   </div>
                 </div>
@@ -816,26 +810,25 @@ export function FactoryIdeasMobile() {
           /* ━━━ Grid View ━━━
              Rule: grid + items-stretch → ทุกการ์ดในแถวเดียวกันสูงเท่ากัน
              Rule: h-full + flex flex-col → การ์ดยืดเต็ม Grid Track */
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
               return (
                 <article
                   key={item.id}
-                  className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]"
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   {/* ── Image: h-[150px] ตายตัว + shrink-0 ป้องกัน flex บีบ ── */}
-                  <div className="relative h-[150px] shrink-0 bg-gray-100">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
                     <span
-                      className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm"
+                      className="absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
                       style={{ backgroundColor: badgeColor }}
                     >
                       {contentTypeLabel[item.contentType]}
@@ -843,54 +836,30 @@ export function FactoryIdeasMobile() {
                   </div>
 
                   {/* ── Body: flex-1 ยืดเต็มที่เหลือ + min-w-0 ให้ truncate ทำงาน ── */}
-                  <div className="p-3 flex flex-col flex-1 min-w-0">
+                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
 
                     {/* Title — min-h-[36px] จอง 2 บรรทัดเสมอ */}
-                    <h3
-                      className="text-xs font-bold leading-[18px] line-clamp-2 min-h-[36px]"
-                      style={{ color: COLORS.blue }}
-                    >
+                    <h3 className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
                       {item.title}
                     </h3>
 
-                    {/* Excerpt — min-h-[28px] จอง 2 บรรทัดเสมอ */}
-                    <p className="text-[10px] leading-[14px] text-gray-400 mt-1 line-clamp-2 min-h-[28px]">
-                      {item.excerpt}
-                    </p>
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                      <span className="text-gray-500 text-[10px] truncate">
+                        {(factory?.provinceName ?? factory?.location ?? '').trim() || '—'}
+                      </span>
+                    </div>
 
                     {/* ── Footer: mt-auto ดันลงล่างเสมอ ── */}
-                    <div className="mt-auto pt-2 border-t border-gray-100">
+                    <div className="mt-auto pt-1 border-t border-gray-50">
                       {/* Factory name — h-[18px] ตายตัว ไม่ว่ามีหรือไม่มีชื่อ */}
-                      <div className="h-[18px] mb-1 min-w-0">
-                        {item.factoryName && (
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                            className="flex items-center gap-1 w-full text-left text-[10px] font-semibold active:opacity-80 min-w-0"
-                            style={{ color: COLORS.blue }}
-                          >
-                            <span className="truncate">{item.factoryName}</span>
-                            {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
-                          </button>
-                        )}
-                      </div>
-
-                      {/* MOQ + Heart — ตำแหน่งตรงกันเสมอ */}
-                      <div className="flex items-center justify-end min-w-0">
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
-                          className="flex items-center gap-1 shrink-0 text-[10px] text-gray-400 active:opacity-70"
-                          aria-label="ถูกใจ"
-                        >
-                          <Heart
-                            className="w-3 h-3 shrink-0"
-                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
-                          />
-                          <span className="tabular-nums font-medium text-gray-500">
-                            {item.likes + (isLiked(item.id) ? 1 : 0)}
-                          </span>
-                        </button>
+                      <div className="flex items-center justify-between min-w-0">
+                        <div className="flex items-center gap-0.5 min-w-0">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                          <span className="text-gray-700 text-[10px] font-semibold">{factory?.rating ?? 0}</span>
+                          <span className="text-gray-400 text-[9px] truncate">({factory?.reviews ?? 0})</span>
+                        </div>
+                        <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder}</span>
                       </div>
                     </div>
                   </div>
@@ -940,6 +909,9 @@ export function FactoryIdeasMobile() {
                         >
                           {item.title}
                         </h3>
+                        <p className="text-[10px] leading-[15px] text-gray-500 line-clamp-2 mt-1">
+                          {item.excerpt || ' '}
+                        </p>
                       </div>
 
                       {/* Footer — mt-auto ติดขอบล่าง */}
@@ -1001,41 +973,50 @@ export function FactoryIdeasMobile() {
                 ดูทั้งหมด ({visibleFactories.length})
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {visibleFactories.slice(0, 4).map((factory) => (
-                <article
+                <div
                   key={`fac-${factory.id}`}
-                  className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
                   onClick={() => navigate(`/factories/${factory.id}`)}
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]"
                 >
-                  <div className="relative h-[120px] shrink-0 bg-gray-100">
-                    <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover" />
-                    <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: COLORS.teal }}>
-                      โรงงาน
-                    </span>
-                    {factory.verified && (
-                      <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                        <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                    <ImageWithFallback
+                      src={factory.image}
+                      alt={factory.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {factory.verified === true && (
+                      <div className="absolute top-1 left-1 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                        <BadgeCheck className="w-2.5 h-2.5 shrink-0" style={{ color: '#A238FF' }} />
+                        <span className="font-medium text-[8px]" style={{ color: '#A238FF' }}>
+                          ยืนยัน
+                        </span>
                       </div>
                     )}
                   </div>
-                  <div className="p-2.5 flex flex-col flex-1 min-w-0">
-                    <h3 className="text-[11px] font-bold truncate" style={{ color: COLORS.blue }}>{factory.name}</h3>
-                    <div className="flex items-center gap-0.5 mt-0.5 min-w-0">
-                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                      <span className="text-[9px] text-gray-400 truncate">
-                        {(factory.provinceName ?? factory.location).trim() || '—'}
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                    <div>
+                      <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
+                        {factory.name}
+                      </p>
                       <div className="flex items-center gap-0.5">
-                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
-                        <span className="text-[9px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[10px] truncate">
+                          {(factory.provinceName ?? factory.location).trim() || '—'}
+                        </span>
                       </div>
-                      <span className="text-[8px] text-gray-400">MOQ {factory.minOrder}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                      <div className="flex items-center gap-0.5 min-w-0">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
+                        <span className="text-gray-400 text-[9px] truncate">({factory.reviews})</span>
+                      </div>
+                      <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {factory.minOrder}</span>
                     </div>
                   </div>
-                </article>
+                </div>
               ))}
             </div>
           </div>

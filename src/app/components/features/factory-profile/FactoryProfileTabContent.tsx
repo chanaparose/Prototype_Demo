@@ -1,7 +1,10 @@
 import React from 'react';
 import {
   Building2,
+  ChevronRight,
   Factory,
+  Search,
+  ThumbsUp,
   MapPin,
   Package,
   Percent,
@@ -57,6 +60,8 @@ export type ReviewItem = {
   rating: number;
   comment: string;
   imageUrls?: string[];
+  helpfulCount?: number;
+  optionText?: string;
 };
 
 const TABS: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -336,25 +341,50 @@ export function FactoryProfileTabContent({
             </div>
           </div>
           <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-            <p className="text-sm text-gray-900 mb-2.5" style={{ fontWeight: 700 }}>
-              รีวิวจากลูกค้า
-            </p>
+            <div className="flex items-center justify-between mb-2.5">
+              <p className="text-sm text-gray-900 inline-flex items-center gap-1.5" style={{ fontWeight: 700 }}>
+                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                คะแนนสินค้า ({reviews.length})
+              </p>
+              <button
+                type="button"
+                className="text-xs font-medium inline-flex items-center gap-0.5 text-gray-500 hover:text-gray-700"
+              >
+                ดูทั้งหมด <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            <div className="mb-3 relative">
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                disabled
+                placeholder="ค้นหารีวิวจากผู้ซื้อคนอื่น"
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-3 py-2 text-xs text-gray-500"
+              />
+            </div>
+
             <div className="space-y-2.5">
               {reviews.length === 0 ? (
                 <p className="text-sm text-gray-500">ยังไม่มีรีวิว</p>
               ) : (
-                reviews.map((review) => (
+                reviews.slice(0, 4).map((review) => (
                   <div key={review.id} className="rounded-xl bg-gray-50 p-3">
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-xs text-gray-700" style={{ fontWeight: 600 }}>
                         {review.reviewer}
                       </p>
-                      <p className="text-[11px] text-gray-400">
-                        {formatThaiDate(review.date)}
+                      <p className="text-[11px] text-gray-500 inline-flex items-center gap-1">
+                        <ThumbsUp className="w-3 h-3" />
+                        มีประโยชน์ ({Number(review.helpfulCount ?? 0)})
                       </p>
                     </div>
                     <p className="text-[11px] text-amber-600 mb-1">★ {review.rating}</p>
+                    {review.optionText ? (
+                      <p className="text-[11px] text-gray-500 mb-1">ตัวเลือกสินค้า: {review.optionText}</p>
+                    ) : null}
                     <p className="text-xs text-gray-600">{review.comment}</p>
+                    <p className="text-[10px] text-gray-400 mt-1">{formatThaiDate(review.date)}</p>
                     {review.imageUrls && review.imageUrls.length > 0 ? (
                       <div className="mt-2">
                         <ReviewImageAttachments

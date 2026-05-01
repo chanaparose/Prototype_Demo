@@ -86,6 +86,8 @@ function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): Factor
     rating: Number(r.rating ?? 0),
     comment: String(r.comment ?? r.text ?? ''),
     date: String(r.created_at ?? r.date ?? ''),
+    helpfulCount: Number(r.helpful_count ?? r.useful_count ?? 0),
+    optionText: String(r.option_text ?? r.variant ?? r.sku_option ?? '').trim() || undefined,
     ...(imageUrls.length > 0 ? { imageUrls } : {}),
   };
 }

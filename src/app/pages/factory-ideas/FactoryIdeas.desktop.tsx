@@ -704,49 +704,41 @@ export function FactoryIdeasDesktop() {
           </div>
         ) : isFactoryTab ? (
           /* ━━━ Factory-only Grid ━━━ */
-          <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-4 xl:grid-cols-5 gap-3">
             {visibleFactories.map((factory) => (
               <article
                 key={factory.id}
-                className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full"
+                className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col"
                 onClick={() => navigate(`/factories/${factory.id}`)}
               >
-                <div className="relative h-36 overflow-hidden bg-gray-100 shrink-0">
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                   <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
-                  <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.teal }}>
-                    โรงงาน
-                  </span>
                   {factory.verified && (
-                    <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                      <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
-                      <span className="text-[9px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
+                    <div className="absolute top-1 left-1 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                      <BadgeCheck className="w-2.5 h-2.5 shrink-0" style={{ color: '#A238FF' }} />
+                      <span className="font-medium text-[8px]" style={{ color: '#A238FF' }}>ยืนยัน</span>
                     </div>
                   )}
-                  <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ArrowUpRight size={11} className="text-white" />
-                  </div>
                 </div>
-                <div className="p-3 flex flex-col flex-1 min-w-0">
-                  <h3 className="text-[12px] font-bold line-clamp-2 leading-snug min-h-[36px]" style={{ color: COLORS.blue }}>
+                <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                  <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
                     {factory.name}
-                  </h3>
-                  <div className="flex items-center gap-1 mt-1 min-w-0">
-                    <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
-                    <span className="text-[10px] text-gray-400 truncate">
+                  </p>
+                  <div className="flex items-center gap-0.5">
+                    <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                    <span className="text-gray-500 text-[10px] truncate">
                       {(factory.provinceName ?? factory.location).trim() || '—'}
                     </span>
                   </div>
-                  <div className="mt-auto pt-2 border-t border-gray-100">
+                  <div className="mt-auto pt-1 border-t border-gray-50">
                     <div className="flex items-center justify-between min-w-0">
-                      <div className="flex items-center gap-0.5">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
-                        <span className="text-[10px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
-                        <span className="text-[9px] text-gray-400">({factory.reviews})</span>
+                      <div className="flex items-center gap-0.5 min-w-0">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
+                        <span className="text-gray-400 text-[9px] truncate">({factory.reviews})</span>
                       </div>
-                      <span className="text-[9px] text-gray-400 shrink-0">
-                        MOQ <span className="font-semibold" style={{ color: COLORS.blue }}>{factory.minOrder}</span>
-                      </span>
+                      <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {factory.minOrder}</span>
                     </div>
                   </div>
                 </div>
@@ -805,65 +797,44 @@ export function FactoryIdeasDesktop() {
             })}
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-4 xl:grid-cols-5 gap-3">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
               return (
                 <article
                   key={item.id}
-                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col"
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
-                  <div className="relative h-36 overflow-hidden bg-gray-100">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                    <div className="absolute top-2 left-2">
-                      <span
-                        className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white"
-                        style={{ backgroundColor: badgeColor }}
-                      >
-                        {contentTypeLabel[item.contentType]}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowUpRight size={11} className="text-white" />
-                    </div>
+                    <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white" style={{ backgroundColor: badgeColor }}>
+                      {contentTypeLabel[item.contentType]}
+                    </span>
                   </div>
-                  <div className="p-3 flex flex-col gap-2 min-h-0">
-                    <div className="min-w-0">
-                      <h3 className="text-[12px] font-bold line-clamp-2 leading-snug" style={{ color: COLORS.blue }}>{item.title}</h3>
-                      <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2">{item.excerpt}</p>
+                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                    <div>
+                      <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</p>
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[10px] truncate">
+                          {(factory?.provinceName ?? factory?.location ?? '').trim() || '—'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="pt-2 border-t border-gray-100 space-y-1.5">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                        className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
-                        style={{ color: COLORS.blue }}
-                      >
-                        <span className="truncate">{item.factoryName}</span>
-                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
-                      </button>
-                      <div className="flex items-center justify-end gap-2 text-[10px] text-gray-400">
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
-                          className="flex items-center gap-0.5 shrink-0 tabular-nums active:opacity-70"
-                          aria-label="ถูกใจ"
-                        >
-                          <Heart
-                            className="w-2.5 h-2.5 shrink-0"
-                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
-                          />
-                          <span className="text-[10px] leading-none">
-                            {item.likes + (isLiked(item.id) ? 1 : 0)}
-                          </span>
-                        </button>
+                    <div className="mt-auto pt-1 border-t border-gray-50">
+                      <div className="flex items-center justify-between min-w-0">
+                        <div className="flex items-center gap-0.5 min-w-0">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                          <span className="text-gray-700 text-[10px] font-semibold">{factory?.rating ?? 0}</span>
+                          <span className="text-gray-400 text-[9px] truncate">({factory?.reviews ?? 0})</span>
+                        </div>
+                        <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder}</span>
                       </div>
                     </div>
                   </div>
@@ -903,7 +874,7 @@ export function FactoryIdeasDesktop() {
                             <span className="text-[10px] text-gray-400">{item.category}</span>
                           </div>
                           <h3 className="text-[13px] font-bold truncate" style={{ color: COLORS.blue }}>{item.title}</h3>
-                          <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">{item.excerpt}</p>
+                          <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{item.excerpt || ' '}</p>
                         </div>
                         <div className="shrink-0 flex items-center gap-4 text-[11px] text-gray-400">
                           <button
@@ -963,43 +934,50 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleFactories.length})
               </button>
             </div>
-            <div className="grid grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
               {visibleFactories.slice(0, 5).map((factory) => (
-                <article
+                <div
                   key={`fac-${factory.id}`}
-                  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col h-full"
                   onClick={() => navigate(`/factories/${factory.id}`)}
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
                 >
-                  <div className="relative h-32 overflow-hidden bg-gray-100 shrink-0">
-                    <ImageWithFallback src={factory.image} alt={factory.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    <span className="absolute top-2 left-2 z-[1] px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.teal }}>
-                      โรงงาน
-                    </span>
-                    {factory.verified && (
-                      <div className="absolute top-2 right-2 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                        <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: '#A238FF' }} />
+                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
+                    <ImageWithFallback
+                      src={factory.image}
+                      alt={factory.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {factory.verified === true && (
+                      <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                        <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
+                        <span className="text-[9px] font-medium" style={{ color: '#A238FF' }}>
+                          ยืนยันแล้ว
+                        </span>
                       </div>
                     )}
                   </div>
-                  <div className="p-2.5 flex flex-col flex-1 min-w-0">
-                    <h3 className="text-[11px] font-bold truncate group-hover:text-[#A238FF] transition-colors" style={{ color: COLORS.blue }}>
-                      {factory.name}
-                    </h3>
-                    <div className="flex items-center gap-0.5 mt-0.5 min-w-0">
-                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                      <span className="text-[9px] text-gray-400 truncate">
-                        {(factory.provinceName ?? factory.location).trim() || '—'}
-                      </span>
-                    </div>
-                    <div className="mt-auto pt-1.5 border-t border-gray-100 flex items-center justify-between">
-                      <div className="flex items-center gap-0.5">
-                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
-                        <span className="text-[9px] font-semibold" style={{ color: COLORS.blue }}>{factory.rating}</span>
+                  <div className="p-2.5 flex flex-col flex-1 justify-between">
+                    <div>
+                      <h3 className="font-medium text-[13px] leading-tight text-gray-700 mb-1 truncate group-hover:text-[#A238FF] transition-colors">
+                        {factory.name}
+                      </h3>
+                      <div className="flex items-center gap-1 mb-1">
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[11px] truncate">
+                          {(factory.provinceName ?? factory.location).trim() || '—'}
+                        </span>
                       </div>
-                      <span className="text-[8px] text-gray-400">MOQ {factory.minOrder}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1.5 border-t border-gray-50">
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <span className="text-gray-700 text-[11px] font-semibold">{factory.rating}</span>
+                        <span className="text-gray-400 text-[9px]">({factory.reviews})</span>
+                      </div>
+                      <span className="text-gray-400 text-[9px]">ขั้นต่ำ {factory.minOrder}</span>
                     </div>
                   </div>
-                </article>
+                </div>
               ))}
             </div>
           </div>

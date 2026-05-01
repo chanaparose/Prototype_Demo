@@ -17,6 +17,7 @@ import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../contexts/AuthContext';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
+import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
 import { useFavorites } from '../../hooks/useFavorites';
 
 const BRAND = {
@@ -67,6 +68,7 @@ export function ProductDetailMobile() {
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, isIdea, resolvedId, relatedProducts } = useProductDetailShowcase();
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
+  const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
   const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {
@@ -131,6 +133,7 @@ export function ProductDetailMobile() {
   const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
   const reviewCount = Number(summary?.review_count ?? factory?.reviews ?? 0);
   const breakdown = summary?.rating_breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
+  const latestReviews = reviewListQ.data ?? [];
 
   // ── Spec rows ──
   const specRows: { label: string; value: string }[] = [];
@@ -456,6 +459,24 @@ export function ProductDetailMobile() {
               );
             })}
           </div>
+        </div>
+        <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+          <p className="text-[12px] font-semibold" style={{ color: BRAND.ink }}>
+            รีวิวล่าสุดจากลูกค้า
+          </p>
+          {latestReviews.length === 0 ? (
+            <p className="text-[11px] text-gray-400">ยังไม่มีรีวิว</p>
+          ) : (
+            latestReviews.slice(0, 2).map((r) => (
+              <div key={r.id} className="rounded-lg border border-gray-100 px-2.5 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold text-gray-700 truncate">{r.reviewer}</p>
+                  <p className="text-[10px] text-amber-600">★ {Number(r.rating || 0).toFixed(1)}</p>
+                </div>
+                <p className="text-[11px] text-gray-600 mt-1 line-clamp-2">{r.comment || '-'}</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
