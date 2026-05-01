@@ -10,7 +10,7 @@ import { ExploreMobile } from './Explore.mobile';
 import { ExploreDesktop } from './Explore.desktop';
 
 export function Explore() {
-  const isDesktop = useIsDesktop();
+  const isDesktop = useIsDesktop(768);
   const { showGate, pageApisReady, setPageApisReady } = useManualApiPageGate();
   const data = useData();
   const { isAuthenticated } = useAuth();

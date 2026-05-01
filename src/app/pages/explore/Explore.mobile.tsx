@@ -55,7 +55,7 @@ export function ExploreMobile({
 }: ExploreMobileProps) {
   const navigate = useNavigate();
 
-  const productShowcases = (exploreProducts ?? []).slice(0, 4);
+  const productShowcases = (exploreProducts ?? []).slice(0, 8);
   const promoShowcases = (explorePromotions ?? []).slice(0, 4);
 
   const productBannerImg = 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700';
@@ -65,7 +65,7 @@ export function ExploreMobile({
     'https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600';
 
   return (
-    <div className="lg:hidden pt-5 pb-4 space-y-5">
+    <div className="md:hidden pt-5 pb-4 space-y-5">
       {/* Hero Banner — matches desktop purple gradient */}
       <div className="mx-4 relative rounded-2xl overflow-hidden h-[160px] shadow-md flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
         <div className="absolute top-0 right-0 w-[280px] h-full rounded-l-[60px] opacity-70 transform translate-x-16 skew-x-[-15deg]" style={{ background: '#A238FF' }} />
@@ -159,54 +159,45 @@ export function ExploreMobile({
           </div>
 
           {hasProductShowcases ? (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                {productShowcases.map((item) => (
-                  <div
-                    key={item.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() =>
-                      navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
+            <div
+              className="flex gap-3 overflow-x-auto pb-2"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {productShowcases.map((item) => (
+                <div
+                  key={item.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() =>
+                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                     }
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
-                      }
-                    }}
-                    className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer"
-                  >
-                    <div className="relative h-32 overflow-hidden bg-gray-50">
-                      <ImageWithFallback
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                       
-                    </div>
-                    <div className="p-2.5">
-                      <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
-                      {(item.category || item.subCategoryName) ? (
-                        <p className="text-[10px] text-violet-700 font-medium truncate mb-0.5">
-                          {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
-                        </p>
-                      ) : null}
-                      <p className="text-[11px] text-gray-500 truncate">{item.factoryName}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => navigate('/factory-ideas?type=product')}
-                  className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-8 py-2 rounded-lg text-xs font-medium transition-colors"
+                  }}
+                  className="flex-shrink-0 w-[200px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
                 >
-                  ดูเพิ่มเติม
-                </button>
-              </div>
-            </>
+                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-2.5 flex flex-col flex-1">
+                    <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
+                    {(item.category || item.subCategoryName) ? (
+                      <p className="text-[10px] text-violet-700 font-medium truncate mb-0.5">
+                        {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
+                      </p>
+                    ) : null}
+                    <p className="text-[11px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-6 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
@@ -224,7 +215,7 @@ export function ExploreMobile({
       </div>
 
       <ExploreFactoryGrid
-        factories={factories ?? []}
+        factories={(factories ?? []).slice(0, 6)}
         onFactoryClick={(id) => navigate(`/factories/${id}`)}
         onSeeAll={() => navigate('/factory-ideas?type=factory')}
       />
@@ -284,7 +275,7 @@ export function ExploreMobile({
                     }}
                   className="flex-shrink-0 w-[200px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer"
                 >
-                  <div className="h-28 relative overflow-hidden bg-gray-100">
+                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}

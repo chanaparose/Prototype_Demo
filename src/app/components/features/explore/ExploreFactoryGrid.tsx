@@ -54,7 +54,7 @@ export function ExploreFactoryGrid({ factories, onFactoryClick, onSeeAll }: Expl
               onClick={() => onFactoryClick(factory.id)}
               className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col"
             >
-              <div className="relative h-20 overflow-hidden bg-gray-100">
+              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                 <ImageWithFallback
                   src={factory.image}
                   alt={factory.name}

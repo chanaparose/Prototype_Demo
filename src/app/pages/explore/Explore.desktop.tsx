@@ -33,7 +33,7 @@ type ProductItem = {
   subCategoryName?: string;
 };
 
-const CARD_W = 204; // card width (192px) + gap (12px)
+const CARD_W = 252; // card width (240px) + gap (12px)
 const VISIBLE_CARDS = 4;
 const AUTO_SCROLL_INTERVAL = 3500;
 
@@ -178,10 +178,10 @@ function ProductCarouselSection({
                         onItemClick?.(product.id);
                       }
                     }}
-                    className="flex-shrink-0 w-[192px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
+                    className="flex-shrink-0 w-[240px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
                   >
-                    {/* Image — taller for product visibility */}
-                    <div className="h-[180px] relative overflow-hidden bg-gray-50">
+                    {/* Image */}
+                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
                       <ImageWithFallback
                         src={product.img}
                         alt={product.title}
@@ -410,7 +410,7 @@ export function ExploreDesktop({
   };
 
   return (
-    <div className="hidden lg:block min-h-screen">
+    <div className="hidden md:block min-h-screen">
       <div className="lg:px-8 lg:py-7 space-y-12 pb-0 w-full mx-auto">
 
         {/* ═══ 1. Hero Banner ═══ */}
@@ -581,14 +581,14 @@ export function ExploreDesktop({
 
           {/* --- Body Section --- */}
           <div className="p-4 bg-gradient-to-b from-purple-50/20 to-white">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {(factories ?? []).map((factory) => (
+            <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
+              {(factories ?? []).slice(0, 8).map((factory) => (
                 <div
                   key={factory.id}
                   onClick={() => navigate(`/factories/${factory.id}`)}
                   className="bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
                 >
-                  <div className="aspect-video relative overflow-hidden bg-gray-100">
+                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={factory.image}
                       alt={factory.name}
@@ -669,7 +669,7 @@ export function ExploreDesktop({
             <div className="lg:w-[60%] flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
               {promoShowcases.map((item) => (
                 <div key={item.id} onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
-                  <div className="h-36 relative overflow-hidden bg-gray-100">
+                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
