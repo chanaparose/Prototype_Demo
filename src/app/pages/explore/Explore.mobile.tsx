@@ -132,11 +132,9 @@ export function ExploreMobile({
             ดูเพิ่มเติม <ChevronRight size={14} />
           </button>
         </div>
-        <div className="px-4 space-y-3">
-          {/* แบนเนอร์เดียวกับ desktop (ซ้าย maaboom-style) — full width บนมือถือ */}
-          <div
-            className="relative overflow-hidden rounded-2xl shadow-md min-h-[140px]"
-          >
+        {/* Banner — padded */}
+        <div className="px-4 mb-3">
+          <div className="relative overflow-hidden rounded-2xl shadow-md min-h-[140px]">
             <ImageWithFallback
               src={productBannerImg}
               alt="สินค้าแนะนำ"
@@ -157,48 +155,53 @@ export function ExploreMobile({
               </div>
             </div>
           </div>
+        </div>
 
-          {hasProductShowcases ? (
-            <div
-              className="flex gap-3 overflow-x-auto pb-2"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {productShowcases.map((item) => (
-                <div
-                  key={item.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() =>
-                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
+        {/* Cards — full-width horizontal scroll (เริ่มที่ pl-4 ซ้าย, spacer ขวา) */}
+        {hasProductShowcases ? (
+          <div
+            className="flex gap-3 overflow-x-auto pb-2 pl-4"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {productShowcases.map((item) => (
+              <div
+                key={item.id}
+                role="button"
+                tabIndex={0}
+                onClick={() =>
+                  navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                   }
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
-                    }
-                  }}
-                  className="flex-shrink-0 w-[200px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
-                >
-                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-2.5 flex flex-col flex-1">
-                    <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
-                    {(item.category || item.subCategoryName) ? (
-                      <p className="text-[10px] text-violet-700 font-medium truncate mb-0.5">
-                        {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
-                      </p>
-                    ) : null}
-                    <p className="text-[11px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
-                  </div>
+                }}
+                className="flex-shrink-0 w-[200px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+              >
+                <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
+                  <ImageWithFallback
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
-              ))}
-            </div>
-          ) : (
+                <div className="p-2.5 flex flex-col flex-1">
+                  <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
+                  {(item.category || item.subCategoryName) ? (
+                    <p className="text-[10px] text-violet-700 font-medium truncate mb-0.5">
+                      {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
+                    </p>
+                  ) : null}
+                  <p className="text-[11px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
+                </div>
+              </div>
+            ))}
+            {/* trailing spacer — การ์ดสุดท้ายไม่โดนตัด */}
+            <div className="flex-shrink-0 w-4" aria-hidden />
+          </div>
+        ) : (
+          <div className="px-4">
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-6 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
               <p className="mt-1 text-xs text-gray-400">ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง</p>
@@ -210,8 +213,8 @@ export function ExploreMobile({
                 ดูสินค้าแนะนำ
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <ExploreFactoryGrid

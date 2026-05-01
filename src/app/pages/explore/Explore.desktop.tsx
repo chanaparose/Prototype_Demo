@@ -411,7 +411,7 @@ export function ExploreDesktop({
 
   return (
     <div className="hidden md:block min-h-screen">
-      <div className="lg:px-8 lg:py-7 space-y-12 pb-0 w-full mx-auto">
+      <div className="px-4 md:px-6 lg:px-8 py-5 lg:py-7 space-y-12 pb-0 w-full mx-auto">
 
         {/* ═══ 1. Hero Banner ═══ */}
         <section className="relative rounded-3xl overflow-hidden h-[280px] shadow-lg flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
