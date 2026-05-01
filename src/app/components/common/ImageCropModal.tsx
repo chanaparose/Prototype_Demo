@@ -180,12 +180,10 @@ export function ImageCropModal({
   useEffect(() => {
     if (!natural.width || !natural.height || !viewport.width || !viewport.height) return;
     if (didInitForSourceRef.current) return;
-    // Scale image to COVER the crop viewport (object-fit: cover behaviour).
-    // This ensures:
-    //   • The crop frame is always filled — no empty/squeezed areas.
-    //   • The canvas render uses the same baseScale, so the output exactly
-    //     matches what the user sees in the preview.
-    const scaleToFill = Math.max(
+    // Scale image to FIT inside the crop viewport (object-fit: contain behaviour).
+    // This preserves the original aspect ratio — no squishing.
+    // The user can then zoom in freely to fill the frame as desired.
+    const scaleToFill = Math.min(
       viewport.width / natural.width,
       viewport.height / natural.height,
     );
@@ -224,6 +222,7 @@ export function ImageCropModal({
   if (!open || !file) return null;
 
   const canRender = sourceUrl && natural.width > 0 && natural.height > 0 && viewport.width > 0 && viewport.height > 0;
+  const isFourByThree = Math.abs(aspect - 4 / 3) < 0.001;
 
   return (
     <div className="fixed inset-0 z-[120] bg-black/55 backdrop-blur-[1px] p-4 flex items-center justify-center">
@@ -244,13 +243,19 @@ export function ImageCropModal({
         <div className="p-4 space-y-3 overflow-y-auto">
           <div
             ref={stageRef}
-            className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 select-none touch-none"
+            className={`relative mx-auto block max-w-full overflow-hidden select-none touch-none ${
+              isFourByThree
+                ? 'rounded-2xl border-2 border-dashed border-gray-200 bg-gray-100'
+                : 'rounded-xl border border-slate-200 bg-slate-100'
+            }`}
             style={{
               // Keep crop stage stable and never exceed viewport.
-              // Width remains responsive; height is clamped to screen.
+              // For showcase uploader, we align the frame with the on-page 4:3 cover box.
               aspectRatio: `${aspect}`,
+              width: 'min(100%, calc((92vh - 220px) * var(--crop-aspect)))',
+              maxWidth: '100%',
               maxHeight: 'calc(92vh - 220px)',
-              height: 'min(calc((100vw - 64px) / var(--crop-aspect)), calc(92vh - 220px))',
+              height: 'auto',
               ['--crop-aspect' as string]: String(aspect),
             }}
             onPointerDown={(e) => {

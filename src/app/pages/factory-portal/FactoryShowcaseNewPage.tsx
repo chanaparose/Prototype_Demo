@@ -222,10 +222,9 @@ export function FactoryShowcaseNewPage() {
           open={cropFile != null}
           file={cropFile}
           title="จัดตำแหน่งภาพ Showcase"
-          // PD/PM แสดงเป็น aspect-square (1:1) บนหน้า customer detail
-          // → crop ที่ 1:1; ID เป็นบทความ → 16:9 banner
-          aspect={contentType === 'ID' ? 16 / 9 : 1}
-          outputWidth={contentType === 'ID' ? 1800 : 1200}
+          // Lock crop frame to 4:3 for showcase uploader/editor consistency.
+          aspect={4 / 3}
+          outputWidth={1600}
           onCancel={() => setCropFile(null)}
           onConfirm={async (file) => {
             setUploading(true);
@@ -251,7 +250,7 @@ export function FactoryShowcaseNewPage() {
         {/* ── Cover image (hero) ── */}
         {contentType !== 'ID' ? (
           <section>
-            <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors cursor-pointer">
+            <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-[4/3] border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors cursor-pointer">
             {imageUrls[0] ? (
               <>
                 <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
