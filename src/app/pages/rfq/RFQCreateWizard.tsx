@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { z } from 'zod';
 import { useData } from '../../contexts/DataContext';
-import { categoriesApi } from '../../services/api';
+import { addressesApi, categoriesApi, masterApi } from '../../services/api';
 import { useCreateRFQ } from './useCreateRFQ';
 import { useRFQDraft } from './useRFQDraft';
 import { Step1Basic } from './steps/Step1Basic';
@@ -32,6 +32,11 @@ const step4Schema = z.object({
 });
 
 const STEPS = ['กรอกข้อมูล', 'สรุปข้อมูล'];
+const INSPECTION_LABEL: Record<'self' | 'third_party' | 'buyer_onsite', string> = {
+  self: 'ตรวจสอบโดยโรงงาน',
+  third_party: 'ตรวจสอบโดยหน่วยงานภายนอก',
+  buyer_onsite: 'ผู้ซื้อเข้าตรวจที่โรงงาน',
+};
 
 export function RFQCreateWizard() {
   const navigate = useNavigate();
@@ -43,6 +48,9 @@ export function RFQCreateWizard() {
   const [subCategories, setSubCategories] = React.useState<
     { id: number; name: string; sortOrder?: number }[]
   >([]);
+  const [addressMap, setAddressMap] = React.useState<Record<number, string>>({});
+  const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
+  const [categoryMap, setCategoryMap] = React.useState<Record<number, string>>({});
 
   React.useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
@@ -77,6 +85,68 @@ export function RFQCreateWizard() {
     };
   }, [draft.category_id]);
 
+  React.useEffect(() => {
+    let active = true;
+    void addressesApi.list()
+      .then((raw) => {
+        if (!active) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped: Record<number, string> = {};
+        for (const r of arr) {
+          const id = Number(r.address_id ?? r.id ?? 0);
+          if (!Number.isFinite(id) || id <= 0) continue;
+          const label = [
+            String(r.address_detail ?? '').trim(),
+            String(r.sub_district_name ?? r.sub_district ?? '').trim(),
+            String(r.district_name ?? r.district ?? '').trim(),
+            String(r.province_name ?? r.province ?? '').trim(),
+            String(r.zip_code ?? '').trim(),
+          ].filter(Boolean).join(', ');
+          mapped[id] = label || `ที่อยู่ #${id}`;
+        }
+        setAddressMap(mapped);
+      })
+      .catch(() => {
+        if (active) setAddressMap({});
+      });
+
+    void categoriesApi.list()
+      .then((raw) => {
+        if (!active) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped: Record<number, string> = {};
+        for (const r of arr) {
+          const id = Number(r.category_id ?? r.id ?? 0);
+          const name = String(r.category_name ?? r.name ?? '').trim();
+          if (Number.isFinite(id) && id > 0 && name) mapped[id] = name;
+        }
+        setCategoryMap(mapped);
+      })
+      .catch(() => {
+        if (active) setCategoryMap({});
+      });
+
+    void masterApi.shippingMethods()
+      .then((raw) => {
+        if (!active) return;
+        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const mapped: Record<number, string> = {};
+        for (const r of arr) {
+          const id = Number(r.shipping_method_id ?? r.id ?? 0);
+          const name = String(r.method_name ?? r.name ?? '').trim();
+          if (Number.isFinite(id) && id > 0 && name) mapped[id] = name;
+        }
+        setShippingMap(mapped);
+      })
+      .catch(() => {
+        if (active) setShippingMap({});
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const isFormValid = React.useMemo(() => {
     return (
       step1Schema.safeParse(draft).success &&
@@ -89,8 +159,9 @@ export function RFQCreateWizard() {
   const categoryName = React.useMemo(() => {
     const id = Number(draft.category_id ?? 0);
     if (!id) return '-';
-    return categories.find((c) => c.id === id)?.name ?? String(id);
-  }, [categories, draft.category_id]);
+    const fromContext = categories.find((c) => Number(c.id) === id)?.name;
+    return fromContext ?? categoryMap[id] ?? String(id);
+  }, [categories, categoryMap, draft.category_id]);
 
   const subCategoryName = React.useMemo(() => {
     const id = Number(draft.sub_category_id ?? 0);
@@ -98,10 +169,27 @@ export function RFQCreateWizard() {
     return subCategories.find((s) => s.id === id)?.name ?? String(id);
   }, [subCategories, draft.sub_category_id]);
 
+  const deliveryAddressLabel = React.useMemo(() => {
+    const id = Number(draft.delivery_address_id ?? 0);
+    if (!id) return '-';
+    return addressMap[id] ?? `ที่อยู่ #${id}`;
+  }, [addressMap, draft.delivery_address_id]);
+
+  const shippingMethodLabel = React.useMemo(() => {
+    const id = Number(draft.shipping_method_id ?? 0);
+    if (!id) return '-';
+    return shippingMap[id] ?? `วิธีจัดส่ง #${id}`;
+  }, [shippingMap, draft.shipping_method_id]);
+
+  const inspectionTypeLabel = React.useMemo(() => {
+    if (!draft.inspection_type) return '-';
+    return INSPECTION_LABEL[draft.inspection_type] ?? draft.inspection_type;
+  }, [draft.inspection_type]);
+
   const optionalMissing = React.useMemo(() => {
     const missing: string[] = [];
     if (!draft.sub_category_id) missing.push('หมวดย่อย');
-    if (!draft.material_grade?.trim()) missing.push('Material grade');
+    if (!draft.material_grade?.trim()) missing.push('วัตถุดิบ');
     if (!draft.target_unit_price) missing.push('งบประมาณรวม');
     if (!draft.target_lead_time_days) missing.push('ระยะเวลาผลิต');
     if (!draft.required_delivery_date) missing.push('วันที่ต้องการรับสินค้า');
@@ -210,18 +298,18 @@ export function RFQCreateWizard() {
                 <p><span className="text-gray-500">งบประมาณรวม:</span> {draft.target_unit_price ?? '-'}</p>
                 <p><span className="text-gray-500">ระยะเวลาผลิต:</span> {draft.target_lead_time_days ?? '-'} วัน</p>
                 <p><span className="text-gray-500">วันที่ต้องการรับ:</span> {draft.required_delivery_date || '-'}</p>
-                <p><span className="text-gray-500">ที่อยู่จัดส่ง:</span> {draft.delivery_address_id ?? '-'}</p>
-                <p><span className="text-gray-500">วิธีจัดส่ง:</span> {draft.shipping_method_id ?? '-'}</p>
+                <p><span className="text-gray-500">ที่อยู่จัดส่ง:</span> {deliveryAddressLabel}</p>
+                <p><span className="text-gray-500">วิธีจัดส่ง:</span> {shippingMethodLabel}</p>
               </div>
             </section>
 
             <section className="rounded-xl border border-gray-100 p-4">
               <p className="font-semibold text-[#2E2252] mb-3">สเปกและคุณภาพ</p>
               <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
-                <p><span className="text-gray-500">Material grade:</span> {draft.material_grade || '-'}</p>
+                <p><span className="text-gray-500">วัตถุดิบ:</span> {draft.material_grade || '-'}</p>
                 <p><span className="text-gray-500">Certifications:</span> {draft.certifications_required.join(', ') || '-'}</p>
                 <p><span className="text-gray-500">ต้องการตัวอย่าง:</span> {draft.sample_required ? `ใช่ (${draft.sample_qty ?? '-'})` : 'ไม่'}</p>
-                <p><span className="text-gray-500">รูปแบบตรวจคุณภาพ:</span> {draft.inspection_type || '-'}</p>
+                <p><span className="text-gray-500">รูปแบบตรวจคุณภาพ:</span> {inspectionTypeLabel}</p>
               </div>
               <p className="mt-2 text-gray-500">รูปอ้างอิง: {draft.reference_images.length} รูป</p>
             </section>

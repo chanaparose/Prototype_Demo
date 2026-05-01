@@ -41,7 +41,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
       <input
         value={draft.material_grade}
         onChange={(e) => setDraft({ material_grade: e.target.value })}
-        placeholder="Material grade"
+        placeholder="วัตถุดิบ"
         className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
       />
       {advanced ? (
