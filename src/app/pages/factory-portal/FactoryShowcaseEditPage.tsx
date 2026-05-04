@@ -198,6 +198,7 @@ export function FactoryShowcaseEditPage() {
   const [uploading, setUploading] = React.useState(false);
   const [cropFile, setCropFile] = React.useState<File | null>(null);
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
+  const [persistedImageIdByUrl, setPersistedImageIdByUrl] = React.useState<Record<string, number>>({});
   const [selectedShowcaseIds, setSelectedShowcaseIds] = React.useState<number[]>([]);
   const [linkedShowcaseError, setLinkedShowcaseError] = React.useState('');
   const didHydrateFromServerRef = React.useRef(false);
@@ -206,9 +207,26 @@ export function FactoryShowcaseEditPage() {
     didHydrateFromServerRef.current = false;
   }, [id]);
 
-  const removeImage = useCallback((urlToRemove: string) => {
+  const removeImage = useCallback(async (urlToRemove: string) => {
+    // Optimistic UI
     setImageUrls((prev) => prev.filter((u) => u !== urlToRemove));
-  }, []);
+
+    const imageId = persistedImageIdByUrl[urlToRemove];
+    if (!id || !Number.isFinite(imageId) || imageId <= 0) return;
+
+    try {
+      await showcasesApi.deleteImage(id, imageId);
+      setPersistedImageIdByUrl((prev) => {
+        const next = { ...prev };
+        delete next[urlToRemove];
+        return next;
+      });
+    } catch (e) {
+      // Revert on failure
+      setImageUrls((prev) => (prev.includes(urlToRemove) ? prev : [...prev, urlToRemove].slice(0, 5)));
+      setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
+    }
+  }, [id, persistedImageIdByUrl]);
 
   const { form, isLoading, isError, refetch } = useEditForm<ShowcaseFormValues, Raw>({
     queryKey: ['showcase', id] as const,
@@ -252,6 +270,29 @@ export function FactoryShowcaseEditPage() {
   const subsResult = useSubCategoriesByCategories(subIds);
   const subOptions =
     selectedCategoryId != null ? subsResult.byCategory.get(selectedCategoryId) ?? [] : [];
+
+  React.useEffect(() => {
+    if (!id) return;
+    let active = true;
+    void showcasesApi.listImages(id)
+      .then((rows) => {
+        if (!active) return;
+        const arr = (Array.isArray(rows) ? rows : []) as Record<string, unknown>[];
+        const map: Record<string, number> = {};
+        for (const r of arr) {
+          const imageId = Number(r.image_id ?? r.id ?? 0);
+          const url = String(r.image_url ?? r.url ?? '').trim();
+          if (Number.isFinite(imageId) && imageId > 0 && url) map[url] = imageId;
+        }
+        setPersistedImageIdByUrl(map);
+      })
+      .catch(() => {
+        if (active) setPersistedImageIdByUrl({});
+      });
+    return () => {
+      active = false;
+    };
+  }, [id]);
 
   const save = useCallback(async (submitStatus: 'DR' | 'AC') => {
     if (!id) return;
@@ -500,7 +541,7 @@ export function FactoryShowcaseEditPage() {
                 <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
                 <button
                   type="button"
-                  onClick={() => removeImage(imageUrls[0])}
+                  onClick={() => void removeImage(imageUrls[0])}
                   className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors z-10"
                   aria-label="ลบภาพปก"
                 >
@@ -530,7 +571,7 @@ export function FactoryShowcaseEditPage() {
                     <img src={url} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
-                      onClick={() => removeImage(url)}
+                      onClick={() => void removeImage(url)}
                       className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center z-10"
                       aria-label="ลบภาพ"
                     >
