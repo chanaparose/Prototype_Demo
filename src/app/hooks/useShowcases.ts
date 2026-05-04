@@ -1,24 +1,26 @@
 /**
  * useShowcases — Load showcases from GET /showcases (API spec §7, new_api_specs_for_fe.md)
  *
- * Optional `type` uses server filter: PD | PM | ID. Omit for full list (ทั้งหมด).
+ * Optional `type` uses server filter: PD | PM | ID | MT. Omit for full list (ทั้งหมด).
  */
 import { useState, useEffect, useMemo } from 'react';
 import { showcasesApi } from '../services/api';
 import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '../contexts/DataContext';
 import { partitionLinkedShowcases } from '../utils/linkedShowcases';
 
-export type ShowcaseApiType = 'PD' | 'PM' | 'ID';
+export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';
 
 /** Maps API `content_type` (and legacy codes) → UI contentType */
-const CT_MAP: Record<string, 'product' | 'promotion' | 'idea'> = {
+const CT_MAP: Record<string, 'product' | 'promotion' | 'idea' | 'material'> = {
   PD: 'product',
   PR: 'product',
   PM: 'promotion',
   ID: 'idea',
+  MT: 'material',
   product: 'product',
   promotion: 'promotion',
   idea: 'idea',
+  material: 'material',
 };
 
 function parseImageUrls(raw: unknown): string[] {
@@ -182,11 +184,12 @@ function cacheKey(type: ShowcaseApiType | undefined) {
 
 /** Map Factory Ideas UI tab → `GET /showcases` query `type` (PD / PM / ID) */
 export function showcaseQueryTypeFromTab(
-  tab: 'all' | 'product' | 'promotion' | 'idea' | 'factory',
+  tab: 'all' | 'product' | 'promotion' | 'idea' | 'material' | 'factory',
 ): ShowcaseApiType | undefined {
   if (tab === 'all' || tab === 'factory') return undefined;
   if (tab === 'product') return 'PD';
   if (tab === 'promotion') return 'PM';
+  if (tab === 'material') return 'MT';
   return 'ID';
 }
 

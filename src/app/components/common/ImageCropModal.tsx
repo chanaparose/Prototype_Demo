@@ -181,12 +181,14 @@ export function ImageCropModal({
     if (!natural.width || !natural.height || !viewport.width || !viewport.height) return;
     if (didInitForSourceRef.current) return;
     // Scale image to FIT inside the crop viewport (object-fit: contain behaviour).
-    // This preserves the original aspect ratio — no squishing.
+    // Never scale above 1.0 — if the image is smaller than the frame, keep it
+    // at its original size and let white padding fill the rest.
     // The user can then zoom in freely to fill the frame as desired.
-    const scaleToFill = Math.min(
+    const scaleToFit = Math.min(
       viewport.width / natural.width,
       viewport.height / natural.height,
     );
+    const scaleToFill = Math.min(1, scaleToFit);
     setBaseScale(scaleToFill);
     setZoom(1);
     setOffset({ x: 0, y: 0 });
@@ -245,8 +247,8 @@ export function ImageCropModal({
             ref={stageRef}
             className={`relative mx-auto block max-w-full overflow-hidden select-none touch-none ${
               isFourByThree
-                ? 'rounded-2xl border-2 border-dashed border-gray-200 bg-gray-100'
-                : 'rounded-xl border border-slate-200 bg-slate-100'
+                ? 'rounded-2xl border-2 border-dashed border-gray-200 bg-white'
+                : 'rounded-xl border border-slate-200 bg-white'
             }`}
             style={{
               // Keep crop stage stable and never exceed viewport.

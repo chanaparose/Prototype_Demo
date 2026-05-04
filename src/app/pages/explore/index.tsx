@@ -24,6 +24,7 @@ export function Explore() {
     showcases,
     productShowcases,
     promotionShowcases,
+    materialShowcases,
     promoSlides,
     exploreCategoriesMerged,
     exploreCategoriesLoading,
@@ -87,6 +88,7 @@ export function Explore() {
           factoryShowcases={showcases as any}
           exploreProducts={productShowcases as any}
           explorePromotions={promotionShowcases as any}
+          exploreMatrials={materialShowcases as any}
           explorePromoCodes={[]}
           promoSlides={promoSlides as any}
         />
@@ -110,6 +112,7 @@ export function Explore() {
         factoryShowcases={showcases as any}
         exploreProducts={productShowcases as any}
         explorePromotions={promotionShowcases as any}
+        exploreMatrials={materialShowcases as any}
         explorePromoCodes={[]}
         promoSlides={promoSlides as any}
       />

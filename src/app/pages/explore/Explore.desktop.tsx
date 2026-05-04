@@ -14,6 +14,7 @@ import {
   Sparkles,
   ShoppingBag,
   Tag,
+  Leaf,
 } from 'lucide-react';
 import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/exploreCategoryTilesConfig';
 import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
@@ -43,14 +44,19 @@ function ProductCarouselSection({
   bannerImg,
   bannerText,
   onItemClick,
+  seeMoreHref = '/factory-ideas?type=product',
+  theme = 'product',
 }: {
   title: string;
   items: ProductItem[];
   bannerImg: string;
   bannerText: string;
   onItemClick?: (id: string) => void;
+  seeMoreHref?: string;
+  theme?: 'product' | 'material';
 }) {
   const navigate = useNavigate();
+  const isMaterial = theme === 'material';
   const hasItems = items.length > 0;
   const [idx, setIdx] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -91,13 +97,16 @@ function ProductCarouselSection({
       {/* Section header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
-          <ShoppingBag className="text-[#F28A2E]" size={20} />
+          {isMaterial
+            ? <Leaf className="text-[#059669]" size={20} />
+            : <ShoppingBag className="text-[#F28A2E]" size={20} />}
           {title}
         </h2>
         <button
           type="button"
-          onClick={() => navigate('/factory-ideas?type=product')}
-          className="text-[#A656A0] text-sm font-medium hover:underline flex items-center gap-0.5 transition-colors"
+          onClick={() => navigate(seeMoreHref)}
+          className="text-sm font-medium hover:underline flex items-center gap-0.5 transition-colors"
+          style={{ color: isMaterial ? '#059669' : '#A656A0' }}
         >
           ดูเพิ่มเติม <ChevronRight size={16} />
         </button>
@@ -112,12 +121,22 @@ function ProductCarouselSection({
             alt={title}
             className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          {/* Gradient overlay — orange theme (soft / faded) */}
-          <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#F27830]/45 via-[#F28A2E]/22 to-transparent" />
+          {/* Gradient overlay */}
+          <div
+            className="absolute inset-0 z-[1]"
+            style={{
+              background: isMaterial
+                ? 'linear-gradient(to top, rgba(4,120,87,0.45), rgba(5,150,105,0.22), transparent)'
+                : 'linear-gradient(to top, rgba(242,120,48,0.45), rgba(242,138,46,0.22), transparent)',
+            }}
+          />
           <div className="absolute inset-0 z-10 flex flex-col justify-between p-4">
             {/* Top badge */}
-            <span className="self-start bg-[#F28A2E]/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow backdrop-blur-[2px]">
-              🐾 PET SHOP
+            <span
+              className="self-start text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow backdrop-blur-[2px]"
+              style={{ background: isMaterial ? 'rgba(5,150,105,0.75)' : 'rgba(242,138,46,0.75)' }}
+            >
+              {isMaterial ? '🌿 วัตถุดิบ' : '🐾 PET SHOP'}
             </span>
             {/* Bottom text */}
             <div>
@@ -125,7 +144,7 @@ function ProductCarouselSection({
                 {bannerText}
               </p>
               <span className="inline-block bg-white/20 border border-white/40 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
-                สำหรับสัตว์เลี้ยงแสนรัก
+                {isMaterial ? 'สำหรับการผลิตของคุณ' : 'สำหรับสัตว์เลี้ยงแสนรัก'}
               </span>
             </div>
           </div>
@@ -155,7 +174,7 @@ function ProductCarouselSection({
                 type="button"
                 onClick={() => goTo(idx - 1)}
                 disabled={idx === 0}
-                className="absolute left-0 top-[calc(50%-20px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="absolute left-0 top-[calc(50%-28px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={18} className="text-gray-600" />
               </button>
@@ -218,7 +237,7 @@ function ProductCarouselSection({
                 type="button"
                 onClick={() => goTo(idx + 1)}
                 disabled={idx >= totalDots - 1}
-                className="absolute right-0 top-[calc(50%-20px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="absolute right-0 top-[calc(50%-28px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={18} className="text-gray-600" />
               </button>
@@ -350,6 +369,7 @@ type ExploreDesktopProps = {
   factoryShowcases: ShowcaseItem[];
   exploreProducts: ShowcaseItem[];
   explorePromotions: ShowcaseItem[];
+  exploreMatrials?: ShowcaseItem[];
   explorePromoCodes: unknown[];
   promoSlides: unknown[];
 };
@@ -368,6 +388,7 @@ export function ExploreDesktop({
   ideaArticles,
   exploreProducts,
   explorePromotions,
+  exploreMatrials,
   promoSlides,
 }: ExploreDesktopProps) {
   const navigate = useNavigate();
@@ -388,6 +409,18 @@ export function ExploreDesktop({
   const promoShowcases = useMemo(
     () => (explorePromotions ?? []).slice(0, 4),
     [explorePromotions],
+  );
+
+  const materialShowcases = useMemo(
+    () => (exploreMatrials ?? []).slice(0, 8).map((s) => ({
+      id: s.id,
+      title: s.title,
+      price: `MOQ ${s.minOrder}`,
+      img: s.image,
+      category: s.category,
+      subCategoryName: s.subCategoryName,
+    })),
+    [exploreMatrials],
   );
 
   // Promo slides จาก API เท่านั้น — ไม่มี fallback
@@ -536,6 +569,19 @@ export function ExploreDesktop({
           items={productShowcases}
           bannerImg={'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'}
           bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง"
+          onItemClick={(id) =>
+            navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
+          }
+        />
+
+        {/* ═══ 5b. วัตถุดิบแนะนำ ═══ */}
+        <ProductCarouselSection
+          title="วัตถุดิบแนะนำ"
+          theme="material"
+          seeMoreHref="/factory-ideas?type=material"
+          items={materialShowcases}
+          bannerImg={'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=500&h=300&fit=crop'}
+          bannerText="วัตถุดิบคุณภาพสูง"
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
           }

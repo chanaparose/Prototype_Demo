@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf } from 'lucide-react';
 import {
   ExplorePromoCarousel,
   ExploreCategories,
@@ -34,6 +34,7 @@ type ExploreMobileProps = {
   factoryShowcases: ShowcaseItem[];
   exploreProducts: ShowcaseItem[];
   explorePromotions: ShowcaseItem[];
+  exploreMatrials?: ShowcaseItem[];
   explorePromoCodes: unknown[];
   promoSlides: unknown[];
 };
@@ -50,6 +51,7 @@ export function ExploreMobile({
   ideaArticles,
   exploreProducts,
   explorePromotions,
+  exploreMatrials,
   explorePromoCodes,
   promoSlides,
 }: ExploreMobileProps) {
@@ -57,12 +59,11 @@ export function ExploreMobile({
 
   const productShowcases = (exploreProducts ?? []).slice(0, 8);
   const promoShowcases = (explorePromotions ?? []).slice(0, 4);
+  const materialShowcases = (exploreMatrials ?? []).slice(0, 8);
 
-  const productBannerImg = 'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700';
   const hasProductShowcases = productShowcases.length > 0;
   const hasPromoShowcases = promoShowcases.length > 0;
-  const PROMO_BANNER_IMG =
-    'https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600';
+  const hasMaterialShowcases = materialShowcases.length > 0;
 
   return (
     <div className="md:hidden pt-5 pb-4 space-y-5">
@@ -132,30 +133,6 @@ export function ExploreMobile({
             ดูเพิ่มเติม <ChevronRight size={14} />
           </button>
         </div>
-        {/* Banner — padded */}
-        <div className="px-4 mb-3">
-          <div className="relative overflow-hidden rounded-2xl shadow-md min-h-[140px]">
-            <ImageWithFallback
-              src={productBannerImg}
-              alt="สินค้าแนะนำ"
-              className="absolute inset-0 z-0 h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#F27830]/45 via-[#F28A2E]/22 to-transparent" />
-            <div className="relative z-10 flex min-h-[140px] flex-col justify-between p-4">
-              <span className="self-start bg-[#F28A2E]/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow backdrop-blur-[2px]">
-                🐾 PET SHOP
-              </span>
-              <div>
-                <p className="text-white text-base font-black leading-tight drop-shadow-lg mb-1.5">
-                  คุ้มค่า ถูกใจสัตว์เลี้ยง
-                </p>
-                <span className="inline-block bg-white/20 border border-white/40 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                  สำหรับสัตว์เลี้ยงแสนรัก
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Cards — full-width horizontal scroll (เริ่มที่ pl-4 ซ้าย, spacer ขวา) */}
         {hasProductShowcases ? (
@@ -217,6 +194,81 @@ export function ExploreMobile({
         )}
       </div>
 
+      {/* วัตถุดิบแนะนำ (Mobile) */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between px-4 mb-3">
+          <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
+            <Leaf size={16} className="text-[#059669]" /> วัตถุดิบแนะนำ
+          </h3>
+          <button
+            type="button"
+            onClick={() => navigate('/factory-ideas?type=material')}
+            className="text-[#059669] text-xs font-medium flex items-center gap-0.5"
+          >
+            ดูเพิ่มเติม <ChevronRight size={14} />
+          </button>
+        </div>
+
+        {/* Cards — horizontal scroll */}
+        {hasMaterialShowcases ? (
+          <div
+            className="flex gap-3 overflow-x-auto pb-2 pl-4"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {materialShowcases.map((item) => (
+              <div
+                key={item.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
+                  }
+                }}
+                className="flex-shrink-0 w-[200px] bg-white rounded-2xl overflow-hidden border border-emerald-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+              >
+                <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
+                  <ImageWithFallback
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-2 left-2 bg-[#059669] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
+                    วัตถุดิบ
+                  </div>
+                </div>
+                <div className="p-2.5 flex flex-col flex-1">
+                  <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#059669] transition-colors min-h-[28px]">{item.title}</p>
+                  {(item.category || item.subCategoryName) ? (
+                    <p className="text-[10px] text-emerald-700 font-medium truncate mb-0.5">
+                      {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
+                    </p>
+                  ) : null}
+                  <p className="text-[11px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
+                </div>
+              </div>
+            ))}
+            <div className="flex-shrink-0 w-4" aria-hidden />
+          </div>
+        ) : (
+          <div className="px-4">
+            <div className="rounded-2xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-6 text-center">
+              <p className="text-sm font-medium text-gray-600">ยังไม่มีวัตถุดิบแนะนำในขณะนี้</p>
+              <p className="mt-1 text-xs text-gray-400">ดูข้อมูลวัตถุดิบได้จากปุ่มด้านล่าง</p>
+              <button
+                type="button"
+                onClick={() => navigate('/factory-ideas?type=material')}
+                className="mt-3 w-full rounded-full border border-[#059669]/40 bg-white py-2.5 text-sm font-medium text-[#059669] hover:bg-emerald-50 transition-colors"
+              >
+                ดูวัตถุดิบแนะนำ
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <ExploreFactoryGrid
         factories={(factories ?? []).slice(0, 6)}
         onFactoryClick={(id) => navigate(`/factories/${id}`)}
@@ -244,21 +296,6 @@ export function ExploreMobile({
           </button>
         </div>
         <div className="px-4 space-y-3">
-          {/* แบนเนอร์ซ้าย desktop — โหมดเต็มความกว้างบนมือถือ */}
-          <div className="relative min-h-[260px] overflow-hidden rounded-2xl shadow-md group">
-            <ImageWithFallback
-              src={PROMO_BANNER_IMG}
-              alt="โปรโมชันแนะนำ"
-              className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 z-10 bg-gradient-to-tr from-[#F27830]/48 via-[#F28A2E]/24 to-transparent flex flex-col justify-end p-8">
-              <h3 className="mb-2 text-2xl font-black text-white drop-shadow-md sm:text-3xl">บริการ</h3>
-              <p className="mb-4 max-w-[90%] self-start rounded-full border border-white/25 bg-[#F27830]/65 px-4 py-1.5 text-sm font-medium text-white drop-shadow-md backdrop-blur-sm sm:text-lg">
-                สำหรับสัตว์เลี้ยงแสนรัก
-              </p>
-            </div>
-          </div>
-
           {hasPromoShowcases ? (
             <div
               className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"

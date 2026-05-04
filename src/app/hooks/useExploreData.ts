@@ -13,7 +13,7 @@ type NormalisedShowcase = {
   title: string;
   excerpt: string;
   image: string;
-  contentType: 'product' | 'promotion' | 'idea';
+  contentType: 'product' | 'promotion' | 'idea' | 'material';
   category: string;
   subCategoryName: string;
   postedAt: string;
@@ -28,9 +28,11 @@ const CT_MAP: Record<string, NormalisedShowcase['contentType']> = {
   PR: 'product',
   PM: 'promotion',
   ID: 'idea',
+  MT: 'material',
   product: 'product',
   promotion: 'promotion',
   idea: 'idea',
+  material: 'material',
 };
 
 function parseImageUrls(raw: unknown): string[] {
@@ -110,7 +112,7 @@ function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
     title: String(r.title ?? ''),
     excerpt: String(r.excerpt ?? ''),
     image:
-      ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM'
+      ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM' || ctRaw === 'MT'
         ? linkedFirstImage || imageUrls[0] || String(r.image_url ?? r.image ?? '')
         : imageUrls[0] || linkedFirstImage || String(r.image_url ?? r.image ?? ''),
     contentType: CT_MAP[String(r.content_type ?? '')] ?? 'product',
@@ -165,10 +167,11 @@ export function useExploreData(options?: UseExploreDataOptions) {
   const [searchText, setSearchText] = React.useState('');
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
 
-  /** รวม PD+PM+ID สำหรับ prop factoryShowcases (เผื่อใช้ในอนาคต) */
+  /** รวม PD+PM+ID+MT สำหรับ prop factoryShowcases (เผื่อใช้ในอนาคต) */
   const [pdShowcases, setPdShowcases] = React.useState<NormalisedShowcase[]>([]);
   const [pmShowcases, setPmShowcases] = React.useState<NormalisedShowcase[]>([]);
   const [idShowcases, setIdShowcases] = React.useState<NormalisedShowcase[]>([]);
+  const [mtShowcases, setMtShowcases] = React.useState<NormalisedShowcase[]>([]);
   const [promoSlides, setPromoSlides] = React.useState<NormSlide[]>([]);
   const [promoCodes, setPromoCodes] = React.useState<NormSlide[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -178,6 +181,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
       setPdShowcases([]);
       setPmShowcases([]);
       setIdShowcases([]);
+      setMtShowcases([]);
       setPromoSlides([]);
       setPromoCodes([]);
       return;
@@ -225,6 +229,17 @@ export function useExploreData(options?: UseExploreDataOptions) {
           if (!cancelled) setIdShowcases([]);
         });
 
+      // วัตถุดิบ → GET /showcases?type=MT
+      const pMt = showcasesApi
+        .list('MT')
+        .then((raw) => {
+          if (cancelled) return;
+          setMtShowcases(mapRows(raw));
+        })
+        .catch(() => {
+          if (!cancelled) setMtShowcases([]);
+        });
+
       // 2) Explore aggregate → promo_codes เท่านั้น (การ์ดโรงงานมาจาก GET /frontend/bootstrap ใน DataContext)
       const p2 = frontendApi
         .getExplore()
@@ -242,7 +257,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
         setPromoSlides(arr.map(normSlide).filter((s) => s.id && s.title));
       }).catch(() => {});
 
-      await Promise.allSettled([pPd, pPm, pId, p2, p3]);
+      await Promise.allSettled([pPd, pPm, pId, pMt, p2, p3]);
       if (!cancelled) setIsLoading(false);
     }
 
@@ -253,6 +268,8 @@ export function useExploreData(options?: UseExploreDataOptions) {
   const productShowcases = React.useMemo(() => pdShowcases, [pdShowcases]);
 
   const promotionShowcases = React.useMemo(() => pmShowcases, [pmShowcases]);
+
+  const materialShowcases = React.useMemo(() => mtShowcases, [mtShowcases]);
 
   const ideaArticles = React.useMemo(
     () =>
@@ -271,11 +288,11 @@ export function useExploreData(options?: UseExploreDataOptions) {
 
   const showcases = React.useMemo(() => {
     const byId = new Map<string, NormalisedShowcase>();
-    for (const s of [...pdShowcases, ...pmShowcases, ...idShowcases]) {
+    for (const s of [...pdShowcases, ...pmShowcases, ...idShowcases, ...mtShowcases]) {
       if (!byId.has(s.id)) byId.set(s.id, s);
     }
     return [...byId.values()];
-  }, [pdShowcases, pmShowcases, idShowcases]);
+  }, [pdShowcases, pmShowcases, idShowcases, mtShowcases]);
 
   const allPromoSlides = React.useMemo(() => {
     const merged = [...promoSlides, ...promoCodes];
@@ -295,6 +312,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
     ideaArticles,
     productShowcases,
     promotionShowcases,
+    materialShowcases,
     showcases,
     promoSlides: allPromoSlides,
 

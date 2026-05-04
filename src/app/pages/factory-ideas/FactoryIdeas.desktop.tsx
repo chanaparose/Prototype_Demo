@@ -46,12 +46,13 @@ const COLORS = {
   teal: '#0D9488',
 };
 
-type ContentType = 'all' | 'product' | 'promotion' | 'idea' | 'factory';
+type ContentType = 'all' | 'product' | 'promotion' | 'idea' | 'material' | 'factory';
 
 const CONTENT_TYPES: { id: ContentType; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
   { id: 'product', label: 'สินค้า' },
   { id: 'promotion', label: 'โปรโมชัน' },
+  { id: 'material', label: 'วัตถุดิบ' },
   { id: 'idea', label: 'ไอเดีย' },
   { id: 'factory', label: 'โรงงาน' },
 ];
@@ -59,6 +60,7 @@ const CONTENT_TYPES: { id: ContentType; label: string }[] = [
 const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
   product: 'สินค้า',
   promotion: 'โปรโมชัน',
+  material: 'วัตถุดิบ',
   idea: 'ไอเดีย',
   factory: 'โรงงาน',
 };
@@ -66,6 +68,7 @@ const contentTypeLabel: Record<Exclude<ContentType, 'all'>, string> = {
 const contentTypeBadge: Record<Exclude<ContentType, 'all'>, string> = {
   product: COLORS.productBadgeBlue,
   promotion: COLORS.orange,
+  material: '#0EA5A4',
   idea: COLORS.purple,
   factory: COLORS.teal,
 };
@@ -150,7 +153,7 @@ export function FactoryIdeasDesktop() {
 
   useEffect(() => {
     const t = searchParams.get('type');
-    if (t === 'product' || t === 'promotion' || t === 'idea' || t === 'factory') {
+    if (t === 'product' || t === 'promotion' || t === 'idea' || t === 'material' || t === 'factory') {
       setSelectedType(t);
     }
   }, [searchParams]);
@@ -397,6 +400,32 @@ export function FactoryIdeasDesktop() {
       .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
   }, [searchText, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
 
+  const visibleMaterialItems = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    return pageShowcases
+      .filter((item) => {
+        const byType = item.contentType === 'material';
+        const byCategory = showcaseMatchesSelectedCategoryId(
+          item.category,
+          effectiveCategoryId,
+          apiCategoriesAll,
+          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
+          item.categoryId,
+        );
+        const bySubCategory = !(
+          selectedSubCategoryId &&
+          item.sub_category_id != null &&
+          String(item.sub_category_id) !== selectedSubCategoryId
+        );
+        if (!q) return byType && byCategory && bySubCategory;
+        const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
+          .join(' ')
+          .toLowerCase();
+        return byType && byCategory && bySubCategory && haystack.includes(q);
+      })
+      .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+  }, [searchText, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, data.categories]);
+
   const visibleFactories = useMemo(() => {
     if (selectedType !== 'all' && selectedType !== 'factory') return [];
     const q = searchText.trim().toLowerCase();
@@ -411,11 +440,14 @@ export function FactoryIdeasDesktop() {
     ? visibleFactories.length
     : selectedType === 'idea'
       ? visibleIdeaItems.length
+      : selectedType === 'material'
+        ? visibleMaterialItems.length
       : visibleItems.length + (selectedType === 'all' ? visibleFactories.length + visibleIdeaItems.length : 0);
 
   const getDetailPath = (type: string, id: string) => {
     const q = encodeURIComponent(id);
     if (type === 'product') return `/product-detail?showcase_id=${q}`;
+    if (type === 'material') return `/product-detail?showcase_id=${q}`;
     if (type === 'promotion') return `/promotion-detail?showcase_id=${q}`;
     return `/idea-detail?showcase_id=${q}`;
   };
@@ -1040,6 +1072,68 @@ export function FactoryIdeasDesktop() {
                           />
                           {item.likes + (isLiked(item.id) ? 1 : 0)}
                         </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {selectedType === 'all' && visibleMaterialItems.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold flex items-center gap-2" style={{ color: COLORS.blue }}>
+                <Sparkles className="w-5 h-5" style={{ color: '#0EA5A4' }} />
+                วัตถุดิบแนะนำ
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedType('material')}
+                className="text-[13px] font-medium hover:opacity-80 transition-opacity"
+                style={{ color: COLORS.purple }}
+              >
+                ดูทั้งหมด ({visibleMaterialItems.length})
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              {visibleMaterialItems.slice(0, 5).map((item) => {
+                const factory = data.factories.find((f) => f.id === item.factoryId);
+                return (
+                  <article
+                    key={`mt-${item.id}`}
+                    className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col"
+                    onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                      <ImageWithFallback
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white" style={{ backgroundColor: '#0EA5A4' }}>
+                        วัตถุดิบ
+                      </span>
+                    </div>
+                    <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                      <div>
+                        <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</p>
+                        <div className="flex items-center gap-0.5 mt-0.5">
+                          <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                          <span className="text-gray-500 text-[10px] truncate">
+                            {(factory?.provinceName ?? factory?.location ?? '').trim() || '—'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-auto pt-1 border-t border-gray-50">
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center gap-0.5 min-w-0">
+                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                            <span className="text-gray-700 text-[10px] font-semibold">{factory?.rating ?? 0}</span>
+                            <span className="text-gray-400 text-[9px] truncate">({factory?.reviews ?? 0})</span>
+                          </div>
+                          <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder}</span>
+                        </div>
                       </div>
                     </div>
                   </article>
