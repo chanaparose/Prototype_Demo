@@ -698,8 +698,8 @@ export function ExploreDesktop({
           </div>
 
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Left Banner — Orange gradient */}
-            <div className="lg:w-[40%] rounded-2xl overflow-hidden relative min-h-[260px] flex-shrink-0 group cursor-pointer shadow-md">
+            {/* Left Banner — Orange gradient (desktop lg+ เท่านั้น; iPad/md ไม่แสดง) */}
+            <div className="hidden lg:block lg:w-[40%] rounded-2xl overflow-hidden relative min-h-[260px] flex-shrink-0 group cursor-pointer shadow-md">
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600"
                 alt="Banner"
@@ -712,7 +712,7 @@ export function ExploreDesktop({
             </div>
 
             {/* Right Scrollable Cards — from factoryShowcases */}
-            <div className="lg:w-[60%] flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
+            <div className="w-full lg:w-[60%] flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
               {promoShowcases.map((item) => (
                 <div key={item.id} onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
                   <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
