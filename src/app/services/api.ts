@@ -387,6 +387,8 @@ export const rfqsApi = {
   create: (data: Record<string, unknown> & { reference_images?: string[] }) =>
     api.post<Record<string, unknown>>('/rfqs', data),
   cancel: (rfqId: string | number) => api.patch(`/rfqs/${rfqId}/cancel`),
+  /** PATCH /rfqs/:id/close — ลูกค้าปิดรับคำขอด้วยตนเอง (OP → CL) ไม่กระทบ order ที่ยอมรับแล้ว */
+  close: (rfqId: string | number) => api.patch(`/rfqs/${rfqId}/close`),
   createQuotation: (rfqId: string | number, data: Record<string, unknown>) =>
     api.post(`/rfqs/${rfqId}/quotations`, data),
   listQuotations: (rfqId: string | number) =>

@@ -2,13 +2,16 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
   ChevronRight,
+  ChevronDown,
   Calendar,
   FileText,
   Plus,
   Layers,
-  Clock3,
-  FileCheck2,
-  OctagonX,
+  Factory,
+  CheckCircle2,
+  Clock,
+  History,
+  AlertCircle,
 } from 'lucide-react';
 import {
   PRIMARY_COLOR,
@@ -17,14 +20,17 @@ import {
   PLUM_SOFT_BG,
   PEACH_MIST,
   ACCENT_ORANGE_DEEP,
+  ACCENT_ORANGE,
   BORDER_WARM,
-  MOBILE_PRIMARY_TAB_BAR,
-  RFQ_FILTER_THEME,
   CTA_GRADIENT,
   RFQ_STATUS_DISPLAY,
+  DEEP_PURPLE,
 } from './constants';
-import type { RfqFilterId } from './constants';
 import { formatBudget, formatDate } from './utils';
+
+// Brand colors per brief
+const GREEN = '#059669';
+const GREEN_BG = '#D1FAE5';
 
 export type RfqItem = {
   id: string;
@@ -36,6 +42,13 @@ export type RfqItem = {
   budget: number;
   createdAt: string;
   description?: string;
+  offers?: Array<{
+    id: string;
+    factoryId?: string;
+    factoryName?: string;
+    quoteStatus?: string; // 'PD' | 'AC' | 'RJ'
+    orderId?: string;
+  }>;
 };
 
 type RfqTagCounts = {
@@ -45,28 +58,241 @@ type RfqTagCounts = {
 };
 
 type RfqSectionProps = {
-  rfqFilter: RfqFilterId;
-  setRfqFilter: (id: RfqFilterId) => void;
+  rfqFilter: string;
+  setRfqFilter: (id: string) => void;
   filteredRfqs: RfqItem[];
   rfqTagCounts: RfqTagCounts;
+  /** Full list of all RFQs (for computing active vs history split) */
+  allRfqs?: RfqItem[];
 };
 
-const RFQ_TABS: { id: RfqFilterId; label: string; icon: typeof Clock3 }[] = [
-  { id: 'pending', label: 'รอดำเนินการ', icon: Clock3 },
-  { id: 'has_quote', label: 'มีใบเสนอราคา', icon: FileCheck2 },
-  { id: 'cancelled_expired', label: 'ยกเลิก/หมดอายุ', icon: OctagonX },
-];
+// ─── Activity counts computed from offers ─────────────────────────────────
+function getActivityCounts(rfq: RfqItem) {
+  const offers = rfq.offers ?? [];
+  const totalOffers = offers.length || rfq.offerCount || 0;
+  const accepted = offers.filter((o) => o.quoteStatus === 'AC').length;
+  const pending = offers.filter((o) => o.quoteStatus === 'PD').length;
+  return { totalOffers, accepted, pending };
+}
 
+// ─── Single RFQ card (active section) ─────────────────────────────────────
+function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
+  const { totalOffers, accepted, pending } = getActivityCounts(rfq);
+  const iconBgs = [PRIMARY_BG, PEACH_MIST, PLUM_SOFT_BG] as const;
+  const iconColors = [PRIMARY_COLOR, ACCENT_ORANGE_DEEP, PLUM] as const;
+  const ib = iconBgs[idx % 3];
+  const ic = iconColors[idx % 3];
+
+  const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
+    label: rfq.status,
+    color: '#6B7280',
+    bg: '#F3F4F6',
+  };
+
+  const hasNewOffers = pending > 0;
+  const hasAccepted = accepted > 0;
+
+  return (
+    <Link key={rfq.id} to={`/rfqs/${rfq.id}`} className="block group">
+      <div
+        className="rounded-2xl p-4 border bg-white transition-all active:scale-[0.99] group-hover:shadow-md"
+        style={{
+          borderColor: hasNewOffers ? ACCENT_ORANGE : BORDER_WARM,
+          borderLeftWidth: hasNewOffers ? '3px' : '1px',
+          borderLeftColor: hasNewOffers ? ACCENT_ORANGE : BORDER_WARM,
+        }}
+      >
+        {/* Top row: icon + name + status badge */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex gap-3 min-w-0 flex-1">
+            <div
+              className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center text-lg"
+              style={{ background: ib }}
+            >
+              {rfq.categoryIcon ?? <Layers size={20} style={{ color: ic }} />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] mb-0.5 font-semibold" style={{ color: ic }}>
+                {rfq.category}
+              </p>
+              <h3 className="text-gray-900 font-bold text-sm leading-tight truncate">
+                {rfq.projectName}
+              </h3>
+            </div>
+          </div>
+          <span
+            className="shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full"
+            style={{ background: statusCfg.bg, color: statusCfg.color }}
+          >
+            {statusCfg.label}
+          </span>
+        </div>
+
+        {/* Activity indicator row */}
+        <div
+          className="flex items-center gap-3 py-2 px-3 rounded-xl mb-3 flex-wrap"
+          style={{ background: '#F9F7FD' }}
+        >
+          {/* Total offers */}
+          <span
+            className="flex items-center gap-1.5 text-xs"
+            style={{ color: totalOffers > 0 ? PLUM : '#9CA3AF' }}
+          >
+            <Factory size={12} />
+            <span className="font-semibold">{totalOffers}</span>
+            <span>โรงงานตอบแล้ว</span>
+          </span>
+
+          {/* Accepted */}
+          {accepted > 0 && (
+            <>
+              <span className="text-gray-200 text-sm">|</span>
+              <span className="flex items-center gap-1.5 text-xs" style={{ color: GREEN }}>
+                <CheckCircle2 size={12} />
+                <span className="font-semibold">{accepted}</span>
+                <span>ยืนยันแล้ว</span>
+              </span>
+            </>
+          )}
+
+          {/* Pending offers awaiting review */}
+          {pending > 0 && (
+            <>
+              <span className="text-gray-200 text-sm">|</span>
+              <span
+                className="flex items-center gap-1.5 text-xs font-semibold"
+                style={{ color: ACCENT_ORANGE_DEEP }}
+              >
+                <Clock size={12} />
+                <span>{pending}</span>
+                <span>รอตอบ</span>
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: ACCENT_ORANGE }}
+                />
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Link to orders if any accepted */}
+        {hasAccepted && (
+          <div className="mb-2">
+            <span
+              className="inline-flex items-center gap-1 text-xs font-semibold"
+              style={{ color: GREEN }}
+            >
+              <CheckCircle2 size={11} />
+              ดูคำสั่งซื้อ {accepted} รายการ
+              <ChevronRight size={12} />
+            </span>
+          </div>
+        )}
+
+        {/* Bottom row: budget + date + cta */}
+        <div
+          className="flex items-center justify-between pt-2 border-t text-xs"
+          style={{ borderColor: BORDER_WARM }}
+        >
+          <div className="flex items-center gap-3 text-gray-500">
+            <span className="flex items-center gap-1">
+              <FileText size={11} className="text-gray-300" />
+              {formatBudget(rfq.budget)}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar size={11} className="text-gray-300" />
+              {formatDate(rfq.createdAt)}
+            </span>
+          </div>
+          <span className="flex items-center gap-0.5 font-semibold" style={{ color: ic }}>
+            {totalOffers > 0 ? 'ดูใบเสนอราคา' : 'รายละเอียด'}
+            <ChevronRight size={13} />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ─── History (compact) row ──────────────────────────────────────────────────
+function HistoryRfqRow({ rfq }: { rfq: RfqItem }) {
+  const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
+    label: rfq.status,
+    color: '#6B7280',
+    bg: '#F3F4F6',
+  };
+  const totalOffers = (rfq.offers?.length) || rfq.offerCount || 0;
+
+  return (
+    <Link to={`/rfqs/${rfq.id}`} className="block group">
+      <div
+        className="flex items-center justify-between py-3 px-3 rounded-xl border bg-white/80 hover:bg-white transition-all"
+        style={{ borderColor: BORDER_WARM }}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div
+            className="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm"
+            style={{ background: '#F3F4F6' }}
+          >
+            {rfq.categoryIcon ?? <FileText size={14} className="text-gray-400" />}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-700 truncate">{rfq.projectName}</p>
+            <p className="text-[10px] text-gray-400 flex items-center gap-1.5 mt-0.5">
+              <Calendar size={9} />
+              {formatDate(rfq.createdAt)}
+              {totalOffers > 0 && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <Factory size={9} />
+                  {totalOffers} โรงงาน
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+          <span
+            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+            style={{ background: statusCfg.bg, color: statusCfg.color }}
+          >
+            {statusCfg.label}
+          </span>
+          <ChevronRight size={13} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ─── Main RfqSection component ─────────────────────────────────────────────
 export function RfqSection({
-  rfqFilter,
-  setRfqFilter,
   filteredRfqs,
   rfqTagCounts,
+  allRfqs,
 }: RfqSectionProps) {
   const navigate = useNavigate();
+  const [historyOpen, setHistoryOpen] = React.useState(false);
+
+  // Split from allRfqs if available, otherwise from filteredRfqs
+  const source = allRfqs ?? filteredRfqs;
+
+  const activeRfqs = source.filter(
+    (r) => r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'completed',
+  );
+  const historyRfqs = source.filter(
+    (r) => r.status === 'cancelled' || r.status === 'expired' || r.status === 'completed',
+  );
+
+  // Count new offers (pending review)
+  const totalPendingReview = activeRfqs.reduce((sum, rfq) => {
+    const pend = (rfq.offers ?? []).filter((o) => o.quoteStatus === 'PD').length;
+    return sum + pend;
+  }, 0);
 
   return (
     <>
+      {/* FAB */}
       <button
         onClick={() => navigate('/create-rfq')}
         className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
@@ -78,166 +304,96 @@ export function RfqSection({
         <Plus size={24} className="text-white" />
       </button>
 
-      <div
-        className="grid grid-cols-3 mb-3 rounded-xl px-1.5 py-2 border"
-        style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
-      >
-        {RFQ_TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = rfqFilter === tab.id;
-          const count = rfqTagCounts[tab.id];
-          const th = RFQ_FILTER_THEME[tab.id];
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setRfqFilter(tab.id)}
-              className="relative flex flex-col items-center gap-1 py-1"
+      {/* ─── Section A: Active ─────────────────────────────────── */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold" style={{ color: DEEP_PURPLE }}>
+              กำลังดำเนินการ
+            </h3>
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+              style={{ background: PRIMARY_BG, color: PRIMARY_COLOR }}
             >
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{
-                  background: isActive ? th.activeBg : 'rgba(255,255,255,0.85)',
-                  boxShadow: isActive ? `0 0 0 1px ${BORDER_WARM}` : 'none',
-                }}
-              >
-                <Icon size={16} style={{ color: isActive ? th.activeColor : '#4B5563' }} />
-              </div>
-              {count > 0 && (
-                <span
-                  className="absolute top-0 right-[20%] min-w-4 h-4 px-1 rounded-full text-white text-[9px] flex items-center justify-center"
-                  style={{
-                    background: isActive ? th.activeColor : th.badgeInactive,
-                    fontWeight: 700,
-                  }}
-                >
-                  {count}
-                </span>
-              )}
+              {activeRfqs.length}
+            </span>
+            {totalPendingReview > 0 && (
               <span
-                className="text-[11px] text-center leading-tight px-1"
-                style={{
-                  color: isActive ? th.activeColor : '#374151',
-                  fontWeight: isActive ? 600 : 500,
-                }}
+                className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse"
+                style={{ background: PEACH_MIST, color: ACCENT_ORANGE_DEEP }}
               >
-                {tab.label}
+                <AlertCircle size={9} />
+                {totalPendingReview} รอตอบ
               </span>
-            </button>
-          );
-        })}
-      </div>
+            )}
+          </div>
+        </div>
 
-      <div className="space-y-3">
-        {filteredRfqs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+        {activeRfqs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-14 text-center rounded-2xl border" style={{ borderColor: BORDER_WARM, background: '#FDFCFF' }}>
             <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
               style={{ background: PRIMARY_BG }}
             >
-              <FileText size={36} style={{ color: PRIMARY_COLOR }} />
+              <FileText size={28} style={{ color: PRIMARY_COLOR }} />
             </div>
-            <p className="text-gray-900 mb-1" style={{ fontWeight: 600 }}>
-              ยังไม่มีคำขอราคา
-            </p>
-            <p className="text-sm text-gray-500 max-w-[220px] mb-4">
-              สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน
-            </p>
+            <p className="text-gray-700 font-semibold text-sm mb-1">ยังไม่มีคำขอราคาที่ดำเนินการอยู่</p>
+            <p className="text-xs text-gray-400 mb-4">สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน</p>
             <Link
               to="/create-rfq"
               className="py-2.5 px-6 rounded-xl text-white font-bold text-sm shadow-md"
-              style={{
-                background: CTA_GRADIENT,
-                boxShadow: '0 6px 18px rgba(162,56,255,0.3)',
-              }}
+              style={{ background: CTA_GRADIENT, boxShadow: '0 6px 18px rgba(162,56,255,0.3)' }}
             >
               สร้างคำขอราคา
             </Link>
           </div>
         ) : (
-          filteredRfqs.map((rfq, idx) => {
-            const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
-              label: rfq.status,
-              color: '#6B7280',
-              bg: '#F3F4F6',
-            };
-            const iconBgs = [PRIMARY_BG, PEACH_MIST, PLUM_SOFT_BG] as const;
-            const iconColors = [PRIMARY_COLOR, ACCENT_ORANGE_DEEP, PLUM] as const;
-            const ib = iconBgs[idx % 3];
-            const ic = iconColors[idx % 3];
-            const catColor = idx % 2 === 0 ? PLUM : PRIMARY_COLOR;
-            return (
-              <Link key={rfq.id} to={`/rfqs/${rfq.id}`} className="block">
-                <div
-                  className="rounded-2xl p-4 shadow-sm active:scale-[0.99] transition-transform border bg-white/90 backdrop-blur-sm hover:bg-white/95"
-                  style={{ borderColor: BORDER_WARM }}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="flex gap-3 min-w-0 flex-1">
-                      <div
-                        className="w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-xl"
-                        style={{ background: ib }}
-                      >
-                        {rfq.categoryIcon ?? (
-                          <Layers size={24} style={{ color: ic }} />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className="text-[10px] mb-0.5 font-semibold"
-                          style={{ color: catColor }}
-                        >
-                          {rfq.category}
-                        </p>
-                        <h3 className="text-gray-900 font-bold text-sm leading-tight truncate">
-                          {rfq.projectName}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
-                          {rfq.description?.slice(0, 60)}
-                          {(rfq.description?.length ?? 0) > 60 ? '...' : ''}
-                        </p>
-                      </div>
-                    </div>
-                    <span
-                      className="shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full"
-                      style={{ background: statusCfg.bg, color: statusCfg.color }}
-                    >
-                      {statusCfg.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1">
-                        <FileText size={12} style={{ color: '#9CA3AF' }} />
-                        {formatBudget(rfq.budget)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar size={12} style={{ color: '#9CA3AF' }} />
-                        {formatDate(rfq.createdAt)}
-                      </span>
-                    </div>
-                    <span className="font-semibold" style={{ color: ic }}>
-                      {rfq.offerCount} โรงงานตอบ
-                    </span>
-                  </div>
-                  <div
-                    className="mt-2 pt-2 flex items-center justify-end gap-2 text-xs"
-                    style={{
-                      borderTop: `1px solid ${BORDER_WARM}`,
-                    }}
-                  >
-                    <span
-                      className="flex items-center gap-1"
-                      style={{ color: ic, fontWeight: 600 }}
-                    >
-                      ดูใบเสนอราคา <ChevronRight size={14} />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })
+          <div className="space-y-3">
+            {activeRfqs.map((rfq, idx) => (
+              <ActiveRfqCard key={rfq.id} rfq={rfq} idx={idx} />
+            ))}
+          </div>
         )}
       </div>
+
+      {/* ─── Section B: History accordion ──────────────────────── */}
+      {historyRfqs.length > 0 && (
+        <div>
+          <button
+            onClick={() => setHistoryOpen((v) => !v)}
+            className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl border text-sm font-semibold transition-all"
+            style={{
+              background: historyOpen ? '#F0EBF8' : '#F9F8FC',
+              borderColor: BORDER_WARM,
+              color: DEEP_PURPLE,
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <History size={14} style={{ color: PLUM }} />
+              ประวัติ
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                style={{ background: PLUM_SOFT_BG, color: PLUM }}
+              >
+                {historyRfqs.length}
+              </span>
+            </span>
+            <ChevronDown
+              size={16}
+              className="transition-transform duration-200"
+              style={{ transform: historyOpen ? 'rotate(180deg)' : 'rotate(0deg)', color: PLUM }}
+            />
+          </button>
+
+          {historyOpen && (
+            <div className="mt-2 space-y-1.5">
+              {historyRfqs.map((rfq) => (
+                <HistoryRfqRow key={rfq.id} rfq={rfq} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

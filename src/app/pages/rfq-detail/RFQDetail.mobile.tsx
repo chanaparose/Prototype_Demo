@@ -17,6 +17,7 @@ import {
 } from '../../components/features/rfq-detail';
 
 const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
+const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 const COLORS = {
   purple: '#7A4B94',
@@ -34,6 +35,7 @@ export function RFQDetailMobile() {
   const [specsOpen, setSpecsOpen] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [closing, setClosing] = useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
@@ -127,6 +129,7 @@ export function RFQDetailMobile() {
     rfq.status as (typeof HISTORY_STATUSES)[number],
   );
   const canCancel = CANCELLABLE_STATUSES.has(rfq.status);
+  const canClose = CLOSEABLE_STATUSES.has(rfq.status);
 
   const statusBadgeStyle = isHistoryView
     ? rfq.status === 'completed'
@@ -163,28 +166,56 @@ export function RFQDetailMobile() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4">
-        {canCancel ? (
-          <button
-            type="button"
-            disabled={cancelling}
-            onClick={async () => {
-              const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
-              if (!ok) return;
-              setCancelling(true);
-              try {
-                await rfqsApi.cancel(rfq.id);
-                toast.success('ยกเลิก RFQ สำเร็จ');
-                await refetch();
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
-              } finally {
-                setCancelling(false);
-              }
-            }}
-            className="w-full rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold py-2.5 disabled:opacity-60"
-          >
-            {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
-          </button>
+        {(canClose || canCancel) ? (
+          <div className="flex gap-2">
+            {canClose ? (
+              <button
+                type="button"
+                disabled={closing}
+                onClick={async () => {
+                  const ok = window.confirm('ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป');
+                  if (!ok) return;
+                  setClosing(true);
+                  try {
+                    await rfqsApi.close(rfq.id);
+                    toast.success('ปิดรับคำขอราคาเรียบร้อย');
+                    await refetch();
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
+                  } finally {
+                    setClosing(false);
+                  }
+                }}
+                className="flex-1 rounded-xl border text-sm font-semibold py-2.5 disabled:opacity-60"
+                style={{ borderColor: COLORS.purple, color: COLORS.purple, backgroundColor: COLORS.lightPurpleBg }}
+              >
+                {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
+              </button>
+            ) : null}
+            {canCancel ? (
+              <button
+                type="button"
+                disabled={cancelling}
+                onClick={async () => {
+                  const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
+                  if (!ok) return;
+                  setCancelling(true);
+                  try {
+                    await rfqsApi.cancel(rfq.id);
+                    toast.success('ยกเลิก RFQ สำเร็จ');
+                    await refetch();
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
+                  } finally {
+                    setCancelling(false);
+                  }
+                }}
+                className="flex-1 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold py-2.5 disabled:opacity-60"
+              >
+                {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
+              </button>
+            ) : null}
+          </div>
         ) : null}
         {(rfq.subCategoryName || rfq.shippingMethodName) ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-2 text-sm">

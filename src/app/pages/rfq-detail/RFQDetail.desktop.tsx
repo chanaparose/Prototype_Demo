@@ -26,6 +26,8 @@ const COLORS = {
   lightPurpleBg: '#F8F6FA',
 };
 const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
+// สถานะที่ลูกค้าสามารถ "ปิดรับคำขอ" ด้วยตนเองได้ (ยังเปิดอยู่ มีหรือไม่มีข้อเสนอก็ได้)
+const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +39,7 @@ export function RFQDetailDesktop() {
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
   const [cancelling, setCancelling] = React.useState(false);
+  const [closing, setClosing] = React.useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
@@ -139,6 +142,7 @@ export function RFQDetailDesktop() {
     ? STATUS_LABEL[rfq.status] ?? rfq.status
     : `${rfq.offerCount} ใบเสนอราคา`;
   const canCancel = CANCELLABLE_STATUSES.has(rfq.status);
+  const canClose = CLOSEABLE_STATUSES.has(rfq.status);
 
   return (
     <div className="hidden lg:block" style={{ backgroundColor: COLORS.lightPurpleBg }}>
@@ -174,29 +178,55 @@ export function RFQDetailDesktop() {
               <span>งบ: ฿{rfq.budget.toLocaleString()}</span>
             </div>
           </div>
-          {canCancel ? (
-            <button
-              type="button"
-              disabled={cancelling}
-              onClick={async () => {
-                const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
-                if (!ok) return;
-                setCancelling(true);
-                try {
-                  await rfqsApi.cancel(rfq.id);
-                  toast.success('ยกเลิก RFQ สำเร็จ');
-                  await refetch();
-                } catch (err) {
-                  toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
-                } finally {
-                  setCancelling(false);
-                }
-              }}
-              className="px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold disabled:opacity-60"
-            >
-              {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
-            </button>
-          ) : null}
+          <div className="flex items-center gap-2 shrink-0">
+            {canClose ? (
+              <button
+                type="button"
+                disabled={closing}
+                onClick={async () => {
+                  const ok = window.confirm('ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป');
+                  if (!ok) return;
+                  setClosing(true);
+                  try {
+                    await rfqsApi.close(rfq.id);
+                    toast.success('ปิดรับคำขอราคาเรียบร้อย');
+                    await refetch();
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
+                  } finally {
+                    setClosing(false);
+                  }
+                }}
+                className="px-4 py-2 rounded-xl border text-sm font-semibold disabled:opacity-60"
+                style={{ borderColor: COLORS.purple, color: COLORS.purple, backgroundColor: '#F8F6FA' }}
+              >
+                {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
+              </button>
+            ) : null}
+            {canCancel ? (
+              <button
+                type="button"
+                disabled={cancelling}
+                onClick={async () => {
+                  const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
+                  if (!ok) return;
+                  setCancelling(true);
+                  try {
+                    await rfqsApi.cancel(rfq.id);
+                    toast.success('ยกเลิก RFQ สำเร็จ');
+                    await refetch();
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
+                  } finally {
+                    setCancelling(false);
+                  }
+                }}
+                className="px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold disabled:opacity-60"
+              >
+                {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {/* Content */}
