@@ -110,6 +110,7 @@ export function useFactoryRfqBoard() {
         if (!id) continue;
 
         const title = String(inner.title ?? row.title ?? 'RFQ');
+        const requestKind = String(inner.request_kind ?? row.request_kind ?? 'PR').toUpperCase();
         const status = String(inner.status ?? row.status ?? '').toUpperCase();
         const quantity = inner.quantity != null ? Number(inner.quantity) : null;
         const totalBudgetRaw = Number(
@@ -177,6 +178,7 @@ export function useFactoryRfqBoard() {
         bases.push({
           id,
           title,
+          requestKind,
           status,
           categoryName,
           subCategoryName,

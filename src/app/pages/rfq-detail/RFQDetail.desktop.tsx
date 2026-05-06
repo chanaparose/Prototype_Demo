@@ -32,7 +32,7 @@ export function RFQDetailDesktop() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { rfq, relatedOrder, loading, error, refetch } = useRfqDetail(id);
+  const { rfq, relatedOrder, quoteOrderMap, loading, error, refetch } = useRfqDetail(id);
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
@@ -239,9 +239,9 @@ export function RFQDetailDesktop() {
                   onSelectOffer={setSelectedOffer}
                   onChatWithOffer={handleChatWithOffer}
                   rfqQuantity={rfq.quantity}
-                  onOfferFlowComplete={async ({ orderId }) => {
+                  onOfferFlowComplete={async () => {
+                    // Multi-factory: refetch เพื่ออัปเดต status ทุก card — ไม่ navigate ออก
                     await refetch();
-                    if (orderId) navigate(`/orders/${orderId}`);
                   }}
                 />
               </div>

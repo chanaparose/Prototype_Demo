@@ -71,7 +71,7 @@ export function ProductDetailDesktop() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, isIdea, resolvedId, relatedProducts } = useProductDetailShowcase();
+  const { item, loading, error, factory, isIdea, isMaterial, resolvedId, relatedProducts } = useProductDetailShowcase();
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
   const { isLiked, toggleFavorite } = useFavorites();
@@ -150,7 +150,7 @@ export function ProductDetailDesktop() {
   // ── Spec rows for the specifications table ──
   const specRows: { label: string; value: React.ReactNode }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
-  if (subName) specRows.push({ label: 'ประเภทย่อย', value: subName });
+  if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
   specRows.push({ label: 'ขั้นต่ำการสั่งผลิต', value: `${item.minOrder} ชิ้น (MOQ)` });
   if (item.leadTime) specRows.push({ label: 'ระยะเวลาผลิต', value: item.leadTime });
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
@@ -178,7 +178,7 @@ export function ProductDetailDesktop() {
           </button>
           <Chevron className="w-3 h-3 text-gray-300" />
           <span>{item.category || 'ทั้งหมด'}</span>
-          {subName ? (
+          {subName && !isMaterial ? (
             <>
               <Chevron className="w-3 h-3 text-gray-300" />
               <span>{subName}</span>
@@ -293,7 +293,7 @@ export function ProductDetailDesktop() {
                   className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-semibold"
                   style={{ background: BRAND.purpleSoft, color: BRAND.purple }}
                 >
-                  {isIdea ? 'ไอเดีย / บทความ' : 'สินค้า'}
+                  {isIdea ? 'ไอเดีย / บทความ' : isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                 </span>
                 {item.category ? (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-medium text-gray-500 border border-gray-200">

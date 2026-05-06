@@ -127,6 +127,7 @@ export function FactoryIdeasDesktop() {
   const { isLiked, toggleFavorite } = useFavorites();
 
   const isFactoryTab = selectedType === 'factory';
+  const isMaterialTab = selectedType === 'material';
   const showcaseApiType = isFactoryTab ? undefined : showcaseQueryTypeFromTab(selectedType);
   const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
     type: showcaseApiType,
@@ -159,7 +160,7 @@ export function FactoryIdeasDesktop() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!categoryMenuOpen || !menuHighlightCategoryId || menuHighlightCategoryId === 'all') {
+    if (isMaterialTab || !categoryMenuOpen || !menuHighlightCategoryId || menuHighlightCategoryId === 'all') {
       setPanelSubs([]);
       setPanelSubsLoading(false);
       return;
@@ -200,7 +201,7 @@ export function FactoryIdeasDesktop() {
     return () => {
       cancelled = true;
     };
-  }, [categoryMenuOpen, menuHighlightCategoryId]);
+  }, [categoryMenuOpen, menuHighlightCategoryId, isMaterialTab]);
 
   useEffect(() => {
     if (!categoryMenuOpen) return;
@@ -220,34 +221,43 @@ export function FactoryIdeasDesktop() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetchExploreCategoriesMerged();
-        if (cancelled) return;
-        let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
-        let categorySource: 'exploreMerged' | 'masterProductCategories' | 'empty' = 'exploreMerged';
-        if (rows.length === 0) {
-          categorySource = 'empty';
-          try {
-            const raw = await masterApi.productCategories();
-            if (!cancelled) {
-              rows = parseMasterProductCategories(raw);
-              categorySource =
-                rows.length > 0 ? 'masterProductCategories' : 'empty';
-            }
-          } catch {
-            /* keep [] */
+        if (isMaterialTab) {
+          // Tab วัตถุดิบ → ดึง MT categories จาก GET /lbi/categories?scope=MT
+          const raw = await masterApi.lbiCategories('MT') as Record<string, unknown>;
+          if (cancelled) return;
+          const arr = (Array.isArray(raw.categories) ? raw.categories : []) as Record<string, unknown>[];
+          const rows = arr
+            .map((c) => ({ id: String(c.category_id ?? c.id ?? ''), name: String(c.name ?? '') }))
+            .filter((r) => r.id && r.name);
+          if (!cancelled) setApiCategoriesAll(rows);
+        } else {
+          // Tab อื่น → ดึง PD categories จาก Explore (merged)
+          const res = await fetchExploreCategoriesMerged();
+          if (cancelled) return;
+          let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
+          let categorySource: 'exploreMerged' | 'masterProductCategories' | 'empty' = 'exploreMerged';
+          if (rows.length === 0) {
+            categorySource = 'empty';
+            try {
+              const rawPD = await masterApi.productCategories();
+              if (!cancelled) {
+                rows = parseMasterProductCategories(rawPD);
+                categorySource = rows.length > 0 ? 'masterProductCategories' : 'empty';
+              }
+            } catch { /* keep [] */ }
           }
-        }
-        if (!cancelled) {
-          setApiCategoriesAll(rows);
-          // Prefetch sub-categories for every category in parallel —
-          // dropdown clicks become instant (module-level cache in subCategoriesCache.ts)
-          prefetchSubCategoriesFor(rows.map((r) => r.id));
-          logFactoryIdeasCategory('categoryMenu.apiCategoriesAll', {
-            source: categorySource,
-            exploreMergedCount: res.merged.length,
-            rowCount: rows.length,
-            rows,
-          });
+          if (!cancelled) {
+            setApiCategoriesAll(rows);
+            // Prefetch sub-categories for every category in parallel —
+            // dropdown clicks become instant (module-level cache in subCategoriesCache.ts)
+            prefetchSubCategoriesFor(rows.map((r) => r.id));
+            logFactoryIdeasCategory('categoryMenu.apiCategoriesAll', {
+              source: categorySource,
+              exploreMergedCount: res.merged.length,
+              rowCount: rows.length,
+              rows,
+            });
+          }
         }
       } catch {
         if (!cancelled) setApiCategoriesAll([]);
@@ -256,10 +266,15 @@ export function FactoryIdeasDesktop() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isMaterialTab]);
 
   /** dropdown: รายการจาก API ก่อน แล้วต่อด้วยหมวดจาก bundle ที่ยังไม่มี id ซ้ำ */
   const categoryFilters = useMemo(() => {
+    if (isMaterialTab) {
+      // MT: ใช้เฉพาะ categories จาก API scope=MT ไม่รวม bundle PD
+      const rest = [...apiCategoriesAll].sort((a, b) => a.name.localeCompare(b.name, 'th'));
+      return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
+    }
     const byId = new Map<string, string>();
     for (const c of apiCategoriesAll) byId.set(String(c.id), c.name);
     for (const c of data.categories) {
@@ -270,7 +285,7 @@ export function FactoryIdeasDesktop() {
       .map(([id, name]) => ({ id, name }))
       .sort((a, b) => a.name.localeCompare(b.name, 'th'));
     return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
-  }, [apiCategoriesAll, data.categories]);
+  }, [apiCategoriesAll, data.categories, isMaterialTab]);
 
   useEffect(() => {
     logFactoryIdeasCategory('categoryMenu.categoryFilters', {
@@ -286,6 +301,20 @@ export function FactoryIdeasDesktop() {
     apiCategoriesAll,
   );
 
+  // Reset category / sub เมื่อสลับระหว่าง material tab กับ tab อื่น
+  const prevIsMaterialTabRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (prevIsMaterialTabRef.current === null) {
+      prevIsMaterialTabRef.current = isMaterialTab;
+      return;
+    }
+    if (prevIsMaterialTabRef.current === isMaterialTab) return;
+    prevIsMaterialTabRef.current = isMaterialTab;
+    applyCategory('all');
+    setSelectedSubCategoryId(null);
+    setSubCategories([]);
+  }, [isMaterialTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!categoryMenuOpen) return;
     setMenuHighlightCategoryId(
@@ -297,6 +326,13 @@ export function FactoryIdeasDesktop() {
     effectiveCategoryId !== 'all' ? effectiveCategoryId : null;
 
   useEffect(() => {
+    // MT showcase ไม่มี sub-category
+    if (isMaterialTab) {
+      setSelectedSubCategoryId(null);
+      setSubCategories([]);
+      return;
+    }
+
     // Skip the reset when the category change was triggered by pickSubCategory
     // (it already set the new sub id we want to keep).
     if (skipSubResetOnNextCategoryChangeRef.current) {
@@ -330,12 +366,13 @@ export function FactoryIdeasDesktop() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCategoryIdForSubs]);
+  }, [selectedCategoryIdForSubs, isMaterialTab]);
 
   const categoryMenuTriggerLabel = useMemo(() => {
     if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';
     const catName =
       categoryFilters.find((c) => c.id === effectiveCategoryId)?.name ?? 'หมวด';
+    if (isMaterialTab) return catName; // MT ไม่มีหมวดย่อย
     if (!selectedSubCategoryId) return `${catName} › ทุกหมวดย่อย`;
     const subName = subCategories.find((s) => s.id === selectedSubCategoryId)?.name;
     return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
@@ -344,6 +381,7 @@ export function FactoryIdeasDesktop() {
     selectedSubCategoryId,
     categoryFilters,
     subCategories,
+    isMaterialTab,
   ]);
 
   const visibleItems = useMemo(() => {
@@ -562,7 +600,7 @@ export function FactoryIdeasDesktop() {
               </button>
               {categoryMenuOpen ? (
                 <div className="absolute top-full mt-1.5 left-0 flex rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden max-w-[calc(100vw-4rem)]">
-                  <div className="w-44 sm:w-52 max-h-[min(75vh,22rem)] overflow-y-auto border-r border-gray-100 py-1 shrink-0">
+                  <div className={`max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0 ${isMaterialTab ? 'w-56 sm:w-64' : 'w-44 sm:w-52 border-r border-gray-100'}`}>
                     {categoryFilters.map((cat) => {
                       const selected = factoryIdeasCategoryOptionSelected(effectiveCategoryId, cat.id);
                       const rowHi =
@@ -579,6 +617,11 @@ export function FactoryIdeasDesktop() {
                           onClick={() => {
                             if (cat.id === 'all') {
                               applyCategory('all');
+                              setSelectedSubCategoryId(null);
+                              closeCategoryMenu();
+                            } else if (isMaterialTab) {
+                              // MT ไม่มีหมวดย่อย → ปิดเมนูทันที
+                              applyCategory(cat.id);
                               setSelectedSubCategoryId(null);
                               closeCategoryMenu();
                             } else {
@@ -601,7 +644,7 @@ export function FactoryIdeasDesktop() {
                       );
                     })}
                   </div>
-                  <div className="w-44 sm:w-52 max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0">
+                  {!isMaterialTab && <div className="w-44 sm:w-52 max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0">
                     {!menuHighlightCategoryId ? (
                       <p className="px-3 py-4 text-[11px] text-gray-400 leading-relaxed">
                         เลือกหมวดทางซ้ายเพื่อดูหมวดย่อย
@@ -661,7 +704,7 @@ export function FactoryIdeasDesktop() {
                         })}
                       </>
                     )}
-                  </div>
+                  </div>}
                 </div>
               ) : null}
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import {
   CheckCircle,
@@ -12,6 +12,7 @@ import {
   ChevronDown,
   History,
   GitCompare,
+  ExternalLink,
 } from 'lucide-react';
 import { ordersApi } from '../../../services/api';
 import type { Quotation } from './QuotationBOQCard';
@@ -31,6 +32,8 @@ export type OfferItem = {
   aiReason?: string;
   /** PD | AC | RJ จากตาราง quotations */
   quoteStatus?: string;
+  /** order_id ที่สร้างแล้วเมื่อ quoteStatus = 'AC' */
+  orderId?: string;
   /** รายละเอียด BOQ จาก API — รวมกับค่าที่คำนวณจากราคา/จำนวน RFQ */
   quotationDetail?: Partial<Quotation>;
 };
@@ -83,6 +86,14 @@ export function RfqDetailOffersSection({
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [flowError, setFlowError] = useState<string | null>(null);
   const [expandedBoqOfferId, setExpandedBoqOfferId] = useState<string | null>(null);
+  /** orderId ล่าสุดที่เพิ่ง accept สำเร็จ — แสดง toast 5 วินาที */
+  const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!successOrderId) return;
+    const t = setTimeout(() => setSuccessOrderId(null), 5000);
+    return () => clearTimeout(t);
+  }, [successOrderId]);
 
   const handleAcceptOffer = async (offerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -94,6 +105,7 @@ export function RfqDetailOffersSection({
       const created = (await ordersApi.create(Number(offerId))) as Record<string, unknown>;
       const oid = created.order_id ?? created.id;
       if (oid != null && String(oid)) orderId = String(oid);
+      if (orderId) setSuccessOrderId(orderId);
       onOfferFlowComplete?.({ quoteId: offerId, orderId });
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'ไม่สามารถยอมรับข้อเสนอได้');
@@ -355,6 +367,23 @@ export function RfqDetailOffersSection({
               </p>
             </div>
           </div>
+          {/* Success toast — ยอมรับสำเร็จ ยังอยู่หน้าเดิม */}
+          {successOrderId && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 mb-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={15} className="text-emerald-600 shrink-0" />
+                <p className="text-xs font-semibold text-emerald-800">
+                  สร้างคำสั่งซื้อสำเร็จ!
+                </p>
+              </div>
+              <Link
+                to={`/orders/${successOrderId}`}
+                className="shrink-0 text-[11px] font-bold text-emerald-700 hover:underline flex items-center gap-1"
+              >
+                ดูคำสั่งซื้อ <ExternalLink size={11} />
+              </Link>
+            </div>
+          )}
           {flowError && (
             <p className="text-xs text-red-600 mb-2 px-1" role="alert">
               {flowError}
@@ -532,12 +561,26 @@ export function RfqDetailOffersSection({
                 <p className="text-[10px] text-gray-500 mb-3">
                   {boq.valid_until ? `ใบเสนอราคาถึง ${boq.valid_until}` : offer.aiReason}
                 </p>
-                {(isAccepted || isRejected) && (
-                  <p
-                    className="text-[10px] font-semibold mb-2"
-                    style={{ color: isAccepted ? '#059669' : '#64748B' }}
-                  >
-                    {isAccepted ? 'ยอมรับข้อเสนอแล้ว' : 'ไม่ได้รับการเลือก (ปฏิเสธ)'}
+                {isAccepted && (
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700">
+                      <CheckCircle size={11} className="shrink-0" />
+                      ยอมรับข้อเสนอแล้ว
+                    </span>
+                    {offer.orderId && (
+                      <Link
+                        to={`/orders/${offer.orderId}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 hover:underline shrink-0"
+                      >
+                        ดูคำสั่งซื้อ <ExternalLink size={10} />
+                      </Link>
+                    )}
+                  </div>
+                )}
+                {isRejected && (
+                  <p className="text-[10px] font-semibold mb-2 text-slate-500">
+                    ไม่ได้รับการเลือก
                   </p>
                 )}
                 <p className="text-[10px] text-gray-400 mb-2">
@@ -569,21 +612,42 @@ export function RfqDetailOffersSection({
                       <MessageCircle size={14} /> แชท
                     </button>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={(e) => handleAcceptOffer(offer.id, e)}
-                    disabled={!!acceptingId || isAccepted || isRejected}
-                    className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
-                    style={{ background: '#7A4B94', fontWeight: 600 }}
-                  >
-                    {acceptingId === offer.id
-                      ? 'กำลังส่ง...'
-                      : isAccepted
-                        ? 'ยอมรับแล้ว'
+                  {isAccepted ? (
+                    /* AC: แสดง link ไป order แทนปุ่ม */
+                    offer.orderId ? (
+                      <Link
+                        to={`/orders/${offer.orderId}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-emerald-700 border-2 border-emerald-200 bg-emerald-50"
+                      >
+                        <ExternalLink size={13} />
+                        ดูคำสั่งซื้อ
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
+                        style={{ background: '#059669', fontWeight: 600 }}
+                      >
+                        ยอมรับแล้ว ✓
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={(e) => handleAcceptOffer(offer.id, e)}
+                      disabled={!!acceptingId || isRejected}
+                      className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
+                      style={{ background: isRejected ? '#94A3B8' : '#7A4B94', fontWeight: 600 }}
+                    >
+                      {acceptingId === offer.id
+                        ? 'กำลังส่ง...'
                         : isRejected
-                          ? 'ปิดใบนี้แล้ว'
+                          ? 'ไม่ได้รับการเลือก'
                           : 'ยอมรับข้อเสนอ'}
-                  </button>
+                    </button>
+                  )}
                 </div>
               </div>
             );

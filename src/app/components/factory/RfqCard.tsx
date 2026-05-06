@@ -6,6 +6,7 @@ import { DeadlineBadge } from './DeadlineBadge';
 export type RfqCardModel = {
   id: string;
   title: string;
+  requestKind?: 'PR' | 'PS' | 'MS' | string;
   status: string;
   categoryName: string;
   subCategoryName: string;
@@ -21,6 +22,13 @@ export type RfqCardModel = {
   myQuoteStatus: string | null;
   hasMyQuote: boolean;
 };
+
+function requestKindLabel(kind?: string): string {
+  const k = String(kind ?? '').toUpperCase();
+  if (k === 'PS') return 'ขอตัวอย่างสินค้า';
+  if (k === 'MS') return 'ขอตัวอย่างวัสดุ';
+  return 'ขอราคาผลิต OEM';
+}
 
 function formatBaht(n: number): string {
   return `฿${Math.round(n).toLocaleString('th-TH')}`;
@@ -70,7 +78,12 @@ export function RfqCard({ row }: { row: RfqCardModel }) {
         )}
       </div>
       <div className="flex-1 min-w-0 py-0.5">
-        <p className="text-[11px] text-gray-400 font-medium">#{row.id}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-[11px] text-gray-400 font-medium">#{row.id}</p>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+            {requestKindLabel(row.requestKind)}
+          </span>
+        </div>
         <p className="font-bold text-gray-900 truncate text-sm sm:text-base">{row.title}</p>
         <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{breadcrumb}</p>
         <div className="mt-2 space-y-1 text-xs text-gray-700">

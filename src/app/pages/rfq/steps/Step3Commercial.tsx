@@ -263,24 +263,16 @@ export function Step3Commercial({ draft, setDraft }: Props) {
       </div>
 
       {/* ══ 3. Lead time (optional) ══ */}
-      <input
-        type="number"
-        min={1}
-        value={draft.target_lead_time_days ?? ''}
-        onChange={(e) => setDraft({ target_lead_time_days: Number(e.target.value) || undefined })}
-        placeholder="ระยะเวลาผลิตที่ต้องการ (วัน)"
-        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-      />
-
-      {/* ══ 4. วันที่ต้องการรับสินค้า (optional) ══ */}
       <div>
-        <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1 block">
-          วันที่ต้องการรับสินค้า
-        </label>
+        <p className="text-[13px] font-bold text-gray-700 mb-2">
+          ระยะเวลาผลิตที่ต้องการ (วัน)
+        </p>
         <input
-          type="date"
-          value={draft.required_delivery_date ?? ''}
-          onChange={(e) => setDraft({ required_delivery_date: e.target.value || undefined })}
+          type="number"
+          min={1}
+          value={draft.target_lead_time_days ?? ''}
+          onChange={(e) => setDraft({ target_lead_time_days: Number(e.target.value) || undefined })}
+          placeholder="ระยะเวลาผลิตที่ต้องการ (วัน)"
           className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
         />
       </div>

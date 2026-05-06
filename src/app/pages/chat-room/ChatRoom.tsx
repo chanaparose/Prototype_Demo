@@ -89,6 +89,8 @@ const bangkokDateKey = bangkokDateKeyUtil;
 const formatBangkokDateLabel = formatChatDateLabel;
 
 function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
+  const { user } = useAuth();
+  const currentUserId = getCurrentUserId(user);
   const { refetchConversations } = useData();
   const markAsRead = useMarkAsRead();
   const [messages, setMessages] = useState<RoomMessage[]>([]);
@@ -162,8 +164,10 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
           }));
         }
 
-        void markAsRead(conversationId);
-        void refetchConversations();
+        void (async () => {
+          await markAsRead(conversationId);
+          await refetchConversations();
+        })();
       })
       .catch(() => {
         if (!cancelled) setMessages([]);
@@ -178,6 +182,23 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
 
   useEffect(() => {
     if (!conversationId) return;
+    const onFocusOrVisible = () => {
+      if (document.hidden) return;
+      void (async () => {
+        await markAsRead(conversationId, { force: true });
+        await refetchConversations();
+      })();
+    };
+    window.addEventListener('focus', onFocusOrVisible);
+    document.addEventListener('visibilitychange', onFocusOrVisible);
+    return () => {
+      window.removeEventListener('focus', onFocusOrVisible);
+      document.removeEventListener('visibilitychange', onFocusOrVisible);
+    };
+  }, [conversationId, markAsRead, refetchConversations]);
+
+  useEffect(() => {
+    if (!conversationId) return;
     let stop = false;
     const timer = window.setInterval(() => {
       if (stop || document.hidden) return;
@@ -186,6 +207,14 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
         .then((raw) => {
           if (stop) return;
           const serverRows = messagesFromApi(raw);
+          const hasUnreadForMe =
+            currentUserId != null &&
+            serverRows.some(
+              (m) =>
+                m.receiver_id === currentUserId &&
+                m.sender_id !== currentUserId &&
+                m.is_read === false,
+            );
           setMessages((prev) => {
             const pending = prev.filter((m) => m.status === 'sending' || m.status === 'error');
             const next = sortMessagesByCreatedAt(dedupeByKey([...serverRows, ...pending]));
@@ -210,6 +239,12 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
             }
             return next;
           });
+          if (hasUnreadForMe) {
+            void (async () => {
+              await markAsRead(conversationId, { force: true });
+              await refetchConversations();
+            })();
+          }
         })
         .catch(() => {
           /* ignore polling errors */
@@ -219,7 +254,7 @@ function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
       stop = true;
       window.clearInterval(timer);
     };
-  }, [conversationId]);
+  }, [conversationId, currentUserId, markAsRead, refetchConversations]);
 
   const conv: Conversation = useMemo(
     () => ({

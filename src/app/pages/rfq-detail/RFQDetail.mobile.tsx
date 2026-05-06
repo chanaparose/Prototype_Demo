@@ -30,7 +30,7 @@ export function RFQDetailMobile() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { rfq, relatedOrder, loading, error, refetch } = useRfqDetail(id);
+  const { rfq, relatedOrder, quoteOrderMap: _quoteOrderMap, loading, error, refetch } = useRfqDetail(id);
   const [specsOpen, setSpecsOpen] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -224,9 +224,9 @@ export function RFQDetailMobile() {
           onSelectOffer={setSelectedOffer}
           onChatWithOffer={handleChatWithOffer}
           rfqQuantity={rfq.quantity}
-          onOfferFlowComplete={async ({ orderId }) => {
+          onOfferFlowComplete={async () => {
+            // Multi-factory: refetch เพื่ออัปเดต status ทุก card — ไม่ navigate ออก
             await refetch();
-            if (orderId) navigate(`/orders/${orderId}`);
           }}
         />
       </div>

@@ -69,7 +69,7 @@ export function ProductDetailMobile() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, isIdea, resolvedId, relatedProducts } = useProductDetailShowcase();
+  const { item, loading, error, factory, isIdea, isMaterial, resolvedId, relatedProducts } = useProductDetailShowcase();
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
   const { isLiked, toggleFavorite } = useFavorites();
@@ -141,7 +141,7 @@ export function ProductDetailMobile() {
   // ── Spec rows ──
   const specRows: { label: string; value: string }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
-  if (subName) specRows.push({ label: 'ประเภทย่อย', value: subName });
+  if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
   specRows.push({ label: 'ขั้นต่ำผลิต (MOQ)', value: `${item.minOrder} ชิ้น` });
   if (item.leadTime) specRows.push({ label: 'ระยะเวลาผลิต', value: item.leadTime });
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
@@ -253,7 +253,7 @@ export function ProductDetailMobile() {
             className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[9px] font-semibold"
             style={{ background: BRAND.purpleSoft, color: BRAND.purple }}
           >
-            {isIdea ? 'ไอเดีย' : 'สินค้า'}
+            {isIdea ? 'ไอเดีย' : isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
           </span>
           {item.category ? (
             <span className="text-[10px] text-gray-500">{item.category}</span>

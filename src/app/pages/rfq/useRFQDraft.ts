@@ -3,6 +3,7 @@ import React from 'react';
 const KEY = 'rfq_draft_v1';
 
 export type RFQDraft = {
+  request_kind?: 'PR' | 'PS' | 'MS';
   title: string;
   description: string;
   category_id: number | null;
@@ -28,9 +29,11 @@ export type RFQDraft = {
   tech_drawing_url?: string;
   reference_images: string[];
   spec_sheet_url?: string;
+  source_showcase_id?: number;
 };
 
 const initialDraft: RFQDraft = {
+  request_kind: 'PR',
   title: '',
   description: '',
   category_id: null,

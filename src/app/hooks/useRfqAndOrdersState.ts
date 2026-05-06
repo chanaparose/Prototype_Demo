@@ -149,7 +149,13 @@ export function useRfqAndOrdersState(initial?: InitialState) {
           let quotes: RawQuotation[] = [];
           try {
             const q = await rfqsApi.listQuotations(r.rfq_id);
-            if (Array.isArray(q)) quotes = q as RawQuotation[];
+            if (Array.isArray(q)) {
+              quotes = q as RawQuotation[];
+            } else if (q && typeof q === 'object') {
+              const obj = q as Record<string, unknown>;
+              const nested = obj.quotations ?? obj.data ?? obj.items ?? obj.results;
+              if (Array.isArray(nested)) quotes = nested as RawQuotation[];
+            }
           } catch { /* no quotes */ }
           return { raw: r, quotes };
         }),

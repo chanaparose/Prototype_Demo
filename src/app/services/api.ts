@@ -391,6 +391,35 @@ export const rfqsApi = {
     api.post(`/rfqs/${rfqId}/quotations`, data),
   listQuotations: (rfqId: string | number) =>
     api.get<QuotationRow[] | null>(`/rfqs/${rfqId}/quotations`),
+  /** GET /rfqs/preview-factories?kind=PR|PS|MS&category_id=..&sub_category_id=.. */
+  previewFactories: (params: {
+    kind: 'PR' | 'PS' | 'MS';
+    category_id: number;
+    sub_category_id?: number;
+  }) =>
+    api.get<Record<string, unknown>>(
+      `/rfqs/preview-factories${qs({
+        kind: params.kind,
+        category_id: params.category_id,
+        sub_category_id: params.sub_category_id,
+      })}`,
+    ),
+  /** POST /rfqs/:id/bulk-checkout */
+  bulkCheckout: (
+    rfqId: string | number,
+    data: {
+      quotation_ids: number[];
+      payment_method?: 'WALLET' | 'PROMPTPAY' | 'BANK';
+      note?: string;
+    },
+  ) => api.post<Record<string, unknown>>(`/rfqs/${rfqId}/bulk-checkout`, data),
+};
+
+export const factoryRfqsApi = {
+  dismiss: (rfqId: string | number) =>
+    api.post<Record<string, unknown>>(`/factory/rfqs/${rfqId}/dismiss`, {}),
+  undismiss: (rfqId: string | number) =>
+    api.delete<Record<string, unknown>>(`/factory/rfqs/${rfqId}/dismiss`),
 };
 
 export const ordersApi = {
@@ -627,6 +656,8 @@ export const quotationTemplatesApi = {
 };
 
 export const masterApi = {
+  lbiCategories: (scope: 'PD' | 'MT') =>
+    api.get<unknown[]>(`/lbi/categories?scope=${encodeURIComponent(scope)}`),
   provinces: () => api.get<unknown[]>('/master/provinces'),
   districts: (provinceId: number) => api.get<unknown[]>(`/master/districts?province_id=${provinceId}`),
   subDistricts: (districtId: number) =>
@@ -663,7 +694,7 @@ export const showcasesApi = {
    * Supports category/sub-category/status filters from FE handoff.
    */
   listFiltered: (params: {
-    type?: 'PD' | 'PM' | 'ID' | string;
+    type?: 'PD' | 'PM' | 'ID' | 'MT' | string;
     factory_id?: string | number;
     status?: string;
     category_id?: number | string;
@@ -1409,6 +1440,8 @@ export interface RFQCreateInput {
   tech_drawing_url?: string;
   reference_images?: string[];
   spec_sheet_url?: string;
+  request_kind?: 'PR' | 'PS' | 'MS';
+  source_showcase_id?: number;
 }
 
 export const quotationApi = {

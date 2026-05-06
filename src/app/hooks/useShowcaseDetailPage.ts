@@ -21,7 +21,8 @@ const PAGE_CONFIG: Record<
   'product' | 'promotion' | 'idea',
   { acceptTypes: ShowcaseContentType[] }
 > = {
-  product: { acceptTypes: ['product'] },
+  // หน้า /product-detail รับทั้ง PD (product) และ MT (material) — UI เหมือนกัน
+  product: { acceptTypes: ['product', 'material'] },
   promotion: { acceptTypes: ['promotion'] },
   idea: { acceptTypes: ['idea'] },
 };
@@ -128,7 +129,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         const detailRaw = await showcasesApi.get(resolvedId).catch(() => ({}));
         const detailRow = unwrapShowcaseDetailPayload((detailRaw as Record<string, unknown>) ?? {});
         const detail = item ?? normShowcase(detailRow);
-        const apiTypes: Array<'PD' | 'PM'> = ['PD', 'PM'];
+        const apiTypes: Array<'PD' | 'PM' | 'MT'> = ['PD', 'PM', 'MT'];
 
         const subIdFromDetail = detail.sub_category_id ?? Number(detailRow.sub_category_id ?? NaN);
         const catIdFromDetail =
@@ -180,7 +181,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         const uniq = new Map<string, FactoryShowcase>();
         for (const row of buckets) {
           if (!row.id || row.id === currentId) continue;
-          if (!(row.contentType === 'product' || row.contentType === 'promotion')) continue;
+          if (!(row.contentType === 'product' || row.contentType === 'promotion' || row.contentType === 'material')) continue;
           if (!uniq.has(row.id)) uniq.set(row.id, row);
         }
         if (!cancelled) setRelatedApiShowcases([...uniq.values()].slice(0, 8));
@@ -196,7 +197,9 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const relatedShowcases = useMemo(() => {
     if (!item || kind === 'idea') return [] as FactoryShowcase[];
     const allByType = data.factoryShowcases.filter(
-      (s) => (s.contentType === 'product' || s.contentType === 'promotion') && s.id !== item.id,
+      (s) =>
+        (s.contentType === 'product' || s.contentType === 'promotion' || s.contentType === 'material') &&
+        s.id !== item.id,
     );
     const sameSub = allByType.filter((s) => {
       if (item.sub_category_id == null || s.sub_category_id == null) return false;
@@ -244,6 +247,7 @@ export function useProductDetailShowcase() {
   return {
     ...base,
     isIdea: base.item?.contentType === 'idea',
+    isMaterial: base.item?.contentType === 'material',
   };
 }
 

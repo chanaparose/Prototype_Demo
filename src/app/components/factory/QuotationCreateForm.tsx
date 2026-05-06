@@ -7,6 +7,7 @@ import type { QuotationBreakdown } from '../../services/api';
 import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { ShippingMethodLockedField } from './ShippingMethodLockedField';
 import { hoursUntilDeadline } from '../../utils/rfqDeadline';
+import { FactoryHighlightField } from '../features/factory-rfq/FactoryHighlightField';
 
 /* ── Constants ──────────────────────────────────────────────────── */
 /** ค่า payment_terms ที่ล็อคไว้ตามข้อกำหนดล่าสุด */
@@ -42,6 +43,7 @@ interface Props {
   rfqQuantity?: number | null;        // จำนวนที่ลูกค้าขอ — ใช้คำนวณ preview
   initial?: Partial<QuotationCreateFormValues>;
   initialImageUrls?: string[];        // รูปภาพที่บันทึกไว้แล้ว (pre-fill)
+  initialFactoryHighlight?: string;
   patchQuotationId?: string | null;   // PATCH mode
   submitLabel?: string;
   onSubmitted?: () => void | Promise<void>;
@@ -67,6 +69,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       rfqQuantity = null,
       initial,
       initialImageUrls,
+      initialFactoryHighlight,
       patchQuotationId,
       submitLabel = 'ส่งใบเสนอราคา',
       onSubmitted,
@@ -162,12 +165,21 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
     /* ── Image upload ── */
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
+    const [factoryHighlight, setFactoryHighlight] = useState<string>(initialFactoryHighlight ?? '');
     const [uploadingImage, setUploadingImage] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
       setImageUrls(initialImageUrls ?? []);
     }, [initialImageUrls]);
+    useEffect(() => {
+      setFactoryHighlight(initialFactoryHighlight ?? '');
+    }, [initialFactoryHighlight]);
+
+    const highlightError = useMemo(() => {
+      if ((factoryHighlight.trim().length ?? 0) > 200) return 'สูงสุด 200 ตัวอักษร';
+      return null;
+    }, [factoryHighlight]);
 
     const handleImageFiles = useCallback(async (files: FileList | null) => {
       if (!files || files.length === 0) return;
@@ -210,6 +222,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         setError('Lead time ต้องมากกว่า 0');
         return;
       }
+      if (highlightError) {
+        setError(highlightError);
+        return;
+      }
 
       setSaving(true);
       setError('');
@@ -224,6 +240,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           lead_time_days: leadN,
           validity_days: Number(v.validity_days) || 14,
           image_urls: imageUrls,
+          factory_highlight: factoryHighlight.trim() || undefined,
           reason: 'อัปเดตใบเสนอราคา',
         };
         // ส่ง shipping_method_id เฉพาะเมื่อมีค่า (BE ต้องรับ optional)
@@ -244,7 +261,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       } finally {
         setSaving(false);
       }
-    }, [readOnly, form, rfqId, factoryId, lockedShippingMethodId, patchQuotationId, qc, onSubmitted, imageUrls]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [readOnly, form, rfqId, factoryId, lockedShippingMethodId, patchQuotationId, qc, onSubmitted, imageUrls, factoryHighlight, highlightError]); // eslint-disable-line react-hooks/exhaustive-deps
 
     /* ── Render ── */
     return (
@@ -375,7 +392,16 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           />
         ) : null}
 
-        {/* ── 6. รูปภาพประกอบใบเสนอราคา ── */}
+        {/* ── 6.1 รายละเอียดสินค้าและ BOQ ── */}
+        <FactoryHighlightField
+          value={factoryHighlight}
+          onChange={setFactoryHighlight}
+          isLocked={readOnly}
+          maxLength={200}
+          error={highlightError}
+        />
+
+        {/* ── 7. รูปภาพประกอบใบเสนอราคา ── */}
         {!readOnly ? (
           <div>
             <p className="text-xs font-semibold text-gray-600 mb-2">รูปภาพประกอบ (ถ้ามี)</p>
@@ -430,7 +456,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         ) : null}
 
-        {/* ── 7. Live Breakdown ── */}
+        {/* ── 8. Live Breakdown ── */}
         {(preview || previewLoading) && rfqQuantity && rfqQuantity > 0 ? (
           <div className="rounded-xl border border-violet-100 bg-violet-50/60 p-3 space-y-1.5">
             <div className="flex items-center justify-between mb-1">
@@ -474,7 +500,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         ) : null}
 
-        {/* ── 8. Warnings ── */}
+        {/* ── 9. Warnings ── */}
         {formWarnings.length > 0 ? (
           <ul className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 space-y-1">
             {formWarnings.map((w) => (
@@ -483,11 +509,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </ul>
         ) : null}
 
-        {/* ── 9. Submit ── */}
+        {/* ── 10. Submit ── */}
         {!readOnly ? (
           <button
             type="submit"
-            disabled={saving || !form.formState.isDirty}
+            disabled={saving || (!form.formState.isDirty && (factoryHighlight ?? '') === (initialFactoryHighlight ?? '')) || Boolean(highlightError)}
             className="w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2"
             style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
           >

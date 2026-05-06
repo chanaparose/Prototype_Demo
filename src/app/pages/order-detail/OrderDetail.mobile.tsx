@@ -72,10 +72,8 @@ function OrderDetailMobileBody() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancellingOrder, setCancellingOrder] = useState(false);
 
-  // PP / PE / PR / WF — statuses the backend allows cancellation
-  const CANCELLABLE_STATUSES = ['PP', 'PE', 'PR', 'WF'];
-  const isCancellable = CANCELLABLE_STATUSES.includes(apiStatus);
-  const canShowCancelButton = isCancellable && !Boolean(order.depositPaid);
+  // UI rule: show cancel button only when status is PP
+  const canShowCancelButton = apiStatus === 'PP';
 
   const depositAmount =
     nextAction?.amount ??

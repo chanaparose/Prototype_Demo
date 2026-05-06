@@ -5,7 +5,7 @@ import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
 
-type TabKey = 'all' | 'open' | 'quoted' | 'closing';
+type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
 
 function useNarrowTabs(breakpoint = 400) {
@@ -34,6 +34,9 @@ function applyTab(rows: FactoryBoardRow[], tab: TabKey): FactoryBoardRow[] {
   if (tab === 'all') return rows;
   if (tab === 'open') return rows.filter((r) => !r.hasMyQuote);
   if (tab === 'quoted') return rows.filter((r) => r.hasMyQuote);
+  if (tab === 'pr') return rows.filter((r) => String(r.requestKind ?? 'PR').toUpperCase() === 'PR');
+  if (tab === 'ps') return rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'PS');
+  if (tab === 'ms') return rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'MS');
   return rows.filter(
     (r) => !r.hasMyQuote && r.daysLeft != null && r.daysLeft >= 0 && r.daysLeft <= 3,
   );
@@ -105,6 +108,16 @@ export function FactoryRfqBoardPage() {
   const [sort, setSort] = useState<SortKey>('new');
 
   const counts = useMemo(() => tabCounts(rows), [rows]);
+  const kindCounts = useMemo(() => ({
+    pr: rows.filter((r) => String(r.requestKind ?? 'PR').toUpperCase() === 'PR').length,
+    ps: rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'PS').length,
+    ms: rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'MS').length,
+  }), [rows]);
+  const unansweredByKind = useMemo(() => ({
+    pr: rows.filter((r) => !r.hasMyQuote && String(r.requestKind ?? 'PR').toUpperCase() === 'PR').length,
+    ps: rows.filter((r) => !r.hasMyQuote && String(r.requestKind ?? '').toUpperCase() === 'PS').length,
+    ms: rows.filter((r) => !r.hasMyQuote && String(r.requestKind ?? '').toUpperCase() === 'MS').length,
+  }), [rows]);
   const summary = useMemo(() => {
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
@@ -158,6 +171,9 @@ export function FactoryRfqBoardPage() {
     { key: 'all', label: 'ทั้งหมด', count: counts.all },
     { key: 'open', label: 'ยังไม่ได้เสนอ', count: counts.open },
     { key: 'quoted', label: 'เสนอแล้ว', count: counts.quoted },
+    { key: 'pr', label: 'OEM', count: kindCounts.pr },
+    { key: 'ps', label: 'ตัวอย่างสินค้า', count: kindCounts.ps },
+    { key: 'ms', label: 'ตัวอย่างวัสดุ', count: kindCounts.ms },
     { key: 'closing', label: 'ใกล้ปิด', count: counts.closing, warn: counts.closing > 0 },
   ];
 
@@ -244,20 +260,23 @@ export function FactoryRfqBoardPage() {
       {!noFactoryCategories && rows.length > 0 ? (
         <>
           {/* ── Stats row: 4 cards ── */}
-          <div className="grid grid-cols-4 gap-3">
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { label: 'ทั้งหมด', value: counts.all, color: '#4F46E5' },
-              { label: 'รอเสนอราคา', value: counts.open, color: '#4F46E5' },
-              { label: 'เสนอแล้ว', value: counts.quoted, color: '#059669' },
-              { label: 'ปิดเร็วๆ', value: counts.closing, color: '#DC2626' },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-2xl bg-white border border-gray-100 shadow-sm p-3 text-center"
+              { key: 'pr', label: 'OEM', total: kindCounts.pr, pending: unansweredByKind.pr, color: 'indigo' },
+              { key: 'ps', label: 'ขอตัวอย่างสินค้า', total: kindCounts.ps, pending: unansweredByKind.ps, color: 'violet' },
+              { key: 'ms', label: 'ขอตัวอย่างวัสดุ', total: kindCounts.ms, pending: unansweredByKind.ms, color: 'emerald' },
+            ].map((k) => (
+              <button
+                key={k.key}
+                type="button"
+                onClick={() => setTab(k.key as TabKey)}
+                className="text-left rounded-2xl bg-white border border-gray-100 shadow-sm p-3 hover:shadow-md transition"
               >
-                <p className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">{stat.label}</p>
-              </div>
+                <p className="text-xs text-gray-500">{k.label}</p>
+                <p className="text-xl font-bold text-slate-900 mt-1">{k.total} รายการ</p>
+                <p className="text-xs mt-1 text-amber-700">ยังไม่ได้ตอบกลับ {k.pending} รายการ</p>
+              </button>
             ))}
           </div>
 

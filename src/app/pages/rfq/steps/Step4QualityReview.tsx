@@ -18,28 +18,8 @@ export function Step4QualityReview({ draft, setDraft }: Props) {
         onChange={(v) => setDraft({ certifications_required: v })}
       />
 
-      <div className="flex items-center gap-2">
-        <input
-          id="sampleRequired"
-          type="checkbox"
-          checked={draft.sample_required}
-          onChange={(e) => setDraft({ sample_required: e.target.checked })}
-        />
-        <label htmlFor="sampleRequired" className="text-sm text-gray-700">
-          ต้องการตัวอย่างสินค้า
-        </label>
-      </div>
-
-      {draft.sample_required ? (
-        <input
-          type="number"
-          min={1}
-          value={draft.sample_qty ?? ''}
-          onChange={(e) => setDraft({ sample_qty: Number(e.target.value) || undefined })}
-          placeholder="จำนวนตัวอย่าง"
-          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-        />
-      ) : null}
+      {/* "ต้องการตัวอย่างสินค้า" ตัดออกจาก section นี้แล้ว
+          → ใช้ tab "ขอซื้อตัวอย่าง" (request_kind=PS/MS) แทน */}
 
       <select
         value={draft.inspection_type ?? ''}

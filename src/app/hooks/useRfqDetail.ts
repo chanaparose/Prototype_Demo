@@ -244,6 +244,8 @@ export function useRfqDetail(rfqId: string | undefined) {
 
   const [rfq, setRfq] = React.useState<Rfq | null>(null);
   const [relatedOrder, setRelatedOrder] = React.useState<Order | null>(null);
+  /** quoteId → orderId สำหรับ multi-factory: แต่ละ AC quote มี order ของตัวเอง */
+  const [quoteOrderMap, setQuoteOrderMap] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   /** ข้อมูลเสริมจาก RFQ ดิบ — ใช้ factory detail / spec FACTORY_RFQ_BOARD_UX */
@@ -290,8 +292,17 @@ export function useRfqDetail(rfqId: string | undefined) {
 
       // Parse quotations
       let quotes: RawQuotation[] = [];
-      if (quotesRes.status === 'fulfilled' && Array.isArray(quotesRes.value)) {
-        quotes = quotesRes.value as RawQuotation[];
+      if (quotesRes.status === 'fulfilled') {
+        const raw = quotesRes.value as unknown;
+        if (Array.isArray(raw)) {
+          quotes = raw as RawQuotation[];
+        } else if (raw && typeof raw === 'object') {
+          const obj = raw as Record<string, unknown>;
+          const nested = obj.quotations ?? obj.data ?? obj.items ?? obj.results;
+          if (Array.isArray(nested)) {
+            quotes = nested as RawQuotation[];
+          }
+        }
       }
 
       // Map to FE type
@@ -550,13 +561,23 @@ export function useRfqDetail(rfqId: string | undefined) {
 
       setRfq(mappedRfq);
 
-      // ── Find related order ──────────────────────────────────
-      // Order links via quote_id — check if any accepted quote has an order
+      // ── Find related orders (multi-factory) ──────────────────
+      // Build quoteId → orderId map จาก AC quotes ทั้งหมด
       const acceptedQuoteIds = quotes.filter((q) => q.status === 'AC').map((q) => q.quote_id);
+      const newQuoteOrderMap: Record<string, string> = {};
       if (acceptedQuoteIds.length > 0) {
         try {
           const rawOrders = (await ordersApi.list()) as Array<Record<string, unknown>> | null;
           if (Array.isArray(rawOrders)) {
+            // Build full quoteId → orderId map (รองรับหลายโรงงาน)
+            for (const o of rawOrders) {
+              const oqid = Number(o.quote_id);
+              if (acceptedQuoteIds.includes(oqid)) {
+                const oid = String(o.order_id ?? o.id ?? '');
+                if (oid) newQuoteOrderMap[String(oqid)] = oid;
+              }
+            }
+            // compat: set relatedOrder = first matching order
             const matchingOrder = rawOrders.find((o) =>
               acceptedQuoteIds.includes(Number(o.quote_id)),
             );
@@ -582,6 +603,14 @@ export function useRfqDetail(rfqId: string | undefined) {
           }
         } catch { /* no orders found */ }
       }
+      setQuoteOrderMap(newQuoteOrderMap);
+
+      // Inject orderId ลง offers เพื่อให้ card แสดง "ดูคำสั่งซื้อ" ได้
+      for (const offer of offers) {
+        if ((offer.quoteStatus ?? '').toUpperCase() === 'AC') {
+          offer.orderId = newQuoteOrderMap[offer.id];
+        }
+      }
     } catch (err) {
       console.error('[useRfqDetail] fetchDetail failed:', err);
       setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูล RFQ ได้');
@@ -598,7 +627,8 @@ export function useRfqDetail(rfqId: string | undefined) {
   // ─── Accept offer flow ───────────────────────────────────────
   const acceptOffer = React.useCallback(
     async (quoteId: string): Promise<{ orderId?: string }> => {
-      // POST /orders เท่านั้น — BE accept quote + reject siblings + close RFQ + สร้าง order PP (ไม่ PATCH quotation ก่อน)
+      // POST /orders — BE accept quote + create order PP
+      // Multi-factory: ไม่ reject siblings ไม่ปิด RFQ
       let orderId: string | undefined;
       const created = (await ordersApi.create(Number(quoteId))) as Record<string, unknown>;
       const oid = created.order_id ?? created.id;
@@ -614,6 +644,7 @@ export function useRfqDetail(rfqId: string | undefined) {
   return {
     rfq,
     relatedOrder,
+    quoteOrderMap,
     loading,
     error,
     refetch: fetchDetail,

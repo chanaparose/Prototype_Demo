@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
 import type { QuotationRow } from '../../types/rfq';
 import { getFactoryEntityId } from '../../utils/factoryUser';
-import { rfqsApi, quotationsApi, conversationsApi, messagesApi, categoriesApi } from '../../services/api';
+import { rfqsApi, quotationsApi, conversationsApi, messagesApi, categoriesApi, factoryRfqsApi } from '../../services/api';
 import { buildSendPayload, chatRoomPath, getCurrentUserId } from '../../utils/chatContract';
 import type { ApiConversation } from '../../utils/chatContract';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
@@ -14,6 +14,7 @@ import { DeadlineBadge } from '../../components/factory/DeadlineBadge';
 import { ShippingMethodLockedField } from '../../components/factory/ShippingMethodLockedField';
 import { QuotationCreateForm, type QuotationCreateFormHandle } from '../../components/factory/QuotationCreateForm';
 import { summarizeRfqAddress } from '../../utils/rfqAddressSummary';
+import { DismissRfqButton } from '../../components/features/factory-rfq/DismissRfqButton';
 
 type QuoteRow = QuotationRow & {
   factoryId?: number | string;
@@ -23,7 +24,16 @@ type QuoteRow = QuotationRow & {
 };
 
 function quoteFid(q: QuoteRow): number | null {
-  const n = Number(q.factory_id ?? q.factoryId);
+  const factoryObj =
+    q.factory && typeof q.factory === 'object' ? (q.factory as Record<string, unknown>) : null;
+  const n = Number(
+    q.factory_id ??
+      q.factoryId ??
+      q.user_id ??
+      q.factory_user_id ??
+      factoryObj?.user_id ??
+      factoryObj?.id,
+  );
   return Number.isFinite(n) ? n : null;
 }
 
@@ -61,8 +71,23 @@ export function FactoryRfqDetailPage() {
   const shippingMethodsQ = useShippingMethods();
 
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [dismissBusy, setDismissBusy] = useState(false);
   const [chatBusy, setChatBusy] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const normalizeQuoteRows = (raw: unknown): QuoteRow[] => {
+    if (Array.isArray(raw)) return raw as QuoteRow[];
+    if (raw && typeof raw === 'object') {
+      const obj = raw as Record<string, unknown>;
+      const nested =
+        obj.quotations ??
+        obj.data ??
+        obj.items ??
+        obj.results;
+      if (Array.isArray(nested)) return nested as QuoteRow[];
+    }
+    return [];
+  };
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -73,7 +98,7 @@ export function FactoryRfqDetailPage() {
       const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
       setRfqTitle(String(rfq.title ?? ''));
       setRfqBody(rfq);
-      setQuotes(Array.isArray(qList) ? qList : []);
+      setQuotes(normalizeQuoteRows(qList));
       const sidCheck = Number(rfq.shipping_method_id ?? 0);
       if (!Number.isFinite(sidCheck) || sidCheck <= 0) {
         console.warn('[FactoryRfqDetail] RFQ missing shipping_method_id', { rfq_id: rfq.rfq_id ?? id });
@@ -111,8 +136,23 @@ export function FactoryRfqDetailPage() {
   }, [rfqBody.category_id, rfqBody.sub_category_id]);
 
   const myQuote = fid != null ? quotes.find((q) => quoteFid(q) === fid) : undefined;
+  const myQuotes = useMemo(
+    () => (fid != null ? quotes.filter((q) => quoteFid(q) === fid) : []),
+    [quotes, fid],
+  );
   const myStatus = myQuote ? String(myQuote.status ?? 'PD').toUpperCase() : '';
   const canEdit = Boolean(myQuote && myStatus === 'PD');
+  const canDismiss = useMemo(() => {
+    if (!myQuote) return true;
+    if (myStatus === 'AC') return false;
+    if (myStatus === 'PD') return false;
+    return true;
+  }, [myQuote, myStatus]);
+  const dismissDisabledReason = myStatus === 'PD'
+    ? 'มีใบเสนอราคาที่รอการตอบรับ — ถอนใบเสนอก่อน'
+    : myStatus === 'AC'
+      ? 'ลูกค้ายืนยันข้อเสนอแล้ว ไม่สามารถข้าม RFQ ได้'
+      : undefined;
 
   const rfqShipId = useMemo(() => {
     const n = Number(rfqBody.shipping_method_id ?? 0);
@@ -396,6 +436,36 @@ export function FactoryRfqDetailPage() {
       setError(e instanceof Error ? e.message : 'ยกเลิกใบเสนอราคาไม่สำเร็จ');
     } finally {
       setCancelBusy(false);
+    }
+  };
+
+  const dismissRfq = async () => {
+    if (!id) return;
+    setDismissBusy(true);
+    setError('');
+    try {
+      await factoryRfqsApi.dismiss(id);
+      navigate(backPath);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ซ่อน RFQ ไม่สำเร็จ');
+      throw e;
+    } finally {
+      setDismissBusy(false);
+    }
+  };
+
+  const undismissRfq = async () => {
+    if (!id) return;
+    setDismissBusy(true);
+    setError('');
+    try {
+      await factoryRfqsApi.undismiss(id);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'คืน RFQ ไม่สำเร็จ');
+      throw e;
+    } finally {
+      setDismissBusy(false);
     }
   };
 
@@ -699,6 +769,11 @@ export function FactoryRfqDetailPage() {
                           })()
                         : undefined
                     }
+                    initialFactoryHighlight={
+                      myQuote
+                        ? String((myQuote as Record<string, unknown>).factory_highlight ?? (myQuote as Record<string, unknown>).highlight ?? '')
+                        : ''
+                    }
                     submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                     readOnly={Boolean(myQuote && !canEdit)}
                     showHeading={false}
@@ -720,6 +795,16 @@ export function FactoryRfqDetailPage() {
                   >
                     ถอนใบเสนอราคา
                   </button>
+                ) : null}
+                {!dismissBusy && !myQuote ? (
+                  <DismissRfqButton
+                    rfqId={Number(id)}
+                    rfqCode={`#${id}`}
+                    canDismiss={canDismiss}
+                    disabledReason={dismissDisabledReason}
+                    onDismiss={dismissRfq}
+                    onUndismiss={undismissRfq}
+                  />
                 ) : null}
               </section>
             </div>
@@ -756,11 +841,11 @@ export function FactoryRfqDetailPage() {
 
             <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">ประวัติการเสนอราคา</p>
-              {quotes.length === 0 ? (
+              {myQuotes.length === 0 ? (
                 <p className="text-sm text-gray-500">ยังไม่มีใบเสนอราคา</p>
               ) : (
                 <ul className="space-y-2">
-                  {quotes
+                  {myQuotes
                     .slice()
                     .sort(
                       (a, b) =>

@@ -85,7 +85,7 @@
 
 | Component | หน้าที่ | ไฟล์ที่แนะนำ |
 |-----------|---------|----------------|
-| **CreateRfqStep1** | ฟอร์ม step 1 (หมวด, ชื่อโปรเจกต์, คำอธิบาย) | `features/create-rfq/CreateRfqStep1.tsx` |
+| **CreateRfqStep1** | ฟอร์ม step 1 (หมวด, ชื่อสินค้า, คำอธิบาย) | `features/create-rfq/CreateRfqStep1.tsx` |
 | **CreateRfqStep2** | ฟอร์ม step 2 (จำนวน, งบ, วัสดุ, deadline) | `features/create-rfq/CreateRfqStep2.tsx` |
 | **CreateRfqStep3Summary** | แสดงสรุป + ปุ่มส่งคำขอ | `features/create-rfq/CreateRfqStep3Summary.tsx` |
 
