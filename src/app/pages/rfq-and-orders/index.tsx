@@ -86,6 +86,7 @@ function getTabCount(id: OrderFilterId, c: ReturnType<typeof useRfqAndOrdersStat
 // ─── Active RFQ card ────────────────────────────────────────────────────────
 function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
   const { totalOffers, accepted, pending } = getActivityCounts(rfq);
+  const remaining = Math.max(totalOffers - accepted, 0);
   const iconBgs = [PRIMARY_BG, PEACH_MIST, PLUM_SOFT_BG] as const;
   const iconColors = [PRIMARY_COLOR, ACCENT_ORANGE_DEEP, PLUM] as const;
   const ib = iconBgs[idx % 3];
@@ -142,7 +143,8 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           </div>
         ) : (
           /* มีโรงงานตอบแล้ว */
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
             {/* badge: จำนวนที่ตอบ */}
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
@@ -151,27 +153,14 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
               <Factory size={11} />
               {totalOffers} โรงงานตอบแล้ว
             </span>
-            {/* badge: รอพิจารณา */}
-            {pending > 0 && (
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
-                style={{ background: '#FFF3E0', color: ACCENT_ORANGE_DEEP }}
-              >
-                <Clock size={11} />
-                {pending} รอพิจารณา
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: ACCENT_ORANGE }} />
-              </span>
-            )}
-            {/* badge: ยืนยันแล้ว */}
-            {accepted > 0 && (
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
-                style={{ background: '#D1FAE5', color: GREEN }}
-              >
-                <CheckCircle2 size={11} />
-                {accepted} ยืนยันแล้ว
-              </span>
-            )}
+              
+            </div>
+            <div className="text-[11px] text-gray-500 flex items-center gap-2">
+              <span>ตอบรับแล้ว <span className="font-bold text-emerald-700">{accepted}</span></span>
+              <span className="text-gray-300">|</span>
+               
+              <span>ข้อเสนอคงเหลือ <span className="font-bold text-gray-700">{remaining}</span></span>
+            </div>
           </div>
         )}
 

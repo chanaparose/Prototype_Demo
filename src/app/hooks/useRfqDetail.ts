@@ -276,7 +276,7 @@ export function useRfqDetail(rfqId: string | undefined) {
       let rawRfq: RawRfqDetail['rfq'] | null = null;
       let detailPayload: RawRfqDetail | null = null;
       if (rfqRes.status === 'fulfilled' && rfqRes.value) {
-        const data = rfqRes.value as RawRfqDetail;
+        const data = rfqRes.value as unknown as RawRfqDetail;
         detailPayload = data;
         rawRfq = data.rfq ?? (data as unknown as RawRfqDetail['rfq']);
       }
@@ -454,6 +454,7 @@ export function useRfqDetail(rfqId: string | undefined) {
         verified: true,
         recommended: false,
         aiReason: `เสนอราคาเมื่อ ${q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}`,
+        factoryHighlight: String(q.factory_highlight ?? '').trim(),
         completedOrders: 0,
         responseTime: '',
         // Extra fields for BOQ
@@ -608,7 +609,7 @@ export function useRfqDetail(rfqId: string | undefined) {
       // Inject orderId ลง offers เพื่อให้ card แสดง "ดูคำสั่งซื้อ" ได้
       for (const offer of offers) {
         if ((offer.quoteStatus ?? '').toUpperCase() === 'AC') {
-          offer.orderId = newQuoteOrderMap[offer.id];
+          (offer as RfqOffer & { orderId?: string }).orderId = newQuoteOrderMap[offer.id];
         }
       }
     } catch (err) {

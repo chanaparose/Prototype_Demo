@@ -9,7 +9,6 @@ import {
   Layers,
   Factory,
   CheckCircle2,
-  Clock,
   History,
   AlertCircle,
 } from 'lucide-react';
@@ -78,6 +77,7 @@ function getActivityCounts(rfq: RfqItem) {
 // ─── Single RFQ card (active section) ─────────────────────────────────────
 function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
   const { totalOffers, accepted, pending } = getActivityCounts(rfq);
+  const remaining = Math.max(totalOffers - accepted, 0);
   const iconBgs = [PRIMARY_BG, PEACH_MIST, PLUM_SOFT_BG] as const;
   const iconColors = [PRIMARY_COLOR, ACCENT_ORANGE_DEEP, PLUM] as const;
   const ib = iconBgs[idx % 3];
@@ -129,10 +129,8 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
         </div>
 
         {/* Activity indicator row */}
-        <div
-          className="flex items-center gap-3 py-2 px-3 rounded-xl mb-3 flex-wrap"
-          style={{ background: '#F9F7FD' }}
-        >
+        <div className="py-2 px-3 rounded-xl mb-3" style={{ background: '#F9F7FD' }}>
+          <div className="flex items-center gap-3 flex-wrap">
           {/* Total offers */}
           <span
             className="flex items-center gap-1.5 text-xs"
@@ -143,36 +141,12 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
             <span>โรงงานตอบแล้ว</span>
           </span>
 
-          {/* Accepted */}
-          {accepted > 0 && (
-            <>
-              <span className="text-gray-200 text-sm">|</span>
-              <span className="flex items-center gap-1.5 text-xs" style={{ color: GREEN }}>
-                <CheckCircle2 size={12} />
-                <span className="font-semibold">{accepted}</span>
-                <span>ยืนยันแล้ว</span>
-              </span>
-            </>
-          )}
-
-          {/* Pending offers awaiting review */}
-          {pending > 0 && (
-            <>
-              <span className="text-gray-200 text-sm">|</span>
-              <span
-                className="flex items-center gap-1.5 text-xs font-semibold"
-                style={{ color: ACCENT_ORANGE_DEEP }}
-              >
-                <Clock size={12} />
-                <span>{pending}</span>
-                <span>รอตอบ</span>
-                <span
-                  className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ background: ACCENT_ORANGE }}
-                />
-              </span>
-            </>
-          )}
+          </div>
+          <div className="text-[11px] text-gray-500 flex items-center gap-2 mt-2">
+            <span>ตอบรับแล้ว <span className="font-bold text-emerald-700">{accepted}</span></span>
+            <span className="text-gray-300">|</span>
+            <span>ข้อเสนอคงเหลือ <span className="font-bold text-gray-700">{remaining}</span></span>
+          </div>
         </div>
 
         {/* Link to orders if any accepted */}

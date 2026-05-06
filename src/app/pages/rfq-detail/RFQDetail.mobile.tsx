@@ -16,7 +16,6 @@ import {
   STATUS_LABEL,
 } from '../../components/features/rfq-detail';
 
-const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 const COLORS = {
@@ -34,7 +33,6 @@ export function RFQDetailMobile() {
   const { rfq, relatedOrder, quoteOrderMap: _quoteOrderMap, loading, error, refetch } = useRfqDetail(id);
   const [specsOpen, setSpecsOpen] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
-  const [cancelling, setCancelling] = useState(false);
   const [closing, setClosing] = useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
@@ -125,10 +123,10 @@ export function RFQDetailMobile() {
     );
   }
 
+  const isClosedRequest = rfq.status === 'completed' || rfq.status === 'cancelled';
   const isHistoryView = HISTORY_STATUSES.includes(
     rfq.status as (typeof HISTORY_STATUSES)[number],
-  );
-  const canCancel = CANCELLABLE_STATUSES.has(rfq.status);
+  ) && !isClosedRequest;
   const canClose = CLOSEABLE_STATUSES.has(rfq.status);
 
   const statusBadgeStyle = isHistoryView
@@ -137,9 +135,17 @@ export function RFQDetailMobile() {
       : rfq.status === 'cancelled'
         ? { background: '#F1F5F9', color: '#64748B' }
         : { background: '#FEF3C7', color: '#B45309' }
+    : isClosedRequest
+      ? rfq.status === 'completed'
+        ? { background: '#E8F7EE', color: '#0F9F6E' }
+        : { background: '#F1F5F9', color: '#64748B' }
     : { background: COLORS.lightPurpleBg, color: COLORS.purple };
 
-  const statusLabel = isHistoryView
+  const statusLabel = isClosedRequest
+    ? rfq.status === 'completed'
+      ? 'ปิดคำขอแล้ว'
+      : 'ยกเลิกคำขอแล้ว'
+    : isHistoryView
     ? STATUS_LABEL[rfq.status] ?? rfq.status
     : `${rfq.offerCount} ใบเสนอราคา`;
 
@@ -166,7 +172,7 @@ export function RFQDetailMobile() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4">
-        {(canClose || canCancel) ? (
+        {canClose ? (
           <div className="flex gap-2">
             {canClose ? (
               <button
@@ -190,29 +196,6 @@ export function RFQDetailMobile() {
                 style={{ borderColor: COLORS.purple, color: COLORS.purple, backgroundColor: COLORS.lightPurpleBg }}
               >
                 {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
-              </button>
-            ) : null}
-            {canCancel ? (
-              <button
-                type="button"
-                disabled={cancelling}
-                onClick={async () => {
-                  const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
-                  if (!ok) return;
-                  setCancelling(true);
-                  try {
-                    await rfqsApi.cancel(rfq.id);
-                    toast.success('ยกเลิก RFQ สำเร็จ');
-                    await refetch();
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
-                  } finally {
-                    setCancelling(false);
-                  }
-                }}
-                className="flex-1 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold py-2.5 disabled:opacity-60"
-              >
-                {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
               </button>
             ) : null}
           </div>

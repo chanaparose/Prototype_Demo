@@ -201,6 +201,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
             aiReason: '',
             completedOrders: 0,
             responseTime: '',
+            quoteStatus: String(q.status ?? '').toUpperCase(),
           })),
         };
       });

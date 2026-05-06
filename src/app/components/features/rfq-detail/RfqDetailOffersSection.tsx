@@ -30,6 +30,7 @@ export type OfferItem = {
   verified?: boolean;
   recommended?: boolean;
   aiReason?: string;
+  factoryHighlight?: string;
   /** PD | AC | RJ จากตาราง quotations */
   quoteStatus?: string;
   /** order_id ที่สร้างแล้วเมื่อ quoteStatus = 'AC' */
@@ -83,6 +84,7 @@ export function RfqDetailOffersSection({
   onOfferFlowComplete,
   rfqQuantity = 0,
 }: RfqDetailOffersSectionProps) {
+  const isRequestClosed = rfqStatus === 'completed' || rfqStatus === 'cancelled' || rfqStatus === 'expired';
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [flowError, setFlowError] = useState<string | null>(null);
   const [expandedBoqOfferId, setExpandedBoqOfferId] = useState<string | null>(null);
@@ -558,6 +560,12 @@ export function RfqDetailOffersSection({
                     <span className="font-bold text-[#7A4B94]">{formatTHB(grandTotal)}</span>
                   </div>
                 </div>
+                {offer.factoryHighlight ? (
+                  <div className="rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2 mb-2">
+                    <p className="text-[10px] font-semibold text-violet-700 mb-0.5">จุดเด่นจากโรงงาน</p>
+                    <p className="text-[11px] text-violet-900 leading-relaxed">{offer.factoryHighlight}</p>
+                  </div>
+                ) : null}
                 <p className="text-[10px] text-gray-500 mb-3">
                   {boq.valid_until ? `ใบเสนอราคาถึง ${boq.valid_until}` : offer.aiReason}
                 </p>
@@ -633,6 +641,15 @@ export function RfqDetailOffersSection({
                         ยอมรับแล้ว ✓
                       </button>
                     )
+                  ) : isRequestClosed ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-70"
+                      style={{ background: '#94A3B8', fontWeight: 600 }}
+                    >
+                      {rfqStatus === 'cancelled' ? 'ยกเลิกคำขอแล้ว' : 'ปิดคำขอแล้ว'}
+                    </button>
                   ) : (
                     <button
                       type="button"

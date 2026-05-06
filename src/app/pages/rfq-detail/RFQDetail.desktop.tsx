@@ -25,7 +25,6 @@ const COLORS = {
   gray: '#F5F5F5',
   lightPurpleBg: '#F8F6FA',
 };
-const CANCELLABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 // สถานะที่ลูกค้าสามารถ "ปิดรับคำขอ" ด้วยตนเองได้ (ยังเปิดอยู่ มีหรือไม่มีข้อเสนอก็ได้)
 const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
@@ -38,7 +37,6 @@ export function RFQDetailDesktop() {
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
-  const [cancelling, setCancelling] = React.useState(false);
   const [closing, setClosing] = React.useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
@@ -126,9 +124,10 @@ export function RFQDetailDesktop() {
     );
   }
 
+  const isClosedRequest = rfq.status === 'completed' || rfq.status === 'cancelled';
   const isHistoryView = HISTORY_STATUSES.includes(
     rfq.status as (typeof HISTORY_STATUSES)[number],
-  );
+  ) && !isClosedRequest;
 
   const statusBadgeStyle = isHistoryView
     ? rfq.status === 'completed'
@@ -136,12 +135,19 @@ export function RFQDetailDesktop() {
       : rfq.status === 'cancelled'
         ? { background: '#F1F5F9', color: '#64748B' }
         : { background: '#FEF3C7', color: '#B45309' }
+    : isClosedRequest
+      ? rfq.status === 'completed'
+        ? { background: '#E8F7EE', color: '#0F9F6E' }
+        : { background: '#F1F5F9', color: '#64748B' }
     : { background: COLORS.lightPurpleBg, color: COLORS.purple };
 
-  const statusLabel = isHistoryView
+  const statusLabel = isClosedRequest
+    ? rfq.status === 'completed'
+      ? 'ปิดคำขอแล้ว'
+      : 'ยกเลิกคำขอแล้ว'
+    : isHistoryView
     ? STATUS_LABEL[rfq.status] ?? rfq.status
     : `${rfq.offerCount} ใบเสนอราคา`;
-  const canCancel = CANCELLABLE_STATUSES.has(rfq.status);
   const canClose = CLOSEABLE_STATUSES.has(rfq.status);
 
   return (
@@ -201,29 +207,6 @@ export function RFQDetailDesktop() {
                 style={{ borderColor: COLORS.purple, color: COLORS.purple, backgroundColor: '#F8F6FA' }}
               >
                 {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
-              </button>
-            ) : null}
-            {canCancel ? (
-              <button
-                type="button"
-                disabled={cancelling}
-                onClick={async () => {
-                  const ok = window.confirm('ยืนยันการยกเลิก RFQ นี้? การกระทำนี้ไม่สามารถย้อนกลับได้');
-                  if (!ok) return;
-                  setCancelling(true);
-                  try {
-                    await rfqsApi.cancel(rfq.id);
-                    toast.success('ยกเลิก RFQ สำเร็จ');
-                    await refetch();
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถยกเลิก RFQ ได้');
-                  } finally {
-                    setCancelling(false);
-                  }
-                }}
-                className="px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm font-semibold disabled:opacity-60"
-              >
-                {cancelling ? 'กำลังยกเลิก...' : 'ยกเลิก RFQ'}
               </button>
             ) : null}
           </div>

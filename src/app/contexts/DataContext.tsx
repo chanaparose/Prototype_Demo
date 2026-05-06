@@ -148,10 +148,13 @@ export type RfqOffer = {
   verified: boolean;
   recommended: boolean;
   aiReason: string;
+  factoryHighlight?: string;
   completedOrders: number;
   responseTime: string;
   /** จาก quotations.status: PD | AC | RJ */
   quoteStatus?: string;
+  /** ผูกจาก quotations.quote_id -> orders.order_id เมื่อใบเสนอราคาถูกยอมรับ */
+  orderId?: string;
 };
 
 export type Rfq = {
