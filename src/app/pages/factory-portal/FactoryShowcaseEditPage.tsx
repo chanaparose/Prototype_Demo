@@ -10,9 +10,10 @@ import { useBeforeUnload } from '../../hooks/forms/useBeforeUnload';
 import { FormSkeleton } from '../../components/common/FormSkeleton';
 import { LookupSelect } from '../../components/common/LookupSelect';
 import { MarkdownEditor } from '../../components/common/MarkdownEditor';
-import { type ShowcaseType } from '../../components/factory/showcase/ShowcaseTypeSelector';
-import { useProductCategories } from '../../hooks/master/useProductCategories';
+import { useLbiCategoriesByScope } from '../../hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
+
+type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
@@ -24,38 +25,8 @@ const TYPE_META = {
   PD: { icon: '🏷', label: 'สินค้า', sub: 'Product Design', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
   PM: { icon: '🎁', label: 'โปรโมชัน', sub: 'Promotion', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   ID: { icon: '💡', label: 'ไอเดีย', sub: 'Industrial Design', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  MT: { icon: '🧱', label: 'วัตถุดิบ', sub: 'Materials', cls: 'bg-green-50 text-green-700 border-green-200' },
 } as const;
-
-const PRODUCT_MARKDOWN_TEMPLATE = `> รับผลิต OEM พร้อมช่วยปรับสูตร เริ่ม MOQ 500 ถุง เหมาะสำหรับเริ่มทำแบรนด์
-
-รับผลิตอาหารเม็ดสูตร Grain-Free สำหรับสุนัขและแมว ใช้วัตถุดิบคุณภาพสูง ปรับสูตรตามกลุ่มเป้าหมาย พร้อมออกแบบแพ็กเกจให้ตรงตลาด
-
-## จุดเด่นที่เหมาะกับแบรนด์
-
-- **รองรับการเริ่มต้น**: เหมาะกับการทดลองตลาดและปรับสูตร/สเปกตามกลุ่มลูกค้า
-- **Lead time ชัดเจน**: ระยะเวลาผลิตเฉลี่ย {lead_time} ช่วยวางแผนเปิดตัวได้ง่าย
-- **ยกระดับ Perceived Value**: เพิ่มความน่าเชื่อถือและภาพลักษณ์แบรนด์ด้วยสเปกและมาตรฐานที่ครบ
-
-## ข้อมูลที่ควรแจ้งโรงงานก่อนเริ่มผลิต
-
-1. กลุ่มเป้าหมายและตำแหน่งราคาที่ต้องการ
-2. สูตร/ขนาดเม็ด/คุณสมบัติหลักของสินค้า
-3. รูปแบบบรรจุภัณฑ์ และจำนวนที่ต้องการต่อรอบผลิต
-4. มาตรฐานหรือเอกสารที่ต้องใช้ เช่น อย., Halal, GMP
-`;
-
-const ID_TEMPLATE = `## ที่มาของไอเดีย
-
-อธิบายแรงบันดาลใจและปัญหาที่ต้องการแก้ไข...
-
-## แนวทางการออกแบบ
-
----
-
-## ผลลัพธ์และสิ่งที่ทำได้
-
-- จุดที่ 1
-- จุดที่ 2`;
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -165,7 +136,7 @@ function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
     image_entries.length > 0 ? image_entries.map((e) => e.url) : linked.imageUrls;
   const image_url = mergedImageUrls[0] ?? String(r.image_url ?? '').trim();
   return {
-    content_type: (ct === 'PM' || ct === 'ID' ? ct : 'PD') as ShowcaseType,
+    content_type: (ct === 'PM' || ct === 'ID' || ct === 'MT' ? ct : 'PD') as ShowcaseType,
     title: String(r.title ?? '').trim(),
     excerpt: String(r.excerpt ?? '').trim(),
     content: String(r.content ?? '').trim(),
@@ -253,7 +224,8 @@ export function FactoryShowcaseEditPage() {
 
   useBeforeUnload(form.formState.isDirty);
 
-  const categoriesQ = useProductCategories();
+  const [idScope, setIdScope] = React.useState<'PD' | 'MT'>('PD');
+  const [pmScope, setPmScope] = React.useState<'PD' | 'MT'>('PD');
 
   const selectedCategoryId = form.watch('category_id');
   const contentType = form.watch('content_type');
@@ -263,9 +235,16 @@ export function FactoryShowcaseEditPage() {
     return `/factory/showcases?type=${contentType}`;
   }, [location.state, contentType]);
 
+  const categoryScope: 'PD' | 'MT' =
+    contentType === 'MT' ? 'MT'
+    : contentType === 'ID' ? idScope
+    : contentType === 'PM' ? pmScope
+    : 'PD';
+  const categoriesQ = useLbiCategoriesByScope(categoryScope);
+
   const subIds = useMemo(
-    () => (selectedCategoryId != null ? [selectedCategoryId] : []),
-    [selectedCategoryId],
+    () => (contentType !== 'MT' && selectedCategoryId != null ? [selectedCategoryId] : []),
+    [contentType, selectedCategoryId],
   );
   const subsResult = useSubCategoriesByCategories(subIds);
   const subOptions =
@@ -306,10 +285,6 @@ export function FactoryShowcaseEditPage() {
         setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
         return;
       }
-      if (v.base_price == null || Number(v.base_price) <= 0) {
-        setError('กรุณากรอกราคาปกติให้มากกว่า 0');
-        return;
-      }
     }
     if (v.content_type === 'PM') {
       if (submitStatus === 'AC') {
@@ -317,7 +292,7 @@ export function FactoryShowcaseEditPage() {
           setError('กรุณากรอกราคาโปรโมชันให้มากกว่า 0');
           return;
         }
-        if (Number(v.promo_price) > Number(v.base_price ?? 0)) {
+        if (v.base_price != null && Number(v.base_price) > 0 && Number(v.promo_price) > Number(v.base_price)) {
           setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
           return;
         }
@@ -614,77 +589,144 @@ export function FactoryShowcaseEditPage() {
         <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4">
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">ข้อมูลหลัก</p>
 
-          {/* Row 1: Category | Sub-category | Status */}
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Controller
-              control={form.control}
-              name="category_id"
-              render={({ field }) => (
-                <LookupSelect
-                  label="หมวดหมู่"
-                  value={field.value}
-                  onChange={(v) => {
-                    field.onChange(v);
-                    form.setValue('sub_category_id', null, { shouldDirty: true });
-                  }}
-                  queryResult={categoriesQ}
-                  getId={(o) => o.id}
-                  getLabel={(o) => o.name}
-                  placeholder="เลือกหมวดหมู่"
-                />
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="sub_category_id"
-              render={({ field }) => (
-                <label className="block">
-                  <span className="text-xs text-gray-500 mb-1.5 block">หมวดหมู่ย่อย</span>
-                  <select
-                    disabled={selectedCategoryId == null || subsResult.isLoading}
-                    value={field.value != null ? String(field.value) : ''}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      field.onChange(v ? Number(v) : null);
+          {/* ID-type scope picker */}
+          {contentType === 'ID' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                ประเภทเนื้อหา
+              </label>
+              <div className="flex gap-2">
+                {(['PD', 'MT'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setIdScope(s);
+                      form.setValue('category_id', null, { shouldDirty: true });
+                      form.setValue('sub_category_id', null, { shouldDirty: true });
                     }}
-                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none disabled:bg-gray-50"
+                    className="flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all"
+                    style={{
+                      backgroundColor: idScope === s ? '#4F46E5' : '#F8FAFC',
+                      color: idScope === s ? '#fff' : '#334155',
+                      borderColor: idScope === s ? '#4F46E5' : '#E2E8F0',
+                    }}
                   >
-                    <option value="">
-                      {selectedCategoryId == null
-                        ? '— เลือกหมวดหมู่ก่อน —'
-                        : subsResult.isLoading
-                          ? 'กำลังโหลด…'
-                          : '— เลือกหมวดหมู่ย่อย —'}
-                    </option>
-                    {subOptions.map((o) => (
-                      <option key={o.id} value={String(o.id)}>
-                        {o.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <label className="block">
-                  <span className="text-xs text-gray-500 mb-1.5 block">สถานะ</span>
-                  <select
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
+                    {s === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* PM-type scope picker */}
+          {contentType === 'PM' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                ประเภทสินค้าที่โปรโมท
+              </label>
+              <div className="flex gap-2">
+                {(['PD', 'MT'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setPmScope(s);
+                      form.setValue('category_id', null, { shouldDirty: true });
+                      form.setValue('sub_category_id', null, { shouldDirty: true });
+                    }}
+                    className="flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all"
+                    style={{
+                      backgroundColor: pmScope === s ? '#4F46E5' : '#F8FAFC',
+                      color: pmScope === s ? '#fff' : '#334155',
+                      borderColor: pmScope === s ? '#4F46E5' : '#E2E8F0',
+                    }}
                   >
-                    <option value="DR">ร่าง</option>
-                    <option value="AC">Active</option>
-                    <option value="HI">Hidden</option>
-                    <option value="AR">เก็บเข้าคลัง</option>
-                  </select>
-                </label>
-              )}
-            />
-          </div>
+                    {s === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Row 1: Category | Sub-category | Status */}
+          {(() => {
+            const hideSubCat = contentType === 'MT' || (contentType === 'ID' && idScope === 'MT') || (contentType === 'PM' && pmScope === 'MT');
+            return (
+              <div className={`grid gap-3 ${hideSubCat ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
+                <Controller
+                  control={form.control}
+                  name="category_id"
+                  render={({ field }) => (
+                    <LookupSelect
+                      label="หมวดหมู่"
+                      value={field.value}
+                      onChange={(v) => {
+                        field.onChange(v);
+                        form.setValue('sub_category_id', null, { shouldDirty: true });
+                      }}
+                      queryResult={categoriesQ}
+                      getId={(o) => o.id}
+                      getLabel={(o) => o.name}
+                      placeholder="เลือกหมวดหมู่"
+                    />
+                  )}
+                />
+                {!hideSubCat && (
+                  <Controller
+                    control={form.control}
+                    name="sub_category_id"
+                    render={({ field }) => (
+                      <label className="block">
+                        <span className="text-xs text-gray-500 mb-1.5 block">หมวดหมู่ย่อย</span>
+                        <select
+                          disabled={selectedCategoryId == null || subsResult.isLoading}
+                          value={field.value != null ? String(field.value) : ''}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            field.onChange(v ? Number(v) : null);
+                          }}
+                          className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none disabled:bg-gray-50"
+                        >
+                          <option value="">
+                            {selectedCategoryId == null
+                              ? '— เลือกหมวดหมู่ก่อน —'
+                              : subsResult.isLoading
+                                ? 'กำลังโหลด…'
+                                : '— เลือกหมวดหมู่ย่อย —'}
+                          </option>
+                          {subOptions.map((o) => (
+                            <option key={o.id} value={String(o.id)}>
+                              {o.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                  />
+                )}
+                <Controller
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <label className="block">
+                      <span className="text-xs text-gray-500 mb-1.5 block">สถานะ</span>
+                      <select
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
+                      >
+                        <option value="DR">ร่าง</option>
+                        <option value="AC">Active</option>
+                        <option value="HI">Hidden</option>
+                        <option value="AR">เก็บเข้าคลัง</option>
+                      </select>
+                    </label>
+                  )}
+                />
+              </div>
+            );
+          })()}
 
           {/* Row 2: MOQ | Lead time | Price (PD/PM only) */}
           {contentType !== 'ID' && (
@@ -761,7 +803,6 @@ export function FactoryShowcaseEditPage() {
                 value={field.value ?? ''}
                 onChange={field.onChange}
                 minHeight={300}
-                templateContent={contentType === 'ID' ? ID_TEMPLATE : PRODUCT_MARKDOWN_TEMPLATE}
                 disabled={form.getValues('status') === 'AR'}
               />
             )}

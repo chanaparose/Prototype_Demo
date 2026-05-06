@@ -237,27 +237,7 @@ export function FactoryRfqBoardPage() {
         </div>
       ) : null}
 
-      {!noFactoryCategories && rows.length === 0 && !loading ? (
-        <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4">
-          <div className="text-5xl">📋</div>
-          <p className="text-base font-bold" style={{ color: '#2E2252' }}>
-            ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ
-          </p>
-          <p className="text-sm text-gray-500">ปรับหมวดหมู่เพื่อรับ RFQ ที่ตรงกับโรงงาน</p>
-          <Link
-            to="/factory/profile"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
-              boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
-            }}
-          >
-            ปรับหมวดหมู่ในโปรไฟล์
-          </Link>
-        </div>
-      ) : null}
-
-      {!noFactoryCategories && rows.length > 0 ? (
+      {!noFactoryCategories ? (
         <>
           {/* ── Stats row: 4 cards ── */}
           
@@ -452,9 +432,11 @@ export function FactoryRfqBoardPage() {
             <div className="rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4">
               <div className="text-5xl">🔍</div>
               <p className="text-base font-bold" style={{ color: '#2E2252' }}>
-                ไม่พบ RFQ ตามเงื่อนไข
+                {rows.length === 0 ? 'ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ' : 'ไม่พบ RFQ ตามเงื่อนไข'}
               </p>
-              <p className="text-sm text-gray-400">ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง</p>
+              <p className="text-sm text-gray-400">
+                {rows.length === 0 ? 'ระบบจะแสดงรายการใหม่ที่ตรงกับหมวดหมู่ทันทีเมื่อมี RFQ เข้า' : 'ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง'}
+              </p>
               {hasFilters ? (
                 <button
                   type="button"
@@ -467,6 +449,17 @@ export function FactoryRfqBoardPage() {
                 >
                   ล้างตัวกรอง
                 </button>
+              ) : rows.length === 0 ? (
+                <Link
+                  to="/factory/profile"
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                    boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
+                  }}
+                >
+                  ปรับหมวดหมู่ในโปรไฟล์
+                </Link>
               ) : null}
             </div>
           ) : (

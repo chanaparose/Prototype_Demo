@@ -9,7 +9,6 @@ interface MarkdownEditorProps {
   placeholder?: string;
   minHeight?: number;
   label?: string;
-  templateContent?: string;
   disabled?: boolean;
 }
 
@@ -36,7 +35,6 @@ export function MarkdownEditor({
   placeholder,
   minHeight = 300,
   label,
-  templateContent,
   disabled,
 }: MarkdownEditorProps) {
   const [tab, setTab] = useState<'write' | 'preview'>('write');
@@ -85,7 +83,7 @@ export function MarkdownEditor({
         }`}
         style={focused ? { boxShadow: 'inset 2px 0 0 #fb923c' } : undefined}
       >
-        <div className="px-3 pt-2 pb-2 flex items-center justify-between border-b border-gray-100">
+        <div className="px-3 pt-2 pb-2 flex items-center justify-end border-b border-gray-100">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -104,23 +102,12 @@ export function MarkdownEditor({
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'preview'
                   ? 'bg-orange-50 border-orange-200 text-orange-700'
-                  : 'border-gray-200 text-gray-600'
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
               Preview
             </button>
           </div>
-          <button
-            type="button"
-            disabled={disabled || !templateContent}
-            onClick={() => {
-              if (!templateContent || value.trim()) return;
-              onChange(templateContent);
-            }}
-            className="px-2 py-1 text-xs rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
-          >
-            ใช้ตัวอย่าง
-          </button>
         </div>
 
         {tab === 'write' ? (

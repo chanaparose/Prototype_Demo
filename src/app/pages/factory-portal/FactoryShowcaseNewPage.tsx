@@ -4,9 +4,10 @@ import { ChevronLeft, Plus, X, Camera } from 'lucide-react';
 import { showcasesApi, mediaApi } from '../../services/api';
 import { LookupSelect } from '../../components/common/LookupSelect';
 import { MarkdownEditor } from '../../components/common/MarkdownEditor';
-import { type ShowcaseType } from '../../components/factory/showcase/ShowcaseTypeSelector';
-import { useProductCategories } from '../../hooks/master/useProductCategories';
+import { useLbiCategoriesByScope } from '../../hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
+
+type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
@@ -18,34 +19,8 @@ const TYPE_META = {
   PD: { icon: '🏷', label: 'สินค้า', sub: 'Product Design', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
   PM: { icon: '🎁', label: 'โปรโมชัน', sub: 'Promotion', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   ID: { icon: '💡', label: 'ไอเดีย', sub: 'Industrial Design', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  MT: { icon: '🧱', label: 'วัตถุดิบ', sub: 'Materials', cls: 'bg-green-50 text-green-700 border-green-200' },
 } as const;
-
-const PRODUCT_TEMPLATE = `> รับผลิต OEM พร้อมช่วยปรับสูตร เริ่ม MOQ 500 ถุง เหมาะสำหรับเริ่มทำแบรนด์
-
-## จุดเด่น
-
-- **รองรับการเริ่มต้น**: เหมาะกับการทดลองตลาด
-- **Lead time ชัดเจน**: วางแผนเปิดตัวได้ง่าย
-
-## ข้อมูลที่ควรแจ้งก่อนเริ่มผลิต
-
-1. กลุ่มเป้าหมายและตำแหน่งราคา
-2. สูตร/คุณสมบัติหลัก
-3. รูปแบบบรรจุภัณฑ์และจำนวน
-4. มาตรฐาน เช่น อย., Halal, GMP`;
-
-const ID_TEMPLATE = `## ที่มาของไอเดีย
-
-อธิบายแรงบันดาลใจและปัญหาที่ต้องการแก้ไข...
-
-## แนวทางการออกแบบ
-
----
-
-## ผลลัพธ์และสิ่งที่ทำได้
-
-- จุดที่ 1
-- จุดที่ 2`;
 
 type FormValues = {
   title: string;
@@ -77,7 +52,7 @@ export function FactoryShowcaseNewPage() {
   /* content_type is FIXED from URL — cannot be changed on this page */
   const contentType: ShowcaseType = (() => {
     const t = searchParams.get('type');
-    return t === 'PM' || t === 'ID' ? t : 'PD';
+    return t === 'PM' || t === 'ID' || t === 'MT' ? t : 'PD';
   })();
 
   const [form, setForm] = useState<FormValues>(EMPTY);
@@ -88,12 +63,19 @@ export function FactoryShowcaseNewPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
+  const [idScope, setIdScope] = useState<'PD' | 'MT'>('PD');
+  const [pmScope, setPmScope] = useState<'PD' | 'MT'>('PD');
 
-  const categoriesQ = useProductCategories();
+  const categoryScope: 'PD' | 'MT' =
+    contentType === 'MT' ? 'MT'
+    : contentType === 'ID' ? idScope
+    : contentType === 'PM' ? pmScope
+    : 'PD';
+  const categoriesQ = useLbiCategoriesByScope(categoryScope);
   const selectedCategoryId = Number(form.category_id);
   const subIds = useMemo(
-    () => (Number.isFinite(selectedCategoryId) && selectedCategoryId > 0 ? [selectedCategoryId] : []),
-    [selectedCategoryId],
+    () => (contentType !== 'MT' && Number.isFinite(selectedCategoryId) && selectedCategoryId > 0 ? [selectedCategoryId] : []),
+    [contentType, selectedCategoryId],
   );
   const subsResult = useSubCategoriesByCategories(subIds);
   const subOptions =
@@ -151,17 +133,13 @@ export function FactoryShowcaseNewPage() {
         setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
         return;
       }
-      if (!form.base_price || Number(form.base_price) <= 0) {
-        setError('กรุณากรอกราคา (฿) ให้มากกว่า 0');
-        return;
-      }
     }
     if (contentType === 'PM' && status === 'AC') {
       if (!form.promo_price || Number(form.promo_price) <= 0) {
         setError('กรุณากรอกราคาโปรโมชัน (฿) ให้มากกว่า 0');
         return;
       }
-      if (Number(form.promo_price) > Number(form.base_price || 0)) {
+      if (form.base_price && Number(form.base_price) > 0 && Number(form.promo_price) > Number(form.base_price)) {
         setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
         return;
       }
@@ -321,33 +299,93 @@ export function FactoryShowcaseNewPage() {
         {/* ── Info bar ── */}
         <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4 shadow-sm">
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">ข้อมูลหลัก</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <LookupSelect
-              label="หมวดหมู่"
-              value={form.category_id ? Number(form.category_id) : null}
-              onChange={(v) => { setField('category_id', v != null ? String(v) : ''); setField('sub_category_id', ''); }}
-              queryResult={categoriesQ}
-              getId={(o) => o.id}
-              getLabel={(o) => o.name}
-              placeholder="เลือกหมวดหมู่"
-            />
-            <label className="block">
-              <span className="text-xs text-gray-500">หมวดหมู่ย่อย</span>
-              <select
-                value={form.sub_category_id}
-                onChange={(e) => setField('sub_category_id', e.target.value)}
-                disabled={!form.category_id || subsResult.isLoading}
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
-              >
-                <option value="">
-                  {!form.category_id ? '— เลือกหมวดหมู่ก่อน —' : subsResult.isLoading ? 'กำลังโหลด…' : '— เลือกหมวดย่อย —'}
-                </option>
-                {subOptions.map((o) => (
-                  <option key={o.id} value={String(o.id)}>{o.name}</option>
+
+          {/* ID-type scope picker */}
+          {contentType === 'ID' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                ประเภทเนื้อหา
+              </label>
+              <div className="flex gap-2">
+                {(['PD', 'MT'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => { setIdScope(s); setForm((f) => ({ ...f, category_id: '', sub_category_id: '' })); }}
+                    className="flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all"
+                    style={{
+                      backgroundColor: idScope === s ? '#4F46E5' : '#F8FAFC',
+                      color: idScope === s ? '#fff' : '#334155',
+                      borderColor: idScope === s ? '#4F46E5' : '#E2E8F0',
+                    }}
+                  >
+                    {s === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
+                  </button>
                 ))}
-              </select>
-            </label>
-          </div>
+              </div>
+            </div>
+          )}
+
+          {/* PM-type scope picker */}
+          {contentType === 'PM' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                ประเภทสินค้าที่โปรโมท
+              </label>
+              <div className="flex gap-2">
+                {(['PD', 'MT'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => { setPmScope(s); setForm((f) => ({ ...f, category_id: '', sub_category_id: '' })); }}
+                    className="flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all"
+                    style={{
+                      backgroundColor: pmScope === s ? '#4F46E5' : '#F8FAFC',
+                      color: pmScope === s ? '#fff' : '#334155',
+                      borderColor: pmScope === s ? '#4F46E5' : '#E2E8F0',
+                    }}
+                  >
+                    {s === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(() => {
+            const hideSubCat = contentType === 'MT' || (contentType === 'ID' && idScope === 'MT') || (contentType === 'PM' && pmScope === 'MT');
+            return (
+              <div className={`grid grid-cols-1 gap-3 ${hideSubCat ? '' : 'sm:grid-cols-2'}`}>
+                <LookupSelect
+                  label="หมวดหมู่"
+                  value={form.category_id ? Number(form.category_id) : null}
+                  onChange={(v) => { setField('category_id', v != null ? String(v) : ''); setField('sub_category_id', ''); }}
+                  queryResult={categoriesQ}
+                  getId={(o) => o.id}
+                  getLabel={(o) => o.name}
+                  placeholder="เลือกหมวดหมู่"
+                />
+                {!hideSubCat && (
+                  <label className="block">
+                    <span className="text-xs text-gray-500">หมวดหมู่ย่อย</span>
+                    <select
+                      value={form.sub_category_id}
+                      onChange={(e) => setField('sub_category_id', e.target.value)}
+                      disabled={!form.category_id || subsResult.isLoading}
+                      className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
+                    >
+                      <option value="">
+                        {!form.category_id ? '— เลือกหมวดหมู่ก่อน —' : subsResult.isLoading ? 'กำลังโหลด…' : '— เลือกหมวดย่อย —'}
+                      </option>
+                      {subOptions.map((o) => (
+                        <option key={o.id} value={String(o.id)}>{o.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
+            );
+          })()}
 
           {/* PD / PM fields */}
           {contentType !== 'ID' ? (
@@ -405,7 +443,6 @@ export function FactoryShowcaseNewPage() {
             value={form.content}
             onChange={(v) => setField('content', v)}
             minHeight={300}
-            templateContent={contentType === 'ID' ? ID_TEMPLATE : PRODUCT_TEMPLATE}
           />
         </section>
 

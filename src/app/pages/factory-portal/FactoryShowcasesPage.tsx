@@ -8,13 +8,14 @@ import { FactoryPageHeader } from './components/FactoryPageHeader';
 import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
 
 type Row = Record<string, unknown>;
-type ShowcaseType = 'PD' | 'PM' | 'ID';
+type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 type ShowcaseStatus = 'DR' | 'AC' | 'HI' | 'AR';
 
 const TAB_META = {
   PD: { icon: '🏷', label: 'สินค้า', btnLabel: 'เพิ่มสินค้า', empty: 'ยังไม่มีสินค้า' },
   PM: { icon: '🎁', label: 'โปรโมชัน', btnLabel: 'เพิ่มโปรโมชัน', empty: 'ยังไม่มีโปรโมชัน' },
   ID: { icon: '💡', label: 'ไอเดีย', btnLabel: 'เพิ่มไอเดีย', empty: 'ยังไม่มีไอเดีย' },
+  MT: { icon: '🧱', label: 'วัตถุดิบ', btnLabel: 'เพิ่มวัตถุดิบ', empty: 'ยังไม่มีวัตถุดิบ' },
 } as const;
 
 const STATUS_META: Record<ShowcaseStatus, { label: string; bg: string; color: string }> = {
@@ -69,7 +70,7 @@ export function FactoryShowcasesPage() {
 
   const initialType = ((): ShowcaseType => {
     const t = searchParams.get('type');
-    return t === 'PM' || t === 'ID' ? t : 'PD';
+    return t === 'PM' || t === 'ID' || t === 'MT' ? t : 'PD';
   })();
 
   const [activeType, setActiveType] = useState<ShowcaseType>(initialType);
@@ -132,7 +133,7 @@ export function FactoryShowcasesPage() {
 
       {/* Tab bar */}
       <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200">
-        {(['PD', 'PM', 'ID'] as ShowcaseType[]).map((type) => {
+        {(['PD', 'PM', 'ID', 'MT'] as ShowcaseType[]).map((type) => {
           const meta = TAB_META[type];
           const active = activeType === type;
           return (
