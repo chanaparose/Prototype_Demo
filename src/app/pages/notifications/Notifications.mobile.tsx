@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Search, Bell, ChevronLeft, Trash2 } from 'lucide-react';
+import { Search, Bell, ChevronLeft, Trash2, ShoppingBag, Truck, CheckCircle, XCircle, CreditCard, Star, FileText, FileCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 import { notificationsApi } from '../../services/api';
+import { NOTIFICATIONS_CHANGED_EVENT } from '../../hooks/useNotificationUnreadCount';
 
 type NotificationItem = {
   noti_id: number;
@@ -56,6 +57,8 @@ export function NotificationsMobile() {
   const [error, setError] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [markingAll, setMarkingAll] = useState(false);
+  const [tab, setTab] = useState<'all' | 'rfq' | 'order'>('all');
+  const [onlyUnread, setOnlyUnread] = useState(false);
 
   const load = useCallback(async (nextPage: number, append: boolean) => {
     if (append) setLoadingMore(true);
@@ -93,20 +96,28 @@ export function NotificationsMobile() {
 
   const filtered = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
-    if (!keyword) return notifications;
-    return notifications.filter(
+    const byTab = notifications.filter((n) => {
+      const t = String(n.type).toUpperCase();
+      if (tab === 'rfq') return t.includes('RFQ') || t.includes('QUOTATION');
+      if (tab === 'order') return t.includes('ORDER') || t.includes('PAYMENT') || t.includes('REVIEW');
+      return true;
+    });
+    const byUnread = onlyUnread ? byTab.filter((n) => !n.is_read) : byTab;
+    if (!keyword) return byUnread;
+    return byUnread.filter(
       (n) =>
         n.title.toLowerCase().includes(keyword) ||
         n.message.toLowerCase().includes(keyword) ||
         n.type.toLowerCase().includes(keyword),
     );
-  }, [notifications, searchText]);
+  }, [notifications, searchText, tab, onlyUnread]);
 
   const markRead = useCallback(async (id: number) => {
     setNotifications((prev) => prev.map((n) => (n.noti_id === id ? { ...n, is_read: true } : n)));
     setUnreadCount((prev) => Math.max(0, prev - 1));
     try {
       await notificationsApi.markAsRead(id);
+      window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));
     } catch {
       setNotifications((prev) => prev.map((n) => (n.noti_id === id ? { ...n, is_read: false } : n)));
       setUnreadCount((prev) => prev + 1);
@@ -120,6 +131,7 @@ export function NotificationsMobile() {
     setUnreadCount(0);
     try {
       await notificationsApi.markAllAsRead();
+      window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));
     } catch {
       setNotifications(backup);
       setUnreadCount(backup.filter((n) => !n.is_read).length);
@@ -135,6 +147,7 @@ export function NotificationsMobile() {
     if (target && !target.is_read) setUnreadCount((prev) => Math.max(0, prev - 1));
     try {
       await notificationsApi.delete(id);
+      window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));
     } catch {
       setNotifications(backup);
       setUnreadCount(backup.filter((n) => !n.is_read).length);
@@ -145,7 +158,7 @@ export function NotificationsMobile() {
 
   return (
     <div className="min-h-screen flex flex-col pb-20 bg-white">
-      <div className="flex items-center justify-between px-4 pt-5 pb-4">
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -156,11 +169,11 @@ export function NotificationsMobile() {
         <div className="flex flex-col items-center">
           <p className="text-[10px] text-gray-400">แจ้งเตือน</p>
           <div className="flex items-center gap-2">
-            <h1 className="text-sm text-gray-900 truncate" style={{ fontWeight: 700 }}>
+            <h1 className="text-[13px] text-gray-900 truncate" style={{ fontWeight: 700 }}>
               การแจ้งเตือน
             </h1>
             {unreadCount > 0 ? (
-              <span className="w-5 h-5 rounded-full bg-[#A238FF] text-white flex items-center justify-center text-[10px] font-bold">
+              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#A238FF] text-white flex items-center justify-center text-[9px] font-bold">
                 {unreadCount}
               </span>
             ) : null}
@@ -180,8 +193,8 @@ export function NotificationsMobile() {
         )}
       </div>
 
-      <div className="px-4 py-4 flex-1">
-        <div className="relative mb-4">
+      <div className="px-4 py-3 flex-1">
+        <div className="relative mb-3">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-slate-400" />
           </div>
@@ -189,9 +202,50 @@ export function NotificationsMobile() {
             type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-50 rounded-2xl text-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-[#A238FF] transition-all"
+            className="block w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-sm text-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-[#A238FF] transition-all"
             placeholder="ค้นหาการแจ้งเตือน..."
           />
+        </div>
+
+        <div className="mb-3 grid grid-cols-3 gap-2">
+          {[
+            { key: 'all', label: 'ทั้งหมด' },
+            { key: 'rfq', label: 'RFQ' },
+            { key: 'order', label: 'Order' },
+          ].map((t) => {
+            const active = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setTab(t.key as 'all' | 'rfq' | 'order')}
+                className="rounded-lg px-2 py-1.5 text-[11px] font-semibold border transition-colors"
+                style={{
+                  borderColor: active ? '#A238FF' : '#E2E8F0',
+                  background: active ? '#F3E8FF' : '#fff',
+                  color: active ? '#7E22CE' : '#64748B',
+                }}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="mb-4 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setOnlyUnread((v) => !v)}
+            className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors"
+            style={{
+              borderColor: onlyUnread ? '#A238FF' : '#E2E8F0',
+              background: onlyUnread ? '#F3E8FF' : '#FFFFFF',
+              color: onlyUnread ? '#7E22CE' : '#64748B',
+            }}
+          >
+            ยังไม่อ่าน
+            {unreadCount > 0 ? <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px]">{unreadCount}</span> : null}
+          </button>
+          <span className="text-[11px] text-slate-400">{filtered.length} รายการ</span>
         </div>
 
         {error ? (
@@ -276,29 +330,30 @@ function NotificationCard({
   onDelete: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const read = notif.is_read;
+  const icon = getNotificationIcon(notif.type);
   return (
     <div
-      className={`bg-white p-4 rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.02)] border transition-all flex items-center gap-4 ${
+      className={`bg-white p-3 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] border transition-all flex items-center gap-3 ${
         read ? 'border-slate-50' : 'border-[#A238FF]/20 bg-violet-50/30'
       }`}
     >
-      <div className="relative w-14 h-14 shrink-0">
-        <div className="w-full h-full rounded-[20px] bg-violet-100 flex items-center justify-center">
-          <Bell className="text-[#A238FF]" size={24} />
+      <div className="relative w-12 h-12 shrink-0">
+        <div className="w-full h-full rounded-2xl bg-violet-100 flex items-center justify-center">
+          {icon}
         </div>
         {!read ? <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#A238FF] border-2 border-white rounded-full" /> : null}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start gap-2 mb-1">
-          <h3 className={`line-clamp-1 text-sm ${read ? 'font-semibold text-slate-700' : 'font-bold text-slate-800'}`}>
+          <h3 className={`line-clamp-1 text-[13px] ${read ? 'font-semibold text-slate-700' : 'font-bold text-slate-800'}`}>
             {notif.title}
           </h3>
           <span className={`text-[11px] font-semibold shrink-0 ${!read ? 'text-[#A238FF]' : 'text-slate-400'}`}>
             {formatTimeLabel(notif.created_at)}
           </span>
         </div>
-        <p className={`text-sm line-clamp-2 ${read ? 'font-medium text-slate-500' : 'font-medium text-slate-600'}`}>
+        <p className={`text-[13px] line-clamp-2 ${read ? 'font-medium text-slate-500' : 'font-medium text-slate-600'}`}>
           {notif.message}
         </p>
       </div>
@@ -313,4 +368,19 @@ function NotificationCard({
       </button>
     </div>
   );
+}
+
+function getNotificationIcon(type: string) {
+  switch (String(type).toUpperCase()) {
+    case 'ORDER_PLACED': return <ShoppingBag className="text-[#A238FF]" size={20} />;
+    case 'ORDER_SHIPPED': return <Truck className="text-[#A238FF]" size={20} />;
+    case 'ORDER_COMPLETED': return <CheckCircle className="text-green-500" size={20} />;
+    case 'ORDER_CANCELLED': return <XCircle className="text-red-400" size={20} />;
+    case 'PAYMENT_RECEIVED': return <CreditCard className="text-[#A238FF]" size={20} />;
+    case 'REVIEW_RECEIVED': return <Star className="text-amber-500" size={20} />;
+    case 'QUOTATION_ACCEPTED': return <FileCheck className="text-green-500" size={20} />;
+    case 'QUOTATION_RECEIVED': return <FileText className="text-[#A238FF]" size={20} />;
+    case 'RFQ_RECEIVED': return <Bell className="text-[#A238FF]" size={20} />;
+    default: return <Bell className="text-[#A238FF]" size={20} />;
+  }
 }
