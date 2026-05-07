@@ -52,8 +52,6 @@ export function RfqDetailStatusCard({
         <span>฿{rfq.budget.toLocaleString()}</span>
         <span>•</span>
         <span>{rfq.quantity.toLocaleString()} ชิ้น</span>
-        <span>•</span>
-        <span>{rfq.material}</span>
       </div>
     </div>
   );

@@ -263,46 +263,7 @@ export function RFQDetailDesktop() {
 
           {/* Sidebar */}
           <div className="space-y-4 sticky top-6">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <p className="text-sm font-bold mb-3" style={{ color: COLORS.blue }}>ข้อมูล RFQ</p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {rfq.subCategoryName ? (
-                  <div className="rounded-xl p-3 col-span-2" style={{ backgroundColor: COLORS.lightPurpleBg }}>
-                    <p className="text-[11px] text-gray-400">ประเภทย่อย</p>
-                    <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
-                      {rfq.subCategoryName}
-                    </p>
-                  </div>
-                ) : null}
-                {rfq.shippingMethodName ? (
-                  <div className="rounded-xl p-3 col-span-2" style={{ backgroundColor: COLORS.lightPurpleBg }}>
-                    <p className="text-[11px] text-gray-400">วิธีส่งของ</p>
-                    <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
-                      {rfq.shippingMethodName}
-                    </p>
-                  </div>
-                ) : null}
-                <div className="rounded-xl p-3" style={{ backgroundColor: COLORS.lightPurpleBg }}>
-                  <p className="text-[11px] text-gray-400">จำนวน</p>
-                  <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
-                    {rfq.quantity.toLocaleString()}
-                  </p>
-                </div>
-                <div className="rounded-xl p-3" style={{ backgroundColor: COLORS.lightPurpleBg }}>
-                  <p className="text-[11px] text-gray-400">Deadline</p>
-                  <p className="font-semibold mt-0.5" style={{ color: COLORS.blue }}>
-                    {rfq.deadline || '-'}
-                  </p>
-                </div>
-                <div className="rounded-xl p-3 col-span-2" style={{ backgroundColor: COLORS.lightPurpleBg }}>
-                  <p className="text-[11px] text-gray-400">รายละเอียด</p>
-                  <p className="font-semibold mt-0.5 line-clamp-3 text-xs" style={{ color: COLORS.blue }}>
-                    {rfq.description || rfq.material || '-'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
+             
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div>

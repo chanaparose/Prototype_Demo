@@ -109,12 +109,7 @@ export function RfqCard({ row }: { row: RfqCardModel }) {
           </p>
           <p>
             <span className="text-gray-500">🚚</span> {row.shippingMethodName || '—'}
-            {row.addressSummary ? (
-              <>
-                {' '}
-                <span className="text-gray-400">·</span> 📍 {row.addressSummary}
-              </>
-            ) : null}
+             
           </p>
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

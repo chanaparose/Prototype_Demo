@@ -715,14 +715,7 @@ export function RfqAndOrders() {
                   {rfqs.filter((r) => r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'completed').length}
                 </span>
               </div>
-              <Link
-                to="/create-rfq"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-white font-semibold transition-opacity hover:opacity-80"
-                style={{ background: PRIMARY_COLOR }}
-              >
-                <Plus size={12} />
-                สร้างใหม่
-              </Link>
+               
             </div>
 
             {/* Scrollable RFQ content */}

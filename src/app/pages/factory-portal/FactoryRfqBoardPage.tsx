@@ -239,25 +239,31 @@ export function FactoryRfqBoardPage() {
 
       {!noFactoryCategories ? (
         <>
-          {/* ── Stats row: 4 cards ── */}
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { key: 'pr', label: 'OEM', total: kindCounts.pr, pending: unansweredByKind.pr, color: 'indigo' },
-              { key: 'ps', label: 'ขอตัวอย่างสินค้า', total: kindCounts.ps, pending: unansweredByKind.ps, color: 'violet' },
-              { key: 'ms', label: 'ขอตัวอย่างวัสดุ', total: kindCounts.ms, pending: unansweredByKind.ms, color: 'emerald' },
-            ].map((k) => (
-              <button
-                key={k.key}
-                type="button"
-                onClick={() => setTab(k.key as TabKey)}
-                className="text-left rounded-2xl bg-white border border-gray-100 shadow-sm p-3 hover:shadow-md transition"
-              >
-                <p className="text-xs text-gray-500">{k.label}</p>
-                <p className="text-xl font-bold text-slate-900 mt-1">{k.total} รายการ</p>
-                <p className="text-xs mt-1 text-amber-700">ยังไม่ได้ตอบกลับ {k.pending} รายการ</p>
-              </button>
-            ))}
+          {/* ── Unanswered alerts by request kind ── */}
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3">
+             
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'pr', label: 'OEM', total: kindCounts.pr, pending: unansweredByKind.pr },
+                { key: 'ps', label: 'ขอตัวอย่างสินค้า', total: kindCounts.ps, pending: unansweredByKind.ps },
+                { key: 'ms', label: 'ขอตัวอย่างวัสดุ', total: kindCounts.ms, pending: unansweredByKind.ms },
+              ]
+                .filter((k) => k.pending > 0)
+                .map((k) => (
+                  <button
+                    key={k.key}
+                    type="button"
+                    onClick={() => setTab(k.key as TabKey)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-left hover:bg-amber-100/60 transition"
+                  >
+                    <span className="text-[11px] font-semibold text-amber-900">{k.label}</span>
+                    <span className="text-[11px] text-amber-700">ยังไม่ตอบ {k.pending}/{k.total}</span>
+                  </button>
+                ))}
+              {unansweredByKind.pr + unansweredByKind.ps + unansweredByKind.ms === 0 ? (
+                <span className="text-xs text-emerald-700 font-medium">ตอบครบทุกหมวดแล้ว</span>
+              ) : null}
+            </div>
           </div>
 
           {/* ── Tab bar ── */}
