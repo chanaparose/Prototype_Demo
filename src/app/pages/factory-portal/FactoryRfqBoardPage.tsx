@@ -1,12 +1,80 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
-import { Search, SlidersHorizontal, FileText, Factory, PackageSearch, FlaskConical } from 'lucide-react';
+import { Search, SlidersHorizontal, FileText, Factory, PackageSearch, FlaskConical, ChevronDown, Check } from 'lucide-react';
 import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
+
+type DropdownOption = { value: string; label: string };
+function FilterDropdown({
+  label,
+  value,
+  options,
+  onChange,
+  className = '',
+}: {
+  label: string;
+  value: string;
+  options: DropdownOption[];
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const selected = options.find((o) => o.value === value) ?? options[0];
+
+  useEffect(() => {
+    const onDocClick = (ev: MouseEvent) => {
+      if (!boxRef.current) return;
+      if (!boxRef.current.contains(ev.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
+
+  return (
+    <div ref={boxRef} className={`relative ${className}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full h-[42px] rounded-xl border border-slate-200 bg-white px-3.5 text-left shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-slate-500 shrink-0">{label}</span>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs font-semibold text-slate-700 truncate">{selected?.label ?? '-'}</span>
+            <ChevronDown size={10} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+          </span>
+        </div>
+      </button>
+      {open ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 rounded-xl border border-slate-200 bg-white shadow-lg p-1 max-h-64 overflow-auto">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value || '__empty'}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-slate-50 transition-colors"
+                style={{ background: isSelected ? '#EEF2FF' : 'transparent' }}
+              >
+                <span className={`text-[12px] ${isSelected ? 'font-semibold text-indigo-700' : 'text-slate-700'}`}>{opt.label}</span>
+                {isSelected ? <Check size={13} className="text-indigo-600" /> : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function useNarrowTabs(breakpoint = 400) {
   const [narrow, setNarrow] = useState(false);
@@ -287,18 +355,13 @@ export function FactoryRfqBoardPage() {
 
           {narrowTabs ? (
             <div className="flex items-center gap-2">
-              <label className="text-xs text-gray-500 shrink-0">ชุดรายการ</label>
-              <select
+              <FilterDropdown
+                label="ชุดรายการ"
                 value={tab}
-                onChange={(e) => setTab(e.target.value as TabKey)}
-                className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium focus:outline-none focus:border-[#4F46E5]"
-              >
-                {tabDefs.map((t) => (
-                  <option key={t.key} value={t.key}>
-                    {t.label} ({t.count}){t.warn && t.key === 'closing' ? ' ⚠' : ''}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setTab(v as TabKey)}
+                options={tabDefs.map((t) => ({ value: t.key, label: `${t.label} (${t.count})` }))}
+                className="flex-1"
+              />
             </div>
           ) : (
             <div
@@ -348,16 +411,18 @@ export function FactoryRfqBoardPage() {
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- bg-white"
                 />
               </div>
-              <select
+              <FilterDropdown
+                label="เรียงลำดับ"
                 value={sort}
-                onChange={(e) => setSort(e.target.value as SortKey)}
-                className="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5] bg-white"
-              >
-                <option value="new">เรียง: ใหม่ล่าสุด</option>
-                <option value="deadline">เรียง: ใกล้ปิด</option>
-                <option value="budget">เรียง: งบสูงสุด</option>
-                <option value="qty">เรียง: จำนวนมากสุด</option>
-              </select>
+                onChange={(v) => setSort(v as SortKey)}
+                options={[
+                  { value: 'new', label: 'ใหม่ล่าสุด' },
+                  { value: 'deadline', label: 'ใกล้ปิด' },
+                  { value: 'budget', label: 'งบสูงสุด' },
+                  { value: 'qty', label: 'จำนวนมากสุด' },
+                ]}
+                className="sm:min-w-[11rem]"
+              />
             </div>
 
             {/* Additional filters */}
@@ -365,40 +430,38 @@ export function FactoryRfqBoardPage() {
               <span className="inline-flex items-center gap-1 text-xs text-gray-500 shrink-0 sm:hidden">
                 <SlidersHorizontal size={14} /> กรอง
               </span>
-              <select
+              <FilterDropdown
+                label="หมวดหมู่"
                 value={filterCat}
-                onChange={(e) => setFilterCat(e.target.value)}
-                className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-xs sm:text-sm min-w-[7rem] focus:outline-none focus:border-[#4F46E5] bg-white"
-              >
-                <option value="">หมวดหมู่ทั้งหมด</option>
-                {categoryOptions.map(([cid, name]) => (
-                  <option key={cid} value={String(cid)}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-              <select
+                onChange={setFilterCat}
+                options={[
+                  { value: '', label: 'หมวดหมู่ทั้งหมด' },
+                  ...categoryOptions.map(([cid, name]) => ({ value: String(cid), label: name })),
+                ]}
+                className="shrink-0 min-w-[11rem]"
+              />
+              <FilterDropdown
+                label="สถานะ RFQ"
                 value={filterRfqStatus}
-                onChange={(e) => setFilterRfqStatus(e.target.value)}
-                className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-xs sm:text-sm min-w-[6.5rem] focus:outline-none focus:border-[#4F46E5] bg-white"
-              >
-                <option value="">สถานะ RFQ</option>
-                <option value="OP">เปิดรับ (OP)</option>
-                <option value="CL">ปิดแล้ว (CL)</option>
-                <option value="CC">ยกเลิก (CC)</option>
-              </select>
-              <select
+                onChange={setFilterRfqStatus}
+                options={[
+                  { value: '', label: 'สถานะ RFQ ทั้งหมด' },
+                  { value: 'OP', label: 'เปิดรับ (OP)' },
+                  { value: 'CL', label: 'ปิดแล้ว (CL)' },
+                  { value: 'CC', label: 'ยกเลิก (CC)' },
+                ]}
+                className="shrink-0 min-w-[10rem]"
+              />
+              <FilterDropdown
+                label="วิธีจัดส่ง"
                 value={filterShip}
-                onChange={(e) => setFilterShip(e.target.value)}
-                className="shrink-0 rounded-xl border border-gray-200 px-3 py-2 text-xs sm:text-sm min-w-[7rem] focus:outline-none focus:border-[#4F46E5] bg-white"
-              >
-                <option value="">วิธีส่งทั้งหมด</option>
-                {shipOptions.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setFilterShip}
+                options={[
+                  { value: '', label: 'วิธีส่งทั้งหมด' },
+                  ...shipOptions.map((s) => ({ value: String(s.id), label: s.name })),
+                ]}
+                className="shrink-0 min-w-[11rem]"
+              />
               {hasFilters ? (
                 <button
                   type="button"
