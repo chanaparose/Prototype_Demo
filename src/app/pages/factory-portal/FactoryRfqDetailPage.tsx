@@ -635,12 +635,6 @@ export function FactoryRfqDetailPage() {
                     </span>
                   </div>
                    
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs text-gray-500">ประเภทการตรวจสอบ</span>
-                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
-                      {String(rfqBody.inspection_type ?? '-')}
-                    </span>
-                  </div>
                   {Array.isArray(rfqBody.certifications_required) && rfqBody.certifications_required.length > 0 ? (
                     <div className="flex items-start justify-between gap-2">
                       <span className="text-xs text-gray-500">ใบรับรองที่ต้องการ</span>
@@ -684,12 +678,6 @@ export function FactoryRfqDetailPage() {
                       </span>
                     </div>
                   ) : null}
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs text-gray-500">วันที่ต้องการรับสินค้า</span>
-                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
-                      {deadlineIso ? new Date(deadlineIso).toLocaleDateString('th-TH') : '-'}
-                    </span>
-                  </div>
                   <div className="pt-1">
                     <ShippingMethodLockedField
                       label="วิธีจัดส่ง (ลูกค้าเลือก)"

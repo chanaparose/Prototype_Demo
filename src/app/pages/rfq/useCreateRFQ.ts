@@ -26,7 +26,7 @@ export function useCreateRFQ() {
           payload.target_price != null && Number.isFinite(Number(payload.target_price))
             ? Number(payload.target_price)
             : undefined,
-        material_grade: isSample ? undefined : payload.material_grade?.trim() || undefined,
+        material_grade: payload.material_grade?.trim() || undefined,
         reference_images: Array.isArray(payload.reference_images)
           ? payload.reference_images.filter((u) => typeof u === 'string' && u.trim().length > 0).slice(0, 5)
           : [],
