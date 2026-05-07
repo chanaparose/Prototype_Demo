@@ -153,7 +153,7 @@ type RawRfqDetail = {
     quantity: number;
     unit?: string;
     budget_per_piece?: number; // backward compatibility
-    target_unit_price?: number;
+    target_price?: number;
     details?: string;
     description?: string;
     address_id: number;
@@ -313,7 +313,7 @@ export function useRfqDetail(rfqId: string | undefined) {
         rExtra.total_budget,
         rExtra.target_total_budget,
         rExtra.budget_total,
-        rExtra.target_unit_price, // FE currently uses this field for "งบประมาณรวม"
+        rExtra.target_price, // FE currently uses this field for "งบประมาณรวม"
       );
       const budgetFallback = budgetPerPiece != null ? budgetPerPiece * quantity : 0;
       const budget = Math.max(0, Math.round(budgetTotalExplicit ?? budgetFallback ?? 0));

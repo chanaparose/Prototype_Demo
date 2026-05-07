@@ -94,8 +94,8 @@ export function Step1Basic({
       <input
         type="number"
         min={0}
-        value={draft.target_unit_price ?? ''}
-        onChange={(e) => setDraft({ target_unit_price: Number(e.target.value) || undefined })}
+        value={draft.target_price ?? ''}
+        onChange={(e) => setDraft({ target_price: Number(e.target.value) || undefined })}
         placeholder="งบประมาณรวม"
         className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
       />

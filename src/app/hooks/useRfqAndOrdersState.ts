@@ -72,7 +72,7 @@ type RawRfq = {
   quantity: number;
   details?: string;
   description?: string;
-  target_unit_price?: number;
+  target_price?: number;
   budget_total?: number;
   address_id: number;
   status: string;
@@ -164,7 +164,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
       const mapped: Rfq[] = withQuotes.map(({ raw, quotes }) => {
         const catName = categoryMap.get(String(raw.category_id)) ?? '';
         const totalBudget = Number(
-          raw.target_unit_price ?? raw.budget_total ?? (raw as Record<string, unknown>).total_budget ?? 0,
+          raw.target_price ?? raw.budget_total ?? (raw as Record<string, unknown>).total_budget ?? 0,
         );
         const legacyBudgetPerPiece = Number((raw as Record<string, unknown>).budget_per_piece ?? 0);
         const budget = Math.round(

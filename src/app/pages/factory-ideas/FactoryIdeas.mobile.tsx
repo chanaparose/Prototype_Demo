@@ -160,7 +160,7 @@ export function FactoryIdeasMobile() {
       try {
         if (isMaterialTab) {
           // Tab วัตถุดิบ → ดึง MT categories จาก GET /lbi/categories?scope=MT
-          const raw = await masterApi.lbiCategories('MT') as Record<string, unknown>;
+          const raw = await masterApi.lbiCategories('MT') as unknown as Record<string, unknown>;
           if (cancelled) return;
           const arr = (Array.isArray(raw.categories) ? raw.categories : []) as Record<string, unknown>[];
           const rows = arr
@@ -1030,6 +1030,69 @@ export function FactoryIdeasMobile() {
           </div>
         )}
 
+        {selectedType === 'all' && visibleMaterialItems.length > 0 && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold flex items-center gap-1.5" style={{ color: COLORS.blue }}>
+                <Sparkles className="w-4 h-4" style={{ color: '#0EA5A4' }} />
+                วัตถุดิบแนะนำ
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedType('material')}
+                className="text-[11px] font-medium"
+                style={{ color: COLORS.purple }}
+              >
+                ดูทั้งหมด ({visibleMaterialItems.length})
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {visibleMaterialItems.slice(0, 4).map((item) => {
+                const factory = data.factories.find((f) => f.id === item.factoryId);
+                return (
+                  <article
+                    key={`mt-top-${item.id}`}
+                    className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]"
+                    onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                      <ImageWithFallback
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <span className="absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white" style={{ backgroundColor: '#0EA5A4' }}>
+                        วัตถุดิบ
+                      </span>
+                    </div>
+                    <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                      <h3 className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
+                        {item.title}
+                      </h3>
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[10px] truncate">
+                          {(factory?.provinceName ?? factory?.location ?? '').trim() || '—'}
+                        </span>
+                      </div>
+                      <div className="mt-auto pt-1 border-t border-gray-50">
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center gap-0.5 min-w-0">
+                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                            <span className="text-gray-700 text-[10px] font-semibold">{factory?.rating ?? 0}</span>
+                            <span className="text-gray-400 text-[9px] truncate">({factory?.reviews ?? 0})</span>
+                          </div>
+                          <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ━━━ Factory section ใน tab "ทั้งหมด" ━━━ */}
         {selectedType === 'all' && visibleFactories.length > 0 && (
           <div className="mt-6">
@@ -1178,7 +1241,7 @@ export function FactoryIdeasMobile() {
             </div>
           </div>
         )}
-        {selectedType === 'all' && visibleMaterialItems.length > 0 && (
+        {selectedType === 'all' && visibleMaterialItems.length > 0 && false && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold flex items-center gap-1.5" style={{ color: COLORS.blue }}>

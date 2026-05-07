@@ -24,13 +24,15 @@ type QuoteRow = QuotationRow & {
 };
 
 function quoteFid(q: QuoteRow): number | null {
+  const qRecord = q as unknown as Record<string, unknown>;
+  const factoryRaw = qRecord.factory;
   const factoryObj =
-    q.factory && typeof q.factory === 'object' ? (q.factory as Record<string, unknown>) : null;
+    factoryRaw && typeof factoryRaw === 'object' ? (factoryRaw as Record<string, unknown>) : null;
   const n = Number(
     q.factory_id ??
       q.factoryId ??
-      q.user_id ??
-      q.factory_user_id ??
+      qRecord.user_id ??
+      qRecord.factory_user_id ??
       factoryObj?.user_id ??
       factoryObj?.id,
   );
@@ -197,7 +199,7 @@ export function FactoryRfqDetailPage() {
 
   const budgetPerPiece = useMemo(() => {
     const totalBudget = Number(
-      rfqBody.target_unit_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
+      rfqBody.target_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
     );
     const qty = Number(rfqBody.quantity ?? 0);
     if (Number.isFinite(totalBudget) && totalBudget > 0 && Number.isFinite(qty) && qty > 0) {
@@ -214,7 +216,7 @@ export function FactoryRfqDetailPage() {
 
   const revenueApprox = useMemo(() => {
     const totalBudget = Number(
-      rfqBody.target_unit_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
+      rfqBody.target_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
     );
     if (Number.isFinite(totalBudget) && totalBudget > 0) return totalBudget;
     if (budgetPerPiece == null || quantity == null) return null;
@@ -632,12 +634,7 @@ export function FactoryRfqDetailPage() {
                       {String(rfqBody.material_grade ?? '-')}
                     </span>
                   </div>
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs text-gray-500">ต้องการตัวอย่าง</span>
-                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
-                      {Boolean(rfqBody.sample_required) ? `ใช่${rfqBody.sample_qty ? ` (${String(rfqBody.sample_qty)} ชิ้น)` : ''}` : 'ไม่'}
-                    </span>
-                  </div>
+                   
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs text-gray-500">ประเภทการตรวจสอบ</span>
                     <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
@@ -676,7 +673,7 @@ export function FactoryRfqDetailPage() {
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs text-gray-500">งบประมาณรวม</span>
                     <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>
-                      {rfqBody.target_unit_price != null ? `${Number(rfqBody.target_unit_price).toLocaleString('th-TH')} บาท` : '-'}
+                      {rfqBody.target_price != null ? `${Number(rfqBody.target_price).toLocaleString('th-TH')} บาท` : '-'}
                     </span>
                   </div>
                   {targetDaysCustomer != null ? (
@@ -771,7 +768,11 @@ export function FactoryRfqDetailPage() {
                     }
                     initialFactoryHighlight={
                       myQuote
-                        ? String((myQuote as Record<string, unknown>).factory_highlight ?? (myQuote as Record<string, unknown>).highlight ?? '')
+                        ? String(
+                            (myQuote as unknown as Record<string, unknown>).factory_highlight ??
+                              (myQuote as unknown as Record<string, unknown>).highlight ??
+                              '',
+                          )
                         : ''
                     }
                     submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}

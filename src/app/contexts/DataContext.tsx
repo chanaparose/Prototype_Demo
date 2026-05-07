@@ -439,7 +439,7 @@ export function normalizeRfqRecord(
   const effCount = Math.max(offerCount, offers.length);
   const status = mapApiRfqStatus(String(row.status ?? ''), effCount);
   const totalBudget = Number(
-    row.target_unit_price ?? row.budget_total ?? row.total_budget ?? row.budget ?? 0,
+    row.target_price ?? row.budget_total ?? row.total_budget ?? row.budget ?? 0,
   );
   const budgetPerPiece = Number(row.budget_per_piece ?? 0); // backward compatibility
   const budget =

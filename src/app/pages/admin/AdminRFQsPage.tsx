@@ -60,7 +60,7 @@ function mapRfq(row: AdminRfqRow): AdminRfqView {
     rfq_id: String(row.rfq_id),
     buyer_name: String(row.customer_name ?? '-'),
     factory_name: undefined,
-    budget: Number(row.target_unit_price ?? 0),
+    budget: Number(row.target_price ?? 0),
     status: String(row.status ?? 'OP'),
     created_at: String(row.created_at ?? ''),
     title: String(row.title ?? '-'),
@@ -146,7 +146,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
                 <DollarSign size={14} className="text-indigo-500 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase font-semibold">งบประมาณ</p>
-                  <p className="text-sm text-slate-900 font-bold">฿{Number(rfq.target_unit_price ?? 0).toLocaleString('th-TH')}</p>
+                  <p className="text-sm text-slate-900 font-bold">฿{Number(rfq.target_price ?? 0).toLocaleString('th-TH')}</p>
                 </div>
               </div>
             </div>

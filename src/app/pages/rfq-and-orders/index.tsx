@@ -234,7 +234,7 @@ function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
 }
 
 // ─── RFQ panel (shared between mobile + desktop) ───────────────────────────
-function RfqPanel({ rfqs, isMobile }: { rfqs: Rfq[]; isMobile?: boolean }) {
+function RfqPanel({ rfqs, isMobile, isDesktop }: { rfqs: Rfq[]; isMobile?: boolean; isDesktop?: boolean }) {
   const navigate = useNavigate();
   const [historyOpen, setHistoryOpen] = React.useState(false);
 
@@ -263,7 +263,10 @@ function RfqPanel({ rfqs, isMobile }: { rfqs: Rfq[]; isMobile?: boolean }) {
       )}
 
       {/* Section A header */}
-      <div className="flex items-center justify-between mb-3">
+      <div
+        className={`flex items-center justify-between mb-3 ${isDesktop ? 'min-h-[56px] rounded-xl border px-3 py-2' : ''}`}
+        style={isDesktop ? { borderColor: BORDER_WARM, background: '#F9F8FC' } : undefined}
+      >
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="text-sm font-bold" style={{ color: DEEP_PURPLE }}>กำลังดำเนินการ</h3>
           <span
@@ -393,10 +396,10 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
 
       {/* Tab bar */}
       <div
-        className="grid grid-cols-5 mb-3 rounded-xl px-1 py-1.5 border gap-0.5"
+        className="grid grid-cols-5 rounded-xl px-1 py-[5px] border gap-0.5 w-full mb-3"
         style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
       >
-        {ORDER_TABS.map((tab) => {
+          {ORDER_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = orderFilter === tab.id;
           const th = ORDER_MOBILE_TAB_THEME[tab.id];
@@ -407,21 +410,21 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
             <button
               key={tab.id}
               onClick={() => setOrderFilter(tab.id)}
-              className="relative flex flex-col items-center gap-1 py-1 rounded-lg transition-all"
+              className="relative flex flex-col items-center gap-0.5 py-0.5 rounded-lg transition-all"
               style={{
                 background: isActive ? 'rgba(255,255,255,0.9)' : 'transparent',
                 boxShadow: isActive ? '0 1px 6px rgba(0,0,0,0.08)' : 'none',
               }}
             >
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center"
+                className="w-7 h-7 rounded-full flex items-center justify-center"
                 style={{ background: isActive ? th.activeBg : 'transparent' }}
               >
-                <Icon size={15} style={{ color: isActive ? th.activeColor : '#6B7280' }} />
+                <Icon size={14} style={{ color: isActive ? th.activeColor : '#6B7280' }} />
               </div>
               {count > 0 && (
                 <span
-                  className={`absolute top-0.5 right-[10%] min-w-[16px] h-4 px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold ${isPendingTab && !isActive ? 'animate-pulse' : ''}`}
+                  className={`absolute top-0.5 right-[10%] min-w-[14px] h-3.5 px-1 rounded-full text-white text-[8px] flex items-center justify-center font-bold ${isPendingTab && !isActive ? 'animate-pulse' : ''}`}
                   style={{
                     background: isActive ? th.activeColor : isPendingTab ? ACCENT_ORANGE : th.badgeInactive,
                   }}
@@ -430,7 +433,7 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
                 </span>
               )}
               <span
-                className="text-[10px] text-center leading-tight"
+                className="text-[9px] text-center leading-tight"
                 style={{ color: isActive ? th.activeColor : '#6B7280', fontWeight: isActive ? 700 : 500 }}
               >
                 {tab.shortLabel}
@@ -443,7 +446,7 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
       {/* Order cards */}
       {filteredOrders.length === 0 ? (
         <div
-          className="flex flex-col items-center justify-center py-12 text-center rounded-2xl border"
+          className="flex flex-col items-center justify-center py-12 text-center rounded-2xl border min-h-[258px]"
           style={{ borderColor: BORDER_WARM, background: '#FFFAF5' }}
         >
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ background: ACCENT_ORANGE_BG }}>
@@ -724,7 +727,7 @@ export function RfqAndOrders() {
 
             {/* Scrollable RFQ content */}
             <div className="overflow-y-auto flex-1 p-4">
-              <RfqPanel rfqs={rfqs} />
+              <RfqPanel rfqs={rfqs} isDesktop />
             </div>
           </div>
 

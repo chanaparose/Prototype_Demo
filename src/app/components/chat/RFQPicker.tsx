@@ -16,7 +16,7 @@ type OpenRfqItem = {
   title: string;
   status: string;
   category_name?: string;
-  target_unit_price?: number;
+  target_price?: number;
   required_delivery_date?: string;
 };
 
@@ -30,8 +30,8 @@ function toOpenRfqItem(row: Record<string, unknown>): OpenRfqItem | null {
     title: String(row.title ?? row.project_name ?? `RFQ #${rfqId}`),
     status,
     category_name: String(row.category_name ?? row.category ?? '').trim() || undefined,
-    target_unit_price:
-      row.target_unit_price != null ? Number(row.target_unit_price) : undefined,
+    target_price:
+      row.target_price != null ? Number(row.target_price) : undefined,
     required_delivery_date: String(
       row.required_delivery_date ?? row.deadline ?? row.target_date ?? '',
     ).trim() || undefined,
@@ -132,7 +132,7 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">{rfq.title}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {rfq.target_unit_price ? `งบ ฿${rfq.target_unit_price.toLocaleString('th-TH')}` : 'ไม่มีงบ'}
+                        {rfq.target_price ? `งบ ฿${rfq.target_price.toLocaleString('th-TH')}` : 'ไม่มีงบ'}
                         {rfq.required_delivery_date ? ` · กำหนด ${new Date(rfq.required_delivery_date).toLocaleDateString('th-TH')}` : ''}
                       </p>
                       {rfq.category_name ? (

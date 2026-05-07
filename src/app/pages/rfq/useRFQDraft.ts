@@ -15,7 +15,7 @@ export type RFQDraft = {
   dimension_spec?: { L: number; W: number; H: number; unit: 'mm' | 'cm' | 'm' };
   weight_target_g?: number;
   packaging_spec: string;
-  target_unit_price?: number;
+  target_price?: number;
   target_lead_time_days?: number;
   required_delivery_date?: string;
   incoterms?: string;

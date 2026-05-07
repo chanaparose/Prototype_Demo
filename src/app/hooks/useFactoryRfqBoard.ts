@@ -114,7 +114,7 @@ export function useFactoryRfqBoard() {
         const status = String(inner.status ?? row.status ?? '').toUpperCase();
         const quantity = inner.quantity != null ? Number(inner.quantity) : null;
         const totalBudgetRaw = Number(
-          inner.target_unit_price ?? inner.budget_total ?? inner.total_budget ?? 0,
+          inner.target_price ?? inner.budget_total ?? inner.total_budget ?? 0,
         );
         const legacyBudgetPerPiece =
           inner.budget_per_piece != null ? Number(inner.budget_per_piece) : null;

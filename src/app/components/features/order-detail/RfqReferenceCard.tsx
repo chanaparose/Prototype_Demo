@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, DollarSign, Clock, Wrench } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import type { RfqNestedDTO, QuoteNestedDTO } from '../../../types/api';
-import { rfqsApi } from '../../../services/api';
+import { rfqsApi, quotationsApi } from '../../../services/api';
 import { summarizeRfqAddress } from '../../../utils/rfqAddressSummary';
 import { OrderPhotoGallery } from './OrderPhotoGallery';
 
@@ -13,10 +13,11 @@ interface Props {
   quotation?: QuoteNestedDTO | null;
 }
 
-export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props) {
+export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [rfqDetail, setRfqDetail] = useState<Record<string, unknown> | null>(null);
+  const [quotationDetail, setQuotationDetail] = useState<Record<string, unknown> | null>(null);
   const [rfqLoading, setRfqLoading] = useState(false);
   const [rfqError, setRfqError] = useState('');
 
@@ -49,6 +50,33 @@ export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props)
     };
   }, [rfq.rfq_id]);
 
+  useEffect(() => {
+    let mounted = true;
+    const quoteId = Number(quotation?.quote_id ?? 0);
+    if (!Number.isFinite(quoteId) || quoteId <= 0) {
+      setQuotationDetail(null);
+      return () => void 0;
+    }
+    const load = async () => {
+      try {
+        const res = await quotationsApi.get(quoteId);
+        const payload =
+          res && typeof res === 'object' && !Array.isArray(res) && res.quotation && typeof res.quotation === 'object'
+            ? (res.quotation as Record<string, unknown>)
+            : (res as Record<string, unknown>);
+        if (!mounted) return;
+        setQuotationDetail(payload);
+      } catch {
+        if (!mounted) return;
+        setQuotationDetail(null);
+      }
+    };
+    void load();
+    return () => {
+      mounted = false;
+    };
+  }, [quotation?.quote_id]);
+
   const data = rfqDetail ?? (rfq as unknown as Record<string, unknown>);
   const quantity = Math.max(0, Number(data.quantity ?? rfq.quantity ?? 0) || 0);
   const categoryName = String(data.category_name ?? rfq.category_name ?? '').trim() || '-';
@@ -68,13 +96,11 @@ export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props)
   ).trim();
   const deadlineRaw = String(data.deadline ?? data.target_date ?? data.delivery_deadline ?? rfq.deadline_date ?? '').trim();
   const inspectionType = String(data.inspection_type ?? data.inspectionType ?? '').trim();
-  const sampleRequired = Boolean(data.sample_required ?? data.sampleRequired);
-  const sampleQty = Number(data.sample_qty ?? data.sampleQty ?? 0);
   const budgetTotal = Number(
     data.total_budget ??
       data.target_total_budget ??
       data.budget_total ??
-      data.target_unit_price ??
+      data.target_price ??
       0,
   );
   const description = String(data.details ?? data.description ?? rfq.details ?? '').trim();
@@ -172,9 +198,6 @@ export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props)
     ...(requiredDeliveryDateLabel ? [{ label: 'วันที่ต้องการรับสินค้า', value: requiredDeliveryDateLabel }] : []),
     ...(deadlineLabel ? [{ label: 'กำหนดส่ง', value: deadlineLabel }] : []),
     ...(inspectionTypeLabel ? [{ label: 'รูปแบบตรวจคุณภาพ', value: inspectionTypeLabel }] : []),
-    ...(sampleRequired
-      ? [{ label: 'ต้องการตัวอย่าง', value: Number.isFinite(sampleQty) && sampleQty > 0 ? `ใช่ (${sampleQty} ชิ้น)` : 'ใช่' }]
-      : [{ label: 'ต้องการตัวอย่าง', value: 'ไม่' }]),
   ];
 
   const body = (
@@ -237,26 +260,114 @@ export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props)
       {quotation ? (
         <div>
           <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2">รายละเอียดใบเสนอราคา</p>
-          <dl className="grid grid-cols-2 gap-2 text-xs">
-            <MetaRow
-              icon={<DollarSign size={12} />}
-              label="ราคา/ชิ้น"
-              value={`฿${quotation.price_per_piece.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`}
-            />
-            {quotation.mold_cost > 0 ? (
-              <MetaRow
-                icon={<Wrench size={12} />}
-                label="ค่าแม่พิมพ์"
-                value={`฿${quotation.mold_cost.toLocaleString('th-TH')}`}
-              />
-            ) : null}
-             
-            <MetaRow
-              icon={<DollarSign size={12} />}
-              label="มูลค่ารวม"
-              value={`฿${(quotation.price_per_piece * rfq.quantity).toLocaleString('th-TH', { minimumFractionDigits: 2 })}`}
-            />
-          </dl>
+          {(() => {
+            const q = {
+              ...(quotation as unknown as Record<string, unknown>),
+              ...(quotationDetail ?? {}),
+            } as QuoteNestedDTO & Record<string, unknown>;
+            const pricePerPiece = Number(q.price_per_piece ?? 0);
+            const qty = Math.max(0, Number(data.quantity ?? rfq.quantity ?? 0) || 0);
+            const subtotalRaw = Number(q.subtotal ?? 0);
+            const subtotal = subtotalRaw > 0 ? subtotalRaw : Math.max(0, pricePerPiece * qty);
+            const shippingCost = Number(q.shipping_cost ?? 0);
+            const packagingCost = Number(q.packaging_cost ?? 0);
+            const toolingMoldCost = Number(q.tooling_mold_cost ?? q.mold_cost ?? quotation.mold_cost ?? 0);
+            const discountAmount = Number(q.discount_amount ?? 0);
+            const vatRate = Number(q.vat_rate ?? 0);
+            const vatAmountRaw = Number(q.vat_amount ?? 0);
+            const vatAmount =
+              vatAmountRaw > 0
+                ? vatAmountRaw
+                : Math.max(0, ((subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost) * vatRate) / 100);
+            const grandTotalRaw = Number(q.grand_total ?? 0);
+            const grandTotal =
+              grandTotalRaw > 0
+                ? grandTotalRaw
+                : Math.max(0, subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost + vatAmount);
+            const leadTimeDays = Number(q.lead_time_days ?? quotation.lead_time_days ?? 0);
+            const validityDays = Math.max(0, Number(q.validity_days ?? 0));
+            const formatTHB = (n: number) =>
+              `฿${n.toLocaleString('th-TH', { minimumFractionDigits: n % 1 !== 0 ? 2 : 0, maximumFractionDigits: 2 })}`;
+
+            return (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                  <div className="bg-gray-50 rounded-xl p-2.5 text-center">
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700, color: '#7A4B94' }}>
+                      {formatTHB(pricePerPiece)}
+                    </p>
+                    <p className="text-[9px] text-gray-500">ราคาต่อชิ้น</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2.5 text-center">
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
+                      {leadTimeDays > 0 ? leadTimeDays : '-'}
+                    </p>
+                    <p className="text-[9px] text-gray-500">Lead time (วัน)</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2.5 text-center">
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700, color: '#7A4B94' }}>
+                      {formatTHB(grandTotal)}
+                    </p>
+                    <p className="text-[9px] text-gray-500">ราคารวมเสนอ</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2.5 text-center">
+                    <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
+                      {validityDays > 0 ? `${validityDays}` : '-'}
+                    </p>
+                    <p className="text-[9px] text-gray-500">อายุใบเสนอราคา (วัน)</p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 mb-3">
+                  <div className="flex items-center justify-between text-[11px] text-gray-600">
+                    <span>ค่าสินค้ารวม</span>
+                    <span className="font-semibold text-[#2E2252]">{formatTHB(subtotal)}</span>
+                  </div>
+                  {shippingCost > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ค่าขนส่ง</span>
+                      <span className="font-semibold text-[#2E2252]">{formatTHB(shippingCost)}</span>
+                    </div>
+                  ) : null}
+                  {packagingCost > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ค่าบรรจุภัณฑ์</span>
+                      <span className="font-semibold text-[#2E2252]">{formatTHB(packagingCost)}</span>
+                    </div>
+                  ) : null}
+                  {toolingMoldCost > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ค่าแม่พิมพ์</span>
+                      <span className="font-semibold text-[#2E2252]">{formatTHB(toolingMoldCost)}</span>
+                    </div>
+                  ) : null}
+                  {discountAmount > 0 ? (
+                    <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                      <span>ส่วนลด</span>
+                      <span className="font-semibold text-emerald-700">-{formatTHB(discountAmount)}</span>
+                    </div>
+                  ) : null}
+                  <div className="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                    <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
+                    <span className="font-semibold text-[#2E2252]">{formatTHB(vatAmount)}</span>
+                  </div>
+                  <div className="border-t border-gray-200 mt-2 pt-2 flex items-center justify-between text-[12px]">
+                    <span className="font-semibold text-[#2E2252]">รวมทั้งหมด</span>
+                    <span className="font-bold text-[#7A4B94]">{formatTHB(grandTotal)}</span>
+                  </div>
+                </div>
+
+                {String(q.factory_highlight ?? q.highlight ?? '').trim() ? (
+                  <div className="rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2 mb-2">
+                    <p className="text-[10px] font-semibold text-violet-700 mb-0.5">จุดเด่นจากโรงงาน</p>
+                    <p className="text-[11px] text-violet-900 leading-relaxed">
+                      {String(q.factory_highlight ?? q.highlight ?? '').trim()}
+                    </p>
+                  </div>
+                ) : null}
+              </>
+            );
+          })()}
         </div>
       ) : null}
       {rfqLoading ? <p className="text-xs text-gray-400">กำลังโหลดสเปค RFQ...</p> : null}
@@ -279,19 +390,5 @@ export function RfqReferenceCard({ rfq, defaultOpen = false, quotation }: Props)
       </button>
       {open ? <div className="px-4 pb-4">{body}</div> : null}
     </section>
-  );
-}
-
-function MetaRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-gray-500 flex items-center gap-1">
-        {icon}
-        {label}
-      </dt>
-      <dd className="text-gray-900" style={{ fontWeight: 600 }}>
-        {value}
-      </dd>
-    </div>
   );
 }

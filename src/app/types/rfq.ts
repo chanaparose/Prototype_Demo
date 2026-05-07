@@ -18,7 +18,7 @@ export interface RfqListItem {
   image_urls?: string[]; // backward compatibility
   reference_images?: string[];
   material_grade?: string;
-  target_unit_price?: number;
+  target_price?: number;
   target_lead_time_days?: number;
   required_delivery_date?: string;
   certifications_required?: string[];

@@ -22,9 +22,9 @@ export function useCreateRFQ() {
         category_id: Number(payload.category_id),
         quantity: Number(payload.qty),
         unit: payload.unit || 'ชิ้น',
-        target_unit_price:
-          payload.target_unit_price != null && Number.isFinite(Number(payload.target_unit_price))
-            ? Number(payload.target_unit_price)
+        target_price:
+          payload.target_price != null && Number.isFinite(Number(payload.target_price))
+            ? Number(payload.target_price)
             : undefined,
         material_grade: isSample ? undefined : payload.material_grade?.trim() || undefined,
         reference_images: Array.isArray(payload.reference_images)

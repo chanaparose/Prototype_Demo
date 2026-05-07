@@ -318,7 +318,7 @@ export function RFQCreateWizard() {
     const missing: string[] = [];
     if ((draft.request_kind ?? 'PR') !== 'MS' && !draft.sub_category_id) missing.push('หมวดย่อย');
     if (!draft.material_grade?.trim()) missing.push('วัตถุดิบ');
-    if (!draft.target_unit_price) missing.push('งบประมาณรวม');
+    if (!draft.target_price) missing.push('งบประมาณรวม');
     if (!draft.target_lead_time_days) missing.push('ระยะเวลาผลิต');
     if (!draft.certifications_required.length) missing.push('Certification');
     if (!draft.reference_images.length) missing.push('รูปอ้างอิง');
@@ -488,7 +488,7 @@ export function RFQCreateWizard() {
             <section className="rounded-xl border border-gray-100 p-4">
               <p className="font-semibold text-[#2E2252] mb-3">เงื่อนไขส่งมอบและงบ</p>
               <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
-                <p><span className="text-gray-500">งบประมาณรวม:</span> {draft.target_unit_price ?? '-'}</p>
+                <p><span className="text-gray-500">งบประมาณรวม:</span> {draft.target_price ?? '-'}</p>
                 <p><span className="text-gray-500">ระยะเวลาผลิต:</span> {draft.target_lead_time_days ?? '-'} วัน</p>
                 <p><span className="text-gray-500">ที่อยู่จัดส่ง:</span> {deliveryAddressLabel}</p>
                 <p><span className="text-gray-500">วิธีจัดส่ง:</span> {shippingMethodLabel}</p>

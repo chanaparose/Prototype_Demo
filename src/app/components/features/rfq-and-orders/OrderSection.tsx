@@ -111,10 +111,10 @@ export function OrderSection({
 
       {/* Tab bar */}
       <div
-        className="grid grid-cols-5 mb-3 rounded-xl px-1 py-1.5 border gap-0.5"
+        className="grid grid-cols-5 rounded-xl px-1 py-[8px] border gap-0.5 w-full mb-3"
         style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
       >
-        {ORDER_TABS.map((tab) => {
+          {ORDER_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = orderFilter === tab.id;
           const th = ORDER_MOBILE_TAB_THEME[tab.id];
@@ -125,27 +125,27 @@ export function OrderSection({
             <button
               key={tab.id}
               onClick={() => setOrderFilter(tab.id)}
-              className="relative flex flex-col items-center gap-1 py-1 rounded-lg transition-all"
+              className="relative flex flex-col items-center gap-0.5 py-0.5 rounded-lg transition-all"
               style={{
                 background: isActive ? 'rgba(255,255,255,0.9)' : 'transparent',
                 boxShadow: isActive ? `0 1px 6px rgba(0,0,0,0.08)` : 'none',
               }}
             >
               <div
-                className="w-8 h-8 rounded-full flex items-center justify-center"
+                className="w-7 h-7 rounded-full flex items-center justify-center"
                 style={{
                   background: isActive ? th.activeBg : 'transparent',
                 }}
               >
                 <Icon
-                  size={15}
+                  size={14}
                   style={{ color: isActive ? th.activeColor : '#6B7280' }}
                 />
               </div>
               {/* Badge — bold/pulsing for pending_payment */}
               {count > 0 && (
                 <span
-                  className={`absolute top-0.5 right-[10%] min-w-[16px] h-4 px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold ${isPendingPaymentTab && !isActive ? 'animate-pulse' : ''}`}
+                  className={`absolute top-0.5 right-[10%] min-w-[14px] h-3.5 px-1 rounded-full text-white text-[8px] flex items-center justify-center font-bold ${isPendingPaymentTab && !isActive ? 'animate-pulse' : ''}`}
                   style={{
                     background: isActive
                       ? th.activeColor
@@ -158,7 +158,7 @@ export function OrderSection({
                 </span>
               )}
               <span
-                className="text-[10px] text-center leading-tight"
+                className="text-[9px] text-center leading-tight"
                 style={{
                   color: isActive ? th.activeColor : '#6B7280',
                   fontWeight: isActive ? 700 : 500,

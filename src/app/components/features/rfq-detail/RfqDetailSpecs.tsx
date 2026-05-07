@@ -76,9 +76,6 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
       : []),
     ...(rfq.deadline ? [{ label: 'กำหนดส่ง', value: rfq.deadline }] : []),
     ...(inspectionTypeLabel ? [{ label: 'รูปแบบตรวจคุณภาพ', value: inspectionTypeLabel }] : []),
-    ...(rfq.sampleRequired
-      ? [{ label: 'ต้องการตัวอย่าง', value: rfq.sampleQty ? `ใช่ (${rfq.sampleQty} ชิ้น)` : 'ใช่' }]
-      : [{ label: 'ต้องการตัวอย่าง', value: 'ไม่' }]),
     { label: 'วันที่สร้าง', value: rfq.createdAt },
   ];
 

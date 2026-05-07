@@ -280,7 +280,10 @@ export function RfqSection({
 
       {/* ─── Section A: Active ─────────────────────────────────── */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-3">
+        <div
+          className="flex items-center justify-between mb-3 min-h-[56px] rounded-xl border px-3 py-2"
+          style={{ borderColor: BORDER_WARM, background: '#F9F8FC' }}
+        >
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold" style={{ color: DEEP_PURPLE }}>
               กำลังดำเนินการ

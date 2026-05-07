@@ -59,30 +59,13 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
     <div className="space-y-4">
       <OrderPaymentScheduleCard schedule={paymentSchedule} />
 
-      {showDepositPayment ? (
+      {showDepositPayment && (
         <OrderPendingPaymentSection
           orderId={mappedOrder.id}
           depositAmount={payableAmount}
           totalAmount={mappedOrder.totalAmount}
           onVerified={() => void refetchAll()}
         />
-      ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 text-sm text-gray-600 space-y-2">
-          <p className="font-semibold text-gray-900">สรุปการชำระเงิน</p>
-          <p>
-            ยอดที่ชำระ/ต้องชำระ:{' '}
-            <span className="font-medium text-gray-900">฿{payableAmount.toLocaleString('th-TH')}</span>
-          </p>
-          <p>
-            ยอดรวม:{' '}
-            <span className="font-medium text-gray-900">
-              ฿{order.totalAmount.toLocaleString('th-TH')}
-            </span>
-          </p>
-          <p className="text-xs text-gray-500">
-            ไม่มีรายการชำระเงินที่ต้องดำเนินการในขณะนี้
-          </p>
-        </div>
       )}
 
       {relatedRfq && (
