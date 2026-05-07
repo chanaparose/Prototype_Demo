@@ -20,6 +20,7 @@ import {
 } from './factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '../factory/FactoryVerifiedGuard';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
+import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -54,7 +55,7 @@ export function DesktopSidebar() {
       : location.pathname === path || location.pathname.startsWith(`${path}/`);
 
   const unreadMessages = data.conversations.reduce((s, c) => s + c.unread, 0);
-  const unreadNotifications = data.notifications.filter((n) => !n.read).length;
+  const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
   const activeRfqCount = data.rfqs.filter(
     (r) =>
       r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired',
