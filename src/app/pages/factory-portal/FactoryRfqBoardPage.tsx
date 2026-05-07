@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { Search, SlidersHorizontal, FileText } from 'lucide-react';
+import { Search, SlidersHorizontal, FileText, Factory, PackageSearch, FlaskConical } from 'lucide-react';
 import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
@@ -171,10 +171,11 @@ export function FactoryRfqBoardPage() {
     { key: 'all', label: 'ทั้งหมด', count: counts.all },
     { key: 'open', label: 'ยังไม่ได้เสนอ', count: counts.open },
     { key: 'quoted', label: 'เสนอแล้ว', count: counts.quoted },
-    { key: 'pr', label: 'OEM', count: kindCounts.pr },
-    { key: 'ps', label: 'ตัวอย่างสินค้า', count: kindCounts.ps },
-    { key: 'ms', label: 'ตัวอย่างวัสดุ', count: kindCounts.ms },
-    { key: 'closing', label: 'ใกล้ปิด', count: counts.closing, warn: counts.closing > 0 },
+  ];
+  const kindTabs: { key: Extract<TabKey, 'pr' | 'ps' | 'ms'>; label: string; count: number; icon: React.ComponentType<{ size?: number; className?: string }>; hint: string }[] = [
+    { key: 'pr', label: 'OEM', count: kindCounts.pr, icon: Factory, hint: 'ขอราคาการผลิต' },
+    { key: 'ps', label: 'ตัวอย่างสินค้า', count: kindCounts.ps, icon: PackageSearch, hint: 'ขอสินค้าทดลอง' },
+    { key: 'ms', label: 'ตัวอย่างวัสดุ', count: kindCounts.ms, icon: FlaskConical, hint: 'ขอวัสดุทดลอง' },
   ];
 
   if (loading) {
@@ -239,34 +240,51 @@ export function FactoryRfqBoardPage() {
 
       {!noFactoryCategories ? (
         <>
-          {/* ── Unanswered alerts by request kind ── */}
-          <div className="rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3">
-             
-            <div className="flex flex-wrap gap-2">
-              {[
-                { key: 'pr', label: 'OEM', total: kindCounts.pr, pending: unansweredByKind.pr },
-                { key: 'ps', label: 'ขอตัวอย่างสินค้า', total: kindCounts.ps, pending: unansweredByKind.ps },
-                { key: 'ms', label: 'ขอตัวอย่างวัสดุ', total: kindCounts.ms, pending: unansweredByKind.ms },
-              ]
-                .filter((k) => k.pending > 0)
-                .map((k) => (
-                  <button
-                    key={k.key}
-                    type="button"
-                    onClick={() => setTab(k.key as TabKey)}
-                    className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-left hover:bg-amber-100/60 transition"
-                  >
-                    <span className="text-[11px] font-semibold text-amber-900">{k.label}</span>
-                    <span className="text-[11px] text-amber-700">ยังไม่ตอบ {k.pending}/{k.total}</span>
-                  </button>
-                ))}
-              {unansweredByKind.pr + unansweredByKind.ps + unansweredByKind.ms === 0 ? (
-                <span className="text-xs text-emerald-700 font-medium">ตอบครบทุกหมวดแล้ว</span>
-              ) : null}
-            </div>
+          {/* ── Tab bar ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {kindTabs.map((k) => {
+              const active = tab === k.key;
+              const pending = unansweredByKind[k.key];
+              return (
+                <button
+                  key={k.key}
+                  type="button"
+                  onClick={() => setTab(k.key)}
+                  className="rounded-2xl border px-3 py-2.5 text-left transition-all"
+                  style={{
+                    borderColor: active ? '#4F46E5' : '#E5E7EB',
+                    background: active ? '#EEF2FF' : '#FFFFFF',
+                    boxShadow: active ? '0 2px 10px rgba(79,70,229,0.12)' : 'none',
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100">
+                        <k.icon size={15} className={active ? 'text-indigo-600' : 'text-slate-500'} />
+                      </span>
+                      <div>
+                        <p className="text-[13px] font-semibold text-slate-900 leading-none">{k.label}</p>
+                        <p className="text-[11px] text-slate-500 mt-1">{k.hint}</p>
+                        <p className={`text-[11px] mt-1 font-medium ${pending > 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
+                          {pending > 0 ? `ยังไม่ตอบ ${pending}/${k.count}` : 'ตอบครบแล้ว'}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className="text-xs font-bold rounded-full px-2 py-0.5"
+                      style={{
+                        background: active ? '#4F46E5' : '#EEF2FF',
+                        color: active ? '#fff' : '#4F46E5',
+                      }}
+                    >
+                      {k.count}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
-          {/* ── Tab bar ── */}
           {narrowTabs ? (
             <div className="flex items-center gap-2">
               <label className="text-xs text-gray-500 shrink-0">ชุดรายการ</label>
