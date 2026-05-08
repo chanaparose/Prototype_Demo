@@ -872,7 +872,7 @@ export function FactoryIdeasDesktop() {
             })}
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-5 gap-2">
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
@@ -1008,7 +1008,7 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleMaterialItems.length})
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-5 gap-2">
               {visibleMaterialItems.slice(0, 5).map((item) => {
                 const factory = data.factories.find((f) => f.id === item.factoryId);
                 return (
@@ -1072,7 +1072,7 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleFactories.length})
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-5 gap-2">
               {visibleFactories.slice(0, 5).map((factory) => (
                 <div
                   key={`fac-${factory.id}`}
@@ -1086,33 +1086,35 @@ export function FactoryIdeasDesktop() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     {factory.verified === true && (
-                      <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                        <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
-                        <span className="text-[9px] font-medium" style={{ color: '#A238FF' }}>
-                          ยืนยันแล้ว
+                      <div className="absolute top-1 left-1 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                        <BadgeCheck className="w-2.5 h-2.5 text-[#A238FF]" />
+                        <span className="text-[8px] font-medium" style={{ color: '#A238FF' }}>
+                          ยืนยัน
                         </span>
                       </div>
                     )}
                   </div>
-                  <div className="p-2.5 flex flex-col flex-1 justify-between">
+                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
                     <div>
-                      <h3 className="font-medium text-[13px] leading-tight text-gray-700 mb-1 truncate group-hover:text-[#A238FF] transition-colors">
+                      <h3 className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
                         {factory.name}
                       </h3>
-                      <div className="flex items-center gap-1 mb-1">
+                      <div className="flex items-center gap-0.5 mt-0.5">
                         <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                        <span className="text-gray-500 text-[11px] truncate">
+                        <span className="text-gray-500 text-[10px] truncate">
                           {(factory.provinceName ?? factory.location).trim() || '—'}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-1.5 border-t border-gray-50">
-                      <div className="flex items-center gap-0.5">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                        <span className="text-gray-700 text-[11px] font-semibold">{factory.rating}</span>
-                        <span className="text-gray-400 text-[9px]">({factory.reviews})</span>
+                    <div className="mt-auto pt-1 border-t border-gray-50">
+                      <div className="flex items-center justify-between min-w-0">
+                        <div className="flex items-center gap-0.5 min-w-0">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                          <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
+                          <span className="text-gray-400 text-[9px] truncate">({factory.reviews})</span>
+                        </div>
+                        <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {factory.minOrder}</span>
                       </div>
-                      <span className="text-gray-400 text-[9px]">ขั้นต่ำ {factory.minOrder}</span>
                     </div>
                   </div>
                 </div>
@@ -1202,7 +1204,7 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleMaterialItems.length})
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-5 gap-2">
               {visibleMaterialItems.slice(0, 5).map((item) => {
                 const factory = data.factories.find((f) => f.id === item.factoryId);
                 return (
