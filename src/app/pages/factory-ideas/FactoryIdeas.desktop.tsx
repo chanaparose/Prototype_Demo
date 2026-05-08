@@ -834,11 +834,19 @@ export function FactoryIdeasDesktop() {
                     <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
                       ไอเดีย
                     </span>
-                    <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
+                     
                   </div>
-                  <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors" style={{ color: COLORS.blue }}>
-                    {item.title}
-                  </h3>
+                  <div className="flex items-start justify-between gap-3 min-w-0">
+                    <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-w-0 flex-1" style={{ color: COLORS.blue }}>
+                      {item.title}
+                    </h3>
+                    <span className="text-[11px] text-gray-400 shrink-0 tabular-nums self-start pt-0.5 text-right">
+                      ขั้นต่ำ{' '}
+                      <span className="font-semibold" style={{ color: COLORS.blue }}>
+                        {item.minOrder}
+                      </span>
+                    </span>
+                  </div>
                   <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
                   <div className="pt-2 mt-3 border-t border-gray-100">
                     <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
@@ -1151,13 +1159,21 @@ export function FactoryIdeasDesktop() {
                       <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
                         ไอเดีย
                       </span>
-                      <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
+                       
                     </div>
-                    <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors" style={{ color: COLORS.blue }}>
-                      {item.title}
-                    </h3>
+                    <div className="flex items-start justify-between gap-3 min-w-0">
+                      <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-w-0 flex-1" style={{ color: COLORS.blue }}>
+                        {item.title}
+                      </h3>
+                      <span className="text-[11px] text-gray-400 shrink-0 tabular-nums self-start pt-0.5 text-right">
+                        ขั้นต่ำ{' '}
+                        <span className="font-semibold" style={{ color: COLORS.blue }}>
+                          {item.minOrder}
+                        </span>
+                      </span>
+                    </div>
                     <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
-                    <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
+                    <div className="pt-2 mt-1 border-t border-gray-100 space-y-1.5">
                       <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
                         <button
                           type="button"
