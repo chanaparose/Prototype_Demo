@@ -95,7 +95,7 @@ function ProductCarouselSection({
       onMouseLeave={() => { isHovered.current = false; }}
     >
       {/* Section header */}
-      <div className="flex items-center justify-between mb-2.5">
+      <div className="mt-[30px] flex items-center justify-between mb-2.5">
         <h2 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
           {isMaterial
             ? <Leaf className="text-[#059669]" size={16} />
@@ -331,11 +331,11 @@ function DesktopCategories({
           );
         })}
       </div>
-      <div className="flex justify-center mt-3">
+      <div className="flex justify-center mt-4">
         <button
           type="button"
           onClick={() => navigate('/factory-ideas')}
-          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-2 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5"
         >
           ดูเพิ่มเติม <ChevronRight size={13} />
         </button>
@@ -460,7 +460,7 @@ export function ExploreDesktop({
               READY TO START YOUR PRODUCT?
             </span>
             <h1
-              className="font-brand-display text-[1.5rem] md:text-[1.85rem] font-semibold mb-1.5 leading-[0.96] tracking-[0.01em] drop-shadow-md"
+              className="mt-[8px] font-brand-display text-[1.5rem] md:text-[1.85rem] font-semibold mb-1.5 leading-[0.96] tracking-[0.01em] drop-shadow-md"
               style={{ textWrap: 'balance' }}
             >
               ค้นหาโรงงานที่ใช่
@@ -487,7 +487,7 @@ export function ExploreDesktop({
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               placeholder="ค้นหาโรงงาน ประเภทงาน หรือ วัสดุ..."
-              className="flex-1 text-xs bg-transparent outline-none text-gray-700 placeholder-gray-400"
+              className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400"
             />
           </div>
           <button
@@ -588,7 +588,7 @@ export function ExploreDesktop({
         />
 
         {/* ═══ 6. โรงงานแนะนำ ═══ */}
-        <section className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
+        <section className="mt-[40px] rounded-2xl overflow-hidden border border-gray-200 bg-white">
           <div className="relative px-4 py-4 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
 
             {/* ── Color-block shapes (cat illustration style) ── */}
@@ -613,7 +613,7 @@ export function ExploreDesktop({
 
             {/* Content */}
             <div className="relative z-10">
-              <h2 className="text-lg font-bold text-white drop-shadow-md flex items-center justify-center gap-2">
+              <h2 className="text-xl font-bold text-white drop-shadow-md flex items-center justify-center gap-2">
                 โรงงานแนะนำ
                 <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-white font-bold text-sm" style={{ background: '#F28A2E' }}>
                   <Plus size={12} />
@@ -669,11 +669,11 @@ export function ExploreDesktop({
                 </div>
               ))}
             </div>
-            <div className="mt-3 flex justify-center">
+            <div className="mt-5 flex justify-center">
               <button
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=factory')}
-                className="m-[3px] bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-6 py-1 rounded-md text-xs font-medium transition-colors shadow-sm"
+                className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-6 py-1 rounded-md text-[13px] font-medium transition-colors shadow-sm"
               >
                 ดูเพิ่มเติม
               </button>
@@ -683,7 +683,7 @@ export function ExploreDesktop({
 
         {/* ═══ 2. โปรโมชันแนะนำ — ORANGE THEME ═══ */}
         <section>
-          <div className="flex items-center justify-between mb-3">
+          <div className="mt-[30px] flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
               <Tag className="text-[#F27830]" size={16} />
               โปรโมชันแนะนำ
