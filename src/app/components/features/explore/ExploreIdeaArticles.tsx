@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Heart } from 'lucide-react';
 
 export type IdeaArticleItem = {
   id: string;
@@ -8,6 +8,7 @@ export type IdeaArticleItem = {
   image: string;
   tag: string;
   factoryName: string;
+  likes?: number;
 };
 
 type ExploreIdeaArticlesProps = {
@@ -34,36 +35,38 @@ export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: Expl
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
-      <div
-        className="flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
+      <div className="px-3 grid grid-cols-1 gap-2">
         {articles.map((article) => (
-          <div
+          <article
             key={article.id}
             onClick={() => onArticleClick?.(article.id)}
-            className="flex-shrink-0 w-[240px] bg-white rounded-xl p-3 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:border-[#A656A0]/30 transition-all group"
+            className="bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3"
           >
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0]">
-                {article.tag || 'Idea'}
+              <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
+                ไอเดีย
               </span>
-              <p className="text-[10px] text-gray-400 truncate">
-                {article.factoryName}
-              </p>
+              <span className="text-[10px] text-gray-400 truncate">{article.factoryName}</span>
             </div>
-            <p className="text-gray-700 font-semibold line-clamp-2 mb-1 leading-snug group-hover:text-[#A656A0] transition-colors" style={{ fontSize: 13 }}>
+            <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug">
               {article.title}
+            </h3>
+            <p className="text-[12px] text-gray-500 line-clamp-2">
+              {article.excerpt || ' '}
             </p>
-            <p className="text-gray-500 line-clamp-2" style={{ fontSize: 11 }}>
-              {article.excerpt}
-            </p>
-            <div className="mt-1.5 pt-1.5 border-t border-gray-100">
-              <p className="text-gray-400" style={{ fontSize: 10 }}>
-                แตะเพื่ออ่านต่อ
-              </p>
+            <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+              <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
+              <button
+                type="button"
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
+                aria-label="ถูกใจ"
+              >
+                <Heart className="w-2.5 h-2.5 shrink-0" />
+                <span className="text-[10px] leading-none">{Number(article.likes ?? 0)}</span>
+              </button>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </div>

@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Tag,
   Leaf,
+  Heart,
 } from 'lucide-react';
 import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/exploreCategoryTilesConfig';
 import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
@@ -777,8 +778,17 @@ export function ExploreDesktop({
                   <p className="text-[12px] text-gray-500 line-clamp-2">
                     {article.excerpt}
                   </p>
-                  <div className="mt-2 pt-1.5 border-t border-gray-100 text-[10px] text-gray-400">
-                    แตะเพื่ออ่านต่อ
+                  <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
+                    <button
+                      type="button"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
+                      aria-label="ถูกใจ"
+                    >
+                      <Heart className="w-2.5 h-2.5 shrink-0" />
+                      <span className="text-[10px] leading-none">{Number(article.likes ?? 0)}</span>
+                    </button>
                   </div>
                 </div>
               ))}

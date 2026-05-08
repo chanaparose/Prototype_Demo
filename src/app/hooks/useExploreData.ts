@@ -128,7 +128,7 @@ function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
 
 type NormArticle = {
   id: string; title: string; excerpt: string;
-  image: string; tag: string; factoryName: string;
+  image: string; tag: string; factoryName: string; likes: number;
 };
 
 function normArticle(r: Record<string, unknown>): NormArticle {
@@ -281,6 +281,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
           image: s.image,
           tag: s.category,
           factoryName: s.factoryName,
+          likes: s.likes,
         }),
       ),
     [idShowcases],
