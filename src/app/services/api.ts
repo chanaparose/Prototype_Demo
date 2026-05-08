@@ -5,7 +5,7 @@
 
 import type { MessagesSendBody } from '../utils/chatContract';
 import type { OrderDetailDTO } from '../types/api';
-import type { RfqDetailResponse, RfqListItem, QuotationRow } from '../types/rfq';
+import type { RfqDetailResponse, RfqListItem, QuotationRow, QuotationHistoryEntry } from '../types/rfq';
 
 const DEFAULT_API_BASE = '/api/v1';
 
@@ -393,6 +393,8 @@ export const rfqsApi = {
     api.post(`/rfqs/${rfqId}/quotations`, data),
   listQuotations: (rfqId: string | number) =>
     api.get<QuotationRow[] | null>(`/rfqs/${rfqId}/quotations`),
+  history: (quotationId: number | string) =>
+    api.get<QuotationHistoryEntry[]>(`/quotations/${quotationId}/history`),
   /** GET /rfqs/preview-factories?kind=PR|PS|MS&category_id=..&sub_category_id=.. */
   previewFactories: (params: {
     kind: 'PR' | 'PS' | 'MS';
@@ -898,7 +900,7 @@ export const quotationsApi = {
   listMine: () => api.get<unknown[]>('/quotations/me'),
   /** ดึงประวัติการแก้ไข quotation (Phase 1.5 — ต้องมี quotation_history table) */
   history: (quotationId: number | string) =>
-    api.get<unknown[]>(`/quotations/${quotationId}/history`),
+    api.get<QuotationHistoryEntry[]>(`/quotations/${quotationId}/history`),
   updateStatus: (quotationId: number | string, status: string) =>
     api.patch<Record<string, unknown>>(`/quotations/${quotationId}/status`, { status }),
   /** Partial update — ใช้เมื่อ backend รองรับ PATCH body (เช่น แก้ราคาก่อนลูกค้ารับ) */
@@ -1454,7 +1456,7 @@ export const quotationApi = {
   revision: (id: number, body: QuotationCreateInput) =>
     api.post<Record<string, unknown>>(`/quotations/${id}/revision`, body),
   get: (id: number) => api.get<Record<string, unknown>>(`/quotations/${id}`),
-  history: (id: number) => api.get<Record<string, unknown>[]>(`/quotations/${id}/history`),
+  history: (id: number) => api.get<QuotationHistoryEntry[]>(`/quotations/${id}/history`),
   accept: (id: number) => api.post(`/quotations/${id}/accept`),
   reject: (id: number, reason?: string) =>
     api.post(`/quotations/${id}/reject`, { reason }),

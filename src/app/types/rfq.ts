@@ -62,3 +62,18 @@ export interface QuotationRow {
   image_urls?: string[];
   payment_terms?: string | null;
 }
+
+export type QuotationHistoryEntry = {
+  history_id: number;
+  quote_id: number;
+  event_type: 'CR' | 'UP' | 'ST';
+  version_after: number;
+  price_per_piece: number | null;
+  mold_cost: number | null;
+  lead_time_days: number | null;
+  shipping_method_id: number | null;
+  status: string | null;
+  reason: string | null;
+  edited_by: number | null;
+  created_at: string;
+};

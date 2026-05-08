@@ -10,6 +10,7 @@ import { getCurrentUserId } from '../../utils/chatContract';
 import type { OfferItem } from '../../components/features/rfq-detail/RfqDetailOffersSection';
 import {
   HISTORY_STATUSES,
+  QuotationHistoryPanel,
   RfqDetailOffersSection,
   RfqDetailSpecs,
   RfqDetailStatusCard,
@@ -257,6 +258,11 @@ export function RFQDetailDesktop() {
                     await refetch();
                   }}
                 />
+                {selectedOffer ? (
+                  <div className="mt-4">
+                    <QuotationHistoryPanel quotationId={selectedOffer} />
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

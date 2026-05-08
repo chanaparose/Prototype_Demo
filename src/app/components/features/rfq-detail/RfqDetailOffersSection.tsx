@@ -17,6 +17,7 @@ import {
 import { ordersApi } from '../../../services/api';
 import type { Quotation } from './QuotationBOQCard';
 import { QuotationBOQDetailsPanel, quotationFromOfferSource } from './QuotationBOQCard';
+import { QuotationHistoryPanel } from './QuotationHistoryPanel';
 
 export type OfferItem = {
   id: string;
@@ -601,6 +602,9 @@ export function RfqDetailOffersSection({
                   <div className="overflow-hidden min-h-0">
                     <QuotationBOQDetailsPanel quotation={boq} className="-mx-4 border-gray-100 px-4 pb-3 pt-2" />
                   </div>
+                </div>
+                <div onClick={(e) => e.stopPropagation()} className="mb-3">
+                  <QuotationHistoryPanel quotationId={offer.id} />
                 </div>
                 <div className="flex gap-2">
                   {onChatWithOffer ? (

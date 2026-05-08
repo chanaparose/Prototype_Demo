@@ -12,6 +12,7 @@ import {
   RfqDetailStatusCard,
   RfqDetailSpecs,
   RfqDetailOffersSection,
+  QuotationHistoryPanel,
   HISTORY_STATUSES,
   STATUS_LABEL,
 } from '../../components/features/rfq-detail';
@@ -243,6 +244,11 @@ export function RFQDetailMobile() {
             await refetch();
           }}
         />
+        {selectedOffer ? (
+          <div className="px-1">
+            <QuotationHistoryPanel quotationId={selectedOffer} />
+          </div>
+        ) : null}
       </div>
     </div>
   );

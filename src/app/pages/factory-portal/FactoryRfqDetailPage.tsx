@@ -13,6 +13,7 @@ import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { DeadlineBadge } from '../../components/factory/DeadlineBadge';
 import { ShippingMethodLockedField } from '../../components/factory/ShippingMethodLockedField';
 import { QuotationCreateForm, type QuotationCreateFormHandle } from '../../components/factory/QuotationCreateForm';
+import { QuotationHistoryPanel } from '../../components/features/rfq-detail';
 import { summarizeRfqAddress } from '../../utils/rfqAddressSummary';
 import { DismissRfqButton } from '../../components/features/factory-rfq/DismissRfqButton';
 
@@ -138,10 +139,6 @@ export function FactoryRfqDetailPage() {
   }, [rfqBody.category_id, rfqBody.sub_category_id]);
 
   const myQuote = fid != null ? quotes.find((q) => quoteFid(q) === fid) : undefined;
-  const myQuotes = useMemo(
-    () => (fid != null ? quotes.filter((q) => quoteFid(q) === fid) : []),
-    [quotes, fid],
-  );
   const myStatus = myQuote ? String(myQuote.status ?? 'PD').toUpperCase() : '';
   const canEdit = Boolean(myQuote && myStatus === 'PD');
   const canDismiss = useMemo(() => {
@@ -833,72 +830,9 @@ export function FactoryRfqDetailPage() {
               </section>
             ) : null}
 
-            <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">ประวัติการเสนอราคา</p>
-              {myQuotes.length === 0 ? (
-                <p className="text-sm text-gray-500">ยังไม่มีใบเสนอราคา</p>
-              ) : (
-                <ul className="space-y-2">
-                  {myQuotes
-                    .slice()
-                    .sort(
-                      (a, b) =>
-                        new Date(String(b.create_time ?? '')).getTime() -
-                        new Date(String(a.create_time ?? '')).getTime(),
-                    )
-                    .slice(0, 5)
-                    .map((q) => {
-                      const grandTotal = Number(q.grand_total ?? 0);
-                      const vatAmt = Number(q.vat_amount ?? 0);
-                      const netAmt = Number(q.factory_net_receivable ?? 0);
-                      const hasBreakdown = grandTotal > 0;
-                      return (
-                        <li key={quoteIdOf(q)} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 space-y-1.5">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-slate-800">
-                                ฿{Number(q.price_per_piece ?? 0).toLocaleString('th-TH')} / ชิ้น
-                              </p>
-                              <p className="text-[11px] text-slate-500">
-                                {String(q.status ?? 'PD')} · Lead {String(q.lead_time_days ?? '-')} วัน
-                              </p>
-                            </div>
-                            <p className="text-[11px] text-slate-500 shrink-0">
-                              {q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}
-                            </p>
-                          </div>
-                          {hasBreakdown ? (
-                            <div className="rounded-lg bg-violet-50 border border-violet-100 px-2.5 py-2 space-y-1">
-                              <div className="flex justify-between text-[11px]">
-                                <span className="text-slate-500">รวม VAT {Number(q.vat_rate ?? 7).toFixed(0)}%</span>
-                                <span className="font-semibold text-slate-700">฿{grandTotal.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
-                              </div>
-                              {vatAmt > 0 ? (
-                                <div className="flex justify-between text-[11px] text-slate-400">
-                                  <span>VAT</span>
-                                  <span>฿{vatAmt.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
-                                </div>
-                              ) : null}
-                              {netAmt > 0 ? (
-                                <div className="flex justify-between text-[11px]">
-                                  <span className="text-violet-700">โรงงานได้รับ (หลังค่าบริการ)</span>
-                                  <span className="font-semibold text-violet-700">฿{netAmt.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</span>
-                                </div>
-                              ) : null}
-                              {q.payment_terms ? (
-                                <div className="flex justify-between text-[11px] text-slate-400">
-                                  <span>การชำระเงิน</span>
-                                  <span>{q.payment_terms}</span>
-                                </div>
-                              ) : null}
-                            </div>
-                          ) : null}
-                        </li>
-                      );
-                    })}
-                </ul>
-              )}
-            </section>
+            {myQuote && quoteIdOf(myQuote) ? (
+              <QuotationHistoryPanel quotationId={quoteIdOf(myQuote)} />
+            ) : null}
           </div>
         ) : null}
       </div>
