@@ -12,6 +12,7 @@ import {
   notificationsApi,
   conversationsApi,
   rfqsApi,
+  walletApi,
 } from '../services/api';
 import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
 import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
@@ -489,6 +490,8 @@ type DataContextType = DataState & {
   /** Refresh only `conversations` from `GET /conversations` (after send / mark-as-read). */
   refetchConversations: () => Promise<void>;
   refetchFactory: (id: string) => Promise<void>;
+  /** Refresh wallet balance in sidebar after payment. */
+  refetchWallet: () => Promise<void>;
 };
 
 /** Normalize `GET /conversations` rows into app `Conversation` (shared by bootstrap + refetch). */
@@ -893,6 +896,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refetchWallet = async () => {
+    try {
+      const w = (await walletApi.getMe()) as Record<string, unknown>;
+      const balance = Number(w.good_fund ?? w.walletBalance ?? 0) || 0;
+      const pending = Number(w.pending_fund ?? w.pendingBalance ?? 0) || 0;
+      setState((prev) => {
+        if (!prev.currentUser) return prev;
+        return {
+          ...prev,
+          currentUser: {
+            ...prev.currentUser,
+            walletBalance: balance,
+            pendingBalance: pending,
+          },
+        };
+      });
+    } catch (err) {
+      console.error('Failed to refetch wallet:', err);
+    }
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -904,6 +928,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         refetchMessages,
         refetchConversations,
         refetchFactory,
+        refetchWallet,
       }}
     >
       {children}

@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
+import { useData } from '../../contexts/DataContext';
 import type { Order } from '../../contexts/DataContext';
 import type {
   ProductionLockContext,
@@ -120,13 +121,15 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
   const orderQ = useOrderDetailQuery(orderId);
   const prodQ = useOrderProductionUpdates(orderId);
   const qc = useQueryClient();
+  const { refetchWallet } = useData();
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
       qc.invalidateQueries({ queryKey: ['order', orderId] }),
       qc.invalidateQueries({ queryKey: ['order', orderId, 'production-updates'] }),
+      refetchWallet(),
     ]);
-  }, [qc, orderId]);
+  }, [qc, orderId, refetchWallet]);
 
   const value = useMemo((): OrderDetailContextValue | null => {
     if (!orderQ.data) return null;
