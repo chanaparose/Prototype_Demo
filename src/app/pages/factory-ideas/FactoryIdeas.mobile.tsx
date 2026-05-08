@@ -827,62 +827,37 @@ export function FactoryIdeasMobile() {
               return (
                 <article
                   key={item.id}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-2.5"
+                  className="bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3"
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
                       ไอเดีย
                     </span>
-                    
+                    <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
                   </div>
-                  <div className="flex items-start justify-between gap-2 min-w-0">
-                    <h3 className="text-[12px] font-bold leading-snug line-clamp-2 min-w-0 flex-1" style={{ color: COLORS.blue }}>
-                      {item.title}
-                    </h3>
-                    <span className="text-[11px] text-gray-400 shrink-0 tabular-nums self-start pt-0.5 text-right">
-                      ขั้นต่ำ{' '}
-                      <span className="font-semibold" style={{ color: COLORS.blue }}>
-                        {item.minOrder}
-                      </span>
-                    </span>
-                  </div>
-                  <p className="text-[12px] leading-[16px] text-gray-500 mt-0.5 line-clamp-2">
+                  <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug">
+                    {item.title}
+                  </h3>
+                  <p className="text-[12px] text-gray-500 line-clamp-2">
                     {item.excerpt || ' '}
                   </p>
-                  <div className="pt-1.5 mt-1.5 border-t border-gray-100">
-                    <div className="flex items-center justify-between gap-2 min-w-0">
-                      {item.factoryName ? (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/factories/${item.factoryId}`);
-                          }}
-                          className="flex items-center gap-1 min-w-0 flex-1 text-left text-[12px] font-semibold active:opacity-80"
-                          style={{ color: COLORS.blue }}
-                        >
-                          <span className="truncate">{item.factoryName}</span>
-                          {factory?.verified && <BadgeCheck className="w-2.5 h-2.5 shrink-0" style={{ color: COLORS.purple }} />}
-                        </button>
-                      ) : (
-                        <span className="flex-1 min-w-0" />
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
-                        className="flex items-center gap-0.5 shrink-0 text-[10px] text-gray-400 active:opacity-70"
-                        aria-label="ถูกใจ"
-                      >
-                        <Heart
-                          className="w-2 h-2 shrink-0"
-                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
-                        />
-                        <span className="tabular-nums font-medium text-gray-500 leading-none">
-                          {item.likes + (isLiked(item.id) ? 1 : 0)}
-                        </span>
-                      </button>
-                    </div>
+                  <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                      className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
+                      aria-label="ถูกใจ"
+                    >
+                      <Heart
+                        className="w-2.5 h-2.5 shrink-0"
+                        style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                      />
+                      <span className="text-[10px] leading-none">
+                        {item.likes + (isLiked(item.id) ? 1 : 0)}
+                      </span>
+                    </button>
                   </div>
                 </article>
               );
@@ -1188,62 +1163,37 @@ export function FactoryIdeasMobile() {
                 return (
                   <article
                     key={`idea-${item.id}`}
-                    className="bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-2.5"
+                    className="bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3"
                     onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                   >
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
                         ไอเดีย
                       </span>
-                       
+                      <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
                     </div>
-                    <div className="flex items-start justify-between gap-2 min-w-0">
-                      <h3 className="text-[12px] font-bold leading-snug line-clamp-2 min-w-0 flex-1" style={{ color: COLORS.blue }}>
-                        {item.title}
-                      </h3>
-                      <span className="text-[11px] text-gray-400 shrink-0 tabular-nums self-start pt-0.5 text-right">
-                        ขั้นต่ำ{' '}
-                        <span className="font-semibold" style={{ color: COLORS.blue }}>
-                          {item.minOrder}
-                        </span>
-                      </span>
-                    </div>
-                    <p className="text-[12px] leading-[16px] text-gray-500 mt-0.5 line-clamp-2">
+                    <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-[12px] text-gray-500 line-clamp-2">
                       {item.excerpt || ' '}
                     </p>
-                    <div className="pt-1.5 mt-1.5 border-t border-gray-100">
-                      <div className="flex items-center justify-between gap-2 min-w-0">
-                        {item.factoryName ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/factories/${item.factoryId}`);
-                            }}
-                            className="flex items-center gap-1 min-w-0 flex-1 text-left text-[12px] font-semibold active:opacity-80"
-                            style={{ color: COLORS.blue }}
-                          >
-                            <span className="truncate">{item.factoryName}</span>
-                            {factory?.verified && <BadgeCheck className="w-2.5 h-2.5 shrink-0" style={{ color: COLORS.purple }} />}
-                          </button>
-                        ) : (
-                          <span className="flex-1 min-w-0" />
-                        )}
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
-                          className="flex items-center gap-0.5 shrink-0 text-[10px] text-gray-400 active:opacity-70"
-                          aria-label="ถูกใจ"
-                        >
-                          <Heart
-                            className="w-2 h-2 shrink-0"
-                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
-                          />
-                          <span className="tabular-nums font-medium text-gray-500 leading-none">
-                            {item.likes + (isLiked(item.id) ? 1 : 0)}
-                          </span>
-                        </button>
-                      </div>
+                    <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                        className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
+                        aria-label="ถูกใจ"
+                      >
+                        <Heart
+                          className="w-2.5 h-2.5 shrink-0"
+                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                        />
+                        <span className="text-[10px] leading-none">
+                          {item.likes + (isLiked(item.id) ? 1 : 0)}
+                        </span>
+                      </button>
                     </div>
                   </article>
                 );
