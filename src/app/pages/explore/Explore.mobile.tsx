@@ -66,19 +66,19 @@ export function ExploreMobile({
   const hasMaterialShowcases = materialShowcases.length > 0;
 
   return (
-    <div className="md:hidden pt-5 pb-4 space-y-5">
+    <div className="md:hidden pt-3 pb-2 space-y-3">
       {/* Hero Banner — matches desktop purple gradient */}
-      <div className="mx-4 relative rounded-2xl overflow-hidden h-[160px] shadow-md flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
+      <div className="mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
         <div className="absolute top-0 right-0 w-[280px] h-full rounded-l-[60px] opacity-70 transform translate-x-16 skew-x-[-15deg]" style={{ background: '#A238FF' }} />
         <div className="absolute -bottom-10 right-10 w-[200px] h-[150px] rounded-full opacity-40 blur-3xl mix-blend-screen" style={{ background: '#FF7A00' }} />
         <div className="absolute top-4 left-1/3 w-32 h-32 rounded-full opacity-30 blur-2xl" style={{ background: '#A238FF' }} />
 
-        <div className="relative z-10 px-6 py-5 text-white">
-          <span className="inline-block px-2 py-0.5 mb-2 rounded-full text-[10px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
+        <div className="relative z-10 px-4 py-3 text-white">
+          <span className="inline-block px-2 py-0.5 mb-1.5 rounded-full text-[10px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
             READY TO START YOUR PRODUCT?
           </span>
           <h1
-            className="font-brand-display text-[1.4rem] font-semibold mb-1 leading-[0.98] tracking-[0.01em] drop-shadow-md"
+            className="font-brand-display text-[1.1rem] font-semibold mb-0.5 leading-[0.98] tracking-[0.01em] drop-shadow-md"
             style={{ textWrap: 'balance' }}
           >
             ค้นหาโรงงานที่ใช่
@@ -91,8 +91,8 @@ export function ExploreMobile({
 
       {/* Search Bar */}
       <div className="px-4 flex gap-2">
-        <div className="flex-1 flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
-          <Search size={18} className="text-gray-400 shrink-0" />
+        <div className="flex-1 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100">
+          <Search size={16} className="text-gray-400 shrink-0" />
           <input
             type="text"
             value={searchText}
@@ -103,41 +103,43 @@ export function ExploreMobile({
         </div>
         <button
           type="button"
-          className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center shrink-0 hover:border-[#A656A0]/30 transition-colors"
+          className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center shrink-0 hover:border-[#A656A0]/30 transition-colors"
         >
-          <SlidersHorizontal size={18} className="text-[#A656A0]" />
+          <SlidersHorizontal size={16} className="text-[#A656A0]" />
         </button>
       </div>
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
-      <ExploreCategories
-        categories={categories}
-        mergedFromApi={exploreCategoriesMerged}
-        apiLoading={exploreCategoriesLoading}
-        apiError={exploreCategoriesError}
-        onRetryCategoriesApi={reloadExploreCategories}
-      />
+      <div className="mt-[20px]">
+        <ExploreCategories
+          categories={categories}
+          mergedFromApi={exploreCategoriesMerged}
+          apiLoading={exploreCategoriesLoading}
+          apiError={exploreCategoriesError}
+          onRetryCategoriesApi={reloadExploreCategories}
+        />
+      </div>
 
       {/* สินค้าแนะนำ (Mobile) — แบนเนอร์ PET SHOP แสดงเสมอ; grid เมื่อมีข้อมูล */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between px-4 mb-3">
+      <div className="mb-3">
+        <div className="mt-[25px] flex items-center justify-between px-4 mb-2">
           <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-            <ShoppingBag size={16} className="text-[#F28A2E]" /> สินค้าแนะนำ
+            <ShoppingBag size={15} className="text-[#F28A2E]" /> สินค้าแนะนำ
           </h3>
           <button
             type="button"
             onClick={() => navigate('/factory-ideas?type=product')}
             className="text-[#A656A0] text-xs font-medium flex items-center gap-0.5"
           >
-            ดูเพิ่มเติม <ChevronRight size={14} />
+            ดูเพิ่มเติม <ChevronRight size={13} />
           </button>
         </div>
 
         {/* Cards — full-width horizontal scroll (เริ่มที่ pl-4 ซ้าย, spacer ขวา) */}
         {hasProductShowcases ? (
           <div
-            className="flex gap-3 overflow-x-auto pb-2 pl-4"
+            className="flex gap-2 overflow-x-auto pb-2 pl-3"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {productShowcases.map((item) => (
@@ -154,7 +156,7 @@ export function ExploreMobile({
                     navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                   }
                 }}
-                className="flex-shrink-0 w-[200px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                className="flex-shrink-0 w-[155px] bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
               >
                 <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
                   <ImageWithFallback
@@ -163,29 +165,29 @@ export function ExploreMobile({
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
-                <div className="p-2.5 flex flex-col flex-1">
+                <div className="p-2 flex flex-col flex-1">
                   <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
                   {(item.category || item.subCategoryName) ? (
-                    <p className="text-[10px] text-violet-700 font-medium truncate mb-0.5">
+                    <p className="text-[10px] text-violet-700/90 font-medium truncate mb-0.5">
                       {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
                     </p>
                   ) : null}
-                  <p className="text-[11px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
+                  <p className="text-[10px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
                 </div>
               </div>
             ))}
             {/* trailing spacer — การ์ดสุดท้ายไม่โดนตัด */}
-            <div className="flex-shrink-0 w-4" aria-hidden />
+            <div className="flex-shrink-0 w-3" aria-hidden />
           </div>
         ) : (
           <div className="px-4">
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-6 text-center">
+            <div className="rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
               <p className="mt-1 text-xs text-gray-400">ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง</p>
               <button
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=product')}
-                className="mt-3 w-full rounded-full border border-[#A656A0]/40 bg-white py-2.5 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
+                className="mt-3 w-full rounded-full border border-[#A656A0]/40 bg-white py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
               >
                 ดูสินค้าแนะนำ
               </button>
@@ -195,24 +197,24 @@ export function ExploreMobile({
       </div>
 
       {/* วัตถุดิบแนะนำ (Mobile) */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between px-4 mb-3">
+      <div className="mb-3">
+        <div className="mt-[20px] flex items-center justify-between px-4 mb-2">
           <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-            <Leaf size={16} className="text-[#059669]" /> วัตถุดิบแนะนำ
+            <Leaf size={15} className="text-[#059669]" /> วัตถุดิบแนะนำ
           </h3>
           <button
             type="button"
             onClick={() => navigate('/factory-ideas?type=material')}
             className="text-[#059669] text-xs font-medium flex items-center gap-0.5"
           >
-            ดูเพิ่มเติม <ChevronRight size={14} />
+            ดูเพิ่มเติม <ChevronRight size={13} />
           </button>
         </div>
 
         {/* Cards — horizontal scroll */}
         {hasMaterialShowcases ? (
           <div
-            className="flex gap-3 overflow-x-auto pb-2 pl-4"
+            className="flex gap-2 overflow-x-auto pb-2 pl-3"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {materialShowcases.map((item) => (
@@ -227,7 +229,7 @@ export function ExploreMobile({
                     navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                   }
                 }}
-                className="flex-shrink-0 w-[200px] bg-white rounded-2xl overflow-hidden border border-emerald-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                className="flex-shrink-0 w-[155px] bg-white rounded-xl overflow-hidden border border-emerald-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
               >
                 <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
                   <ImageWithFallback
@@ -235,32 +237,32 @@ export function ExploreMobile({
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-2 left-2 bg-[#059669] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
+                  <div className="absolute top-1.5 left-1.5 bg-[#059669] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide">
                     วัตถุดิบ
                   </div>
                 </div>
-                <div className="p-2.5 flex flex-col flex-1">
+                <div className="p-2 flex flex-col flex-1">
                   <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#059669] transition-colors min-h-[28px]">{item.title}</p>
                   {(item.category || item.subCategoryName) ? (
-                    <p className="text-[10px] text-emerald-700 font-medium truncate mb-0.5">
+                    <p className="text-[10px] text-emerald-700/90 font-medium truncate mb-0.5">
                       {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
                     </p>
                   ) : null}
-                  <p className="text-[11px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
+                  <p className="text-[10px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
                 </div>
               </div>
             ))}
-            <div className="flex-shrink-0 w-4" aria-hidden />
+            <div className="flex-shrink-0 w-3" aria-hidden />
           </div>
         ) : (
           <div className="px-4">
-            <div className="rounded-2xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-6 text-center">
+            <div className="rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีวัตถุดิบแนะนำในขณะนี้</p>
               <p className="mt-1 text-xs text-gray-400">ดูข้อมูลวัตถุดิบได้จากปุ่มด้านล่าง</p>
               <button
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=material')}
-                className="mt-3 w-full rounded-full border border-[#059669]/40 bg-white py-2.5 text-sm font-medium text-[#059669] hover:bg-emerald-50 transition-colors"
+                className="mt-3 w-full rounded-full border border-[#059669]/40 bg-white py-2 text-sm font-medium text-[#059669] hover:bg-emerald-50 transition-colors"
               >
                 ดูวัตถุดิบแนะนำ
               </button>
@@ -269,36 +271,40 @@ export function ExploreMobile({
         )}
       </div>
 
-      <ExploreFactoryGrid
-        factories={(factories ?? []).slice(0, 6)}
-        onFactoryClick={(id) => navigate(`/factories/${id}`)}
-        onSeeAll={() => navigate('/factory-ideas?type=factory')}
-      />
+      <div className="mt-[20px]"> 
+        <ExploreFactoryGrid
+          factories={(factories ?? []).slice(0, 6)}
+          onFactoryClick={(id) => navigate(`/factories/${id}`)}
+          onSeeAll={() => navigate('/factory-ideas?type=factory')}
+        />
+      </div>
 
-      <ExploreIdeaArticles
-        articles={ideaArticles ?? []}
-        onSeeAll={() => navigate('/factory-ideas?type=idea')}
-        onArticleClick={(id) => navigate(`/idea-detail?showcase_id=${id}`)}
-      />
+      <div className="mt-[20px]">
+        <ExploreIdeaArticles
+          articles={ideaArticles ?? []}
+          onSeeAll={() => navigate('/factory-ideas?type=idea')}
+          onArticleClick={(id) => navigate(`/idea-detail?showcase_id=${id}`)}
+        />
+      </div>
 
       {/* โปรโมชันแนะนำ — แบนเนอร์ส้ม (เดียวกับ desktop) แสดงเสมอ; การ์ดเมื่อมีข้อมูล */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between px-4 mb-3">
+      <div className="mb-3">
+        <div className="mt-[20px] flex items-center justify-between px-4 mb-2">
           <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-            <Tag size={16} className="text-[#F27830]" /> โปรโมชันแนะนำ
+            <Tag size={15} className="text-[#F27830]" /> โปรโมชันแนะนำ
           </h3>
           <button
             type="button"
             onClick={() => navigate('/factory-ideas?type=promotion')}
             className="text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center gap-0.5 transition-colors"
           >
-            ดูเพิ่มเติม <ChevronRight size={14} />
+            ดูเพิ่มเติม <ChevronRight size={13} />
           </button>
         </div>
-        <div className="px-4 space-y-3">
+        <div className="px-3 space-y-2">
           {hasPromoShowcases ? (
             <div
-              className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+              className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {promoShowcases.map((item) => (
@@ -313,7 +319,7 @@ export function ExploreMobile({
                         navigate(`/factory-ideas/promotions/${item.id}`);
                       }
                     }}
-                  className="flex-shrink-0 w-[200px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer"
+                  className="flex-shrink-0 w-[155px] bg-white border border-[#F28A2E]/15 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer"
                 >
                   <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
@@ -321,14 +327,14 @@ export function ExploreMobile({
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-2 left-2 bg-[#F28A2E] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
+                    <div className="absolute top-1.5 left-1.5 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide">
                       โปรโมชัน
                     </div>
                   </div>
-                  <div className="p-3 flex flex-col flex-1">
-                    <h4 className="font-bold text-xs text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h4>
-                    <p className="text-[11px] text-gray-500 mb-2 line-clamp-2">{item.excerpt}</p>
-                    <div className="mt-auto pt-2 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-xs">
+                  <div className="p-2 flex flex-col flex-1">
+                    <h4 className="font-semibold text-xs text-gray-700 mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h4>
+                    <p className="text-[10px] text-gray-500 mb-1.5 line-clamp-2">{item.excerpt}</p>
+                    <div className="mt-auto pt-1.5 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-[10px]">
                       {item.factoryName}
                     </div>
                   </div>
@@ -336,13 +342,13 @@ export function ExploreMobile({
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-[#F28A2E]/25 bg-gradient-to-br from-orange-50/50 to-white px-4 py-6 text-center">
+            <div className="rounded-xl border border-dashed border-[#F28A2E]/25 bg-gradient-to-br from-orange-50/50 to-white px-4 py-5 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีโปรโมชันแนะนำในขณะนี้</p>
               <p className="mt-1 text-xs text-gray-400">ดูไอเดียโปรโมชันได้จากปุ่มด้านล่าง</p>
               <button
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=promotion')}
-                className="mt-3 w-full rounded-full border border-[#F28A2E]/40 bg-white py-2.5 text-sm font-medium text-[#F27830] hover:bg-orange-50/80 transition-colors"
+                className="mt-3 w-full rounded-full border border-[#F28A2E]/40 bg-white py-2 text-sm font-medium text-[#F27830] hover:bg-orange-50/80 transition-colors"
               >
                 ดูไอเดียโปรโมชัน
               </button>
@@ -352,7 +358,7 @@ export function ExploreMobile({
       </div>
 
       {/* Registration CTA (Mobile) — matches desktop purple theme */}
-      <div className="mx-4 rounded-2xl overflow-hidden shadow-sm border border-[#A238FF]/30 relative" style={{ background: 'linear-gradient(135deg, #F8F5FF 0%, #FAFAFA 100%)' }}>
+      <div className="mx-4 rounded-xl overflow-hidden shadow-sm border border-[#A238FF]/30 relative" style={{ background: 'linear-gradient(135deg, #F8F5FF 0%, #FAFAFA 100%)' }}>
         <div
           className="absolute inset-0 opacity-30 pointer-events-none"
           style={{ maskImage: 'linear-gradient(to left, rgba(0,0,0,0.5), transparent)', WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.5), transparent)' }}
@@ -363,21 +369,21 @@ export function ExploreMobile({
             alt=""
           />
         </div>
-        <div className="relative z-10 p-5 text-center">
-          <h3 className="text-lg font-bold text-[#2D1B4E] mb-1">
+        <div className="relative z-10 p-3.5 text-center">
+          <h3 className="text-base font-bold text-[#2D1B4E] mb-0.5">
             ลงทะเบียนกับ <span className="text-[#A238FF]">Tryly</span>
           </h3>
-          <p className="text-gray-600 text-sm mb-4 font-medium">สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!</p>
+          <p className="text-gray-600 text-sm mb-3 font-medium">สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!</p>
           <div className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => navigate('/register/factory')}
-              className="w-full py-2.5 rounded-lg font-bold transition-colors shadow-md text-sm text-white"
+              className="w-full py-2 rounded-lg font-bold transition-colors shadow-md text-sm text-white"
               style={{ background: '#A238FF' }}
             >
               สมัครเลย
             </button>
-            <button className="w-full bg-white border border-[#A238FF] text-[#A238FF] py-2.5 rounded-lg font-bold transition-colors text-sm">
+            <button className="w-full bg-white border border-[#A238FF] text-[#A238FF] py-2 rounded-lg font-bold transition-colors text-sm">
               สิทธิประโยชน์มากมาย
             </button>
           </div>
@@ -391,10 +397,10 @@ export function ExploreMobile({
       <button
         type="button"
         onClick={() => navigate('/create-rfq')}
-        className="fixed bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
+        className="fixed bottom-6 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
         style={{ background: '#A238FF', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
       >
-        <Plus size={24} className="text-white" />
+        <Plus size={20} className="text-white" />
       </button>
     </div>
   );

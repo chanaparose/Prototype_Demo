@@ -21,9 +21,9 @@ type ExploreFactoryGridProps = {
 
 export function ExploreFactoryGrid({ factories, onFactoryClick, onSeeAll }: ExploreFactoryGridProps) {
   return (
-    <div className="mx-4 mb-5 rounded-2xl overflow-hidden border border-gray-200 bg-white">
+    <div className="mx-4 mb-3 rounded-2xl overflow-hidden border border-gray-200 bg-white">
       {/* Header — matches desktop gradient */}
-      <div className="relative px-4 py-5 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
+      <div className="relative px-3 py-3.5 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
         <div className="absolute top-0 right-0 h-full w-[45%] opacity-80 pointer-events-none"
           style={{ background: 'linear-gradient(135deg, transparent 30%, #A238FF 100%)', clipPath: 'polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)' }} />
         <div className="absolute top-0 right-0 h-full w-[22%] opacity-60 pointer-events-none"
@@ -46,7 +46,7 @@ export function ExploreFactoryGrid({ factories, onFactoryClick, onSeeAll }: Expl
       </div>
 
       {/* Factory Cards — Body Section: ลดความสูงการ์ด */}
-      <div className="p-2.5 bg-gradient-to-b from-purple-50/20 to-white">
+      <div className="p-2 bg-gradient-to-b from-purple-50/20 to-white">
         <div className="grid grid-cols-2 gap-2">
           {factories.map((factory) => (
             <div

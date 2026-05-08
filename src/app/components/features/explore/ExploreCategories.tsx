@@ -39,14 +39,14 @@ export function ExploreCategories({
   );
 
   return (
-    <div className="mb-5">
-      <div className="flex items-center justify-between px-4 mb-3">
+    <div className="mb-3">
+      <div className="flex items-center justify-between px-4 mb-2">
         <h3 className="text-gray-800 font-bold">หมวดหมู่</h3>
         <Link
           to="/factory-ideas"
           className="text-[#A238FF] text-[13px] flex items-center gap-0.5 hover:underline"
         >
-          ดูทั้งหมด <ChevronRight size={14} />
+          ดูทั้งหมด <ChevronRight size={13} />
         </Link>
       </div>
 
@@ -57,7 +57,7 @@ export function ExploreCategories({
       )}
 
       {apiError && !apiLoading && (
-        <div className="mx-4 mb-3 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-[13px] text-amber-900" role="alert">
+        <div className="mx-4 mb-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-[13px] text-amber-900" role="alert">
           <span>{apiError}</span>
           <button
             type="button"
@@ -70,19 +70,19 @@ export function ExploreCategories({
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-3 px-4">
+      <div className="grid grid-cols-3 gap-2 px-3">
         {tiles.map((row) => {
           const Icon = row.icon;
           return (
             <Link
               key={row.categoryId}
               to={`/factory-ideas?category_id=${encodeURIComponent(row.categoryId)}`}
-              className="bg-white border border-gray-100 rounded-2xl p-3 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
+              className="bg-white border border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center gap-1.5 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
             >
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center ${row.color} group-hover:scale-110 transition-transform`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${row.color} group-hover:scale-110 transition-transform`}
               >
-                <Icon size={22} />
+                <Icon size={18} />
               </div>
               <span className="text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-[#2D1B4E]">
                 {row.displayName}
