@@ -253,9 +253,9 @@ export function RFQDetailDesktop() {
                   onSelectOffer={setSelectedOffer}
                   onChatWithOffer={handleChatWithOffer}
                   rfqQuantity={rfq.quantity}
-                  onOfferFlowComplete={async () => {
-                    // Multi-factory: refetch เพื่ออัปเดต status ทุก card — ไม่ navigate ออก
+                  onOfferFlowComplete={async ({ orderId }) => {
                     await refetch();
+                    if (orderId) navigate(`/orders/${orderId}`);
                   }}
                 />
                 {selectedOffer ? (
