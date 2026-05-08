@@ -34,7 +34,7 @@ type ProductItem = {
   subCategoryName?: string;
 };
 
-const CARD_W = 252; // card width (240px) + gap (12px)
+const CARD_W = 192; // card width (180px) + gap (12px)
 const VISIBLE_CARDS = 4;
 const AUTO_SCROLL_INTERVAL = 3500;
 
@@ -95,27 +95,27 @@ function ProductCarouselSection({
       onMouseLeave={() => { isHovered.current = false; }}
     >
       {/* Section header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
+      <div className="flex items-center justify-between mb-2.5">
+        <h2 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
           {isMaterial
-            ? <Leaf className="text-[#059669]" size={20} />
-            : <ShoppingBag className="text-[#F28A2E]" size={20} />}
+            ? <Leaf className="text-[#059669]" size={16} />
+            : <ShoppingBag className="text-[#F28A2E]" size={16} />}
           {title}
         </h2>
         <button
           type="button"
           onClick={() => navigate(seeMoreHref)}
-          className="text-sm font-medium hover:underline flex items-center gap-0.5 transition-colors"
+          className="text-xs font-medium hover:underline flex items-center gap-0.5 transition-colors"
           style={{ color: isMaterial ? '#059669' : '#A656A0' }}
         >
-          ดูเพิ่มเติม <ChevronRight size={16} />
+          ดูเพิ่มเติม <ChevronRight size={14} />
         </button>
       </div>
 
       <div className="flex gap-3 items-stretch">
         {/* Left banner — fixed width square matching card height */}
-        <div className="w-[200px] flex-shrink-0 rounded-2xl overflow-hidden relative cursor-pointer shadow-md group"
-             style={{ minHeight: 290 }}>
+        <div className="w-[150px] flex-shrink-0 rounded-2xl overflow-hidden relative cursor-pointer shadow-md group"
+             style={{ minHeight: 210 }}>
           <ImageWithFallback
             src={bannerImg}
             alt={title}
@@ -130,20 +130,20 @@ function ProductCarouselSection({
                 : 'linear-gradient(to top, rgba(242,120,48,0.45), rgba(242,138,46,0.22), transparent)',
             }}
           />
-          <div className="absolute inset-0 z-10 flex flex-col justify-between p-4">
+          <div className="absolute inset-0 z-10 flex flex-col justify-between p-3">
             {/* Top badge */}
             <span
-              className="self-start text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow backdrop-blur-[2px]"
+              className="self-start text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow backdrop-blur-[2px]"
               style={{ background: isMaterial ? 'rgba(5,150,105,0.75)' : 'rgba(242,138,46,0.75)' }}
             >
               {isMaterial ? '🌿 วัตถุดิบ' : '🐾 PET SHOP'}
             </span>
             {/* Bottom text */}
             <div>
-              <p className="text-white text-lg font-black leading-tight drop-shadow-lg mb-2">
+              <p className="text-white text-sm font-black leading-tight drop-shadow-lg mb-1.5">
                 {bannerText}
               </p>
-              <span className="inline-block bg-white/20 border border-white/40 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
+              <span className="inline-block bg-white/20 border border-white/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                 {isMaterial ? 'สำหรับการผลิตของคุณ' : 'สำหรับสัตว์เลี้ยงแสนรัก'}
               </span>
             </div>
@@ -154,7 +154,7 @@ function ProductCarouselSection({
         <div className="flex-1 relative min-w-0">
           {!hasItems ? (
             <div
-              className="flex min-h-[290px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-6 text-center"
+              className="flex min-h-[210px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-6 text-center"
             >
               <ShoppingBag className="text-[#F28A2E]/50" size={40} />
               <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
@@ -197,7 +197,7 @@ function ProductCarouselSection({
                         onItemClick?.(product.id);
                       }
                     }}
-                    className="flex-shrink-0 w-[240px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
+                    className="flex-shrink-0 w-[180px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
                   >
                     {/* Image */}
                     <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
@@ -217,16 +217,16 @@ function ProductCarouselSection({
                       </div>
                     </div>
                     {/* Card body */}
-                    <div className="p-3 pb-4">
-                      <p className="text-gray-700 text-xs mb-2 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[32px]">
+                    <div className="p-2.5 pb-3">
+                      <p className="text-gray-700 text-[11px] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">
                         {product.title}
                       </p>
                       {(product.category || product.subCategoryName) ? (
-                        <p className="text-[10px] text-violet-700/90 font-medium truncate mb-1">
+                        <p className="text-[9px] text-violet-700/90 font-medium truncate mb-1">
                           {[product.category, product.subCategoryName].filter(Boolean).join(' › ')}
                         </p>
                       ) : null}
-                      <p className="font-bold text-[#F28A2E] text-base">{product.price}</p>
+                      <p className="font-bold text-[#F28A2E] text-sm">{product.price}</p>
                     </div>
                   </div>
                 ))}
@@ -244,7 +244,7 @@ function ProductCarouselSection({
 
               {/* Dot indicators */}
               {totalDots > 1 && (
-                <div className="flex justify-center gap-1.5 mt-4">
+                <div className="flex justify-center gap-1.5 mt-2.5">
                   {Array.from({ length: totalDots }).map((_, i) => (
                     <button
                       key={i}
@@ -299,7 +299,7 @@ function DesktopCategories({
           </button>
         </div>
       )}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-2.5">
         {EXPLORE_CATEGORY_TILES.map((cfg) => {
           const Icon = cfg.icon;
           const displayName = exploreDisplayNameForTile(
@@ -321,23 +321,23 @@ function DesktopCategories({
                   navigate(href);
                 }
               }}
-              className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
+              className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
             >
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center ${cfg.color} group-hover:scale-110 transition-transform`}>
-                <Icon size={24} />
+              <div className={`w-11 h-11 rounded-full flex items-center justify-center ${cfg.color} group-hover:scale-110 transition-transform`}>
+                <Icon size={20} />
               </div>
-              <span className="text-sm font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]">{displayName}</span>
+              <span className="text-xs font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]">{displayName}</span>
             </div>
           );
         })}
       </div>
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-3">
         <button
           type="button"
           onClick={() => navigate('/factory-ideas')}
-          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-10 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
         >
-          ดูเพิ่มเติม <ChevronRight size={15} />
+          ดูเพิ่มเติม <ChevronRight size={13} />
         </button>
       </div>
     </section>
@@ -444,10 +444,10 @@ export function ExploreDesktop({
 
   return (
     <div className="hidden md:block min-h-screen">
-      <div className="px-4 md:px-6 lg:px-8 py-5 lg:py-7 space-y-12 pb-0 w-full mx-auto">
+      <div className="px-4 md:px-6 lg:px-8 py-3 lg:py-4 space-y-6 pb-0 w-full mx-auto">
 
         {/* ═══ 1. Hero Banner ═══ */}
-        <section className="relative rounded-3xl overflow-hidden h-[280px] shadow-lg flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
+        <section className="relative rounded-2xl overflow-hidden h-[180px] shadow-lg flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
           {/* Bright violet diagonal shape */}
           <div className="absolute top-0 right-0 w-[600px] h-full rounded-l-[100px] opacity-70 transform translate-x-32 skew-x-[-15deg]" style={{ background: '#A238FF' }}></div>
           {/* Orange warm glow bottom-right */}
@@ -455,46 +455,46 @@ export function ExploreDesktop({
           {/* Purple glow accent */}
           <div className="absolute top-10 left-1/3 w-64 h-64 rounded-full opacity-30 blur-3xl" style={{ background: '#A238FF' }}></div>
 
-          <div className="relative z-10 px-10 py-6 text-white max-w-2xl">
-            <span className="inline-block px-2.5 py-0.5 mb-2 rounded-full text-[11px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
+          <div className="relative z-10 px-7 py-4 text-white max-w-2xl">
+            <span className="inline-block px-2 py-0.5 mb-1.5 rounded-full text-[10px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
               READY TO START YOUR PRODUCT?
             </span>
             <h1
-              className="font-brand-display text-[2rem] md:text-[2.45rem] font-semibold mb-2 leading-[0.96] tracking-[0.01em] drop-shadow-md"
+              className="font-brand-display text-[1.5rem] md:text-[1.85rem] font-semibold mb-1.5 leading-[0.96] tracking-[0.01em] drop-shadow-md"
               style={{ textWrap: 'balance' }}
             >
               ค้นหาโรงงานที่ใช่
             </h1>
-            <p className="text-sm mb-4 max-w-md font-medium leading-relaxed" style={{ color: '#E2DCE6' }}>
+            <p className="text-xs mb-3 max-w-md font-medium leading-relaxed" style={{ color: '#E2DCE6' }}>
               เริ่มผลิตกับพาร์ตเนอร์ที่เชื่อถือได้
             </p>
             <button
               onClick={() => navigate('/create-rfq')}
-              className="text-white text-sm px-6 py-2.5 rounded-full font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-1.5 shadow-lg"
+              className="text-white text-xs px-4 py-2 rounded-full font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-1.5 shadow-lg"
               style={{ background: '#A238FF', boxShadow: '0 8px 24px rgba(162,56,255,0.40)' }}
             >
-              เริ่มสร้างคำขอราคา <ChevronRight size={16} />
+              เริ่มสร้างคำขอราคา <ChevronRight size={14} />
             </button>
           </div>
         </section>
 
         {/* ═══ Search Bar ═══ */}
-        <div className="flex gap-3">
-          <div className="flex-1 flex items-center gap-3 bg-white rounded-2xl px-5 py-3.5 shadow-sm border border-gray-100">
-            <Search size={18} className="text-gray-400 shrink-0" />
+        <div className="flex gap-2.5">
+          <div className="flex-1 flex items-center gap-2.5 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100">
+            <Search size={16} className="text-gray-400 shrink-0" />
             <input
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               placeholder="ค้นหาโรงงาน ประเภทงาน หรือ วัสดุ..."
-              className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400"
+              className="flex-1 text-xs bg-transparent outline-none text-gray-700 placeholder-gray-400"
             />
           </div>
           <button
             type="button"
-            className="px-5 py-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center gap-2 text-sm font-medium shrink-0 text-[#A656A0] hover:border-[#A656A0]/30 transition-colors"
+            className="px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-1.5 text-xs font-medium shrink-0 text-[#A656A0] hover:border-[#A656A0]/30 transition-colors"
           >
-            <SlidersHorizontal size={16} />
+            <SlidersHorizontal size={14} />
             ตัวกรอง
           </button>
         </div>
@@ -502,21 +502,21 @@ export function ExploreDesktop({
         {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) — แสดงเฉพาะเมื่อมีจาก API ═══ */}
         {desktopPromoSlides.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
-              <Sparkles className="text-[#F28A2E]" size={20} />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
+              <Sparkles className="text-[#F28A2E]" size={16} />
               โค้ดส่วนลดพิเศษ
             </h2>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             {desktopPromoSlides.map((promo) => (
               <div
                 key={promo.id}
-                className="h-full rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all flex flex-col"
+                className="h-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all flex flex-col"
               >
                 <div
-                  className="relative overflow-hidden p-5 text-white h-full flex-1 flex flex-col"
+                  className="relative overflow-hidden p-3.5 text-white h-full flex-1 flex flex-col"
                   style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}
                 >
                   {/* Purple ribbon circle top-right */}
@@ -526,12 +526,12 @@ export function ExploreDesktop({
                   <div className="absolute -bottom-3 -left-3 w-12 h-12 rounded-full opacity-20" style={{ background: '#FAEBD7' }} />
                   <div className="relative z-10">
                     {/* Purple ribbon badge */}
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-2" style={{ background: '#A238FF' }}>
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-1.5" style={{ background: '#A238FF' }}>
                       <Gift className="w-3 h-3 text-white" />
                       <span className="text-[10px] text-white font-semibold tracking-wide">โปรโมชั่นพิเศษ</span>
                     </div>
-                    <p className="text-base font-bold mb-1 leading-tight text-white drop-shadow-sm">{promo.title}</p>
-                    <p className="text-[11px] mb-3 leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>{promo.subtitle}</p>
+                    <p className="text-sm font-bold mb-1 leading-tight text-white drop-shadow-sm">{promo.title}</p>
+                    <p className="text-[10px] mb-2 leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>{promo.subtitle}</p>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center rounded-lg px-2.5 py-1 border" style={{ background: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.40)' }}>
                         <span className="text-sm font-mono tracking-widest font-bold text-white">{promo.code}</span>
@@ -589,7 +589,7 @@ export function ExploreDesktop({
 
         {/* ═══ 6. โรงงานแนะนำ ═══ */}
         <section className="rounded-2xl overflow-hidden border border-gray-200 bg-white">
-          <div className="relative px-6 py-7 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
+          <div className="relative px-4 py-4 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
 
             {/* ── Color-block shapes (cat illustration style) ── */}
             {/* Bright purple diagonal block — right side */}
@@ -613,21 +613,21 @@ export function ExploreDesktop({
 
             {/* Content */}
             <div className="relative z-10">
-              <h2 className="text-2xl font-bold text-white drop-shadow-md flex items-center justify-center gap-2">
+              <h2 className="text-lg font-bold text-white drop-shadow-md flex items-center justify-center gap-2">
                 โรงงานแนะนำ
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm" style={{ background: '#F28A2E' }}>
-                  <Plus size={14} />
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-white font-bold text-sm" style={{ background: '#F28A2E' }}>
+                  <Plus size={12} />
                 </span>
               </h2>
-              <p className="text-sm mt-1.5 font-medium" style={{ color: 'rgba(235,211,255,0.90)' }}>
+              <p className="text-xs mt-1 font-medium" style={{ color: 'rgba(235,211,255,0.90)' }}>
                 โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าสัตว์เลี้ยงคุณภาพสูง
               </p>
             </div>
           </div>
 
           {/* --- Body Section --- */}
-          <div className="p-4 bg-gradient-to-b from-purple-50/20 to-white">
-            <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="p-3 bg-gradient-to-b from-purple-50/20 to-white">
+            <div className="grid grid-cols-3 lg:grid-cols-4 gap-2">
               {(factories ?? []).slice(0, 8).map((factory) => (
                 <div
                   key={factory.id}
@@ -647,20 +647,20 @@ export function ExploreDesktop({
                       </div>
                     )}
                   </div>
-                  <div className="p-2.5 flex flex-col flex-1 justify-between">
+                  <div className="p-2 flex flex-col flex-1 justify-between">
                     <div>
-                      <h3 className="font-medium text-[13px] leading-tight text-gray-700 mb-1 truncate group-hover:text-[#A238FF] transition-colors">
+                      <h3 className="font-medium text-[12px] leading-tight text-gray-700 mb-0.5 truncate group-hover:text-[#A238FF] transition-colors">
                         {factory.name}
                       </h3>
-                      <div className="flex items-center gap-1 mb-1">
+                      <div className="flex items-center gap-1 mb-0.5">
                         <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                        <span className="text-gray-500 text-[11px] truncate">{factory.location}</span>
+                        <span className="text-gray-500 text-[10px] truncate">{factory.location}</span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-1.5 border-t border-gray-50">
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-50">
                       <div className="flex items-center gap-0.5">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                        <span className="text-gray-700 text-[11px] font-semibold">{factory.rating}</span>
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                        <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
                         <span className="text-gray-400 text-[9px]">({factory.reviews})</span>
                       </div>
                       <span className="text-gray-400 text-[9px]">ขั้นต่ำ {factory.minOrder}</span>
@@ -669,11 +669,11 @@ export function ExploreDesktop({
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex justify-center">
+            <div className="mt-3 flex justify-center">
               <button
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=factory')}
-                className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm"
+                className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-6 py-1 rounded-md text-xs font-medium transition-colors shadow-sm"
               >
                 ดูเพิ่มเติม
               </button>
@@ -683,52 +683,52 @@ export function ExploreDesktop({
 
         {/* ═══ 2. โปรโมชันแนะนำ — ORANGE THEME ═══ */}
         <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-[#292259] flex items-center gap-2">
-              <Tag className="text-[#F27830]" size={20} />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
+              <Tag className="text-[#F27830]" size={16} />
               โปรโมชันแนะนำ
             </h2>
             <button
               type="button"
               onClick={() => navigate('/factory-ideas?type=promotion')}
-              className="text-[#F28A2E] text-sm font-medium hover:text-[#F27830] flex items-center transition-colors"
+              className="text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center transition-colors"
             >
-              ดูเพิ่มเติม <ChevronRight size={16} />
+              ดูเพิ่มเติม <ChevronRight size={14} />
             </button>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Left Banner — Orange gradient (desktop lg+ เท่านั้น; iPad/md ไม่แสดง) */}
-            <div className="hidden lg:block lg:w-[40%] rounded-2xl overflow-hidden relative min-h-[260px] flex-shrink-0 group cursor-pointer shadow-md">
+          <div className="flex flex-col lg:flex-row gap-3">
+            {/* Left Banner */}
+            <div className="hidden lg:block lg:w-[40%] rounded-xl overflow-hidden relative min-h-[180px] flex-shrink-0 group cursor-pointer shadow-md">
               <ImageWithFallback
                 src="https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600"
                 alt="Banner"
                 className="w-full h-full object-cover absolute transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#F27830]/48 via-[#F28A2E]/24 to-transparent flex flex-col justify-end p-8">
-                <h3 className="text-3xl font-black text-white drop-shadow-md mb-2">บริการ</h3>
-                <p className="text-white font-medium text-lg drop-shadow-md mb-4 bg-[#F27830]/65 backdrop-blur-sm self-start px-4 py-1.5 rounded-full border border-white/25">สำหรับสัตว์เลี้ยงแสนรัก</p>
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#F27830]/48 via-[#F28A2E]/24 to-transparent flex flex-col justify-end p-5">
+                <h3 className="text-2xl font-black text-white drop-shadow-md mb-1">บริการ</h3>
+                <p className="text-white font-medium text-sm drop-shadow-md mb-3 bg-[#F27830]/65 backdrop-blur-sm self-start px-3 py-1 rounded-full border border-white/25">สำหรับสัตว์เลี้ยงแสนรัก</p>
               </div>
             </div>
 
-            {/* Right Scrollable Cards — from factoryShowcases */}
-            <div className="w-full lg:w-[60%] flex gap-4 overflow-x-auto snap-x hide-scrollbar pb-2">
+            {/* Right Scrollable Cards */}
+            <div className="w-full lg:w-[60%] flex gap-3 overflow-x-auto snap-x hide-scrollbar pb-2">
               {promoShowcases.map((item) => (
-                <div key={item.id} onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)} className="min-w-[240px] bg-white border border-[#F28A2E]/15 rounded-2xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
+                <div key={item.id} onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)} className="min-w-[180px] bg-white border border-[#F28A2E]/15 rounded-xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
                   <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-2 left-2 bg-[#F28A2E] px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
+                    <div className="absolute top-1.5 left-1.5 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide">
                       โปรโมชัน
                     </div>
                   </div>
-                  <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-bold text-sm text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h3>
-                    <p className="text-xs text-gray-500 mb-3 line-clamp-2">{item.excerpt}</p>
-                    <div className="mt-auto pt-3 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-sm">
+                  <div className="p-3 flex flex-col flex-1">
+                    <h3 className="font-bold text-xs text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h3>
+                    <p className="text-[11px] text-gray-500 mb-2 line-clamp-2">{item.excerpt}</p>
+                    <div className="mt-auto pt-2 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-xs">
                       {item.factoryName}
                     </div>
                   </div>
@@ -739,45 +739,45 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ 7. บทความ Idea — GRAY/LIGHT THEME ═══ */}
-        <section className="bg-[#F2F2F2] -mx-8 px-8 py-8 rounded-xl">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-[#292259]">บทความ Idea</h2>
+        <section className="bg-[#F2F2F2] -mx-8 px-8 py-5 rounded-xl">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-[#292259]">บทความ Idea</h2>
             <button
               type="button"
               onClick={() => navigate('/factory-ideas?type=idea')}
-              className="text-[#A656A0] text-sm font-medium hover:underline flex items-center"
+              className="text-[#A656A0] text-xs font-medium hover:underline flex items-center"
             >
-              ดูทั้งหมด <ChevronRight size={16} />
+              ดูทั้งหมด <ChevronRight size={14} />
             </button>
           </div>
 
           {ideaArticlesList.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-8 text-center text-sm text-gray-500">
+            <div className="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-6 text-center text-xs text-gray-500">
               ยังไม่มีบทความในขณะนี้
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {ideaArticlesList.map((article) => (
                 <div
                   key={article.id}
                   onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
-                  className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow cursor-pointer group min-h-[138px]"
+                  className="bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2.5 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[9px] font-bold text-[#A656A0] uppercase tracking-wide">
                       {article.tag || 'Idea'}
                     </span>
                     <span className="text-[10px] text-gray-400 truncate">
                       {article.factoryName}
                     </span>
                   </div>
-                  <h3 className="font-bold text-[15px] text-[#292259] mb-2 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors">
+                  <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors">
                     {article.title}
                   </h3>
-                  <p className="text-[12px] text-gray-500 line-clamp-3">
+                  <p className="text-[11px] text-gray-500 line-clamp-2">
                     {article.excerpt}
                   </p>
-                  <div className="mt-3 pt-2 border-t border-gray-100 text-[10px] text-gray-400">
+                  <div className="mt-2 pt-1.5 border-t border-gray-100 text-[10px] text-gray-400">
                     แตะเพื่ออ่านต่อ
                   </div>
                 </div>
@@ -787,7 +787,7 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ 8. Registration CTA ═══ */}
-        <section className="bg-gradient-to-r from-[#F8F5FF] to-[#FAFAFA] rounded-2xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-8 px-6 md:px-12">
+        <section className="bg-gradient-to-r from-[#F8F5FF] to-[#FAFAFA] rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-5 px-4 md:px-8">
           {/* Background Decoration */}
           <div
             className="absolute inset-y-0 right-0 w-2/3 opacity-40 pointer-events-none"
@@ -799,23 +799,23 @@ export function ExploreDesktop({
               alt=""
             />
           </div>
-          <div className="relative z-10 flex-1 text-center md:text-left mb-6 md:mb-0">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#2D1B4E] mb-2 flex items-center justify-center md:justify-start gap-2">
+          <div className="relative z-10 flex-1 text-center md:text-left mb-4 md:mb-0">
+            <h2 className="text-xl md:text-2xl font-bold text-[#2D1B4E] mb-1 flex items-center justify-center md:justify-start gap-2">
               ลงทะเบียนข้อมูลธุรกิจกับ <span className="text-[#A238FF]">Tryly</span>
             </h2>
-            <p className="text-gray-600 font-medium md:text-lg">
+            <p className="text-gray-600 font-medium text-sm md:text-base">
               สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!
             </p>
           </div>
-          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
             <button
               type="button"
               onClick={() => navigate('/register/factory')}
-              className="w-full sm:w-auto bg-[#A238FF] hover:bg-[#8B2BE2] text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-md text-sm md:text-base whitespace-nowrap"
+              className="w-full sm:w-auto bg-[#A238FF] hover:bg-[#8B2BE2] text-white px-6 py-2 rounded-lg font-bold transition-colors shadow-md text-xs md:text-sm whitespace-nowrap"
             >
               สมัครเลย
             </button>
-            <button className="w-full sm:w-auto bg-white border border-[#A238FF] text-[#A238FF] hover:bg-[#F8F5FF] px-8 py-3 rounded-lg font-bold transition-colors text-sm md:text-base whitespace-nowrap">
+            <button className="w-full sm:w-auto bg-white border border-[#A238FF] text-[#A238FF] hover:bg-[#F8F5FF] px-6 py-2 rounded-lg font-bold transition-colors text-xs md:text-sm whitespace-nowrap">
               สิทธิประโยชน์มากมาย
             </button>
           </div>
