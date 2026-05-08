@@ -827,53 +827,35 @@ export function FactoryIdeasDesktop() {
               return (
                 <article
                   key={item.id}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4"
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                  className="bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
                       ไอเดีย
                     </span>
-                     
+                    <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
                   </div>
-                  <div className="flex items-start justify-between gap-3 min-w-0">
-                    <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-w-0 flex-1" style={{ color: COLORS.blue }}>
-                      {item.title}
-                    </h3>
-                    <span className="text-[11px] text-gray-400 shrink-0 tabular-nums self-start pt-0.5 text-right">
-                      ขั้นต่ำ{' '}
-                      <span className="font-semibold" style={{ color: COLORS.blue }}>
-                        {item.minOrder}
+                  <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-[12px] text-gray-500 line-clamp-2">{item.excerpt || ' '}</p>
+                  <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                      className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
+                      aria-label="ถูกใจ"
+                    >
+                      <Heart
+                        className="w-2.5 h-2.5 shrink-0"
+                        style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                      />
+                      <span className="text-[10px] leading-none">
+                        {item.likes + (isLiked(item.id) ? 1 : 0)}
                       </span>
-                    </span>
-                  </div>
-                  <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
-                  <div className="pt-2 mt-3 border-t border-gray-100">
-                    <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                        className="flex items-center gap-1 min-w-0 flex-1 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
-                        style={{ color: COLORS.blue }}
-                      >
-                        <span className="truncate">{item.factoryName}</span>
-                        {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
-                        className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
-                        aria-label="ถูกใจ"
-                      >
-                        <Heart
-                          className="w-2.5 h-2.5 shrink-0"
-                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
-                        />
-                        <span className="text-[10px] leading-none">
-                          {item.likes + (isLiked(item.id) ? 1 : 0)}
-                        </span>
-                      </button>
-                    </div>
+                    </button>
                   </div>
                 </article>
               );
@@ -1152,51 +1134,35 @@ export function FactoryIdeasDesktop() {
                 return (
                   <article
                     key={`idea-${item.id}`}
-                    className="group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4"
                     onClick={() => navigate(getDetailPath(item.contentType, item.id))}
+                    className="bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: COLORS.purple }}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
                         ไอเดีย
                       </span>
-                       
+                      <span className="text-[10px] text-gray-400 truncate">{item.factoryName}</span>
                     </div>
-                    <div className="flex items-start justify-between gap-3 min-w-0">
-                      <h3 className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-w-0 flex-1" style={{ color: COLORS.blue }}>
-                        {item.title}
-                      </h3>
-                      <span className="text-[11px] text-gray-400 shrink-0 tabular-nums self-start pt-0.5 text-right">
-                        ขั้นต่ำ{' '}
-                        <span className="font-semibold" style={{ color: COLORS.blue }}>
-                          {item.minOrder}
-                        </span>
-                      </span>
-                    </div>
-                    <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">{item.excerpt || ' '}</p>
-                    <div className="pt-2 mt-1 border-t border-gray-100 space-y-1.5">
-                      <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/factories/${item.factoryId}`); }}
-                          className="flex items-center gap-1 min-w-0 flex-1 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
-                          style={{ color: COLORS.blue }}
-                        >
-                          <span className="truncate">{item.factoryName}</span>
-                          {factory?.verified && <BadgeCheck className="w-3 h-3 shrink-0" style={{ color: COLORS.purple }} />}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
-                          className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
-                          aria-label="ถูกใจ"
-                        >
-                          <Heart
-                            className="w-2.5 h-2.5 shrink-0"
-                            style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
-                          />
+                    <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-[12px] text-gray-500 line-clamp-2">{item.excerpt || ' '}</p>
+                    <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
+                        className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
+                        aria-label="ถูกใจ"
+                      >
+                        <Heart
+                          className="w-2.5 h-2.5 shrink-0"
+                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                        />
+                        <span className="text-[10px] leading-none">
                           {item.likes + (isLiked(item.id) ? 1 : 0)}
-                        </button>
-                      </div>
+                        </span>
+                      </button>
                     </div>
                   </article>
                 );
