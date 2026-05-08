@@ -38,7 +38,7 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
         style={{ borderColor: 'rgba(220, 38, 38, 0.25)', background: '#FEF2F2' }}
       >
         <p className="text-xs font-semibold text-red-700">💰 ยอดที่ต้องชำระ</p>
-        <p className="mt-1 text-3xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
+        <p className="mt-1 text-xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
           ฿{amount.toLocaleString('th-TH')}
         </p>
         {expired ? (

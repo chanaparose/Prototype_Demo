@@ -53,7 +53,7 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
         style={{ borderColor: BORDER_WARM, background: PEACH_MIST }}
       >
         <p className="text-xs" style={{ color: ACCENT_ORANGE_DEEP }}>💰 ยอดที่ต้องชำระ</p>
-        <p className="mt-1 text-3xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
+        <p className="mt-1 text-xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
           ฿{amount.toLocaleString('th-TH')}
         </p>
         {due ? (

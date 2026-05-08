@@ -296,25 +296,25 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                     <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700, color: '#7A4B94' }}>
                       {formatTHB(pricePerPiece)}
                     </p>
-                    <p className="text-[9px] text-gray-500">ราคาต่อชิ้น</p>
+                    <p className="text-[12px] text-gray-500">ราคาต่อชิ้น</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
                     <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
                       {leadTimeDays > 0 ? leadTimeDays : '-'}
                     </p>
-                    <p className="text-[9px] text-gray-500">Lead time (วัน)</p>
+                    <p className="text-[12px] text-gray-500">Lead time (วัน)</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
                     <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700, color: '#7A4B94' }}>
                       {formatTHB(grandTotal)}
                     </p>
-                    <p className="text-[9px] text-gray-500">ราคารวมเสนอ</p>
+                    <p className="text-[12px] text-gray-500">ราคารวมเสนอ</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2.5 text-center">
                     <p className="text-sm text-[#2E2252]" style={{ fontWeight: 700 }}>
                       {validityDays > 0 ? `${validityDays}` : '-'}
                     </p>
-                    <p className="text-[9px] text-gray-500">อายุใบเสนอราคา (วัน)</p>
+                    <p className="text-[12px] text-gray-500">อายุใบเสนอราคา (วัน)</p>
                   </div>
                 </div>
 
@@ -359,7 +359,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
 
                 {String(q.factory_highlight ?? q.highlight ?? '').trim() ? (
                   <div className="rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2 mb-2">
-                    <p className="text-[10px] font-semibold text-violet-700 mb-0.5">จุดเด่นจากโรงงาน</p>
+                    <p className="text-[12px] font-semibold text-violet-700 mb-0.5">จุดเด่นจากโรงงาน</p>
                     <p className="text-[11px] text-violet-900 leading-relaxed">
                       {String(q.factory_highlight ?? q.highlight ?? '').trim()}
                     </p>
