@@ -851,7 +851,7 @@ export function FactoryIdeasMobile() {
                     {item.excerpt || ' '}
                   </p>
                   <div className="pt-1.5 mt-1.5 border-t border-gray-100">
-                    <div className="flex items-center justify-between gap-2 min-w-0 mb-0.5">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
                       {item.factoryName ? (
                         <button
                           type="button"
@@ -868,8 +868,6 @@ export function FactoryIdeasMobile() {
                       ) : (
                         <span className="flex-1 min-w-0" />
                       )}
-                    </div>
-                    <div className="flex items-center justify-end min-w-0">
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
@@ -1214,7 +1212,7 @@ export function FactoryIdeasMobile() {
                       {item.excerpt || ' '}
                     </p>
                     <div className="pt-1.5 mt-1.5 border-t border-gray-100">
-                      <div className="flex items-center justify-between gap-2 min-w-0 mb-0.5">
+                      <div className="flex items-center justify-between gap-2 min-w-0">
                         {item.factoryName ? (
                           <button
                             type="button"
@@ -1231,8 +1229,6 @@ export function FactoryIdeasMobile() {
                         ) : (
                           <span className="flex-1 min-w-0" />
                         )}
-                      </div>
-                      <div className="flex items-center justify-end min-w-0">
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); void toggleFavorite(item.id); }}
