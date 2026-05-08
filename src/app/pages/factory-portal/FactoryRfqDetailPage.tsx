@@ -654,9 +654,14 @@ export function FactoryRfqDetailPage() {
                   {rfqBody.details ?? rfqBody.description ? (
                     <div className="pt-1 border-t border-gray-50">
                       <p className="text-xs text-gray-500 mb-1">รายละเอียดเพิ่มเติม</p>
-                      <p className="text-sm break-words" style={{ color: '#2E2252' }}>
-                        {String(rfqBody.details ?? rfqBody.description ?? '—')}
-                      </p>
+                      <div
+                        className="rounded-xl border px-3 py-2.5"
+                        style={{ background: '#EEF2FF', borderColor: '#C7D2FE' }}
+                      >
+                        <p className="text-sm break-words leading-relaxed" style={{ color: '#2E2252' }}>
+                          {String(rfqBody.details ?? rfqBody.description ?? '—')}
+                        </p>
+                      </div>
                     </div>
                   ) : null}
                 </section>
