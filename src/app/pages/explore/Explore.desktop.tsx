@@ -133,7 +133,7 @@ function ProductCarouselSection({
           <div className="absolute inset-0 z-10 flex flex-col justify-between p-3">
             {/* Top badge */}
             <span
-              className="self-start text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow backdrop-blur-[2px]"
+              className="self-start text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow backdrop-blur-[2px]"
               style={{ background: isMaterial ? 'rgba(5,150,105,0.75)' : 'rgba(242,138,46,0.75)' }}
             >
               {isMaterial ? '🌿 วัตถุดิบ' : '🐾 PET SHOP'}
@@ -212,17 +212,17 @@ function ProductCarouselSection({
                         </span>
                       )}
                       {/* Subtle paw badge */}
-                      <div className="absolute top-2 left-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[11px]">
+                      <div className="absolute top-2 left-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[12px]">
                         🐾
                       </div>
                     </div>
                     {/* Card body */}
                     <div className="p-2.5 pb-3">
-                      <p className="text-gray-700 text-[11px] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">
+                      <p className="text-gray-700 text-[12px] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">
                         {product.title}
                       </p>
                       {(product.category || product.subCategoryName) ? (
-                        <p className="text-[9px] text-violet-700/90 font-medium truncate mb-1">
+                        <p className="text-[10px] text-violet-700/90 font-medium truncate mb-1">
                           {[product.category, product.subCategoryName].filter(Boolean).join(' › ')}
                         </p>
                       ) : null}
@@ -643,7 +643,7 @@ export function ExploreDesktop({
                     {factory.verified === true && (
                       <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
                         <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
-                        <span className="text-[9px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
+                        <span className="text-[10px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
                       </div>
                     )}
                   </div>
@@ -661,9 +661,9 @@ export function ExploreDesktop({
                       <div className="flex items-center gap-0.5">
                         <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
                         <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
-                        <span className="text-gray-400 text-[9px]">({factory.reviews})</span>
+                        <span className="text-gray-400 text-[10px]">({factory.reviews})</span>
                       </div>
-                      <span className="text-gray-400 text-[9px]">ขั้นต่ำ {factory.minOrder}</span>
+                      <span className="text-gray-400 text-[10px]">ขั้นต่ำ {factory.minOrder}</span>
                     </div>
                   </div>
                 </div>
@@ -673,7 +673,7 @@ export function ExploreDesktop({
               <button
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=factory')}
-                className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-6 py-1 rounded-md text-xs font-medium transition-colors shadow-sm"
+                className="m-[3px] bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-6 py-1 rounded-md text-xs font-medium transition-colors shadow-sm"
               >
                 ดูเพิ่มเติม
               </button>
@@ -721,14 +721,14 @@ export function ExploreDesktop({
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-1.5 left-1.5 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide">
+                    <div className="absolute top-1.5 left-1.5 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
                       โปรโมชัน
                     </div>
                   </div>
                   <div className="p-3 flex flex-col flex-1">
-                    <h3 className="font-bold text-xs text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h3>
-                    <p className="text-[11px] text-gray-500 mb-2 line-clamp-2">{item.excerpt}</p>
-                    <div className="mt-auto pt-2 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-xs">
+                    <h3 className="text-[12px] text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h3>
+                    <p className="text-[10px] text-gray-500 mb-2 line-clamp-2">{item.excerpt}</p>
+                    <div className="mt-auto pt-2 border-t border-[#F28A2E]/10 text-[10px] text-violet-700/90 font-medium truncate mb-1">
                       {item.factoryName}
                     </div>
                   </div>
@@ -764,7 +764,7 @@ export function ExploreDesktop({
                   className="bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]"
                 >
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[9px] font-bold text-[#A656A0] uppercase tracking-wide">
+                    <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
                       {article.tag || 'Idea'}
                     </span>
                     <span className="text-[10px] text-gray-400 truncate">
@@ -774,7 +774,7 @@ export function ExploreDesktop({
                   <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors">
                     {article.title}
                   </h3>
-                  <p className="text-[11px] text-gray-500 line-clamp-2">
+                  <p className="text-[12px] text-gray-500 line-clamp-2">
                     {article.excerpt}
                   </p>
                   <div className="mt-2 pt-1.5 border-t border-gray-100 text-[10px] text-gray-400">
