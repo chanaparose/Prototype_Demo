@@ -626,6 +626,10 @@ export function ExploreDesktop({
           }}
         />
 
+
+        {/* ═══ How to Order ═══ */}
+        <HowToOrderSection className="mx-0" />
+
         {/* ═══ 6. โรงงานแนะนำ ═══ */}
         <section className="mt-[40px] rounded-2xl overflow-hidden border border-gray-200 bg-white">
           <div className="relative px-4 py-4 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
@@ -849,9 +853,11 @@ export function ExploreDesktop({
             </div>
           )}
         </section>
+ 
+      </div>
 
-        {/* ═══ 8. Registration CTA ═══ */}
-        <section className="bg-gradient-to-r from-[#F8F5FF] to-[#FAFAFA] rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-5 px-4 md:px-8">
+      {/* ═══ 8. Registration CTA ═══ */}
+      <section className="bg-gradient-to-r from-[#F8F5FF] to-[#FAFAFA] rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-5 px-4 md:px-8">
           {/* Background Decoration */}
           <div
             className="absolute inset-y-0 right-0 w-2/3 opacity-40 pointer-events-none"
@@ -884,11 +890,6 @@ export function ExploreDesktop({
             </button>
           </div>
         </section>
-
-      </div>
-
-      {/* ═══ How to Order ═══ */}
-      <HowToOrderSection className="mx-0" />
 
       {/* ═══ Footer ═══ */}
       <div className="lg:px-8">

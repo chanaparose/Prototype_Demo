@@ -304,6 +304,11 @@ export function ExploreMobile({
         )}
       </div>
 
+
+      {/* How to Order */}
+      <HowToOrderSection className="mx-4" />
+
+
       <div className="mt-[20px]"> 
         <ExploreFactoryGrid
           factories={(factories ?? []).slice(0, 6)}
@@ -438,9 +443,6 @@ export function ExploreMobile({
           </div>
         </div>
       </div>
-
-      {/* How to Order */}
-      <HowToOrderSection className="mx-4" />
 
       {/* Footer (Mobile) */}
       <ExploreFooter />
