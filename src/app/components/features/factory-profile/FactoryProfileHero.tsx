@@ -71,7 +71,7 @@ export function FactoryProfileHero({ factory, onBack, onChat, chatLoading, showC
         ) : null}
       </div>
 
-      <div className="relative z-[2] -mt-11 sm:-mt-12 px-5 pb-5">
+      <div className="relative z-[2] px-5 pb-5 pt-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div className="w-fit shrink-0 rounded-2xl">
             <div
@@ -91,7 +91,7 @@ export function FactoryProfileHero({ factory, onBack, onChat, chatLoading, showC
           </div>
 
           <div className="min-w-0 flex-1 pt-1 sm:pb-0.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">โรงงานของคุณ</p>
+             
             <h1 className="mt-0.5 truncate text-lg font-bold leading-snug sm:text-xl" style={{ color: NAVY }}>
               {factory.name}
             </h1>

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Building2,
+  ChevronDown,
   ChevronRight,
   Factory,
   Search,
@@ -111,6 +112,26 @@ export function FactoryProfileTabContent({
   onPromotionClick,
   onIdeaClick,
 }: FactoryProfileTabContentProps) {
+  const [showCategorySubs, setShowCategorySubs] = useState(false);
+  const groupedCategorySubs = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const p of factorySubCategoryPairs) {
+      const cat = String(p.categoryLabel ?? '').trim();
+      const sub = String(p.subLabel ?? '').trim();
+      if (!cat || !sub) continue;
+      const prev = map.get(cat) ?? [];
+      if (!prev.includes(sub)) prev.push(sub);
+      map.set(cat, prev);
+    }
+    if (map.size === 0 && factoryCategoryNames.length > 0) {
+      for (const c of factoryCategoryNames) map.set(c, []);
+    }
+    if (map.size === 0 && factorySubCategoryNames.length > 0) {
+      map.set('หมวดย่อย', [...factorySubCategoryNames]);
+    }
+    return Array.from(map.entries());
+  }, [factorySubCategoryPairs, factoryCategoryNames, factorySubCategoryNames]);
+
   const ShowcaseGridCard = ({
     item,
     onClick,
@@ -304,52 +325,33 @@ export function FactoryProfileTabContent({
                 <MapPin className="w-4 h-4 mt-0.5 text-purple-600" />
                 ที่อยู่: {profile?.address ?? factory.location}
               </p>
-              <p className="flex items-start gap-2">
-                <Package className="w-4 h-4 mt-0.5 text-purple-600" />
-                ประเภทสินค้าที่รับผลิต:{' '}
-                {(profile?.acceptedProductTypes ?? [factory.specialization]).join(', ')}
-              </p>
-              {(factorySubCategoryPairs.length > 0 ||
-                factoryCategoryNames.length > 0 ||
-                factorySubCategoryNames.length > 0) && (
-                <div className="flex items-start gap-2">
-                  <Package className="w-4 h-4 mt-0.5 text-purple-600" />
-                  <div>
-                    <p>หมวดสินค้า</p>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {factorySubCategoryPairs.length > 0
-                        ? factorySubCategoryPairs.map((p, i) => (
-                            <span
-                              key={`pair-${p.categoryLabel}-${p.subLabel}-${i}`}
-                              className="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-800"
-                            >
-                              {p.categoryLabel} › {p.subLabel}
-                            </span>
-                          ))
-                        : (
-                          <>
-                            {factoryCategoryNames.map((n) => (
-                              <span
-                                key={`cat-${n}`}
-                                className="rounded-full border border-sky-100 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-800"
-                              >
-                                {n}
-                              </span>
-                            ))}
-                            {factorySubCategoryNames.map((n) => (
-                              <span
-                                key={`sub-${n}`}
-                                className="rounded-full border border-teal-100 bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-800"
-                              >
-                                {n}
-                              </span>
-                            ))}
-                          </>
-                        )}
+              {groupedCategorySubs.length > 0 ? (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowCategorySubs((v) => !v)}
+                    className="flex w-full max-w-xl items-center justify-between gap-2 rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2 text-left"
+                  >
+                    <span className="text-[12px] font-semibold text-violet-800">หมวดหมู่ที่รับผลิต</span>
+                    <div className="inline-flex items-center gap-1.5 text-[11px] text-violet-700 shrink-0">
+                      <span>{groupedCategorySubs.length} หมวดหลัก</span>
+                      <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showCategorySubs ? 'rotate-180' : ''}`} />
                     </div>
-                  </div>
+                  </button>
+                  {showCategorySubs ? (
+                    <div className="mt-2 max-h-80 overflow-auto rounded-xl border border-violet-100 bg-white p-2 shadow-sm space-y-1.5">
+                      {groupedCategorySubs.map(([cat, subs]) => (
+                        <div key={`cat-group-${cat}`} className="rounded-lg bg-violet-50/50 px-2.5 py-2">
+                          <p className="text-[11px] font-bold text-violet-900">{cat}</p>
+                          <p className="mt-0.5 text-[11px] text-violet-700">
+                            {subs.length > 0 ? subs.join(', ') : 'ไม่มีหมวดย่อย'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              )}
+              ) : null}
               <div className="flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 mt-0.5 text-purple-600" />
                 <div>
@@ -375,14 +377,6 @@ export function FactoryProfileTabContent({
                   </div>
                 </div>
               </div>
-              <p className="flex items-start gap-2">
-                <Star className="w-4 h-4 mt-0.5 text-purple-600" />
-                รีวิวเฉลี่ย: {factory.rating} จาก {factory.reviews} รีวิว
-              </p>
-              <p className="flex items-start gap-2">
-                <Factory className="w-4 h-4 mt-0.5 text-purple-600" />
-                ขั้นต่ำรับผลิต: {factory.minOrder} ชิ้น
-              </p>
             </div>
           </div>
           <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">

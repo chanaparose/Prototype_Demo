@@ -228,9 +228,9 @@ export function useFactoryProfile() {
           string,
           unknown
         >;
-        if (!factory) {
-          factory = mapFactoryFromApi(rawF, fid, fb);
-        }
+        // Always merge BFF/frontend factory fields on top of the current object
+        // so detail page reflects latest location/minOrder/leadTime from this API.
+        factory = mapFactoryFromApi(rawF, fid, factory ?? fb);
 
         const rawP =
           res.profile && typeof res.profile === 'object' ? (res.profile as Record<string, unknown>) : null;

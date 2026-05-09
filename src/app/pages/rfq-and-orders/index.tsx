@@ -721,7 +721,7 @@ export function RfqAndOrders() {
             {/* Scrollable RFQ content */}
             <div className="overflow-y-auto flex-1 p-4">
               <RfqPanel rfqs={rfqs} isDesktop />
-            </div>
+              </div>
             </div>
 
           {/* ── Right: Orders panel ── */}

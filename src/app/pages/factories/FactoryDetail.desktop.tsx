@@ -1,17 +1,6 @@
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import {
-  MapPin,
-  Mail,
-  Phone,
-  ArrowLeft,
-  ChevronDown,
-  Star,
-  Package,
-  Clock,
-  CheckCircle2,
-  ShieldCheck,
-} from 'lucide-react';
+import { ArrowLeft, Package, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
 import {
   FactoryProfileHero,
   FactoryProfileTabContent,
@@ -57,6 +46,23 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
     await startChat(factory.id);
   }, [factory, startChat]);
 
+  const [showCategorySubs, setShowCategorySubs] = React.useState(false);
+  const groupedCategorySubs = React.useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const p of factorySubCategoryPairs) {
+      const cat = String(p.categoryLabel ?? '').trim();
+      const sub = String(p.subLabel ?? '').trim();
+      if (!cat || !sub) continue;
+      const prev = map.get(cat) ?? [];
+      if (!prev.includes(sub)) prev.push(sub);
+      map.set(cat, prev);
+    }
+    if (map.size === 0 && factoryCategoryNames.length > 0) {
+      for (const c of factoryCategoryNames) map.set(c, []);
+    }
+    return Array.from(map.entries());
+  }, [factorySubCategoryPairs, factoryCategoryNames]);
+
   if (detailLoading && !factory) {
     return (
       <div className="hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 pb-20 lg:flex">
@@ -88,36 +94,13 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
   }
 
   const statItems = [
-    { icon: <Package size={14} className="text-purple-500" />, label: 'MOQ', value: factory.minOrder },
     { icon: <Clock size={14} className="text-purple-500" />, label: 'Lead Time', value: factory.leadTime },
     {
       icon: <CheckCircle2 size={14} className="text-purple-500" />,
       label: 'งานสำเร็จ',
       value: `${factory.completedOrders} ออเดอร์`,
     },
-    {
-      icon: <Star size={14} className="fill-amber-400 text-amber-400" />,
-      label: 'เรทติ้ง',
-      value: `${factory.rating} (${factory.reviews})`,
-    },
   ];
-
-  const [showCategorySubs, setShowCategorySubs] = React.useState(false);
-  const groupedCategorySubs = React.useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (const p of factorySubCategoryPairs) {
-      const cat = String(p.categoryLabel ?? '').trim();
-      const sub = String(p.subLabel ?? '').trim();
-      if (!cat || !sub) continue;
-      const prev = map.get(cat) ?? [];
-      if (!prev.includes(sub)) prev.push(sub);
-      map.set(cat, prev);
-    }
-    if (map.size === 0 && factoryCategoryNames.length > 0) {
-      for (const c of factoryCategoryNames) map.set(c, []);
-    }
-    return Array.from(map.entries());
-  }, [factorySubCategoryPairs, factoryCategoryNames]);
 
   return (
     <div className="hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex">
@@ -133,10 +116,6 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
       <div className="border-b border-gray-100 bg-white px-8 py-4">
         <div className="flex flex-wrap items-center gap-6">
-          
-
-          <div className="h-8 w-px shrink-0 bg-gray-100" />
-
           <div className="flex items-center gap-5">
             {statItems.map((s) => (
               <div key={s.label} className="flex items-center gap-1.5">
@@ -183,52 +162,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             </>
           )}
 
-          {groupedCategorySubs.length > 0 && (
-            <>
-              <div className="h-8 w-px shrink-0 bg-gray-100" />
-              <div className="min-w-[280px] rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCategorySubs((v) => !v)}
-                  className="flex w-full items-center justify-between gap-2"
-                >
-                  <span className="text-[12px] font-semibold text-violet-800">หมวดหมู่ที่รับผลิต</span>
-                  <div className="inline-flex items-center gap-1.5 text-[11px] text-violet-700">
-                    <span>{groupedCategorySubs.length} หมวดหลัก</span>
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showCategorySubs ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
-                {showCategorySubs ? (
-                  <div className="mt-2 space-y-1.5">
-                    {groupedCategorySubs.map(([cat, subs]) => (
-                      <div key={`cat-group-${cat}`} className="rounded-lg bg-white/80 px-2.5 py-2">
-                        <p className="text-[11px] font-bold text-violet-900">{cat}</p>
-                        <p className="mt-0.5 text-[11px] text-violet-700">
-                          {subs.length > 0 ? subs.join(', ') : 'ไม่มีหมวดย่อย'}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </>
-          )}
-
-          {apiCertificates.length > 0 && (
-            <>
-              <div className="h-8 w-px shrink-0 bg-gray-100" />
-              <div className="flex flex-wrap items-center gap-2">
-                {apiCertificates.map((c, i) => (
-                  <span
-                    key={String(c.map_id ?? c.cert_id ?? c.id ?? i)}
-                    className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800"
-                  >
-                    {String(c.cert_name ?? c.name_th ?? c.cert_number ?? 'ใบรับรอง')}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
+           
         </div>
       </div>
 
