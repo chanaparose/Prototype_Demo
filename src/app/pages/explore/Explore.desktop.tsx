@@ -473,7 +473,12 @@ export function ExploreDesktop({
           <ImageWithFallback
             src="assets/tryly_banner_slim.png"
             alt="Tryly banner"
-            className="block h-full w-full object-cover object-[center_45%]"
+            className="block xl:hidden h-full w-full object-cover object-[center_45%]"
+          />
+          <ImageWithFallback
+            src="assets/tryly_banner_refined_spacing.png"
+            alt="Tryly banner"
+            className="hidden xl:block h-full w-full object-cover object-[center_50%]"
           />
         </section>
 

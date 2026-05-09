@@ -806,7 +806,11 @@ export function ProductTour() {
     }
     const seen = localStorage.getItem(TOUR_KEY);
     if (!seen) {
-      const t = setTimeout(() => { setOpen(true); setAutoShown(true); }, 1200);
+      const t = setTimeout(() => {
+        setTourActive(true);
+        setOpen(true);
+        setAutoShown(true);
+      }, 1200);
       return () => clearTimeout(t);
     }
     setAutoShown(true);
@@ -817,6 +821,7 @@ export function ProductTour() {
     const handler = () => {
       originPath.current = location.pathname;
       setStep(0);
+      setTourActive(true);
       setOpen(true);
     };
     window.addEventListener('tryly-open-tour', handler);
@@ -875,32 +880,54 @@ export function ProductTour() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const handleClose = useCallback(() => {
-    localStorage.setItem(TOUR_KEY, '1');
-    clearTourMocks();
-    setTourActive(false);
-    setOpen(false);
-    setTargetRect(null);
-    if (location.pathname !== originPath.current) {
-      navigate(originPath.current);
-    }
-  }, [location.pathname, navigate]);
-
-  const handleFinish = useCallback(() => {
-    localStorage.setItem(TOUR_KEY, '1');
-    clearTourMocks();
-    setTourActive(false);
-    setOpen(false);
-    setTargetRect(null);
+  // Public routes the guest is allowed to land on after tour ends without
+  // hitting AuthGuard → /login. Anything else: bounce to '/'.
+  const isPublicRoute = useCallback((path: string) => {
+    if (path === '/' || path === '/factory-ideas' || path === '/factories') return true;
+    if (path.startsWith('/factories/')) return true;
+    if (path.startsWith('/factory-ideas/')) return true;
+    if (path === '/product-detail' || path === '/promotion-detail' || path === '/idea-detail') return true;
+    return false;
   }, []);
 
-  // Tell AuthGuard that tour is in progress — bypass auth on protected routes
-  // until close/finish.
-  useEffect(() => {
-    setTourActive(open);
-  }, [open]);
+  /**
+   * Common close-flow: navigate to a safe public route FIRST, then defer
+   * `setTourActive(false)` to the next tick so React Router has time to
+   * unmount the protected-route AuthGuard before the auth bluff goes away.
+   * Without the defer, AuthGuard re-renders in the same batch with
+   * isAuth=false and bounces the guest to /login.
+   */
+  const closeTo = useCallback((target: string) => {
+    localStorage.setItem(TOUR_KEY, '1');
+    clearTourMocks();
+    // Hide the tour UI immediately for snappy feel.
+    setOpen(false);
+    setTargetRect(null);
+    // Navigate to target if not already there.
+    if (location.pathname !== target) {
+      navigate(target, { replace: true });
+    }
+    // Defer tour-active flip — let the route transition flush first.
+    window.setTimeout(() => setTourActive(false), 50);
+  }, [location.pathname, navigate]);
 
-  // Safety net — always clear mocks + tour-active flag if tour unmounts.
+  const handleClose = useCallback(() => {
+    const target = isPublicRoute(originPath.current) ? originPath.current : '/';
+    closeTo(target);
+  }, [closeTo, isPublicRoute]);
+
+  const handleFinish = useCallback(() => {
+    // Always send guest to home so they can keep browsing — no forced login.
+    closeTo('/');
+  }, [closeTo]);
+
+  // NOTE: tour-active flag is managed *explicitly* by handlers (handler
+  // sets it true on open; closeTo defers it to false 50ms after navigate).
+  // Don't sync it from `open` via useEffect — that fires synchronously on
+  // setOpen(false) and yanks AuthContext.isAuthenticated to false BEFORE
+  // the route transition completes, which kicks the guest to /login.
+
+  // Safety net — clear mocks + tour-active flag if tour unmounts.
   useEffect(() => {
     return () => {
       clearTourMocks();

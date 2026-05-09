@@ -202,11 +202,18 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     if (isTourActive()) {
       skipImmediateLogout = true;
     }
+    // Genuine guest (no token ever stored) — 401 is expected, do not punt
+    // them to /login. They can keep browsing public pages. This also
+    // suppresses the post-tour-finish race where a leftover protected fetch
+    // would otherwise hard-redirect away from Explore.
+    if (!getToken()) {
+      skipImmediateLogout = true;
+    }
     if (!authPostFailed) {
       if (!skipImmediateLogout) {
         removeToken();
         window.location.href = '/login';
-      } else if (!isTourActive()) {
+      } else if (!isTourActive() && getToken()) {
         console.warn('[api] transient 401 on /frontend/me right after login; keep token and retry later');
       }
     }
