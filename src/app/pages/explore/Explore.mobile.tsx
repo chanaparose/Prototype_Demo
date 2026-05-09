@@ -69,25 +69,12 @@ export function ExploreMobile({
   return (
     <div className="md:hidden pt-3 pb-2 space-y-3">
       {/* Hero Banner — matches desktop purple gradient */}
-      <div className="mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
-        <div className="absolute top-0 right-0 w-[280px] h-full rounded-l-[60px] opacity-70 transform translate-x-16 skew-x-[-15deg]" style={{ background: '#A238FF' }} />
-        <div className="absolute -bottom-10 right-10 w-[200px] h-[150px] rounded-full opacity-40 blur-3xl mix-blend-screen" style={{ background: '#FF7A00' }} />
-        <div className="absolute top-4 left-1/3 w-32 h-32 rounded-full opacity-30 blur-2xl" style={{ background: '#A238FF' }} />
-
-        <div className="relative z-10 px-4 py-3 text-white">
-          <span className="inline-block px-2 py-0.5 mb-1.5 rounded-full text-[10px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
-            READY TO START YOUR PRODUCT?
-          </span>
-          <h1
-            className="font-brand-display text-[1.1rem] font-semibold mb-0.5 leading-[0.98] tracking-[0.01em] drop-shadow-md"
-            style={{ textWrap: 'balance' }}
-          >
-            ค้นหาโรงงานที่ใช่
-          </h1>
-          <p className="text-xs max-w-[240px] font-medium" style={{ color: '#E2DCE6' }}>
-            เริ่มผลิตกับพาร์ตเนอร์ที่เชื่อถือได้
-          </p>
-        </div>
+      <div className="mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md">
+        <ImageWithFallback
+          src="/assets/tryly-banner-final.png"
+          alt="Tryly banner"
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Search Bar */}

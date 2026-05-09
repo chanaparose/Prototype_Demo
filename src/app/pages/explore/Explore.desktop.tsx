@@ -469,36 +469,12 @@ export function ExploreDesktop({
       <div className="px-4 md:px-6 lg:px-8 py-3 lg:py-4 space-y-6 pb-0 w-full mx-auto">
 
         {/* ═══ 1. Hero Banner ═══ */}
-        <section className="relative rounded-2xl overflow-hidden h-[180px] shadow-lg flex items-center" style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}>
-          {/* Bright violet diagonal shape */}
-          <div className="absolute top-0 right-0 w-[600px] h-full rounded-l-[100px] opacity-70 transform translate-x-32 skew-x-[-15deg]" style={{ background: '#A238FF' }}></div>
-          {/* Orange warm glow bottom-right */}
-          <div className="absolute -bottom-20 right-20 w-[400px] h-[300px] rounded-full opacity-40 blur-3xl mix-blend-screen" style={{ background: '#FF7A00' }}></div>
-          {/* Purple glow accent */}
-          <div className="absolute top-10 left-1/3 w-64 h-64 rounded-full opacity-30 blur-3xl" style={{ background: '#A238FF' }}></div>
-
-          <div className="relative z-10 px-7 py-4 text-white max-w-2xl">
-            <span className="inline-block px-2 py-0.5 mb-1.5 rounded-full text-[10px] font-semibold tracking-wide border backdrop-blur-sm" style={{ background: 'rgba(162,56,255,0.30)', color: '#EBD3FF', borderColor: 'rgba(162,56,255,0.50)' }}>
-              READY TO START YOUR PRODUCT?
-            </span>
-            <h1
-              className="mt-[8px] font-brand-display text-[1.5rem] md:text-[1.85rem] font-semibold mb-1.5 leading-[0.96] tracking-[0.01em] drop-shadow-md"
-              style={{ textWrap: 'balance' }}
-            >
-              ค้นหาโรงงานที่ใช่
-            </h1>
-            <p className="text-xs mb-3 max-w-md font-medium leading-relaxed" style={{ color: '#E2DCE6' }}>
-              เริ่มผลิตกับพาร์ตเนอร์ที่เชื่อถือได้
-            </p>
-            <button
-              data-tour="fab"
-              onClick={() => navigate('/create-rfq')}
-              className="text-white text-xs px-4 py-2 rounded-full font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-1.5 shadow-lg"
-              style={{ background: '#A238FF', boxShadow: '0 8px 24px rgba(162,56,255,0.40)' }}
-            >
-              เริ่มสร้างคำขอราคา <ChevronRight size={14} />
-            </button>
-          </div>
+        <section className="relative rounded-2xl overflow-hidden h-[180px] shadow-lg">
+          <ImageWithFallback
+            src="assets/tryly_banner_slim.png"
+            alt="Tryly banner"
+            className="w-full h-full object-cover"
+          />
         </section>
 
         {/* ═══ Search Bar ═══ */}
@@ -900,6 +876,17 @@ export function ExploreDesktop({
       <div className="lg:px-8">
         <ExploreFooter />
       </div>
+
+      {/* iPad FAB: create RFQ (same behavior as mobile) */}
+      <button
+        data-tour="fab"
+        type="button"
+        onClick={() => navigate('/create-rfq')}
+        className="hidden md:flex xl:hidden fixed bottom-6 right-5 w-12 h-12 rounded-full items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
+        style={{ background: '#A238FF', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
+      >
+        <Plus size={20} className="text-white" />
+      </button>
 
     </div>
   );
