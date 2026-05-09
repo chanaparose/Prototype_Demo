@@ -33,6 +33,10 @@ type ProductItem = {
   discount?: string;
   category?: string;
   subCategoryName?: string;
+  factoryId?: string;
+  factoryName?: string;
+  likes?: number;
+  minOrder?: number;
 };
 
 const CARD_W = 192; // card width (180px) + gap (12px)
@@ -47,6 +51,7 @@ function ProductCarouselSection({
   onItemClick,
   seeMoreHref = '/factory-ideas?type=product',
   theme = 'product',
+  getFactoryMeta,
 }: {
   title: string;
   items: ProductItem[];
@@ -55,6 +60,7 @@ function ProductCarouselSection({
   onItemClick?: (id: string) => void;
   seeMoreHref?: string;
   theme?: 'product' | 'material';
+  getFactoryMeta?: (factoryId?: string) => { location: string; rating: number; reviews: number };
 }) {
   const navigate = useNavigate();
   const isMaterial = theme === 'material';
@@ -187,6 +193,9 @@ function ProductCarouselSection({
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {items.map((product) => (
+                  (() => {
+                    const meta = getFactoryMeta?.(product.factoryId) ?? { location: '—', rating: 0, reviews: 0 };
+                    return (
                   <div
                     key={product.id}
                     role="button"
@@ -198,38 +207,43 @@ function ProductCarouselSection({
                         onItemClick?.(product.id);
                       }
                     }}
-                    className="flex-shrink-0 w-[180px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all group cursor-pointer"
+                    className="flex-shrink-0 w-[180px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
                   >
-                    {/* Image */}
-                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
+                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                       <ImageWithFallback
                         src={product.img}
                         alt={product.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      {product.discount && (
-                        <span className="absolute top-2 right-2 bg-[#F28A2E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-                          {product.discount}
-                        </span>
-                      )}
-                      {/* Subtle paw badge */}
-                      <div className="absolute top-2 left-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center shadow-sm text-[12px]">
-                        🐾
-                      </div>
+                      <span
+                        className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
+                        style={{ backgroundColor: isMaterial ? '#0EA5A4' : '#5185D4' }}
+                      >
+                        {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
+                      </span>
                     </div>
-                    {/* Card body */}
-                    <div className="p-2.5 pb-3">
-                      <p className="text-gray-700 text-[12px] mb-1.5 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">
+                    <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                      <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
                         {product.title}
                       </p>
-                      {(product.category || product.subCategoryName) ? (
-                        <p className="text-[10px] text-violet-700/90 font-medium truncate mb-1">
-                          {[product.category, product.subCategoryName].filter(Boolean).join(' › ')}
-                        </p>
-                      ) : null}
-                      <p className="font-bold text-[#F28A2E] text-sm">{product.price}</p>
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[10px] truncate">{meta.location || '—'}</span>
+                      </div>
+                      <div className="mt-auto pt-1 border-t border-gray-50">
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center gap-0.5 min-w-0">
+                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                            <span className="text-gray-700 text-[10px] font-semibold">{meta.rating}</span>
+                            <span className="text-gray-400 text-[9px] truncate">({meta.reviews})</span>
+                          </div>
+                          <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {product.minOrder ?? 0}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                    );
+                  })()
                 ))}
               </div>
 
@@ -403,6 +417,9 @@ export function ExploreDesktop({
       img: s.image,
       category: s.category,
       subCategoryName: s.subCategoryName,
+      factoryId: s.factoryId,
+      factoryName: s.factoryName,
+      minOrder: s.minOrder,
     })),
     [exploreProducts],
   );
@@ -420,6 +437,9 @@ export function ExploreDesktop({
       img: s.image,
       category: s.category,
       subCategoryName: s.subCategoryName,
+      factoryId: s.factoryId,
+      factoryName: s.factoryName,
+      minOrder: s.minOrder,
     })),
     [exploreMatrials],
   );
@@ -573,6 +593,14 @@ export function ExploreDesktop({
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
           }
+          getFactoryMeta={(factoryId) => {
+            const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
+            return {
+              location: (f?.location ?? '').trim() || '—',
+              rating: Number(f?.rating ?? 0),
+              reviews: Number(f?.reviews ?? 0),
+            };
+          }}
         />
 
         {/* ═══ 5b. วัตถุดิบแนะนำ ═══ */}
@@ -586,6 +614,14 @@ export function ExploreDesktop({
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
           }
+          getFactoryMeta={(factoryId) => {
+            const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
+            return {
+              location: (f?.location ?? '').trim() || '—',
+              rating: Number(f?.rating ?? 0),
+              reviews: Number(f?.reviews ?? 0),
+            };
+          }}
         />
 
         {/* ═══ 6. โรงงานแนะนำ ═══ */}
@@ -715,22 +751,38 @@ export function ExploreDesktop({
             {/* Right Scrollable Cards */}
             <div className="w-full lg:w-[60%] flex gap-3 overflow-x-auto snap-x hide-scrollbar pb-2">
               {promoShowcases.map((item) => (
-                <div key={item.id} onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)} className="min-w-[180px] bg-white border border-[#F28A2E]/15 rounded-xl overflow-hidden snap-start shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer">
+                <div key={item.id} onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)} className="min-w-[180px] bg-white border border-gray-100 rounded-lg overflow-hidden snap-start shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer">
                   <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute top-1.5 left-1.5 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide">
+                    <div className="absolute top-1 left-1 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide">
                       โปรโมชัน
                     </div>
                   </div>
-                  <div className="p-3 flex flex-col flex-1">
-                    <h3 className="text-[12px] text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h3>
-                    <p className="text-[10px] text-gray-500 mb-2 line-clamp-2">{item.excerpt}</p>
-                    <div className="mt-auto pt-2 border-t border-[#F28A2E]/10 text-[10px] text-violet-700/90 font-medium truncate mb-1">
-                      {item.factoryName}
+                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                    <h3 className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</h3>
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                      <span className="text-gray-500 text-[10px] truncate">
+                        {((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.location ?? '').trim() || '—'}
+                      </span>
+                    </div>
+                    <div className="mt-auto pt-1 border-t border-gray-50">
+                      <div className="flex items-center justify-between min-w-0">
+                        <div className="flex items-center gap-0.5 min-w-0">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                          <span className="text-gray-700 text-[10px] font-semibold">
+                            {Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.rating ?? 0)}
+                          </span>
+                          <span className="text-gray-400 text-[9px] truncate">
+                            ({Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.reviews ?? 0)})
+                          </span>
+                        </div>
+                        <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

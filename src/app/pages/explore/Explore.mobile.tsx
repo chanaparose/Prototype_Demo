@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf, MapPin, Star } from 'lucide-react';
 import {
   ExplorePromoCarousel,
   ExploreCategories,
@@ -156,23 +156,40 @@ export function ExploreMobile({
                     navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                   }
                 }}
-                className="flex-shrink-0 w-[155px] bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                className="flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
               >
-                <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
+                <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                   <ImageWithFallback
                     src={item.image}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                  <div className="absolute top-1 left-1 bg-[#5185D4] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide">
+                    สินค้า
+                  </div>
                 </div>
-                <div className="p-2 flex flex-col flex-1">
-                  <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors min-h-[28px]">{item.title}</p>
-                  {(item.category || item.subCategoryName) ? (
-                    <p className="text-[10px] text-violet-700/90 font-medium truncate mb-0.5">
-                      {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
-                    </p>
-                  ) : null}
-                  <p className="text-[10px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
+                <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                  <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</p>
+                  <div className="flex items-center gap-0.5 mt-0.5">
+                    <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                    <span className="text-gray-500 text-[10px] truncate">
+                      {((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.location ?? '').trim() || '—'}
+                    </span>
+                  </div>
+                  <div className="mt-auto pt-1 border-t border-gray-50">
+                    <div className="flex items-center justify-between min-w-0">
+                      <div className="flex items-center gap-0.5 min-w-0">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-gray-700 text-[10px] font-semibold">
+                          {Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.rating ?? 0)}
+                        </span>
+                        <span className="text-gray-400 text-[9px] truncate">
+                          ({Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.reviews ?? 0)})
+                        </span>
+                      </div>
+                      <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -229,7 +246,7 @@ export function ExploreMobile({
                     navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                   }
                 }}
-                className="flex-shrink-0 w-[155px] bg-white rounded-xl overflow-hidden border border-emerald-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                className="flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
               >
                 <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
                   <ImageWithFallback
@@ -241,14 +258,28 @@ export function ExploreMobile({
                     วัตถุดิบ
                   </div>
                 </div>
-                <div className="p-2 flex flex-col flex-1">
-                  <p className="text-gray-700 text-xs mb-1 line-clamp-2 leading-snug group-hover:text-[#059669] transition-colors min-h-[28px]">{item.title}</p>
-                  {(item.category || item.subCategoryName) ? (
-                    <p className="text-[10px] text-emerald-700/90 font-medium truncate mb-0.5">
-                      {[item.category, item.subCategoryName].filter(Boolean).join(' › ')}
-                    </p>
-                  ) : null}
-                  <p className="text-[10px] text-gray-500 truncate mt-auto">{item.factoryName}</p>
+                <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                  <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</p>
+                  <div className="flex items-center gap-0.5 mt-0.5">
+                    <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                    <span className="text-gray-500 text-[10px] truncate">
+                      {((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.location ?? '').trim() || '—'}
+                    </span>
+                  </div>
+                  <div className="mt-auto pt-1 border-t border-gray-50">
+                    <div className="flex items-center justify-between min-w-0">
+                      <div className="flex items-center gap-0.5 min-w-0">
+                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                        <span className="text-gray-700 text-[10px] font-semibold">
+                          {Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.rating ?? 0)}
+                        </span>
+                        <span className="text-gray-400 text-[9px] truncate">
+                          ({Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.reviews ?? 0)})
+                        </span>
+                      </div>
+                      <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -319,7 +350,7 @@ export function ExploreMobile({
                         navigate(`/factory-ideas/promotions/${item.id}`);
                       }
                     }}
-                  className="flex-shrink-0 w-[155px] bg-white border border-[#F28A2E]/15 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-[#F28A2E]/30 transition-all group flex flex-col cursor-pointer"
+                  className="flex-shrink-0 w-[155px] bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer"
                 >
                   <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback
@@ -331,11 +362,27 @@ export function ExploreMobile({
                       โปรโมชัน
                     </div>
                   </div>
-                  <div className="p-2 flex flex-col flex-1">
-                    <h4 className="font-semibold text-xs text-gray-700 mb-1 line-clamp-2 leading-snug group-hover:text-[#F27830] transition-colors">{item.title}</h4>
-                    <p className="text-[10px] text-gray-500 mb-1.5 line-clamp-2">{item.excerpt}</p>
-                    <div className="mt-auto pt-1.5 border-t border-[#F28A2E]/10 font-medium text-[#F27830] text-[10px]">
-                      {item.factoryName}
+                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                    <h4 className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</h4>
+                    <div className="flex items-center gap-0.5 mt-0.5">
+                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                      <span className="text-gray-500 text-[10px] truncate">
+                        {((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.location ?? '').trim() || '—'}
+                      </span>
+                    </div>
+                    <div className="mt-auto pt-1 border-t border-gray-50">
+                      <div className="flex items-center justify-between min-w-0">
+                        <div className="flex items-center gap-0.5 min-w-0">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                          <span className="text-gray-700 text-[10px] font-semibold">
+                            {Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.rating ?? 0)}
+                          </span>
+                          <span className="text-gray-400 text-[9px] truncate">
+                            ({Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.reviews ?? 0)})
+                          </span>
+                        </div>
+                        <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
