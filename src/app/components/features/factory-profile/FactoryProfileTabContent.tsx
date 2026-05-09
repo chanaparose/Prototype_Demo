@@ -16,7 +16,7 @@ import { ImageWithFallback } from '../../shared';
 import { ReviewImageAttachments } from '../reviews/ReviewImageAttachments';
 import { formatThaiDate } from './utils';
 
-export type TabId = 'products' | 'promotions' | 'articles' | 'about';
+export type TabId = 'products' | 'promotions' | 'materials' | 'articles' | 'about';
 
 export type ShowcaseItem = {
   id: string;
@@ -67,6 +67,7 @@ export type ReviewItem = {
 const TABS: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'products', label: 'สินค้า', icon: Package },
   { id: 'promotions', label: 'โปรโมชัน', icon: Percent },
+  { id: 'materials', label: 'วัตถุดิบ', icon: Package },
   { id: 'articles', label: 'บทความ', icon: Newspaper },
   { id: 'about', label: 'โรงงาน', icon: Factory },
 ];
@@ -76,6 +77,7 @@ type FactoryProfileTabContentProps = {
   onTabChange: (tab: TabId) => void;
   productItems: ShowcaseItem[];
   promotionItems: ShowcaseItem[];
+  materialItems: ShowcaseItem[];
   articleShowcases: ShowcaseItem[];
   factory: FactoryAbout;
   factoryId?: string;
@@ -95,6 +97,7 @@ export function FactoryProfileTabContent({
   onTabChange,
   productItems,
   promotionItems,
+  materialItems,
   articleShowcases,
   factory,
   factoryId,
@@ -108,6 +111,56 @@ export function FactoryProfileTabContent({
   onPromotionClick,
   onIdeaClick,
 }: FactoryProfileTabContentProps) {
+  const ShowcaseGridCard = ({
+    item,
+    onClick,
+    badgeLabel,
+    badgeColor,
+  }: {
+    item: ShowcaseItem;
+    onClick: () => void;
+    badgeLabel: string;
+    badgeColor: string;
+  }) => (
+    <div
+      onClick={onClick}
+      className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]"
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+        <ImageWithFallback
+          src={item.image}
+          alt={item.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        <span
+          className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
+          style={{ backgroundColor: badgeColor }}
+        >
+          {badgeLabel}
+        </span>
+      </div>
+      <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+        <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
+          {item.title}
+        </p>
+        <div className="flex items-center gap-0.5 mt-0.5">
+          <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+          <span className="text-gray-500 text-[10px] truncate">{factory.location || '—'}</span>
+        </div>
+        <div className="mt-auto pt-1 border-t border-gray-50">
+          <div className="flex items-center justify-between min-w-0">
+            <div className="flex items-center gap-0.5 min-w-0">
+              <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+              <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
+              <span className="text-gray-400 text-[9px] truncate">({factory.reviews})</span>
+            </div>
+            <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="px-4 pt-4 space-y-3">
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -143,28 +196,13 @@ export function FactoryProfileTabContent({
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {productItems.map((item) => (
-              <div
+              <ShowcaseGridCard
                 key={item.id}
+                item={item}
                 onClick={() => onProductClick(item.id)}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform min-w-0"
-              >
-                <div className="h-28 sm:h-32">
-                  <ImageWithFallback
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-2.5 sm:p-3">
-                  <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
-                    {item.title}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1.5">
-                    MOQ {item.minOrder} • {item.leadTime}
-                  </p>
-                </div>
-              </div>
+                badgeLabel="สินค้า"
+                badgeColor="#5185D4"
+              />
             ))}
             </div>
           )}
@@ -180,29 +218,36 @@ export function FactoryProfileTabContent({
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {promotionItems.map((item) => (
-              <div
+              <ShowcaseGridCard
                 key={item.id}
+                item={item}
                 onClick={() => onPromotionClick(item.id)}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer active:scale-[0.99] transition-transform min-w-0"
-              >
-                <div className="h-28 sm:h-32">
-                  <ImageWithFallback
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-2.5 sm:p-3">
-                  <p className="text-xs sm:text-sm text-gray-900 line-clamp-2" style={{ fontWeight: 700 }}>
-                    {item.title}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1 line-clamp-2">{item.excerpt}</p>
-                  <p className="text-[10px] sm:text-[11px] text-amber-700 mt-1.5">
-                    ขั้นต่ำเริ่มที่ MOQ {item.minOrder}
-                  </p>
-                </div>
-              </div>
+                badgeLabel="โปรโมชัน"
+                badgeColor="#E38844"
+              />
             ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'materials' && (
+        <div>
+          {materialItems.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center">
+              โรงงานนี้ยังไม่มีวัตถุดิบ
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {materialItems.map((item) => (
+                <ShowcaseGridCard
+                  key={item.id}
+                  item={item}
+                  onClick={() => onProductClick(item.id)}
+                  badgeLabel="วัตถุดิบ"
+                  badgeColor="#0EA5A4"
+                />
+              ))}
             </div>
           )}
         </div>
@@ -220,7 +265,7 @@ export function FactoryProfileTabContent({
                 <div
                   key={item.id}
                   onClick={() => onIdeaClick(item.id)}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer active:scale-[0.99] transition-transform p-4 min-w-0"
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98] p-4 min-w-0"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-700 uppercase tracking-wide">

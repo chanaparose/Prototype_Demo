@@ -5,6 +5,7 @@ import {
   Mail,
   Phone,
   ArrowLeft,
+  ChevronDown,
   Star,
   Package,
   Clock,
@@ -35,6 +36,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
     setActiveTab,
     productItems,
     promotionItems,
+    materialItems,
     articleItems,
     reviews,
     detailLoading,
@@ -100,6 +102,23 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
     },
   ];
 
+  const [showCategorySubs, setShowCategorySubs] = React.useState(false);
+  const groupedCategorySubs = React.useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const p of factorySubCategoryPairs) {
+      const cat = String(p.categoryLabel ?? '').trim();
+      const sub = String(p.subLabel ?? '').trim();
+      if (!cat || !sub) continue;
+      const prev = map.get(cat) ?? [];
+      if (!prev.includes(sub)) prev.push(sub);
+      map.set(cat, prev);
+    }
+    if (map.size === 0 && factoryCategoryNames.length > 0) {
+      for (const c of factoryCategoryNames) map.set(c, []);
+    }
+    return Array.from(map.entries());
+  }, [factorySubCategoryPairs, factoryCategoryNames]);
+
   return (
     <div className="hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex">
       <div className="px-8 pt-6">
@@ -164,41 +183,33 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             </>
           )}
 
-          {(factorySubCategoryPairs.length > 0 ||
-            factoryCategoryNames.length > 0 ||
-            factorySubCategoryNames.length > 0) && (
+          {groupedCategorySubs.length > 0 && (
             <>
               <div className="h-8 w-px shrink-0 bg-gray-100" />
-              <div className="flex flex-wrap items-center gap-2">
-                {factorySubCategoryPairs.length > 0
-                  ? factorySubCategoryPairs.map((p, i) => (
-                      <span
-                        key={`pair-${p.categoryLabel}-${p.subLabel}-${i}`}
-                        className="rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-800"
-                      >
-                        {p.categoryLabel} › {p.subLabel}
-                      </span>
-                    ))
-                  : (
-                    <>
-                      {factoryCategoryNames.map((n) => (
-                        <span
-                          key={`cat-${n}`}
-                          className="rounded-full border border-sky-100 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-800"
-                        >
-                          {n}
-                        </span>
-                      ))}
-                      {factorySubCategoryNames.map((n) => (
-                        <span
-                          key={`sub-${n}`}
-                          className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[11px] font-medium text-teal-800"
-                        >
-                          {n}
-                        </span>
-                      ))}
-                    </>
-                  )}
+              <div className="min-w-[280px] rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCategorySubs((v) => !v)}
+                  className="flex w-full items-center justify-between gap-2"
+                >
+                  <span className="text-[12px] font-semibold text-violet-800">หมวดหมู่ที่รับผลิต</span>
+                  <div className="inline-flex items-center gap-1.5 text-[11px] text-violet-700">
+                    <span>{groupedCategorySubs.length} หมวดหลัก</span>
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showCategorySubs ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+                {showCategorySubs ? (
+                  <div className="mt-2 space-y-1.5">
+                    {groupedCategorySubs.map(([cat, subs]) => (
+                      <div key={`cat-group-${cat}`} className="rounded-lg bg-white/80 px-2.5 py-2">
+                        <p className="text-[11px] font-bold text-violet-900">{cat}</p>
+                        <p className="mt-0.5 text-[11px] text-violet-700">
+                          {subs.length > 0 ? subs.join(', ') : 'ไม่มีหมวดย่อย'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </>
           )}
@@ -229,6 +240,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             factoryId={factory.id}
             productItems={productItems}
             promotionItems={promotionItems}
+            materialItems={materialItems}
             articleShowcases={articleItems.showcaseIdeas}
             factory={{
               name: factory.name,

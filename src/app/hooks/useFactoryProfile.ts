@@ -355,6 +355,10 @@ export function useFactoryProfile() {
     () => factoryShowcases.filter((item) => item.contentType === 'promotion'),
     [factoryShowcases],
   );
+  const materialItems = React.useMemo(
+    () => factoryShowcases.filter((item) => item.contentType === 'material'),
+    [factoryShowcases],
+  );
 
   const articleItems = React.useMemo(() => {
     const showcaseIdeas = factoryShowcases.filter((item) => item.contentType === 'idea');
@@ -402,6 +406,7 @@ export function useFactoryProfile() {
     conversation,
     productItems,
     promotionItems,
+    materialItems,
     articleItems,
     reviews,
     showcasesLoading,
