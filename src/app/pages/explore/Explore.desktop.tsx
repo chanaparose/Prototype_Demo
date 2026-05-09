@@ -473,7 +473,7 @@ export function ExploreDesktop({
           <ImageWithFallback
             src="assets/tryly_banner_slim.png"
             alt="Tryly banner"
-            className="block h-full w-full object-cover object-[center_calc(50%+10px)]"
+            className="block h-full w-full object-cover object-[center_45%]"
           />
         </section>
 
