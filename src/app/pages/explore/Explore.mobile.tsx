@@ -311,7 +311,7 @@ export function ExploreMobile({
 
       <div className="mt-[20px]"> 
         <ExploreFactoryGrid
-          factories={(factories ?? []).slice(0, 6)}
+          factories={(factories ?? []).slice(0, 4)}
           onFactoryClick={(id) => navigate(`/factories/${id}`)}
           onSeeAll={() => navigate('/factory-ideas?type=factory')}
         />
@@ -319,7 +319,7 @@ export function ExploreMobile({
 
       <div className="mt-[20px]">
         <ExploreIdeaArticles
-          articles={ideaArticles ?? []}
+          articles={(ideaArticles ?? []).slice(0, 3)}
           onSeeAll={() => navigate('/factory-ideas?type=idea')}
           onArticleClick={(id) => navigate(`/idea-detail?showcase_id=${id}`)}
         />

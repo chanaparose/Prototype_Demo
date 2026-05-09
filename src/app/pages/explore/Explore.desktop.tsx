@@ -816,7 +816,7 @@ export function ExploreDesktop({
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {ideaArticlesList.map((article) => (
+              {ideaArticlesList.slice(0, 4).map((article) => (
                 <div
                   key={article.id}
                   onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
