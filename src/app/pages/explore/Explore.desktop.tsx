@@ -129,33 +129,14 @@ function ProductCarouselSection({
             alt={title}
             className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          {/* Gradient overlay */}
           <div
-            className="absolute inset-0 z-[1]"
+            className="absolute inset-0 flex flex-col justify-end p-5 pointer-events-none"
             style={{
-              background: isMaterial
-                ? 'linear-gradient(to top, rgba(4,120,87,0.45), rgba(5,150,105,0.22), transparent)'
-                : 'linear-gradient(to top, rgba(242,120,48,0.45), rgba(242,138,46,0.22), transparent)',
+              background:
+                'linear-gradient(to top right, rgba(0, 60, 100, 0.2), rgba(3, 153, 190, 0.1), transparent)',
             }}
+            aria-hidden
           />
-          <div className="absolute inset-0 z-10 flex flex-col justify-between p-3">
-            {/* Top badge */}
-            <span
-              className="self-start text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow backdrop-blur-[2px]"
-              style={{ background: isMaterial ? 'rgba(5,150,105,0.75)' : 'rgba(242,138,46,0.75)' }}
-            >
-              {isMaterial ? '🌿 วัตถุดิบ' : '🐾 PET SHOP'}
-            </span>
-            {/* Bottom text */}
-            <div>
-              <p className="text-white text-sm font-black leading-tight drop-shadow-lg mb-1.5">
-                {bannerText}
-              </p>
-              <span className="inline-block bg-white/20 border border-white/40 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
-                {isMaterial ? 'สำหรับการผลิตของคุณ' : 'สำหรับสัตว์เลี้ยงแสนรัก'}
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Right: card carousel + arrows + dots — หรือ empty state */}
@@ -574,7 +555,7 @@ export function ExploreDesktop({
         <ProductCarouselSection
           title="สินค้าแนะนำ"
           items={productShowcases}
-          bannerImg={'https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700'}
+          bannerImg={'/assets/tryly_vertical_banner_v3_new_concept_0.png'}
           bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง"
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
@@ -597,7 +578,7 @@ export function ExploreDesktop({
           theme="material"
           seeMoreHref="/factory-ideas?type=material"
           items={materialShowcases}
-          bannerImg={'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=500&h=300&fit=crop'}
+          bannerImg={'/assets/tryly_vertical_banner_raw_material_v3_0.png'}
           bannerText="วัตถุดิบคุณภาพสูง"
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
@@ -734,9 +715,9 @@ export function ExploreDesktop({
                 alt="Banner"
                 className="w-full h-full object-cover absolute transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#F27830]/48 via-[#F28A2E]/24 to-transparent flex flex-col justify-end p-5">
+              <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/60 via-slate-700/30 to-transparent flex flex-col justify-end p-5">
                 <h3 className="text-2xl font-black text-white drop-shadow-md mb-1">บริการ</h3>
-                <p className="text-white font-medium text-sm drop-shadow-md mb-3 bg-[#F27830]/65 backdrop-blur-sm self-start px-3 py-1 rounded-full border border-white/25">สำหรับสัตว์เลี้ยงแสนรัก</p>
+                <p className="text-white font-medium text-sm drop-shadow-md mb-3 bg-slate-800/65 backdrop-blur-sm self-start px-3 py-1 rounded-full border border-white/25">สำหรับสัตว์เลี้ยงแสนรัก</p>
               </div>
             </div>
 
