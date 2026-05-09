@@ -534,25 +534,28 @@ export function ProductDetailMobile() {
 
       {/* ── Sticky bottom CTA bar ── */}
       <div
-        className="fixed bottom-0 left-0 right-0 bg-[#F8F6FC]/95 backdrop-blur border-t z-40 flex items-stretch h-[60px]"
+        className="fixed inset-x-2 bottom-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-2xl shadow-[0_12px_30px_rgba(46,34,82,0.16)] overflow-hidden supports-[padding:max(0px)]:pb-[env(safe-area-inset-bottom)]"
         style={{ borderColor: BRAND.divider }}
       >
         <button
           type="button"
           onClick={() => navigate(`/factories/${item.factoryId}`)}
-          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white/70"
+          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white"
         >
           <Store className="w-5 h-5" />
           <span className="text-[10px] leading-none">โปรไฟล์</span>
         </button>
-        <div className="w-px bg-gray-100" />
+        <div className="w-px bg-violet-100/70" />
         <button
           type="button"
           onClick={() => void toggleFavorite(item.id)}
-          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white/70"
+          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white"
           aria-label="ถูกใจ"
         >
-          <Heart className="w-5 h-5" style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }} />
+          <Heart
+            className="w-5 h-5 shrink-0"
+            style={liked ? { color: '#EF4444', fill: '#EF4444' } : {}}
+          />
           <span className="text-[10px] leading-none text-gray-500">{likeCount}</span>
         </button>
         <button
