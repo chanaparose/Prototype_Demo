@@ -13,6 +13,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { DesktopSidebar } from './DesktopSidebar';
+import { ProductTour } from '../features/explore/ProductTour';
 import { useAuth } from '../../contexts/AuthContext';
 import { useData } from '../../contexts/DataContext';
 import { isFactoryRole } from '../../utils/factoryUser';
@@ -266,6 +267,9 @@ export function Layout() {
           </div>
         </main>
       </div>
+
+      {/* Product Tour — persists across all routes */}
+      <ProductTour />
     </div>
   );
 }

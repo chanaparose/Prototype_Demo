@@ -8,7 +8,6 @@ import {
   ExploreIdeaArticles,
   ExploreFooter,
   HowToOrderSection,
-  ProductTour,
 } from '../../components/features/explore';
 import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
@@ -92,7 +91,7 @@ export function ExploreMobile({
       </div>
 
       {/* Search Bar */}
-      <div className="px-4 flex gap-2">
+      <div data-tour="search" className="px-4 flex gap-2">
         <div className="flex-1 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100">
           <Search size={16} className="text-gray-400 shrink-0" />
           <input
@@ -113,7 +112,7 @@ export function ExploreMobile({
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
-      <div className="mt-[20px]">
+      <div data-tour="categories" className="mt-[20px]">
         <ExploreCategories
           categories={categories}
           mergedFromApi={exploreCategoriesMerged}
@@ -124,7 +123,7 @@ export function ExploreMobile({
       </div>
 
       {/* สินค้าแนะนำ (Mobile) — แบนเนอร์ PET SHOP แสดงเสมอ; grid เมื่อมีข้อมูล */}
-      <div className="mb-3">
+      <div data-tour="products" className="mb-3">
         <div className="mt-[25px] flex items-center justify-between px-4 mb-2">
           <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
             <ShoppingBag size={15} className="text-[#F28A2E]" /> สินค้าแนะนำ
@@ -449,6 +448,7 @@ export function ExploreMobile({
 
       {/* FAB — matches desktop purple accent */}
       <button
+        data-tour="fab"
         type="button"
         onClick={() => navigate('/create-rfq')}
         className="fixed bottom-6 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
@@ -457,8 +457,6 @@ export function ExploreMobile({
         <Plus size={20} className="text-white" />
       </button>
 
-      {/* Product Tour (floating) */}
-      <ProductTour />
     </div>
   );
 }

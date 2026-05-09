@@ -21,7 +21,6 @@ import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/explor
 import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '../../components/features/explore/HowToOrderSection';
-import { ProductTour } from '../../components/features/explore/ProductTour';
 import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
@@ -492,6 +491,7 @@ export function ExploreDesktop({
               เริ่มผลิตกับพาร์ตเนอร์ที่เชื่อถือได้
             </p>
             <button
+              data-tour="fab"
               onClick={() => navigate('/create-rfq')}
               className="text-white text-xs px-4 py-2 rounded-full font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-1.5 shadow-lg"
               style={{ background: '#A238FF', boxShadow: '0 8px 24px rgba(162,56,255,0.40)' }}
@@ -502,7 +502,7 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ Search Bar ═══ */}
-        <div className="flex gap-2.5">
+        <div data-tour="search" className="flex gap-2.5">
           <div className="flex-1 flex items-center gap-2.5 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100">
             <Search size={16} className="text-gray-400 shrink-0" />
             <input
@@ -578,6 +578,7 @@ export function ExploreDesktop({
         )}
 
         {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
+        <div data-tour="categories">
         <DesktopCategories
           categories={categories}
           mergedFromApi={exploreCategoriesMerged}
@@ -585,8 +586,10 @@ export function ExploreDesktop({
           apiError={exploreCategoriesError}
           onRetryCategoriesApi={reloadExploreCategories}
         />
+        </div>
 
         {/* ═══ 5. สินค้าแนะนำ — from factoryShowcases (แบนเนอร์ซ้ายแสดงเสมอ) ═══ */}
+        <div data-tour="products">
         <ProductCarouselSection
           title="สินค้าแนะนำ"
           items={productShowcases}
@@ -604,6 +607,8 @@ export function ExploreDesktop({
             };
           }}
         />
+
+        </div>
 
         {/* ═══ 5b. วัตถุดิบแนะนำ ═══ */}
         <ProductCarouselSection
@@ -896,8 +901,6 @@ export function ExploreDesktop({
         <ExploreFooter />
       </div>
 
-      {/* Product Tour (floating) */}
-      <ProductTour />
     </div>
   );
 }
