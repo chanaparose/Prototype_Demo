@@ -672,17 +672,31 @@ function TourCard({
   const isFirst = stepIdx === 0;
   const isLast = stepIdx === total - 1;
   const wh = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const arrowUp = !isMock && rect ? rect.bottom < wh * 0.55 : false;
+  const ww = typeof window !== 'undefined' ? window.innerWidth : 400;
+
+  // If the spotlight target sits in the lower half of the viewport, flip the
+  // tour card to the TOP so it doesn't overlap the highlighted area.
+  // (Steps 2 / 4 / 5 commonly target buttons near the bottom on mobile.)
+  const placeAtTop = !isMock && rect ? rect.top > wh * 0.5 : false;
+  // Arrow direction: when card is at TOP, arrow points DOWN to target below.
+  // When card is at BOTTOM, arrow points UP to target above (only when target
+  // sits in upper half so the arrow actually meets the spotlight).
+  const arrowDown = placeAtTop && rect != null;
+  const arrowUp = !placeAtTop && !isMock && rect ? rect.bottom < wh * 0.55 : false;
 
   return (
     <div
       key={stepIdx}
       onClick={(e) => e.stopPropagation()}
       style={{
-        position: 'fixed', bottom: 16, left: 12, right: 12, zIndex: 9999,
+        position: 'fixed',
+        ...(placeAtTop ? { top: 16 } : { bottom: 16 }),
+        left: 12, right: 12, zIndex: 9999,
         maxWidth: 440, margin: '0 auto',
         background: '#FFFFFF', borderRadius: 20,
-        boxShadow: '0 -4px 40px rgba(0,0,0,0.28)',
+        boxShadow: placeAtTop
+          ? '0 4px 40px rgba(0,0,0,0.28)'
+          : '0 -4px 40px rgba(0,0,0,0.28)',
         overflow: 'visible',
         animation: 'tour-card-in 0.22s ease-out both',
       }}
@@ -690,10 +704,19 @@ function TourCard({
       {arrowUp && rect && (
         <div style={{
           position: 'absolute', bottom: '100%',
-          left: Math.min(Math.max(rect.left + rect.width / 2 - 24, 20), (typeof window !== 'undefined' ? window.innerWidth : 400) - 60),
+          left: Math.min(Math.max(rect.left + rect.width / 2 - 24, 20), ww - 60),
           width: 0, height: 0,
           borderLeft: '12px solid transparent', borderRight: '12px solid transparent',
           borderBottom: `12px solid ${def.badgeColor}`, marginBottom: -1, pointerEvents: 'none',
+        }} />
+      )}
+      {arrowDown && rect && (
+        <div style={{
+          position: 'absolute', top: '100%',
+          left: Math.min(Math.max(rect.left + rect.width / 2 - 24, 20), ww - 60),
+          width: 0, height: 0,
+          borderLeft: '12px solid transparent', borderRight: '12px solid transparent',
+          borderTop: `12px solid ${def.badgeColor}`, marginTop: -1, pointerEvents: 'none',
         }} />
       )}
       <div style={{ height: 4, borderRadius: '20px 20px 0 0', background: `linear-gradient(90deg, ${def.badgeColor} 0%, #A238FF 100%)` }} />
