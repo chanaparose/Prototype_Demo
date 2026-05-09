@@ -133,7 +133,7 @@ function ProductCarouselSection({
             className="absolute inset-0 flex flex-col justify-end p-5 pointer-events-none"
             style={{
               background:
-                'linear-gradient(to top right, rgba(0, 60, 100, 0.2), rgba(3, 153, 190, 0.1), transparent)',
+                'linear-gradient(to top right, rgba(0, 56, 94, 0.29), rgba(22, 189, 231, 0.17), transparent)',
             }}
             aria-hidden
           />
@@ -555,7 +555,7 @@ export function ExploreDesktop({
         <ProductCarouselSection
           title="สินค้าแนะนำ"
           items={productShowcases}
-          bannerImg={'/assets/tryly_vertical_banner_v3_new_concept_0.png'}
+          bannerImg={'assets/tryly_vertical_banner_v4_minimalist_0.png'}
           bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง"
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
@@ -578,7 +578,7 @@ export function ExploreDesktop({
           theme="material"
           seeMoreHref="/factory-ideas?type=material"
           items={materialShowcases}
-          bannerImg={'/assets/tryly_vertical_banner_raw_material_v3_0.png'}
+          bannerImg={'assets/tryly_vertical_banner_raw_material_v4_minimalist_0.png'}
           bannerText="วัตถุดิบคุณภาพสูง"
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
