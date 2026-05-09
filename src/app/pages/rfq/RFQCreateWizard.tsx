@@ -385,7 +385,10 @@ export function RFQCreateWizard() {
 
         {step === 0 ? (
           <div className="space-y-4">
-            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
+            <section
+              data-tour="request-kind"
+              className="rounded-xl border border-gray-100 p-3 sm:p-4"
+            >
               <p className="text-sm font-semibold text-[#2E2252] mb-2">ประเภทคำขอ</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {([

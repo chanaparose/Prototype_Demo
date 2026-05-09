@@ -501,21 +501,40 @@ const STEPS: StepDef[] = [
     spotlightPad: 6,
     badgeColor: '#A238FF',
     icon: '🔍',
-    badge: 'ขั้นตอนที่ 1 / 6',
+    badge: 'ขั้นตอนที่ 1 / 7',
     title: 'เลือกดูสินค้าและโรงงาน',
     desc: 'เลือกดูสินค้าตัวอย่าง วัตถุดิบ และโรงงานที่สนใจ กรองตามหมวดหมู่ tab ด้านบน หรือค้นหาโดยตรงได้เลย',
     tip: '💡 กด tab "สินค้า" เพื่อดูตัวอย่างที่โรงงานเคยผลิต',
   },
   {
-    route: '/create-rfq',
-    targetTexts: ['ส่งคำขอราคา', 'ส่งคำขอ', 'สร้างคำขอ'],
+    // Navigate to home where both targets exist:
+    //   - Desktop: sidebar "สร้างคำขอราคา" button
+    //   - Mobile : floating "+" FAB at bottom-right
+    // findTarget picks the first visible match → adapts to viewport.
+    route: '/',
+    targetSelector: '[data-tour="create-rfq-cta"], [data-tour="fab"]',
+    targetTexts: ['สร้างคำขอราคา'],
     spotlightRadius: 12,
+    spotlightPad: 8,
+    badgeColor: '#F28A2E',
+    icon: '➕',
+    badge: 'ขั้นตอนที่ 2 / 7',
+    title: 'กดปุ่มสร้างคำขอราคา',
+    desc: 'เมื่อต้องการเริ่มต้น กดปุ่ม "สร้างคำขอราคา" ที่ sidebar (Desktop) หรือ ปุ่มลอย "+" มุมขวาล่าง (Mobile) เพื่อเข้าสู่ฟอร์มสร้าง RFQ',
+    tip: '➕ ปุ่มนี้จะอยู่กับคุณตลอดทุกหน้า กดได้เมื่อพร้อม',
+  },
+  {
+    route: '/create-rfq',
+    targetSelector: '[data-tour="request-kind"]',
+    targetTexts: ['ประเภทคำขอ', 'ขอตัวอย่างสินค้า', 'ขอราคาผลิต'],
+    spotlightRadius: 14,
+    spotlightPad: 10,
     badgeColor: '#F28A2E',
     icon: '📋',
-    badge: 'ขั้นตอนที่ 2 / 6',
-    title: 'ส่งคำขอราคา (RFQ) ฟรี',
-    desc: 'กรอกข้อมูลสินค้าที่ต้องการผลิต เช่น ผลิตตัวอย่าง หรือ ขอตัวอย่างวัตถุดิบ ระบบจะส่ง RFQ ให้ทุกโรงงานในหมวดหมู่นั้น',
-    tip: '📋 ยิ่งกรอกละเอียด ยิ่งได้ราคาที่แม่นยำ',
+    badge: 'ขั้นตอนที่ 3 / 7',
+    title: 'เลือกประเภทคำขอที่เหมาะกับคุณ',
+    desc: 'นอกจาก "ขอราคาผลิต OEM" แล้ว คุณยังสามารถเลือก "ขอตัวอย่างสินค้า" หรือ "ขอตัวอย่างวัตถุดิบ" ได้ฟรี เพื่อทดลองคุณภาพก่อนสั่งจริง',
+    tip: '📋 แนะนำเริ่มจาก "ขอตัวอย่างสินค้า" ถ้ายังไม่แน่ใจคุณภาพโรงงาน',
   },
   {
     route: '/product-detail?showcase_id=14',
@@ -524,7 +543,7 @@ const STEPS: StepDef[] = [
     spotlightRadius: 12,
     badgeColor: '#0D9488',
     icon: '💬',
-    badge: 'ขั้นตอนที่ 3 / 6',
+    badge: 'ขั้นตอนที่ 4 / 7',
     title: 'แชทกับโรงงานที่สนใจ',
     desc: 'กดปุ่ม "แชทกับโรงงาน" เพื่อคุยรายละเอียดโดยตรง ปรับแบบ ขอตัวอย่าง หรือต่อรองราคาได้เลย',
     tip: '💬 โรงงานใน Tryly ทุกรายพร้อมตอบกลับภายใน 24 ชม.',
@@ -536,7 +555,7 @@ const STEPS: StepDef[] = [
     spotlightRadius: 10,
     badgeColor: '#3B82F6',
     icon: '📩',
-    badge: 'ขั้นตอนที่ 4 / 6',
+    badge: 'ขั้นตอนที่ 5 / 7',
     title: 'ส่ง RFQ ให้โรงงานใน Chat',
     desc: 'แนบคำขอราคาที่สร้างไว้ในห้องแชท เพื่อให้โรงงานส่งใบเสนอราคาอย่างเป็นทางการกลับมา',
     tip: '📩 โรงงานจะส่งใบเสนอราคาผ่าน Chat และในหน้า RFQ',
@@ -548,7 +567,7 @@ const STEPS: StepDef[] = [
     spotlightRadius: 12,
     badgeColor: '#7C3AED',
     icon: '⚖️',
-    badge: 'ขั้นตอนที่ 5 / 6',
+    badge: 'ขั้นตอนที่ 6 / 7',
     title: 'เปรียบเทียบและยอมรับข้อเสนอ',
     desc: 'ดูรายละเอียดใบเสนอราคาจากหลายโรงงาน เปรียบเทียบราคา เงื่อนไข และยอมรับข้อเสนอได้',
     tip: '⚖️ AI จะแนะนำโรงงานที่คุ้มค่าที่สุดสำหรับงานของคุณ',
@@ -560,18 +579,27 @@ const STEPS: StepDef[] = [
     spotlightRadius: 12,
     badgeColor: '#22C55E',
     icon: '✅',
-    badge: 'ขั้นตอนที่ 6 / 6',
+    badge: 'ขั้นตอนที่ 7 / 7',
     title: 'จ่ายเงินและติดตามสถานะ',
     desc: 'ชำระมัดจำผ่านระบบ Escrow ที่ปลอดภัย แล้วติดตามสถานะการผลิตจนถึงมือคุณ',
     tip: '🔒 เงินจะโอนให้โรงงานเมื่อคุณรับสินค้าแล้วเท่านั้น',
   },
 ];
 
+/** True if element has a non-zero bounding box (i.e. actually rendered + visible). */
+function isVisible(el: Element): boolean {
+  const r = el.getBoundingClientRect();
+  return r.width > 1 && r.height > 1;
+}
+
 /* ─── Find target element (for real-page steps) ─────────────────────────────── */
 function findTarget(def: StepDef): Element | null {
   if (def.targetSelector) {
-    const el = document.querySelector(def.targetSelector);
-    if (el) return el;
+    // querySelectorAll allows comma-separated fallback selectors — pick the
+    // first one that is actually rendered + visible (hidden via CSS gives 0×0).
+    const candidates = Array.from(document.querySelectorAll(def.targetSelector));
+    const visible = candidates.find(isVisible);
+    if (visible) return visible;
   }
   if (def.targetTexts) {
     // Pass 1: prefer interactive elements
@@ -582,6 +610,7 @@ function findTarget(def: StepDef): Element | null {
         // Skip elements inside the tour card itself (z-index 9999)
         const card = el.closest('[style*="z-index: 9999"]');
         if (card) return false;
+        if (!isVisible(el)) return false;
         const t = (el.textContent || '').trim();
         const ph = (el as HTMLInputElement).placeholder || '';
         return t.includes(text) || ph.includes(text);
@@ -593,6 +622,7 @@ function findTarget(def: StepDef): Element | null {
       const all = Array.from(document.querySelectorAll('h1, h2, h3, p, span, div'));
       const found = all.find((el) => {
         if (el.closest('[style*="z-index: 9999"]')) return false;
+        if (!isVisible(el)) return false;
         const own = Array.from(el.childNodes)
           .filter((n) => n.nodeType === 3)
           .map((n) => n.textContent || '')

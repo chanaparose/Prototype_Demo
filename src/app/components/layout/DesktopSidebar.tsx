@@ -20,6 +20,7 @@ import {
 import { factoryVerifyStatus } from '../factory/FactoryVerifiedGuard';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
+import { isTourActive, subscribeTourActive } from '../../utils/tourMocks';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -47,6 +48,9 @@ export function DesktopSidebar() {
   const currentUser = data.currentUser;
   const isFactory = isFactoryRole(authUser);
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
+  // Subscribe to tour-active so guest can see "สร้างคำขอราคา" CTA during tour
+  const [tourOn, setTourOn] = React.useState<boolean>(isTourActive());
+  React.useEffect(() => subscribeTourActive(setTourOn), []);
 
   const isActivePath = (path: string) =>
     path === '/'
@@ -227,11 +231,12 @@ export function DesktopSidebar() {
         </div>
       )}
 
-      {/* Create RFQ — เฉพาะลูกค้า */}
-      {!isFactory && isAuthenticated ? (
+      {/* Create RFQ — เฉพาะลูกค้า (หรือระหว่าง ProductTour) */}
+      {!isFactory && (isAuthenticated || tourOn) ? (
         <div className="px-3 pb-3">
           <button
             type="button"
+            data-tour="create-rfq-cta"
             onClick={() => navigate('/create-rfq')}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
