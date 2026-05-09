@@ -22,15 +22,16 @@ import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
 import { useFavorites } from '../../hooks/useFavorites';
 
+// Aligned with Explore page palette — vibrant brand purple + bright accent orange
 const BRAND = {
-  orange: '#E38844',
-  orangeDark: '#C9722F',
+  orange: '#F28A2E',      // Explore primary orange
+  orangeDark: '#F27830',  // Explore hover orange
   orangeSoft: '#FFF4E8',
-  purple: '#7A4B94',
-  purpleSoft: '#F8F6FA',
-  ink: '#2E2252',
-  border: '#EDE7F1',
-  divider: '#F2F2F2',
+  purple: '#A238FF',      // Explore vibrant brand purple
+  purpleSoft: '#F5F3FF',  // softer page background for readability
+  ink: '#1A0A2E',         // Explore deepest text
+  border: '#E7E2F0',
+  divider: '#ECE7F4',
 } as const;
 
 function formatThaiDate(date: string): string {
@@ -155,7 +156,7 @@ export function ProductDetailMobile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] pb-[72px]">
+    <div className="min-h-screen bg-[#F6F4FB] pb-[72px]">
       {/* ── Image carousel — เฟรม 4:3 มือถือ + iPad (เลย์เอาต์มือถือ) พื้นขาว (รูปจัตุรัสยังอยู่กลางเฟรม) ── */}
       <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
         {/* รูปแสดงเป็นสี่เหลี่ยมจัตุรัส (ครอป) กลางเฟรม — ขอบเฟรมคงสัดส่วนเดิม */}
@@ -251,11 +252,11 @@ export function ProductDetailMobile() {
 
         <div className="flex items-baseline gap-2 flex-wrap mt-2">
           {priceText ? (
-            <p className="text-[24px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
+            <p className="text-[24px] font-bold leading-none" style={{ color: '#7C3AED' }}>
               {priceText}
             </p>
           ) : (
-            <p className="text-[18px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
+            <p className="text-[18px] font-semibold leading-none" style={{ color: '#7C3AED' }}>
               สอบถามราคากับโรงงาน
             </p>
           )}
@@ -286,14 +287,14 @@ export function ProductDetailMobile() {
       </div>
 
       {/* divider strip */}
-      <div className="h-2" style={{ background: '#F5F5F5' }} />
+      <div className="h-2" style={{ background: '#F6F4FB' }} />
 
       {/* ── Info rows ── */}
       
       {/* tags */}
       {item.tags.length > 0 ? (
         <>
-          <div className="h-2" style={{ background: '#F5F5F5' }} />
+          <div className="h-2" style={{ background: '#F6F4FB' }} />
           <div className="bg-white px-4 py-3">
             <p className="text-[12px] font-semibold mb-2" style={{ color: BRAND.ink }}>แท็กสินค้า</p>
             <div className="flex flex-wrap gap-1.5">
@@ -312,7 +313,7 @@ export function ProductDetailMobile() {
       ) : null}
 
       {/* divider */}
-      <div className="h-2" style={{ background: '#F5F5F5' }} />
+      <div className="h-2" style={{ background: '#F6F4FB' }} />
 
       {/* ── Specifications ── */}
       <div className="bg-white px-4 py-3">
@@ -356,7 +357,7 @@ export function ProductDetailMobile() {
 
 
       {/* divider */}
-      <div className="h-2" style={{ background: '#F5F5F5' }} />
+      <div className="h-2" style={{ background: '#F6F4FB' }} />
 
       {/* ── Shop card ── */}
       <button
@@ -464,7 +465,7 @@ export function ProductDetailMobile() {
       </div>
 
       <>
-        <div className="h-2" style={{ background: '#F5F5F5' }} />
+        <div className="h-2" style={{ background: '#F6F4FB' }} />
         <div className="bg-white px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <p className="text-[13px] font-bold" style={{ color: BRAND.ink }}>
@@ -533,13 +534,13 @@ export function ProductDetailMobile() {
 
       {/* ── Sticky bottom CTA bar ── */}
       <div
-        className="fixed bottom-0 left-0 right-0 bg-white border-t z-40 flex items-stretch h-[60px]"
+        className="fixed bottom-0 left-0 right-0 bg-[#F8F6FC]/95 backdrop-blur border-t z-40 flex items-stretch h-[60px]"
         style={{ borderColor: BRAND.divider }}
       >
         <button
           type="button"
           onClick={() => navigate(`/factories/${item.factoryId}`)}
-          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-gray-50"
+          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white/70"
         >
           <Store className="w-5 h-5" />
           <span className="text-[10px] leading-none">โปรไฟล์</span>
@@ -548,7 +549,7 @@ export function ProductDetailMobile() {
         <button
           type="button"
           onClick={() => void toggleFavorite(item.id)}
-          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-gray-50"
+          className="w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white/70"
           aria-label="ถูกใจ"
         >
           <Heart className="w-5 h-5" style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }} />
@@ -559,7 +560,7 @@ export function ProductDetailMobile() {
           onClick={canChat ? handleStartChat : () => navigate(`/factories/${item.factoryId}`)}
           disabled={starting}
           className="flex-1 flex items-center justify-center gap-2 text-white font-bold text-[14px] disabled:opacity-70"
-          style={{ background: BRAND.orange }}
+          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)' }}
         >
           {starting ? (
             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

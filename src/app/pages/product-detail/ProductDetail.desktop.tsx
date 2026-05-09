@@ -25,14 +25,15 @@ import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
 import { useFavorites } from '../../hooks/useFavorites';
 
+// Aligned with Explore page palette — vibrant brand purple + bright accent orange
 const BRAND = {
-  orange: '#E38844',
-  orangeDark: '#C9722F',
+  orange: '#F28A2E',      // Explore primary orange
+  orangeDark: '#F27830',  // Explore hover orange
   orangeSoft: '#FFF4E8',
-  purple: '#7A4B94',
-  purpleSoft: '#F8F6FA',
-  ink: '#2E2252',
-  border: '#EDE7F1',
+  purple: '#A238FF',      // Explore vibrant brand purple
+  purpleSoft: '#F5F3FF',  // softer page background for readability
+  ink: '#1A0A2E',         // Explore deepest text
+  border: '#E7E2F0',
 } as const;
 
 function formatThaiDate(date: string): string {
@@ -164,7 +165,7 @@ export function ProductDetailDesktop() {
   }
 
   return (
-    <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: BRAND.purpleSoft }}>
+    <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F6F4FB' }}>
       {/* ── Breadcrumb / back row ── */}
       <div className="px-8 pt-5 pb-3">
         <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
@@ -336,12 +337,12 @@ export function ProductDetailDesktop() {
 
               {/* Price block */}
               <div
-                className="mt-4 px-4 py-4 rounded-md"
-                style={{ background: BRAND.orangeSoft }}
+                className="mt-4 px-4 py-4 rounded-xl border"
+                style={{ background: '#FFF9F2', borderColor: '#F8DEC1' }}
               >
                 {priceText ? (
                   <div className="flex items-baseline gap-2">
-                    <p className="text-[26px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
+                    <p className="text-[26px] font-bold leading-none" style={{ color: '#7C3AED' }}>
                       {priceText}
                     </p>
                     {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
@@ -351,7 +352,7 @@ export function ProductDetailDesktop() {
                     ) : null}
                   </div>
                 ) : (
-                  <p className="text-[20px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
+                  <p className="text-[20px] font-semibold leading-none" style={{ color: '#7C3AED' }}>
                     สอบถามราคากับโรงงาน
                   </p>
                 )}

@@ -25,15 +25,16 @@ import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
 import { useFavorites } from '../../hooks/useFavorites';
 
+// Aligned with Explore page palette — vibrant brand purple + bright accent orange
 const BRAND = {
   rose: '#E11D48',
   roseSoft: '#FFF1F5',
-  orange: '#E38844',
+  orange: '#F28A2E',      // Explore primary orange
   orangeSoft: '#FFF4E8',
-  purple: '#7A4B94',
-  purpleSoft: '#F8F6FA',
-  ink: '#2E2252',
-  border: '#EDE7F1',
+  purple: '#A238FF',      // Explore vibrant brand purple
+  purpleSoft: '#F5F3FF',  // softer page background for readability
+  ink: '#1A0A2E',         // Explore deepest text
+  border: '#E7E2F0',
 } as const;
 
 function formatThaiDate(date: string): string {
@@ -145,7 +146,7 @@ export function PromotionDetailDesktop() {
     });
 
   return (
-    <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: BRAND.purpleSoft }}>
+    <div className="hidden lg:block min-h-[calc(100vh-4rem)]" style={{ background: '#F6F4FB' }}>
       {/* ── Breadcrumb / back row ── */}
       <div className="px-8 pt-5 pb-3">
         <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
@@ -238,8 +239,8 @@ export function PromotionDetailDesktop() {
                 </button>
               </div>
 
-              <div className="mt-4 px-4 py-3 rounded-md" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-                <p className="text-[22px] font-medium leading-none text-gray-800">{priceText}</p>
+              <div className="mt-4 px-4 py-3 rounded-xl border" style={{ background: '#FFF9F2', borderColor: '#F8DEC1' }}>
+                <p className="text-[22px] font-bold leading-none" style={{ color: '#7C3AED' }}>{priceText}</p>
                 {item.basePrice != null && item.promoPrice != null && item.basePrice > item.promoPrice ? (
                   <p className="text-[12px] text-gray-400 line-through mt-1">{formatTHB(item.basePrice)}</p>
                 ) : null}

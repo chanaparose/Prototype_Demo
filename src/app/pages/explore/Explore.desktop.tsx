@@ -131,10 +131,7 @@ function ProductCarouselSection({
           />
           <div
             className="absolute inset-0 flex flex-col justify-end p-5 pointer-events-none"
-            style={{
-              background:
-                'linear-gradient(to top right, rgba(0, 56, 94, 0.29), rgba(22, 189, 231, 0.17), transparent)',
-            }}
+             
             aria-hidden
           />
         </div>
