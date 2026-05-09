@@ -9,7 +9,6 @@ import {
   Menu,
   X,
   Bell,
-  Factory,
   Wallet,
   Lock,
 } from 'lucide-react';
@@ -69,17 +68,11 @@ export function Layout() {
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <Link to="/" className="flex items-center gap-2 shrink-0">
-                <div
-                  className={`h-7 pl-1.5 pr-2 sm:h-8 sm:pl-2 sm:pr-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm ${
-                    isFactory ? 'bg-indigo-50 border-indigo-200' : ''
-                  }`}
-                  style={isFactory ? undefined : { background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
-                >
-                  <Factory className="shrink-0" size={14} strokeWidth={2.5} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
-                  <span className="text-[10px] sm:text-xs font-bold leading-none whitespace-nowrap" style={{ color: isFactory ? '#4F46E5' : '#A238FF' }}>
-                    Tryly
-                  </span>
-                </div>
+                <img
+                  src="/assets/tryly-logo.png"
+                  alt="Tryly"
+                  className="h-15 sm:h-15 w-auto object-contain"
+                />
               </Link>
 
               {/* Desktop Nav (md only, before lg sidebar kicks in) */}

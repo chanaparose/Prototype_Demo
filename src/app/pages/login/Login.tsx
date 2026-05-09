@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { Factory, Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontendApi } from '../../services/api';
 
@@ -118,13 +118,11 @@ export function Login() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div
-            className="h-12 px-4 rounded-2xl flex items-center gap-2 mb-3"
-            style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
-          >
-            <Factory className="text-white" size={20} strokeWidth={2.5} />
-            <span className="text-white text-lg font-bold">Tryly</span>
-          </div>
+          <img
+            src="/assets/tryly-logo.png"
+            alt="Tryly"
+            className="h-20 w-auto object-contain -ml-[5px]"
+          />
           <p className="text-gray-500 text-sm">Manufacturing Platform</p>
         </div>
 
@@ -367,7 +365,7 @@ export function Login() {
         <div className="mt-5 bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3 border border-purple-100">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#F5F0FF] flex items-center justify-center shrink-0">
-              <Factory size={18} className="text-[#6C47FF]" />
+              <UserPlus size={18} className="text-[#6C47FF]" />
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-800">เป็นเจ้าของโรงงาน?</p>

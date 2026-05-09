@@ -5,7 +5,6 @@ import {
   ClipboardList,
   MessageCircle,
   Lightbulb,
-  Factory,
   Plus,
   Bell,
   Wallet,
@@ -71,19 +70,12 @@ export function DesktopSidebar() {
     <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40">
       {/* Logo */}
       <div className="flex items-center h-16 px-5 border-b border-gray-100 shrink-0">
-        <Link to="/" className="flex items-center gap-2.5 w-full">
-          <div
-            className={`h-8 px-2.5 rounded-full flex items-center gap-1.5 shrink-0 border backdrop-blur-sm ${
-              isFactory ? 'bg-indigo-50 border-indigo-200' : ''
-            }`}
-            style={isFactory ? undefined : { background: 'rgba(162,56,255,0.30)', borderColor: 'rgba(162,56,255,0.50)' }}
-          >
-            <Factory className="shrink-0" size={15} strokeWidth={2.5} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
-            <span className="text-xs font-bold leading-none whitespace-nowrap" style={{ color: isFactory ? '#4F46E5' : '#A238FF' }}>
-              Tryly
-            </span>
-          </div>
-          <span className="text-sm font-semibold" style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}>Manufacturing</span>
+        <Link to="/" className="flex items-center w-full">
+          <img
+            src="/assets/tryly-logo.png"
+            alt="Tryly"
+            className="h-20 w-auto shrink-0 object-contain -ml-[10px]"
+          />
         </Link>
       </div>
 

@@ -10,7 +10,6 @@ import {
   Menu,
   X,
   LogOut,
-  Shield,
   Bell,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -95,9 +94,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       {/* Logo */}
       <div className="flex items-center justify-between px-5 h-16 border-b border-slate-200 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-            <Shield size={16} className="text-white" />
-          </div>
+          <img
+            src="/assets/tryly-logo.png"
+            alt="Tryly"
+            className="h-8 w-auto object-contain"
+          />
           <div>
             <p className="text-sm font-bold text-slate-900 leading-none">Tryly</p>
             <p className="text-[10px] text-indigo-600 font-medium mt-0.5">Admin Panel</p>
