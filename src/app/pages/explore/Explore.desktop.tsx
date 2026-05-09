@@ -670,12 +670,12 @@ export function ExploreDesktop({
 
           {/* --- Body Section --- */}
           <div className="p-3 bg-gradient-to-b from-purple-50/20 to-white">
-            <div className="grid grid-cols-3 lg:grid-cols-4 gap-2">
-              {(factories ?? []).slice(0, 8).map((factory) => (
+            <div className="grid grid-cols-5 gap-2">
+              {(factories ?? []).slice(0, 10).map((factory) => (
                 <div
                   key={factory.id}
                   onClick={() => navigate(`/factories/${factory.id}`)}
-                  className="bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                  className="bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col w-full max-w-[180px] mx-auto"
                 >
                   <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
                     <ImageWithFallback

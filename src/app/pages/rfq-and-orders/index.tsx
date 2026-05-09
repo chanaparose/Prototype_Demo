@@ -608,11 +608,11 @@ export function RfqAndOrders() {
         {/* Page header */}
         <div className="px-4 pt-5 pb-3">
           <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5" style={{ color: '#C4A484' }}>
-            คำขอ
-          </p>
+                คำขอ
+              </p>
           <h1 className="text-xl font-bold" style={{ color: DEEP_PURPLE }}>
             คำขอราคา & คำสั่งซื้อ
-          </h1>
+              </h1>
         </div>
 
         {/* Primary tab switcher */}
@@ -650,7 +650,7 @@ export function RfqAndOrders() {
               )}
             </button>
           </div>
-        </div>
+          </div>
 
         <div className="px-4 flex-1">
           {primaryTab === 'rfq' ? (
@@ -680,14 +680,14 @@ export function RfqAndOrders() {
               คำขอราคา &amp; คำสั่งซื้อ
             </h1>
           </div>
-          <Link
-            to="/create-rfq"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 shadow-md"
-            style={{ background: CTA_GRADIENT, boxShadow: '0 6px 20px rgba(162,56,255,0.35)' }}
-          >
-            <Plus size={16} />
+            <Link
+              to="/create-rfq"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 shadow-md"
+              style={{ background: CTA_GRADIENT, boxShadow: '0 6px 20px rgba(162,56,255,0.35)' }}
+            >
+              <Plus size={16} />
             สร้างคำขอราคา
-          </Link>
+            </Link>
         </div>
 
         {/* 2-column grid — equal width */}
@@ -696,66 +696,66 @@ export function RfqAndOrders() {
           {/* ── Left: RFQ panel ── */}
           <div
             className="bg-white rounded-2xl border overflow-hidden flex flex-col"
-            style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${PRIMARY_COLOR}` }}
-          >
-            {/* Sticky panel header */}
-            <div
-              className="flex items-center justify-between px-5 py-4 border-b shrink-0"
-              style={{ borderColor: BORDER_WARM, background: PRIMARY_BG_LIGHT }}
+              style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${PRIMARY_COLOR}` }}
             >
-              <div className="flex items-center gap-2">
+            {/* Sticky panel header */}
+              <div
+              className="flex items-center justify-between px-5 py-4 border-b shrink-0"
+                style={{ borderColor: BORDER_WARM, background: PRIMARY_BG_LIGHT }}
+              >
+                <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: PRIMARY_BG }}>
-                  <FileText size={15} style={{ color: PRIMARY_COLOR }} />
-                </div>
+                    <FileText size={15} style={{ color: PRIMARY_COLOR }} />
+                  </div>
                 <h2 className="font-bold" style={{ color: DEEP_PURPLE }}>คำขอราคา</h2>
-                <span
-                  className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
-                  style={{ background: PRIMARY_BG, color: PRIMARY_COLOR }}
-                >
+                  <span
+                    className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
+                    style={{ background: PRIMARY_BG, color: PRIMARY_COLOR }}
+                  >
                   {rfqs.filter((r) => r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'completed').length}
-                </span>
+                  </span>
               </div>
-               
-            </div>
+
+              </div>
 
             {/* Scrollable RFQ content */}
             <div className="overflow-y-auto flex-1 p-4">
               <RfqPanel rfqs={rfqs} isDesktop />
             </div>
-          </div>
+            </div>
 
           {/* ── Right: Orders panel ── */}
-          <div
-            className="bg-white rounded-2xl border overflow-hidden flex flex-col"
-            style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${ACCENT_ORANGE}` }}
-          >
-            {/* Sticky panel header */}
             <div
-              className="flex items-center justify-between px-5 py-4 border-b shrink-0"
-              style={{ borderColor: BORDER_WARM, background: ACCENT_ORANGE_BG }}
+            className="bg-white rounded-2xl border overflow-hidden flex flex-col"
+              style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${ACCENT_ORANGE}` }}
             >
-              <div className="flex items-center gap-2">
+            {/* Sticky panel header */}
+              <div
+              className="flex items-center justify-between px-5 py-4 border-b shrink-0"
+                style={{ borderColor: BORDER_WARM, background: ACCENT_ORANGE_BG }}
+              >
+                <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: ACCENT_ORANGE_BG }}>
-                  <Package size={15} style={{ color: ACCENT_ORANGE_DEEP }} />
-                </div>
+                    <Package size={15} style={{ color: ACCENT_ORANGE_DEEP }} />
+                  </div>
                 <h2 className="font-bold" style={{ color: DEEP_PURPLE }}>คำสั่งซื้อ</h2>
-                <span
-                  className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
-                  style={{ background: ACCENT_ORANGE_BG, color: ACCENT_ORANGE_DEEP }}
-                >
-                  {orders.filter((o) => o.status !== 'completed').length}
-                </span>
-              </div>
+                  <span
+                    className="text-[11px] px-2 py-0.5 rounded-full font-semibold"
+                    style={{ background: ACCENT_ORANGE_BG, color: ACCENT_ORANGE_DEEP }}
+                  >
+                    {orders.filter((o) => o.status !== 'completed').length}
+                  </span>
+                </div>
               {hasPendingPayment && (
-                <span
+                        <span
                   className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse"
                   style={{ background: '#FFF3E0', color: ACCENT_ORANGE_DEEP }}
-                >
+                        >
                   <AlertTriangle size={10} />
                   {orderTagCounts.pendingPayment} รอชำระ
-                </span>
-              )}
-            </div>
+                        </span>
+                      )}
+              </div>
 
             {/* Scrollable Orders content */}
             <div className="overflow-y-auto flex-1 p-4">
@@ -766,8 +766,8 @@ export function RfqAndOrders() {
                 orderTagCounts={orderTagCounts}
                 isDesktop
               />
+              </div>
             </div>
-          </div>
         </div>
       </div>
     </>
