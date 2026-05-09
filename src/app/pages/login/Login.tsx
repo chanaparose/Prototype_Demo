@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { frontendApi } from '../../services/api';
 
@@ -114,7 +114,14 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
+      <Link
+        to="/"
+        className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 hover:text-[#6C47FF] hover:bg-white/80 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4 shrink-0" aria-hidden />
+        ย้อนกลับ
+      </Link>
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">

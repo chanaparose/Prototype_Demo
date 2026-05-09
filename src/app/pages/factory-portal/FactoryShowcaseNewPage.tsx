@@ -164,9 +164,10 @@ export function FactoryShowcaseNewPage() {
   };
 
   const typeMeta = TYPE_META[contentType];
+  const canPublish = form.title.trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
 
   return (
-    <div className="max-w-3xl mx-auto pb-28">
+    <div className="max-w-6xl mx-auto pb-28">
 
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3">
@@ -195,7 +196,7 @@ export function FactoryShowcaseNewPage() {
         </button>
       </div>
 
-      <div className="px-4 py-5 space-y-5">
+      <div className="px-4 py-5">
         <ImageCropModal
           open={cropFile != null}
           file={cropFile}
@@ -225,79 +226,87 @@ export function FactoryShowcaseNewPage() {
           <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
         ) : null}
 
-        {/* ── Cover image (hero) ── */}
-        {contentType !== 'ID' ? (
-          <section>
-            <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-[4/3] border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors cursor-pointer">
-            {imageUrls[0] ? (
-              <>
-                <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removeImage(0)}
-                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                  aria-label="ลบภาพปก"
+        <div className="space-y-5 min-w-0">
+            {/* Cover (PD/PM only) sits LEFT; title + main info sit RIGHT on xl. */}
+            <div className="flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5">
+            {/* ── Cover image (hero) ── */}
+            {contentType !== 'ID' ? (
+              <section className="w-full max-w-[360px] xl:shrink-0">
+                <div
+                  className="relative aspect-[4/3] rounded-xl overflow-hidden border"
+                  style={{ borderColor: '#E7E2F0', background: '#F5F5F5' }}
                 >
-                  <X size={16} />
-                </button>
-              </>
-            ) : (
-              <label className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors">
-                <Camera size={36} strokeWidth={1.5} />
-                <span className="text-sm font-medium">
-                  {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
-                </span>
-                <span className="text-xs opacity-70">PNG, JPG, WEBP · สูงสุด 5 รูป</span>
-                <input
-                  type="file" accept="image/*" className="hidden" disabled={uploading}
-                  onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
-                />
-              </label>
-            )}
-            </div>
-
-            {/* Additional images */}
-            {imageUrls.length > 0 ? (
-              <div className="flex gap-2 mt-2 flex-wrap">
-                {imageUrls.slice(1).map((url, i) => (
-                  <div key={`${url}-${i}`} className="relative w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shrink-0">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
+                {imageUrls[0] ? (
+                  <>
+                    <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
-                      onClick={() => removeImage(i + 1)}
-                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
+                      onClick={() => removeImage(0)}
+                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                      aria-label="ลบภาพปก"
                     >
-                      <X size={10} />
+                      <X size={16} />
                     </button>
-                  </div>
-                ))}
-                {imageUrls.length < 5 ? (
-                  <label className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
-                    <Plus size={16} />
-                    <span className="text-[9px] mt-0.5">เพิ่ม</span>
+                  </>
+                ) : (
+                  <label className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors">
+                    <Camera size={36} strokeWidth={1.5} />
+                    <span className="text-sm font-medium">
+                      {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
+                    </span>
+                    <span className="text-xs opacity-70">PNG, JPG, WEBP · สูงสุด 5 รูป</span>
                     <input
                       type="file" accept="image/*" className="hidden" disabled={uploading}
                       onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
                     />
                   </label>
+                )}
+                </div>
+
+                {/* Additional images */}
+                {imageUrls.length > 0 ? (
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {imageUrls.slice(1).map((url, i) => (
+                      <div key={`${url}-${i}`} className="relative w-14 h-14 rounded-lg border border-gray-200 overflow-hidden shrink-0">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(i + 1)}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                    {imageUrls.length < 5 ? (
+                      <label className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
+                        <Plus size={16} />
+                        <span className="text-[9px] mt-0.5">เพิ่ม</span>
+                        <input
+                          type="file" accept="image/*" className="hidden" disabled={uploading}
+                          onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
+                        />
+                      </label>
+                    ) : null}
+                  </div>
                 ) : null}
-              </div>
+              </section>
             ) : null}
-          </section>
-        ) : null}
 
-        {/* ── Title & excerpt ── */}
-        <section className="space-y-3">
-          <input
-            className="w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 border-b-2 border-transparent focus:border-orange-400 focus:outline-none pb-1.5 bg-transparent transition-colors"
-            placeholder="ชื่อ *"
-            value={form.title}
-            onChange={(e) => setField('title', e.target.value)}
-          />
-        </section>
+            {/* Right column: title + main info (sits beside cover on xl) */}
+            <div className="flex-1 min-w-0 space-y-5">
+            {/* ── Title & excerpt ── */}
+            <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4">
+              <input
+                className="w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow"
+                placeholder="ชื่อ *"
+                value={form.title}
+                onChange={(e) => setField('title', e.target.value)}
+              />
+            </section>
 
-        {/* ── Info bar ── */}
-        <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4 shadow-sm">
+            {/* ── Info bar ── */}
+            <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4 shadow-sm">
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">ข้อมูลหลัก</p>
 
           {/* ID-type scope picker */}
@@ -434,40 +443,91 @@ export function FactoryShowcaseNewPage() {
               </label>
             </div>
           ) : null}
-        </section>
+            </section>
+            </div>
+            </div>
 
-        {/* ── Markdown content ── */}
-        <section>
-          <MarkdownEditor
-            label="รายละเอียด (Markdown)"
-            value={form.content}
-            onChange={(v) => setField('content', v)}
-            minHeight={300}
-          />
-        </section>
+            {/* ── Markdown content (full width below cover/info) ── */}
+            <section>
+              <MarkdownEditor
+                label="รายละเอียด (Markdown)"
+                value={form.content}
+                onChange={(v) => setField('content', v)}
+                minHeight={300}
+              />
+            </section>
 
-        {contentType === 'ID' && myFactoryId != null ? (
-          <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
-            <label className="block text-sm font-semibold text-[#2E2252]">
-              อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
-            </label>
-            <p className="text-xs text-gray-500">
-              เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
-            </p>
-            <RelatedShowcasePicker
-              factoryId={myFactoryId}
-              value={selectedShowcaseIds}
-              onChange={setSelectedShowcaseIds}
-              max={5}
-              disabled={saving}
-              errorText={linkedShowcaseError}
-            />
-          </section>
-        ) : null}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <p className="text-sm font-semibold text-gray-900">การเผยแพร่</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {contentType === 'ID' ? 'กรอกชื่อและเนื้อหาให้ครบก่อนเผยแพร่' : 'กรอกชื่อและอัปโหลดภาพปกก่อนเผยแพร่'}
+                </p>
+                <div className="mt-4 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => void onSubmit('DR')}
+                    disabled={saving}
+                    className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                  >
+                    {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void onSubmit('AC')}
+                    disabled={saving || !canPublish}
+                    className="w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm transition-all"
+                    style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
+                  >
+                    {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">สถานะฟอร์ม</p>
+                <div className="mt-3 space-y-2 text-sm text-gray-700">
+                  <div className="flex items-center justify-between">
+                    <span>ชื่อรายการ</span>
+                    <span className={form.title.trim() ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
+                      {form.title.trim() ? 'พร้อม' : 'ยังไม่ครบ'}
+                    </span>
+                  </div>
+                  {contentType !== 'ID' ? (
+                    <div className="flex items-center justify-between">
+                      <span>ภาพปก</span>
+                      <span className={imageUrls.length > 0 ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
+                        {imageUrls.length > 0 ? `${imageUrls.length}/5` : 'ยังไม่เพิ่ม'}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {contentType === 'ID' && myFactoryId != null ? (
+              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
+                <label className="block text-sm font-semibold text-[#2E2252]">
+                  อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
+                </label>
+                <p className="text-xs text-gray-500">
+                  เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
+                </p>
+                <RelatedShowcasePicker
+                  factoryId={myFactoryId}
+                  value={selectedShowcaseIds}
+                  onChange={setSelectedShowcaseIds}
+                  max={5}
+                  disabled={saving}
+                  errorText={linkedShowcaseError}
+                />
+              </section>
+            ) : null}
+        </div>
       </div>
 
       {/* ── Sticky bottom bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3 flex gap-3">
+      <div className="fixed xl:hidden bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3 flex gap-3">
         <button
           type="button"
           onClick={() => void onSubmit('DR')}
@@ -479,7 +539,7 @@ export function FactoryShowcaseNewPage() {
         <button
           type="button"
           onClick={() => void onSubmit('AC')}
-          disabled={saving}
+          disabled={saving || !canPublish}
           className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm active:scale-95 transition-all"
           style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
         >
