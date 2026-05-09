@@ -6,7 +6,7 @@
 import type { MessagesSendBody } from '../utils/chatContract';
 import type { OrderDetailDTO } from '../types/api';
 import type { RfqDetailResponse, RfqListItem, QuotationRow, QuotationHistoryEntry } from '../types/rfq';
-import { getTourMockResponse } from '../utils/tourMocks';
+import { getTourMockResponse, isTourActive } from '../utils/tourMocks';
 
 const DEFAULT_API_BASE = '/api/v1';
 
@@ -196,11 +196,17 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     } catch {
       // ignore
     }
+    // While ProductTour is running, the guest is bluffed as authenticated by
+    // AuthContext to satisfy guards. Real API calls (those without a tour
+    // mock) will 401 — we must NOT redirect to /login or the tour explodes.
+    if (isTourActive()) {
+      skipImmediateLogout = true;
+    }
     if (!authPostFailed) {
       if (!skipImmediateLogout) {
         removeToken();
         window.location.href = '/login';
-      } else {
+      } else if (!isTourActive()) {
         console.warn('[api] transient 401 on /frontend/me right after login; keep token and retry later');
       }
     }

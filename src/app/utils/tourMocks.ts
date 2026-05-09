@@ -106,6 +106,27 @@ const TOUR_CUSTOMER = {
   last_name: 'สาธิต',
 };
 
+/** User ID injected into AuthContext while tour is running so downstream
+ *  hooks (useConversations, ChatRoom, getCurrentUserId, ...) treat the
+ *  guest as the demo customer and can load mocked data correctly. */
+export const TOUR_GUEST_USER_ID = TOUR_CUSTOMER.user_id;
+export const TOUR_GUEST_USER = {
+  id: TOUR_CUSTOMER.user_id,
+  user_id: TOUR_CUSTOMER.user_id,
+  role: 'CT',
+  name: TOUR_CUSTOMER.display_name,
+  email: 'guest-tour@tryly.demo',
+  phone: '',
+  company: '',
+  avatar: '',
+  walletBalance: 0,
+  pendingBalance: 0,
+  memberSince: '2026-01-01',
+  first_name: TOUR_CUSTOMER.first_name,
+  last_name: TOUR_CUSTOMER.last_name,
+  display_name: TOUR_CUSTOMER.display_name,
+} as const;
+
 /* ─── Product detail (showcase_id=14) ──────────────────────────────────── */
 const SHOWCASE_14 = {
   showcase_id: 14,

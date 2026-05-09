@@ -9,6 +9,7 @@ import {
   type RegisterCustomerPayload,
   type RegisterFactoryPayload,
 } from '../services/api';
+import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '../utils/tourMocks';
 
 // ─── Types ──────────────────────────────────────────────────────
 export type User = {
@@ -169,9 +170,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await fetchUser();
   };
 
+  // While the ProductTour walks a guest through protected pages, inject a
+  // fake demo user so downstream hooks (useConversations, ChatRoom, etc.)
+  // resolve `currentUserId` and load the mocked data correctly.
+  const [tourOn, setTourOn] = React.useState<boolean>(isTourActive());
+  React.useEffect(() => subscribeTourActive(setTourOn), []);
+
+  const effectiveState =
+    tourOn && !state.user
+      ? { ...state, user: TOUR_GUEST_USER as unknown as User, isAuthenticated: true }
+      : state;
+
   return (
     <AuthContext.Provider
-      value={{ ...state, login, register, logout, refreshUser }}
+      value={{ ...effectiveState, login, register, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

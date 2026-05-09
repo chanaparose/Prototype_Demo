@@ -8,6 +8,7 @@ import {
   TOUR_MESSAGES_CONV_ID,
   type TourScenario,
 } from '../../../utils/tourMocks';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const TOUR_KEY = 'tryly_tour_seen_v1';
 
@@ -742,6 +743,7 @@ function TourCard({
 export function ProductTour() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
@@ -750,17 +752,23 @@ export function ProductTour() {
 
   injectCSS();
 
-  // Auto-open on first visit to explore home
+  // Auto-open on first visit to explore home — guest only.
+  // Once a user logs in, no longer auto-shows (they can still trigger via
+  // the tryly-open-tour event from a help button).
   useEffect(() => {
     if (autoShown || open) return;
     if (location.pathname !== '/') return;
+    if (isAuthenticated) {
+      setAutoShown(true);
+      return;
+    }
     const seen = localStorage.getItem(TOUR_KEY);
     if (!seen) {
       const t = setTimeout(() => { setOpen(true); setAutoShown(true); }, 1200);
       return () => clearTimeout(t);
     }
     setAutoShown(true);
-  }, [autoShown, open, location.pathname]);
+  }, [autoShown, open, location.pathname, isAuthenticated]);
 
   // Listen for manual trigger
   useEffect(() => {
