@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles, MapPin, Star } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi } from '../../services/api';
@@ -203,21 +203,26 @@ export function FactoryShowcasesPage() {
             const isDeleting = deletingId === id;
             const isIdea = activeType === 'ID';
             const likes = asPositiveInt(r.like_count ?? r.likes ?? r.likes_count);
+            const locationLine = String(r.factory_location ?? r.province_name ?? catLine ?? '—').trim() || '—';
+            const rating = Number(r.rating_avg ?? r.factory_rating_avg ?? 0);
+            const reviews = asPositiveInt(r.review_count ?? r.reviews ?? 0);
+            const moq = asPositiveInt(r.moq ?? 0);
 
             return (
               <article
                 key={id}
-                className="group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                className={isIdea
+                  ? 'group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
+                  : 'bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'}
               >
                 {!isIdea ? (
                   <>
-                    {/* Cover */}
-                    <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                    <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
                       {img ? (
                         <ImageWithFallback
                           src={img}
                           alt={String(r.title ?? '')}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-300">
@@ -226,23 +231,30 @@ export function FactoryShowcasesPage() {
                         </div>
                       )}
                       <span
-                        className="absolute top-2 left-2 rounded-full text-[11px] font-semibold px-2.5 py-0.5"
-                        style={{ backgroundColor: statusBg, color: statusColor }}
+                        className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
+                        style={{ backgroundColor: activeType === 'MT' ? '#0EA5A4' : activeType === 'PM' ? '#F28A2E' : '#5185D4' }}
                       >
-                        {statusLabel}
+                        {activeType === 'MT' ? 'วัตถุดิบ' : activeType === 'PM' ? 'โปรโมชัน' : 'สินค้า'}
                       </span>
                     </div>
-                    {/* Info */}
-                    <div className="px-3 pt-3 pb-2">
-                      <p className="font-semibold text-sm line-clamp-2 min-h-[40px] leading-snug text-slate-900">
+                    <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
+                      <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
                         {String(r.title ?? '—')}
                       </p>
-                      {ctx ? (
-                        <p className="text-[11px] font-medium mt-1.5 text-indigo-600">{ctx}</p>
-                      ) : null}
-                      {catLine ? (
-                        <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{catLine}</p>
-                      ) : null}
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                        <span className="text-gray-500 text-[10px] truncate">{locationLine}</span>
+                      </div>
+                      <div className="mt-auto pt-1 border-t border-gray-50">
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center gap-0.5 min-w-0">
+                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                            <span className="text-gray-700 text-[10px] font-semibold">{rating.toFixed(1)}</span>
+                            <span className="text-gray-400 text-[9px] truncate">({reviews})</span>
+                          </div>
+                          <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {moq}</span>
+                        </div>
+                      </div>
                     </div>
                   </>
                 ) : (
