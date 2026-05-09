@@ -54,6 +54,13 @@ type StepDef = {
   targetSelector?: string;
   spotlightRadius?: number;
   spotlightPad?: number;
+  /**
+   * Where to render the tour card. `'auto'` (default) computes from the
+   * spotlight rect AFTER it lands, which causes a brief flash. Use `'top'`
+   * or `'bottom'` to lock placement upfront for steps where we know the
+   * spotlight target sits in the lower / upper half of the viewport.
+   */
+  cardPlacement?: 'top' | 'bottom' | 'auto';
   badgeColor: string;
   icon: string;
   badge: string;
@@ -497,6 +504,9 @@ function MockScreenOverlay({ stepIdx, def }: { stepIdx: number; def: StepDef }) 
 const STEPS: StepDef[] = [
   {
     route: '/factory-ideas',
+    // Anchor to the actual "สินค้า" tab pill — text-search alone matched the
+    // hero banner ("ค้นหาไอเดียสินค้าใหม่...") which contains the same word.
+    targetSelector: '[data-tour="tab-product"]',
     targetTexts: ['สินค้า', 'ทั้งหมด'],
     spotlightRadius: 24,
     spotlightPad: 6,
@@ -517,6 +527,7 @@ const STEPS: StepDef[] = [
     targetTexts: ['สร้างคำขอราคา'],
     spotlightRadius: 12,
     spotlightPad: 8,
+    cardPlacement: 'top', // FAB sits at bottom-right → keep card up top from the start
     badgeColor: '#F28A2E',
     icon: '➕',
     badge: 'ขั้นตอนที่ 2 / 7',
@@ -542,6 +553,7 @@ const STEPS: StepDef[] = [
     mockScenario: 'product',
     targetTexts: ['แชทกับโรงงาน', 'แชท'],
     spotlightRadius: 12,
+    cardPlacement: 'top', // chat CTA sits in bottom action bar
     badgeColor: '#0D9488',
     icon: '💬',
     badge: 'ขั้นตอนที่ 4 / 7',
@@ -554,6 +566,7 @@ const STEPS: StepDef[] = [
     mockScenario: 'messages',
     targetTexts: ['📎', 'แนบ RFQ', 'RFQ', 'พิมพ์ข้อความ'],
     spotlightRadius: 10,
+    cardPlacement: 'top', // chat input + RFQ attach btn sit at bottom of viewport
     badgeColor: '#3B82F6',
     icon: '📩',
     badge: 'ขั้นตอนที่ 5 / 7',
@@ -674,10 +687,16 @@ function TourCard({
   const wh = typeof window !== 'undefined' ? window.innerHeight : 800;
   const ww = typeof window !== 'undefined' ? window.innerWidth : 400;
 
-  // If the spotlight target sits in the lower half of the viewport, flip the
-  // tour card to the TOP so it doesn't overlap the highlighted area.
-  // (Steps 2 / 4 / 5 commonly target buttons near the bottom on mobile.)
-  const placeAtTop = !isMock && rect ? rect.top > wh * 0.5 : false;
+  // Decide card placement:
+  //  - explicit `def.cardPlacement` ('top' | 'bottom') wins immediately,
+  //    avoiding the bottom→top flash that 'auto' produces while waiting
+  //    for `rect` to compute on slower mobile devices.
+  //  - 'auto' falls back to rect-based heuristic.
+  const placeAtTop = (() => {
+    if (def.cardPlacement === 'top') return true;
+    if (def.cardPlacement === 'bottom') return false;
+    return !isMock && rect ? rect.top > wh * 0.5 : false;
+  })();
   // Arrow direction: when card is at TOP, arrow points DOWN to target below.
   // When card is at BOTTOM, arrow points UP to target above (only when target
   // sits in upper half so the arrow actually meets the spotlight).

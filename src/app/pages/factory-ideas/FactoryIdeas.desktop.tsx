@@ -549,6 +549,7 @@ export function FactoryIdeasDesktop() {
                 <button
                   key={type.id}
                   type="button"
+                  data-tour={`tab-${type.id}`}
                   onClick={() => setSelectedType(type.id)}
                   className={`px-4 py-2 rounded-lg text-[13px] transition-all ${
                     selectedType === type.id

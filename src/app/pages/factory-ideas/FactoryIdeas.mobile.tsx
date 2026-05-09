@@ -573,6 +573,7 @@ export function FactoryIdeasMobile() {
               <button
                 key={type.id}
                 type="button"
+                data-tour={`tab-${type.id}`}
                 onClick={() => setSelectedType(type.id)}
                 className={`shrink-0 px-3.5 py-1.5 rounded-full text-[12px] transition-all whitespace-nowrap ${
                   active ? 'shadow-sm' : 'active:scale-95'
