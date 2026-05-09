@@ -163,8 +163,8 @@ export function FactoryShowcasesPage() {
 
       {/* Skeleton */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="rounded-2xl overflow-hidden border border-gray-100 bg-white">
               <div className="aspect-video bg-gray-100 animate-pulse" />
               <div className="p-3 space-y-2">
@@ -192,7 +192,7 @@ export function FactoryShowcasesPage() {
         </div>
       ) : (
         /* Card grid */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {rows.map((r) => {
             const id = rowId(r);
             const img = firstImage(r);
