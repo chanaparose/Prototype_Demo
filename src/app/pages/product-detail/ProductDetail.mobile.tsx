@@ -223,24 +223,9 @@ export function ProductDetailMobile() {
         </div>
       ) : null}
 
-      {/* ── Price + title ── */}
+      {/* ── Label → ชื่อสินค้า → ราคา ── */}
       <div className="bg-white px-4 pt-4 pb-3">
-        <div className="flex items-baseline gap-2">
-          {priceText ? (
-            <p className="text-[24px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
-              {priceText}
-            </p>
-          ) : (
-            <p className="text-[18px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
-              สอบถามราคากับโรงงาน
-            </p>
-          )}
-          {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
-            <p className="text-[13px] line-through text-gray-400">{formatTHB(item.basePrice)}</p>
-          ) : null}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 mt-3">
+        <div className="flex flex-wrap items-center gap-1.5">
           {factory?.verified ? (
             <span
               className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-bold text-white"
@@ -263,6 +248,21 @@ export function ProductDetailMobile() {
         <h1 className="mt-2 text-[15px] font-medium leading-snug" style={{ color: BRAND.ink }}>
           {item.title}
         </h1>
+
+        <div className="flex items-baseline gap-2 flex-wrap mt-2">
+          {priceText ? (
+            <p className="text-[24px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
+              {priceText}
+            </p>
+          ) : (
+            <p className="text-[18px] font-semibold leading-none" style={{ color: BRAND.orangeDark }}>
+              สอบถามราคากับโรงงาน
+            </p>
+          )}
+          {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
+            <p className="text-[13px] line-through text-gray-400">{formatTHB(item.basePrice)}</p>
+          ) : null}
+        </div>
 
         <div className="flex items-center gap-3 mt-2 text-[11px] text-gray-500">
           <span className="inline-flex items-center gap-1">
