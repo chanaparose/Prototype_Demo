@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
+import { isTourActive, subscribeTourActive } from '../utils/tourMocks';
 
 export function AuthGuard() {
   const { isAuthenticated, isLoading } = useAuth();
+  // While the ProductTour is walking the user through protected routes
+  // (create-rfq, messages, rfqs, orders, ...), bypass auth so guests can
+  // see the demo. Mocks installed by the tour provide canned data.
+  const [tourOn, setTourOn] = useState<boolean>(isTourActive());
+  useEffect(() => subscribeTourActive(setTourOn), []);
 
   if (isLoading) {
     return (
@@ -19,7 +25,7 @@ export function AuthGuard() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !tourOn) {
     return <Navigate to="/login" replace />;
   }
 

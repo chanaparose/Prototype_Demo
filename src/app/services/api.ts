@@ -6,6 +6,7 @@
 import type { MessagesSendBody } from '../utils/chatContract';
 import type { OrderDetailDTO } from '../types/api';
 import type { RfqDetailResponse, RfqListItem, QuotationRow, QuotationHistoryEntry } from '../types/rfq';
+import { getTourMockResponse } from '../utils/tourMocks';
 
 const DEFAULT_API_BASE = '/api/v1';
 
@@ -121,6 +122,17 @@ function extractErrorMessage(data: unknown, fallback: string): string {
 
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, headers = {}, timeoutMs = 60000 } = options;
+
+  // ProductTour mock intercept — return canned data when a tour scenario is
+  // active so guests see the same demo regardless of their account/data.
+  // No-op when no tour mocks are registered (zero-cost in production).
+  const tourMock = getTourMockResponse(endpoint, method);
+  if (tourMock !== undefined) {
+    // Resolve on next tick so callers get async behavior consistent with fetch
+    return new Promise<T>((resolve) => {
+      window.setTimeout(() => resolve(tourMock as T), 0);
+    });
+  }
 
   const token = getToken();
   const defaultHeaders: Record<string, string> = {
