@@ -552,7 +552,7 @@ export function ExploreDesktop({
         <ProductCarouselSection
           title="สินค้าแนะนำ"
           items={productShowcases}
-          bannerImg={'assets/tryly_vertical_banner_v4_minimalist_0.png'}
+          bannerImg={'assets/tryly_vertical_banner_v5_oval_final.png'}
           bannerText="คุ้มค่า ถูกใจสัตว์เลี้ยง"
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
@@ -575,7 +575,7 @@ export function ExploreDesktop({
           theme="material"
           seeMoreHref="/factory-ideas?type=material"
           items={materialShowcases}
-          bannerImg={'assets/tryly_vertical_banner_raw_material_v4_minimalist_0.png'}
+          bannerImg={'assets/tryly_vertical_banner_raw_material_v5_oval_final.png'}
           bannerText="วัตถุดิบคุณภาพสูง"
           onItemClick={(id) =>
             navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)
@@ -708,13 +708,20 @@ export function ExploreDesktop({
             {/* Left Banner */}
             <div className="hidden lg:block lg:w-[40%] rounded-xl overflow-hidden relative min-h-[180px] flex-shrink-0 group cursor-pointer shadow-md">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1566575799269-4a58e16f766b?w=600"
-                alt="Banner"
-                className="w-full h-full object-cover absolute transition-transform duration-700 group-hover:scale-105"
+                src="/assets/tryly_service_banner_v2_376x218.png"
+                alt="แบนเนอร์บริการ"
+                className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/60 via-slate-700/30 to-transparent flex flex-col justify-end p-5">
-                <h3 className="text-2xl font-black text-white drop-shadow-md mb-1">บริการ</h3>
-                <p className="text-white font-medium text-sm drop-shadow-md mb-3 bg-slate-800/65 backdrop-blur-sm self-start px-3 py-1 rounded-full border border-white/25">สำหรับสัตว์เลี้ยงแสนรัก</p>
+              <div
+                className="absolute inset-0 z-[1] flex flex-col justify-end p-5 pointer-events-none"
+                style={{
+                  background:
+                    'linear-gradient(to top right, rgba(0, 60, 100, 0.2), rgba(3, 153, 190, 0.1), transparent)',
+                }}
+              >
+                <p className="text-white text-sm font-medium drop-shadow-md max-w-[90%] leading-snug">
+                  คุ้มค่า ถูกใจสัตว์เลี้ยง
+                </p>
               </div>
             </div>
 
@@ -761,9 +768,23 @@ export function ExploreDesktop({
           </div>
         </section>
 
-        {/* ═══ 7. บทความ Idea — GRAY/LIGHT THEME ═══ */}
-        <section className="bg-[#F2F2F2] -mx-8 px-8 py-5 rounded-xl">
-          <div className="flex items-center justify-between mb-3">
+        {/* ═══ 7. บทความ Idea — พื้นหลัง gradient โทนเดียวกับ HowToOrderSection (shimmer bar) ═══ */}
+        <section className="relative -mx-8 px-8 py-5 rounded-xl overflow-hidden bg-[#EFEFF2]">
+          {/* เลเยอร์นอกลดความเข้ม — ข้างในใช้ gradient + hiw-shimmer-bar เหมือน HowToOrderSection */}
+          <div
+            aria-hidden
+            className="absolute inset-0 rounded-xl pointer-events-none"
+            style={{ opacity: 0.2 }}
+          >
+            <div
+              className="absolute inset-0 rounded-xl"
+              style={{
+                background: 'linear-gradient(90deg, #7C3AED 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
+                animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
+              }}
+            />
+          </div>
+          <div className="relative z-[1] flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-[#292259]">บทความ Idea</h2>
             <button
               type="button"
@@ -774,6 +795,7 @@ export function ExploreDesktop({
             </button>
           </div>
 
+          <div className="relative z-[1]">
           {ideaArticlesList.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-6 text-center text-xs text-gray-500">
               ยังไม่มีบทความในขณะนี้
@@ -816,6 +838,7 @@ export function ExploreDesktop({
               ))}
             </div>
           )}
+          </div>
         </section>
  
       </div>
