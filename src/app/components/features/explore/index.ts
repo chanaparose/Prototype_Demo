@@ -4,6 +4,8 @@ export { ExploreFactoryGrid } from './ExploreFactoryGrid';
 export { ExploreIdeaArticles } from './ExploreIdeaArticles';
 export { ExploreRecentActivity } from './ExploreRecentActivity';
 export { ExploreFooter } from './ExploreFooter';
+export { HowToOrderSection } from './HowToOrderSection';
+export { ProductTour } from './ProductTour';
 export { EXPLORE_STATUS_CONFIG } from './constants';
 export type { CategoryItem } from './ExploreCategories';
 export type { FactoryItem } from './ExploreFactoryGrid';

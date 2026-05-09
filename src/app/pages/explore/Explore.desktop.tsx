@@ -20,6 +20,8 @@ import {
 import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/exploreCategoryTilesConfig';
 import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
+import { HowToOrderSection } from '../../components/features/explore/HowToOrderSection';
+import { ProductTour } from '../../components/features/explore/ProductTour';
 import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
@@ -885,10 +887,16 @@ export function ExploreDesktop({
 
       </div>
 
+      {/* ═══ How to Order ═══ */}
+      <HowToOrderSection className="mx-0" />
+
       {/* ═══ Footer ═══ */}
       <div className="lg:px-8">
         <ExploreFooter />
       </div>
+
+      {/* Product Tour (floating) */}
+      <ProductTour />
     </div>
   );
 }

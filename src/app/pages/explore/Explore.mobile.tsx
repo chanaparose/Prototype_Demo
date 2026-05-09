@@ -7,6 +7,8 @@ import {
   ExploreFactoryGrid,
   ExploreIdeaArticles,
   ExploreFooter,
+  HowToOrderSection,
+  ProductTour,
 } from '../../components/features/explore';
 import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
@@ -437,6 +439,9 @@ export function ExploreMobile({
         </div>
       </div>
 
+      {/* How to Order */}
+      <HowToOrderSection className="mx-4" />
+
       {/* Footer (Mobile) */}
       <ExploreFooter />
 
@@ -449,6 +454,9 @@ export function ExploreMobile({
       >
         <Plus size={20} className="text-white" />
       </button>
+
+      {/* Product Tour (floating) */}
+      <ProductTour />
     </div>
   );
 }
