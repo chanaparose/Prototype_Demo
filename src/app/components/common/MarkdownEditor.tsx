@@ -1,5 +1,18 @@
 import React, { useRef, useState } from 'react';
-import { Quote, Slash, Minus, Paperclip } from 'lucide-react';
+import { 
+  Quote, 
+  Minus, 
+  Paperclip, 
+  Bold, 
+  Italic, 
+  Code, 
+  Heading, 
+  List, 
+  ListOrdered, 
+  Link, 
+  Table as TableIcon, 
+  Image as ImageIcon 
+} from 'lucide-react';
 import { mediaApi } from '../../services/api';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 
@@ -91,7 +104,7 @@ export function MarkdownEditor({
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'write'
                   ? 'bg-orange-50 border-orange-200 text-orange-700'
-                  : 'border-gray-200 text-gray-600'
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
               Write
@@ -112,103 +125,96 @@ export function MarkdownEditor({
 
         {tab === 'write' ? (
           <>
-            <div className="px-3 py-2 border-b border-gray-100 flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => applyInsert('> ')}
-                disabled={disabled}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="Blockquote"
-              >
-                <Quote size={12} />
-              </button>
-              <button
-                type="button"
-                onClick={() => applyInsert('\n# ')}
-                disabled={disabled}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="หัวข้อ"
-              >
-                #
-              </button>
-              <button
-                type="button"
-                onClick={() => applyInsert('**', '**')}
-                disabled={disabled}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="ตัวหนา"
-              >
-                **
-              </button>
-              <button
-                type="button"
-                onClick={() => applyInsert('`', '`')}
-                disabled={disabled}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="ไฮไลท์ข้อความ"
-              >
-                `
-              </button>
-              <button
-                type="button"
-                onClick={() => applyTemplate('\n\n')}
-                disabled={disabled}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="เว้นบรรทัด"
-              >
-                ↵↵
-              </button>
-              <button
-                type="button"
-                onClick={() => applyTemplate('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')}
-                disabled={disabled}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="ตาราง"
-              >
-                |
-              </button>
-              <button
-                type="button"
-                onClick={() => applyInsert('\n\n---\n\n')}
-                disabled={disabled}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="Divider"
-              >
-                <Minus size={12} />
-                <span className="tracking-wider">---</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={disabled || uploading}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-40"
-                title="แนบรูป"
-              >
-                <Paperclip size={12} />
-                {uploading ? 'กำลังอัปโหลด...' : 'แนบรูป'}
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  e.target.value = '';
-                  void onPickImage(f);
-                }}
-              />
+            {/* Toolbar แบบจัดกลุ่ม */}
+            <div className="px-2 py-1.5 border-b border-gray-100 flex items-center flex-wrap gap-2 bg-white">
+              
+              {/* กลุ่ม: จัดรูปแบบตัวอักษร */}
+              <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
+                <button type="button" onClick={() => applyInsert('**', '**')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวหนา (Bold)">
+                  <Bold size={15} />
+                </button>
+                <button type="button" onClick={() => applyInsert('_', '_')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวเอียง (Italic)">
+                  <Italic size={15} />
+                </button>
+                <button type="button" onClick={() => applyInsert('`', '`')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ไฮไลท์โค้ด (Inline Code)">
+                  <Code size={15} />
+                </button>
+              </div>
+
+              {/* กลุ่ม: โครงสร้าง (หัวข้อ, คำคม, เส้นคั่น) */}
+              <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
+                <button type="button" onClick={() => applyInsert('\n### ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="หัวข้อ (Heading)">
+                  <Heading size={15} />
+                </button>
+                <button type="button" onClick={() => applyInsert('\n> ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="คำคม (Blockquote)">
+                  <Quote size={15} />
+                </button>
+                <button type="button" onClick={() => applyInsert('\n\n---\n\n')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="เส้นคั่น (Divider)">
+                  <Minus size={15} />
+                </button>
+              </div>
+
+              {/* กลุ่ม: รายการ (Lists) */}
+              <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
+                <button type="button" onClick={() => applyInsert('\n- ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการแบบจุด (Bullet List)">
+                  <List size={15} />
+                </button>
+                <button type="button" onClick={() => applyInsert('\n1. ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการตัวเลข (Numbered List)">
+                  <ListOrdered size={15} />
+                </button>
+              </div>
+
+              {/* กลุ่ม: แทรกข้อมูล (ลิงก์, ตาราง, รูปภาพ) */}
+              <div className="flex items-center gap-0.5">
+                <button type="button" onClick={() => applyInsert('[', '](url)')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกลิงก์ (Link)">
+                  <Link size={15} />
+                </button>
+                <button type="button" onClick={() => applyTemplate('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกตาราง (Table)">
+                  <TableIcon size={15} />
+                </button>
+                <button type="button" onClick={() => fileRef.current?.click()} disabled={disabled || uploading} className="inline-flex items-center gap-1.5 p-1.5 px-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แนบรูปภาพ (Image)">
+                  <ImageIcon size={15} />
+                  {uploading && <span className="text-xs font-medium text-orange-600">กำลังอัปโหลด...</span>}
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    e.target.value = '';
+                    void onPickImage(f);
+                  }}
+                />
+              </div>
             </div>
-            <div className="px-3 py-1.5 border-b border-gray-100 text-[11px] text-gray-500 bg-gray-50/60">
-              เวิร์กโฟลว์แนะนำ: เว้นบรรทัด 1 บรรทัดต่อบล็อก, แนบรูปด้วยปุ่ม 📎, ใช้ `|` สร้างตาราง, ใช้ `---` คั่น section
+
+            {/* Guideline อ้างอิงตาม Markdown Guide */}
+            <div className="px-3 py-2 border-b border-gray-100 bg-gray-50/60 flex flex-col gap-1 text-[11px] text-gray-500">
+              <div className="flex items-center justify-between">
+                <p>
+                  <span className="font-semibold text-gray-700 mr-1">💡 ทิปส์:</span> 
+                  ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, เว้นวรรคใช้ \ ต่อท้ายบรรทัด
+                </p>
+                <a 
+                  href="https://www.markdownguide.org/basic-syntax/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-orange-500 hover:text-orange-600 hover:underline inline-flex items-center gap-1"
+                >
+                  ดูไกด์ไลน์ Markdown ทั้งหมด
+                </a>
+              </div>
             </div>
+
             <textarea
               ref={textareaRef}
-              className="w-full resize-y font-mono text-sm px-3 py-2.5 border-0 outline-none"
+              className="w-full resize-y font-mono text-sm px-3 py-3 border-0 outline-none leading-relaxed text-gray-700"
               style={{ minHeight: `${minHeight}px` }}
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              placeholder={placeholder}
+              placeholder={placeholder || "พิมพ์เนื้อหาของคุณที่นี่ รองรับ Markdown..."}
               disabled={disabled}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
