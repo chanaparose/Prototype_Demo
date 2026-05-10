@@ -32,16 +32,6 @@ function normalizeMarkdownContent(raw: string): string {
     .trim();
 }
 
-function insertAtCursor(
-  textarea: HTMLTextAreaElement,
-  prefix: string,
-  suffix = '',
-): string {
-  const { selectionStart: s, selectionEnd: e, value } = textarea;
-  const selected = value.slice(s, e);
-  return value.slice(0, s) + prefix + selected + suffix + value.slice(e);
-}
-
 export function MarkdownEditor({
   value,
   onChange,
@@ -59,10 +49,31 @@ export function MarkdownEditor({
   const applyInsert = (prefix: string, suffix = '') => {
     const textarea = textareaRef.current;
     if (!textarea || disabled) return;
-    const next = insertAtCursor(textarea, prefix, suffix);
-    onChange(next);
+
+    const s = textarea.selectionStart;
+    const e = textarea.selectionEnd;
+    const currentValue = textarea.value;
+    const selected = currentValue.slice(s, e);
+
+    // สร้างข้อความใหม่
+    const nextValue = currentValue.slice(0, s) + prefix + selected + suffix + currentValue.slice(e);
+    onChange(nextValue);
+
+    // รอให้ React อัปเดต State ก่อน แล้วค่อยจัดการตำแหน่ง Cursor
     requestAnimationFrame(() => {
-      textarea.focus();
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        if (s === e) {
+          // ถ้าไม่ได้คลุมดำข้อความ ให้วาง Cursor ไว้หลัง Prefix (ตรงกลาง)
+          // เช่น กด Bold จะได้ **|**
+          const cursorPos = s + prefix.length;
+          textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+        } else {
+          // ถ้าคลุมดำข้อความ ให้คลุมดำที่ข้อความเดิมต่อ (ขยับตำแหน่งตาม Prefix)
+          // เช่น คลุมคำว่า Text แล้วกด Bold จะได้ **[Text]**
+          textareaRef.current.setSelectionRange(s + prefix.length, s + prefix.length + selected.length);
+        }
+      }
     });
   };
 
@@ -82,9 +93,22 @@ export function MarkdownEditor({
   const applyTemplate = (text: string) => {
     const textarea = textareaRef.current;
     if (!textarea || disabled) return;
-    const next = insertAtCursor(textarea, text);
-    onChange(next);
-    requestAnimationFrame(() => textarea.focus());
+
+    const s = textarea.selectionStart;
+    const e = textarea.selectionEnd;
+    const currentValue = textarea.value;
+
+    const nextValue = currentValue.slice(0, s) + text + currentValue.slice(e);
+    onChange(nextValue);
+
+    // วาง Cursor ไว้ท้ายสุดของ Template ที่เพิ่งแทรกเข้าไป
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        const cursorPos = s + text.length;
+        textareaRef.current.setSelectionRange(cursorPos, cursorPos);
+      }
+    });
   };
 
   return (
@@ -195,7 +219,7 @@ export function MarkdownEditor({
               <div className="flex items-center justify-between">
                 <p>
                   <span className="font-semibold text-gray-700 mr-1">💡 ทิปส์:</span> 
-                  ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, เว้นวรรคใช้ \ ต่อท้ายบรรทัด
+                  ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, สร้างตารางด้วย <code>|</code>, หรือแนบรูปลากวาง
                 </p>
                 <a 
                   href="https://www.markdownguide.org/basic-syntax/" 
