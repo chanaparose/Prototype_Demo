@@ -308,7 +308,7 @@ export function MarkdownEditor({
             {value.trim() ? (
               <MarkdownBody
                 source={normalizeMarkdownContent(value)}
-                className="max-w-none text-gray-700"
+                className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
               />
             ) : (
               <p className="text-[13px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>
@@ -378,12 +378,10 @@ export function MarkdownEditor({
                   <span className="text-[11px] text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">ทดลองอ่านได้</span>
                 </div>
                 <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                  <div className="prose prose-sm prose-orange max-w-none">
-                    <MarkdownBody 
-                      source={normalizeMarkdownContent(TEMPLATES[activeTemplateIndex].content)} 
-                      className="text-gray-700"
-                    />
-                  </div>
+                  <MarkdownBody
+                    source={normalizeMarkdownContent(TEMPLATES[activeTemplateIndex].content)}
+                    className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+                  />
                 </div>
               </div>
 
