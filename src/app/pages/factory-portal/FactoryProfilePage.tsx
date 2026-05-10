@@ -475,6 +475,16 @@ export function FactoryProfilePage() {
       })(),
       category_ids: normalizeIds(catsQ.data ?? []),
       sub_category_ids: normalizeIds(subsQ.data ?? []),
+      min_order: (() => {
+        const r = factoryRaw as Record<string, unknown>;
+        const v = Number(r.min_order ?? r.minOrder);
+        return Number.isFinite(v) && v > 0 ? v : null;
+      })(),
+      lead_time_desc: String(
+        (factoryRaw as Record<string, unknown>).lead_time_desc ??
+          (factoryRaw as Record<string, unknown>).leadTimeDesc ??
+          '',
+      ).trim(),
     }),
     [factoryRaw, catsQ.data, subsQ.data],
   );
@@ -550,6 +560,8 @@ export function FactoryProfilePage() {
         tax_id: v.tax_id.trim() || undefined,
         description: v.description.trim() || undefined,
         factory_type_id: v.factory_type_id ?? undefined,
+        min_order: v.min_order != null && v.min_order > 0 ? v.min_order : undefined,
+        lead_time_desc: v.lead_time_desc.trim() || undefined,
       });
     } catch {
       failed += 1;

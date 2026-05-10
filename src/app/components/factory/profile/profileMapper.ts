@@ -28,5 +28,10 @@ export function mapProfileRawToForm(raw: ProfileRawBundle): ProfileFormValues {
     })(),
     category_ids: [...raw.categoryIds].sort((a, b) => a - b),
     sub_category_ids: [...raw.subCategoryIds].sort((a, b) => a - b),
+    min_order: (() => {
+      const v = Number(f.min_order ?? f.minOrder);
+      return Number.isFinite(v) && v > 0 ? v : null;
+    })(),
+    lead_time_desc: String(f.lead_time_desc ?? f.leadTimeDesc ?? '').trim(),
   };
 }

@@ -23,14 +23,30 @@ function rowType(row: Row): 'M' | 'B' | 'S' {
   return 'M';
 }
 
+/**
+ * Renders the secondary address line: ตำบล/แขวง · อำเภอ/เขต · จังหวัด · zip
+ *
+ * Thai postal addresses prefix the locality with ตำบล/แขวง / อำเภอ/เขต tokens
+ * — adding them makes the displayed string read naturally even when stitched
+ * from raw `name_th` columns.
+ */
 function displayLocation(row: Row): string {
   const province = String(row.province_name ?? '').trim();
   const district = String(row.district_name ?? '').trim();
   const subDistrict = String(row.sub_district_name ?? '').trim();
   const zip = String(row.zip_code ?? '').trim();
-  const parts = [subDistrict, district, province].filter((x) => x);
-  if (parts.length === 0 && !zip) return '—';
-  return `${parts.join(' · ')}${zip ? ` · ${zip}` : ''}`;
+
+  // Bangkok uses แขวง/เขต; other provinces use ตำบล/อำเภอ
+  const isBangkok = /กรุงเทพ/.test(province);
+  const subDistrictLabel = isBangkok ? 'แขวง' : 'ตำบล';
+  const districtLabel = isBangkok ? 'เขต' : 'อำเภอ';
+
+  const parts: string[] = [];
+  if (subDistrict) parts.push(`${subDistrictLabel}${subDistrict}`);
+  if (district) parts.push(`${districtLabel}${district}`);
+  if (province) parts.push(`จ.${province}`);
+  if (zip) parts.push(zip);
+  return parts.length > 0 ? parts.join(' ') : '—';
 }
 
 export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefault }: Props) {

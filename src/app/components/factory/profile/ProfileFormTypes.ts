@@ -8,6 +8,10 @@ export interface ProfileFormValues {
   factory_type_id: number | null;
   category_ids: number[];
   sub_category_ids: number[];
+  /** ขั้นต่ำในการรับผลิต (ชิ้น) — แสดงในหน้า factory profile ของลูกค้า */
+  min_order: number | null;
+  /** ระยะเวลาผลิตโดยประมาณแบบข้อความ (เช่น "15-20 วัน") */
+  lead_time_desc: string;
 }
 
 export const PROFILE_FORM_DEFAULTS: ProfileFormValues = {
@@ -19,4 +23,6 @@ export const PROFILE_FORM_DEFAULTS: ProfileFormValues = {
   factory_type_id: null,
   category_ids: [],
   sub_category_ids: [],
+  min_order: null,
+  lead_time_desc: '',
 };

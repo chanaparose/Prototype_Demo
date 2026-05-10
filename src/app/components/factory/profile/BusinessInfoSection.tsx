@@ -48,6 +48,39 @@ export function BusinessInfoSection({ form }: Props) {
           />
         </label>
 
+        <label className="block">
+          <span className="text-xs text-gray-500">
+            ขั้นต่ำในการรับผลิต (ชิ้น)
+            <span className="ml-1 text-gray-400 font-normal">— MOQ</span>
+          </span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            placeholder="500"
+            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            {...register('min_order', {
+              setValueAs: (v) => {
+                if (v === '' || v == null) return null;
+                const n = Number(v);
+                return Number.isFinite(n) && n > 0 ? n : null;
+              },
+            })}
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-xs text-gray-500">
+            ระยะเวลาผลิต (Lead time)
+            <span className="ml-1 text-gray-400 font-normal">— เช่น 15-20 วัน</span>
+          </span>
+          <input
+            placeholder="15-20 วัน"
+            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            {...register('lead_time_desc')}
+          />
+        </label>
+
         <label className="block sm:col-span-2">
           <span className="text-xs text-gray-500">รายละเอียด</span>
           <textarea
