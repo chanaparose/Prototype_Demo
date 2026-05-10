@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf, MapPin, Star } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf, MapPin, Star, Sparkles } from 'lucide-react';
 import {
   ExplorePromoCarousel,
   ExploreCategories,
@@ -398,31 +398,32 @@ export function ExploreMobile({
         </div>
       </div>
 
-      {/* Registration CTA (Mobile) — matches desktop purple theme */}
-      <div className="mx-4 rounded-xl overflow-hidden shadow-sm border border-[#A238FF]/30 relative" style={{ background: 'linear-gradient(135deg, #F8F5FF 0%, #FAFAFA 100%)' }}>
-        <div
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          style={{ maskImage: 'linear-gradient(to left, rgba(0,0,0,0.5), transparent)', WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.5), transparent)' }}
-        >
-          <img
-            src="https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=400"
-            className="w-full h-full object-cover mix-blend-multiply"
-            alt=""
-          />
-        </div>
-        <div className="relative z-10 p-3.5 text-center">
-           
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/register/factory')}
-              className="w-full py-2 rounded-lg font-bold transition-colors shadow-md text-sm text-white"
-              style={{ background: '#A238FF' }}
-            >
-              สมัครเลย
-            </button>
-            
-          </div>
+      {/* Registration CTA (Mobile) — 4:3 cover image with overlaid button */}
+      <div className="mx-auto w-[78%] max-w-xs relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-[#A238FF]/30 mt-8">
+        <img
+          src="assets/IMG_7664.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Bottom soft pastel blue-grey wash for button readability */}
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-300/80 via-slate-200/30 to-transparent pointer-events-none" />
+
+        <div className="absolute inset-x-0 bottom-0 z-10 p-3.5">
+          <button
+            type="button"
+            onClick={() => navigate('/register/factory')}
+            className="group relative w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm text-white whitespace-nowrap
+                       bg-gradient-to-r from-[#A238FF] via-[#8B2BE2] to-[#6D28D9]
+                       shadow-lg shadow-[#A238FF]/40
+                       ring-1 ring-white/20
+                       transition-all duration-200 ease-out
+                       hover:shadow-xl hover:shadow-[#A238FF]/60 hover:brightness-110
+                       active:scale-[0.97]"
+          >
+            <Sparkles size={14} className="text-white/90 group-hover:rotate-12 transition-transform duration-200" />
+            <span>สมัครเลย</span>
+            <ChevronRight size={14} className="text-white/90 group-hover:translate-x-1 transition-transform duration-200" />
+          </button>
         </div>
       </div>
 

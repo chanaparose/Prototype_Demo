@@ -13,6 +13,21 @@ type TxItem = {
   created_at: string;
 };
 
+function mapTxDescription(row: Record<string, unknown>): string {
+  const txType = String(row.type ?? row.transaction_type ?? '').toUpperCase();
+  const refType = String(row.reference_type ?? '').toLowerCase();
+  const refId = Number(row.reference_id ?? 0);
+  if (txType === 'BU') {
+    if (refType === 'order' && Number.isFinite(refId) && refId > 0) return `สั่งซื้อ Order #${refId}`;
+    return 'สั่งซื้อ';
+  }
+  if (txType === 'DP') return 'มัดจำ';
+  if (txType === 'WD') return 'ถอนเงิน';
+  if (txType === 'SC') return 'รับเงิน';
+  if (txType === 'RF') return 'คืนเงิน';
+  return String(row.description ?? row.type_label ?? row.type ?? 'รายการ');
+}
+
 export function TransactionHistoryPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -45,7 +60,7 @@ export function TransactionHistoryPage() {
               : (apiDir === 'in' ? 'in' : 'out');
           return {
             id: String(row.tx_id ?? row.transaction_id ?? row.id ?? ''),
-            description: String(row.description ?? row.type_label ?? row.type ?? 'รายการ'),
+            description: mapTxDescription(row),
             amount,
             direction: effectiveDirection,
             status_label: String(row.status_label ?? row.status ?? '-'),

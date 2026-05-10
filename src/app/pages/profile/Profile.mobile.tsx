@@ -121,6 +121,21 @@ type WalletTransaction = {
   type: 'credit' | 'debit';
 };
 
+function mapTxLabel(row: Record<string, unknown>): string {
+  const txType = String(row.transaction_type ?? row.type ?? '').toUpperCase();
+  const refType = String(row.reference_type ?? '').toLowerCase();
+  const refId = Number(row.reference_id ?? 0);
+  if (txType === 'BU') {
+    if (refType === 'order' && Number.isFinite(refId) && refId > 0) return `สั่งซื้อ Order #${refId}`;
+    return 'สั่งซื้อ';
+  }
+  if (txType === 'DP') return 'มัดจำ';
+  if (txType === 'WD') return 'ถอนเงิน';
+  if (txType === 'SC') return 'รับเงิน';
+  if (txType === 'RF') return 'คืนเงิน';
+  return String(row.description ?? row.type_label ?? row.label ?? row.note ?? 'รายการ');
+}
+
 function normTransaction(r: Record<string, unknown>, isCustomer: boolean): WalletTransaction {
   const amount = Number(r.amount ?? 0);
   const direction = String(r.direction ?? '').toLowerCase();
@@ -145,7 +160,7 @@ function normTransaction(r: Record<string, unknown>, isCustomer: boolean): Walle
   }
   return {
     id: String(r.tx_id ?? r.transaction_id ?? r.id ?? ''),
-    label: String(r.description ?? r.type_label ?? r.label ?? r.note ?? 'รายการ'),
+    label: mapTxLabel(r),
     amount: Math.abs(amount),
     date,
     type,
