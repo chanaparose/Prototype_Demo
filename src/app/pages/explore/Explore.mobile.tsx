@@ -411,10 +411,7 @@ export function ExploreMobile({
           />
         </div>
         <div className="relative z-10 p-3.5 text-center">
-          <h3 className="text-base font-bold text-[#2D1B4E] mb-0.5">
-            ลงทะเบียนกับ <span className="text-[#A238FF]">Tryly</span>
-          </h3>
-          <p className="text-gray-600 text-sm mb-3 font-medium">สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!</p>
+           
           <div className="flex flex-col gap-2">
             <button
               type="button"
@@ -424,9 +421,7 @@ export function ExploreMobile({
             >
               สมัครเลย
             </button>
-            <button className="w-full bg-white border border-[#A238FF] text-[#A238FF] py-2 rounded-lg font-bold transition-colors text-sm">
-              สิทธิประโยชน์มากมาย
-            </button>
+            
           </div>
         </div>
       </div>

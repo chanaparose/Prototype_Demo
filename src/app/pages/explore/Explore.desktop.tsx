@@ -938,36 +938,32 @@ export function ExploreDesktop({
       </div>
 
       {/* ═══ 8. Registration CTA ═══ */}
-      <section className="bg-gradient-to-r from-[#F8F5FF] to-[#FAFAFA] rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-5 px-4 md:px-8">
-          {/* Background Decoration */}
-          <div
-            className="absolute inset-y-0 right-0 w-2/3 opacity-40 pointer-events-none"
-            style={{ maskImage: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)', WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)' }}
-          >
-            <img
-              src="https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=700"
-              className="w-full h-full object-cover mix-blend-multiply"
-              alt=""
-            />
-          </div>
-          <div className="relative z-10 flex-1 text-center md:text-left mb-4 md:mb-0">
-            <h2 className="text-xl md:text-2xl font-bold text-[#2D1B4E] mb-1 flex items-center justify-center md:justify-start gap-2">
-              ลงทะเบียนข้อมูลธุรกิจกับ <span className="text-[#A238FF]">Tryly</span>
-            </h2>
-            <p className="text-gray-600 font-medium text-sm md:text-base">
-              สร้างเว็บไซต์หน้าร้านได้ง่าย ๆ ฟรี!
-            </p>
-          </div>
-          <div className="relative z-10 flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+      <section className="rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-5 px-4 md:px-8">
+          <img
+            src="assets/tryly_banner_v9.png"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          />
+          {/* Soft fade only on the right side to keep image vivid but ensure button readability */}
+          <div className="absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none" />
+
+          <div className="relative z-10 flex w-full justify-end items-center">
             <button
               type="button"
               onClick={() => navigate('/register/factory')}
-              className="w-full sm:w-auto bg-[#A238FF] hover:bg-[#8B2BE2] text-white px-6 py-2 rounded-lg font-bold transition-colors shadow-md text-xs md:text-sm whitespace-nowrap"
+              className="group relative shrink-0 inline-flex items-center gap-2 px-7 py-2.5 rounded-xl text-white font-bold text-xs md:text-sm whitespace-nowrap
+                         bg-gradient-to-r from-[#A238FF] via-[#8B2BE2] to-[#6D28D9]
+                         shadow-lg shadow-[#A238FF]/40
+                         ring-1 ring-white/20
+                         transition-all duration-200 ease-out
+                         hover:shadow-xl hover:shadow-[#A238FF]/60 hover:-translate-y-0.5 hover:brightness-110
+                         active:translate-y-0 active:scale-[0.97]
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#A238FF]"
             >
-              สมัครเลย
-            </button>
-            <button className="w-full sm:w-auto bg-white border border-[#A238FF] text-[#A238FF] hover:bg-[#F8F5FF] px-6 py-2 rounded-lg font-bold transition-colors text-xs md:text-sm whitespace-nowrap">
-              สิทธิประโยชน์มากมาย
+              <Sparkles size={14} className="text-white/90 group-hover:rotate-12 transition-transform duration-200" />
+              <span>สมัครเลย</span>
+              <ChevronRight size={14} className="text-white/90 group-hover:translate-x-1 transition-transform duration-200" />
+              <span aria-hidden className="pointer-events-none absolute inset-0 rounded-xl bg-white/0 group-hover:bg-white/10 transition-colors" />
             </button>
           </div>
         </section>
