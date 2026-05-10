@@ -13,6 +13,7 @@ type Props = {
   canReject: boolean;
   onOpenDrawer: () => void;
   onOpenReject: () => void;
+  onContactFactory?: () => void;
   onPhotoClick: (url: string) => void;
 };
 
@@ -78,6 +79,7 @@ export function StepRow({
   canReject,
   onOpenDrawer,
   onOpenReject,
+  onContactFactory,
   onPhotoClick,
 }: Props) {
   const { template, update } = merged;
@@ -146,11 +148,11 @@ export function StepRow({
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          onOpenReject();
+          onContactFactory?.();
         }}
         className="shrink-0 text-xs font-semibold text-violet-700 underline"
       >
-        ขอตรวจสอบใหม่
+        ติดต่อโรงงาน
       </button>
     ) : null;
 

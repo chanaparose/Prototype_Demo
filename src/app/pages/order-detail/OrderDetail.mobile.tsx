@@ -411,6 +411,7 @@ function OrderDetailMobileBody() {
               onPhotoClick={setSelectedPhoto}
               onRequestOverviewTab={() => setActiveSection('overview')}
               onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
+              onContactFactory={openOrderChat}
             />
           )}
         </div>

@@ -24,6 +24,7 @@ type Props = {
   onPhotoClick?: (url: string) => void;
   onRequestOverviewTab?: () => void;
   onPayDeposit?: () => void;
+  onContactFactory?: () => void;
 };
 
 export function OrderProductionTab({
@@ -31,6 +32,7 @@ export function OrderProductionTab({
   onPhotoClick,
   onRequestOverviewTab,
   onPayDeposit,
+  onContactFactory,
 }: Props) {
   const { user } = useAuth();
   const {
@@ -178,6 +180,7 @@ export function OrderProductionTab({
           if (uiMode.readOnly) return;
           setRejectStep(m);
         }}
+        onContactFactory={onContactFactory}
         onPhotoClick={handlePhoto}
       />
 

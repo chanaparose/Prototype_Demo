@@ -213,7 +213,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
             className="hidden sm:flex shrink-0 items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 hover:opacity-90"
             style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', color: 'white', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
           >
-            <span>เริ่มต้นเลย</span>
+            <span>สาธิตการใช้งาน</span>
             <ArrowRight size={15} />
           </button>
         </div>
@@ -322,7 +322,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
           className="sm:hidden mt-4 w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
           style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
         >
-          <span>🚀 เริ่มต้นเลย</span>
+          <span>สาธิตการใช้งาน</span>
           <ArrowRight size={15} />
         </button>
       </div>
