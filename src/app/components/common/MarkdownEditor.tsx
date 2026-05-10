@@ -11,10 +11,49 @@ import {
   ListOrdered, 
   Link, 
   Table as TableIcon, 
-  Image as ImageIcon 
+  Image as ImageIcon,
+  LayoutTemplate
 } from 'lucide-react';
 import { mediaApi } from '../../services/api';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
+
+// ---------------------------------------------------------------------------
+// เทมเพลตสำหรับแนะนำสินค้า / รับผลิต OEM (แบบโครงสร้างให้กรอกตาม)
+// ---------------------------------------------------------------------------
+const PRODUCT_TEMPLATE = `> **[ระบุหัวข้อโปรโมทหลัก หรือ คำโปรยที่น่าสนใจ]**
+> [ระบุคำอธิบายย่อย หรือ สโลแกนสั้นๆ เช่น รับผลิตอะไร, ขั้นต่ำเท่าไหร่, เหมาะกับใคร]
+
+---
+
+# [ใส่ชื่อบริษัท หรือ บริการหลักของคุณ] 
+[อธิบายสั้นๆ ว่าคุณคือใคร เชี่ยวชาญด้านไหน และช่วยแก้ปัญหาให้ลูกค้าได้อย่างไร]
+
+✨ **จุดเด่นบริการ / สินค้าของเรา**
+1. **[ระบุจุดเด่นข้อที่ 1 เช่น รองรับการเริ่มต้น (Low MOQ)]:** [อธิบายรายละเอียดเพิ่มเติม]
+2. **[ระบุจุดเด่นข้อที่ 2 เช่น ปรับแต่งสูตรได้ตามต้องการ]:** [อธิบายรายละเอียดเพิ่มเติม]
+3. **[ระบุจุดเด่นข้อที่ 3 เช่น ระยะเวลาผลิตชัดเจน]:** [อธิบายรายละเอียดเพิ่มเติม]
+
+### ข้อมูลที่ต้องเตรียมก่อนเริ่มงาน / เริ่มผลิต
+เพื่อให้ประเมินราคาและวางแผนได้แม่นยำ รบกวนระบุข้อมูลดังนี้:
+
+- **[หัวข้อข้อมูลที่ 1 เช่น กลุ่มเป้าหมาย]:** [ระบุสิ่งที่คุณต้องการทราบจากลูกค้า]
+- **[หัวข้อข้อมูลที่ 2 เช่น สเปกสินค้า]:**
+  - [รายละเอียดย่อย 1 เช่น วัตถุดิบที่ต้องการ]
+  - [รายละเอียดย่อย 2 เช่น รูปทรง หรือขนาด]
+- **[หัวข้อข้อมูลที่ 3 เช่น รูปแบบบรรจุภัณฑ์]:** [ระบุสิ่งที่คุณต้องการทราบ เช่น ขนาดซอง, จำนวน]
+- **[หัวข้อข้อมูลที่ 4 เช่น มาตรฐานที่ต้องการ]:** [เช่น อย., GMP, Halal]
+
+---
+
+✅ \`มาตรฐานและบริการที่เรามอบให้\`
+1. [ระบุมาตรฐาน หรือ การรับรองข้อที่ 1]
+2. [ระบุมาตรฐาน หรือ การรับรองข้อที่ 2]
+3. [ระบุมาตรฐาน หรือ การรับรองข้อที่ 3]
+
+![]([วางลิงก์รูปภาพแบนเนอร์หรือสินค้ารูปแบบ URL ที่นี่])
+
+[ระบุข้อความปิดท้าย หรือ Call to action เช่น "ยินดีให้คำปรึกษาเรื่องการออกแบบและขึ้นทะเบียนฟรี!"]
+`;
 
 interface MarkdownEditorProps {
   value: string;
@@ -55,22 +94,16 @@ export function MarkdownEditor({
     const currentValue = textarea.value;
     const selected = currentValue.slice(s, e);
 
-    // สร้างข้อความใหม่
     const nextValue = currentValue.slice(0, s) + prefix + selected + suffix + currentValue.slice(e);
     onChange(nextValue);
 
-    // รอให้ React อัปเดต State ก่อน แล้วค่อยจัดการตำแหน่ง Cursor
     requestAnimationFrame(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
         if (s === e) {
-          // ถ้าไม่ได้คลุมดำข้อความ ให้วาง Cursor ไว้หลัง Prefix (ตรงกลาง)
-          // เช่น กด Bold จะได้ **|**
           const cursorPos = s + prefix.length;
           textareaRef.current.setSelectionRange(cursorPos, cursorPos);
         } else {
-          // ถ้าคลุมดำข้อความ ให้คลุมดำที่ข้อความเดิมต่อ (ขยับตำแหน่งตาม Prefix)
-          // เช่น คลุมคำว่า Text แล้วกด Bold จะได้ **[Text]**
           textareaRef.current.setSelectionRange(s + prefix.length, s + prefix.length + selected.length);
         }
       }
@@ -101,7 +134,6 @@ export function MarkdownEditor({
     const nextValue = currentValue.slice(0, s) + text + currentValue.slice(e);
     onChange(nextValue);
 
-    // วาง Cursor ไว้ท้ายสุดของ Template ที่เพิ่งแทรกเข้าไป
     requestAnimationFrame(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
@@ -212,6 +244,20 @@ export function MarkdownEditor({
                   }}
                 />
               </div>
+
+              {/* ปุ่มแทรกเทมเพลต (ดันไปอยู่ขวาสุดด้วย ml-auto) */}
+              <div className="ml-auto flex items-center">
+                <button 
+                  type="button" 
+                  onClick={() => applyTemplate(PRODUCT_TEMPLATE)} 
+                  disabled={disabled} 
+                  className="inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-[13px] font-medium transition-colors" 
+                  title="แทรกเทมเพลตสินค้า OEM"
+                >
+                  <LayoutTemplate size={14} />
+                  แทรกเทมเพลตแนะนำสินค้า
+                </button>
+              </div>
             </div>
 
             {/* Guideline อ้างอิงตาม Markdown Guide */}
@@ -219,7 +265,7 @@ export function MarkdownEditor({
               <div className="flex items-center justify-between">
                 <p>
                   <span className="font-semibold text-gray-700 mr-1">💡 ทิปส์:</span> 
-                  ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, สร้างตารางด้วย <code>|</code>, หรือแนบรูปลากวาง
+                  ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, สร้างตารางด้วย <code>|</code>, หรือกดปุ่มแทรกเทมเพลตด้านบน
                 </p>
                 <a 
                   href="https://www.markdownguide.org/basic-syntax/" 
