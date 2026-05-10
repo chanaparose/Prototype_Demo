@@ -219,18 +219,15 @@ function NextActionCard({ step, stepIndex, totalSteps, state, customerShipping, 
           </div>
         ) : null}
 
-        {/* Checklist preview (first 3 items) */}
-        <div className="space-y-1.5">
-          {guide.checklist.slice(0, 3).map((item, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <div className="w-4 h-4 rounded border-2 border-gray-300 shrink-0 mt-0.5" />
-              <span className="text-xs text-gray-600 leading-relaxed">{item}</span>
-            </div>
+        {/* Bullet preview (first 3 items) — dot list เหมือน UpdateStepDrawer */}
+        <ul className="space-y-1.5">
+          {guide.bulletPoints.slice(0, 3).map((item, i) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-gray-700 leading-relaxed">
+              <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5" />
+              {item}
+            </li>
           ))}
-          {guide.checklist.length > 3 ? (
-            <p className="text-[11px] text-indigo-500 pl-6">+{guide.checklist.length - 3} รายการ (ดูใน popup)</p>
-          ) : null}
-        </div>
+        </ul>
 
         {/* What happens after */}
         <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 flex items-center gap-2">
