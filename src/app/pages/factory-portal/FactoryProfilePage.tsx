@@ -134,21 +134,21 @@ function SectionCard({ icon: Icon, title, iconColor, iconBg, badge, children }: 
   return (
     <section className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
       {/* Section header */}
-      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-50">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-6 border-b border-gray-100 bg-white px-8 py-4">
+        <div className="flex items-center gap-5">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
             style={{ backgroundColor: iconBg ?? 'rgba(122,75,148,0.1)' }}
           >
-            <Icon size={16} style={{ color: iconColor ?? COLORS.purple }} strokeWidth={2} />
+            <Icon size={14} style={{ color: iconColor ?? COLORS.purple }} strokeWidth={2} />
           </div>
           <div>
-            <p className="text-sm font-bold" style={{ color: COLORS.navy }}>{title}</p>
+            <p className="text-[12px] font-bold leading-none text-gray-800">{title}</p>
           </div>
         </div>
         {badge && (
           <span
-            className={`text-[10px] font-semibold px-2.5 py-1 rounded-full shrink-0 ${
+            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
               badge.complete
                 ? 'bg-teal-100 text-teal-700'
                 : 'bg-amber-100 text-amber-700'
@@ -159,7 +159,7 @@ function SectionCard({ icon: Icon, title, iconColor, iconBg, badge, children }: 
         )}
       </div>
       {/* Content */}
-      <div className="p-5 space-y-4">{children}</div>
+      <div className="space-y-4 px-8 py-6">{children}</div>
     </section>
   );
 }
@@ -304,10 +304,10 @@ function FactoryHeroCard({
         ) : null}
       </div>
 
-      <div className="px-5 pb-5 -mt-11 sm:-mt-12 relative z-[2]">
-        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+      <div className="relative z-[2] px-5 pb-5 pt-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <div
-            className={`rounded-2xl shrink-0 w-fit transition-[box-shadow] ${
+            className={`w-fit shrink-0 rounded-2xl transition-[box-shadow] ${
               profileDragOver ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-white' : ''
             }`}
             onDragOver={(e) => {
@@ -384,7 +384,9 @@ function FactoryHeroCard({
             </div>
           </div>
         </div>
+      </div>
 
+      <div className="px-5 pb-5">
         <p className="text-[11px] text-gray-500 mt-3">
           อัปโหลดแยกกัน: พื้นหลังแถบบน และรูปโปรไฟล์สี่เหลี่ยม — บันทึกทันทีหลังอัปโหลด (รองรับ JPG, PNG, WebP)
         </p>
