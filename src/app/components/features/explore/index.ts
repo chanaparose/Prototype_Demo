@@ -1,6 +1,7 @@
 export { ExplorePromoCarousel } from './ExplorePromoCarousel';
 export { ExploreCategories } from './ExploreCategories';
 export { ExploreFactoryGrid } from './ExploreFactoryGrid';
+export { ExploreFactoryShowcase } from './ExploreFactoryShowcase';
 export { ExploreIdeaArticles } from './ExploreIdeaArticles';
 export { ExploreRecentActivity } from './ExploreRecentActivity';
 export { ExploreFooter } from './ExploreFooter';

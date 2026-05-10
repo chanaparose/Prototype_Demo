@@ -21,6 +21,7 @@ import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/explor
 import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '../../components/features/explore/HowToOrderSection';
+import { ExploreFactoryShowcase } from '../../components/features/explore/ExploreFactoryShowcase';
 import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
@@ -387,6 +388,45 @@ export function ExploreDesktop({
 }: ExploreDesktopProps) {
   const navigate = useNavigate();
   const ideaArticlesList = ideaArticles ?? [];
+  const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 10), [factories]);
+  const factoryVisibleCards = 5;
+  const factoryCardW = 196;
+  const factoryHasItems = recommendedFactories.length > 0;
+  const factoryTotalSteps = factoryHasItems
+    ? Math.max(1, recommendedFactories.length - factoryVisibleCards + 1)
+    : 0;
+  const [factoryIdx, setFactoryIdx] = useState(0);
+  const factoryScrollRef = useRef<HTMLDivElement>(null);
+  const factoryHoveredRef = useRef(false);
+
+  const goToFactory = useCallback((next: number) => {
+    if (!factoryHasItems || factoryTotalSteps <= 0) return;
+    const clamped = Math.max(0, Math.min(next, factoryTotalSteps - 1));
+    setFactoryIdx(clamped);
+    if (factoryScrollRef.current) {
+      factoryScrollRef.current.scrollTo({ left: clamped * factoryCardW, behavior: 'smooth' });
+    }
+  }, [factoryHasItems, factoryTotalSteps]);
+
+  useEffect(() => {
+    setFactoryIdx(0);
+    if (factoryScrollRef.current) factoryScrollRef.current.scrollTo({ left: 0 });
+  }, [recommendedFactories.length]);
+
+  useEffect(() => {
+    if (!factoryHasItems || factoryTotalSteps <= 1) return;
+    const timer = window.setInterval(() => {
+      if (factoryHoveredRef.current) return;
+      setFactoryIdx((prev) => {
+        const next = prev + 1 >= factoryTotalSteps ? 0 : prev + 1;
+        if (factoryScrollRef.current) {
+          factoryScrollRef.current.scrollTo({ left: next * factoryCardW, behavior: 'smooth' });
+        }
+        return next;
+      });
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [factoryHasItems, factoryTotalSteps]);
 
   const productShowcases = useMemo(
     () => (exploreProducts ?? []).slice(0, 8).map((s) => ({
@@ -594,8 +634,17 @@ export function ExploreDesktop({
         {/* ═══ How to Order ═══ */}
         <HowToOrderSection className="mx-0" />
 
-        {/* ═══ 6. โรงงานแนะนำ ═══ */}
-        <section className="mt-[40px] rounded-2xl overflow-hidden border border-gray-200 bg-white">
+        {/* ═══ 6. โรงงานแนะนำ — light pastel cards (text-left + image-right) ═══ */}
+        <div className="mt-[40px]">
+          <ExploreFactoryShowcase
+            factories={recommendedFactories}
+            onFactoryClick={(id) => navigate(`/factories/${id}`)}
+            onSeeAll={() => navigate('/factory-ideas?type=factory')}
+            variant="desktop"
+          />
+        </div>
+        {/* ── Legacy banner section retained below as hidden until removed ── */}
+        <section className="hidden mt-[40px] rounded-2xl overflow-hidden border border-gray-200 bg-white">
           <div className="relative px-4 py-4 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
 
             {/* ── Color-block shapes (cat illustration style) ── */}
@@ -633,49 +682,96 @@ export function ExploreDesktop({
           </div>
 
           {/* --- Body Section --- */}
-          <div className="p-3 bg-gradient-to-b from-purple-50/20 to-white">
-            <div className="grid grid-cols-5 gap-2">
-              {(factories ?? []).slice(0, 10).map((factory) => (
-                <div
-                  key={factory.id}
-                  onClick={() => navigate(`/factories/${factory.id}`)}
-                  className="bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col w-full max-w-[180px] mx-auto"
-                >
-                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
-                    <ImageWithFallback
-                      src={factory.image}
-                      alt={factory.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {factory.verified === true && (
-                      <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                        <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
-                        <span className="text-[10px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
+          <div
+            className="p-3 bg-gradient-to-b from-purple-50/20 to-white"
+            onMouseEnter={() => { factoryHoveredRef.current = true; }}
+            onMouseLeave={() => { factoryHoveredRef.current = false; }}
+          >
+            <div className="relative">
+              {factoryHasItems && factoryTotalSteps > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => goToFactory(factoryIdx - 1)}
+                    disabled={factoryIdx === 0}
+                    className="absolute left-0 top-[calc(50%-28px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    aria-label="ก่อนหน้า"
+                  >
+                    <ChevronLeft size={18} className="text-gray-600" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToFactory(factoryIdx + 1)}
+                    disabled={factoryIdx >= factoryTotalSteps - 1}
+                    className="absolute right-0 top-[calc(50%-28px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    aria-label="ถัดไป"
+                  >
+                    <ChevronRight size={18} className="text-gray-600" />
+                  </button>
+                </>
+              ) : null}
+
+              <div
+                ref={factoryScrollRef}
+                className="flex gap-4 overflow-x-hidden pb-1"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {recommendedFactories.map((factory) => (
+                  <div
+                    key={factory.id}
+                    onClick={() => navigate(`/factories/${factory.id}`)}
+                    className="min-w-[180px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                  >
+                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
+                      <ImageWithFallback
+                        src={factory.image}
+                        alt={factory.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {factory.verified === true && (
+                        <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                          <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
+                          <span className="text-[10px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-2 flex flex-col flex-1 justify-between">
+                      <div>
+                        <h3 className="font-medium text-[12px] leading-tight text-gray-700 mb-0.5 truncate group-hover:text-[#A238FF] transition-colors">
+                          {factory.name}
+                        </h3>
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
+                          <span className="text-gray-500 text-[10px] truncate">{factory.location}</span>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-2 flex flex-col flex-1 justify-between">
-                    <div>
-                      <h3 className="font-medium text-[12px] leading-tight text-gray-700 mb-0.5 truncate group-hover:text-[#A238FF] transition-colors">
-                        {factory.name}
-                      </h3>
-                      <div className="flex items-center gap-1 mb-0.5">
-                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                        <span className="text-gray-500 text-[10px] truncate">{factory.location}</span>
+                      <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                        <div className="flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                          <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
+                          <span className="text-gray-400 text-[10px]">({factory.reviews})</span>
+                        </div>
+                        <span className="text-gray-400 text-[10px]">ขั้นต่ำ {factory.minOrder}</span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-gray-50">
-                      <div className="flex items-center gap-0.5">
-                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                        <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
-                        <span className="text-gray-400 text-[10px]">({factory.reviews})</span>
-                      </div>
-                      <span className="text-gray-400 text-[10px]">ขั้นต่ำ {factory.minOrder}</span>
-                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+            {factoryHasItems && factoryTotalSteps > 1 ? (
+              <div className="mt-3 flex items-center justify-center gap-1.5">
+                {Array.from({ length: factoryTotalSteps }).map((_, i) => (
+                  <button
+                    key={`fac-dot-${i}`}
+                    type="button"
+                    onClick={() => goToFactory(i)}
+                    className={`h-1.5 rounded-full transition-all ${factoryIdx === i ? 'w-5' : 'w-1.5'}`}
+                    style={{ backgroundColor: factoryIdx === i ? '#A238FF' : '#D6D3E6' }}
+                    aria-label={`ไปที่ลำดับ ${i + 1}`}
+                  />
+                ))}
+              </div>
+            ) : null}
             <div className="mt-5 flex justify-center">
               <button
                 type="button"
@@ -708,7 +804,7 @@ export function ExploreDesktop({
             {/* Left Banner */}
             <div className="hidden lg:block lg:w-[40%] rounded-xl overflow-hidden relative min-h-[180px] flex-shrink-0 group cursor-pointer shadow-md">
               <ImageWithFallback
-                src="/assets/tryly_service_banner_v2_376x218.png"
+                src="assets/tryly_service_banner_375x215.png"
                 alt="แบนเนอร์บริการ"
                 className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
@@ -719,9 +815,7 @@ export function ExploreDesktop({
                     'linear-gradient(to top right, rgba(0, 60, 100, 0.2), rgba(3, 153, 190, 0.1), transparent)',
                 }}
               >
-                <p className="text-white text-sm font-medium drop-shadow-md max-w-[90%] leading-snug">
-                  คุ้มค่า ถูกใจสัตว์เลี้ยง
-                </p>
+                 
               </div>
             </div>
 

@@ -292,7 +292,6 @@ export function FactoryOrderDetailPage() {
                   rfq={rfq}
                   quotation={quotation}
                   variant="accordion"
-                  defaultOpen={false}
                 />
               ) : null}
             </div>

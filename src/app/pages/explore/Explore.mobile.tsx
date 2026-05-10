@@ -4,7 +4,7 @@ import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf, 
 import {
   ExplorePromoCarousel,
   ExploreCategories,
-  ExploreFactoryGrid,
+  ExploreFactoryShowcase,
   ExploreIdeaArticles,
   ExploreFooter,
   HowToOrderSection,
@@ -295,11 +295,12 @@ export function ExploreMobile({
       <HowToOrderSection className="mx-4" />
 
 
-      <div className="mt-[20px]"> 
-        <ExploreFactoryGrid
-          factories={(factories ?? []).slice(0, 4)}
+      <div className="mt-[20px]">
+        <ExploreFactoryShowcase
+          factories={(factories ?? []).slice(0, 8)}
           onFactoryClick={(id) => navigate(`/factories/${id}`)}
           onSeeAll={() => navigate('/factory-ideas?type=factory')}
+          variant="mobile"
         />
       </div>
 
