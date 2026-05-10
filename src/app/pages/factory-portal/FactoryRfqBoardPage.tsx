@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
-import { Search, SlidersHorizontal, FileText, Factory, PackageSearch, FlaskConical, ChevronDown, Check } from 'lucide-react';
+import { Search, SlidersHorizontal, FileText, Factory, PackageSearch, FlaskConical, ChevronDown, Check, ClipboardList } from 'lucide-react';
 import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
@@ -88,25 +88,35 @@ function useNarrowTabs(breakpoint = 400) {
   return narrow;
 }
 
+/**
+ * Flow rules (ตรงกับ useFactoryRfqBoard):
+ * - open  : ยังไม่เสนอ + RFQ status OP เท่านั้น
+ * - quoted: เสนอแล้ว + quotation ยังไม่ AC (AC ถูก hook กรองออกแล้ว)
+ * - all   : union ของทั้งสอง (ทุก row ที่เหลือหลัง hook filter)
+ */
 function tabCounts(rows: FactoryBoardRow[]) {
-  const all = rows.length;
-  const open = rows.filter((r) => !r.hasMyQuote).length;
+  const open = rows.filter((r) => !r.hasMyQuote && r.status === 'OP').length;
   const quoted = rows.filter((r) => r.hasMyQuote).length;
+  const all = open + quoted;
   const closing = rows.filter(
-    (r) => !r.hasMyQuote && r.daysLeft != null && r.daysLeft >= 0 && r.daysLeft <= 3,
+    (r) => !r.hasMyQuote && r.status === 'OP' && r.daysLeft != null && r.daysLeft >= 0 && r.daysLeft <= 3,
   ).length;
   return { all, open, quoted, closing };
 }
 
 function applyTab(rows: FactoryBoardRow[], tab: TabKey): FactoryBoardRow[] {
+  // "ทั้งหมด" = ยังไม่เสนอ (OP) + เสนอแล้ว (non-AC) → hook กรอง AC ออกแล้ว
   if (tab === 'all') return rows;
-  if (tab === 'open') return rows.filter((r) => !r.hasMyQuote);
+  // ยังไม่เสนอ: เฉพาะ OP ที่ไม่มีการส่ง quotation
+  if (tab === 'open') return rows.filter((r) => !r.hasMyQuote && r.status === 'OP');
+  // ติดตาม BOQ: ส่ง quotation แล้ว (ทุก rfq status เพราะ rfq อาจปิดหลังจากเสนอ)
   if (tab === 'quoted') return rows.filter((r) => r.hasMyQuote);
-  if (tab === 'pr') return rows.filter((r) => String(r.requestKind ?? 'PR').toUpperCase() === 'PR');
-  if (tab === 'ps') return rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'PS');
-  if (tab === 'ms') return rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'MS');
+  // kind tabs กรองเฉพาะ OP ที่ยังไม่เสนอ
+  if (tab === 'pr') return rows.filter((r) => !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? 'PR').toUpperCase() === 'PR');
+  if (tab === 'ps') return rows.filter((r) => !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'PS');
+  if (tab === 'ms') return rows.filter((r) => !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MS');
   return rows.filter(
-    (r) => !r.hasMyQuote && r.daysLeft != null && r.daysLeft >= 0 && r.daysLeft <= 3,
+    (r) => !r.hasMyQuote && r.status === 'OP' && r.daysLeft != null && r.daysLeft >= 0 && r.daysLeft <= 3,
   );
 }
 
@@ -168,7 +178,7 @@ export function FactoryRfqBoardPage() {
   const { fid, rows, factoryCategoryIds, shipNameById, loading, error, reload } = useFactoryRfqBoard();
   const narrowTabs = useNarrowTabs(400);
 
-  const [tab, setTab] = useState<TabKey>('all');
+  const [tab, setTab] = useState<TabKey>('open');
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('');
   const [filterRfqStatus, setFilterRfqStatus] = useState('');
@@ -176,22 +186,19 @@ export function FactoryRfqBoardPage() {
   const [sort, setSort] = useState<SortKey>('new');
 
   const counts = useMemo(() => tabCounts(rows), [rows]);
-  const kindCounts = useMemo(() => ({
-    pr: rows.filter((r) => String(r.requestKind ?? 'PR').toUpperCase() === 'PR').length,
-    ps: rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'PS').length,
-    ms: rows.filter((r) => String(r.requestKind ?? '').toUpperCase() === 'MS').length,
-  }), [rows]);
+  // Kind counts = ยังไม่ได้เสนอ + OP เท่านั้น (ใช้ unansweredByKind แทน kindCounts)
   const unansweredByKind = useMemo(() => ({
-    pr: rows.filter((r) => !r.hasMyQuote && String(r.requestKind ?? 'PR').toUpperCase() === 'PR').length,
-    ps: rows.filter((r) => !r.hasMyQuote && String(r.requestKind ?? '').toUpperCase() === 'PS').length,
-    ms: rows.filter((r) => !r.hasMyQuote && String(r.requestKind ?? '').toUpperCase() === 'MS').length,
+    pr: rows.filter((r) => !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? 'PR').toUpperCase() === 'PR').length,
+    ps: rows.filter((r) => !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'PS').length,
+    ms: rows.filter((r) => !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MS').length,
   }), [rows]);
   const summary = useMemo(() => {
     const now = Date.now();
     const oneDay = 24 * 60 * 60 * 1000;
-    const newToday = rows.filter((r) => now - r.createdAtMs <= oneDay).length;
+    // นับเฉพาะ OP ที่ยังไม่เสนอ
+    const newToday = rows.filter((r) => !r.hasMyQuote && r.status === 'OP' && now - r.createdAtMs <= oneDay).length;
     const closingSoon = rows.filter(
-      (r) => !r.hasMyQuote && r.daysLeft != null && r.daysLeft >= 0 && r.daysLeft <= 3,
+      (r) => !r.hasMyQuote && r.status === 'OP' && r.daysLeft != null && r.daysLeft >= 0 && r.daysLeft <= 3,
     ).length;
     const waitingQuote = rows.filter((r) => r.hasMyQuote).length;
     return { newToday, closingSoon, waitingQuote };
@@ -235,15 +242,22 @@ export function FactoryRfqBoardPage() {
     setFilterShip('');
   };
 
+  // BOQ status breakdown for the quoted tab summary
+  const boqCounts = useMemo(() => ({
+    pd: rows.filter((r) => r.hasMyQuote && r.myQuoteStatus === 'PD').length,
+    ac: rows.filter((r) => r.hasMyQuote && r.myQuoteStatus === 'AC').length,
+    rj: rows.filter((r) => r.hasMyQuote && r.myQuoteStatus === 'RJ').length,
+  }), [rows]);
+
   const tabDefs: { key: TabKey; label: string; count: number; warn?: boolean }[] = [
-    { key: 'all', label: 'ทั้งหมด', count: counts.all },
     { key: 'open', label: 'ยังไม่ได้เสนอ', count: counts.open },
-    { key: 'quoted', label: 'เสนอแล้ว', count: counts.quoted },
+    { key: 'quoted', label: 'ติดตาม BOQ ที่เสนอ', count: counts.quoted },
+    { key: 'all', label: 'ทั้งหมด', count: counts.all },
   ];
   const kindTabs: { key: Extract<TabKey, 'pr' | 'ps' | 'ms'>; label: string; count: number; icon: React.ComponentType<{ size?: number; className?: string }>; hint: string }[] = [
-    { key: 'pr', label: 'OEM', count: kindCounts.pr, icon: Factory, hint: 'ขอราคาการผลิต' },
-    { key: 'ps', label: 'ตัวอย่างสินค้า', count: kindCounts.ps, icon: PackageSearch, hint: 'ขอสินค้าทดลอง' },
-    { key: 'ms', label: 'ตัวอย่างวัสดุ', count: kindCounts.ms, icon: FlaskConical, hint: 'ขอวัสดุทดลอง' },
+    { key: 'pr', label: 'OEM', count: unansweredByKind.pr, icon: Factory, hint: 'ขอราคาการผลิต' },
+    { key: 'ps', label: 'ตัวอย่างสินค้า', count: unansweredByKind.ps, icon: PackageSearch, hint: 'ขอสินค้าทดลอง' },
+    { key: 'ms', label: 'ตัวอย่างวัสดุ', count: unansweredByKind.ms, icon: FlaskConical, hint: 'ขอวัสดุทดลอง' },
   ];
 
   if (loading) {
@@ -308,7 +322,7 @@ export function FactoryRfqBoardPage() {
 
       {!noFactoryCategories ? (
         <>
-          {/* ── Tab bar ── */}
+          {/* ── Kind cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {kindTabs.map((k) => {
               const active = tab === k.key;
@@ -554,9 +568,9 @@ export function FactoryRfqBoardPage() {
               {pipeline.map((r) => (
                 <li
                   key={r.id}
-                  className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                  className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 overflow-hidden"
                 >
-                  <RfqCard row={r as RfqCardModel} />
+                  <RfqCard row={r as RfqCardModel} variant={tab === 'quoted' ? 'boq' : 'board'} />
                 </li>
               ))}
             </ul>

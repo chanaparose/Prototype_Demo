@@ -5,13 +5,6 @@ import { daysUntilDeadline } from '../utils/rfqDeadline';
 import { rfqsApi, factoriesApi, masterApi, categoriesApi, addressesApi } from '../services/api';
 import type { RfqCardModel } from '../components/factory/RfqCard';
 
-type QuoteRow = Record<string, unknown>;
-
-function quoteFid(q: QuoteRow): number | null {
-  const n = Number(q.factory_id ?? q.factoryId);
-  return Number.isFinite(n) ? n : null;
-}
-
 function innerRfq(row: Record<string, unknown>): Record<string, unknown> {
   const r = row.rfq;
   if (r && typeof r === 'object') return r as Record<string, unknown>;
@@ -161,9 +154,7 @@ export function useFactoryRfqBoard() {
           thumbUrl = typeof u0 === 'string' && u0.trim() ? u0.trim() : null;
         }
 
-        const leadTargetDaysRaw = Number(
-          inner.target_lead_time_days ?? 0,
-        );
+        const leadTargetDaysRaw = Number(inner.target_lead_time_days ?? 0);
         const leadTargetDays =
           Number.isFinite(leadTargetDaysRaw) && leadTargetDaysRaw > 0 ? leadTargetDaysRaw : null;
 
@@ -174,6 +165,14 @@ export function useFactoryRfqBoard() {
         const addressSummary =
           String(inner.address_summary ?? '').trim() ||
           (Number.isFinite(addressId) && addressId > 0 ? addrById.get(addressId) ?? '' : '');
+
+        // ── Quotation overlay — ส่งมาจาก API โดยตรง ไม่ต้อง N+1 ──
+        // Backend guarantees: AC rows are excluded, so my_quote_status is null / PD / RJ only
+        const myQuoteStatusRaw = inner.my_quote_status ?? row.my_quote_status;
+        const hasMyQuote = myQuoteStatusRaw != null && String(myQuoteStatusRaw).trim() !== '';
+        const myQuoteStatus = hasMyQuote ? String(myQuoteStatusRaw).toUpperCase() : null;
+        const myQuotedPriceRaw = Number(inner.my_quoted_price ?? row.my_quoted_price ?? NaN);
+        const myQuotedPrice = hasMyQuote && Number.isFinite(myQuotedPriceRaw) ? myQuotedPriceRaw : null;
 
         bases.push({
           id,
@@ -190,9 +189,9 @@ export function useFactoryRfqBoard() {
           shippingMethodName,
           addressSummary,
           thumbUrl,
-          myQuotedPrice: null,
-          myQuoteStatus: null,
-          hasMyQuote: false,
+          myQuotedPrice,
+          myQuoteStatus,
+          hasMyQuote,
           categoryId: Number.isFinite(categoryId) && categoryId > 0 ? categoryId : 0,
           shippingMethodId,
           createdAtMs: Number.isFinite(createdAtMs) ? createdAtMs : 0,
@@ -200,23 +199,14 @@ export function useFactoryRfqBoard() {
         });
       }
 
-      if (fid != null && bases.length > 0) {
-        const quoteLists = await Promise.all(
-          bases.map((b) => rfqsApi.listQuotations(b.id).catch(() => [])),
-        );
-        for (let i = 0; i < bases.length; i++) {
-          const qList = (Array.isArray(quoteLists[i]) ? quoteLists[i] : []) as QuoteRow[];
-          const mine = qList.find((q) => quoteFid(q) === fid);
-          if (mine) {
-            bases[i].hasMyQuote = true;
-            bases[i].myQuoteStatus = String(mine.status ?? 'PD').toUpperCase();
-            const p = Number(mine.price_per_piece);
-            bases[i].myQuotedPrice = Number.isFinite(p) ? p : null;
-          }
-        }
-      }
+      // Backend already filters AC and non-OP-unquoted rows, but apply defensively on frontend too
+      const visible = bases.filter((b) => {
+        if (b.hasMyQuote && b.myQuoteStatus === 'AC') return false;
+        if (!b.hasMyQuote && b.status !== 'OP') return false;
+        return true;
+      });
 
-      setRows(bases);
+      setRows(visible);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลด RFQ ไม่สำเร็จ');
       setRows([]);
