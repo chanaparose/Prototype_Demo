@@ -36,7 +36,7 @@ const DEFAULT_USER_AVATAR_SRC =
 const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
   { path: '/factory-ideas', icon: Lightbulb, label: 'แนะนำโรงงาน' },
-  { path: '/orders', icon: ClipboardList, label: 'RFQ & คำสั่งงาน' },
+  { path: '/orders', icon: ClipboardList, label: 'คำขอราคา & คำสั่งงาน' },
   { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
 ];
 
