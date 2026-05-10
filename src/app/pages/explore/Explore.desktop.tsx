@@ -937,21 +937,32 @@ export function ExploreDesktop({
  
       </div>
 
-      {/* ═══ 8. Registration CTA ═══ */}
-      <section className="rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative flex flex-col md:flex-row items-center py-5 px-4 md:px-8">
+      {/* ═══ 8. Registration CTA — mt-6 เท่ากับ space-y-6 ในคอลัมน์หลัก (รวม iPad กับ desktop) ═══ */}
+      <section className="mt-6 rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative py-5 px-4 md:px-8">
+          {/* Desktop (xl+): full-bleed hero inside section */}
           <img
             src="assets/tryly_banner_v9.png"
             alt=""
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            className="hidden xl:block absolute inset-0 w-full h-full object-cover pointer-events-none"
           />
-          {/* Soft fade only on the right side to keep image vivid but ensure button readability */}
-          <div className="absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none" />
+          <div className="hidden xl:block absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none" />
 
-          <div className="relative z-10 flex w-full justify-end items-center">
+          {/* iPad / tablet (below xl): banner in-flow; button overlays bottom-right (same horizontal rhythm as section padding) */}
+          <img
+            src="assets/tryly_tablet_banner.png"
+            alt=""
+            className="xl:hidden relative z-0 w-full h-auto object-contain object-center pointer-events-none select-none"
+          />
+
+          <div
+            className="z-10 flex justify-end items-center w-full xl:relative xl:mt-0
+                       max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4
+                       md:max-xl:right-8 md:max-xl:bottom-5"
+          >
             <button
               type="button"
               onClick={() => navigate('/register/factory')}
-              className="group relative shrink-0 inline-flex items-center gap-2 px-7 py-2.5 rounded-xl text-white font-bold text-xs md:text-sm whitespace-nowrap
+              className="group relative shrink-0 inline-flex items-center gap-1.5 xl:gap-2 max-xl:px-4 max-xl:py-2 xl:px-7 xl:py-2.5 rounded-xl text-white font-bold text-xs xl:text-sm whitespace-nowrap
                          bg-gradient-to-r from-[#A238FF] via-[#8B2BE2] to-[#6D28D9]
                          shadow-lg shadow-[#A238FF]/40
                          ring-1 ring-white/20
