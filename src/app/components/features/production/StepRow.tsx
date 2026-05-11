@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Lock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import type { MergedProductionStep } from './types';
 import { STEP_VISUAL, type StepDerivedState } from './stepDerivedState';
 
@@ -23,13 +23,12 @@ function renderStateIcon(state: StepDerivedState) {
       return <CheckCircle2 size={20} className="text-emerald-600" aria-hidden />;
     case 'active':
       return (
-        <span className="relative inline-flex items-center justify-center" aria-hidden>
-          <span className="absolute inset-0 rounded-full bg-violet-300/40 motion-safe:animate-ping" />
-          <Loader2
-            size={20}
-            className="text-[#A238FF] motion-safe:animate-spin"
-            style={{ animationDuration: '1.6s' }}
-          />
+        <span
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#A238FF] bg-[#A238FF]/10"
+          aria-label="กำลังดำเนินการ"
+          role="img"
+        >
+          <span className="h-2 w-2 rounded-full bg-[#A238FF]" />
         </span>
       );
     case 'blocked':
