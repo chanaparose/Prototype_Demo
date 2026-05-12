@@ -98,6 +98,7 @@ export const router = createBrowserRouter([
               { path: 'quotations/:id', Component: QuoteDetailCustomer },
               { path: 'rfqs/:id', Component: RFQDetail },
               { path: 'orders/:id', Component: OrderDetail },
+              { path: 'orders/:id/payment', loader: ({ params }) => redirect(`/orders/${params.id}`) },
               { path: 'messages/:id', Component: ChatRoom },
               { path: 'chat-room', Component: ChatRoom },
               { path: 'chat-room/:id', Component: ChatRoom },
