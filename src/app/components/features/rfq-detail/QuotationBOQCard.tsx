@@ -20,7 +20,7 @@ export interface Quotation {
   moq: number;
   lead_time_days: number;
   shipping_method: string;
-  status: 'Pending' | 'Accepted' | 'Rejected';
+  status: 'Pending' | 'Accepted' | 'Rejected' | 'Expired';
   material_detail: string;
   payment_condition: string;
   sample_cost: number;
@@ -106,7 +106,7 @@ export function quotationFromOfferSource(
   const qSt = (offer.quoteStatus ?? 'PD').toUpperCase();
   const status: Quotation['status'] =
     detail?.status ??
-    (qSt === 'AC' ? 'Accepted' : qSt === 'RJ' ? 'Rejected' : 'Pending');
+    (qSt === 'AC' ? 'Accepted' : qSt === 'RJ' ? 'Rejected' : qSt === 'EX' ? 'Expired' : 'Pending');
 
   return {
     quote_id,

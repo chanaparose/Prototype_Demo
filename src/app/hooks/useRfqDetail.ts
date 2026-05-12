@@ -13,10 +13,11 @@ import { summarizeRfqAddress } from '../utils/rfqAddressSummary';
 import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
 
 // ─── Status Code Mapping ───────────────────────────────────────
-const mapRfqStatus = (code: string, hasQuotes: boolean): string => {
+// hasAccepted = มี quotation status AC อย่างน้อย 1 ใบ (แสดงว่า order ถูกสร้างแล้ว)
+const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): string => {
   switch (code.toUpperCase()) {
     case 'OP': return hasQuotes ? 'offers_received' : 'pending';
-    case 'CL': return 'completed';
+    case 'CL': return hasAccepted ? 'completed' : 'expired';
     case 'CC': return 'cancelled';
     default: return code.toLowerCase();
   }
@@ -318,7 +319,8 @@ export function useRfqDetail(rfqId: string | undefined) {
       const budgetFallback = budgetPerPiece != null ? budgetPerPiece * quantity : 0;
       const budget = Math.max(0, Math.round(budgetTotalExplicit ?? budgetFallback ?? 0));
       const catName = categoryMap.get(String(rawRfq.category_id)) ?? '';
-      const status = mapRfqStatus(rawRfq.status, quotes.length > 0);
+      const hasAcceptedQuote = quotes.some((q) => String(q.status ?? '').toUpperCase() === 'AC');
+      const status = mapRfqStatus(rawRfq.status, quotes.length > 0, hasAcceptedQuote);
       const createdDate = rawRfq.created_at ? rawRfq.created_at.split('T')[0] : '';
 
       const deadlineRaw = String(
@@ -470,17 +472,10 @@ export function useRfqDetail(rfqId: string | undefined) {
             shippingMethodName || `วิธีจัดส่ง #${String(q.shipping_method_id ?? '-')}`,
           image_urls: collectUrlsFromUnknown(q.image_urls),
           sample_cost: 0,
-          status: q.status === 'AC' ? 'Accepted' : q.status === 'RJ' ? 'Rejected' : 'Pending',
+          status: q.status === 'AC' ? 'Accepted' : q.status === 'RJ' ? 'Rejected' : q.status === 'EX' ? 'Expired' : 'Pending',
           valid_until:
-            Number.isFinite(Number(q.validity_days)) &&
-            Number(q.validity_days) > 0 &&
-            String(q.create_time ?? '').trim()
-              ? (() => {
-                  const d = new Date(String(q.create_time));
-                  if (Number.isNaN(d.getTime())) return '';
-                  d.setDate(d.getDate() + Number(q.validity_days));
-                  return d.toISOString().slice(0, 10);
-                })()
+            q.valid_until != null && String(q.valid_until).trim()
+              ? String(q.valid_until)
               : '',
           validity_days: Number.isFinite(Number(q.validity_days)) ? Number(q.validity_days) : 0,
           subtotal,

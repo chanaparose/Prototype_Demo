@@ -33,7 +33,12 @@ export function ProductionLockedState({
           />
         );
       case 'DEPOSIT_EXPIRED':
-        return <LockedDepositExpired ctx={lockContext} onBackToOverview={onBackToOverview} />;
+        return (
+          <LockedDepositExpired
+            ctx={lockContext}
+            onBackToOverview={onBackToOverview}
+          />
+        );
       case 'ORDER_CANCELLED':
         return <LockedOrderCancelled />;
       default:

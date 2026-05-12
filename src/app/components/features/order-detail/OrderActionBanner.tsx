@@ -68,7 +68,11 @@ export function OrderActionBanner({
             {due ? (
               <>
                 <span className="text-gray-500"> · </span>
-                <span>ครบกำหนด {formatDateTh(due)}</span>
+                <span>
+                  {variant === 'deposit_expired'
+                    ? `ชำระเงินได้ถึงวันที่ ${formatDateTh(due)}`
+                    : `ครบกำหนด ${formatDateTh(due)}`}
+                </span>
                 <span className={`${daysLeft <= 1 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
                   {' '}
                   (เหลือ {daysLeft} วัน)

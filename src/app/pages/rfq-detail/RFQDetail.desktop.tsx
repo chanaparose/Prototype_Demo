@@ -258,11 +258,7 @@ export function RFQDetailDesktop() {
                     if (orderId) navigate(`/orders/${orderId}`);
                   }}
                 />
-                {selectedOffer ? (
-                  <div className="mt-4">
-                    <QuotationHistoryPanel quotationId={selectedOffer} />
-                  </div>
-                ) : null}
+                 
               </div>
             </div>
           </div>

@@ -24,13 +24,14 @@ type InitialState = {
 };
 
 // ─── Status Code Mapping ───────────────────────────────────────
-// RFQ: OP=Open, CL=Closed, CC=Cancelled
-const mapRfqStatus = (code: string, hasQuotes: boolean): string => {
+// RFQ: OP=Open, CL=Closed (order placed OR quotations expired), CC=Cancelled
+// hasAccepted = มี quotation AC อย่างน้อย 1 ใบ → แสดงว่า order ถูกสร้างแล้ว
+const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): string => {
   switch (code.toUpperCase()) {
     case 'OP':
       return hasQuotes ? 'offers_received' : 'pending';
     case 'CL':
-      return 'completed';
+      return hasAccepted ? 'completed' : 'expired';
     case 'CC':
       return 'cancelled';
     default:
@@ -171,7 +172,8 @@ export function useRfqAndOrdersState(initial?: InitialState) {
           (Number.isFinite(totalBudget) && totalBudget > 0 ? totalBudget : 0) ||
             (legacyBudgetPerPiece > 0 && raw.quantity > 0 ? legacyBudgetPerPiece * raw.quantity : 0),
         );
-        const status = mapRfqStatus(raw.status, quotes.length > 0);
+        const hasAccepted = quotes.some((q) => String(q.status ?? '').toUpperCase() === 'AC');
+        const status = mapRfqStatus(raw.status, quotes.length > 0, hasAccepted);
         const createdDate = raw.created_at
           ? raw.created_at.split('T')[0]
           : '';

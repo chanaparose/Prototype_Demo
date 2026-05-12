@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { CTA_GRADIENT, DEEP_PURPLE, PLUM } from '../../rfq-and-orders/constants';
+import { DEEP_PURPLE, PLUM } from '../../rfq-and-orders/constants';
 import type { ProductionLockContext } from '../../production/types';
 import { formatDateTh } from '../utils';
 
@@ -12,25 +12,16 @@ type Props = {
 export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
   const navigate = useNavigate();
   const amount = ctx.deposit_amount ?? 0;
-  const payUrl = ctx.payment_url ?? '';
   const expired = ctx.expired_at ?? ctx.deposit_due_date ?? '';
-
-  const pay = () => {
-    if (payUrl.startsWith('http')) {
-      window.location.href = payUrl;
-      return;
-    }
-    navigate(payUrl || '.');
-  };
 
   return (
     <div className="w-full max-w-md mx-auto text-center px-1">
       <div className="mb-3 sm:mb-4 text-4xl sm:text-5xl" aria-hidden>
         🔒
       </div>
-      <h2 className="text-lg font-semibold text-red-800">ครบกำหนดชำระเงิน</h2>
+      <h2 className="text-lg font-semibold text-red-800">คำสั่งซื้อหมดอายุ</h2>
       <p className="mt-2 text-sm text-gray-700">
-        กรุณาชำระเงินโดยเร็วเพื่อให้โรงงานเริ่มงานได้
+        เกินกำหนดชำระเงินแล้ว คำสั่งซื้อนี้ไม่สามารถดำเนินการต่อได้
       </p>
 
       <div
@@ -42,31 +33,14 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
           ฿{amount.toLocaleString('th-TH')}
         </p>
         {expired ? (
-          <p className="mt-2 text-xs text-red-700">
-            ครบกำหนดเดิม {formatDateTh(expired)}
-            {ctx.grace_period_ends ? (
-              <>
-                {' '}
-                · ช่วงผ่อนผันถึง {formatDateTh(ctx.grace_period_ends)}
-              </>
-            ) : null}
-          </p>
+          <p className="mt-2 text-xs text-red-700">ครบกำหนดชำระ {formatDateTh(expired)}</p>
         ) : null}
       </div>
 
       <button
         type="button"
-        onClick={pay}
-        className="mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white"
-        style={{ background: CTA_GRADIENT }}
-      >
-        ชำระเงิน →
-      </button>
-
-      <button
-        type="button"
         onClick={() => (onBackToOverview ? onBackToOverview() : navigate('/orders'))}
-        className="mt-3 w-full rounded-xl py-3 text-sm font-medium"
+        className="mt-6 w-full rounded-xl py-3 text-sm font-medium"
         style={{ color: PLUM }}
       >
         กลับไปหน้าภาพรวม

@@ -32,7 +32,6 @@ export interface ProductionLockContext {
   deposit_percent?: number;
   payment_url?: string;
   expired_at?: string;
-  grace_period_ends?: string;
 }
 
 export function parseLockContextFromApi(raw: unknown): ProductionLockContext | undefined {
@@ -45,7 +44,6 @@ export function parseLockContextFromApi(raw: unknown): ProductionLockContext | u
     deposit_percent: o.deposit_percent != null ? Number(o.deposit_percent) : undefined,
     payment_url: o.payment_url != null ? String(o.payment_url) : undefined,
     expired_at: o.expired_at != null ? String(o.expired_at) : undefined,
-    grace_period_ends: o.grace_period_ends != null ? String(o.grace_period_ends) : undefined,
   };
 }
 

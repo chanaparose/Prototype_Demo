@@ -28,14 +28,18 @@ export function getOrderUiMode(status: string): OrderUiMode {
         showActionBanner: true,
       };
     case 'PE':
+      // PE = หมดกำหนดชำระแล้ว ไม่มี grace period — order จะถูก auto-cancel เป็น CL โดย background job
       return {
         productionLocked: true,
         lockReason: 'DEPOSIT_EXPIRED',
-        payableNow: true,
-        readOnly: false,
-        showActionBanner: true,
+        payableNow: false,
+        readOnly: true,
+        showActionBanner: false,
       };
     case 'CN':
+    case 'CC':
+    case 'CL':
+      // CN = ยกเลิกโดย admin, CC = ยกเลิกโดยลูกค้า, CL = ปิดโดยระบบ (expired payment)
       return {
         productionLocked: true,
         lockReason: 'ORDER_CANCELLED',

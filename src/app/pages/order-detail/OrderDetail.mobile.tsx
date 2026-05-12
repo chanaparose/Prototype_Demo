@@ -332,14 +332,42 @@ function OrderDetailMobileBody() {
             statusLabelTh={statusLabelTh}
           />
 
-          {uiMode.showActionBanner && (nextAction != null || paymentSchedule.length > 0) ? (
+          {/* PP — รอชำระเงิน */}
+          {uiMode.lockReason === 'PENDING_DEPOSIT' && uiMode.showActionBanner && (nextAction != null || paymentSchedule.length > 0) ? (
             <OrderActionBanner
               nextAction={nextAction}
               paymentSchedule={paymentSchedule}
-              variant={uiMode.lockReason === 'DEPOSIT_EXPIRED' ? 'deposit_expired' : 'pending_deposit'}
+              variant="pending_deposit"
               fallbackCtaUrl={lockContextMerged.payment_url}
-              onPayDeposit={uiMode.lockReason === 'PENDING_DEPOSIT' ? openDepositModal : undefined}
+              onPayDeposit={openDepositModal}
             />
+          ) : null}
+
+          {/* PE — หมดกำหนดชำระแล้ว ทำอะไรไม่ได้ */}
+          {uiMode.lockReason === 'DEPOSIT_EXPIRED' ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={16} className="text-red-500 shrink-0" />
+                <span className="text-sm font-bold text-red-700">คำสั่งซื้อหมดอายุ</span>
+              </div>
+              {lockContextMerged.expired_at ?? lockContextMerged.deposit_due_date ? (
+                <p className="text-xs text-red-700 leading-relaxed">
+                  ครบกำหนดชำระ{' '}
+                  {formatDateTh(lockContextMerged.expired_at ?? lockContextMerged.deposit_due_date ?? '')}
+                </p>
+              ) : null}
+              <p className="text-xs text-red-600 leading-relaxed">
+                เกินกำหนดชำระเงินแล้ว คำสั่งซื้อนี้ถูกระงับและไม่สามารถดำเนินการต่อได้
+                กรุณาสร้างคำสั่งซื้อใหม่หากยังต้องการสินค้า
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/orders')}
+                className="w-full mt-1 py-2.5 rounded-xl border border-red-200 text-xs font-semibold text-red-600 bg-white"
+              >
+                กลับไปรายการคำสั่งซื้อ
+              </button>
+            </div>
           ) : null}
 
           <div className="flex border-b border-gray-100 bg-white -mx-4 px-0">

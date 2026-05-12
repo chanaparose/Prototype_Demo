@@ -397,6 +397,14 @@ export function RfqDetailOffersSection({
               const qSt = (offer.quoteStatus ?? 'PD').toUpperCase();
               const isAccepted = qSt === 'AC';
               const isRejected = qSt === 'RJ';
+              const isExpired = qSt === 'EX' || (() => {
+                // ตรวจ valid_until จาก API — ถ้าผ่านแล้วและยังไม่ AC ให้ถือว่าหมดอายุ
+                if (isAccepted) return false;
+                const vu = offer.quotationDetail?.valid_until;
+                if (!vu) return false;
+                const d = new Date(vu);
+                return !Number.isNaN(d.getTime()) && d < new Date();
+              })();
               const boqOpen = expandedBoqOfferId === offer.id || selectedOfferId === offer.id;
               const boq = quotationFromOfferSource(offer, rfqQuantity);
               const qd = (offer.quotationDetail ?? {}) as Partial<Quotation> & Record<string, unknown>;
@@ -592,6 +600,11 @@ export function RfqDetailOffersSection({
                     ไม่ได้รับการเลือก
                   </p>
                 )}
+                {isExpired && (
+                  <p className="text-[10px] font-semibold mb-2 text-orange-500">
+                    ⏰ ใบเสนอราคาหมดอายุแล้ว
+                  </p>
+                )}
                 <p className="text-[10px] text-gray-400 mb-2">
                   แตะการ์ดเพื่อดูรายละเอียด BOQ
                 </p>
@@ -645,6 +658,15 @@ export function RfqDetailOffersSection({
                         ยอมรับแล้ว ✓
                       </button>
                     )
+                  ) : isExpired ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-70"
+                      style={{ background: '#EA580C', fontWeight: 600 }}
+                    >
+                      ใบเสนอราคาหมดอายุ
+                    </button>
                   ) : isRequestClosed ? (
                     <button
                       type="button"
@@ -652,7 +674,11 @@ export function RfqDetailOffersSection({
                       className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-70"
                       style={{ background: '#94A3B8', fontWeight: 600 }}
                     >
-                      {rfqStatus === 'cancelled' ? 'ยกเลิกคำขอแล้ว' : 'ปิดคำขอแล้ว'}
+                      {rfqStatus === 'cancelled'
+                        ? 'ยกเลิกคำขอแล้ว'
+                        : rfqStatus === 'expired'
+                          ? 'หมดระยะเวลารับใบเสนอราคา'
+                          : 'ปิดคำขอแล้ว'}
                     </button>
                   ) : (
                     <button
