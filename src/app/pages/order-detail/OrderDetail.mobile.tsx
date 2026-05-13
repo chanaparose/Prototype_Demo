@@ -364,7 +364,7 @@ function OrderDetailMobileBody() {
                 onClick={() => navigate('/orders')}
                 className="w-full mt-1 py-2.5 rounded-xl border border-red-200 text-xs font-semibold text-red-600 bg-white"
               >
-                กลับไปรายการคำสั่งซื้อ
+                กลับไปหน้าใบเสนอราคา
               </button>
             </div>
           ) : null}
