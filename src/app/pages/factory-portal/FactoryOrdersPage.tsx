@@ -23,13 +23,15 @@ const SLATE_DARK = '#0F172A';
 /* ─── Status meta (for table badges) ─────────────────────────────── */
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   PP: { label: 'รอยืนยัน', cls: 'bg-amber-100 text-amber-700' },
-  PE: { label: 'รอชำระ', cls: 'bg-amber-100 text-amber-700' },
+  PE: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
   PD: { label: 'รอชำระ', cls: 'bg-amber-100 text-amber-700' },
   PR: { label: 'กำลังผลิต', cls: 'bg-blue-100 text-blue-700' },
   QC: { label: 'ตรวจสอบ', cls: 'bg-indigo-100 text-indigo-700' },
   SH: { label: 'จัดส่งแล้ว', cls: 'bg-teal-100 text-teal-700' },
   CP: { label: 'เสร็จสิ้น', cls: 'bg-emerald-100 text-emerald-700' },
   CN: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
+  CC: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
+  CL: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
 };
 
 function statusMeta(code: string) {
@@ -38,7 +40,6 @@ function statusMeta(code: string) {
 
 /* ─── Tab definitions ─────────────────────────────────────────────── */
 const TABS: { id: TabId; label: string }[] = [
-  { id: 'all', label: 'ทั้งหมด' },
   { id: 'needs_action', label: 'ต้องดำเนินการ' },
   { id: 'in_production', label: 'กำลังผลิต' },
   { id: 'awaiting_customer', label: 'รอลูกค้า' },
@@ -69,7 +70,7 @@ export function FactoryOrdersPage() {
   /* ── All existing hooks & state — unchanged ── */
   const { data: rows = [], isLoading, isError, refetch, error } = useFactoryOrdersData();
   const navigate = useNavigate();
-  const [statusTab, setStatusTab] = useState<TabId>('all');
+  const [statusTab, setStatusTab] = useState<TabId>('needs_action');
   const [search, setSearch] = useState('');
   const [sortMode, setSortMode] = useState<SortKey>('newest');
   const [updateModal, setUpdateModal] = useState<{

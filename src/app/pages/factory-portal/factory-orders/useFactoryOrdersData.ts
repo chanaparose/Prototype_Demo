@@ -8,7 +8,7 @@ function isObj(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v);
 }
 
-const VALID_STATUS: OrderStatusCode[] = ['PP', 'PE', 'PD', 'PR', 'QC', 'SH', 'CP', 'CN'];
+const VALID_STATUS: OrderStatusCode[] = ['PP', 'PE', 'PD', 'PR', 'QC', 'SH', 'CP', 'CN', 'CC', 'CL'];
 
 function toProductionSummary(raw: unknown): ProductionSummaryRow | null {
   if (!isObj(raw)) return null;

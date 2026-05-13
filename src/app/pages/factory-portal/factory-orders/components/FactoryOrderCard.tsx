@@ -13,6 +13,8 @@ const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: s
   SH: { label: 'จัดส่งแล้ว', badgeClass: 'bg-sky-100 text-sky-800', icon: '📦' },
   CP: { label: 'เสร็จสิ้น', badgeClass: 'bg-emerald-100 text-emerald-800', icon: '✓' },
   CN: { label: 'ยกเลิก', badgeClass: 'bg-gray-100 text-gray-700', icon: '×' },
+  CC: { label: 'ยกเลิก', badgeClass: 'bg-gray-100 text-gray-700', icon: '×' },
+  CL: { label: 'ยกเลิก', badgeClass: 'bg-gray-100 text-gray-700', icon: '×' },
 };
 
 export function FactoryOrderCard({
