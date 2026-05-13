@@ -202,6 +202,8 @@ export function useFactoryRfqBoard() {
       // Backend already filters AC and non-OP-unquoted rows, but apply defensively on frontend too
       const visible = bases.filter((b) => {
         if (b.hasMyQuote && b.myQuoteStatus === 'AC') return false;
+        // EX = quotation expired → do not show on Factory RFQ board
+        if (b.hasMyQuote && b.myQuoteStatus === 'EX') return false;
         if (!b.hasMyQuote && b.status !== 'OP') return false;
         return true;
       });
