@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Search, SlidersHorizontal, FileText, Factory, PackageSearch, FlaskConical, ChevronDown, Check, ClipboardList } from 'lucide-react';
 import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
+import { useDisclosure, useToggle } from '../../hooks/ui';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms';
@@ -22,35 +23,35 @@ function FilterDropdown({
   onChange: (value: string) => void;
   className?: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const { isOpen, onToggle, onClose } = useDisclosure();
   const boxRef = useRef<HTMLDivElement | null>(null);
   const selected = options.find((o) => o.value === value) ?? options[0];
 
   useEffect(() => {
     const onDocClick = (ev: MouseEvent) => {
       if (!boxRef.current) return;
-      if (!boxRef.current.contains(ev.target as Node)) setOpen(false);
+      if (!boxRef.current.contains(ev.target as Node)) onClose();
     };
     document.addEventListener('mousedown', onDocClick);
     return () => document.removeEventListener('mousedown', onDocClick);
-  }, []);
+  }, [onClose]);
 
   return (
     <div ref={boxRef} className={`relative ${className}`}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={onToggle}
         className="w-full h-[42px] rounded-xl border border-slate-200 bg-white px-3.5 text-left shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
       >
         <div className="flex items-center justify-between gap-2">
           <span className="text-[11px] text-slate-500 shrink-0">{label}</span>
           <span className="flex items-center gap-1.5 min-w-0">
             <span className="text-xs font-semibold text-slate-700 truncate">{selected?.label ?? '-'}</span>
-            <ChevronDown size={10} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+            <ChevronDown size={10} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </span>
         </div>
       </button>
-      {open ? (
+      {isOpen ? (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 rounded-xl border border-slate-200 bg-white shadow-lg p-1 max-h-64 overflow-auto">
           {options.map((opt) => {
             const isSelected = opt.value === value;
@@ -60,7 +61,7 @@ function FilterDropdown({
                 type="button"
                 onClick={() => {
                   onChange(opt.value);
-                  setOpen(false);
+                  onClose();
                 }}
                 className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-slate-50 transition-colors"
                 style={{ background: isSelected ? '#EEF2FF' : 'transparent' }}
@@ -77,14 +78,14 @@ function FilterDropdown({
 }
 
 function useNarrowTabs(breakpoint = 400) {
-  const [narrow, setNarrow] = useState(false);
+  const { state: narrow, set: setNarrow } = useToggle();
   useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
     const fn = () => setNarrow(mq.matches);
     fn();
     mq.addEventListener('change', fn);
     return () => mq.removeEventListener('change', fn);
-  }, [breakpoint]);
+  }, [breakpoint, setNarrow]);
   return narrow;
 }
 
@@ -390,7 +391,7 @@ export function FactoryRfqBoardPage() {
                     key={t.key}
                     type="button"
                     role="tab"
-                    aria-selected={on}
+                    aria-selected={on as boolean}
                     onClick={() => setTab(t.key)}
                     className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[13px] transition-all"
                     style={{

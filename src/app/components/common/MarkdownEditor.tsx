@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useDisclosure, useToggle } from '../../hooks/ui';
 import { 
   Quote, 
   Minus, 
@@ -121,12 +122,15 @@ export function MarkdownEditor({
   label,
   disabled,
 }: MarkdownEditorProps) {
+  // Tab state: write or preview mode
   const [tab, setTab] = useState<'write' | 'preview'>('write');
-  const [uploading, setUploading] = useState(false);
-  const [focused, setFocused] = useState(false);
-  
-  // States สำหรับ Template Modal
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+
+  // Upload and focus states
+  const { state: uploading, toggle: toggleUploading, close: closeUploading } = useToggle(false);
+  const { state: focused, open: focusOn, close: focusOff } = useToggle(false);
+
+  // Template modal state
+  const { isOpen: isTemplateModalOpen, onOpen: openTemplate, onClose: closeTemplate } = useDisclosure();
   const [activeTemplateIndex, setActiveTemplateIndex] = useState(0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -159,14 +163,14 @@ export function MarkdownEditor({
 
   const onPickImage = async (file: File | null) => {
     if (!file || disabled) return;
-    setUploading(true);
+    toggleUploading();
     try {
       const up = await mediaApi.upload(file);
       const url = String(up.url ?? '').trim();
       if (!url) return;
       applyInsert(`![](${url})`);
     } finally {
-      setUploading(false);
+      closeUploading();
     }
   };
 
@@ -193,7 +197,7 @@ export function MarkdownEditor({
   const handleSelectTemplate = () => {
     const selectedTemplate = TEMPLATES[activeTemplateIndex];
     applyTemplate(selectedTemplate.content + '\n\n');
-    setIsTemplateModalOpen(false);
+    closeTemplate();
   };
 
   return (
@@ -201,9 +205,8 @@ export function MarkdownEditor({
       {label ? <p className="text-xs text-gray-500 mb-1">{label}</p> : null}
       <div
         className={`rounded-xl border bg-white overflow-hidden ${
-          focused ? 'border-orange-300' : 'border-gray-200'
+          focused ? 'border-orange-300 shadow-[inset_2px_0_0_#fb923c]' : 'border-gray-200'
         }`}
-        style={focused ? { boxShadow: 'inset 2px 0 0 #fb923c' } : undefined}
       >
         <div className="px-3 pt-2 pb-2 flex items-center justify-end border-b border-gray-100">
           <div className="flex items-center gap-2">
@@ -261,14 +264,15 @@ export function MarkdownEditor({
                   <ImageIcon size={15} />
                   {uploading && <span className="text-xs font-medium text-orange-600">กำลังอัปโหลด...</span>}
                 </button>
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }} />
+                <label htmlFor="file-input" className="hidden">อัปโหลดรูปภาพ</label>
+                <input id="file-input" ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }} aria-label="อัปโหลดรูปภาพ" />
               </div>
 
               {/* ปุ่มเปิด Modal เลือกเทมเพลต */}
               <div className="ml-auto flex items-center">
                 <button 
                   type="button" 
-                  onClick={() => setIsTemplateModalOpen(true)} 
+                  onClick={() => openTemplate()} 
                   disabled={disabled} 
                   className="inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-[13px] font-medium transition-colors" 
                 >
@@ -299,8 +303,8 @@ export function MarkdownEditor({
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder || "พิมพ์เนื้อหาของคุณที่นี่ รองรับ Markdown..."}
               disabled={disabled}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
+              onFocus={focusOn}
+              onBlur={focusOff}
             />
           </>
         ) : (
@@ -332,8 +336,9 @@ export function MarkdownEditor({
               </div>
               <button
                 type="button"
-                onClick={() => setIsTemplateModalOpen(false)}
+                onClick={() => closeTemplate()}
                 className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="ปิด"
               >
                 <X size={20} />
               </button>
@@ -391,7 +396,7 @@ export function MarkdownEditor({
             <div className="px-5 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setIsTemplateModalOpen(false)}
+                onClick={() => closeTemplate()}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-200 transition-colors"
               >
                 ยกเลิก

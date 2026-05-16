@@ -20,6 +20,7 @@ import {
 import { factoryVerifyStatus } from '../factory/FactoryVerifiedGuard';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
+import { useLocalStorage } from '../../hooks';
 import { isTourActive, subscribeTourActive } from '../../utils/tourMocks';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
@@ -48,9 +49,9 @@ export function DesktopSidebar() {
   const currentUser = data.currentUser;
   const isFactory = isFactoryRole(authUser);
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
-  // Subscribe to tour-active so guest can see "สร้างคำขอราคา" CTA during tour
-  const [tourOn, setTourOn] = React.useState<boolean>(isTourActive());
-  React.useEffect(() => subscribeTourActive(setTourOn), []);
+  // Tour state persisted with localStorage and synchronized via subscription
+  const { value: tourOn, setValue: setTourOn } = useLocalStorage('tourActive', isTourActive());
+  React.useEffect(() => subscribeTourActive((active) => setTourOn(active)), [setTourOn]);
 
   const isActivePath = (path: string) =>
     path === '/'
@@ -232,7 +233,7 @@ export function DesktopSidebar() {
       )}
 
       {/* Create RFQ — เฉพาะลูกค้า (หรือระหว่าง ProductTour) */}
-      {!isFactory && (isAuthenticated || tourOn) ? (
+      {!isFactory && (isAuthenticated || tourOn === true) ? (
         <div className="px-3 pb-3">
           <button
             type="button"
