@@ -14,6 +14,7 @@ import {
   Star,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
+import { StatusBadge } from '../../../shared/ui';
 import { ReviewImageAttachments } from '../reviews/ReviewImageAttachments';
 import { formatThaiDate } from './utils';
 
@@ -289,9 +290,7 @@ export function FactoryProfileTabContent({
                   className="bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98] p-4 min-w-0"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-700 uppercase tracking-wide">
-                      Idea
-                    </span>
+                    <StatusBadge variant="info" size="sm">Idea</StatusBadge>
                     <p className="text-[10px] text-gray-400 truncate">
                       {item.postedAt ? formatThaiDate(item.postedAt) : ''}
                     </p>
@@ -358,20 +357,14 @@ export function FactoryProfileTabContent({
                   <p>มาตรฐาน/ใบรับรอง</p>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {(profile?.certificates ?? []).map((c) => (
-                      <span
-                        key={c}
-                        className="rounded-full border border-purple-100 bg-purple-50 px-2 py-0.5 text-[10px] font-semibold text-purple-700"
-                      >
+                      <StatusBadge key={c} variant="active" size="sm">
                         {c}
-                      </span>
+                      </StatusBadge>
                     ))}
                     {apiCertificates.map((c, i) => (
-                      <span
-                        key={String(c.map_id ?? c.cert_id ?? c.id ?? i)}
-                        className="rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800"
-                      >
+                      <StatusBadge key={String(c.map_id ?? c.cert_id ?? c.id ?? i)} variant="success" size="sm">
                         {String(c.cert_name ?? c.name_th ?? c.cert_number ?? 'ใบรับรอง')}
-                      </span>
+                      </StatusBadge>
                     ))}
                     {(profile?.certificates ?? []).length === 0 && apiCertificates.length === 0 ? <span>-</span> : null}
                   </div>

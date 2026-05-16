@@ -10,6 +10,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
+import { StatusBadge } from '../../../shared/ui';
 
 /** ใบเสนอราคา (BOQ) จากโรงงาน — ใช้กับ BOQ Explorer / เปรียบเทียบข้อเสนอ */
 export interface Quotation {
@@ -295,12 +296,10 @@ export function QuotationBOQDetailsPanel({ quotation: q, className = '' }: Quota
           </div>
           <ul className="flex flex-wrap gap-2">
             {q.certifications.map((c) => (
-              <li
-                key={c}
-                className="inline-flex items-center gap-1 rounded-full border border-violet-100 bg-violet-50/80 px-2.5 py-1 text-[10px] font-semibold text-violet-900"
-              >
-                <BadgeCheck size={12} className="text-violet-600" />
-                {c}
+              <li key={c}>
+                <StatusBadge variant="active" size="sm" icon={<BadgeCheck size={12} />}>
+                  {c}
+                </StatusBadge>
               </li>
             ))}
           </ul>

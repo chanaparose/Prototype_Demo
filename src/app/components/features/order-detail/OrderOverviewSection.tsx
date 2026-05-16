@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { FileText } from 'lucide-react';
+import { SectionCard } from '../../../shared/ui';
 import { formatDateTh } from './utils';
 import { OrderPaymentScheduleCard } from './OrderPaymentScheduleCard';
 import { OrderPendingPaymentSection } from './OrderPendingPaymentSection';
@@ -69,22 +70,19 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
       )}
 
       {relatedRfq && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="text-sm text-gray-900 mb-3" style={{ fontWeight: 600 }}>
-            RFQ ที่เกี่ยวข้อง
-          </p>
+        <SectionCard
+          title="RFQ ที่เกี่ยวข้อง"
+          icon={<span className="text-lg">{relatedRfq.categoryIcon ?? '📋'}</span>}
+          className="bg-white rounded-2xl shadow-sm"
+        >
           <div className="rounded-xl border border-gray-100 p-3 bg-[#F8F6FA]">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-[#F8F6FA]">
-                {relatedRfq.categoryIcon ?? '📋'}
-              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500">{relatedRfq.category}</p>
                 <p className="text-sm text-gray-900 truncate" style={{ fontWeight: 600 }}>
                   {relatedRfq.projectName}
                 </p>
               </div>
-              <FileText size={18} className="text-[#A238FF] shrink-0" />
             </div>
 
             <p className="text-xs text-gray-600 mb-3">{relatedRfq.description}</p>
@@ -127,18 +125,15 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
               </div>
             </div>
           </div>
-        </div>
+        </SectionCard>
       )}
 
       {relatedRfq && rfqOffers.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
-              โรงงานที่เคยเสนอราคา
-            </p>
-            <span className="text-xs text-gray-500">{rfqOffers.length} โรงงาน</span>
-          </div>
-
+        <SectionCard
+          title="โรงงานที่เคยเสนอราคา"
+          badge={<span className="text-xs text-gray-500">{rfqOffers.length} โรงงาน</span>}
+          className="bg-white rounded-2xl shadow-sm"
+        >
           <div className="space-y-2.5">
             {rfqOffers.map((offer) => (
               <div
@@ -195,7 +190,7 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
               </div>
             ))}
           </div>
-        </div>
+        </SectionCard>
       )}
     </div>
   );

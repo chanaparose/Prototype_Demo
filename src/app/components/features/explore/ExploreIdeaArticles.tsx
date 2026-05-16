@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight, Heart } from 'lucide-react';
+import { StatusBadge } from '../../../shared/ui';
 
 export type IdeaArticleItem = {
   id: string;
@@ -43,9 +44,7 @@ export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: Expl
             className="bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3"
           >
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide">
-                ไอเดีย
-              </span>
+              <StatusBadge variant="info" size="sm">ไอเดีย</StatusBadge>
               <span className="text-[10px] text-gray-400 truncate">{article.factoryName}</span>
             </div>
             <h3 className="font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug">

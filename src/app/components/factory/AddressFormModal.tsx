@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { BaseModal } from '../../shared/ui';
 import { LbiAddressPicker, type LbiAddressValue } from '../common/LbiAddressPicker';
 
 type Row = Record<string, unknown>;
@@ -89,84 +90,13 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40" role="dialog" aria-modal>
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-w-2xl w-full max-h-[min(90vh,100dvh)] overflow-y-auto p-4 sm:p-5 pb-6 space-y-4">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-lg font-bold text-gray-900">
-            {mode === 'create' ? 'เพิ่มที่อยู่' : 'แก้ไขที่อยู่'}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-sm text-gray-500 hover:text-gray-800"
-            disabled={saving}
-          >
-            ปิด
-          </button>
-        </div>
-
-        {error ? (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-            {error}
-          </p>
-        ) : null}
-
-        <label className="block sm:max-w-sm">
-          <span className="text-xs text-gray-500">ประเภทที่อยู่ *</span>
-          <select
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-            value={addressType}
-            onChange={(e) => setAddressType(e.target.value as 'M' | 'B' | 'S')}
-          >
-            <option value="M">ที่อยู่หลัก</option>
-            <option value="B">ออกใบกำกับภาษี</option>
-            <option value="S">จัดส่ง</option>
-          </select>
-        </label>
-
-        <LbiAddressPicker
-          value={pickerValue}
-          onChange={setPickerValue}
-          onZipCodeAutoFill={(nextZip) => {
-            if (/^\d{5}$/.test(nextZip)) setZipCode(nextZip);
-          }}
-          disabled={saving}
-        />
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="block sm:col-span-1">
-            <span className="text-xs text-gray-500">รหัสไปรษณีย์ *</span>
-            <input
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-              value={zipCode}
-              inputMode="numeric"
-              maxLength={5}
-              onChange={(e) => setZipCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
-              placeholder="10110"
-            />
-          </label>
-          <label className="block sm:col-span-2">
-            <span className="text-xs text-gray-500">ที่อยู่ *</span>
-            <textarea
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]"
-              value={detail}
-              onChange={(e) => setDetail(e.target.value)}
-              placeholder="บ้านเลขที่ หมู่ ซอย ถนน"
-            />
-          </label>
-        </div>
-
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={isDefault}
-            onChange={(e) => setIsDefault(e.target.checked)}
-            className="rounded border-gray-300 text-[#A238FF] focus:ring-[#A238FF]"
-          />
-          ตั้งเป็นค่าเริ่มต้น
-        </label>
-
-        <div className="flex gap-2 pt-2">
+    <BaseModal
+      isOpen={open}
+      onClose={onClose}
+      title={mode === 'create' ? 'เพิ่มที่อยู่' : 'แก้ไขที่อยู่'}
+      placement="bottom"
+      footer={
+        <div className="flex gap-2 w-full">
           <button
             type="button"
             disabled={saving}
@@ -185,7 +115,70 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             ยกเลิก
           </button>
         </div>
+      }
+    >
+      {error ? (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-4">
+          {error}
+        </p>
+      ) : null}
+
+      <label className="block sm:max-w-sm mb-4">
+        <span className="text-xs text-gray-500">ประเภทที่อยู่ *</span>
+        <select
+          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+          value={addressType}
+          onChange={(e) => setAddressType(e.target.value as 'M' | 'B' | 'S')}
+        >
+          <option value="M">ที่อยู่หลัก</option>
+          <option value="B">ออกใบกำกับภาษี</option>
+          <option value="S">จัดส่ง</option>
+        </select>
+      </label>
+
+      <div className="mb-4">
+        <LbiAddressPicker
+          value={pickerValue}
+          onChange={setPickerValue}
+          onZipCodeAutoFill={(nextZip) => {
+            if (/^\d{5}$/.test(nextZip)) setZipCode(nextZip);
+          }}
+          disabled={saving}
+        />
       </div>
-    </div>
+
+      <div className="grid gap-3 sm:grid-cols-3 mb-4">
+        <label className="block sm:col-span-1">
+          <span className="text-xs text-gray-500">รหัสไปรษณีย์ *</span>
+          <input
+            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            value={zipCode}
+            inputMode="numeric"
+            maxLength={5}
+            onChange={(e) => setZipCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
+            placeholder="10110"
+          />
+        </label>
+        <label className="block sm:col-span-2">
+          <span className="text-xs text-gray-500">ที่อยู่ *</span>
+          <textarea
+            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]"
+            value={detail}
+            onChange={(e) => setDetail(e.target.value)}
+            placeholder="บ้านเลขที่ หมู่ ซอย ถนน"
+          />
+        </label>
+      </div>
+
+      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={isDefault}
+          onChange={(e) => setIsDefault(e.target.checked)}
+          className="rounded border-gray-300 text-[#A238FF] focus:ring-[#A238FF]"
+        />
+        ตั้งเป็นค่าเริ่มต้น
+      </label>
+    </BaseModal>
   );
 }

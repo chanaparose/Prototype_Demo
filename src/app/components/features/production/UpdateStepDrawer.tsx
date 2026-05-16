@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { X, Plus, MapPin, Phone, User, ChevronRight } from 'lucide-react';
 import { mediaApi } from '../../../services/api';
+import { InfoBox } from '../../../shared/ui';
 import type { MergedProductionStep } from './types';
 import { productionErrorMessage } from './productionErrors';
 import { getStepGuide } from './stepGuideConfig';
@@ -43,42 +44,45 @@ function ShippingAddressBox({ info }: { info: CustomerShippingInfo }) {
     [info.province, info.postalCode].filter(Boolean).join(' '),
   ].filter(Boolean);
 
-  return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 space-y-2">
-      <div className="flex items-center gap-1.5 mb-1">
-        <MapPin size={13} className="text-amber-600 shrink-0" />
-        <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wide">
-          ที่อยู่จัดส่งลูกค้า — ใช้ทำใบปะหน้าพัสดุ
-        </span>
-      </div>
-
+  const content = (
+    <div className="space-y-2">
       {info.recipientName ? (
         <div className="flex items-center gap-2">
-          <User size={13} className="text-amber-600 shrink-0" />
-          <span className="text-sm font-semibold text-amber-900">{info.recipientName}</span>
+          <User size={13} className="shrink-0" />
+          <span className="text-sm font-semibold">{info.recipientName}</span>
         </div>
       ) : null}
 
       {info.phone ? (
         <div className="flex items-center gap-2">
-          <Phone size={13} className="text-amber-600 shrink-0" />
-          <span className="text-sm font-semibold text-amber-900 tracking-wide">{info.phone}</span>
+          <Phone size={13} className="shrink-0" />
+          <span className="text-sm font-semibold tracking-wide">{info.phone}</span>
         </div>
       ) : null}
 
       {lines.length > 0 ? (
         <div className="flex items-start gap-2">
-          <MapPin size={13} className="text-amber-500 shrink-0 mt-0.5" />
-          <address className="text-xs not-italic text-amber-800 leading-relaxed">
+          <MapPin size={13} className="shrink-0 mt-0.5" />
+          <address className="text-xs not-italic leading-relaxed">
             {lines.map((l, i) => <span key={i}>{l}{i < lines.length - 1 ? ', ' : ''}</span>)}
           </address>
         </div>
       ) : null}
 
       {!info.recipientName && !info.phone && lines.length === 0 ? (
-        <p className="text-xs text-amber-700">ไม่พบข้อมูลที่อยู่ — ติดต่อลูกค้าผ่านแชทโดยตรง</p>
+        <p className="text-xs">ไม่พบข้อมูลที่อยู่ — ติดต่อลูกค้าผ่านแชทโดยตรง</p>
       ) : null}
     </div>
+  );
+
+  return (
+    <InfoBox
+      icon={<MapPin size={14} />}
+      title="ที่อยู่จัดส่งลูกค้า — ใช้ทำใบปะหน้าพัสดุ"
+      variant="warning"
+    >
+      {content}
+    </InfoBox>
   );
 }
 

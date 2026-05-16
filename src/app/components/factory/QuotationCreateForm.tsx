@@ -9,6 +9,7 @@ import { ShippingMethodLockedField } from './ShippingMethodLockedField';
 import { hoursUntilDeadline } from '../../utils/rfqDeadline';
 import { FactoryHighlightField } from '../features/factory-rfq/FactoryHighlightField';
 import { formatCurrencyNoDecimals } from '../../utils/formatting';
+import { FormField } from '../../shared/ui';
 
 /* ── Constants ──────────────────────────────────────────────────── */
 /** ค่า payment_terms ที่ล็อคไว้ตามข้อกำหนดล่าสุด */
@@ -279,100 +280,88 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         ) : null}
 
         {/* ── 1. ราคาต่อชิ้น ── */}
-        <label className="block">
-          <span className="text-xs font-semibold text-gray-600">
-            ราคาต่อชิ้น (บาท) <span className="text-red-400">*</span>
-          </span>
+        <FormField
+          label="ราคาต่อชิ้น (บาท)"
+          required
+          helperText={budgetPerPiece != null ? `งบลูกค้า ${budgetPerPiece.toLocaleString('th-TH')} บ./ชิ้น` : undefined}
+        >
           <input
             type="number"
             step="0.01"
             min={0}
             disabled={readOnly}
             placeholder="0.00"
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
             {...form.register('price_per_piece')}
           />
-          {budgetPerPiece != null ? (
-            <span className="text-[11px] text-gray-400 mt-0.5 block">
-              งบลูกค้า {budgetPerPiece.toLocaleString('th-TH')} บ./ชิ้น
-            </span>
-          ) : null}
-        </label>
+        </FormField>
 
         {/* ── 2. ค่าใช้จ่ายเพิ่มเติม ── */}
         <div>
           <p className="text-xs font-semibold text-gray-600 mb-2">ค่าใช้จ่ายเพิ่มเติม</p>
           <div className="grid grid-cols-3 gap-2">
-            <label className="block">
-              <span className="text-[11px] text-gray-500">ค่าขนส่ง</span>
+            <FormField label="ค่าขนส่ง" labelClassName="text-[11px]">
               <input
                 type="number"
                 step="0.01"
                 min={0}
                 disabled={readOnly}
                 placeholder="0"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
                 {...form.register('shipping_cost')}
               />
-            </label>
-            <label className="block">
-              <span className="text-[11px] text-gray-500">ค่าบรรจุภัณฑ์</span>
+            </FormField>
+            <FormField label="ค่าบรรจุภัณฑ์" labelClassName="text-[11px]">
               <input
                 type="number"
                 step="0.01"
                 min={0}
                 disabled={readOnly}
                 placeholder="0"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
                 {...form.register('packaging_cost')}
               />
-            </label>
-            <label className="block">
-              <span className="text-[11px] text-gray-500">ค่าแม่พิมพ์</span>
+            </FormField>
+            <FormField label="ค่าแม่พิมพ์" labelClassName="text-[11px]">
               <input
                 type="number"
                 step="0.01"
                 min={0}
                 disabled={readOnly}
                 placeholder="0"
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
+                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
                 {...form.register('tooling_mold_cost')}
               />
-            </label>
+            </FormField>
           </div>
         </div>
 
         {/* ── 3. Lead time + Validity ── */}
         <div className="grid grid-cols-2 gap-2">
-          <label className="block">
-            <span className="text-xs font-semibold text-gray-600">
-              Lead time (วัน) <span className="text-red-400">*</span>
-            </span>
+          <FormField
+            label="Lead time (วัน)"
+            required
+            helperText={targetDaysCustomer != null ? `ลูกค้าต้องการ ${targetDaysCustomer} วัน` : undefined}
+          >
             <input
               type="number"
               min={1}
               disabled={readOnly}
               placeholder="30"
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
               {...form.register('lead_time_days')}
             />
-            {targetDaysCustomer != null ? (
-              <span className="text-[11px] text-gray-400 mt-0.5 block">
-                ลูกค้าต้องการ {targetDaysCustomer} วัน
-              </span>
-            ) : null}
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-gray-600">ใบเสนอราคาหมดอายุ (วัน)</span>
+          </FormField>
+          <FormField label="ใบเสนอราคาหมดอายุ (วัน)">
             <input
               type="number"
               min={1}
               disabled={readOnly}
               placeholder="14"
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50"
               {...form.register('validity_days')}
             />
-          </label>
+          </FormField>
         </div>
 
         {/* ── 4. เงื่อนไขการชำระเงิน (ล็อค) ── */}

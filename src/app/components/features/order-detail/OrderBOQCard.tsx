@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, CheckCircle } from 'lucide-react';
+import { CheckCircle, Send } from 'lucide-react';
 import { rfqsApi } from '../../../services/api';
 import type { QuotationRow } from '../../../types/rfq';
 import { formatCurrency } from '@/utils/formatting';
+import { CollapsibleCard, StatusBadge } from '../../../shared/ui';
 
 interface Props {
   rfqId: number | string;
@@ -93,27 +94,20 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
     : [];
 
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
-      {/* Header */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left"
-      >
+    <CollapsibleCard
+      defaultOpen={open}
+      onOpenChange={setOpen}
+      header={
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-gray-900">ใบเสนอราคา BOQ</span>
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+          <StatusBadge variant="success" size="sm">
             <CheckCircle size={10} /> ยอมรับแล้ว
-          </span>
+          </StatusBadge>
         </div>
-        <ChevronDown
-          size={16}
-          className={`text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {open && (
-        <div className="px-4 pb-5 space-y-4">
+      }
+      className="rounded-2xl border border-gray-100 bg-white overflow-hidden"
+    >
+      <div className="space-y-4">
           {/* Factory header row */}
           <div className="flex items-center gap-2.5 -mt-1">
             <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-base shrink-0">
@@ -210,9 +204,8 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
               </div>
             </div>
           )}
-        </div>
-      )}
-    </section>
+      </div>
+    </CollapsibleCard>
   );
 }
 

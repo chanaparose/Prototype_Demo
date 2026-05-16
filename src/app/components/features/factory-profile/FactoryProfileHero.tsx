@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ImageIcon, MapPin, MessageCircle, ShieldCheck, Star } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
+import { StatusBadge } from '../../../shared/ui';
 
 const NAVY = '#2E2252';
 
@@ -97,10 +98,9 @@ export function FactoryProfileHero({ factory, onBack, onChat, chatLoading, showC
             </h1>
             {factory.verified ? (
               <div className="mt-2 flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
-                  <ShieldCheck size={12} className="text-emerald-600" />
+                <StatusBadge variant="success" icon={<ShieldCheck size={12} />}>
                   ยืนยันแล้ว — พร้อมรับ RFQ
-                </span>
+                </StatusBadge>
               </div>
             ) : null}
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500">

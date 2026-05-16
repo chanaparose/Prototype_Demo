@@ -5,6 +5,7 @@ import { Search, X, Plus } from 'lucide-react';
 import { conversationsApi, rfqsApi } from '../../services/api';
 import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/utils/formatting';
+import { StatusBadge } from '../../shared/ui';
 
 type Props = {
   conversationId: number;
@@ -140,9 +141,9 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
                         <p className="text-xs text-gray-500 mt-0.5">หมวด: {rfq.category_name}</p>
                       ) : null}
                     </div>
-                    <span className="text-[10px] font-medium rounded-full px-2 py-0.5 bg-green-50 text-green-700 shrink-0">
+                    <StatusBadge variant="success" size="sm">
                       เปิด
-                    </span>
+                    </StatusBadge>
                   </div>
                   {selectedRfqId === rfq.rfq_id ? (
                     <p className="text-[11px] text-violet-600 mt-1">กำลังแนบ...</p>

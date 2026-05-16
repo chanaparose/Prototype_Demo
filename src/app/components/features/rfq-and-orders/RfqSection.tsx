@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
   ChevronRight,
-  ChevronDown,
   Calendar,
   FileText,
   Plus,
@@ -26,6 +25,7 @@ import {
   DEEP_PURPLE,
 } from './constants';
 import { formatBudget, formatDate } from './utils';
+import { CollapsibleCard } from '../../../shared/ui';
 
 // Brand colors per brief
 const GREEN = '#059669';
@@ -335,41 +335,31 @@ export function RfqSection({
 
       {/* ─── Section B: History accordion ──────────────────────── */}
       {historyRfqs.length > 0 && (
-        <div>
-          <button
-            onClick={() => setHistoryOpen((v) => !v)}
-            className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl border text-sm font-semibold transition-all"
-            style={{
-              background: historyOpen ? '#F0EBF8' : '#F9F8FC',
-              borderColor: BORDER_WARM,
-              color: DEEP_PURPLE,
-            }}
-          >
-            <span className="flex items-center gap-2">
+        <CollapsibleCard
+          defaultOpen={historyOpen}
+          onOpenChange={setHistoryOpen}
+          header={
+            <div className="flex items-center gap-2">
               <History size={14} style={{ color: PLUM }} />
-              ประวัติ
+              <span style={{ color: DEEP_PURPLE }}>ประวัติ</span>
               <span
                 className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                 style={{ background: PLUM_SOFT_BG, color: PLUM }}
               >
                 {historyRfqs.length}
               </span>
-            </span>
-            <ChevronDown
-              size={16}
-              className="transition-transform duration-200"
-              style={{ transform: historyOpen ? 'rotate(180deg)' : 'rotate(0deg)', color: PLUM }}
-            />
-          </button>
-
-          {historyOpen && (
-            <div className="mt-2 space-y-1.5">
-              {historyRfqs.map((rfq) => (
-                <HistoryRfqRow key={rfq.id} rfq={rfq} />
-              ))}
             </div>
-          )}
-        </div>
+          }
+          className="rounded-xl border"
+          headerClassName="text-sm font-semibold py-2.5 px-3"
+          style={{ borderColor: BORDER_WARM, background: '#F9F8FC' }}
+        >
+          <div className="mt-2 space-y-1.5">
+            {historyRfqs.map((rfq) => (
+              <HistoryRfqRow key={rfq.id} rfq={rfq} />
+            ))}
+          </div>
+        </CollapsibleCard>
       )}
     </>
   );
