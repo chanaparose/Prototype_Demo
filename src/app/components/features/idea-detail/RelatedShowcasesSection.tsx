@@ -1,5 +1,5 @@
 import React from 'react';
-import type { FactoryShowcase } from '../../../contexts/DataContext';
+import type { FactoryShowcase } from '../../../stores';
 import { partitionLinkedShowcases } from '../../../utils/linkedShowcases';
 import { useRelatedShowcases } from '../../../hooks/useRelatedShowcases';
 

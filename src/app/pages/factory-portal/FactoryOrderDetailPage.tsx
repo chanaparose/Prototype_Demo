@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { QuoteNestedDTO, RfqNestedDTO } from '../../types/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { ordersApi } from '../../services/api';
 import { RfqReferenceCard } from '../../components/features/order-detail';

@@ -7,7 +7,7 @@
  * Token ถูกแนบอัตโนมัติผ่าน api.ts (Authorization: Bearer <token>)
  */
 import React from 'react';
-import { useData, type Rfq, type RfqOffer, type Order } from '../contexts/DataContext';
+import { useData, type Rfq, type RfqOffer, type Order } from '../stores';
 import { rfqsApi, ordersApi, masterApi, categoriesApi } from '../services/api';
 import { summarizeRfqAddress } from '../utils/rfqAddressSummary';
 import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';

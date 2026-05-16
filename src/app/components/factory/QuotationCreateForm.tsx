@@ -405,6 +405,8 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                       type="button"
                       onClick={() => removeImage(url)}
                       className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
+                      aria-label="ลบรูปภาพ"
+                      title="ลบรูปภาพ"
                     >
                       <XIcon size={10} className="text-white" />
                     </button>
@@ -419,6 +421,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               multiple
               className="hidden"
               onChange={(e) => void handleImageFiles(e.target.files)}
+              aria-label="เลือกรูปภาพ"
             />
             <button
               type="button"
@@ -504,8 +507,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           <button
             type="submit"
             disabled={saving || (!form.formState.isDirty && (factoryHighlight ?? '') === (initialFactoryHighlight ?? '')) || Boolean(highlightError)}
-            className="w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2"
-            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+            className="w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#A238FF] to-[#7C3AED]"
           >
             {saving ? (
               <><Loader2 size={14} className="animate-spin" />กำลังส่ง…</>

@@ -14,7 +14,7 @@ import { useLbiCategoriesByScope } from '../../hooks/master/useLbiCategoriesBySc
 import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
 
 type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
 import { mapLinkedShowcasesErrorToThai, partitionLinkedShowcases } from '../../utils/linkedShowcases';

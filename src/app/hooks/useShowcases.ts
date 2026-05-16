@@ -5,7 +5,7 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { showcasesApi } from '../services/api';
-import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '../contexts/DataContext';
+import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '../stores';
 import { partitionLinkedShowcases } from '../utils/linkedShowcases';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -126,7 +126,7 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
         ? { priceRange: String(r.priceRange) }
         : {}),
     ...(Array.isArray(r.sections) && r.sections.length > 0
-      ? { sections: r.sections as import('../contexts/DataContext').ShowcaseSection[] }
+      ? { sections: r.sections as import('../stores').ShowcaseSection[] }
       : {}),
     ...(Array.isArray(r.images) && r.images.length > 0
       ? { images: r.images as ShowcaseImageRow[] }

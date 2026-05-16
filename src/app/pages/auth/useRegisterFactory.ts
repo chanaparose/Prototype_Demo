@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { ApiHttpError, masterApi, factoriesApi } from '../../services/api';
 
 export interface FormState {

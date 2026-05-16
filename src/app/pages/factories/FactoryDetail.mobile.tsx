@@ -8,7 +8,7 @@ import {
 } from '../../components/features/factory-profile';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailMobileProps = { state: FactoryDetailState };

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../stores';
+import { useData } from '../../stores';
 import type { QuotationRow } from '../../types/rfq';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { rfqsApi, quotationsApi, conversationsApi, messagesApi, categoriesApi, factoryRfqsApi } from '../../services/api';

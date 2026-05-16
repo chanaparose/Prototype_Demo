@@ -99,7 +99,7 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
           <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-4 lg:hidden" />
           <div className="px-4 pb-3 flex items-center justify-between border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-900">แนบ RFQ</p>
-            <button type="button" onClick={onCancel} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+            <button type="button" onClick={onCancel} title="ปิด" className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
               <X size={16} />
             </button>
           </div>

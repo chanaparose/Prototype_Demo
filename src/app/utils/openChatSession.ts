@@ -9,7 +9,7 @@ import {
   type ApiConversation,
   type ChatReference,
 } from './chatContract';
-import type { User } from '../contexts/AuthContext';
+import type { User } from '../stores';
 
 type Row = Record<string, unknown>;
 

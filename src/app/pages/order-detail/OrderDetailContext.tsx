@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useData } from '../../contexts/DataContext';
-import type { Order } from '../../contexts/DataContext';
+import { useData } from '../../stores';
+import type { Order } from '../../stores';
 import type {
   ProductionLockContext,
   ProductionUpdatesBundle,

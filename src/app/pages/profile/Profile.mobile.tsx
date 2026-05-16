@@ -20,8 +20,8 @@ import {
   Plus,
   Home,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../stores';
+import { useAuth } from '../../stores';
 import { profileApi, addressesApi } from '../../services/api';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
 

@@ -13,8 +13,8 @@ import {
 import { ImageWithFallback } from '../../components/shared';
 import { useIdeaDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
-import { useAuth } from '../../contexts/AuthContext';
-import { useData, type FactoryShowcase } from '../../contexts/DataContext';
+import { useAuth } from '../../stores';
+import { useData, type FactoryShowcase } from '../../stores';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { showcasesApi } from '../../services/api';
 import { normShowcase } from '../../hooks/useShowcases';
@@ -98,7 +98,7 @@ export function IdeaDetailMobile() {
   if (!item || !resolvedId) {
     return (
       <div className="px-4 pt-5 pb-20">
-        <button type="button" onClick={handleBack} className="mb-4 inline-flex items-center gap-1 text-sm" style={{ color: '#7A4B94' }}>
+        <button type="button" onClick={handleBack} aria-label="กลับไป" className="mb-4 inline-flex items-center gap-1 text-sm" style={{ color: '#7A4B94' }}>
           <ArrowLeft className="w-4 h-4" /> กลับ
         </button>
         <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center text-sm text-gray-500 shadow-sm">{error || 'ไม่พบบทความไอเดีย'}</div>

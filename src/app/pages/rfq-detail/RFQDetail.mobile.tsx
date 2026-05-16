@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { rfqsApi } from '../../services/api';
 import { openChatSession } from '../../utils/openChatSession';
 import { getCurrentUserId } from '../../utils/chatContract';

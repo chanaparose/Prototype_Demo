@@ -285,8 +285,8 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit, cus
                     ×
                   </button>
                   <div className="absolute bottom-1 left-1 flex gap-0.5">
-                    <button type="button" className="px-1 text-[10px] bg-white/90 rounded" onClick={() => move(idx, -1)} disabled={idx === 0}>↑</button>
-                    <button type="button" className="px-1 text-[10px] bg-white/90 rounded" onClick={() => move(idx, 1)} disabled={idx === urls.length - 1}>↓</button>
+                    <button type="button" aria-label="ขยับขึ้น" className="px-1 text-[10px] bg-white/90 rounded" onClick={() => move(idx, -1)} disabled={idx === 0}>↑</button>
+                    <button type="button" aria-label="ขยับลง" className="px-1 text-[10px] bg-white/90 rounded" onClick={() => move(idx, 1)} disabled={idx === urls.length - 1}>↓</button>
                   </div>
                 </div>
               ))}

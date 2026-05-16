@@ -1,13 +1,13 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import { useData } from '../contexts/DataContext';
+import { useData } from '../stores';
 import type {
   Factory,
   FactoryProfile,
   FactoryReview,
   FactoryShowcase,
   IdeaArticle,
-} from '../contexts/DataContext';
+} from '../stores';
 import type { TabId } from '../components/features/factory-profile';
 import { conversationsApi, factoriesApi, frontendApi, reviewsApi, showcasesApi } from '../services/api';
 import { normalizeReviewImageUrls } from '../utils/reviewImageUrls';

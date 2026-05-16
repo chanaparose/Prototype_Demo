@@ -1,4 +1,4 @@
-import type { User } from '../contexts/AuthContext';
+import type { User } from '../stores';
 
 export type ChatReferenceType = 'RQ' | 'OD' | 'PD' | 'PM' | 'ID';
 

@@ -9,9 +9,9 @@ import {
   ChevronUp,
   FileText,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
-import type { Conversation } from '../../contexts/DataContext';
+import { useData } from '../../stores';
+import { useAuth } from '../../stores';
+import type { Conversation } from '../../stores';
 import { messagesApi, conversationsApi, quotationsApi } from '../../services/api';
 import { ImageWithFallback } from '../../components/shared';
 import type { ChatReference } from '../../utils/chatContract';
@@ -646,6 +646,7 @@ function ChatRoomBody({
             <button
               type="button"
               onClick={onBack}
+              aria-label="กลับไป"
               className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center"
             >
               <ChevronLeft size={22} className="text-gray-700" />

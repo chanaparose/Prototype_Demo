@@ -1,4 +1,4 @@
-import type { User } from '../contexts/AuthContext';
+import type { User } from '../stores';
 
 /** บทบาทโรงงานตาม API (register ใช้ FT) */
 export function isFactoryRole(user: User | null | undefined): boolean {

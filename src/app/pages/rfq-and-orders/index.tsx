@@ -50,7 +50,7 @@ import {
 } from '../../components/features/rfq-and-orders/constants';
 import { formatBudget, formatDate } from '../../components/features/rfq-and-orders/utils';
 import { useRfqAndOrdersState } from '../../hooks/useRfqAndOrdersState';
-import type { Rfq, Order } from '../../contexts/DataContext';
+import type { Rfq, Order } from '../../stores';
 
 // ─── Brand constants (from design brief) ──────────────────────────────────
 const GREEN = '#059669';

@@ -18,8 +18,8 @@ import {
 import { ImageWithFallback } from '../../components/shared';
 import { usePromotionDetailShowcase } from '../../hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
-import { useAuth } from '../../contexts/AuthContext';
-import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../stores';
+import { useData } from '../../stores';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
@@ -114,7 +114,7 @@ export function PromotionDetailDesktop() {
   if (!item || !resolvedId) {
     return (
       <div className="hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]" style={{ background: BRAND.purpleSoft }}>
-        <button type="button" onClick={handleBack} className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium" style={{ color: BRAND.purple }}>
+        <button type="button" onClick={handleBack} aria-label="กลับไป" className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium" style={{ color: BRAND.purple }}>
           <ArrowLeft className="w-4 h-4" /> กลับ
         </button>
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">

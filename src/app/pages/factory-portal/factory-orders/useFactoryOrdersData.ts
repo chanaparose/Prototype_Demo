@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../stores';
 import { ordersApi } from '../../../services/api';
 import { getFactoryEntityId } from '../../../utils/factoryUser';
 import type { FactoryOrderRow, OrderStatusCode, ProductionSummaryRow } from './types';

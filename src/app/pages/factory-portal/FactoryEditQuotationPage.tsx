@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, History, Lock, Save } from 'lucide-react';
 
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { quotationsApi } from '../../services/api';
 

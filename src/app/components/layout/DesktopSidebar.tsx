@@ -10,8 +10,8 @@ import {
   Wallet,
   Lock,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useData } from '../../stores';
+import { useAuth } from '../../stores';
 import { isFactoryRole } from '../../utils/factoryUser';
 import {
   FACTORY_SIDEBAR_NAV,

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { showcasesApi } from '../services/api';
 import { normShowcase } from './useShowcases';
-import type { FactoryShowcase } from '../contexts/DataContext';
+import type { FactoryShowcase } from '../stores';
 
 export function useRelatedShowcases(ids: number[]) {
   const [items, setItems] = useState<FactoryShowcase[]>([]);

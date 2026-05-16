@@ -13,8 +13,8 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
-import type { Factory } from '../../contexts/DataContext';
+import { useData } from '../../stores';
+import type { Factory } from '../../stores';
 import { ImageWithFallback } from '../../components/shared';
 import { masterApi, factoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
@@ -552,7 +552,7 @@ export function FactoryIdeasMobile() {
             style={{ color: COLORS.blue }}
           />
           {searchText && (
-            <button type="button" onClick={() => setSearchText('')} className="shrink-0 p-0.5">
+            <button type="button" onClick={() => setSearchText('')} aria-label="ล้างข้อความค้นหา" className="shrink-0 p-0.5">
               <X size={13} className="text-gray-400" />
             </button>
           )}

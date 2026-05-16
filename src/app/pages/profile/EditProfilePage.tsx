@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 import { profileApi } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 
 export function EditProfilePage() {
   const navigate = useNavigate();

@@ -12,7 +12,7 @@
  */
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { useData } from '../contexts/DataContext';
+import { useData } from '../stores';
 import {
   INITIAL_FORM,
   STEPS,

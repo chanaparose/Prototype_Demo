@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { ChevronLeft, Star, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { profileApi, reviewsApi } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { ReviewImageAttachments } from '../../components/features/reviews/ReviewImageAttachments';
 import { normalizeReviewImageUrls } from '../../utils/reviewImageUrls';
 

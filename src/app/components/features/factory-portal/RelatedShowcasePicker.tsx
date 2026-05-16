@@ -1,7 +1,7 @@
 import React from 'react';
 import { showcasesApi } from '../../../services/api';
 import { normShowcase } from '../../../hooks/useShowcases';
-import type { FactoryShowcase } from '../../../contexts/DataContext';
+import type { FactoryShowcase } from '../../../stores';
 import { Search, Plus, X } from 'lucide-react';
 
 interface RelatedShowcasePickerProps {
@@ -161,6 +161,7 @@ export function RelatedShowcasePicker({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
+                aria-label="ปิด"
                 className="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center"
               >
                 <X size={16} />

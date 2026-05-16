@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../stores';
 import { getFactoryEntityId } from '../utils/factoryUser';
 import { daysUntilDeadline } from '../utils/rfqDeadline';
 import { rfqsApi, factoriesApi, masterApi, categoriesApi, addressesApi } from '../services/api';

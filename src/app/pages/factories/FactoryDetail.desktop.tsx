@@ -9,7 +9,7 @@ import {
 import { ImageWithFallback } from '../../components/shared';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailDesktopProps = { state: FactoryDetailState };

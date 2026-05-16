@@ -19,7 +19,7 @@ import {
   Loader2,
   Plus,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { factoriesApi, mediaApi } from '../../services/api';
 

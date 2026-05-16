@@ -13,8 +13,8 @@ import {
   ChevronRight,
   Loader2,
 } from 'lucide-react';
-import { useData } from '../../contexts/DataContext';
-import type { Factory } from '../../contexts/DataContext';
+import { useData } from '../../stores';
+import type { Factory } from '../../stores';
 import { ImageWithFallback } from '../../components/shared';
 import { masterApi, factoriesApi } from '../../services/api';
 import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
@@ -725,7 +725,7 @@ export function FactoryIdeasDesktop() {
                 style={{ color: COLORS.blue }}
               />
               {searchText && (
-                <button type="button" onClick={() => setSearchText('')} className="text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setSearchText('')} aria-label="ล้างข้อความค้นหา" className="text-gray-400 hover:text-gray-600">
                   <X size={12} />
                 </button>
               )}

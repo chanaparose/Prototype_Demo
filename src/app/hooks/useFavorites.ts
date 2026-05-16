@@ -1,6 +1,6 @@
 import React from 'react';
 import { favoritesApi } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../stores';
 
 type FavoriteRow = Record<string, unknown>;
 

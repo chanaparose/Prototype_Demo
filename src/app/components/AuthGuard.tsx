@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../stores';
 import { isTourActive, subscribeTourActive } from '../utils/tourMocks';
 
 export function AuthGuard() {

@@ -12,7 +12,7 @@ import {
   LogOut,
   Bell,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { Navigate } from 'react-router';
 
 // ─── Types ───────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router';
 import { Lock } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 
 export type FactoryVerifyStatus = 'AP' | 'PD' | 'RJ';
 

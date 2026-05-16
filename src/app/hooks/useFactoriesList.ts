@@ -1,6 +1,6 @@
 import React from 'react';
-import { useData } from '../contexts/DataContext';
-import type { Factory } from '../contexts/DataContext';
+import { useData } from '../stores';
+import type { Factory } from '../stores';
 import { factoriesApi } from '../services/api';
 import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
 

@@ -104,7 +104,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                 background: filters.verifiedOnly ? '#F5F3FF' : '#FFFFFF',
               }}
             >
-              <input type="checkbox" checked={filters.verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} className="sr-only" />
+              <input type="checkbox" checked={filters.verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} className="sr-only" aria-label="โรงงานยืนยันตัวตนเท่านั้น" />
               <div
                 className="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all"
                 style={{ borderColor: filters.verifiedOnly ? '#7C3AED' : '#D1D5DB', background: filters.verifiedOnly ? '#7C3AED' : 'transparent' }}

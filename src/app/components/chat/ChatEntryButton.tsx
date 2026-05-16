@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MessageCircle } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { openChatSession } from '../../utils/openChatSession';
 import { getCurrentUserId, type ChatReference } from '../../utils/chatContract';
 

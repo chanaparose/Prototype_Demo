@@ -14,7 +14,7 @@ export function ChatPartyHeader({ view, density = 'row', trailing, onClick }: Pr
   const size = density === 'header' ? 40 : 44;
   const frameClass = density === 'header' ? 'h-10 w-10' : 'h-11 w-11';
   return (
-    <button type="button" onClick={onClick} className="w-full flex items-center gap-3 text-left">
+    <button type="button" onClick={onClick} className="w-full flex items-center gap-3 text-left" aria-label="ดูข้อมูลการสนทนา">
       <img
         src={view.avatarUrl}
         alt={view.title}

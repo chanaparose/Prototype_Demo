@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { conversationsApi } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import type { ConversationDTO } from '../../types/api';
 import { getCurrentUserId } from '../../utils/chatContract';
 import { resolveCounterparty } from '../../utils/counterparty';

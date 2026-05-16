@@ -75,7 +75,7 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                 className="flex-1 bg-transparent text-[13px] outline-none text-gray-800 placeholder-gray-400"
               />
               {filters.searchText && (
-                <button type="button" onClick={() => setSearchText('')} className="text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setSearchText('')} aria-label="ล้างข้อความค้นหา" className="text-gray-400 hover:text-gray-600">
                   <X size={12} />
                 </button>
               )}

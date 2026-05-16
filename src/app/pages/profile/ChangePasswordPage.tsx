@@ -56,7 +56,7 @@ export function ChangePasswordPage() {
                 onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 pr-9 text-sm"
               />
-              <button type="button" onClick={() => setShow((p) => ({ ...p, [vis]: !p[vis as 'c' | 'n' | 'cf'] }))} className="absolute right-2 top-2 text-slate-400">
+              <button type="button" title="แสดง/ซ่อนรหัสผ่าน" onClick={() => setShow((p) => ({ ...p, [vis]: !p[vis as 'c' | 'n' | 'cf'] }))} className="absolute right-2 top-2 text-slate-400">
                 {show[vis as 'c' | 'n' | 'cf'] ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>

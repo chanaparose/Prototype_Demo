@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { useRfqDetail } from '../../hooks/useRfqDetail';
 import { rfqsApi } from '../../services/api';
 import { openChatSession } from '../../utils/openChatSession';

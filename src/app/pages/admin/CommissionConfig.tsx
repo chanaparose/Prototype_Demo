@@ -46,7 +46,7 @@ export function CommissionConfig() {
         <p className="text-base font-bold text-gray-900">Commission Config</p>
         <label className="block text-sm">
           <span className="text-gray-500">Default Rate (%)</span>
-          <input type="number" step="0.01" value={form.default_commission_rate} onChange={(e) => setForm({ ...form, default_commission_rate: Number(e.target.value) || 0 })} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
+          <input type="number" step="0.01" placeholder="0.00" value={form.default_commission_rate} onChange={(e) => setForm({ ...form, default_commission_rate: Number(e.target.value) || 0 })} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
         </label>
         <div className="border-t border-gray-100 pt-3 space-y-3">
           <label className="inline-flex items-center gap-2 text-sm">
@@ -58,15 +58,15 @@ export function CommissionConfig() {
               <input type="number" step="0.01" value={form.promo_commission_rate} onChange={(e) => setForm({ ...form, promo_commission_rate: Number(e.target.value) || 0 })} placeholder="Promo rate (%)" className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" />
               <input value={form.promo_label} onChange={(e) => setForm({ ...form, promo_label: e.target.value })} placeholder="Promo label" className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" />
               <div className="grid grid-cols-2 gap-2">
-                <input type="date" value={form.promo_start_at} onChange={(e) => setForm({ ...form, promo_start_at: e.target.value })} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
-                <input type="date" value={form.promo_end_at} onChange={(e) => setForm({ ...form, promo_end_at: e.target.value })} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                <input type="date" title="วันเริ่มต้นโปรโมชัน" value={form.promo_start_at} onChange={(e) => setForm({ ...form, promo_start_at: e.target.value })} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                <input type="date" title="วันสิ้นสุดโปรโมชัน" value={form.promo_end_at} onChange={(e) => setForm({ ...form, promo_end_at: e.target.value })} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
               </div>
             </>
           ) : null}
         </div>
         <label className="block text-sm">
           <span className="text-gray-500">VAT (%)</span>
-          <input type="number" step="0.01" value={form.vat_rate} onChange={(e) => setForm({ ...form, vat_rate: Number(e.target.value) || 0 })} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
+          <input type="number" step="0.01" placeholder="0.00" value={form.vat_rate} onChange={(e) => setForm({ ...form, vat_rate: Number(e.target.value) || 0 })} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
         </label>
         <div className="rounded-xl bg-gray-50 border border-gray-100 p-3 text-xs text-gray-600">
           <p>Preview Impact</p>

@@ -4,7 +4,7 @@ import { ChevronLeft, Heart, Package, Lightbulb, Tag } from 'lucide-react';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useShowcases } from '../../hooks/useShowcases';
 import { ImageWithFallback } from '../../components/shared';
-import type { FactoryShowcase } from '../../contexts/DataContext';
+import type { FactoryShowcase } from '../../stores';
 
 type FavoritesTab = 'all' | 'product' | 'promotion' | 'idea';
 

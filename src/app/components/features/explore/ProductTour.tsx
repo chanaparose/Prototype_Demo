@@ -9,7 +9,7 @@ import {
   type TourScenario,
 } from '../../../utils/tourMocks';
 import { formatCurrency } from '@/utils/formatting';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../stores';
 
 export const TOUR_KEY = 'tryly_tour_seen_v1';
 

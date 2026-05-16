@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { useData } from '../contexts/DataContext';
-import type { FactoryShowcase } from '../contexts/DataContext';
+import { useData } from '../stores';
+import type { FactoryShowcase } from '../stores';
 import { showcasesApi } from '../services/api';
 import { normShowcase } from './useShowcases';
 

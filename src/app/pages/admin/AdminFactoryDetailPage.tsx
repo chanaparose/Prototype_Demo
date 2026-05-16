@@ -13,7 +13,7 @@ import {
   FileText,
   AlertTriangle,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import {
   adminApi,
   adminConfigApi,

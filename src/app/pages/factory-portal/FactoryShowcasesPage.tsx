@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles, MapPin, Star } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../stores';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi } from '../../services/api';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
