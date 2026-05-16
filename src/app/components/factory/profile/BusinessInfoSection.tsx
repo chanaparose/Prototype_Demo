@@ -13,9 +13,7 @@ export function BusinessInfoSection({ form }: Props) {
   const factoryTypesQ = useFactoryTypes();
 
   return (
-    <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
-      <h2 className="text-base font-bold text-gray-900 mb-4">ข้อมูลธุรกิจ</h2>
-      <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
           <span className="text-xs text-gray-500">ชื่อโรงงาน *</span>
           <input
@@ -88,7 +86,6 @@ export function BusinessInfoSection({ form }: Props) {
             {...register('description')}
           />
         </label>
-      </div>
-    </section>
+    </div>
   );
 }

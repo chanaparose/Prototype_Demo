@@ -50,8 +50,7 @@ export function AddressesSection() {
   };
 
   return (
-    <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
-      <h2 className="text-base font-bold text-gray-900 mb-3">ที่อยู่</h2>
+    <div>
       <AddressList
         addresses={addresses}
         onCreate={() => {
@@ -80,6 +79,6 @@ export function AddressesSection() {
         }}
         onSubmit={submit}
       />
-    </section>
+    </div>
   );
 }

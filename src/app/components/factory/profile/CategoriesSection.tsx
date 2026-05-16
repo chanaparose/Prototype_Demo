@@ -1,5 +1,4 @@
-import React, { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Controller, type UseFormReturn } from 'react-hook-form';
 import { useProductCategories } from '../../../hooks/master/useProductCategories';
 import { useLbiCategoriesByScope } from '../../../hooks/master/useLbiCategoriesByScope';
@@ -12,9 +11,11 @@ import type { ProfileFormValues } from './ProfileFormTypes';
 interface Props {
   form: UseFormReturn<ProfileFormValues>;
   factoryId: number | string;
+  /** Called by parent to register the "open category picker" handler */
+  onRegisterAdd?: (handler: () => void) => void;
 }
 
-export function CategoriesSection({ form, factoryId }: Props) {
+export function CategoriesSection({ form, factoryId, onRegisterAdd }: Props) {
   const { control } = form;
   const { data: allCategories = [] } = useProductCategories();
   const { data: pdCategories = [] } = useLbiCategoriesByScope('PD');
@@ -27,6 +28,14 @@ export function CategoriesSection({ form, factoryId }: Props) {
 
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+
+  const openCategoryPicker = () => setCategoryPickerOpen(true);
+
+  // Register the add handler with parent once on mount
+  useEffect(() => {
+    onRegisterAdd?.(openCategoryPicker);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const editingCategoryName = useMemo(() => {
     if (editingCategoryId == null) return '';
@@ -82,24 +91,7 @@ export function CategoriesSection({ form, factoryId }: Props) {
   );
 
   return (
-    <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <h2 className="text-base font-bold text-gray-900">หมวดหมู่ที่ขึ้นทะเบียน</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            เลือกหมวดหลัก 1 หรือหลายหมวด และเลือกหมวดย่อยภายใต้แต่ละหมวด
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setCategoryPickerOpen(true)}
-          className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-white text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
-        >
-          <Plus size={14} /> เพิ่มหมวดหมู่
-        </button>
-      </div>
-
+    <div>
       {resolvedCategories.length === 0 ? (
         <div className="border border-dashed border-gray-300 rounded-2xl p-6 text-center">
           <p className="text-sm text-gray-500">ยังไม่ได้เลือกหมวดหมู่</p>
@@ -172,6 +164,6 @@ export function CategoriesSection({ form, factoryId }: Props) {
           setEditingCategoryId(null);
         }}
       />
-    </section>
+    </div>
   );
 }

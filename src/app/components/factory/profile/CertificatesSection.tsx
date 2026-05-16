@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Pencil, Trash2, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Pencil, Trash2, Download } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFactoryCerts } from '../../../hooks/factory/useFactoryCerts';
 import { useMasterCerts, type CertTypeOption } from '../../../hooks/master/useMasterCerts';
@@ -11,6 +11,8 @@ type Row = Record<string, unknown>;
 
 interface Props {
   factoryId: number | string;
+  /** Called by parent to register the "open add modal" handler */
+  onRegisterAdd?: (handler: () => void) => void;
 }
 
 function certRowId(c: Row): string | number | null {
@@ -36,7 +38,7 @@ function toDateInputValue(raw: unknown): string {
   return s.length >= 10 ? s.slice(0, 10) : '';
 }
 
-export function CertificatesSection({ factoryId }: Props) {
+export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
   const qc = useQueryClient();
   const { data: certs = [] } = useFactoryCerts(factoryId);
   const { data: masterCertTypes = [] } = useMasterCerts();
@@ -45,6 +47,18 @@ export function CertificatesSection({ factoryId }: Props) {
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editing, setEditing] = useState<Row | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const openAdd = () => {
+    setMode('create');
+    setEditing(null);
+    setModalOpen(true);
+  };
+
+  // Register the add handler with parent once on mount
+  useEffect(() => {
+    onRegisterAdd?.(openAdd);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ['factory', String(factoryId), 'certs'] });
@@ -94,26 +108,7 @@ export function CertificatesSection({ factoryId }: Props) {
   };
 
   return (
-    <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div>
-          <h2 className="text-base font-bold text-gray-900">ใบรับรอง</h2>
-          <p className="text-xs text-gray-500 mt-0.5">รองรับหลายใบรับรองต่อโรงงาน (1:N)</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            setMode('create');
-            setEditing(null);
-            setModalOpen(true);
-          }}
-          className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-white text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
-        >
-          <Plus size={14} /> เพิ่มใบรับรอง
-        </button>
-      </div>
-
+    <div>
       {certs.length === 0 ? (
         <p className="text-sm text-gray-400">ยังไม่มีใบรับรอง</p>
       ) : (
@@ -190,6 +185,6 @@ export function CertificatesSection({ factoryId }: Props) {
         }}
         onSubmit={submit}
       />
-    </section>
+    </div>
   );
 }
