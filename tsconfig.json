@@ -10,9 +10,12 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/app/*"]
+    },
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src", "vite-env.d.ts"]
 }
