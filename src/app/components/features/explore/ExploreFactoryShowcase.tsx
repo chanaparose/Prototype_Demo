@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, MapPin, Star } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
 import type { FactoryItem } from './ExploreFactoryGrid';
+import { formatCompactNumber } from '@/utils/formatting';
 
 type Props = {
   factories: FactoryItem[];
@@ -197,7 +198,7 @@ export function ExploreFactoryShowcase({
                     <p
                       className="text-[10px] lg:text-[11px] text-gray-600 leading-snug line-clamp-2"
                     >
-                      ขั้นต่ำ <span className="font-semibold text-gray-800">{factory.minOrder.toLocaleString('th-TH')}</span> ชิ้น 
+                      ขั้นต่ำ <span className="font-semibold text-gray-800">{formatCompactNumber(factory.minOrder)}</span> ชิ้น
                     </p>
                   </div>
 

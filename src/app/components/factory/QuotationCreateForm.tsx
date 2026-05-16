@@ -8,6 +8,7 @@ import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { ShippingMethodLockedField } from './ShippingMethodLockedField';
 import { hoursUntilDeadline } from '../../utils/rfqDeadline';
 import { FactoryHighlightField } from '../features/factory-rfq/FactoryHighlightField';
+import { formatCurrencyNoDecimals } from '../../utils/formatting';
 
 /* ── Constants ──────────────────────────────────────────────────── */
 /** ค่า payment_terms ที่ล็อคไว้ตามข้อกำหนดล่าสุด */
@@ -56,7 +57,7 @@ interface Props {
 
 /* ── helpers ────────────────────────────────────────────────────── */
 function fmt(n: number): string {
-  return n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrencyNoDecimals(n);
 }
 
 /* ── Component ──────────────────────────────────────────────────── */

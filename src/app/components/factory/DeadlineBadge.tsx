@@ -6,6 +6,7 @@ import {
   formatThaiDeadlineShort,
   type DeadlineTone,
 } from '../../utils/rfqDeadline';
+import { formatDeadline } from '../../utils/formatting';
 
 const TONE_STYLES: Record<DeadlineTone, { wrap: string }> = {
   ok: { wrap: 'bg-slate-100 text-slate-700 border-slate-200' },

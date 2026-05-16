@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCurrency } from '@/utils/formatting';
 
 type Props = {
   value: number;
@@ -7,12 +8,7 @@ type Props = {
 };
 
 export function MoneyText({ value, currencyCode = 'THB', className }: Props) {
-  const text = new Intl.NumberFormat('th-TH', {
-    style: 'currency',
-    currency: currencyCode,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number.isFinite(value) ? value : 0);
+  const text = formatCurrency(value, currencyCode);
 
   return (
     <span className={className} aria-label={`${currencyCode} ${text}`}>

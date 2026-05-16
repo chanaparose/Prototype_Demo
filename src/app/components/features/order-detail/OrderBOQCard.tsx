@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ChevronDown, CheckCircle } from 'lucide-react';
 import { rfqsApi } from '../../../services/api';
 import type { QuotationRow } from '../../../types/rfq';
+import { formatCurrency } from '@/utils/formatting';
 
 interface Props {
   rfqId: number | string;
@@ -11,7 +12,7 @@ interface Props {
 }
 
 const fmt = (n: number) =>
-  n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  formatCurrency(n, 'THB').replace('฿', '').trim();
 
 const paymentTermsLabel: Record<string, string> = {
   lc_at_sight: 'ชำระเต็ม 100% ก่อนผลิต',

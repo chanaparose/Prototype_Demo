@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Search, X, Plus } from 'lucide-react';
 import { conversationsApi, rfqsApi } from '../../services/api';
 import { toast } from 'sonner';
+import { formatCurrency, formatDate } from '@/utils/formatting';
 
 type Props = {
   conversationId: number;
@@ -132,8 +133,8 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">{rfq.title}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {rfq.target_price ? `งบ ฿${rfq.target_price.toLocaleString('th-TH')}` : 'ไม่มีงบ'}
-                        {rfq.required_delivery_date ? ` · กำหนด ${new Date(rfq.required_delivery_date).toLocaleDateString('th-TH')}` : ''}
+                        {rfq.target_price ? `งบ ${formatCurrency(rfq.target_price, 'THB')}` : 'ไม่มีงบ'}
+                        {rfq.required_delivery_date ? ` · กำหนด ${formatDate(rfq.required_delivery_date, 'd MMMM yyyy')}` : ''}
                       </p>
                       {rfq.category_name ? (
                         <p className="text-xs text-gray-500 mt-0.5">หมวด: {rfq.category_name}</p>

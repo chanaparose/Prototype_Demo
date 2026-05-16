@@ -18,6 +18,7 @@ import {
 import type { CreateRfqForm } from './types';
 import type { Unit } from './types';
 import { mediaApi } from '../../../services/api';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
 
 type CreateRfqStep2Props = {
   form: CreateRfqForm;
@@ -97,7 +98,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
         </div>
         {form.quantity && selectedUnit && (
           <p className="text-[11px] text-violet-600 font-medium mt-2 bg-violet-50 px-3 py-1.5 rounded-lg">
-            สั่งผลิต {Number(form.quantity).toLocaleString('th-TH')} {selectedUnit.name}
+            สั่งผลิต {formatCompactNumber(Number(form.quantity))} {selectedUnit.name}
           </p>
         )}
       </div>
@@ -125,7 +126,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
         </div>
         {form.quantity && form.budgetPerPiece && (
           <p className="text-[11px] text-emerald-600 font-medium mt-2 bg-emerald-50 px-3 py-1.5 rounded-lg">
-            งบประมาณรวมประมาณ ฿{(Number(form.quantity) * Number(form.budgetPerPiece)).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            งบประมาณรวมประมาณ {formatCurrency(Number(form.quantity) * Number(form.budgetPerPiece), 'THB')}
           </p>
         )}
         <p className="text-[10px] text-gray-400 mt-1.5">

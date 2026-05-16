@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRight, TrendingUp, Clock } from 'lucide-react';
 import { EXPLORE_STATUS_CONFIG } from './constants';
+import { formatCurrency } from '@/utils/formatting';
 
 export type RfqActivityItem = {
   id: string;
@@ -77,7 +78,7 @@ export function ExploreRecentActivity({
                     <div className="flex items-center gap-1">
                       <TrendingUp size={12} className="text-gray-400" />
                       <span className="text-xs text-gray-500">
-                        ฿{rfq.budget.toLocaleString()}
+                        {formatCurrency(rfq.budget, 'THB')}
                       </span>
                     </div>
                     <div className="flex items-center gap-1">

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { CreateRfqForm, Unit, Address, ShippingMethod } from './types';
 import { CATEGORY_ICONS, SHIPPING_ICONS } from './types';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
 
 type CreateRfqStep3SummaryProps = {
   form: CreateRfqForm;
@@ -191,7 +192,7 @@ export function CreateRfqStep3Summary({
                 <span className="text-[10px] font-bold text-gray-400 uppercase">จำนวน</span>
               </div>
               <p className="text-[14px] font-bold text-gray-800 tabular-nums">
-                {form.quantity ? Number(form.quantity).toLocaleString('th-TH') : '-'}
+                {form.quantity ? formatCompactNumber(Number(form.quantity)) : '-'}
                 <span className="text-[11px] font-medium text-gray-500 ml-1">{unitName}</span>
               </p>
             </div>
@@ -201,7 +202,7 @@ export function CreateRfqStep3Summary({
                 <span className="text-[10px] font-bold text-gray-400 uppercase">งบ/ชิ้น</span>
               </div>
               <p className="text-[14px] font-bold text-gray-800 tabular-nums">
-                {form.budgetPerPiece ? `฿${Number(form.budgetPerPiece).toLocaleString('th-TH')}` : '-'}
+                {form.budgetPerPiece ? formatCurrency(Number(form.budgetPerPiece), 'THB') : '-'}
               </p>
             </div>
           </div>

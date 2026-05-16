@@ -8,6 +8,7 @@ import {
   TOUR_MESSAGES_CONV_ID,
   type TourScenario,
 } from '../../../utils/tourMocks';
+import { formatCurrency } from '@/utils/formatting';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export const TOUR_KEY = 'tryly_tour_seen_v1';
@@ -344,7 +345,7 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
                 </div>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#111827' }}>฿{o.price.toLocaleString()}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#111827' }}>{formatCurrency(o.price, 'THB')}</div>
                 <div style={{ fontSize: 9.5, color: '#9CA3AF' }}>รวมทั้งหมด</div>
               </div>
             </div>

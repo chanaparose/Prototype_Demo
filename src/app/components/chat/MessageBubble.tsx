@@ -6,6 +6,7 @@ import type { ChatReference, ChatReferenceType } from '../../utils/chatContract'
 import { ReferenceChip } from './ReferenceChip';
 import { normalizeIso } from '../../pages/messages/selectors';
 import { formatChatTime } from '../../utils/chatTime';
+import { formatCurrency } from '@/utils/formatting';
 
 /** Tiny inline spinner for the "sending" status on optimistic bubbles. */
 function SendingSpinner({ color }: { color: string }) {
@@ -302,7 +303,7 @@ export function MessageBubble({
             </div>
             <div className="flex gap-3 mb-4">
               <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>฿{q.price.toLocaleString('th-TH')}</p>
+                <p className="text-white" style={{ fontWeight: 700 }}>{formatCurrency(q.price, 'THB')}</p>
                 <p className="text-white/70 text-[9px]">ราคารวม</p>
               </div>
               <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">

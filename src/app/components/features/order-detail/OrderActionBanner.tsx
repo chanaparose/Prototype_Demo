@@ -7,6 +7,7 @@ import {
 } from '../rfq-and-orders/constants';
 import { diffDaysFromNow, formatDateTh } from './utils';
 import type { NextAction, PaymentScheduleItem } from '../../../pages/order-detail/orderDetailFromApi';
+import { formatCurrency } from '@/utils/formatting';
 
 type Props = {
   nextAction: NextAction | null;
@@ -64,7 +65,7 @@ export function OrderActionBanner({
             {headline}
           </p>
           <p className="text-gray-700 mt-0.5 break-words">
-            <span className="font-medium">฿{amount.toLocaleString('th-TH')}</span>
+            <span className="font-medium">{formatCurrency(amount, 'THB')}</span>
             {due ? (
               <>
                 <span className="text-gray-500"> · </span>

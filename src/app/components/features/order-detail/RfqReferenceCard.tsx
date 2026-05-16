@@ -4,6 +4,7 @@ import type { RfqNestedDTO, QuoteNestedDTO } from '../../../types/api';
 import { rfqsApi, quotationsApi } from '../../../services/api';
 import { summarizeRfqAddress } from '../../../utils/rfqAddressSummary';
 import { OrderPhotoGallery } from './OrderPhotoGallery';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
 
 interface Props {
   rfq: RfqNestedDTO;
@@ -180,20 +181,20 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
       : []),
     ...(shippingMethodName ? [{ label: 'วิธีส่งของ', value: shippingMethodName }] : []),
     ...(deliveryAddress ? [{ label: 'ที่อยู่จัดส่ง', value: deliveryAddress }] : []),
-    { label: 'จำนวน', value: `${quantity.toLocaleString('th-TH')} ชิ้น` },
+    { label: 'จำนวน', value: `${formatCompactNumber(quantity)} ชิ้น` },
     ...(materialGrade ? [{ label: 'Material grade', value: materialGrade }] : []),
     ...(tolerance ? [{ label: 'Tolerance', value: tolerance }] : []),
     ...(colorFinish ? [{ label: 'Color / Finish', value: colorFinish }] : []),
     ...(dimensionSpec ? [{ label: 'Dimension', value: dimensionSpec }] : []),
     ...(Number.isFinite(weightTargetG) && weightTargetG > 0
-      ? [{ label: 'Weight target', value: `${weightTargetG.toLocaleString('th-TH')} g` }]
+      ? [{ label: 'Weight target', value: `${formatCompactNumber(weightTargetG)} g` }]
       : []),
     ...(packagingSpec ? [{ label: 'Packaging spec', value: packagingSpec }] : []),
     ...(Number.isFinite(budgetTotal) && budgetTotal > 0
-      ? [{ label: 'งบประมาณรวม', value: `฿${budgetTotal.toLocaleString('th-TH')}` }]
+      ? [{ label: 'งบประมาณรวม', value: formatCurrency(budgetTotal, 'THB') }]
       : []),
     ...(Number.isFinite(targetLeadTimeDays) && targetLeadTimeDays > 0
-      ? [{ label: 'ระยะเวลาผลิตที่ต้องการ', value: `${targetLeadTimeDays.toLocaleString('th-TH')} วัน` }]
+      ? [{ label: 'ระยะเวลาผลิตที่ต้องการ', value: `${formatCompactNumber(targetLeadTimeDays)} วัน` }]
       : []),
     ...(requiredDeliveryDateLabel ? [{ label: 'วันที่ต้องการรับสินค้า', value: requiredDeliveryDateLabel }] : []),
     ...(deadlineLabel ? [{ label: 'กำหนดส่ง', value: deadlineLabel }] : []),
@@ -287,7 +288,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
             const leadTimeDays = Number(q.lead_time_days ?? quotation.lead_time_days ?? 0);
             const validityDays = Math.max(0, Number(q.validity_days ?? 0));
             const formatTHB = (n: number) =>
-              `฿${n.toLocaleString('th-TH', { minimumFractionDigits: n % 1 !== 0 ? 2 : 0, maximumFractionDigits: 2 })}`;
+              formatCurrency(n, 'THB');
 
             return (
               <>

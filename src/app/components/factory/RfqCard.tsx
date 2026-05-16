@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send } from 'lucide-react';
 import { DeadlineBadge } from './DeadlineBadge';
+import { formatCurrency, formatCompactNumber } from '@/utils/formatting';
 
 export type RfqCardModel = {
   id: string;
@@ -65,7 +66,7 @@ function requestKindLabel(kind?: string): string {
 }
 
 function formatBaht(n: number): string {
-  return `฿${Math.round(n).toLocaleString('th-TH')}`;
+  return formatCurrency(Math.round(n), 'THB');
 }
 
 export function RfqCard({
@@ -83,11 +84,11 @@ export function RfqCard({
 
   const budgetStr =
     row.budgetPerPiece != null && Number.isFinite(row.budgetPerPiece)
-      ? `${row.budgetPerPiece.toLocaleString('th-TH')} บ./ชิ้น`
+      ? `${formatCompactNumber(row.budgetPerPiece)} บ./ชิ้น`
       : '—';
   const qtyStr =
     row.quantity != null && Number.isFinite(row.quantity)
-      ? `${row.quantity.toLocaleString('th-TH')} ชิ้น`
+      ? `${formatCompactNumber(row.quantity)} ชิ้น`
       : '—';
   const rev =
     row.revenueApprox != null && Number.isFinite(row.revenueApprox)
@@ -96,7 +97,7 @@ export function RfqCard({
 
   const statusLabel = row.hasMyQuote
     ? row.myQuoteStatus === 'PD'
-      ? `เสนอแล้ว ${row.myQuotedPrice != null ? `${row.myQuotedPrice.toLocaleString('th-TH')} บ./ชิ้น` : ''} · รอลูกค้าตอบ`
+      ? `เสนอแล้ว ${row.myQuotedPrice != null ? `${formatCompactNumber(row.myQuotedPrice)} บ./ชิ้น` : ''} · รอลูกค้าตอบ`
       : row.myQuoteStatus === 'AC'
         ? 'ลูกค้ารับใบเสนอราคาแล้ว'
         : row.myQuoteStatus === 'RJ'
