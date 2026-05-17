@@ -32,6 +32,7 @@ import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 function promoMeta(startDate?: string, endDate?: string) {
   const now = new Date();
@@ -233,7 +234,7 @@ export function PromotionDetailDesktop() {
                         borderColor: idx === activeImage ? BRAND.rose : BRAND.border,
                       }}
                     >
-                      <img src={url} alt='' className='w-full h-full object-cover' />
+                      <Image src={url} alt='' className='w-full h-full object-cover' />
                     </Button>
                   ))}
                 </div>

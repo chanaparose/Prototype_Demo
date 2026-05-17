@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatDateTh } from '@/components/features/order-detail/utils';
+import { Image } from '@/components/ui/image';
 
 export type OrderSummary = {
   id: string;
@@ -68,7 +69,7 @@ export function OrderSummaryCard({
         <div className='flex items-center justify-between mb-3 gap-3'>
           <div className='flex items-center gap-3 min-w-0 flex-1'>
             {relatedFactory?.image && (
-              <img
+              <Image
                 src={relatedFactory.image}
                 alt=''
                 className='w-12 h-12 rounded-xl object-cover shrink-0'

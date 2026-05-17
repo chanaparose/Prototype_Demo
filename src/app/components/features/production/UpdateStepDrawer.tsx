@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Image } from '@/components/ui/image';
 
 /** ข้อมูลที่อยู่จัดส่งลูกค้า — ส่งมาจาก order API */
 export interface CustomerShippingInfo {
@@ -324,7 +325,7 @@ export function UpdateStepDrawer({
                   key={`${url}-${idx}`}
                   className='relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50'
                 >
-                  <img src={url} alt='' className='w-full h-full object-cover' />
+                  <Image src={url} alt='' className='w-full h-full object-cover' />
                   <Button
                     variant='unstyled'
                     type='button'

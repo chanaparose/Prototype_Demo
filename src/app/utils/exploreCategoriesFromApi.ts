@@ -6,7 +6,6 @@ export type ExploreCategoryItem = {
   parentId?: string | null;
 };
 
-/** แม็ป category_id (ฐานข้อมูล) → id ใน bundle/mock (pet_food …) เมื่อ prop ไม่ใช้เลข id */
 export const TILE_DB_ID_TO_CONTEXT_ID: Record<string, string> = {
   '1': 'pet_food',
   '2': 'supplements',
@@ -112,22 +111,6 @@ export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCate
   const fromCat = res.status === 'fulfilled' ? parseCategoriesResponse(res.value) : [];
   const merged = fromCat;
 
-  if (import.meta.env.DEV) {
-    const verbose =
-      typeof localStorage !== 'undefined' && localStorage.getItem('VERBOSE_API_LOG') === '1';
-    if (verbose) {
-      console.debug('[ExploreCategories API] categories only', {
-        categories: res.status === 'fulfilled' ? res.value : res,
-        merged,
-      });
-    } else {
-      console.debug('[ExploreCategories API]', {
-        mergedCount: merged.length,
-        source: 'GET /categories',
-      });
-    }
-  }
-
   const bothFailed = res.status === 'rejected';
   const firstError =
     res.status === 'rejected'
@@ -155,24 +138,6 @@ export async function fetchExploreCategoriesMerged(): Promise<FetchExploreCatego
   const fromMaster =
     masterRes.status === 'fulfilled' ? parseCategoriesResponse(masterRes.value) : [];
   const merged = mergeCategoryLists(fromCat, fromMaster);
-
-  if (import.meta.env.DEV) {
-    const verbose =
-      typeof localStorage !== 'undefined' && localStorage.getItem('VERBOSE_API_LOG') === '1';
-    if (verbose) {
-      console.debug('[ExploreCategories API] raw', {
-        categories: catRes.status === 'fulfilled' ? catRes.value : catRes,
-        master: masterRes.status === 'fulfilled' ? masterRes.value : masterRes,
-      });
-      console.debug('[ExploreCategories API] merged', merged);
-    } else {
-      console.debug('[ExploreCategories API]', {
-        mergedCount: merged.length,
-        parsedFromCategories: fromCat.length,
-        parsedFromMaster: fromMaster.length,
-      });
-    }
-  }
 
   const bothFailed = catRes.status === 'rejected' && masterRes.status === 'rejected';
   const firstError =

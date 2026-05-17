@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight, FileCheck } from 'lucide-react';
 import { quotationsApi } from '@/services/api';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { useApiCall } from '@/hooks/data/useApiCall';
 
 type Row = Record<string, unknown>;
 
@@ -27,31 +27,21 @@ const STATUS_BADGE: Record<string, { bg: string; color: string }> = {
 };
 
 export function FactoryQuotationsPage() {
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const raw = await quotationsApi.listMine();
-        if (!cancelled) setRows(Array.isArray(raw) ? (raw as Row[]) : []);
-      } catch {
-        if (!cancelled) {
-          setRows([]);
-          setError('โหลดรายการใบเสนอราคาไม่สำเร็จ — ฟีเจอร์นี้อาจยังไม่พร้อมบนเซิร์ฟเวอร์');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const {
+    data: rows = [],
+    loading,
+    error,
+  } = useApiCall(
+    async () => {
+      const raw = await quotationsApi.listMine();
+      return Array.isArray(raw) ? (raw as Row[]) : [];
+    },
+    [],
+    {
+      initialData: [] as Row[],
+      onError: () => undefined,
+    },
+  );
 
   if (loading) {
     return (
@@ -78,7 +68,7 @@ export function FactoryQuotationsPage() {
 
       {error ? (
         <p className='text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3'>
-          {error}
+          โหลดรายการใบเสนอราคาไม่สำเร็จ — ฟีเจอร์นี้อาจยังไม่พร้อมบนเซิร์ฟเวอร์
         </p>
       ) : null}
 

@@ -23,6 +23,7 @@ import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { useLocalStorage } from '@/hooks';
 import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -75,7 +76,7 @@ export function DesktopSidebar() {
     <aside className='hidden lg:flex flex-col fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40'>
       <div className='flex items-center h-16 px-5 border-b border-gray-100 shrink-0'>
         <Link to='/' className='flex items-center w-full'>
-          <img
+          <Image
             src='/assets/tryly-logo.png'
             alt='Tryly'
             className='h-20 w-auto shrink-0 object-contain -ml-[10px]'
@@ -291,7 +292,7 @@ export function DesktopSidebar() {
               className='flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors'
             >
               <span className='relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-brand-lavender-muted'>
-                <img
+                <Image
                   src={avatarSrc}
                   alt={currentUser?.name ?? 'โปรไฟล์'}
                   className='absolute inset-0 w-full h-full object-cover object-center'
@@ -328,7 +329,7 @@ export function DesktopSidebar() {
         ) : (
           <div className='flex items-center gap-2 p-2 rounded-xl bg-gray-50'>
             <span className='relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-brand-lavender-muted'>
-              <img
+              <Image
                 src={DEFAULT_USER_AVATAR_SRC}
                 alt='Guest View'
                 className='absolute inset-0 w-full h-full object-cover object-center'

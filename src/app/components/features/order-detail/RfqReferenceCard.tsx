@@ -6,6 +6,7 @@ import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 interface Props {
   rfq: RfqNestedDTO;
@@ -245,7 +246,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                 onClick={() => setLightbox(url)}
                 className='aspect-square rounded-lg overflow-hidden bg-gray-100'
               >
-                <img src={url} alt='' className='w-full h-full object-cover' />
+                <Image src={url} alt='' className='w-full h-full object-cover' />
               </Button>
             ))}
           </div>

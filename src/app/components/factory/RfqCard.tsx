@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router';
 import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send } from 'lucide-react';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
 import { formatCurrency, formatCompactNumber } from '@/utils/formatting';
+import { Image } from '@/components/ui/image';
 
 export type RfqCardModel = {
   id: string;
@@ -134,7 +135,7 @@ export function RfqCard({
         <div className='flex gap-3 sm:gap-4 p-3 sm:p-4'>
           <div className='w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'>
             {row.thumbUrl ? (
-              <img
+              <Image
                 src={row.thumbUrl}
                 alt=''
                 className='w-full h-full object-cover'
@@ -191,7 +192,7 @@ export function RfqCard({
     >
       <div className='w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'>
         {row.thumbUrl ? (
-          <img src={row.thumbUrl} alt='' className='w-full h-full object-cover' loading='lazy' />
+          <Image src={row.thumbUrl} alt='' className='w-full h-full object-cover' loading='lazy' />
         ) : (
           <ImageIcon className='text-gray-300' size={28} aria-hidden />
         )}

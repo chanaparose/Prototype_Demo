@@ -1,7 +1,14 @@
-import type React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { ImageWithFallback } from '@/components/shared';
+import { Image } from '@/components/ui/image';
+import {
+  Carousel,
+  type CarouselApi,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 type ShowcaseHeroGalleryProps = {
   gallery: string[];
@@ -13,7 +20,7 @@ type ShowcaseHeroGalleryProps = {
   borderColor: string;
   className?: string;
   thumbnailCount?: number;
-  badge?: React.ReactNode;
+  badge?: ReactNode;
 };
 
 export function ShowcaseHeroGallery({
@@ -29,6 +36,25 @@ export function ShowcaseHeroGallery({
   badge,
 }: ShowcaseHeroGalleryProps) {
   const hasMultipleImages = gallery.length > 1;
+  const [api, setApi] = useState<CarouselApi>();
+  const images = gallery.length ? gallery : [fallbackImage];
+
+  useEffect(() => {
+    if (!api) return;
+    api.scrollTo(activeImage);
+  }, [activeImage, api]);
+
+  useEffect(() => {
+    if (!api) return;
+    const syncActiveImage = (nextApi: CarouselApi) => {
+      if (!nextApi) return;
+      onActiveImageChange(nextApi.selectedScrollSnap());
+    };
+    api.on('select', syncActiveImage);
+    return () => {
+      api.off('select', syncActiveImage);
+    };
+  }, [api, onActiveImageChange]);
 
   return (
     <div className={className}>
@@ -36,37 +62,25 @@ export function ShowcaseHeroGallery({
         className='relative aspect-[4/3] rounded-xl overflow-hidden border'
         style={{ borderColor, background: 'var(--neutral-warm-surface)' }}
       >
-        <ImageWithFallback
-          src={gallery[activeImage] ?? fallbackImage}
-          alt={title}
-          className='w-full h-full object-cover'
-        />
-        {badge}
-        {hasMultipleImages ? (
-          <>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => onActiveImageChange((p) => (p - 1 + gallery.length) % gallery.length)}
-              className='absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/35 hover:bg-black/55 text-white flex items-center justify-center transition-colors'
-              aria-label='รูปก่อนหน้า'
-            >
-              <ChevronLeft className='w-5 h-5' />
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => onActiveImageChange((p) => (p + 1) % gallery.length)}
-              className='absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/35 hover:bg-black/55 text-white flex items-center justify-center transition-colors'
-              aria-label='รูปถัดไป'
-            >
-              <ChevronRight className='w-5 h-5' />
-            </Button>
-            <span className='absolute bottom-3 right-3 text-[11px] font-semibold text-white bg-black/45 px-2 py-0.5 rounded-full tabular-nums'>
-              {activeImage + 1} / {gallery.length}
-            </span>
-          </>
-        ) : null}
+        <Carousel setApi={setApi} options={{ loop: hasMultipleImages }} className='h-full'>
+          <CarouselContent className='h-full'>
+            {images.map((url, index) => (
+              <CarouselItem key={`${url}-${index}`} className='h-full'>
+                <Image src={url} alt={title} className='w-full h-full object-cover' />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {badge}
+          {hasMultipleImages ? (
+            <>
+              <CarouselPrevious className='left-3 translate-x-0 bg-black/35 border-transparent hover:bg-black/55 [&_svg]:text-white' />
+              <CarouselNext className='right-3 translate-x-0 bg-black/35 border-transparent hover:bg-black/55 [&_svg]:text-white' />
+              <span className='absolute bottom-3 right-3 text-[11px] font-semibold text-white bg-black/45 px-2 py-0.5 rounded-full tabular-nums'>
+                {activeImage + 1} / {gallery.length}
+              </span>
+            </>
+          ) : null}
+        </Carousel>
       </div>
 
       {hasMultipleImages ? (
@@ -83,7 +97,7 @@ export function ShowcaseHeroGallery({
                 className='aspect-square rounded-lg overflow-hidden border-2 transition-colors'
                 style={{ borderColor: active ? accentColor : borderColor }}
               >
-                <img src={url} alt='' className='w-full h-full object-cover' />
+                <Image src={url} alt='' className='w-full h-full object-cover' />
               </Button>
             );
           })}

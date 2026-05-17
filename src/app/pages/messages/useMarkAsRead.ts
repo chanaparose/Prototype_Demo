@@ -1,10 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { conversationsApi } from '@/services/api';
 
-/**
- * Idempotent mark-as-read per conversation while it stays active.
- * When the user switches to another conversation and back, mark-as-read runs again.
- */
 export function useMarkAsRead() {
   const calledRef = useRef<Set<string>>(new Set());
   const activeConvRef = useRef<string | null>(null);
@@ -23,9 +19,8 @@ export function useMarkAsRead() {
     calledRef.current.add(key);
     try {
       await conversationsApi.markAsRead(convId);
-    } catch (e) {
+    } catch {
       calledRef.current.delete(key);
-      console.warn('[mark-as-read] failed', e);
     }
   }, []);
 }

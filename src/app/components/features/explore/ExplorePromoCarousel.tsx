@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Copy, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Carousel, CarouselContent, CarouselDots, CarouselItem } from '@/components/ui/carousel';
 
 type Slide = { id: string; title: string; subtitle: string; code: string };
 
@@ -41,74 +42,7 @@ export function ExplorePromoCarousel({
     return [...apiSlides, ...apiCodes];
   }, [promoSlides, promoCodes]);
 
-  const [promoIndex, setPromoIndex] = useState(initialIndex);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [slideWidth, setSlideWidth] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef(0);
-  const touchCurrentX = useRef(0);
-  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const GAP = 10;
-  const PADDING = 12;
-
-  const updateSlideWidth = useCallback(() => {
-    if (containerRef.current) {
-      const containerW = containerRef.current.offsetWidth;
-      setSlideWidth(Math.min(containerW - PADDING * 2, 340));
-    }
-  }, []);
-
-  useEffect(() => {
-    updateSlideWidth();
-    window.addEventListener('resize', updateSlideWidth);
-    return () => window.removeEventListener('resize', updateSlideWidth);
-  }, [updateSlideWidth]);
-
-  const startAutoPlay = useCallback(() => {
-    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    autoPlayRef.current = setInterval(() => {
-      setPromoIndex((i) => (i + 1) % slides.length);
-    }, 4000);
-  }, [slides.length]);
-
-  useEffect(() => {
-    startAutoPlay();
-    return () => {
-      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    };
-  }, [startAutoPlay]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchCurrentX.current = e.touches[0].clientX;
-    setIsDragging(true);
-    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    touchCurrentX.current = e.touches[0].clientX;
-    setDragOffset(touchCurrentX.current - touchStartX.current);
-  };
-
-  const handleTouchEnd = () => {
-    if (!isDragging) return;
-    const diff = touchCurrentX.current - touchStartX.current;
-    const threshold = 50;
-
-    if (diff < -threshold && promoIndex < slides.length - 1) {
-      setPromoIndex((i) => i + 1);
-    } else if (diff > threshold && promoIndex > 0) {
-      setPromoIndex((i) => i - 1);
-    }
-
-    setIsDragging(false);
-    setDragOffset(0);
-    startAutoPlay();
-  };
 
   const handleCopy = (code: string, id: string) => {
     navigator.clipboard?.writeText(code);
@@ -117,83 +51,39 @@ export function ExplorePromoCarousel({
     onCopyCode?.(code, id);
   };
 
-  const translateX = -(promoIndex * (slideWidth + GAP)) + (isDragging ? dragOffset : 0);
-
   if (slides.length === 0) return null;
 
   return (
-    <div ref={containerRef} className='relative mb-3 w-full overflow-hidden'>
-      <div
-        className='flex'
-        style={{
-          paddingLeft: `${PADDING}px`,
-          paddingRight: `${PADDING}px`,
-          gap: `${GAP}px`,
-          transform: `translateX(${translateX}px)`,
-          transition: isDragging ? 'none' : 'transform 500ms ease-out',
-          touchAction: 'pan-y',
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+    <Carousel
+      className='relative mb-3 w-full overflow-hidden'
+      options={{ align: 'center', loop: slides.length > 1, startIndex: initialIndex }}
+      autoPlayMs={4000}
+    >
+      <CarouselContent className='gap-2.5 px-3'>
         {slides.map((promo) => (
-          <div
+          <CarouselItem
             key={promo.id}
-            className='flex-shrink-0 rounded-2xl overflow-hidden shadow-lg'
-            style={{ width: slideWidth || 'auto' }}
+            className='basis-[min(calc(100%-24px),340px)] rounded-2xl overflow-hidden shadow-lg'
           >
-            <div
-              className='relative overflow-hidden rounded-2xl p-3 text-white'
-              style={{
-                background:
-                  'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
-              }}
-            >
-              <div
-                className='absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-30'
-                style={{ background: 'var(--brand-purple)' }}
-              />
-              <div
-                className='absolute top-0 right-0 w-16 h-16 rounded-full opacity-20 blur-xl'
-                style={{ background: 'var(--brand-purple)' }}
-              />
-              <div
-                className='absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20'
-                style={{ background: '#FAEBD7' }}
-              />
+            <div className='relative overflow-hidden rounded-2xl p-3 text-white bg-[linear-gradient(135deg,var(--brand-orange)_0%,var(--brand-orange-vivid)_100%)]'>
+              <div className='absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-30 bg-brand-purple' />
+              <div className='absolute top-0 right-0 w-16 h-16 rounded-full opacity-20 blur-xl bg-brand-purple' />
+              <div className='absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20 bg-[#FAEBD7]' />
               <div className='relative z-10'>
-                <div
-                  className='inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full mb-1.5'
-                  style={{ background: 'var(--brand-purple)' }}
-                >
+                <div className='inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full mb-1.5 bg-brand-purple'>
                   <Gift className='w-3 h-3 text-white' />
-                  <span style={{ fontSize: 11 }} className='text-white font-semibold tracking-wide'>
+                  <span className='text-[11px] text-white font-semibold tracking-wide'>
                     โปรโมชั่นพิเศษ!
                   </span>
                 </div>
-                <p style={{ fontSize: 15 }} className='mb-1 font-bold text-white drop-shadow-sm'>
+                <p className='mb-1 text-[15px] font-bold text-white drop-shadow-sm'>
                   {promo.title}
                 </p>
-                <p
-                  style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }}
-                  className='mb-2.5 leading-snug'
-                >
-                  {promo.subtitle}
-                </p>
+                <p className='mb-2.5 text-xs text-white/85 leading-snug'>{promo.subtitle}</p>
                 {promo.code && (
                   <div className='flex items-center gap-2'>
-                    <div
-                      className='flex items-center gap-2 backdrop-blur-sm rounded-lg px-3 py-1.5 border'
-                      style={{
-                        background: 'rgba(255,255,255,0.25)',
-                        borderColor: 'rgba(255,255,255,0.40)',
-                      }}
-                    >
-                      <span
-                        style={{ fontSize: 15, letterSpacing: 2 }}
-                        className='font-mono font-bold text-white'
-                      >
+                    <div className='flex items-center gap-2 backdrop-blur-sm rounded-lg px-3 py-1.5 border bg-white/25 border-white/40'>
+                      <span className='text-[15px] tracking-[2px] font-mono font-bold text-white'>
                         {promo.code}
                       </span>
                     </div>
@@ -201,8 +91,7 @@ export function ExplorePromoCarousel({
                       variant='unstyled'
                       type='button'
                       onClick={() => handleCopy(promo.code, promo.id)}
-                      className='flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors font-semibold'
-                      style={{ background: 'var(--brand-navy-deep)', color: 'white', fontSize: 13 }}
+                      className='flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors font-semibold bg-brand-navy-deep text-white text-[13px]'
                     >
                       <Copy className='w-3.5 h-3.5' />
                       {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
@@ -211,30 +100,11 @@ export function ExplorePromoCarousel({
                 )}
               </div>
             </div>
-          </div>
+          </CarouselItem>
         ))}
-      </div>
+      </CarouselContent>
 
-      <div className='flex justify-center gap-1.5 mt-4'>
-        {slides.map((_, i) => (
-          <Button
-            variant='unstyled'
-            key={i}
-            type='button'
-            aria-label={`สไลด์ ${i + 1}`}
-            onClick={() => {
-              setPromoIndex(i);
-              startAutoPlay();
-            }}
-            className='h-1.5 rounded-full transition-all duration-300'
-            style={
-              i === promoIndex
-                ? { width: '20px', background: 'var(--brand-orange)' }
-                : { width: '6px', background: '#D1D5DB' }
-            }
-          />
-        ))}
-      </div>
-    </div>
+      <CarouselDots className='mt-4' />
+    </Carousel>
   );
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Image } from '@/components/ui/image';
 
 export function EditProfilePage() {
   const navigate = useNavigate();
@@ -119,7 +120,7 @@ export function EditProfilePage() {
 
       <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3'>
         <div className='flex items-center gap-3'>
-          <img
+          <Image
             src={avatarPreview || '/assets/avatars/customer-default.svg'}
             alt='avatar'
             className='w-14 h-14 rounded-2xl object-cover bg-slate-100'

@@ -4,6 +4,7 @@ import { mediaApi } from '@/services/api';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Image } from '@/components/ui/image';
 
 type Props = {
   urls: string[];
@@ -68,10 +69,10 @@ export function ReviewImageAttachments({
                 className='w-full h-full block'
                 onClick={() => onPreviewUrl(url)}
               >
-                <img src={url} alt='' className='w-full h-full object-cover' />
+                <Image src={url} alt='' className='w-full h-full object-cover' />
               </Button>
             ) : (
-              <img src={url} alt='' className='w-full h-full object-cover' />
+              <Image src={url} alt='' className='w-full h-full object-cover' />
             )}
             {editable ? (
               <Button

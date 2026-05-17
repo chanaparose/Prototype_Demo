@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Image } from '@/components/ui/image';
 
 export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 export type ShowcaseScope = 'PD' | 'MT';
@@ -86,7 +87,7 @@ export function ShowcaseImageManager({
       >
         {imageUrls[0] ? (
           <>
-            <img src={imageUrls[0]} alt='' className='w-full h-full object-cover' />
+            <Image src={imageUrls[0]} alt='' className='w-full h-full object-cover' />
             <Button
               onClick={() => onRemoveImage(imageUrls[0], 0)}
               variant='neutral'
@@ -122,7 +123,7 @@ export function ShowcaseImageManager({
               key={`${url}-${i}`}
               className='relative w-14 h-14 rounded-lg border border-gray-200 overflow-hidden shrink-0'
             >
-              <img src={url} alt='' className='w-full h-full object-cover' />
+              <Image src={url} alt='' className='w-full h-full object-cover' />
               <Button
                 onClick={() => onRemoveImage(url, i + 1)}
                 variant='neutral'

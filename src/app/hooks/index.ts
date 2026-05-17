@@ -6,6 +6,7 @@ export * from '@/hooks/data';
 
 // Form Hooks
 export * from '@/hooks/form';
+export { useFormModal } from '@/hooks/forms/useFormModal';
 
 // Business Logic Hooks
 export { useLocalStorage } from '@/hooks/useLocalStorage';

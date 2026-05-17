@@ -27,6 +27,8 @@ import { QuotationHistoryPanel } from '@/components/features/rfq-detail';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { DismissRfqButton } from '@/components/features/factory-rfq/DismissRfqButton';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
+import { StatusBadge } from '@/shared/ui';
 
 type QuoteRow = QuotationRow & {
   factoryId?: number | string;
@@ -63,6 +65,20 @@ function rfqStatusLabel(status: string): string {
   if (s === 'CP' || s === 'COMPLETED') return 'เสร็จสิ้น';
   if (s === 'PD' || s === 'PENDING') return 'รออนุมัติ';
   return status || '—';
+}
+
+function quoteStatusLabel(status: string): string {
+  if (status === 'PD') return 'รอลูกค้าตัดสินใจ';
+  if (status === 'AC') return 'ลูกค้ารับแล้ว';
+  if (status === 'RJ') return 'ปิด / ถูกปฏิเสธ';
+  return status;
+}
+
+function quoteStatusVariant(status: string): React.ComponentProps<typeof StatusBadge>['variant'] {
+  if (status === 'AC') return 'success';
+  if (status === 'PD') return 'active';
+  if (status === 'RJ') return 'inactive';
+  return 'default';
 }
 
 export function FactoryRfqDetailPage() {
@@ -109,12 +125,6 @@ export function FactoryRfqDetailPage() {
       setRfqTitle(String(rfq.title ?? ''));
       setRfqBody(rfq);
       setQuotes(normalizeQuoteRows(qList));
-      const sidCheck = Number(rfq.shipping_method_id ?? 0);
-      if (!Number.isFinite(sidCheck) || sidCheck <= 0) {
-        console.warn('[FactoryRfqDetail] RFQ missing shipping_method_id', {
-          rfq_id: rfq.rfq_id ?? id,
-        });
-      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
     } finally {
@@ -263,7 +273,6 @@ export function FactoryRfqDetailPage() {
       return [] as Array<Record<string, unknown>>;
     })();
 
-    // Helper to extract nested user_id from customer/factory party objects
     const customerIdOf = (c: Record<string, unknown>): number =>
       Number(
         c.customer_id ??
@@ -279,42 +288,13 @@ export function FactoryRfqDetailPage() {
           0,
       );
 
-    // Primary: exact match by both customer_id + factory_id
     let hit = convs.find((c) => customerIdOf(c) === customerId && factoryIdOf(c) === fid);
 
-    // Fallback: match by customer_id only (every conv in this list belongs to this factory)
     if (!hit && customerId > 0) {
       hit = convs.find((c) => customerIdOf(c) === customerId);
     }
 
     const convId = Number(hit?.conv_id ?? hit?.conversation_id ?? hit?.id ?? 0);
-
-    if (import.meta.env.DEV) {
-      const snapshot = convs.slice(0, 20).map((c) => ({
-        conv_id: c.conv_id ?? c.conversation_id ?? c.id ?? null,
-        customer_id:
-          c.customer_id ??
-          c.customerId ??
-          (c.customer as Record<string, unknown> | undefined)?.user_id ??
-          null,
-        factory_id:
-          c.factory_id ??
-          c.factoryId ??
-          (c.factory as Record<string, unknown> | undefined)?.user_id ??
-          null,
-        updated_at: c.updated_at ?? c.last_message_at ?? c.created_at ?? null,
-      }));
-      console.groupCollapsed('[FactoryRfqDetail][findExistingConvId]');
-      console.debug('target', { customerId, fid, rows: convs.length, rawType: typeof convsRaw });
-      console.debug('rows(snapshot<=20)', snapshot);
-      console.debug('hit', {
-        conv_id: hit?.conv_id ?? hit?.conversation_id ?? hit?.id ?? null,
-        customer_id: hit ? customerIdOf(hit) : null,
-        factory_id: hit ? factoryIdOf(hit) : null,
-      });
-      console.debug('convId(parsed)', convId);
-      console.groupEnd();
-    }
 
     return Number.isFinite(convId) && convId > 0 ? convId : null;
   };
@@ -346,13 +326,6 @@ export function FactoryRfqDetailPage() {
       throw new Error('สร้างห้องแชทไม่สำเร็จ (ไม่พบ conv_id)');
     }
 
-    if (import.meta.env.DEV) {
-      console.debug('[FactoryRfqDetail][ensureConversationId] created', {
-        convId,
-        customerId,
-        fid,
-      });
-    }
     return convId;
   };
 
@@ -365,12 +338,6 @@ export function FactoryRfqDetailPage() {
     setError('');
     try {
       const convId = await ensureConversationId();
-      if (import.meta.env.DEV) {
-        console.debug('[FactoryRfqDetail][openChatToCustomer] navigate', {
-          to: chatRoomPath(convId),
-          reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
-        });
-      }
       navigate(chatRoomPath(convId), {
         state: {
           reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
@@ -407,7 +374,6 @@ export function FactoryRfqDetailPage() {
     setError('');
     try {
       const convId = await ensureConversationId();
-      // Build minimal ApiConversation from known IDs so buildSendPayload can resolve receiver
       const apiConv: ApiConversation = {
         conv_id: convId,
         customer_id: customerId,
@@ -504,33 +470,24 @@ export function FactoryRfqDetailPage() {
   }
 
   return (
-    <div style={{ backgroundColor: 'var(--brand-page)' }} className='min-h-screen pb-24'>
+    <div className='min-h-screen pb-24 bg-brand-page'>
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => navigate(backPath)}
-          className='flex items-center gap-1 text-sm font-medium'
-          style={{ color: 'var(--brand-indigo-dark)' }}
+          className='flex items-center gap-1 text-sm font-medium text-brand-indigo-dark'
         >
           <ChevronLeft size={18} /> กลับ
         </Button>
-        <span
-          className='flex-1 text-center text-sm font-bold'
-          style={{ color: 'var(--brand-navy)' }}
-        >
-          รายละเอียด RFQ
-        </span>
+        <span className='flex-1 text-center text-sm font-bold text-brand-navy'>รายละเอียด RFQ</span>
         <span className='text-xs font-medium text-gray-400'>#{id}</span>
       </div>
 
       <div className='w-full max-w-lg lg:max-w-5xl mx-auto px-4 pt-4'>
         {loading ? (
           <div className='flex justify-center py-12'>
-            <div
-              className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-              style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
-            />
+            <div className='w-10 h-10 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin' />
           </div>
         ) : null}
 
@@ -585,31 +542,9 @@ export function FactoryRfqDetailPage() {
                   สถานะใบเสนอราคาของคุณ
                 </p>
                 <div className='flex items-center gap-2'>
-                  <span
-                    className='text-xs font-semibold px-2.5 py-1 rounded-full'
-                    style={{
-                      backgroundColor:
-                        myStatus === 'AC'
-                          ? 'var(--status-success-soft)'
-                          : myStatus === 'PD'
-                            ? 'var(--brand-violet-soft)'
-                            : 'var(--neutral-muted)',
-                      color:
-                        myStatus === 'AC'
-                          ? '#065F46'
-                          : myStatus === 'PD'
-                            ? '#5B21B6'
-                            : 'var(--neutral-text)',
-                    }}
-                  >
-                    {myStatus === 'PD'
-                      ? 'รอลูกค้าตัดสินใจ'
-                      : myStatus === 'AC'
-                        ? 'ลูกค้ารับแล้ว'
-                        : myStatus === 'RJ'
-                          ? 'ปิด / ถูกปฏิเสธ'
-                          : myStatus}
-                  </span>
+                  <StatusBadge variant={quoteStatusVariant(myStatus)} size='md'>
+                    {quoteStatusLabel(myStatus)}
+                  </StatusBadge>
                 </div>
               </section>
             ) : (
@@ -632,10 +567,9 @@ export function FactoryRfqDetailPage() {
                           key={url}
                           type='button'
                           onClick={() => setLightbox(i)}
-                          className='w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none'
-                          style={{ outlineColor: 'var(--brand-indigo)' }}
+                          className='w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-indigo'
                         >
-                          <img src={url} alt='' className='w-full h-full object-cover' />
+                          <Image src={url} alt='' className='w-full h-full' />
                         </Button>
                       ))}
                       {imageUrls.length > 5 ? (
@@ -653,28 +587,19 @@ export function FactoryRfqDetailPage() {
                   </p>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>หมวดหมู่</span>
-                    <span
-                      className='text-sm font-medium text-right'
-                      style={{ color: 'var(--brand-navy)' }}
-                    >
+                    <span className='text-sm font-medium text-right text-brand-navy'>
                       {breadcrumb}
                     </span>
                   </div>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>จำนวน</span>
-                    <span
-                      className='text-sm font-medium text-right'
-                      style={{ color: 'var(--brand-navy)' }}
-                    >
+                    <span className='text-sm font-medium text-right text-brand-navy'>
                       {quantity != null ? `${quantity.toLocaleString('th-TH')} ชิ้น` : '—'}
                     </span>
                   </div>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>วัสดุ/เกรด</span>
-                    <span
-                      className='text-sm font-medium text-right'
-                      style={{ color: 'var(--brand-navy)' }}
-                    >
+                    <span className='text-sm font-medium text-right text-brand-navy'>
                       {String(rfqBody.material_grade ?? '-')}
                     </span>
                   </div>
@@ -687,12 +612,7 @@ export function FactoryRfqDetailPage() {
                         {rfqBody.certifications_required.map((c) => (
                           <span
                             key={String(c)}
-                            className='text-[11px] px-2 py-0.5 rounded-full border'
-                            style={{
-                              backgroundColor: '#F3E8FF',
-                              color: '#6B21A8',
-                              borderColor: '#E9D5FF',
-                            }}
+                            className='text-[11px] px-2 py-0.5 rounded-full border bg-purple-50 text-purple-800 border-purple-200'
                           >
                             {String(c)}
                           </span>
@@ -703,14 +623,8 @@ export function FactoryRfqDetailPage() {
                   {(rfqBody.details ?? rfqBody.description) ? (
                     <div className='pt-1 border-t border-gray-50'>
                       <p className='text-xs text-gray-500 mb-1'>รายละเอียดเพิ่มเติม</p>
-                      <div
-                        className='rounded-xl border px-3 py-2.5'
-                        style={{ background: '#EEF2FF', borderColor: '#C7D2FE' }}
-                      >
-                        <p
-                          className='text-sm break-words leading-relaxed'
-                          style={{ color: 'var(--brand-navy)' }}
-                        >
+                      <div className='rounded-xl border px-3 py-2.5 bg-indigo-50 border-indigo-200'>
+                        <p className='text-sm break-words leading-relaxed text-brand-navy'>
                           {String(rfqBody.details ?? rfqBody.description ?? '—')}
                         </p>
                       </div>
@@ -724,10 +638,7 @@ export function FactoryRfqDetailPage() {
                   </p>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>งบประมาณรวม</span>
-                    <span
-                      className='text-sm font-medium text-right'
-                      style={{ color: 'var(--brand-navy)' }}
-                    >
+                    <span className='text-sm font-medium text-right text-brand-navy'>
                       {rfqBody.target_price != null
                         ? `${Number(rfqBody.target_price).toLocaleString('th-TH')} บาท`
                         : '-'}
@@ -736,10 +647,7 @@ export function FactoryRfqDetailPage() {
                   {targetDaysCustomer != null ? (
                     <div className='flex items-start justify-between gap-2'>
                       <span className='text-xs text-gray-500'>Lead time ที่ต้องการ</span>
-                      <span
-                        className='text-sm font-medium text-right'
-                        style={{ color: 'var(--brand-navy)' }}
-                      >
+                      <span className='text-sm font-medium text-right text-brand-navy'>
                         {targetDaysCustomer} วัน
                       </span>
                     </div>
@@ -755,33 +663,22 @@ export function FactoryRfqDetailPage() {
                   {addressSummary ? (
                     <div className='flex items-start justify-between gap-2'>
                       <span className='text-xs text-gray-500'>ที่อยู่ปลายทาง</span>
-                      <span
-                        className='text-sm font-medium text-right break-words'
-                        style={{ color: 'var(--brand-navy)' }}
-                      >
+                      <span className='text-sm font-medium text-right break-words text-brand-navy'>
                         {addressSummary}
                       </span>
                     </div>
                   ) : (
                     <div className='flex items-start justify-between gap-2'>
                       <span className='text-xs text-gray-500'>ที่อยู่ปลายทาง</span>
-                      <span
-                        className='text-sm font-medium text-right'
-                        style={{ color: 'var(--brand-navy)' }}
-                      >
-                        —
-                      </span>
+                      <span className='text-sm font-medium text-right text-brand-navy'>—</span>
                     </div>
                   )}
                 </section>
 
-                {/* Competitor count */}
                 <div className='rounded-2xl bg-white border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between'>
                   <span className='text-xs text-gray-500'>คู่แข่งที่เสนอราคา</span>
                   <div className='flex items-center gap-1.5'>
-                    <span className='text-sm font-bold' style={{ color: 'var(--brand-navy)' }}>
-                      {competitorCount} ราย
-                    </span>
+                    <span className='text-sm font-bold text-brand-navy'>{competitorCount} ราย</span>
                     <span className='text-[11px] text-gray-400'>(ซ่อนราคา)</span>
                   </div>
                 </div>
@@ -795,7 +692,7 @@ export function FactoryRfqDetailPage() {
                       ? 'ดูใบเสนอราคา'
                       : 'ส่งใบเสนอราคา'}
                 </p>
-                <h2 className='font-bold' style={{ color: 'var(--brand-navy)' }}>
+                <h2 className='font-bold text-brand-navy'>
                   {myQuote && canEdit
                     ? 'แก้ไขใบเสนอราคา'
                     : myQuote
@@ -888,9 +785,7 @@ export function FactoryRfqDetailPage() {
                 <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1'>
                   ติดต่อลูกค้า
                 </p>
-                <h2 className='text-sm font-bold' style={{ color: 'var(--brand-navy)' }}>
-                  ส่งข้อความ
-                </h2>
+                <h2 className='text-sm font-bold text-brand-navy'>ส่งข้อความ</h2>
                 <p className='text-xs text-gray-500'>
                   เปิดห้องแชทเดิมพร้อม prefill ข้อความ (ยังไม่ส่งทันที) และแนบบริบท RFQ
                 </p>
@@ -909,11 +804,7 @@ export function FactoryRfqDetailPage() {
                     type='button'
                     disabled={chatBusy}
                     onClick={() => void sendQuoteMessageToCustomer()}
-                    className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
-                    style={{
-                      background:
-                        'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                    }}
+                    className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)]'
                   >
                     ส่งใบเสนอราคาในแชท (QT)
                   </Button>
@@ -943,10 +834,11 @@ export function FactoryRfqDetailPage() {
           >
             <X size={22} />
           </Button>
-          <img
+          <Image
             src={imageUrls[lightbox]}
             alt=''
             className='max-w-full max-h-[85vh] object-contain rounded-lg pointer-events-none'
+            loading='eager'
           />
         </div>
       ) : null}

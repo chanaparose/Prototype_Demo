@@ -26,6 +26,7 @@ import type { CategoryItem } from '@/components/features/explore/ExploreCategori
 import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 import { Input } from '@/components/ui/input';
+import { Image } from '@/components/ui/image';
 
 type ShowcaseItem = {
   id: string;
@@ -470,7 +471,7 @@ export function ExploreMobile({
       </div>
 
       <div className='mx-auto w-[78%] max-w-xs relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30 mt-8'>
-        <img
+        <Image
           src='assets/IMG_7664.jpg'
           alt=''
           className='absolute inset-0 w-full h-full object-cover'

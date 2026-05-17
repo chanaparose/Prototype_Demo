@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/stores';
 import { Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 const ADMIN_ROLES = ['AM', 'AD', 'SA'] as const;
 type AdminRole = (typeof ADMIN_ROLES)[number];
@@ -90,7 +91,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     <div className='flex flex-col h-full'>
       <div className='flex items-center justify-between px-5 h-16 border-b border-slate-200 shrink-0'>
         <div className='flex items-center gap-2'>
-          <img src='/assets/tryly-logo.png' alt='Tryly' className='h-8 w-auto object-contain' />
+          <Image src='/assets/tryly-logo.png' alt='Tryly' className='h-8 w-auto object-contain' />
           <div>
             <p className='text-sm font-bold text-slate-900 leading-none'>Tryly</p>
             <p className='text-[10px] text-indigo-600 font-medium mt-0.5'>Admin Panel</p>

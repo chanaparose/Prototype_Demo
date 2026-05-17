@@ -33,6 +33,7 @@ import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { FactoryShowcase } from '@/stores';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 function promoMeta(startDate?: string, endDate?: string) {
   const now = new Date();
@@ -232,7 +233,7 @@ export function PromotionDetailMobile() {
                   className='shrink-0 w-14 h-14 rounded-md overflow-hidden border-2 transition-colors'
                   style={{ borderColor: active ? BRAND.rose : BRAND.border }}
                 >
-                  <img src={url} alt='' className='w-full h-full object-cover' />
+                  <Image src={url} alt='' className='w-full h-full object-cover' />
                 </Button>
               );
             })}

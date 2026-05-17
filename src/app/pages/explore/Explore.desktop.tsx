@@ -24,6 +24,7 @@ import type { CategoryItem } from '@/components/features/explore/ExploreCategori
 import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 import { Input } from '@/components/ui/input';
+import { Image } from '@/components/ui/image';
 type ShowcaseItem = {
   id: string;
   title: string;
@@ -485,14 +486,14 @@ export function ExploreDesktop({
       </div>
 
       <section className='mt-6 rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>
-        <img
+        <Image
           src='assets/tryly_banner_v9.png'
           alt=''
           className='hidden xl:block absolute inset-0 w-full h-full object-cover pointer-events-none'
         />
         <div className='hidden xl:block absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none' />
 
-        <img
+        <Image
           src='assets/tryly_tablet_banner.png'
           alt=''
           className='xl:hidden relative z-0 w-full h-auto object-contain object-center pointer-events-none select-none'

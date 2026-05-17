@@ -23,6 +23,7 @@ import {
 } from '@/components/layout/factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
@@ -64,7 +65,7 @@ export function Layout() {
           <div className='max-w-7xl mx-auto px-4 sm:px-6'>
             <div className='flex items-center justify-between h-16'>
               <Link to='/' className='flex items-center gap-2 shrink-0'>
-                <img
+                <Image
                   src='/assets/tryly-logo.png'
                   alt='Tryly'
                   className='h-15 sm:h-15 w-auto object-contain'

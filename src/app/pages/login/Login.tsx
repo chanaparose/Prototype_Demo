@@ -6,6 +6,7 @@ import { frontendApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Image } from '@/components/ui/image';
 
 type Mode = 'login' | 'register';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
@@ -128,7 +129,7 @@ export function Login() {
       </Link>
       <div className='w-full max-w-sm'>
         <div className='flex flex-col items-center mb-8'>
-          <img
+          <Image
             src='/assets/tryly-logo.png'
             alt='Tryly'
             className='h-20 w-auto object-contain -ml-[5px]'

@@ -26,6 +26,7 @@ import { profileApi, addressesApi } from '@/services/api';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Image } from '@/components/ui/image';
 
 type ProfileMenuItem = {
   icon: typeof User;
@@ -311,7 +312,7 @@ export function ProfileMobile() {
           <div className='relative z-10'>
             <div className='flex items-center gap-3 mb-4'>
               <div className='relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/30 bg-brand-lavender-muted'>
-                <img
+                <Image
                   src={HARDCODED_CUSTOMER_PROFILE_SRC}
                   alt='avatar'
                   className='absolute inset-0 w-full h-full object-cover object-center'

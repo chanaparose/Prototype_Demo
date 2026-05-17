@@ -12,12 +12,6 @@ import {
 import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
 import type { User } from '@/stores/types';
 
-const logAuthDebug = (...args: unknown[]) => {
-  if (import.meta.env.DEV) {
-    console.log(...args);
-  }
-};
-
 export interface AuthState {
   user: User | null;
   token: string | null;
@@ -81,7 +75,6 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
 
     login: async (payload: LoginPayload) => {
       const response = (await authApi.login(payload)) as Record<string, unknown>;
-      logAuthDebug('[Auth] login response:', response);
 
       const tokenStr = String(response.token ?? response.access_token ?? '').trim();
       if (!tokenStr) {
@@ -99,16 +92,14 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
 
       try {
         const fullUser = await frontendApi.getMe();
-        logAuthDebug('[Auth] /frontend/me response:', fullUser);
         set({ user: fullUser as unknown as User });
-      } catch (err) {
-        console.warn('[Auth] /frontend/me failed, using basic user:', err);
+      } catch {
+        // Keep the basic login payload when profile hydration is unavailable.
       }
     },
 
     register: async (payload: RegisterCustomerPayload | RegisterFactoryPayload) => {
       const response = (await authApi.register(payload)) as Record<string, unknown>;
-      logAuthDebug('[Auth] register response:', response);
 
       const tokenStr = String(response.token ?? response.access_token ?? '').trim();
       if (!tokenStr) {
@@ -126,10 +117,9 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
 
       try {
         const fullUser = await frontendApi.getMe();
-        logAuthDebug('[Auth] /frontend/me after register:', fullUser);
         set({ user: fullUser as unknown as User });
-      } catch (err) {
-        console.warn('[Auth] /frontend/me failed after register, using basic user:', err);
+      } catch {
+        // Keep the basic register payload when profile hydration is unavailable.
       }
     },
 

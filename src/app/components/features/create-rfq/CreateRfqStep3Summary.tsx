@@ -20,6 +20,7 @@ import type {
 import { CATEGORY_ICONS, SHIPPING_ICONS } from '@/components/features/create-rfq/types';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 type CreateRfqStep3SummaryProps = {
   form: CreateRfqForm;
@@ -242,7 +243,7 @@ export function CreateRfqStep3Summary({
                     key={idx}
                     className='w-14 h-14 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shrink-0'
                   >
-                    <img src={url} alt={`ref-${idx}`} className='w-full h-full object-cover' />
+                    <Image src={url} alt={`ref-${idx}`} className='w-full h-full object-cover' />
                   </div>
                 ))}
               </div>

@@ -45,6 +45,7 @@ import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPage
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Image } from '@/components/ui/image';
 
 const COLORS = {
   purple: 'var(--brand-indigo)',
@@ -303,7 +304,7 @@ function FactoryHeroCard({
               } ${uploadingImage ? 'pointer-events-none opacity-90' : 'hover:ring-indigo-100'}`}
             >
               {imageUrl ? (
-                <img src={imageUrl} alt='' className='w-full h-full object-cover' />
+                <Image src={imageUrl} alt='' className='w-full h-full object-cover' />
               ) : (
                 <span className='w-full h-full flex flex-col items-center justify-center gap-1.5 p-2 text-center'>
                   <ImageIcon

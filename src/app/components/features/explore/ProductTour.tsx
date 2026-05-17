@@ -1,69 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import {
-  activateTourMocks,
-  clearTourMocks,
-  setTourActive,
-  TOUR_MESSAGES_CONV_ID,
-  type TourScenario,
-} from '@/utils/tourMocks';
+
+import { activateTourMocks, clearTourMocks, setTourActive } from '@/utils/tourMocks';
 import { formatCurrency } from '@/utils/formatting';
 import { useAuth } from '@/stores';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { TOUR_STEPS } from '@/components/features/explore/product-tour/tourSteps';
+import { injectTourCSS } from '@/components/features/explore/product-tour/tourStyles';
+import { TourCard } from '@/components/features/explore/product-tour/TourCard';
+import { SpotlightOverlay } from '@/components/features/explore/product-tour/TourSpotlight';
+import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
+import { Image } from '@/components/ui/image';
 
 export const TOUR_KEY = 'tryly_tour_seen_v1';
-
-const TOUR_CSS = `
-@keyframes tour-card-in {
-  from { opacity:0; transform:translateY(14px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-@keyframes tour-ring-pulse {
-  0%,100% { stroke-width:2.5; stroke-opacity:0.85; }
-  50%      { stroke-width:4.5; stroke-opacity:1; }
-}
-@keyframes tour-mock-in {
-  from { opacity:0; transform:scale(0.97) translateY(6px); }
-  to   { opacity:1; transform:scale(1) translateY(0); }
-}
-@keyframes tour-btn-glow {
-  0%,100% { box-shadow: 0 0 0 0 var(--tour-glow,rgba(162,56,255,0.5)), 0 4px 12px var(--tour-glow-soft,rgba(162,56,255,0.3)); }
-  50%      { box-shadow: 0 0 0 9px rgba(0,0,0,0), 0 4px 12px var(--tour-glow-soft,rgba(162,56,255,0.3)); }
-}
-.tour-ring { animation: tour-ring-pulse 1.8s ease-in-out infinite; }
-.tour-mock-frame { animation: tour-mock-in 0.22s ease-out both; }
-.tour-btn-glow { animation: tour-btn-glow 2s ease-in-out infinite; }
-`;
-let cssInjected = false;
-function injectCSS() {
-  if (cssInjected || typeof document === 'undefined') return;
-  const s = document.createElement('style');
-  s.textContent = TOUR_CSS;
-  document.head.appendChild(s);
-  cssInjected = true;
-}
-
-type StepDef = {
-  /** Full path including optional `?query` (e.g. `/product-detail?showcase_id=14`) */
-  route: string | null;
-  /** When set, install canned API mocks for this scenario before navigating */
-  mockScenario?: TourScenario;
-
-  targetTexts?: string[];
-  targetSelector?: string;
-  spotlightRadius?: number;
-  spotlightPad?: number;
-
-  cardPlacement?: 'top' | 'bottom' | 'auto';
-  badgeColor: string;
-  icon: string;
-  badge: string;
-  title: string;
-  desc: string;
-  tip: string;
-};
 
 function MockStatusBar() {
   return (
@@ -131,7 +81,7 @@ function MockNav({ title, showBack = true }: { title?: string; showBack?: boolea
           {title}
         </span>
       ) : (
-        <img
+        <Image
           src='/assets/tryly-logo.png'
           alt='Tryly'
           style={{ height: 26, objectFit: 'contain' }}
@@ -297,7 +247,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           overflow: 'hidden',
         }}
       >
-        <img
+        <Image
           src='https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=500&h=300&fit=crop'
           alt='ของเล่นแมว'
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -354,7 +304,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             border: '2px solid var(--brand-purple)',
           }}
         >
-          <img
+          <Image
             src='https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=80&h=80&fit=crop'
             alt=''
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -369,7 +319,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             overflow: 'hidden',
           }}
         >
-          <img
+          <Image
             src='https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=80&h=80&fit=crop'
             alt=''
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -1228,150 +1178,18 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
   );
 }
 
-function MockScreenOverlay({ stepIdx, def }: { stepIdx: number; def: StepDef }) {
-  return (
-    <>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 9997, background: 'rgba(0,0,0,0.65)' }} />
-      <div
-        key={stepIdx}
-        className='tour-mock-frame'
-        style={{
-          position: 'fixed',
-          top: 8,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'calc(100% - 20px)',
-          maxWidth: 420,
-          height: 'calc(100svh - 215px)',
-          background: 'var(--neutral-surface)',
-          borderRadius: 20,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 9998,
-          boxShadow: '0 8px 50px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.15)',
-        }}
-      >
-        {stepIdx === 1 && <MockCreateRfq badgeColor={def.badgeColor} />}
-        {stepIdx === 2 && <MockProductDetail badgeColor={def.badgeColor} />}
-        {stepIdx === 3 && <MockMessages badgeColor={def.badgeColor} />}
-        {stepIdx === 4 && <MockRfqDetail badgeColor={def.badgeColor} />}
-        {stepIdx === 5 && <MockOrderDetail badgeColor={def.badgeColor} />}
-      </div>
-    </>
-  );
-}
-
-const STEPS: StepDef[] = [
-  {
-    route: '/factory-ideas',
-
-    targetSelector: '[data-tour="tab-product"]',
-    targetTexts: ['สินค้า', 'ทั้งหมด'],
-    spotlightRadius: 24,
-    spotlightPad: 6,
-    badgeColor: 'var(--brand-purple)',
-    icon: '🔍',
-    badge: 'ขั้นตอนที่ 1 / 7',
-    title: 'เลือกดูสินค้าและโรงงาน',
-    desc: 'เลือกดูสินค้าตัวอย่าง วัตถุดิบ และโรงงานที่สนใจ กรองตามหมวดหมู่ tab ด้านบน หรือค้นหาโดยตรงได้เลย',
-    tip: '💡 กด tab "สินค้า" เพื่อดูตัวอย่างที่โรงงานเคยผลิต',
-  },
-  {
-    // findTarget picks the first visible match → adapts to viewport.
-    route: '/',
-    targetSelector: '[data-tour="create-rfq-cta"], [data-tour="fab"]',
-    targetTexts: ['สร้างคำขอราคา'],
-    spotlightRadius: 12,
-    spotlightPad: 8,
-    cardPlacement: 'top', // FAB sits at bottom-right → keep card up top from the start
-    badgeColor: 'var(--brand-orange)',
-    icon: '➕',
-    badge: 'ขั้นตอนที่ 2 / 7',
-    title: 'กดปุ่มสร้างคำขอราคา',
-    desc: 'เมื่อต้องการเริ่มต้น กดปุ่ม "สร้างคำขอราคา" ที่ sidebar (Desktop) หรือ ปุ่มลอย "+" มุมขวาล่าง (Mobile) เพื่อเข้าสู่ฟอร์มสร้าง คำขอราคา',
-    tip: '➕ ปุ่มนี้จะอยู่กับคุณตลอดทุกหน้า กดได้เมื่อพร้อม',
-  },
-  {
-    route: '/create-rfq',
-    targetSelector: '[data-tour="request-kind"]',
-    targetTexts: ['ประเภทคำขอ', 'ขอตัวอย่างสินค้า', 'ขอราคาผลิต'],
-    spotlightRadius: 14,
-    spotlightPad: 10,
-    badgeColor: 'var(--brand-orange)',
-    icon: '📋',
-    badge: 'ขั้นตอนที่ 3 / 7',
-    title: 'เลือกประเภทคำขอที่เหมาะกับคุณ',
-    desc: 'นอกจาก "ขอราคาผลิต OEM" แล้ว คุณยังสามารถเลือก "ขอตัวอย่างสินค้า" หรือ "ขอตัวอย่างวัตถุดิบ" ได้ฟรี เพื่อทดลองคุณภาพก่อนสั่งจริง',
-    tip: '📋 แนะนำเริ่มจาก "ขอตัวอย่างสินค้า" ถ้ายังไม่แน่ใจคุณภาพโรงงาน',
-  },
-  {
-    route: '/product-detail?showcase_id=14',
-    mockScenario: 'product',
-    targetTexts: ['แชทกับโรงงาน', 'แชท'],
-    spotlightRadius: 12,
-    cardPlacement: 'top', // chat CTA sits in bottom action bar
-    badgeColor: 'var(--brand-teal)',
-    icon: '💬',
-    badge: 'ขั้นตอนที่ 4 / 7',
-    title: 'แชทกับโรงงานที่สนใจ',
-    desc: 'กดปุ่ม "แชทกับโรงงาน" เพื่อคุยรายละเอียดโดยตรง ปรับแบบ ขอตัวอย่าง หรือต่อรองราคาได้เลย',
-    tip: '💬 โรงงานใน Tryly ทุกรายพร้อมตอนกลับลูกค้าทุกท่าน',
-  },
-  {
-    route: `/messages/${TOUR_MESSAGES_CONV_ID}`,
-    mockScenario: 'messages',
-    targetTexts: ['📎', 'แนบ RFQ', 'RFQ', 'พิมพ์ข้อความ'],
-    spotlightRadius: 10,
-    cardPlacement: 'top', // chat input + RFQ attach btn sit at bottom of viewport
-    badgeColor: 'var(--status-info)',
-    icon: '📩',
-    badge: 'ขั้นตอนที่ 5 / 7',
-    title: 'ส่ง คำขอราคา ให้โรงงานใน Chat',
-    desc: 'แนบคำขอราคาที่สร้างไว้ในห้องแชท เพื่อให้โรงงานส่งใบเสนอราคาอย่างเป็นทางการกลับมา',
-    tip: '📩 โรงงานจะส่งใบเสนอราคาผ่าน Chat และในหน้า คำขอราคา & คำสั่งงาน',
-  },
-  {
-    route: '/rfqs/28',
-    mockScenario: 'rfq',
-    targetTexts: ['ยอมรับข้อเสนอ', 'ยอมรับ', 'ข้อเสนอ', 'AI แนะนำ', 'ใบเสนอราคา'],
-    spotlightRadius: 12,
-    badgeColor: 'var(--brand-violet)',
-    icon: '⚖️',
-    badge: 'ขั้นตอนที่ 6 / 7',
-    title: 'เปรียบเทียบและยอมรับข้อเสนอ',
-    desc: 'ดูรายละเอียดใบเสนอราคาจากหลายโรงงาน เปรียบเทียบราคา เงื่อนไข และยอมรับข้อเสนอได้',
-    tip: '⚖️ ระบบจะแนะนำโรงงานที่คุ้มค่าที่สุดสำหรับงานของคุณ',
-  },
-  {
-    route: '/orders/17',
-    mockScenario: 'order',
-    targetTexts: ['การผลิต', 'ภาพรวม', 'กำลังผลิต', 'ชำระ'],
-    spotlightRadius: 12,
-    badgeColor: 'var(--status-success-bright)',
-    icon: '✅',
-    badge: 'ขั้นตอนที่ 7 / 7',
-    title: 'จ่ายเงินและติดตามสถานะ',
-    desc: 'ชำระเงินผ่านระบบ Tryly แล้วติดตามสถานะการผลิตจนถึงมือคุณ',
-    tip: '🔒 เงินจะโอนให้โรงงานเมื่อคุณรับสินค้าแล้วเท่านั้น',
-  },
-];
-
 function isVisible(el: Element): boolean {
   const r = el.getBoundingClientRect();
   return r.width > 1 && r.height > 1;
 }
 
-function findTarget(def: StepDef): Element | null {
+function findTarget(def: TourStepDef): Element | null {
   if (def.targetSelector) {
-    // querySelectorAll allows comma-separated fallback selectors — pick the
-
     const candidates = Array.from(document.querySelectorAll(def.targetSelector));
     const visible = candidates.find(isVisible);
     if (visible) return visible;
   }
   if (def.targetTexts) {
-    // Pass 1: prefer interactive elements
     const interactiveSel = 'button, a, [role="button"], [role="tab"], input';
     for (const text of def.targetTexts) {
       const matches = Array.from(document.querySelectorAll(interactiveSel));
@@ -1385,7 +1203,6 @@ function findTarget(def: StepDef): Element | null {
       });
       if (found) return found;
     }
-    // Pass 2: fall back to any visible element with the text (heading, span, div)
     for (const text of def.targetTexts) {
       const all = Array.from(document.querySelectorAll('h1, h2, h3, p, span, div'));
       const found = all.find((el) => {
@@ -1404,313 +1221,6 @@ function findTarget(def: StepDef): Element | null {
   return null;
 }
 
-function SpotlightOverlay({
-  rect,
-  color,
-  radius,
-  onClickOutside,
-}: {
-  rect: DOMRect | null;
-  color: string;
-  radius: number;
-  onClickOutside: () => void;
-}) {
-  const PAD = 8;
-  const uniqueId = `tour-mask-${color.replace('#', '')}`;
-  return (
-    <svg
-      onClick={onClickOutside}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9998,
-        pointerEvents: 'all',
-        cursor: 'default',
-        width: '100%',
-        height: '100%',
-      }}
-    >
-      <defs>
-        <mask id={uniqueId}>
-          <rect width='100%' height='100%' fill='white' />
-          {rect && (
-            <rect
-              x={rect.left - PAD}
-              y={rect.top - PAD}
-              width={rect.width + PAD * 2}
-              height={rect.height + PAD * 2}
-              rx={radius}
-              fill='black'
-            />
-          )}
-        </mask>
-      </defs>
-      <rect width='100%' height='100%' fill='rgba(0,0,0,0.70)' mask={`url(#${uniqueId})`} />
-      {rect && (
-        <rect
-          className='tour-ring'
-          x={rect.left - PAD}
-          y={rect.top - PAD}
-          width={rect.width + PAD * 2}
-          height={rect.height + PAD * 2}
-          rx={radius}
-          fill='none'
-          stroke={color}
-          strokeWidth='3'
-        />
-      )}
-    </svg>
-  );
-}
-
-function TourCard({
-  stepIdx,
-  def,
-  total,
-  rect,
-  isMock,
-  onPrev,
-  onNext,
-  onClose,
-}: {
-  stepIdx: number;
-  def: StepDef;
-  total: number;
-  rect: DOMRect | null;
-  isMock: boolean;
-  onPrev: () => void;
-  onNext: () => void;
-  onClose: () => void;
-}) {
-  const isFirst = stepIdx === 0;
-  const isLast = stepIdx === total - 1;
-  const wh = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const ww = typeof window !== 'undefined' ? window.innerWidth : 400;
-
-  //    avoiding the bottom→top flash that 'auto' produces while waiting
-  //    for `rect` to compute on slower mobile devices.
-  //  - 'auto' falls back to rect-based heuristic.
-  const placeAtTop = (() => {
-    if (def.cardPlacement === 'top') return true;
-    if (def.cardPlacement === 'bottom') return false;
-    return !isMock && rect ? rect.top > wh * 0.5 : false;
-  })();
-
-  const arrowDown = placeAtTop && rect != null;
-  const arrowUp = !placeAtTop && !isMock && rect ? rect.bottom < wh * 0.55 : false;
-
-  return (
-    <div
-      key={stepIdx}
-      onClick={(e) => e.stopPropagation()}
-      style={{
-        position: 'fixed',
-        ...(placeAtTop ? { top: 16 } : { bottom: 16 }),
-        left: 12,
-        right: 12,
-        zIndex: 9999,
-        maxWidth: 440,
-        margin: '0 auto',
-        background: 'var(--neutral-white)',
-        borderRadius: 20,
-        boxShadow: placeAtTop ? '0 4px 40px rgba(0,0,0,0.28)' : '0 -4px 40px rgba(0,0,0,0.28)',
-        overflow: 'visible',
-        animation: 'tour-card-in 0.22s ease-out both',
-      }}
-    >
-      {arrowUp && rect && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: Math.min(Math.max(rect.left + rect.width / 2 - 24, 20), ww - 60),
-            width: 0,
-            height: 0,
-            borderLeft: '12px solid transparent',
-            borderRight: '12px solid transparent',
-            borderBottom: `12px solid ${def.badgeColor}`,
-            marginBottom: -1,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-      {arrowDown && rect && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: Math.min(Math.max(rect.left + rect.width / 2 - 24, 20), ww - 60),
-            width: 0,
-            height: 0,
-            borderLeft: '12px solid transparent',
-            borderRight: '12px solid transparent',
-            borderTop: `12px solid ${def.badgeColor}`,
-            marginTop: -1,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-      <div
-        style={{
-          height: 4,
-          borderRadius: '20px 20px 0 0',
-          background: `linear-gradient(90deg, ${def.badgeColor} 0%, var(--brand-purple) 100%)`,
-        }}
-      />
-      <div style={{ padding: '14px 16px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 9 }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 18,
-              background: `${def.badgeColor}18`,
-              border: `1px solid ${def.badgeColor}30`,
-            }}
-          >
-            {def.icon}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                padding: '2px 8px',
-                borderRadius: 99,
-                background: `${def.badgeColor}18`,
-                color: def.badgeColor,
-                border: `1px solid ${def.badgeColor}30`,
-                display: 'inline-block',
-                marginBottom: 4,
-              }}
-            >
-              {def.badge}
-            </span>
-            <p
-              style={{
-                fontSize: 15,
-                fontWeight: 700,
-                color: 'var(--brand-ink)',
-                lineHeight: 1.3,
-                margin: 0,
-              }}
-            >
-              {def.title}
-            </p>
-          </div>
-        </div>
-        <p style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.7, marginBottom: 10 }}>
-          {def.desc}
-        </p>
-        <div
-          style={{
-            fontSize: 11.5,
-            fontWeight: 600,
-            padding: '7px 11px',
-            borderRadius: 10,
-            marginBottom: 14,
-            background: `${def.badgeColor}12`,
-            border: `1px solid ${def.badgeColor}25`,
-            color: def.badgeColor,
-          }}
-        >
-          {def.tip}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            {Array.from({ length: total }).map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  width: i === stepIdx ? 20 : 6,
-                  height: 6,
-                  borderRadius: 99,
-                  background: i === stepIdx ? def.badgeColor : 'var(--neutral-border)',
-                  transition: 'all 0.25s',
-                }}
-              />
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 7 }}>
-            {!isFirst ? (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={onPrev}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 3,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: '7px 13px',
-                  borderRadius: 99,
-                  border: '1.5px solid var(--neutral-border)',
-                  background: 'transparent',
-                  color: 'var(--neutral-subtle)',
-                  cursor: 'pointer',
-                }}
-              >
-                <ChevronLeft size={13} /> ย้อนกลับ
-              </Button>
-            ) : (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={onClose}
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: '7px 13px',
-                  borderRadius: 99,
-                  border: '1.5px solid var(--neutral-border)',
-                  background: 'transparent',
-                  color: 'var(--neutral-subtle)',
-                  cursor: 'pointer',
-                }}
-              >
-                ข้ามทัวร์
-              </Button>
-            )}
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={isLast ? onClose : onNext}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: 13,
-                fontWeight: 700,
-                padding: '7px 18px',
-                borderRadius: 99,
-                border: 'none',
-                background: def.badgeColor,
-                color: 'var(--neutral-white)',
-                cursor: 'pointer',
-                boxShadow: `0 4px 14px ${def.badgeColor}55`,
-              }}
-            >
-              {isLast ? (
-                'เริ่มเลย 🎉'
-              ) : (
-                <>
-                  ถัดไป <ChevronRight size={13} />
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function ProductTour() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -1721,10 +1231,7 @@ export function ProductTour() {
   const [autoShown, setAutoShown] = useState(false);
   const originPath = useRef('/');
 
-  injectCSS();
-
-  // Auto-open on first visit to explore home — guest only.
-  // Once a user logs in, no longer auto-shows (they can still trigger via
+  injectTourCSS();
 
   useEffect(() => {
     if (autoShown || open) return;
@@ -1756,12 +1263,9 @@ export function ProductTour() {
     return () => window.removeEventListener('tryly-open-tour', handler);
   }, [location.pathname]);
 
-  // Activate / clear API mocks for this step's scenario.
-  // Mocks must be installed BEFORE the page mounts (which fires its data fetch),
-  // hence this effect runs first / synchronously on step change.
   useEffect(() => {
     if (!open) return;
-    const def = STEPS[step];
+    const def = TOUR_STEPS[step];
     if (def.mockScenario) {
       activateTourMocks(def.mockScenario);
     } else {
@@ -1771,18 +1275,17 @@ export function ProductTour() {
 
   useEffect(() => {
     if (!open) return;
-    const def = STEPS[step];
+    const def = TOUR_STEPS[step];
     if (!def.route) return;
     const current = `${location.pathname}${location.search}`;
     if (current !== def.route) {
       navigate(def.route);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, step]);
+  }, [open, step, location.pathname, location.search, navigate]);
 
   useEffect(() => {
     if (!open) return;
-    const def = STEPS[step];
+    const def = TOUR_STEPS[step];
     if (!def.route) {
       setTargetRect(null);
       return;
@@ -1805,19 +1308,6 @@ export function ProductTour() {
     return () => clearTimeout(t);
   }, [open, step, location.pathname, location.search]);
 
-  // Escape key
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  // Public routes the guest is allowed to land on after tour ends without
-  // hitting AuthGuard → /login. Anything else: bounce to '/'.
   const isPublicRoute = useCallback((path: string) => {
     if (path === '/' || path === '/factory-ideas' || path === '/factories') return true;
     if (path.startsWith('/factories/')) return true;
@@ -1831,14 +1321,12 @@ export function ProductTour() {
     (target: string) => {
       localStorage.setItem(TOUR_KEY, '1');
       clearTourMocks();
-      // Hide the tour UI immediately for snappy feel.
       setOpen(false);
       setTargetRect(null);
 
       if (location.pathname !== target) {
         navigate(target, { replace: true });
       }
-      // Defer tour-active flip — let the route transition flush first.
       window.setTimeout(() => setTourActive(false), 50);
     },
     [location.pathname, navigate],
@@ -1853,13 +1341,15 @@ export function ProductTour() {
     closeTo('/');
   }, [closeTo]);
 
-  // NOTE: tour-active flag is managed *explicitly* by handlers (handler
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, handleClose]);
 
-  // Don't sync it from `open` via useEffect — that fires synchronously on
-  // setOpen(false) and yanks AuthContext.isAuthenticated to false BEFORE
-  // the route transition completes, which kicks the guest to /login.
-
-  // Safety net — clear mocks + tour-active flag if tour unmounts.
   useEffect(() => {
     return () => {
       clearTourMocks();
@@ -1869,7 +1359,7 @@ export function ProductTour() {
 
   const handleNext = useCallback(() => {
     setTargetRect(null);
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, TOUR_STEPS.length - 1));
   }, []);
 
   const handlePrev = useCallback(() => {
@@ -1879,8 +1369,8 @@ export function ProductTour() {
 
   if (!open) return null;
 
-  const def = STEPS[step];
-  const isLast = step === STEPS.length - 1;
+  const def = TOUR_STEPS[step];
+  const isLast = step === TOUR_STEPS.length - 1;
 
   return (
     <>
@@ -1893,7 +1383,7 @@ export function ProductTour() {
       <TourCard
         stepIdx={step}
         def={def}
-        total={STEPS.length}
+        total={TOUR_STEPS.length}
         rect={targetRect}
         isMock={false}
         onPrev={handlePrev}

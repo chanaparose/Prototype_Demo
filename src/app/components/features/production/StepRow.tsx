@@ -6,6 +6,7 @@ import {
   type StepDerivedState,
 } from '@/components/features/production/stepDerivedState';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 type Props = {
   merged: MergedProductionStep;
@@ -242,7 +243,7 @@ export function StepRow({
                     className='w-16 h-16 rounded-lg overflow-hidden border border-gray-200'
                     onClick={() => onPhotoClick(u)}
                   >
-                    <img src={u} alt='' className='w-full h-full object-cover' />
+                    <Image src={u} alt='' className='w-full h-full object-cover' />
                   </Button>
                 ))}
               </div>

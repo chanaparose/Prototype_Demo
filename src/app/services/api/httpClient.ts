@@ -135,10 +135,6 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
       if (!skipImmediateLogout) {
         removeToken();
         window.location.href = '/login';
-      } else if (getToken()) {
-        console.warn(
-          '[api] transient 401 on /frontend/me right after login; keep token and retry later',
-        );
       }
     }
 

@@ -2,6 +2,7 @@ import React from 'react';
 import type { FactoryShowcase } from '@/stores';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
 import { useRelatedShowcases } from '@/hooks/useRelatedShowcases';
+import { Image } from '@/components/ui/image';
 
 interface RelatedShowcasesSectionProps {
   linkedShowcases: unknown;
@@ -44,7 +45,7 @@ export function RelatedShowcasesSection({
           >
             <div className='aspect-[4/3] bg-gray-100'>
               {item.image ? (
-                <img src={item.image} alt={item.title} className='w-full h-full object-cover' />
+                <Image src={item.image} alt={item.title} className='w-full h-full object-cover' />
               ) : null}
             </div>
             <div className='p-2.5'>

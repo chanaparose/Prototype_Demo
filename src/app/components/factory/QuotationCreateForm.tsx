@@ -20,6 +20,7 @@ import { formatCurrencyNoDecimals } from '@/utils/formatting';
 import { FormField } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Image } from '@/components/ui/image';
 
 const LOCKED_PAYMENT_TERMS = 'lc_at_sight';
 
@@ -424,7 +425,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                     key={url}
                     className='relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200'
                   >
-                    <img src={url} alt='' className='w-full h-full object-cover' />
+                    <Image src={url} alt='' className='w-full h-full object-cover' />
                     <Button
                       variant='unstyled'
                       type='button'
@@ -477,7 +478,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                   key={url}
                   className='aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200'
                 >
-                  <img src={url} alt='' className='w-full h-full object-cover' />
+                  <Image src={url} alt='' className='w-full h-full object-cover' />
                 </div>
               ))}
             </div>

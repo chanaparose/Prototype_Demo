@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Image } from '@/components/ui/image';
+import { useApiCall } from '@/hooks/data/useApiCall';
 
 interface RelatedShowcasePickerProps {
   factoryId: number;
@@ -25,35 +27,21 @@ export function RelatedShowcasePicker({
   disabled = false,
   errorText = '',
 }: RelatedShowcasePickerProps) {
-  const [items, setItems] = React.useState<FactoryShowcase[]>([]);
-  const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'product' | 'promotion'>('all');
   const [draft, setDraft] = React.useState<number[]>([]);
 
-  React.useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    void showcasesApi
-      .listByFactory(factoryId)
-      .then((rows) => {
-        if (cancelled) return;
-        const list = (Array.isArray(rows) ? rows : [])
-          .map((r) => normShowcase((r ?? {}) as Record<string, unknown>))
-          .filter((s) => s.contentType === 'product' || s.contentType === 'promotion');
-        setItems(list);
-      })
-      .catch(() => {
-        if (!cancelled) setItems([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [factoryId]);
+  const { data: items = [], loading } = useApiCall(
+    async () => {
+      const rows = await showcasesApi.listByFactory(factoryId);
+      return (Array.isArray(rows) ? rows : [])
+        .map((r) => normShowcase((r ?? {}) as Record<string, unknown>))
+        .filter((s) => s.contentType === 'product' || s.contentType === 'promotion');
+    },
+    [factoryId],
+    { initialData: [] as FactoryShowcase[] },
+  );
 
   const selected = React.useMemo(() => {
     const set = new Set<number>();
@@ -130,7 +118,7 @@ export function RelatedShowcasePicker({
               >
                 <div className='w-9 h-9 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 shrink-0'>
                   {item.image ? (
-                    <img src={item.image} alt='' className='w-full h-full object-cover' />
+                    <Image src={item.image} alt='' className='w-full h-full object-cover' />
                   ) : null}
                 </div>
                 <div className='min-w-0 flex-1'>
@@ -240,7 +228,7 @@ export function RelatedShowcasePicker({
                         />
                         <div className='w-10 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 shrink-0'>
                           {item.image ? (
-                            <img src={item.image} alt='' className='w-full h-full object-cover' />
+                            <Image src={item.image} alt='' className='w-full h-full object-cover' />
                           ) : null}
                         </div>
                         <div className='min-w-0'>

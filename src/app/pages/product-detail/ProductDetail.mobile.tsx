@@ -30,6 +30,7 @@ import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
 import { useFavorites } from '@/hooks/useFavorites';
 import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
+import { Image } from '@/components/ui/image';
 
 export function ProductDetailMobile() {
   const navigate = useNavigate();
@@ -183,7 +184,7 @@ export function ProductDetailMobile() {
                   className='shrink-0 w-14 h-14 rounded-md overflow-hidden border-2 transition-colors'
                   style={{ borderColor: active ? BRAND.orange : BRAND.border }}
                 >
-                  <img src={url} alt='' className='w-full h-full object-cover' />
+                  <Image src={url} alt='' className='w-full h-full object-cover' />
                 </Button>
               );
             })}

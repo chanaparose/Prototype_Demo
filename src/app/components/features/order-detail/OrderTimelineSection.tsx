@@ -4,6 +4,7 @@ import { formatDateTh } from '@/components/features/order-detail/utils';
 import { productionUpdatesApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Image } from '@/components/ui/image';
 
 export type TimelineMilestone = {
   id: string;
@@ -233,7 +234,7 @@ export function OrderTimelineSection({
                         className='mt-2 relative overflow-hidden rounded-xl'
                         style={{ width: '100%', height: 100 }}
                       >
-                        <img
+                        <Image
                           src={milestone.photo}
                           alt={milestone.title}
                           className='w-full h-full object-cover'

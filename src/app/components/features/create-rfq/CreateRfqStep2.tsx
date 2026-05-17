@@ -16,6 +16,7 @@ import type { Unit } from '@/components/features/create-rfq/types';
 import { mediaApi } from '@/services/api';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 import {
   Select,
   SelectContent,
@@ -160,7 +161,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
               key={idx}
               className='relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 group'
             >
-              <img src={url} alt={`อ้างอิง ${idx + 1}`} className='w-full h-full object-cover' />
+              <Image src={url} alt={`อ้างอิง ${idx + 1}`} className='w-full h-full object-cover' />
               <Button
                 variant='unstyled'
                 type='button'

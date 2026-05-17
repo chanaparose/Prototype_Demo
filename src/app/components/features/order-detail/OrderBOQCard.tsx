@@ -4,6 +4,7 @@ import { rfqsApi } from '@/services/api';
 import type { QuotationRow } from '@/types/rfq';
 import { formatCurrency } from '@/utils/formatting';
 import { CollapsibleCard, StatusBadge } from '@/shared/ui';
+import { Image } from '@/components/ui/image';
 
 interface Props {
   rfqId: number | string;
@@ -198,7 +199,7 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
             <div className='grid grid-cols-3 gap-2'>
               {imageUrls.map((url) => (
                 <div key={url} className='aspect-square rounded-xl overflow-hidden bg-gray-100'>
-                  <img src={url} alt='' className='w-full h-full object-cover' />
+                  <Image src={url} alt='' className='w-full h-full object-cover' />
                 </div>
               ))}
             </div>

@@ -4,6 +4,7 @@ import { DimensionInput } from '@/shared/ui/DimensionInput';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Image } from '@/components/ui/image';
 
 type Props = {
   draft: RFQDraft;
@@ -107,7 +108,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
                 className='relative aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-100'
               >
                 {!brokenImages[idx] ? (
-                  <img
+                  <Image
                     src={u}
                     alt={`reference-${idx + 1}`}
                     className='w-full h-full object-cover'

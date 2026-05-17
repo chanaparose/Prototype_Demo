@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, ChevronRight, Leaf, MapPin, ShoppingBag, Star } from 'lucide-react';
+import { ChevronRight, Leaf, MapPin, ShoppingBag, Star } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { ImageWithFallback } from '@/components/shared';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselDots,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 export type ExploreProductCarouselItem = {
   id: string;
@@ -19,8 +26,6 @@ export type ExploreProductCarouselItem = {
   minOrder?: number;
 };
 
-const CARD_W = 192;
-const VISIBLE_CARDS = 4;
 const AUTO_SCROLL_INTERVAL = 3500;
 
 type ExploreProductCarouselSectionProps = {
@@ -46,43 +51,9 @@ export function ExploreProductCarouselSection({
   const navigate = useNavigate();
   const isMaterial = theme === 'material';
   const hasItems = items.length > 0;
-  const [idx, setIdx] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const isHovered = useRef(false);
-  const totalDots = hasItems ? Math.max(1, items.length - VISIBLE_CARDS + 1) : 0;
-
-  const goTo = useCallback(
-    (next: number) => {
-      if (!hasItems || totalDots <= 0) return;
-      const clamped = Math.max(0, Math.min(next, totalDots - 1));
-      setIdx(clamped);
-      scrollRef.current?.scrollTo({ left: clamped * CARD_W, behavior: 'smooth' });
-    },
-    [hasItems, totalDots],
-  );
-
-  useEffect(() => {
-    if (!hasItems || totalDots <= 1) return;
-    const timer = setInterval(() => {
-      if (isHovered.current) return;
-      setIdx((prev) => {
-        const next = prev + 1 >= totalDots ? 0 : prev + 1;
-        scrollRef.current?.scrollTo({ left: next * CARD_W, behavior: 'smooth' });
-        return next;
-      });
-    }, AUTO_SCROLL_INTERVAL);
-    return () => clearInterval(timer);
-  }, [hasItems, totalDots]);
 
   return (
-    <section
-      onMouseEnter={() => {
-        isHovered.current = true;
-      }}
-      onMouseLeave={() => {
-        isHovered.current = false;
-      }}
-    >
+    <section>
       <div className='mt-[30px] flex items-center justify-between mb-2.5'>
         <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
           {isMaterial ? (
@@ -138,117 +109,81 @@ export function ExploreProductCarouselSection({
             </div>
           ) : (
             <>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => goTo(idx - 1)}
-                disabled={idx === 0}
-                className='absolute left-0 top-[calc(50%-28px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed'
+              <Carousel
+                options={{ align: 'start', containScroll: 'trimSnaps' }}
+                autoPlayMs={AUTO_SCROLL_INTERVAL}
               >
-                <ChevronLeft size={18} className='text-gray-600' />
-              </Button>
-
-              <div
-                ref={scrollRef}
-                className='flex gap-3 overflow-x-hidden pb-1'
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {items.map((product) => {
-                  const meta = getFactoryMeta?.(product.factoryId) ?? {
-                    location: '—',
-                    rating: 0,
-                    reviews: 0,
-                  };
-                  return (
-                    <div
-                      key={product.id}
-                      role='button'
-                      tabIndex={0}
-                      onClick={() => onItemClick?.(product.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onItemClick?.(product.id);
-                        }
-                      }}
-                      className='flex-shrink-0 w-[180px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
-                    >
-                      <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
-                        <ImageWithFallback
-                          src={product.img}
-                          alt={product.title}
-                          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                        />
-                        <span
-                          className='absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                          style={{
-                            backgroundColor: isMaterial
-                              ? 'var(--brand-teal-light)'
-                              : 'var(--brand-sky)',
+                <CarouselPrevious className='top-[calc(50%-28px)]' />
+                <CarouselContent className='gap-3 pb-1'>
+                  {items.map((product) => {
+                    const meta = getFactoryMeta?.(product.factoryId) ?? {
+                      location: '—',
+                      rating: 0,
+                      reviews: 0,
+                    };
+                    return (
+                      <CarouselItem key={product.id} className='basis-[180px]'>
+                        <div
+                          role='button'
+                          tabIndex={0}
+                          onClick={() => onItemClick?.(product.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              onItemClick?.(product.id);
+                            }
                           }}
+                          className='h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
                         >
-                          {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
-                        </span>
-                      </div>
-                      <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                          {product.title}
-                        </p>
-                        <div className='flex items-center gap-0.5 mt-0.5'>
-                          <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                          <span className='text-gray-500 text-[10px] truncate'>
-                            {meta.location || '—'}
-                          </span>
-                        </div>
-                        <div className='mt-auto pt-1 border-t border-gray-50'>
-                          <div className='flex items-center justify-between min-w-0'>
-                            <div className='flex items-center gap-0.5 min-w-0'>
-                              <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                              <span className='text-gray-700 text-[10px] font-semibold'>
-                                {meta.rating}
-                              </span>
-                              <span className='text-gray-400 text-[9px] truncate'>
-                                ({meta.reviews})
-                              </span>
-                            </div>
-                            <span className='text-gray-400 text-[8px] shrink-0'>
-                              ขั้นต่ำ {product.minOrder ?? 0}
+                          <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
+                            <ImageWithFallback
+                              src={product.img}
+                              alt={product.title}
+                              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+                            />
+                            <span
+                              className={`absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white ${
+                                isMaterial ? 'bg-brand-teal-light' : 'bg-brand-sky'
+                              }`}
+                            >
+                              {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                             </span>
                           </div>
+                          <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                            <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
+                              {product.title}
+                            </p>
+                            <div className='flex items-center gap-0.5 mt-0.5'>
+                              <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                              <span className='text-gray-500 text-[10px] truncate'>
+                                {meta.location || '—'}
+                              </span>
+                            </div>
+                            <div className='mt-auto pt-1 border-t border-gray-50'>
+                              <div className='flex items-center justify-between min-w-0'>
+                                <div className='flex items-center gap-0.5 min-w-0'>
+                                  <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                                  <span className='text-gray-700 text-[10px] font-semibold'>
+                                    {meta.rating}
+                                  </span>
+                                  <span className='text-gray-400 text-[9px] truncate'>
+                                    ({meta.reviews})
+                                  </span>
+                                </div>
+                                <span className='text-gray-400 text-[8px] shrink-0'>
+                                  ขั้นต่ำ {product.minOrder ?? 0}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => goTo(idx + 1)}
-                disabled={idx >= totalDots - 1}
-                className='absolute right-0 top-[calc(50%-28px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed'
-              >
-                <ChevronRight size={18} className='text-gray-600' />
-              </Button>
-
-              {totalDots > 1 && (
-                <div className='flex justify-center gap-1.5 mt-2.5'>
-                  {Array.from({ length: totalDots }).map((_, i) => (
-                    <Button
-                      variant='unstyled'
-                      key={i}
-                      type='button'
-                      onClick={() => goTo(i)}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === idx
-                          ? 'w-6 bg-brand-orange'
-                          : 'w-1.5 bg-gray-300 hover:bg-brand-orange/50'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                <CarouselNext className='top-[calc(50%-28px)]' />
+                <CarouselDots className='mt-2.5' />
+              </Carousel>
             </>
           )}
         </div>

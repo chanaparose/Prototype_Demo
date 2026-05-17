@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 
 type CropPoint = { x: number; y: number };
 type Size = { width: number; height: number };
@@ -26,9 +27,8 @@ function fileExtFromType(type: string): string {
 }
 
 async function loadImageFromUrl(url: string): Promise<HTMLImageElement> {
-  // <img> at 0×0 size (i.e. invisible).
   return new Promise((resolve, reject) => {
-    const img = new Image();
+    const img = new window.Image();
     img.decoding = 'async';
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error('โหลดรูปไม่สำเร็จ'));
@@ -281,7 +281,7 @@ export function ImageCropModal({
             }}
           >
             {sourceUrl ? (
-              <img
+              <Image
                 src={sourceUrl}
                 alt=''
                 draggable={false}
