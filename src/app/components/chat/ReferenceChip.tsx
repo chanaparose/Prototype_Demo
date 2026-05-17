@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import type { ChatReference } from '../../utils/chatContract';
+import type { ChatReference } from '@/utils/chatContract';
 
 type Props = {
   reference: ChatReference;
@@ -46,7 +46,11 @@ function labelFor(ref: ChatReference, titleFallback?: string): string {
 
 export function ReferenceChip({ reference, titleFallback }: Props) {
   const rt = reference.type;
-  if (!['PD', 'PM', 'ID', 'RQ', 'OD'].includes(rt) || !Number.isFinite(reference.id) || reference.id <= 0) {
+  if (
+    !['PD', 'PM', 'ID', 'RQ', 'OD'].includes(rt) ||
+    !Number.isFinite(reference.id) ||
+    reference.id <= 0
+  ) {
     return null;
   }
   const to = hrefFor(reference);
@@ -54,7 +58,7 @@ export function ReferenceChip({ reference, titleFallback }: Props) {
   return (
     <Link
       to={to}
-      className="mt-1 inline-flex max-w-full items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1 text-[11px] font-semibold text-violet-900 hover:bg-violet-100 truncate"
+      className='mt-1 inline-flex max-w-full items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1 text-[11px] font-semibold text-violet-900 hover:bg-violet-100 truncate'
     >
       {label}
     </Link>

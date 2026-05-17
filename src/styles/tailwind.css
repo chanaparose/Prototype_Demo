@@ -14,8 +14,10 @@
 }
 
 @layer base {
-  html, body, #root {
+  html,
+  body,
+  #root {
     height: 100%;
-    background: #E8E6F0;
+    background: #e8e6f0;
   }
 }

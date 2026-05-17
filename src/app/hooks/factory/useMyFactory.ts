@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { factoriesApi } from '../../services/api';
+import { factoriesApi } from '@/services/api';
 
 export function useMyFactory() {
   return useQuery({

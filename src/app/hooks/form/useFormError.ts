@@ -35,13 +35,19 @@ export function useFormError(initialErrors: FieldErrors = {}): UseFormErrorRetur
     setErrors({});
   }, []);
 
-  const hasError = useCallback((field: string) => {
-    return !!errors[field];
-  }, [errors]);
+  const hasError = useCallback(
+    (field: string) => {
+      return !!errors[field];
+    },
+    [errors],
+  );
 
-  const getError = useCallback((field: string) => {
-    return errors[field];
-  }, [errors]);
+  const getError = useCallback(
+    (field: string) => {
+      return errors[field];
+    },
+    [errors],
+  );
 
   return {
     errors,

@@ -1,11 +1,6 @@
-import type { MergedProductionStep } from './types';
+import type { MergedProductionStep } from '@/components/features/production/types';
 
-export type StepDerivedState =
-  | 'completed'
-  | 'active'
-  | 'upcoming'
-  | 'blocked'
-  | 'rejected';
+export type StepDerivedState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
 const ACTIVE_ORDER_STATUSES = new Set(['PR', 'QC', 'SH']);
 const BLOCKING_ORDER_STATUSES = new Set(['PP', 'PE', 'WF']);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { Button } from '../../../../components/ui/button';
-import type { TabId } from '../types';
+import { Button } from '@/components/ui/button';
+import type { TabId } from '@/pages/factory-portal/factory-orders/types';
 
 const TAB_LABEL: Record<TabId, string> = {
   all: 'ทั้งหมด',
@@ -24,16 +24,20 @@ export function FactoryOrdersEmptyState({
 }) {
   if (!hasAnyRows) {
     return (
-      <div className="text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 p-6 text-center lg:col-span-2">
-        <p className="text-base text-gray-600">ยังไม่มีออเดอร์</p>
-        <Link to="/factory/rfq-board" className="text-violet-700 underline">ไปหน้า RFQ Board</Link>
+      <div className='text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 p-6 text-center lg:col-span-2'>
+        <p className='text-base text-gray-600'>ยังไม่มีออเดอร์</p>
+        <Link to='/factory/rfq-board' className='text-violet-700 underline'>
+          ไปหน้า RFQ Board
+        </Link>
       </div>
     );
   }
   return (
-    <div className="text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 p-6 text-center lg:col-span-2">
+    <div className='text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 p-6 text-center lg:col-span-2'>
       <p>ไม่มีออเดอร์ในหมวด {TAB_LABEL[tabId]}</p>
-      <Button variant="link" className="text-violet-700" onClick={onResetTab}>ดูทั้งหมด</Button>
+      <Button variant='link' className='text-violet-700' onClick={onResetTab}>
+        ดูทั้งหมด
+      </Button>
     </div>
   );
 }

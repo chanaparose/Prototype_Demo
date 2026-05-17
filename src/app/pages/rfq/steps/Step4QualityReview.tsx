@@ -1,6 +1,6 @@
 import React from 'react';
-import { CertificationChips } from '../../../shared/ui/CertificationChips';
-import type { RFQDraft } from '../useRFQDraft';
+import { CertificationChips } from '@/shared/ui/CertificationChips';
+import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 
 type Props = {
   draft: RFQDraft;
@@ -11,7 +11,7 @@ const CERTS = ['ISO 9001', 'FDA', 'RoHS', 'GMP', 'CE', 'HACCP'];
 
 export function Step4QualityReview({ draft, setDraft }: Props) {
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <CertificationChips
         options={CERTS}
         value={draft.certifications_required}
@@ -32,15 +32,13 @@ export function Step4QualityReview({ draft, setDraft }: Props) {
               | undefined,
           })
         }
-        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       >
-        <option value="">รูปแบบตรวจคุณภาพ</option>
-        <option value="self">ตรวจสอบโดยโรงงาน</option>
-        <option value="third_party">ตรวจสอบโดยหน่วยงานภายนอก</option>
-        <option value="buyer_onsite">ผู้ซื้อเข้าตรวจที่โรงงาน</option>
+        <option value=''>รูปแบบตรวจคุณภาพ</option>
+        <option value='self'>ตรวจสอบโดยโรงงาน</option>
+        <option value='third_party'>ตรวจสอบโดยหน่วยงานภายนอก</option>
+        <option value='buyer_onsite'>ผู้ซื้อเข้าตรวจที่โรงงาน</option>
       </select>
-
-      
     </div>
   );
 }

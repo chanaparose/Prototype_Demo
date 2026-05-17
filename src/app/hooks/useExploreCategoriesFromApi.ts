@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import type { ExploreCategoryItem } from '../utils/exploreCategoriesFromApi';
-import { fetchExploreCategoriesListOnly } from '../utils/exploreCategoriesFromApi';
+import type { ExploreCategoryItem } from '@/utils/exploreCategoriesFromApi';
+import { fetchExploreCategoriesListOnly } from '@/utils/exploreCategoriesFromApi';
 
 export type ExploreCategoriesApiState = {
   merged: ExploreCategoryItem[];

@@ -1,4 +1,4 @@
-export { FactoryIdeasCategoryDropdown } from './FactoryIdeasCategoryDropdown';
+export { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
 export {
   factoryIdeasContentTypeBadge,
   factoryIdeasContentTypeLabel,
@@ -6,5 +6,5 @@ export {
   factoryIdeasTheme,
   getFactoryIdeaDetailPath,
   normalizeFactoryIdeaFactory,
-} from './factoryIdeasTheme';
-export type { FactoryIdeasContentType } from './factoryIdeasTheme';
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
+export type { FactoryIdeasContentType } from '@/components/features/factory-ideas/factoryIdeasTheme';

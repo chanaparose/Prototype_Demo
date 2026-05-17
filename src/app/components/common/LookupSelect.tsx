@@ -1,6 +1,6 @@
 import React from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 interface LookupSelectProps<Option> {
   label: string;
@@ -33,13 +33,13 @@ export function LookupSelect<Option>({
 
   return (
     <label className={`block ${className}`}>
-      <span className="text-xs text-gray-500">
+      <span className='text-xs text-gray-500'>
         {label}
         {required ? ' *' : ''}
       </span>
-      <div className="relative">
+      <div className='relative'>
         <select
-          className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60"
+          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60'
           value={selected}
           disabled={disabled || isLoading}
           onChange={(e) => {
@@ -47,7 +47,7 @@ export function LookupSelect<Option>({
             onChange(v ? Number(v) : null);
           }}
         >
-          <option value="">{isLoading ? 'กำลังโหลด…' : placeholder}</option>
+          <option value=''>{isLoading ? 'กำลังโหลด…' : placeholder}</option>
           {opts.map((o) => {
             const id = getId(o);
             return (
@@ -60,10 +60,10 @@ export function LookupSelect<Option>({
         {isError ? (
           <Button
             onClick={() => void refetch()}
-            variant="link"
-            size="xs"
-            className="absolute right-2 top-2 text-xs text-red-600 underline"
-            title="โหลดใหม่"
+            variant='link'
+            size='xs'
+            className='absolute right-2 top-2 text-xs text-red-600 underline'
+            title='โหลดใหม่'
           >
             โหลดใหม่
           </Button>

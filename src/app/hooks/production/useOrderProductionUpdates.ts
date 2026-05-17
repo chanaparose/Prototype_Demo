@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { ordersApi } from '../../services/api';
+import { ordersApi } from '@/services/api';
 import {
   parseLockContextFromApi,
   parseStepTemplates,
   parseUpdateRow,
   type ProductionUpdatesBundle,
-} from '../../components/features/production/types';
+} from '@/components/features/production/types';
 
 export function useOrderProductionUpdates(orderId: string | undefined) {
   return useQuery({

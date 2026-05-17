@@ -3,8 +3,8 @@
  * Handles requests, responses, errors, and timeout
  */
 
-import { getTourMockResponse } from '../../utils/tourMocks';
-import { getToken, removeToken } from './tokenManager';
+import { getTourMockResponse } from '@/utils/tourMocks';
+import { getToken, removeToken } from '@/services/api/tokenManager';
 
 export type RequestOptions = {
   method?: string;
@@ -110,7 +110,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     clearTimeout(timer);
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw new Error(
-        'เซิร์ฟเวอร์ตอบกลับช้าเกินไป (timeout) — Render free tier อาจกำลัง cold start กรุณาลองใหม่อีกครั้ง'
+        'เซิร์ฟเวอร์ตอบกลับช้าเกินไป (timeout) — Render free tier อาจกำลัง cold start กรุณาลองใหม่อีกครั้ง',
       );
     }
     throw new Error('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ — กรุณาตรวจสอบ internet หรือลองใหม่อีกครั้ง');
@@ -141,7 +141,9 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
         removeToken();
         window.location.href = '/login';
       } else if (getToken()) {
-        console.warn('[api] transient 401 on /frontend/me right after login; keep token and retry later');
+        console.warn(
+          '[api] transient 401 on /frontend/me right after login; keep token and retry later',
+        );
       }
     }
 
@@ -153,7 +155,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     throw new ApiHttpError(
       extractErrorMessage(errorData, `API Error: ${res.status} ${res.statusText}`),
       res.status,
-      errorData
+      errorData,
     );
   }
 
@@ -166,8 +168,7 @@ export const httpClient = {
   get: <T>(endpoint: string) => request<T>(endpoint),
   post: <T>(endpoint: string, body?: unknown, headers?: Record<string, string>) =>
     request<T>(endpoint, { method: 'POST', body, headers }),
-  patch: <T>(endpoint: string, body?: unknown) =>
-    request<T>(endpoint, { method: 'PATCH', body }),
+  patch: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PATCH', body }),
   put: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PUT', body }),
   delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
   postForm: async <T>(endpoint: string, formData: FormData) => {
@@ -194,7 +195,7 @@ export const httpClient = {
       throw new ApiHttpError(
         extractErrorMessage(errorData, `API Error: ${res.status} ${res.statusText}`),
         res.status,
-        errorData
+        errorData,
       );
     }
 

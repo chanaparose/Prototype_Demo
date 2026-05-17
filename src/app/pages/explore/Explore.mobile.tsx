@@ -1,7 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf, MapPin, Star, Sparkles } from 'lucide-react';
-import { Button } from '../../components/ui/button';
+import {
+  Search,
+  SlidersHorizontal,
+  Plus,
+  ShoppingBag,
+  ChevronRight,
+  Tag,
+  Leaf,
+  MapPin,
+  Star,
+  Sparkles,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   ExplorePromoCarousel,
   ExploreCategories,
@@ -9,15 +20,20 @@ import {
   ExploreIdeaArticles,
   ExploreFooter,
   HowToOrderSection,
-} from '../../components/features/explore';
-import { ImageWithFallback } from '../../components/shared';
-import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
-import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
-import type { IdeaArticleItem } from '../../components/features/explore/ExploreIdeaArticles';
+} from '@/components/features/explore';
+import { ImageWithFallback } from '@/components/shared';
+import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
+import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
+import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 
 type ShowcaseItem = {
-  id: string; title: string; excerpt: string; image: string;
-  factoryName: string; factoryId: string; minOrder: number;
+  id: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  factoryName: string;
+  factoryId: string;
+  minOrder: number;
   contentType: string;
   category?: string;
   subCategoryName?: string;
@@ -68,39 +84,40 @@ export function ExploreMobile({
   const hasMaterialShowcases = materialShowcases.length > 0;
 
   return (
-    <div className="md:hidden pt-3 pb-2 space-y-3">
+    <div className='md:hidden pt-3 pb-2 space-y-3'>
       {/* Hero Banner — matches desktop purple gradient */}
-      <div className="mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md">
+      <div className='mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md'>
         <ImageWithFallback
-          src="/assets/tryly-banner-final.png"
-          alt="Tryly banner"
-          className="block h-full w-full object-cover object-[center_calc(50%)]"
+          src='/assets/tryly-banner-final.png'
+          alt='Tryly banner'
+          className='block h-full w-full object-cover object-[center_calc(50%)]'
         />
       </div>
 
       {/* Search Bar */}
-      <div data-tour="search" className="px-4 flex gap-2">
-        <div className="flex-1 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100">
-          <Search size={16} className="text-gray-400 shrink-0" />
+      <div data-tour='search' className='px-4 flex gap-2'>
+        <div className='flex-1 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100'>
+          <Search size={16} className='text-gray-400 shrink-0' />
           <input
-            type="text"
+            type='text'
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            placeholder="ค้นหาโรงงาน ประเภทงาน หรือ วัสดุ..."
-            className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400"
+            placeholder='ค้นหาโรงงาน ประเภทงาน หรือ วัสดุ...'
+            className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
           />
         </div>
-        <Button variant="unstyled"
-          type="button"
-          className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center shrink-0 hover:border-[#A656A0]/30 transition-colors"
+        <Button
+          variant='unstyled'
+          type='button'
+          className='w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center shrink-0 hover:border-[#A656A0]/30 transition-colors'
         >
-          <SlidersHorizontal size={16} className="text-[#A656A0]" />
+          <SlidersHorizontal size={16} className='text-[#A656A0]' />
         </Button>
       </div>
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
-      <div data-tour="categories" className="mt-[20px]">
+      <div data-tour='categories' className='mt-[20px]'>
         <ExploreCategories
           categories={categories}
           mergedFromApi={exploreCategoriesMerged}
@@ -111,15 +128,16 @@ export function ExploreMobile({
       </div>
 
       {/* สินค้าแนะนำ (Mobile) — แบนเนอร์ PET SHOP แสดงเสมอ; grid เมื่อมีข้อมูล */}
-      <div data-tour="products" className="mb-3">
-        <div className="mt-[25px] flex items-center justify-between px-4 mb-2">
-          <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-            <ShoppingBag size={15} className="text-[#F28A2E]" /> สินค้าแนะนำ
+      <div data-tour='products' className='mb-3'>
+        <div className='mt-[25px] flex items-center justify-between px-4 mb-2'>
+          <h3 className='text-base font-bold text-[#292259] flex items-center gap-1.5'>
+            <ShoppingBag size={15} className='text-[#F28A2E]' /> สินค้าแนะนำ
           </h3>
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => navigate('/factory-ideas?type=product')}
-            className="text-[#A656A0] text-xs font-medium flex items-center gap-0.5"
+            className='text-[#A656A0] text-xs font-medium flex items-center gap-0.5'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
           </Button>
@@ -128,13 +146,13 @@ export function ExploreMobile({
         {/* Cards — full-width horizontal scroll (เริ่มที่ pl-4 ซ้าย, spacer ขวา) */}
         {hasProductShowcases ? (
           <div
-            className="flex gap-2 overflow-x-auto pb-2 pl-3"
+            className='flex gap-2 overflow-x-auto pb-2 pl-3'
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {productShowcases.map((item) => (
               <div
                 key={item.id}
-                role="button"
+                role='button'
                 tabIndex={0}
                 onClick={() =>
                   navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
@@ -145,55 +163,75 @@ export function ExploreMobile({
                     navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                   }
                 }}
-                className="flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                className='flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
               >
-                <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
+                <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
                   <ImageWithFallback
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                   />
-                  <div className="absolute top-1 left-1 bg-[#5185D4] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide">
+                  <div className='absolute top-1 left-1 bg-[#5185D4] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
                     สินค้า
                   </div>
                 </div>
-                <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
-                  <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</p>
-                  <div className="flex items-center gap-0.5 mt-0.5">
-                    <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                    <span className="text-gray-500 text-[10px] truncate">
-                      {((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.location ?? '').trim() || '—'}
+                <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                    {item.title}
+                  </p>
+                  <div className='flex items-center gap-0.5 mt-0.5'>
+                    <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                    <span className='text-gray-500 text-[10px] truncate'>
+                      {(
+                        (factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))
+                          ?.location ?? ''
+                      ).trim() || '—'}
                     </span>
                   </div>
-                  <div className="mt-auto pt-1 border-t border-gray-50">
-                    <div className="flex items-center justify-between min-w-0">
-                      <div className="flex items-center gap-0.5 min-w-0">
-                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
-                        <span className="text-gray-700 text-[10px] font-semibold">
-                          {Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.rating ?? 0)}
+                  <div className='mt-auto pt-1 border-t border-gray-50'>
+                    <div className='flex items-center justify-between min-w-0'>
+                      <div className='flex items-center gap-0.5 min-w-0'>
+                        <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                        <span className='text-gray-700 text-[10px] font-semibold'>
+                          {Number(
+                            (factories ?? []).find(
+                              (f) => String(f.id) === String(item.factoryId ?? ''),
+                            )?.rating ?? 0,
+                          )}
                         </span>
-                        <span className="text-gray-400 text-[9px] truncate">
-                          ({Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.reviews ?? 0)})
+                        <span className='text-gray-400 text-[9px] truncate'>
+                          (
+                          {Number(
+                            (factories ?? []).find(
+                              (f) => String(f.id) === String(item.factoryId ?? ''),
+                            )?.reviews ?? 0,
+                          )}
+                          )
                         </span>
                       </div>
-                      <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+                      <span className='text-gray-400 text-[8px] shrink-0'>
+                        ขั้นต่ำ {item.minOrder ?? 0}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
             {/* trailing spacer — การ์ดสุดท้ายไม่โดนตัด */}
-            <div className="flex-shrink-0 w-3" aria-hidden />
+            <div className='flex-shrink-0 w-3' aria-hidden />
           </div>
         ) : (
-          <div className="px-4">
-            <div className="rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center">
-              <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
-              <p className="mt-1 text-xs text-gray-400">ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง</p>
-              <Button variant="unstyled"
-                type="button"
+          <div className='px-4'>
+            <div className='rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center'>
+              <p className='text-sm font-medium text-gray-600'>ยังไม่มีสินค้าแนะนำในขณะนี้</p>
+              <p className='mt-1 text-xs text-gray-400'>
+                ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง
+              </p>
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={() => navigate('/factory-ideas?type=product')}
-                className="mt-3 w-full rounded-full border border-[#A656A0]/40 bg-white py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
+                className='mt-3 w-full rounded-full border border-[#A656A0]/40 bg-white py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors'
               >
                 ดูสินค้าแนะนำ
               </Button>
@@ -203,15 +241,16 @@ export function ExploreMobile({
       </div>
 
       {/* วัตถุดิบแนะนำ (Mobile) */}
-      <div className="mb-3">
-        <div className="mt-[20px] flex items-center justify-between px-4 mb-2">
-          <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-            <Leaf size={15} className="text-[#059669]" /> วัตถุดิบแนะนำ
+      <div className='mb-3'>
+        <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
+          <h3 className='text-base font-bold text-[#292259] flex items-center gap-1.5'>
+            <Leaf size={15} className='text-[#059669]' /> วัตถุดิบแนะนำ
           </h3>
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => navigate('/factory-ideas?type=material')}
-            className="text-[#059669] text-xs font-medium flex items-center gap-0.5"
+            className='text-[#059669] text-xs font-medium flex items-center gap-0.5'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
           </Button>
@@ -220,69 +259,89 @@ export function ExploreMobile({
         {/* Cards — horizontal scroll */}
         {hasMaterialShowcases ? (
           <div
-            className="flex gap-2 overflow-x-auto pb-2 pl-3"
+            className='flex gap-2 overflow-x-auto pb-2 pl-3'
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {materialShowcases.map((item) => (
               <div
                 key={item.id}
-                role="button"
+                role='button'
                 tabIndex={0}
-                onClick={() => navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)}
+                onClick={() =>
+                  navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`)
+                }
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     navigate(`/product-detail?showcase_id=${encodeURIComponent(item.id)}`);
                   }
                 }}
-                className="flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
+                className='flex-shrink-0 w-[155px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
               >
-                <div className="aspect-[4/3] relative overflow-hidden bg-gray-50">
+                <div className='aspect-[4/3] relative overflow-hidden bg-gray-50'>
                   <ImageWithFallback
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                   />
-                  <div className="absolute top-1.5 left-1.5 bg-[#059669] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide">
+                  <div className='absolute top-1.5 left-1.5 bg-[#059669] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide'>
                     วัตถุดิบ
                   </div>
                 </div>
-                <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
-                  <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</p>
-                  <div className="flex items-center gap-0.5 mt-0.5">
-                    <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                    <span className="text-gray-500 text-[10px] truncate">
-                      {((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.location ?? '').trim() || '—'}
+                <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                    {item.title}
+                  </p>
+                  <div className='flex items-center gap-0.5 mt-0.5'>
+                    <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                    <span className='text-gray-500 text-[10px] truncate'>
+                      {(
+                        (factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))
+                          ?.location ?? ''
+                      ).trim() || '—'}
                     </span>
                   </div>
-                  <div className="mt-auto pt-1 border-t border-gray-50">
-                    <div className="flex items-center justify-between min-w-0">
-                      <div className="flex items-center gap-0.5 min-w-0">
-                        <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
-                        <span className="text-gray-700 text-[10px] font-semibold">
-                          {Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.rating ?? 0)}
+                  <div className='mt-auto pt-1 border-t border-gray-50'>
+                    <div className='flex items-center justify-between min-w-0'>
+                      <div className='flex items-center gap-0.5 min-w-0'>
+                        <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                        <span className='text-gray-700 text-[10px] font-semibold'>
+                          {Number(
+                            (factories ?? []).find(
+                              (f) => String(f.id) === String(item.factoryId ?? ''),
+                            )?.rating ?? 0,
+                          )}
                         </span>
-                        <span className="text-gray-400 text-[9px] truncate">
-                          ({Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.reviews ?? 0)})
+                        <span className='text-gray-400 text-[9px] truncate'>
+                          (
+                          {Number(
+                            (factories ?? []).find(
+                              (f) => String(f.id) === String(item.factoryId ?? ''),
+                            )?.reviews ?? 0,
+                          )}
+                          )
                         </span>
                       </div>
-                      <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+                      <span className='text-gray-400 text-[8px] shrink-0'>
+                        ขั้นต่ำ {item.minOrder ?? 0}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
-            <div className="flex-shrink-0 w-3" aria-hidden />
+            <div className='flex-shrink-0 w-3' aria-hidden />
           </div>
         ) : (
-          <div className="px-4">
-            <div className="rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center">
-              <p className="text-sm font-medium text-gray-600">ยังไม่มีวัตถุดิบแนะนำในขณะนี้</p>
-              <p className="mt-1 text-xs text-gray-400">ดูข้อมูลวัตถุดิบได้จากปุ่มด้านล่าง</p>
-              <Button variant="unstyled"
-                type="button"
+          <div className='px-4'>
+            <div className='rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center'>
+              <p className='text-sm font-medium text-gray-600'>ยังไม่มีวัตถุดิบแนะนำในขณะนี้</p>
+              <p className='mt-1 text-xs text-gray-400'>ดูข้อมูลวัตถุดิบได้จากปุ่มด้านล่าง</p>
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={() => navigate('/factory-ideas?type=material')}
-                className="mt-3 w-full rounded-full border border-[#059669]/40 bg-white py-2 text-sm font-medium text-[#059669] hover:bg-emerald-50 transition-colors"
+                className='mt-3 w-full rounded-full border border-[#059669]/40 bg-white py-2 text-sm font-medium text-[#059669] hover:bg-emerald-50 transition-colors'
               >
                 ดูวัตถุดิบแนะนำ
               </Button>
@@ -291,21 +350,19 @@ export function ExploreMobile({
         )}
       </div>
 
-
       {/* How to Order */}
-      <HowToOrderSection className="mx-4" />
+      <HowToOrderSection className='mx-4' />
 
-
-      <div className="mt-[20px]">
+      <div className='mt-[20px]'>
         <ExploreFactoryShowcase
           factories={(factories ?? []).slice(0, 8)}
           onFactoryClick={(id) => navigate(`/factories/${id}`)}
           onSeeAll={() => navigate('/factory-ideas?type=factory')}
-          variant="mobile"
+          variant='mobile'
         />
       </div>
 
-      <div className="mt-[20px]">
+      <div className='mt-[20px]'>
         <ExploreIdeaArticles
           articles={(ideaArticles ?? []).slice(0, 3)}
           onSeeAll={() => navigate('/factory-ideas?type=idea')}
@@ -314,69 +371,88 @@ export function ExploreMobile({
       </div>
 
       {/* โปรโมชันแนะนำ — แบนเนอร์ส้ม (เดียวกับ desktop) แสดงเสมอ; การ์ดเมื่อมีข้อมูล */}
-      <div className="mb-3">
-        <div className="mt-[20px] flex items-center justify-between px-4 mb-2">
-          <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-            <Tag size={15} className="text-[#F27830]" /> โปรโมชันแนะนำ
+      <div className='mb-3'>
+        <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
+          <h3 className='text-base font-bold text-[#292259] flex items-center gap-1.5'>
+            <Tag size={15} className='text-[#F27830]' /> โปรโมชันแนะนำ
           </h3>
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => navigate('/factory-ideas?type=promotion')}
-            className="text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center gap-0.5 transition-colors"
+            className='text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center gap-0.5 transition-colors'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
           </Button>
         </div>
-        <div className="px-3 space-y-2">
+        <div className='px-3 space-y-2'>
           {hasPromoShowcases ? (
             <div
-              className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+              className='flex gap-2 overflow-x-auto pb-2 scrollbar-hide'
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {promoShowcases.map((item) => (
                 <div
                   key={item.id}
-                  role="button"
+                  role='button'
                   tabIndex={0}
-                    onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        navigate(`/factory-ideas/promotions/${item.id}`);
-                      }
-                    }}
-                  className="flex-shrink-0 w-[155px] bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer"
+                  onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/factory-ideas/promotions/${item.id}`);
+                    }
+                  }}
+                  className='flex-shrink-0 w-[155px] bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer'
                 >
-                  <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
+                  <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
                     <ImageWithFallback
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                     />
-                    <div className="absolute top-1.5 left-1.5 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide">
+                    <div className='absolute top-1.5 left-1.5 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide'>
                       โปรโมชัน
                     </div>
                   </div>
-                  <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
-                    <h4 className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">{item.title}</h4>
-                    <div className="flex items-center gap-0.5 mt-0.5">
-                      <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                      <span className="text-gray-500 text-[10px] truncate">
-                        {((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.location ?? '').trim() || '—'}
+                  <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                    <h4 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                      {item.title}
+                    </h4>
+                    <div className='flex items-center gap-0.5 mt-0.5'>
+                      <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                      <span className='text-gray-500 text-[10px] truncate'>
+                        {(
+                          (factories ?? []).find(
+                            (f) => String(f.id) === String(item.factoryId ?? ''),
+                          )?.location ?? ''
+                        ).trim() || '—'}
                       </span>
                     </div>
-                    <div className="mt-auto pt-1 border-t border-gray-50">
-                      <div className="flex items-center justify-between min-w-0">
-                        <div className="flex items-center gap-0.5 min-w-0">
-                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
-                          <span className="text-gray-700 text-[10px] font-semibold">
-                            {Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.rating ?? 0)}
+                    <div className='mt-auto pt-1 border-t border-gray-50'>
+                      <div className='flex items-center justify-between min-w-0'>
+                        <div className='flex items-center gap-0.5 min-w-0'>
+                          <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                          <span className='text-gray-700 text-[10px] font-semibold'>
+                            {Number(
+                              (factories ?? []).find(
+                                (f) => String(f.id) === String(item.factoryId ?? ''),
+                              )?.rating ?? 0,
+                            )}
                           </span>
-                          <span className="text-gray-400 text-[9px] truncate">
-                            ({Number((factories ?? []).find((f) => String(f.id) === String(item.factoryId ?? ''))?.reviews ?? 0)})
+                          <span className='text-gray-400 text-[9px] truncate'>
+                            (
+                            {Number(
+                              (factories ?? []).find(
+                                (f) => String(f.id) === String(item.factoryId ?? ''),
+                              )?.reviews ?? 0,
+                            )}
+                            )
                           </span>
                         </div>
-                        <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {item.minOrder ?? 0}</span>
+                        <span className='text-gray-400 text-[8px] shrink-0'>
+                          ขั้นต่ำ {item.minOrder ?? 0}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -384,13 +460,14 @@ export function ExploreMobile({
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-[#F28A2E]/25 bg-gradient-to-br from-orange-50/50 to-white px-4 py-5 text-center">
-              <p className="text-sm font-medium text-gray-600">ยังไม่มีโปรโมชันแนะนำในขณะนี้</p>
-              <p className="mt-1 text-xs text-gray-400">ดูไอเดียโปรโมชันได้จากปุ่มด้านล่าง</p>
-              <Button variant="unstyled"
-                type="button"
+            <div className='rounded-xl border border-dashed border-[#F28A2E]/25 bg-gradient-to-br from-orange-50/50 to-white px-4 py-5 text-center'>
+              <p className='text-sm font-medium text-gray-600'>ยังไม่มีโปรโมชันแนะนำในขณะนี้</p>
+              <p className='mt-1 text-xs text-gray-400'>ดูไอเดียโปรโมชันได้จากปุ่มด้านล่าง</p>
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={() => navigate('/factory-ideas?type=promotion')}
-                className="mt-3 w-full rounded-full border border-[#F28A2E]/40 bg-white py-2 text-sm font-medium text-[#F27830] hover:bg-orange-50/80 transition-colors"
+                className='mt-3 w-full rounded-full border border-[#F28A2E]/40 bg-white py-2 text-sm font-medium text-[#F27830] hover:bg-orange-50/80 transition-colors'
               >
                 ดูไอเดียโปรโมชัน
               </Button>
@@ -400,30 +477,37 @@ export function ExploreMobile({
       </div>
 
       {/* Registration CTA (Mobile) — 4:3 cover image with overlaid button */}
-      <div className="mx-auto w-[78%] max-w-xs relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-[#A238FF]/30 mt-8">
+      <div className='mx-auto w-[78%] max-w-xs relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-[#A238FF]/30 mt-8'>
         <img
-          src="assets/IMG_7664.jpg"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          src='assets/IMG_7664.jpg'
+          alt=''
+          className='absolute inset-0 w-full h-full object-cover'
         />
         {/* Bottom soft pastel blue-grey wash for button readability */}
-        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-300/80 via-slate-200/30 to-transparent pointer-events-none" />
+        <div className='absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-300/80 via-slate-200/30 to-transparent pointer-events-none' />
 
-        <div className="absolute inset-x-0 bottom-0 z-10 p-3.5">
-          <Button variant="unstyled"
-            type="button"
+        <div className='absolute inset-x-0 bottom-0 z-10 p-3.5'>
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => navigate('/register/factory')}
-            className="group relative w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm text-white whitespace-nowrap
+            className='group relative w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm text-white whitespace-nowrap
                        bg-gradient-to-r from-[#A238FF] via-[#8B2BE2] to-[#6D28D9]
                        shadow-lg shadow-[#A238FF]/40
                        ring-1 ring-white/20
                        transition-all duration-200 ease-out
                        hover:shadow-xl hover:shadow-[#A238FF]/60 hover:brightness-110
-                       active:scale-[0.97]"
+                       active:scale-[0.97]'
           >
-            <Sparkles size={14} className="text-white/90 group-hover:rotate-12 transition-transform duration-200" />
+            <Sparkles
+              size={14}
+              className='text-white/90 group-hover:rotate-12 transition-transform duration-200'
+            />
             <span>สมัครเลย</span>
-            <ChevronRight size={14} className="text-white/90 group-hover:translate-x-1 transition-transform duration-200" />
+            <ChevronRight
+              size={14}
+              className='text-white/90 group-hover:translate-x-1 transition-transform duration-200'
+            />
           </Button>
         </div>
       </div>
@@ -432,16 +516,16 @@ export function ExploreMobile({
       <ExploreFooter />
 
       {/* FAB — matches desktop purple accent */}
-      <Button variant="unstyled"
-        data-tour="fab"
-        type="button"
+      <Button
+        variant='unstyled'
+        data-tour='fab'
+        type='button'
         onClick={() => navigate('/create-rfq')}
-        className="fixed bottom-6 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
+        className='fixed bottom-6 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30'
         style={{ background: '#A238FF', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
       >
-        <Plus size={20} className="text-white" />
+        <Plus size={20} className='text-white' />
       </Button>
-
     </div>
   );
 }

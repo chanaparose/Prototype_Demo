@@ -16,7 +16,7 @@ interface UseInfiniteScrollReturn<T> {
  */
 export function useInfiniteScroll<T>(
   fetcher: (page: number) => Promise<{ items: T[]; hasMore: boolean }>,
-  pageSize = 20
+  pageSize = 20,
 ): UseInfiniteScrollReturn<T> {
   const [items, setItems] = useState<T[]>([]);
   const [page, setPage] = useState(1);
@@ -48,7 +48,7 @@ export function useInfiniteScroll<T>(
           setPage((prev) => prev + 1);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(observerTarget.current);

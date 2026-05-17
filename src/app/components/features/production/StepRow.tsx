@@ -1,8 +1,11 @@
 import React from 'react';
 import { Lock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
-import type { MergedProductionStep } from './types';
-import { STEP_VISUAL, type StepDerivedState } from './stepDerivedState';
-import { Button } from '../../ui/button';
+import type { MergedProductionStep } from '@/components/features/production/types';
+import {
+  STEP_VISUAL,
+  type StepDerivedState,
+} from '@/components/features/production/stepDerivedState';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   merged: MergedProductionStep;
@@ -21,24 +24,24 @@ type Props = {
 function renderStateIcon(state: StepDerivedState) {
   switch (state) {
     case 'completed':
-      return <CheckCircle2 size={20} className="text-emerald-600" aria-hidden />;
+      return <CheckCircle2 size={20} className='text-emerald-600' aria-hidden />;
     case 'active':
       return (
         <span
-          className="inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#A238FF] bg-[#A238FF]/10"
-          aria-label="กำลังดำเนินการ"
-          role="img"
+          className='inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#A238FF] bg-[#A238FF]/10'
+          aria-label='กำลังดำเนินการ'
+          role='img'
         >
-          <span className="h-2 w-2 rounded-full bg-[#A238FF]" />
+          <span className='h-2 w-2 rounded-full bg-[#A238FF]' />
         </span>
       );
     case 'blocked':
-      return <AlertCircle size={20} className="text-amber-500" aria-hidden />;
+      return <AlertCircle size={20} className='text-amber-500' aria-hidden />;
     case 'rejected':
-      return <XCircle size={20} className="text-red-500" aria-hidden />;
+      return <XCircle size={20} className='text-red-500' aria-hidden />;
     case 'upcoming':
     default:
-      return <Lock size={18} className="text-gray-300" aria-hidden />;
+      return <Lock size={18} className='text-gray-300' aria-hidden />;
   }
 }
 
@@ -92,65 +95,69 @@ export function StepRow({
   const isActive = derivedState === 'active';
   const isBlocked = derivedState === 'blocked';
 
-  const ctaFactory =
-    !factoryCanUpdateThisStep ? null : st === 'IP' ? (
-      <Button variant="unstyled"
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenDrawer();
-        }}
-        className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
-        style={{ background: '#7C3AED' }}
-      >
-        อัปเดตขั้นนี้
-      </Button>
-    ) : st === 'CD' ? (
-      <Button variant="unstyled"
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenDrawer();
-        }}
-        className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border border-violet-200 text-violet-800"
-      >
-        แก้ไข
-      </Button>
-    ) : st === 'RJ' ? (
-      <Button variant="unstyled"
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenDrawer();
-        }}
-        className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
-        style={{ background: '#A238FF' }}
-      >
-        ส่งใหม่
-      </Button>
-    ) : isFactory && isActive ? (
-      <Button variant="unstyled"
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpenDrawer();
-        }}
-        className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
-        style={{ background: '#A238FF' }}
-      >
-        เริ่มขั้นต่อไป
-      </Button>
-    ) : null;
+  const ctaFactory = !factoryCanUpdateThisStep ? null : st === 'IP' ? (
+    <Button
+      variant='unstyled'
+      type='button'
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenDrawer();
+      }}
+      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
+      style={{ background: '#7C3AED' }}
+    >
+      อัปเดตขั้นนี้
+    </Button>
+  ) : st === 'CD' ? (
+    <Button
+      variant='unstyled'
+      type='button'
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenDrawer();
+      }}
+      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border border-violet-200 text-violet-800'
+    >
+      แก้ไข
+    </Button>
+  ) : st === 'RJ' ? (
+    <Button
+      variant='unstyled'
+      type='button'
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenDrawer();
+      }}
+      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
+      style={{ background: '#A238FF' }}
+    >
+      ส่งใหม่
+    </Button>
+  ) : isFactory && isActive ? (
+    <Button
+      variant='unstyled'
+      type='button'
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenDrawer();
+      }}
+      className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
+      style={{ background: '#A238FF' }}
+    >
+      เริ่มขั้นต่อไป
+    </Button>
+  ) : null;
 
   const ctaCustomer =
     st === 'CD' && canReject ? (
-      <Button variant="unstyled"
-        type="button"
+      <Button
+        variant='unstyled'
+        type='button'
         onClick={(e) => {
           e.stopPropagation();
           onContactFactory?.();
         }}
-        className="shrink-0 text-xs font-semibold text-violet-700 underline"
+        className='shrink-0 text-xs font-semibold text-violet-700 underline'
       >
         ติดต่อโรงงาน
       </Button>
@@ -167,9 +174,9 @@ export function StepRow({
       aria-disabled={derivedState === 'upcoming' ? true : undefined}
     >
       <div
-        role="button"
+        role='button'
         tabIndex={0}
-        className="w-full text-left px-4 py-3 flex items-start gap-3 cursor-pointer"
+        className='w-full text-left px-4 py-3 flex items-start gap-3 cursor-pointer'
         onClick={onToggleExpand}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -178,9 +185,9 @@ export function StepRow({
           }
         }}
       >
-        <div className="mt-0.5 shrink-0">{renderStateIcon(derivedState)}</div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className='mt-0.5 shrink-0'>{renderStateIcon(derivedState)}</div>
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2 min-w-0'>
             <p className={`${titleClass(derivedState)} truncate`}>{template.step_name_th}</p>
             {visual.chipLabel ? (
               <span
@@ -189,58 +196,60 @@ export function StepRow({
                 {visual.chipLabel}
               </span>
             ) : null}
-            <span className="sr-only">{visual.ariaLabel}</span>
+            <span className='sr-only'>{visual.ariaLabel}</span>
           </div>
           {template.description ? (
             <p className={descClass(derivedState)}>{template.description}</p>
           ) : null}
         </div>
-        <div className="shrink-0 flex flex-col items-end gap-1" onClick={(e) => e.stopPropagation()}>
+        <div
+          className='shrink-0 flex flex-col items-end gap-1'
+          onClick={(e) => e.stopPropagation()}
+        >
           {isFactory ? ctaFactory : null}
           {isCustomer ? ctaCustomer : null}
         </div>
       </div>
 
       {isBlocked ? (
-        <div className="px-4 pb-3 -mt-1">
-          <p className="text-[11px] text-amber-800">
-            รอลูกค้าดำเนินการก่อนจึงจะเริ่มขั้นตอนนี้ได้
-          </p>
+        <div className='px-4 pb-3 -mt-1'>
+          <p className='text-[11px] text-amber-800'>รอลูกค้าดำเนินการก่อนจึงจะเริ่มขั้นตอนนี้ได้</p>
         </div>
       ) : null}
 
       {expanded ? (
-        <div className="px-4 pb-4 pt-0 border-t border-gray-100/80 space-y-3 text-sm">
+        <div className='px-4 pb-4 pt-0 border-t border-gray-100/80 space-y-3 text-sm'>
           {update.description ? (
             <div>
-              <p className="text-[10px] text-gray-500 uppercase">หมายเหตุ</p>
-              <p className="text-gray-800 whitespace-pre-wrap">{update.description}</p>
+              <p className='text-[10px] text-gray-500 uppercase'>หมายเหตุ</p>
+              <p className='text-gray-800 whitespace-pre-wrap'>{update.description}</p>
             </div>
           ) : null}
           {update.rejected_reason && st === 'RJ' ? (
-            <div className="rounded-xl bg-red-100 border border-red-200 px-3 py-2 text-xs text-red-900">
+            <div className='rounded-xl bg-red-100 border border-red-200 px-3 py-2 text-xs text-red-900'>
               <strong>เหตุผลปฏิเสธ:</strong> {update.rejected_reason}
             </div>
           ) : null}
           {update.image_urls && update.image_urls.length > 0 ? (
             <div>
-              <p className="text-[10px] text-gray-500 uppercase mb-1">รูปภาพ</p>
-              <div className="flex flex-wrap gap-2">
+              <p className='text-[10px] text-gray-500 uppercase mb-1'>รูปภาพ</p>
+              <div className='flex flex-wrap gap-2'>
                 {update.image_urls.map((u) => (
-                  <Button variant="unstyled"
+                  <Button
+                    variant='unstyled'
                     key={u}
-                    type="button"
-                    className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
+                    type='button'
+                    className='w-16 h-16 rounded-lg overflow-hidden border border-gray-200'
                     onClick={() => onPhotoClick(u)}
                   >
-                    <img src={u} alt="" className="w-full h-full object-cover" />
+                    <img src={u} alt='' className='w-full h-full object-cover' />
                   </Button>
                 ))}
               </div>
             </div>
           ) : null}
           {update.last_updated_at ? (
-            <p className="text-[11px] text-gray-400">
+            <p className='text-[11px] text-gray-400'>
               อัปเดตล่าสุด{' '}
               {new Date(update.last_updated_at).toLocaleString('th-TH', {
                 dateStyle: 'medium',

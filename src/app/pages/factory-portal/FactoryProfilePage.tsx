@@ -17,32 +17,32 @@ import {
   Loader2,
   Plus,
 } from 'lucide-react';
-import { useAuth } from '../../stores';
-import { getFactoryEntityId } from '../../utils/factoryUser';
-import { factoriesApi, mediaApi } from '../../services/api';
+import { useAuth } from '@/stores';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { factoriesApi, mediaApi } from '@/services/api';
 
-import { useMyFactory } from '../../hooks/factory/useMyFactory';
-import { useFactoryCategories } from '../../hooks/factory/useFactoryCategories';
-import { useFactorySubCategories } from '../../hooks/factory/useFactorySubCategories';
-import { useBeforeUnload } from '../../hooks/forms/useBeforeUnload';
+import { useMyFactory } from '@/hooks/factory/useMyFactory';
+import { useFactoryCategories } from '@/hooks/factory/useFactoryCategories';
+import { useFactorySubCategories } from '@/hooks/factory/useFactorySubCategories';
+import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 
-import { FormSkeleton } from '../../components/common/FormSkeleton';
-import { ImageCropModal } from '../../components/common/ImageCropModal';
-import { VerifyStatusBanner } from '../../components/factory/profile/VerifyStatusBanner';
-import { BusinessInfoSection } from '../../components/factory/profile/BusinessInfoSection';
-import { CategoriesSection } from '../../components/factory/profile/CategoriesSection';
-import { AddressesSection } from '../../components/factory/profile/AddressesSection';
-import { CertificatesSection } from '../../components/factory/profile/CertificatesSection';
-import { BankAccountPlaceholder } from '../../components/factory/profile/BankAccountPlaceholder';
-import { ProfileSaveBar } from '../../components/factory/profile/ProfileSaveBar';
-import { SectionCard, StatusBadge } from '../../shared/ui';
+import { FormSkeleton } from '@/components/common/FormSkeleton';
+import { ImageCropModal } from '@/components/common/ImageCropModal';
+import { VerifyStatusBanner } from '@/components/factory/profile/VerifyStatusBanner';
+import { BusinessInfoSection } from '@/components/factory/profile/BusinessInfoSection';
+import { CategoriesSection } from '@/components/factory/profile/CategoriesSection';
+import { AddressesSection } from '@/components/factory/profile/AddressesSection';
+import { CertificatesSection } from '@/components/factory/profile/CertificatesSection';
+import { BankAccountPlaceholder } from '@/components/factory/profile/BankAccountPlaceholder';
+import { ProfileSaveBar } from '@/components/factory/profile/ProfileSaveBar';
+import { SectionCard, StatusBadge } from '@/shared/ui';
 
 import {
   PROFILE_FORM_DEFAULTS,
   type ProfileFormValues,
-} from '../../components/factory/profile/ProfileFormTypes';
-import { FactoryPageHeader } from './components/FactoryPageHeader';
-import { Button } from '../../components/ui/button';
+} from '@/components/factory/profile/ProfileFormTypes';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { Button } from '@/components/ui/button';
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const COLORS = {
@@ -73,7 +73,7 @@ function countDirty(dirtyFields: Record<string, unknown>): number {
 
 function sectionBadge(complete: boolean) {
   return (
-    <StatusBadge variant={complete ? 'success' : 'pending'} size="sm">
+    <StatusBadge variant={complete ? 'success' : 'pending'} size='sm'>
       {complete ? 'ครบถ้วน ✓' : 'ยังไม่ครบ !'}
     </StatusBadge>
   );
@@ -89,18 +89,22 @@ interface StepDef {
 function VerificationStepper({ steps }: { steps: StepDef[] }) {
   const allDone = steps.every((s) => s.complete);
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-5">
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">ขั้นตอนการยืนยัน</p>
-        <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${allDone ? 'bg-teal-100 text-teal-700' : 'bg-amber-100 text-amber-700'}`}>
+    <div className='rounded-2xl border border-gray-100 bg-white shadow-sm p-5'>
+      <div className='flex items-center justify-between mb-4'>
+        <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
+          ขั้นตอนการยืนยัน
+        </p>
+        <span
+          className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${allDone ? 'bg-teal-100 text-teal-700' : 'bg-amber-100 text-amber-700'}`}
+        >
           {steps.filter((s) => s.complete).length}/{steps.length} ขั้นตอน
         </span>
       </div>
 
-      <div className="flex items-start">
+      <div className='flex items-start'>
         {steps.map((step, i) => (
           <React.Fragment key={step.label}>
-            <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+            <div className='flex flex-col items-center gap-2 flex-1 min-w-0'>
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all ${
                   step.complete
@@ -110,16 +114,20 @@ function VerificationStepper({ steps }: { steps: StepDef[] }) {
               >
                 {step.complete ? '✓' : i + 1}
               </div>
-              <div className="text-center min-w-0 px-1">
-                <p className={`text-[10px] font-semibold leading-tight ${step.complete ? 'text-teal-700' : 'text-gray-500'}`}>
+              <div className='text-center min-w-0 px-1'>
+                <p
+                  className={`text-[10px] font-semibold leading-tight ${step.complete ? 'text-teal-700' : 'text-gray-500'}`}
+                >
                   {step.label}
                 </p>
-                <p className="text-[9px] text-gray-400 leading-tight mt-0.5 hidden sm:block">{step.sublabel}</p>
+                <p className='text-[9px] text-gray-400 leading-tight mt-0.5 hidden sm:block'>
+                  {step.sublabel}
+                </p>
               </div>
             </div>
             {i < steps.length - 1 && (
               <div
-                className="h-0.5 flex-1 mt-[18px] mx-1 shrink-0 transition-all"
+                className='h-0.5 flex-1 mt-[18px] mx-1 shrink-0 transition-all'
                 style={{ backgroundColor: step.complete ? '#14b8a6' : '#E5E7EB' }}
               />
             )}
@@ -180,7 +188,7 @@ function FactoryHeroCard({
   };
 
   return (
-    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+    <div className='rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden'>
       {/* Cover image zone */}
       <div
         className={`relative h-28 sm:h-36 transition-[box-shadow] ${
@@ -207,30 +215,33 @@ function FactoryHeroCard({
         }}
       >
         {!coverImageUrl ? (
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-violet-50 to-indigo-50" aria-hidden />
+          <div
+            className='absolute inset-0 bg-gradient-to-br from-slate-100 via-violet-50 to-indigo-50'
+            aria-hidden
+          />
         ) : null}
-        <div className="absolute inset-0 bg-slate-900/25 pointer-events-none" aria-hidden />
+        <div className='absolute inset-0 bg-slate-900/25 pointer-events-none' aria-hidden />
 
         {coverDragOver ? (
-          <div className="absolute inset-0 z-[5] flex items-center justify-center bg-indigo-500/15 backdrop-blur-[1px]">
-            <p className="text-xs font-semibold text-indigo-900 px-3 py-1.5 rounded-full bg-white/95 shadow">
+          <div className='absolute inset-0 z-[5] flex items-center justify-center bg-indigo-500/15 backdrop-blur-[1px]'>
+            <p className='text-xs font-semibold text-indigo-900 px-3 py-1.5 rounded-full bg-white/95 shadow'>
               ปล่อยเพื่ออัปโหลดพื้นหลัง
             </p>
           </div>
         ) : null}
 
         {uploadingCover ? (
-          <div className="absolute inset-0 z-[6] bg-black/45 flex items-center justify-center">
-            <Loader2 size={32} className="text-white animate-spin" />
+          <div className='absolute inset-0 z-[6] bg-black/45 flex items-center justify-center'>
+            <Loader2 size={32} className='text-white animate-spin' />
           </div>
         ) : null}
 
-        <label className="absolute inset-0 z-[1] cursor-pointer group flex flex-col items-center justify-center text-center px-4">
+        <label className='absolute inset-0 z-[1] cursor-pointer group flex flex-col items-center justify-center text-center px-4'>
           <input
             ref={coverInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
+            type='file'
+            accept='image/jpeg,image/png,image/webp'
+            className='hidden'
             disabled={busy}
             onChange={(e) => {
               acceptCover(e.target.files?.[0]);
@@ -239,25 +250,26 @@ function FactoryHeroCard({
           />
           {!coverImageUrl && !uploadingCover ? (
             <>
-              <ImageIcon size={28} className="text-indigo-500 mb-1" strokeWidth={1.5} />
-              <span className="text-[11px] font-semibold text-slate-800">รูปพื้นหลังโรงงาน</span>
-              <span className="text-[10px] text-slate-600 mt-0.5 max-w-[240px]">
+              <ImageIcon size={28} className='text-indigo-500 mb-1' strokeWidth={1.5} />
+              <span className='text-[11px] font-semibold text-slate-800'>รูปพื้นหลังโรงงาน</span>
+              <span className='text-[10px] text-slate-600 mt-0.5 max-w-[240px]'>
                 คลิกหรือลากไฟล์มาวาง · JPG, PNG, WebP
               </span>
             </>
           ) : null}
           {coverImageUrl && !uploadingCover ? (
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <Upload size={26} className="text-white drop-shadow-md" />
+            <div className='absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100'>
+              <Upload size={26} className='text-white drop-shadow-md' />
             </div>
           ) : null}
         </label>
 
         {coverImageUrl ? (
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             disabled={busy}
-            className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-white/95 text-red-600 border border-red-100 shadow-sm hover:bg-red-50 disabled:opacity-50"
+            className='absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-white/95 text-red-600 border border-red-100 shadow-sm hover:bg-red-50 disabled:opacity-50'
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -270,8 +282,8 @@ function FactoryHeroCard({
         ) : null}
       </div>
 
-      <div className="relative z-[2] px-5 pb-5 pt-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+      <div className='relative z-[2] px-5 pb-5 pt-4'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-end'>
           {/* Profile image zone */}
           <div
             className={`w-fit shrink-0 rounded-2xl transition-[box-shadow] ${
@@ -294,27 +306,33 @@ function FactoryHeroCard({
               } ${uploadingImage ? 'pointer-events-none opacity-90' : 'hover:ring-indigo-100'}`}
             >
               {imageUrl ? (
-                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                <img src={imageUrl} alt='' className='w-full h-full object-cover' />
               ) : (
-                <span className="w-full h-full flex flex-col items-center justify-center gap-1.5 p-2 text-center">
-                  <ImageIcon size={28} className="text-indigo-400 group-hover:text-indigo-500" strokeWidth={1.5} />
-                  <span className="text-[10px] font-semibold text-indigo-600 leading-tight">โปรไฟล์</span>
+                <span className='w-full h-full flex flex-col items-center justify-center gap-1.5 p-2 text-center'>
+                  <ImageIcon
+                    size={28}
+                    className='text-indigo-400 group-hover:text-indigo-500'
+                    strokeWidth={1.5}
+                  />
+                  <span className='text-[10px] font-semibold text-indigo-600 leading-tight'>
+                    โปรไฟล์
+                  </span>
                 </span>
               )}
               {uploadingImage ? (
-                <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
-                  <Loader2 size={28} className="text-white animate-spin" />
+                <div className='absolute inset-0 bg-black/45 flex items-center justify-center'>
+                  <Loader2 size={28} className='text-white animate-spin' />
                 </div>
               ) : (
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <Upload size={22} className="text-white drop-shadow-md" />
+                <div className='absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100'>
+                  <Upload size={22} className='text-white drop-shadow-md' />
                 </div>
               )}
               <input
                 ref={profileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
+                type='file'
+                accept='image/jpeg,image/png,image/webp'
+                className='hidden'
                 disabled={busy}
                 onChange={(e) => {
                   acceptProfile(e.target.files?.[0]);
@@ -324,27 +342,32 @@ function FactoryHeroCard({
             </label>
           </div>
 
-          <div className="min-w-0 flex-1 pt-1 sm:pb-0.5">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">โรงงานของคุณ</p>
-            <h1 className="text-lg sm:text-xl font-bold mt-0.5 leading-snug truncate" style={{ color: COLORS.navy }}>
+          <div className='min-w-0 flex-1 pt-1 sm:pb-0.5'>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
+              โรงงานของคุณ
+            </p>
+            <h1
+              className='text-lg sm:text-xl font-bold mt-0.5 leading-snug truncate'
+              style={{ color: COLORS.navy }}
+            >
               {factoryName}
             </h1>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className='mt-2 flex flex-wrap gap-2'>
               {isVerified && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100">
-                  <ShieldCheck size={12} className="text-emerald-600" />
+                <span className='inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100'>
+                  <ShieldCheck size={12} className='text-emerald-600' />
                   ยืนยันแล้ว — พร้อมรับ RFQ
                 </span>
               )}
               {isRejected && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-800 border border-red-100">
-                  <XCircle size={12} className="text-red-600" />
+                <span className='inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-800 border border-red-100'>
+                  <XCircle size={12} className='text-red-600' />
                   ไม่ผ่านการตรวจสอบ
                 </span>
               )}
               {isPending && (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-100">
-                  <Clock size={12} className="text-amber-600" />
+                <span className='inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-100'>
+                  <Clock size={12} className='text-amber-600' />
                   รอการอนุมัติจากแอดมิน
                 </span>
               )}
@@ -499,7 +522,9 @@ export function FactoryProfilePage() {
       await factoriesApi.setSubCategories(fid, normalizedSubCategoryIds);
 
       const verifyRaw = await factoriesApi.getSubCategories(fid);
-      const verifyRows = (Array.isArray(verifyRaw) ? verifyRaw : []) as Array<Record<string, unknown>>;
+      const verifyRows = (Array.isArray(verifyRaw) ? verifyRaw : []) as Array<
+        Record<string, unknown>
+      >;
       if (verifyRows.length > 0 || normalizedSubCategoryIds.length === 0) {
         const persisted = Array.from(
           new Set(
@@ -644,16 +669,17 @@ export function FactoryProfilePage() {
   }, []);
 
   if (fid == null) {
-    return <p className="text-sm text-red-600">บัญชีนี้ไม่ใช่โรงงาน หรือไม่มีรหัสโรงงานในระบบ</p>;
+    return <p className='text-sm text-red-600'>บัญชีนี้ไม่ใช่โรงงาน หรือไม่มีรหัสโรงงานในระบบ</p>;
   }
   if (isError) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-sm text-red-600 mb-3">โหลดข้อมูลไม่สำเร็จ</p>
-        <Button variant="unstyled"
-          type="button"
+      <div className='py-12 text-center'>
+        <p className='text-sm text-red-600 mb-3'>โหลดข้อมูลไม่สำเร็จ</p>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => void factoryQ.refetch()}
-          className="px-4 py-2 rounded-xl border border-gray-200 text-sm"
+          className='px-4 py-2 rounded-xl border border-gray-200 text-sm'
         >
           ลองใหม่
         </Button>
@@ -662,8 +688,8 @@ export function FactoryProfilePage() {
   }
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <FactoryPageHeader title="ข้อมูลโรงงาน" subtitle="Factory Portal" icon={Building2} />
+      <div className='space-y-4'>
+        <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory Portal' icon={Building2} />
         <FormSkeleton sections={5} />
       </div>
     );
@@ -694,9 +720,9 @@ export function FactoryProfilePage() {
   ];
 
   return (
-    <div className="space-y-5 pb-32" style={{ backgroundColor: COLORS.pageBg }}>
+    <div className='space-y-5 pb-32' style={{ backgroundColor: COLORS.pageBg }}>
       <FactoryPageHeader
-        title="ข้อมูลโรงงาน"
+        title='ข้อมูลโรงงาน'
         subtitle={isVerified ? 'ยืนยันแล้ว' : 'ตั้งค่าโปรไฟล์โรงงาน'}
         icon={Building2}
       />
@@ -744,15 +770,15 @@ export function FactoryProfilePage() {
 
       {/* Error / Success alerts */}
       {error ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
-          <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className='flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'>
+          <AlertTriangle size={16} className='text-red-500 shrink-0 mt-0.5' />
+          <p className='text-sm text-red-700'>{error}</p>
         </div>
       ) : null}
       {okMsg ? (
-        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <CheckCircle size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-          <p className="text-sm text-emerald-700">{okMsg}</p>
+        <div className='flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
+          <CheckCircle size={16} className='text-emerald-500 shrink-0 mt-0.5' />
+          <p className='text-sm text-emerald-700'>{okMsg}</p>
         </div>
       ) : null}
 
@@ -761,17 +787,17 @@ export function FactoryProfilePage() {
           e.preventDefault();
           void handleSave();
         }}
-        className="space-y-5 w-full min-w-0"
+        className='space-y-5 w-full min-w-0'
       >
         {/* ── ข้อมูลพื้นฐาน ── */}
         <SectionCard
           icon={<Building2 size={14} style={{ color: COLORS.purple }} strokeWidth={2} />}
-          title="ข้อมูลพื้นฐาน"
-          iconClassName="h-8 w-8 rounded-lg"
+          title='ข้อมูลพื้นฐาน'
+          iconClassName='h-8 w-8 rounded-lg'
           iconStyle={{ backgroundColor: 'rgba(79,70,229,0.1)' }}
-          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
-          headerClassName="px-6 py-4"
-          contentClassName="px-6 py-5"
+          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
+          headerClassName='px-6 py-4'
+          contentClassName='px-6 py-5'
           badge={sectionBadge(requiredStatus.hasBusiness)}
         >
           <BusinessInfoSection form={form} />
@@ -780,18 +806,19 @@ export function FactoryProfilePage() {
         {/* ── หมวดหมู่การผลิต ── */}
         <SectionCard
           icon={<Award size={14} style={{ color: '#0EA5E9' }} strokeWidth={2} />}
-          title="ข้อมูลการผลิตและหมวดหมู่"
-          iconClassName="h-8 w-8 rounded-lg"
+          title='ข้อมูลการผลิตและหมวดหมู่'
+          iconClassName='h-8 w-8 rounded-lg'
           iconStyle={{ backgroundColor: 'rgba(14,165,233,0.1)' }}
-          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
-          headerClassName="px-6 py-4"
-          contentClassName="px-6 py-5"
+          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
+          headerClassName='px-6 py-4'
+          contentClassName='px-6 py-5'
           badge={sectionBadge(requiredStatus.hasCategories)}
           actionButton={
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => openCategoryPickerRef.current?.()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors'
             >
               <Plus size={12} />
               เพิ่มหมวดหมู่
@@ -810,12 +837,12 @@ export function FactoryProfilePage() {
         {/* ── ที่อยู่และการติดต่อ ── */}
         <SectionCard
           icon={<MapPin size={14} style={{ color: '#F97316' }} strokeWidth={2} />}
-          title="ที่อยู่และการติดต่อ"
-          iconClassName="h-8 w-8 rounded-lg"
+          title='ที่อยู่และการติดต่อ'
+          iconClassName='h-8 w-8 rounded-lg'
           iconStyle={{ backgroundColor: 'rgba(249,115,22,0.1)' }}
-          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
-          headerClassName="px-6 py-4"
-          contentClassName="px-6 py-5"
+          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
+          headerClassName='px-6 py-4'
+          contentClassName='px-6 py-5'
           badge={sectionBadge(requiredStatus.hasAddress)}
         >
           <AddressesSection />
@@ -824,25 +851,26 @@ export function FactoryProfilePage() {
         {/* ── เอกสารและใบรับรอง ── */}
         <SectionCard
           icon={<Award size={14} style={{ color: '#10B981' }} strokeWidth={2} />}
-          title="เอกสารและใบรับรอง"
-          iconClassName="h-8 w-8 rounded-lg"
+          title='เอกสารและใบรับรอง'
+          iconClassName='h-8 w-8 rounded-lg'
           iconStyle={{ backgroundColor: 'rgba(16,185,129,0.1)' }}
-          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
-          headerClassName="px-6 py-4"
-          contentClassName="px-6 py-5"
+          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
+          headerClassName='px-6 py-4'
+          contentClassName='px-6 py-5'
           badge={sectionBadge(requiredStatus.hasCertificates)}
           actionButton={
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => openCertAddRef.current?.()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors'
             >
               <Plus size={12} />
               เพิ่มใบรับรอง
             </Button>
           }
         >
-          <p className="text-xs text-gray-400 mb-3">เช่น GMP, Halal, ISO, มาตรฐานอาหาร</p>
+          <p className='text-xs text-gray-400 mb-3'>เช่น GMP, Halal, ISO, มาตรฐานอาหาร</p>
           <CertificatesSection
             factoryId={fid}
             onRegisterAdd={(handler) => {
@@ -854,23 +882,25 @@ export function FactoryProfilePage() {
         {/* ── บัญชีธนาคาร ── */}
         <SectionCard
           icon={<Landmark size={14} style={{ color: '#6366F1' }} strokeWidth={2} />}
-          title="บัญชีธนาคาร"
-          iconClassName="h-8 w-8 rounded-lg"
+          title='บัญชีธนาคาร'
+          iconClassName='h-8 w-8 rounded-lg'
           iconStyle={{ backgroundColor: 'rgba(99,102,241,0.1)' }}
-          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
-          headerClassName="px-6 py-4"
-          contentClassName="px-6 py-5"
+          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
+          headerClassName='px-6 py-4'
+          contentClassName='px-6 py-5'
         >
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">Optional</span>
-            <p className="text-xs text-gray-400">ใช้สำหรับรับการโอนเงิน</p>
+          <div className='flex items-center gap-2 mb-3'>
+            <span className='text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500'>
+              Optional
+            </span>
+            <p className='text-xs text-gray-400'>ใช้สำหรับรับการโอนเงิน</p>
           </div>
           <BankAccountPlaceholder />
         </SectionCard>
 
         {/* Dirty indicator */}
         {isDirty && changeCount > 0 && (
-          <p className="text-xs text-gray-400 text-center">
+          <p className='text-xs text-gray-400 text-center'>
             มี {changeCount} ฟิลด์ที่เปลี่ยนแปลง — กดบันทึกเพื่อยืนยัน
           </p>
         )}

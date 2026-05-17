@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { notificationsApi } from '../services/api';
+import { notificationsApi } from '@/services/api';
 
 export const NOTIFICATIONS_CHANGED_EVENT = 'notifications:changed';
 
@@ -32,4 +32,3 @@ export function useNotificationUnreadCount(enabled: boolean) {
 
   return count;
 }
-

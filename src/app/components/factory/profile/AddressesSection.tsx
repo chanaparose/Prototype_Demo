@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useMyAddresses } from '../../../hooks/factory/useMyAddresses';
-import { addressesApi } from '../../../services/api';
-import { AddressList } from '../AddressList';
-import { AddressFormModal, type AddressFormPayload } from '../AddressFormModal';
+import { useMyAddresses } from '@/hooks/factory/useMyAddresses';
+import { addressesApi } from '@/services/api';
+import { AddressList } from '@/components/factory/AddressList';
+import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 
 type Row = Record<string, unknown>;
 

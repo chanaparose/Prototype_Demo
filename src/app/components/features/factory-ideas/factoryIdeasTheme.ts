@@ -1,4 +1,4 @@
-import type { Factory } from '../../../stores';
+import type { Factory } from '@/stores';
 
 export const factoryIdeasTheme = {
   purple: '#7A4B94',
@@ -29,7 +29,10 @@ export const factoryIdeasContentTypes: { id: FactoryIdeasContentType; label: str
   { id: 'factory', label: 'โรงงาน' },
 ];
 
-export const factoryIdeasContentTypeLabel: Record<Exclude<FactoryIdeasContentType, 'all'>, string> = {
+export const factoryIdeasContentTypeLabel: Record<
+  Exclude<FactoryIdeasContentType, 'all'>,
+  string
+> = {
   product: 'สินค้า',
   promotion: 'โปรโมชัน',
   material: 'วัตถุดิบ',
@@ -37,7 +40,10 @@ export const factoryIdeasContentTypeLabel: Record<Exclude<FactoryIdeasContentTyp
   factory: 'โรงงาน',
 };
 
-export const factoryIdeasContentTypeBadge: Record<Exclude<FactoryIdeasContentType, 'all'>, string> = {
+export const factoryIdeasContentTypeBadge: Record<
+  Exclude<FactoryIdeasContentType, 'all'>,
+  string
+> = {
   product: factoryIdeasTheme.productBadgeBlue,
   promotion: factoryIdeasTheme.orange,
   material: '#0EA5A4',

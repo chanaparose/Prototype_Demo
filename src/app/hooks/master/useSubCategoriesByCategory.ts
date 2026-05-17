@@ -1,5 +1,5 @@
 import { useQueries } from '@tanstack/react-query';
-import { categoriesApi } from '../../services/api';
+import { categoriesApi } from '@/services/api';
 
 type Row = Record<string, unknown>;
 
@@ -55,7 +55,10 @@ export function useSubCategoriesByCategories(categoryIds: number[]) {
     for (const item of normalized) {
       if (!uniq.has(item.id)) uniq.set(item.id, item);
     }
-    byCategory.set(cid, [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th')));
+    byCategory.set(
+      cid,
+      [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th')),
+    );
   });
 
   const flat: SubCategoryOption[] = [];

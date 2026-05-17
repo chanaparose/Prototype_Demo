@@ -2,14 +2,14 @@
  * Auth API — Login, Register, Password Reset
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 import type {
   LoginPayload,
   RegisterCustomerPayload,
   RegisterFactoryPayload,
   AuthResponse,
   ForgotPasswordResponse,
-} from './types';
+} from '@/services/api/types';
 
 export const authApi = {
   login: (payload: LoginPayload) => httpClient.post<AuthResponse>('/auth/login', payload),

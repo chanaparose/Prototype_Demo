@@ -9,33 +9,38 @@
  */
 
 // ─── HTTP & Token Management ───────────────────────────
-export { httpClient } from './httpClient';
-export { ApiHttpError } from './httpClient';
-export { getToken, setToken, removeToken } from './tokenManager';
+export { httpClient } from '@/services/api/httpClient';
+export { ApiHttpError } from '@/services/api/httpClient';
+export { getToken, setToken, removeToken } from '@/services/api/tokenManager';
 
 // ─── Error Handling ────────────────────────────────────
-export { ApiError, extractErrorMessage, formatApiError, getApiErrorStatus } from './apiErrorHandler';
+export {
+  ApiError,
+  extractErrorMessage,
+  formatApiError,
+  getApiErrorStatus,
+} from '@/services/api/apiErrorHandler';
 
 // ─── Auth ──────────────────────────────────────────────
-export { authApi } from './authApi';
+export { authApi } from '@/services/api/authApi';
 
 // ─── RFQ ───────────────────────────────────────────────
-export { rfqsApi, factoryRfqsApi, quotationsApi, quotationApi } from './rfqApi';
+export { rfqsApi, factoryRfqsApi, quotationsApi, quotationApi } from '@/services/api/rfqApi';
 
 // ─── Orders ────────────────────────────────────────────
-export { ordersApi, productionUpdatesApi, productionApi } from './ordersApi';
+export { ordersApi, productionUpdatesApi, productionApi } from '@/services/api/ordersApi';
 
 // ─── Factory ───────────────────────────────────────────
-export { factoriesApi, showcasesApi, mediaApi } from './factoryApi';
+export { factoriesApi, showcasesApi, mediaApi } from '@/services/api/factoryApi';
 
 // ─── Explore & Frontend ────────────────────────────────
-export { frontendApi, promoSlidesApi } from './exploreApi';
+export { frontendApi, promoSlidesApi } from '@/services/api/exploreApi';
 
 // ─── Chat & Messaging ─────────────────────────────────
-export { conversationsApi, messagesApi, notificationsApi } from './chatApi';
+export { conversationsApi, messagesApi, notificationsApi } from '@/services/api/chatApi';
 
 // ─── Master Data ───────────────────────────────────────
-export { categoriesApi, masterApi, addressesApi } from './masterApi';
+export { categoriesApi, masterApi, addressesApi } from '@/services/api/masterApi';
 
 // ─── User (Profile, Wallet, Favorites, etc) ───────────
 export {
@@ -45,7 +50,7 @@ export {
   reviewsApi,
   certificatesApi,
   transactionsApi,
-} from './userApi';
+} from '@/services/api/userApi';
 
 // ─── Admin ─────────────────────────────────────────────
 export {
@@ -55,18 +60,18 @@ export {
   adminApi,
   adminCustomerApi,
   adminSettlementApi,
-} from './adminApi';
+} from '@/services/api/adminApi';
 
 // ─── Types ────────────────────────────────────────────
-export * from './types';
+export * from '@/services/api/types';
 
 // ─── Backward Compatibility ────────────────────────────
 // Re-export common types that were previously in the main api.ts
-export type { FrontendBootstrapResponse } from './exploreApi';
+export type { FrontendBootstrapResponse } from '@/services/api/exploreApi';
 export type {
   PlatformConfig,
   AdminDashboardSummary,
   AdminFactoryRow,
   AdminRfqRow,
   AdminOrderRow,
-} from './adminApi';
+} from '@/services/api/adminApi';

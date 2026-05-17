@@ -13,35 +13,37 @@ This document outlines all available reusable UI components in `src/app/shared/u
 **Purpose:** Wraps form inputs with consistent styling for label, error messages, and helper text. Saves ~30 lines per form field.
 
 **Props:**
+
 ```typescript
 type FormFieldProps = {
-  label?: string;           // Field label
-  error?: string;           // Error message (red)
-  helperText?: string;      // Helper text (gray)
-  required?: boolean;       // Show red asterisk
+  label?: string; // Field label
+  error?: string; // Error message (red)
+  helperText?: string; // Helper text (gray)
+  required?: boolean; // Show red asterisk
   children: React.ReactNode; // Form input element
-  className?: string;       // Container className
-  labelClassName?: string;  // Label className
+  className?: string; // Container className
+  labelClassName?: string; // Label className
 };
 ```
 
 **Usage Example:**
+
 ```tsx
 import { FormField } from '@/shared/ui';
 
 <FormField
-  label="ราคาต่อชิ้น"
+  label='ราคาต่อชิ้น'
   required
-  error={errors.price ? "ป้อนราคา" : undefined}
-  helperText="กรุณาระบุราคาต่อหน่วย"
+  error={errors.price ? 'ป้อนราคา' : undefined}
+  helperText='กรุณาระบุราคาต่อหน่วย'
 >
   <input
-    type="number"
-    placeholder="0.00"
-    className="w-full rounded-xl border border-gray-200 px-3 py-2"
+    type='number'
+    placeholder='0.00'
+    className='w-full rounded-xl border border-gray-200 px-3 py-2'
     {...register('price')}
   />
-</FormField>
+</FormField>;
 ```
 
 **Before:** 25-30 lines of JSX  
@@ -57,20 +59,22 @@ import { FormField } from '@/shared/ui';
 **Purpose:** Renders rounded card with collapsible header. Replaces 20+ lines of toggle logic in each card.
 
 **Props:**
+
 ```typescript
 type CollapsibleCardProps = {
-  defaultOpen?: boolean;                    // Initial state
+  defaultOpen?: boolean; // Initial state
   onOpenChange?: (isOpen: boolean) => void; // Callback on toggle
-  header: React.ReactNode;                  // Header content
-  children: React.ReactNode;                // Body content
-  className?: string;                       // Card className
-  headerClassName?: string;                 // Header className
-  contentClassName?: string;                // Content className
-  showChevron?: boolean;                    // Show chevron icon
+  header: React.ReactNode; // Header content
+  children: React.ReactNode; // Body content
+  className?: string; // Card className
+  headerClassName?: string; // Header className
+  contentClassName?: string; // Content className
+  showChevron?: boolean; // Show chevron icon
 };
 ```
 
 **Usage Example:**
+
 ```tsx
 import { CollapsibleCard, StatusBadge } from '@/shared/ui';
 import { CheckCircle } from 'lucide-react';
@@ -78,19 +82,17 @@ import { CheckCircle } from 'lucide-react';
 <CollapsibleCard
   defaultOpen={true}
   header={
-    <div className="flex items-center gap-2">
-      <span className="font-bold">ใบเสนอราคา BOQ</span>
-      <StatusBadge variant="success" size="sm">
+    <div className='flex items-center gap-2'>
+      <span className='font-bold'>ใบเสนอราคา BOQ</span>
+      <StatusBadge variant='success' size='sm'>
         <CheckCircle size={10} /> ยอมรับแล้ว
       </StatusBadge>
     </div>
   }
 >
   {/* Card content goes here */}
-  <div className="space-y-4">
-    {/* Quotation details */}
-  </div>
-</CollapsibleCard>
+  <div className='space-y-4'>{/* Quotation details */}</div>
+</CollapsibleCard>;
 ```
 
 **Before:** OrderBOQCard (244 lines) - 20 lines for header/chevron logic  
@@ -106,9 +108,18 @@ import { CheckCircle } from 'lucide-react';
 **Purpose:** Replaces 20+ inline badge patterns with consistent styling.
 
 **Props:**
+
 ```typescript
 type StatusBadgeProps = {
-  variant?: 'pending' | 'success' | 'error' | 'warning' | 'info' | 'active' | 'inactive' | 'default';
+  variant?:
+    | 'pending'
+    | 'success'
+    | 'error'
+    | 'warning'
+    | 'info'
+    | 'active'
+    | 'inactive'
+    | 'default';
   children: React.ReactNode;
   icon?: React.ReactNode;
   size?: 'sm' | 'md';
@@ -117,24 +128,31 @@ type StatusBadgeProps = {
 ```
 
 **Usage Example:**
+
 ```tsx
 import { StatusBadge } from '@/shared/ui';
 import { CheckCircle, Clock } from 'lucide-react';
 
-{/* Success badge */}
-<StatusBadge variant="success">
+{
+  /* Success badge */
+}
+<StatusBadge variant='success'>
   <CheckCircle size={12} /> ยอมรับแล้ว
-</StatusBadge>
+</StatusBadge>;
 
-{/* Pending badge */}
-<StatusBadge variant="pending" size="sm">
+{
+  /* Pending badge */
+}
+<StatusBadge variant='pending' size='sm'>
   <Clock size={10} /> รอยืนยัน
-</StatusBadge>
+</StatusBadge>;
 
-{/* Custom styling */}
-<StatusBadge variant="warning" className="bg-custom">
+{
+  /* Custom styling */
+}
+<StatusBadge variant='warning' className='bg-custom'>
   Warning
-</StatusBadge>
+</StatusBadge>;
 ```
 
 **Before:** Inline span with hardcoded colors (15+ instances)  
@@ -150,6 +168,7 @@ import { CheckCircle, Clock } from 'lucide-react';
 **Purpose:** Eliminates modal boilerplate (50-100 lines per modal).
 
 **Props:**
+
 ```typescript
 type BaseModalProps = {
   isOpen: boolean;
@@ -165,6 +184,7 @@ type BaseModalProps = {
 ```
 
 **Usage Example:**
+
 ```tsx
 import { BaseModal } from '@/shared/ui';
 import { useState } from 'react';
@@ -174,21 +194,21 @@ const [isOpen, setIsOpen] = useState(false);
 <BaseModal
   isOpen={isOpen}
   onClose={() => setIsOpen(false)}
-  title="Add Address"
-  size="md"
+  title='Add Address'
+  size='md'
   footer={
     <>
       <button
-        type="button"
+        type='button'
         onClick={() => setIsOpen(false)}
-        className="px-4 py-2 border rounded-lg"
+        className='px-4 py-2 border rounded-lg'
       >
         ยกเลิก
       </button>
       <button
-        type="button"
+        type='button'
         onClick={handleSubmit}
-        className="px-4 py-2 bg-violet-600 text-white rounded-lg"
+        className='px-4 py-2 bg-violet-600 text-white rounded-lg'
       >
         บันทึก
       </button>
@@ -197,9 +217,9 @@ const [isOpen, setIsOpen] = useState(false);
 >
   {/* Modal content */}
   <form>
-    <input type="text" placeholder="Name" />
+    <input type='text' placeholder='Name' />
   </form>
-</BaseModal>
+</BaseModal>;
 ```
 
 **Before:** DepositPaymentModal (272 lines), AddressFormModal (191 lines)  
@@ -215,6 +235,7 @@ const [isOpen, setIsOpen] = useState(false);
 **Purpose:** Reusable section card for RFQ, Orders, Timeline sections.
 
 **Props:**
+
 ```typescript
 type SectionCardProps = {
   icon?: React.ReactNode;
@@ -230,26 +251,27 @@ type SectionCardProps = {
 ```
 
 **Usage Example:**
+
 ```tsx
 import { SectionCard, StatusBadge } from '@/shared/ui';
 
 <SectionCard
-  icon="📋"
-  title="คำขอ RFQ #1234"
-  subtitle="เสนอราคารวมจำนวน 5 ราย"
-  badge={<StatusBadge variant="active">เปิด</StatusBadge>}
+  icon='📋'
+  title='คำขอ RFQ #1234'
+  subtitle='เสนอราคารวมจำนวน 5 ราย'
+  badge={<StatusBadge variant='active'>เปิด</StatusBadge>}
   actionButton={
-    <button type="button" onClick={() => {}}>
+    <button type='button' onClick={() => {}}>
       ดูทั้งหมด →
     </button>
   }
 >
   {/* Section content */}
-  <div className="space-y-2">
+  <div className='space-y-2'>
     <p>ประเภท: เฟอร์นิเจอร์</p>
     <p>จำนวน: 1,000 ชิ้น</p>
   </div>
-</SectionCard>
+</SectionCard>;
 ```
 
 **Before:** RfqSection (376 lines), OrderSection (293 lines)  
@@ -265,6 +287,7 @@ import { SectionCard, StatusBadge } from '@/shared/ui';
 **Purpose:** Displays info with optional icon and colored variant.
 
 **Props:**
+
 ```typescript
 type InfoBoxProps = {
   icon?: React.ReactNode;
@@ -276,16 +299,13 @@ type InfoBoxProps = {
 ```
 
 **Usage Example:**
+
 ```tsx
 import { InfoBox } from '@/shared/ui';
 
-<InfoBox
-  icon="📍"
-  title="ที่อยู่จัดส่ง"
-  variant="warning"
->
+<InfoBox icon='📍' title='ที่อยู่จัดส่ง' variant='warning'>
   123 ถ. สุขุมวิท แขวงบางนา กรุงเทพฯ 10110
-</InfoBox>
+</InfoBox>;
 ```
 
 **Before:** UpdateStepDrawer ShippingAddressBox (45 lines inline)  
@@ -301,6 +321,7 @@ import { InfoBox } from '@/shared/ui';
 **Purpose:** Consolidate tab navigation patterns.
 
 **Props:**
+
 ```typescript
 type TabNavigationProps = {
   tabs: TabItem[];
@@ -319,6 +340,7 @@ type TabItem = {
 ```
 
 **Usage Example:**
+
 ```tsx
 import { TabNavigation } from '@/shared/ui';
 import { useState } from 'react';
@@ -333,7 +355,7 @@ const [activeTab, setActiveTab] = useState('pending');
   ]}
   activeTabId={activeTab}
   onTabChange={setActiveTab}
-/>
+/>;
 ```
 
 **Before:** RfqSection (40 lines), OrderSection (40 lines)  
@@ -345,57 +367,56 @@ const [activeTab, setActiveTab] = useState('pending');
 ## 🚀 Usage Patterns
 
 ### Pattern 1: Form with multiple fields
+
 ```tsx
 import { FormField } from '@/shared/ui';
 
-<div className="space-y-4">
-  <FormField label="ชื่อ" required>
-    <input type="text" placeholder="ชื่อเต็ม" {...register('name')} />
+<div className='space-y-4'>
+  <FormField label='ชื่อ' required>
+    <input type='text' placeholder='ชื่อเต็ม' {...register('name')} />
   </FormField>
-  
-  <FormField label="อีเมล" required error={errors.email?.message}>
-    <input type="email" placeholder="email@example.com" {...register('email')} />
+
+  <FormField label='อีเมล' required error={errors.email?.message}>
+    <input type='email' placeholder='email@example.com' {...register('email')} />
   </FormField>
-  
-  <FormField
-    label="หมายเหตุ"
-    helperText="ตัวเลือก"
-  >
-    <textarea placeholder="เพิ่มหมายเหตุ..." {...register('notes')} />
+
+  <FormField label='หมายเหตุ' helperText='ตัวเลือก'>
+    <textarea placeholder='เพิ่มหมายเหตุ...' {...register('notes')} />
   </FormField>
-</div>
+</div>;
 ```
 
 ### Pattern 2: Card with status
+
 ```tsx
 import { CollapsibleCard, StatusBadge } from '@/shared/ui';
 
 <CollapsibleCard
   header={
-    <div className="flex items-center justify-between w-full">
+    <div className='flex items-center justify-between w-full'>
       <span>ใบเสนอราคา #001</span>
-      <StatusBadge variant="success">ยอมรับแล้ว</StatusBadge>
+      <StatusBadge variant='success'>ยอมรับแล้ว</StatusBadge>
     </div>
   }
 >
   {/* Content */}
-</CollapsibleCard>
+</CollapsibleCard>;
 ```
 
 ---
 
 ## 📊 Impact Summary
 
-| Component | Files Refactored | Lines Saved | Reusability |
-|-----------|------------------|-------------|------------|
-| FormField | 4+ | ~150 | High |
-| CollapsibleCard | 3 | ~60 | High |
-| StatusBadge | 6+ | ~120 | Very High |
-| BaseModal | 4-5 | ~400 | High |
-| SectionCard | 3 | ~200 | High |
-| InfoBox | 2-3 | ~80 | Medium |
-| TabNavigation | 3 | ~120 | Medium |
-| **TOTAL** | **25+** | **~1,130** | **Excellent** |
+| Component       | Files Refactored | Lines Saved | Reusability   |
+| --------------- | ---------------- | ----------- | ------------- |
+| FormField       | 4+               | ~150        | High          |
+| CollapsibleCard | 3                | ~60         | High          |
+| StatusBadge     | 6+               | ~120        | Very High     |
+| BaseModal       | 4-5              | ~400        | High          |
+| SectionCard     | 3                | ~200        | High          |
+| InfoBox         | 2-3              | ~80         | Medium        |
+| TabNavigation   | 3                | ~120        | Medium        |
+| **TOTAL**       | **25+**          | **~1,130**  | **Excellent** |
 
 ---
 
@@ -404,13 +425,14 @@ import { CollapsibleCard, StatusBadge } from '@/shared/ui';
 ### For Existing Components:
 
 1. **Replace form labels with FormField:**
+
    ```tsx
    // Before
    <label className="block">
      <span className="text-xs font-semibold">Price</span>
      <input {...register('price')} />
    </label>
-   
+
    // After
    <FormField label="Price">
      <input {...register('price')} />
@@ -418,32 +440,32 @@ import { CollapsibleCard, StatusBadge } from '@/shared/ui';
    ```
 
 2. **Replace modal boilerplate with BaseModal:**
+
    ```tsx
    // Before
    return (
      <>
-       <div className="fixed inset-0 bg-black/40" />
-       <div className="fixed inset-0 flex items-center justify-center">
-         {/* Modal content */}
-       </div>
+       <div className='fixed inset-0 bg-black/40' />
+       <div className='fixed inset-0 flex items-center justify-center'>{/* Modal content */}</div>
      </>
    );
-   
+
    // After
    return (
-     <BaseModal isOpen={isOpen} onClose={onClose} title="Modal Title">
+     <BaseModal isOpen={isOpen} onClose={onClose} title='Modal Title'>
        {/* Modal content */}
      </BaseModal>
    );
    ```
 
 3. **Replace inline badges:**
+
    ```tsx
    // Before
    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
      ยอมรับแล้ว
    </span>
-   
+
    // After
    <StatusBadge variant="success">ยอมรับแล้ว</StatusBadge>
    ```

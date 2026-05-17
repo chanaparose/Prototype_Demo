@@ -4,16 +4,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, History, Lock, Save } from 'lucide-react';
 
-import { useAuth } from '../../stores';
-import { getFactoryEntityId } from '../../utils/factoryUser';
-import { quotationsApi } from '../../services/api';
+import { useAuth } from '@/stores';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { quotationsApi } from '@/services/api';
 
-import { useEditForm } from '../../hooks/forms/useEditForm';
-import { useBeforeUnload } from '../../hooks/forms/useBeforeUnload';
-import { useShippingMethods } from '../../hooks/master/useShippingMethods';
-import { FormSkeleton } from '../../components/common/FormSkeleton';
-import { ShippingMethodLockedField } from '../../components/factory/ShippingMethodLockedField';
-import { Button } from '../../components/ui/button';
+import { useEditForm } from '@/hooks/forms/useEditForm';
+import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
+import { useShippingMethods } from '@/hooks/master/useShippingMethods';
+import { FormSkeleton } from '@/components/common/FormSkeleton';
+import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
+import { Button } from '@/components/ui/button';
 
 type Raw = Record<string, unknown>;
 
@@ -154,12 +154,13 @@ export function FactoryEditQuotationPage() {
   if (!id) return null;
   if (isError) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-sm text-red-600 mb-3">โหลดใบเสนอราคาไม่สำเร็จ</p>
-        <Button variant="unstyled"
-          type="button"
+      <div className='py-12 text-center'>
+        <p className='text-sm text-red-600 mb-3'>โหลดใบเสนอราคาไม่สำเร็จ</p>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => void refetch()}
-          className="px-4 py-2 rounded-xl border text-sm"
+          className='px-4 py-2 rounded-xl border text-sm'
         >
           ลองใหม่
         </Button>
@@ -169,48 +170,49 @@ export function FactoryEditQuotationPage() {
   if (isLoading) return <FormSkeleton sections={2} />;
 
   return (
-    <div style={{ backgroundColor: '#F8F6FA' }} className="min-h-screen pb-28">
+    <div style={{ backgroundColor: '#F8F6FA' }} className='min-h-screen pb-28'>
       {/* Sticky top bar */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3">
-        <Button variant="unstyled"
-          type="button"
+      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
           style={{ color: '#4F46E5' }}
         >
           <ChevronLeft size={22} />
         </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-sm truncate" style={{ color: '#2E2252' }}>
+        <div className='flex-1 min-w-0'>
+          <h1 className='font-bold text-sm truncate' style={{ color: '#2E2252' }}>
             แก้ไขใบเสนอราคา #{id}
           </h1>
         </div>
         {isLocked && (
-          <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-lg shrink-0">
+          <span className='inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded-lg shrink-0'>
             <Lock size={12} /> ถูกล็อก
           </span>
         )}
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 pt-4 space-y-4 w-full min-w-0">
+      <div className='max-w-3xl mx-auto px-4 pt-4 space-y-4 w-full min-w-0'>
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+          <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
             {error}
           </p>
         )}
         {info && (
-          <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+          <p className='text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3'>
             {info}
           </p>
         )}
 
         {/* Status/version badge */}
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span className="bg-white border border-gray-100 rounded-lg px-2.5 py-1 font-medium">
-            สถานะ: <strong className="text-gray-900">{status}</strong>
+        <div className='flex items-center gap-2 text-xs text-gray-500'>
+          <span className='bg-white border border-gray-100 rounded-lg px-2.5 py-1 font-medium'>
+            สถานะ: <strong className='text-gray-900'>{status}</strong>
           </span>
-          <span className="bg-white border border-gray-100 rounded-lg px-2.5 py-1 font-medium">
-            เวอร์ชัน: <strong className="text-gray-900">{version}</strong>
+          <span className='bg-white border border-gray-100 rounded-lg px-2.5 py-1 font-medium'>
+            เวอร์ชัน: <strong className='text-gray-900'>{version}</strong>
           </span>
         </div>
 
@@ -220,102 +222,114 @@ export function FactoryEditQuotationPage() {
             e.preventDefault();
             void save();
           }}
-          className="space-y-4"
+          className='space-y-4'
         >
           {/* Quotation fields table */}
-          <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+          <div className='rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden'>
             {/* Table header */}
-            <div className="bg-[#F8F6FA] px-4 py-2.5 flex gap-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-              <span className="flex-1">รายการ</span>
-              <span className="w-28 text-right">ค่า</span>
+            <div className='bg-[#F8F6FA] px-4 py-2.5 flex gap-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
+              <span className='flex-1'>รายการ</span>
+              <span className='w-28 text-right'>ค่า</span>
             </div>
 
             {/* ราคาต่อชิ้น */}
-            <div className="px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4">
-              <label className="flex-1 min-w-0">
-                <span className="text-xs text-gray-500 block mb-1">ราคาต่อชิ้น *</span>
+            <div className='px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4'>
+              <label className='flex-1 min-w-0'>
+                <span className='text-xs text-gray-500 block mb-1'>ราคาต่อชิ้น *</span>
                 <input
-                  type="number"
-                  step="0.01"
+                  type='number'
+                  step='0.01'
                   disabled={isLocked}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50"
+                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('price_per_piece')}
                 />
               </label>
             </div>
 
             {/* ค่าแม่พิมพ์ */}
-            <div className="px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4">
-              <label className="flex-1 min-w-0">
-                <span className="text-xs text-gray-500 block mb-1">ค่าแม่พิมพ์</span>
+            <div className='px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4'>
+              <label className='flex-1 min-w-0'>
+                <span className='text-xs text-gray-500 block mb-1'>ค่าแม่พิมพ์</span>
                 <input
-                  type="number"
+                  type='number'
                   disabled={isLocked}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50"
+                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('mold_cost')}
                 />
               </label>
             </div>
 
             {/* Lead time */}
-            <div className="px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4">
-              <label className="flex-1 min-w-0">
-                <span className="text-xs text-gray-500 block mb-1">Lead time (วัน) *</span>
+            <div className='px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4'>
+              <label className='flex-1 min-w-0'>
+                <span className='text-xs text-gray-500 block mb-1'>Lead time (วัน) *</span>
                 <input
-                  type="number"
+                  type='number'
                   disabled={isLocked}
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50"
+                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('lead_time_days')}
                 />
               </label>
             </div>
 
             {/* Shipping method */}
-            <div className={`px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] ${isLocked ? 'opacity-70' : ''}`}>
-              <span className="text-xs text-gray-500 block mb-1">วิธีจัดส่ง</span>
+            <div
+              className={`px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] ${isLocked ? 'opacity-70' : ''}`}
+            >
+              <span className='text-xs text-gray-500 block mb-1'>วิธีจัดส่ง</span>
               <ShippingMethodLockedField
                 methodName={shipLabel}
-                hint="ใช้ค่าเดิมจากใบเสนอราคา (ตรงกับ RFQ ของลูกค้า) — แก้ไขวิธีส่งไม่ได้"
+                hint='ใช้ค่าเดิมจากใบเสนอราคา (ตรงกับ RFQ ของลูกค้า) — แก้ไขวิธีส่งไม่ได้'
               />
             </div>
           </div>
 
           {/* Summary card — navy gradient */}
           <div
-            className="rounded-2xl p-4 space-y-2 text-white shadow-md"
+            className='rounded-2xl p-4 space-y-2 text-white shadow-md'
             style={{ background: 'linear-gradient(135deg, #2E2252 0%, #4A267D 100%)' }}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">สรุปใบเสนอราคา</p>
-            <div className="flex justify-between text-sm">
-              <span className="opacity-80">ราคาต่อชิ้น</span>
-              <span className="font-semibold">
-                ฿{Number(form.watch('price_per_piece') || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+            <p className='text-[10px] font-semibold uppercase tracking-wide opacity-60'>
+              สรุปใบเสนอราคา
+            </p>
+            <div className='flex justify-between text-sm'>
+              <span className='opacity-80'>ราคาต่อชิ้น</span>
+              <span className='font-semibold'>
+                ฿
+                {Number(form.watch('price_per_piece') || 0).toLocaleString('th-TH', {
+                  minimumFractionDigits: 2,
+                })}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="opacity-80">ค่าแม่พิมพ์</span>
-              <span className="font-semibold">
-                ฿{Number(form.watch('mold_cost') || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+            <div className='flex justify-between text-sm'>
+              <span className='opacity-80'>ค่าแม่พิมพ์</span>
+              <span className='font-semibold'>
+                ฿
+                {Number(form.watch('mold_cost') || 0).toLocaleString('th-TH', {
+                  minimumFractionDigits: 2,
+                })}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="opacity-80">Lead time</span>
-              <span className="font-semibold">{form.watch('lead_time_days') || '—'} วัน</span>
+            <div className='flex justify-between text-sm'>
+              <span className='opacity-80'>Lead time</span>
+              <span className='font-semibold'>{form.watch('lead_time_days') || '—'} วัน</span>
             </div>
           </div>
 
           {/* เหตุผลการแก้ไข */}
-          <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">เหตุผลการแก้ไข</p>
-            <label className="block">
-              <span className="text-xs text-gray-500 mb-1.5 block">
+          <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
+              เหตุผลการแก้ไข
+            </p>
+            <label className='block'>
+              <span className='text-xs text-gray-500 mb-1.5 block'>
                 เหตุผล * (บันทึกลง audit log)
               </span>
               <textarea
                 disabled={isLocked}
                 rows={3}
-                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50 resize-none"
-                placeholder="เช่น ปรับลดราคาตามเจรจาลูกค้า"
+                className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50 resize-none'
+                placeholder='เช่น ปรับลดราคาตามเจรจาลูกค้า'
                 {...form.register('reason')}
               />
             </label>
@@ -323,33 +337,33 @@ export function FactoryEditQuotationPage() {
         </form>
 
         {/* History section */}
-        <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
+        <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
           <h2
-            className="font-bold flex items-center gap-2 mb-3 text-sm"
+            className='font-bold flex items-center gap-2 mb-3 text-sm'
             style={{ color: '#2E2252' }}
           >
             <History size={16} style={{ color: '#4F46E5' }} /> ประวัติการแก้ไข
           </h2>
           {historyQ.isLoading ? (
-            <p className="text-sm text-gray-400">กำลังโหลดประวัติ…</p>
+            <p className='text-sm text-gray-400'>กำลังโหลดประวัติ…</p>
           ) : history.length === 0 ? (
-            <p className="text-sm text-gray-500">ยังไม่มีประวัติการแก้ไข</p>
+            <p className='text-sm text-gray-500'>ยังไม่มีประวัติการแก้ไข</p>
           ) : (
-            <ol className="space-y-2.5 text-xs">
+            <ol className='space-y-2.5 text-xs'>
               {history.map((h, i) => (
                 <li
                   key={String(h.history_id ?? i)}
-                  className="border-l-2 pl-3 py-1"
+                  className='border-l-2 pl-3 py-1'
                   style={{ borderColor: '#4F46E5' }}
                 >
-                  <div className="font-medium" style={{ color: '#2E2252' }}>
+                  <div className='font-medium' style={{ color: '#2E2252' }}>
                     v{String(h.version ?? '?')} · {String(h.change_type ?? '')}
                   </div>
-                  <div className="text-gray-500">
+                  <div className='text-gray-500'>
                     {String(h.created_at ?? '')} โดย user #{String(h.changed_by ?? '')}
                   </div>
                   {h.reason ? (
-                    <div className="text-gray-600 mt-0.5">เหตุผล: {String(h.reason)}</div>
+                    <div className='text-gray-600 mt-0.5'>เหตุผล: {String(h.reason)}</div>
                   ) : null}
                 </li>
               ))}
@@ -359,22 +373,24 @@ export function FactoryEditQuotationPage() {
       </div>
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 p-4">
-        <div className="max-w-3xl mx-auto flex gap-3">
-          <Button variant="unstyled"
-            type="button"
+      <div className='fixed bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 p-4'>
+        <div className='max-w-3xl mx-auto flex gap-3'>
+          <Button
+            variant='unstyled'
+            type='button'
             disabled={isLocked || saving}
             onClick={() => void save()}
-            className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2"
+            className='flex-1 py-3 rounded-xl font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2'
             style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
           >
             <Save size={14} /> บันทึกร่าง
           </Button>
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             disabled={isLocked || saving || !form.formState.isDirty}
             onClick={() => void save()}
-            className="flex-1 py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2"
+            className='flex-1 py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2'
             style={{
               background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
               boxShadow: '0 2px 8px rgba(227,136,68,0.35)',

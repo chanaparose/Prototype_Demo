@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Copy, Gift } from 'lucide-react';
-import { Button } from '../../ui/button';
+import { Button } from '@/components/ui/button';
 
 type Slide = { id: string; title: string; subtitle: string; code: string };
 
@@ -122,9 +122,9 @@ export function ExplorePromoCarousel({
   if (slides.length === 0) return null;
 
   return (
-    <div ref={containerRef} className="relative mb-3 w-full overflow-hidden">
+    <div ref={containerRef} className='relative mb-3 w-full overflow-hidden'>
       <div
-        className="flex"
+        className='flex'
         style={{
           paddingLeft: `${PADDING}px`,
           paddingRight: `${PADDING}px`,
@@ -140,38 +140,68 @@ export function ExplorePromoCarousel({
         {slides.map((promo) => (
           <div
             key={promo.id}
-            className="flex-shrink-0 rounded-2xl overflow-hidden shadow-lg"
+            className='flex-shrink-0 rounded-2xl overflow-hidden shadow-lg'
             style={{ width: slideWidth || 'auto' }}
           >
-            <div className="relative overflow-hidden rounded-2xl p-3 text-white" style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}>
-              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-30" style={{ background: '#A238FF' }} />
-              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-20 blur-xl" style={{ background: '#A238FF' }} />
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20" style={{ background: '#FAEBD7' }} />
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full mb-1.5" style={{ background: '#A238FF' }}>
-                  <Gift className="w-3 h-3 text-white" />
-                  <span style={{ fontSize: 11 }} className="text-white font-semibold tracking-wide">
+            <div
+              className='relative overflow-hidden rounded-2xl p-3 text-white'
+              style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}
+            >
+              <div
+                className='absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-30'
+                style={{ background: '#A238FF' }}
+              />
+              <div
+                className='absolute top-0 right-0 w-16 h-16 rounded-full opacity-20 blur-xl'
+                style={{ background: '#A238FF' }}
+              />
+              <div
+                className='absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20'
+                style={{ background: '#FAEBD7' }}
+              />
+              <div className='relative z-10'>
+                <div
+                  className='inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full mb-1.5'
+                  style={{ background: '#A238FF' }}
+                >
+                  <Gift className='w-3 h-3 text-white' />
+                  <span style={{ fontSize: 11 }} className='text-white font-semibold tracking-wide'>
                     โปรโมชั่นพิเศษ!
                   </span>
                 </div>
-                <p style={{ fontSize: 15 }} className="mb-1 font-bold text-white drop-shadow-sm">
+                <p style={{ fontSize: 15 }} className='mb-1 font-bold text-white drop-shadow-sm'>
                   {promo.title}
                 </p>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }} className="mb-2.5 leading-snug">
+                <p
+                  style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)' }}
+                  className='mb-2.5 leading-snug'
+                >
                   {promo.subtitle}
                 </p>
                 {promo.code && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 backdrop-blur-sm rounded-lg px-3 py-1.5 border" style={{ background: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.40)' }}>
-                      <span style={{ fontSize: 15, letterSpacing: 2 }} className="font-mono font-bold text-white">{promo.code}</span>
+                  <div className='flex items-center gap-2'>
+                    <div
+                      className='flex items-center gap-2 backdrop-blur-sm rounded-lg px-3 py-1.5 border'
+                      style={{
+                        background: 'rgba(255,255,255,0.25)',
+                        borderColor: 'rgba(255,255,255,0.40)',
+                      }}
+                    >
+                      <span
+                        style={{ fontSize: 15, letterSpacing: 2 }}
+                        className='font-mono font-bold text-white'
+                      >
+                        {promo.code}
+                      </span>
                     </div>
-                    <Button variant="unstyled"
-                      type="button"
+                    <Button
+                      variant='unstyled'
+                      type='button'
                       onClick={() => handleCopy(promo.code, promo.id)}
-                      className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors font-semibold"
+                      className='flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors font-semibold'
                       style={{ background: '#2D1B4E', color: 'white', fontSize: 13 }}
                     >
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className='w-3.5 h-3.5' />
                       {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
                     </Button>
                   </div>
@@ -182,18 +212,23 @@ export function ExplorePromoCarousel({
         ))}
       </div>
 
-      <div className="flex justify-center gap-1.5 mt-4">
+      <div className='flex justify-center gap-1.5 mt-4'>
         {slides.map((_, i) => (
-          <Button variant="unstyled"
+          <Button
+            variant='unstyled'
             key={i}
-            type="button"
+            type='button'
             aria-label={`สไลด์ ${i + 1}`}
             onClick={() => {
               setPromoIndex(i);
               startAutoPlay();
             }}
-            className="h-1.5 rounded-full transition-all duration-300"
-            style={i === promoIndex ? { width: '20px', background: '#F28A2E' } : { width: '6px', background: '#D1D5DB' }}
+            className='h-1.5 rounded-full transition-all duration-300'
+            style={
+              i === promoIndex
+                ? { width: '20px', background: '#F28A2E' }
+                : { width: '6px', background: '#D1D5DB' }
+            }
           />
         ))}
       </div>

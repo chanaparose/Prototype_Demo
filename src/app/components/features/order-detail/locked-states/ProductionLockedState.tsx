@@ -1,11 +1,14 @@
 import React, { useMemo } from 'react';
-import type { LockReason } from '../../../../pages/order-detail/getOrderUiMode';
-import type { ProductionLockContext, ProductionStepTemplate } from '../../production/types';
-import { FadedStepPreview } from './FadedStepPreview';
-import { LockedDepositExpired } from './LockedDepositExpired';
-import { LockedOrderCancelled } from './LockedOrderCancelled';
-import { LockedPendingDeposit } from './LockedPendingDeposit';
-import { LockedUnknownReason } from './LockedUnknownReason';
+import type { LockReason } from '@/pages/order-detail/getOrderUiMode';
+import type {
+  ProductionLockContext,
+  ProductionStepTemplate,
+} from '@/components/features/production/types';
+import { FadedStepPreview } from '@/components/features/order-detail/locked-states/FadedStepPreview';
+import { LockedDepositExpired } from '@/components/features/order-detail/locked-states/LockedDepositExpired';
+import { LockedOrderCancelled } from '@/components/features/order-detail/locked-states/LockedOrderCancelled';
+import { LockedPendingDeposit } from '@/components/features/order-detail/locked-states/LockedPendingDeposit';
+import { LockedUnknownReason } from '@/components/features/order-detail/locked-states/LockedUnknownReason';
 
 type Props = {
   reason: LockReason;
@@ -33,12 +36,7 @@ export function ProductionLockedState({
           />
         );
       case 'DEPOSIT_EXPIRED':
-        return (
-          <LockedDepositExpired
-            ctx={lockContext}
-            onBackToOverview={onBackToOverview}
-          />
-        );
+        return <LockedDepositExpired ctx={lockContext} onBackToOverview={onBackToOverview} />;
       case 'ORDER_CANCELLED':
         return <LockedOrderCancelled />;
       default:
@@ -47,7 +45,7 @@ export function ProductionLockedState({
   }, [reason, lockContext, onBackToOverview, onPayDeposit]);
 
   return (
-    <div className="flex flex-col items-center space-y-6 py-6 sm:py-8">
+    <div className='flex flex-col items-center space-y-6 py-6 sm:py-8'>
       {body}
       <FadedStepPreview steps={templatePreview} />
     </div>

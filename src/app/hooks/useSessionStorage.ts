@@ -13,7 +13,7 @@ interface UseSessionStorageReturn<T> {
  */
 export function useSessionStorage<T = any>(
   key: string,
-  initialValue?: T
+  initialValue?: T,
 ): UseSessionStorageReturn<T> {
   const [value, setValue] = useState<T | null>(() => {
     try {
@@ -39,7 +39,7 @@ export function useSessionStorage<T = any>(
         console.error(`Failed to set sessionStorage key "${key}"`);
       }
     },
-    [key]
+    [key],
   );
 
   const clear = useCallback(() => {

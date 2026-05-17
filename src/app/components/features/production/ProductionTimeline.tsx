@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { MergedProductionStep } from './types';
-import { StepRow } from './StepRow';
-import { deriveStepStates } from './stepDerivedState';
+import type { MergedProductionStep } from '@/components/features/production/types';
+import { StepRow } from '@/components/features/production/StepRow';
+import { deriveStepStates } from '@/components/features/production/stepDerivedState';
 
 type Props = {
   merged: MergedProductionStep[];
@@ -26,10 +26,7 @@ export function ProductionTimeline({
 }: Props) {
   const [openCodes, setOpenCodes] = useState<Set<string>>(new Set());
 
-  const derivedStates = useMemo(
-    () => deriveStepStates(merged, orderStatus),
-    [merged, orderStatus],
-  );
+  const derivedStates = useMemo(() => deriveStepStates(merged, orderStatus), [merged, orderStatus]);
 
   useEffect(() => {
     if (!merged.length) return;
@@ -40,13 +37,16 @@ export function ProductionTimeline({
   }, [merged]);
 
   return (
-    <div className="space-y-3" aria-label="ไทม์ไลน์การผลิต">
+    <div className='space-y-3' aria-label='ไทม์ไลน์การผลิต'>
       {merged.map((m, i) => {
         const key = m.template.step_code || String(m.template.step_id);
         const expanded = openCodes.has(key);
         const uid = m.update.update_id;
         const canReject =
-          m.update.status === 'CD' && uid != null && Number.isFinite(Number(uid)) && Number(uid) > 0;
+          m.update.status === 'CD' &&
+          uid != null &&
+          Number.isFinite(Number(uid)) &&
+          Number(uid) > 0;
         return (
           <StepRow
             key={key}

@@ -24,12 +24,12 @@ export function FormField({
       {label && (
         <label className={`text-[13px] font-bold text-gray-700 ${labelClassName}`}>
           {label}
-          {required && <span className="text-red-400 ml-1">*</span>}
+          {required && <span className='text-red-400 ml-1'>*</span>}
         </label>
       )}
       {children}
-      {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
-      {helperText && !error && <p className="text-xs text-gray-500">{helperText}</p>}
+      {error && <p className='text-xs text-red-600 font-medium'>{error}</p>}
+      {helperText && !error && <p className='text-xs text-gray-500'>{helperText}</p>}
     </div>
   );
 }

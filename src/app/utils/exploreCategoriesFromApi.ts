@@ -1,4 +1,4 @@
-import { categoriesApi, masterApi } from '../services/api';
+import { categoriesApi, masterApi } from '@/services/api';
 
 export type ExploreCategoryItem = {
   id: string;
@@ -49,13 +49,7 @@ export function parseCategoriesResponse(raw: unknown): ExploreCategoryItem[] {
       o.lbi_category_id ??
       o.product_category_id ??
       o.lbi_product_category_id;
-    const nameRaw =
-      o.name ??
-      o.name_th ??
-      o.name_en ??
-      o.category_name ??
-      o.title ??
-      o.label;
+    const nameRaw = o.name ?? o.name_th ?? o.name_en ?? o.category_name ?? o.title ?? o.label;
     const id = idRaw != null ? String(idRaw).trim() : '';
     const name = typeof nameRaw === 'string' ? nameRaw.trim() : String(nameRaw ?? '').trim();
     if (!id || !name) continue;
@@ -71,7 +65,10 @@ export function parseCategoriesResponse(raw: unknown): ExploreCategoryItem[] {
   return [...dedupe.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
 }
 
-export function mergeCategoryLists(primary: ExploreCategoryItem[], secondary: ExploreCategoryItem[]): ExploreCategoryItem[] {
+export function mergeCategoryLists(
+  primary: ExploreCategoryItem[],
+  secondary: ExploreCategoryItem[],
+): ExploreCategoryItem[] {
   const map = new Map<string, ExploreCategoryItem>();
   for (const c of secondary) map.set(String(c.id), c);
   for (const c of primary) map.set(String(c.id), c);
@@ -125,7 +122,10 @@ export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCate
         merged,
       });
     } else {
-      console.debug('[ExploreCategories API]', { mergedCount: merged.length, source: 'GET /categories' });
+      console.debug('[ExploreCategories API]', {
+        mergedCount: merged.length,
+        source: 'GET /categories',
+      });
     }
   }
 
@@ -154,7 +154,8 @@ export async function fetchExploreCategoriesMerged(): Promise<FetchExploreCatego
   ]);
 
   const fromCat = catRes.status === 'fulfilled' ? parseCategoriesResponse(catRes.value) : [];
-  const fromMaster = masterRes.status === 'fulfilled' ? parseCategoriesResponse(masterRes.value) : [];
+  const fromMaster =
+    masterRes.status === 'fulfilled' ? parseCategoriesResponse(masterRes.value) : [];
   const merged = mergeCategoryLists(fromCat, fromMaster);
 
   if (import.meta.env.DEV) {

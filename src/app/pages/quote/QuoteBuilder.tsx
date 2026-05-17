@@ -1,15 +1,15 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
-import { quotationApi } from '../../services/api';
-import { useQuoteBuilder } from './useQuoteBuilder';
-import { usePreviewBreakdown } from './usePreviewBreakdown';
-import { RFQReferencePanel } from './components/RFQReferencePanel';
-import { LineItemTable } from './components/LineItemTable';
-import { ExtraChargesForm } from './components/ExtraChargesForm';
-import { CommercialTermsForm } from './components/CommercialTermsForm';
-import { BreakdownCard } from './components/BreakdownCard';
-import { Button } from '../../components/ui/button';
+import { quotationApi } from '@/services/api';
+import { useQuoteBuilder } from '@/pages/quote/useQuoteBuilder';
+import { usePreviewBreakdown } from '@/pages/quote/usePreviewBreakdown';
+import { RFQReferencePanel } from '@/pages/quote/components/RFQReferencePanel';
+import { LineItemTable } from '@/pages/quote/components/LineItemTable';
+import { ExtraChargesForm } from '@/pages/quote/components/ExtraChargesForm';
+import { CommercialTermsForm } from '@/pages/quote/components/CommercialTermsForm';
+import { BreakdownCard } from '@/pages/quote/components/BreakdownCard';
+import { Button } from '@/components/ui/button';
 
 export function QuoteBuilder() {
   const { rfqId } = useParams<{ rfqId: string }>();
@@ -24,12 +24,12 @@ export function QuoteBuilder() {
   }, [error]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-5">
-      <div className="grid lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-2">
+    <div className='max-w-7xl mx-auto px-4 py-5'>
+      <div className='grid lg:grid-cols-5 gap-4'>
+        <div className='lg:col-span-2'>
           <RFQReferencePanel rfqId={rid} />
         </div>
-        <div className="lg:col-span-3 space-y-4">
+        <div className='lg:col-span-3 space-y-4'>
           <LineItemTable items={state.items} onChange={(items) => setPartial({ items })} />
           <ExtraChargesForm
             discount_amount={state.discount_amount}
@@ -46,8 +46,9 @@ export function QuoteBuilder() {
             onChange={(next) => setPartial(next)}
           />
           <BreakdownCard loading={loading} breakdown={breakdown} />
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             disabled={submitting}
             onClick={async () => {
               setSubmitting(true);
@@ -59,7 +60,7 @@ export function QuoteBuilder() {
                 setSubmitting(false);
               }
             }}
-            className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-violet-600 disabled:opacity-50"
+            className='w-full py-3 rounded-xl text-sm font-semibold text-white bg-violet-600 disabled:opacity-50'
           >
             {submitting ? 'กำลังบันทึก...' : 'Create quotation'}
           </Button>

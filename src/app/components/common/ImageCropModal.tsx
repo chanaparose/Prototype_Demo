@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, RotateCcw, X } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 type CropPoint = { x: number; y: number };
 type Size = { width: number; height: number };
@@ -49,16 +49,7 @@ async function renderCroppedFile(args: {
   offset: CropPoint;
   outputWidth: number;
 }): Promise<File> {
-  const {
-    sourceFile,
-    sourceUrl,
-    natural,
-    viewport,
-    baseScale,
-    zoom,
-    offset,
-    outputWidth,
-  } = args;
+  const { sourceFile, sourceUrl, natural, viewport, baseScale, zoom, offset, outputWidth } = args;
 
   const img = await loadImageFromUrl(sourceUrl);
   const k = baseScale * zoom;
@@ -146,7 +137,10 @@ export function ImageCropModal({
     loadImageFromUrl(sourceUrl)
       .then((img) => {
         if (cancelled) return;
-        setNatural({ width: img.naturalWidth || img.width, height: img.naturalHeight || img.height });
+        setNatural({
+          width: img.naturalWidth || img.width,
+          height: img.naturalHeight || img.height,
+        });
       })
       .catch(() => {
         if (!cancelled) setNatural({ width: 0, height: 0 });
@@ -185,10 +179,7 @@ export function ImageCropModal({
     // Never scale above 1.0 — if the image is smaller than the frame, keep it
     // at its original size and let white padding fill the rest.
     // The user can then zoom in freely to fill the frame as desired.
-    const scaleToFit = Math.min(
-      viewport.width / natural.width,
-      viewport.height / natural.height,
-    );
+    const scaleToFit = Math.min(viewport.width / natural.width, viewport.height / natural.height);
     const scaleToFill = Math.min(1, scaleToFit);
     setBaseScale(scaleToFill);
     setZoom(1);
@@ -224,27 +215,32 @@ export function ImageCropModal({
 
   if (!open || !file) return null;
 
-  const canRender = sourceUrl && natural.width > 0 && natural.height > 0 && viewport.width > 0 && viewport.height > 0;
+  const canRender =
+    sourceUrl &&
+    natural.width > 0 &&
+    natural.height > 0 &&
+    viewport.width > 0 &&
+    viewport.height > 0;
   const isFourByThree = Math.abs(aspect - 4 / 3) < 0.001;
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/55 backdrop-blur-[1px] p-4 flex items-center justify-center">
-      <div className="w-full max-w-3xl max-h-[92vh] rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
-        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-          <p className="text-sm font-semibold text-slate-900">{title}</p>
+    <div className='fixed inset-0 z-[120] bg-black/55 backdrop-blur-[1px] p-4 flex items-center justify-center'>
+      <div className='w-full max-w-3xl max-h-[92vh] rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden flex flex-col'>
+        <div className='px-4 py-3 border-b border-slate-100 flex items-center justify-between'>
+          <p className='text-sm font-semibold text-slate-900'>{title}</p>
           <Button
             onClick={onCancel}
             disabled={submitting}
-            variant="outline"
-            size="icon-sm"
-            className="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center disabled:opacity-50"
-            aria-label="ปิด"
+            variant='outline'
+            size='icon-sm'
+            className='w-8 h-8 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center disabled:opacity-50'
+            aria-label='ปิด'
           >
             <X size={15} />
           </Button>
         </div>
 
-        <div className="p-4 space-y-3 overflow-y-auto">
+        <div className='p-4 space-y-3 overflow-y-auto'>
           <div
             ref={stageRef}
             className={`relative mx-auto block max-w-full overflow-hidden select-none touch-none ${
@@ -275,7 +271,9 @@ export function ImageCropModal({
               if (!dragging || !dragStartRef.current) return;
               const dx = e.clientX - dragStartRef.current.p.x;
               const dy = e.clientY - dragStartRef.current.p.y;
-              setOffset(clampOffset({ x: dragStartRef.current.o.x + dx, y: dragStartRef.current.o.y + dy }));
+              setOffset(
+                clampOffset({ x: dragStartRef.current.o.x + dx, y: dragStartRef.current.o.y + dy }),
+              );
             }}
             onPointerUp={(e) => {
               setDragging(false);
@@ -291,9 +289,9 @@ export function ImageCropModal({
             {sourceUrl ? (
               <img
                 src={sourceUrl}
-                alt=""
+                alt=''
                 draggable={false}
-                className="absolute top-1/2 left-1/2 pointer-events-none"
+                className='absolute top-1/2 left-1/2 pointer-events-none'
                 style={{
                   width: `${baseDisplayed.width}px`,
                   height: `${baseDisplayed.height}px`,
@@ -304,16 +302,16 @@ export function ImageCropModal({
             ) : null}
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-500 shrink-0">ซูม</span>
+          <div className='flex items-center gap-3'>
+            <span className='text-xs text-slate-500 shrink-0'>ซูม</span>
             <input
-              type="range"
+              type='range'
               min={0.2}
               max={3}
               step={0.01}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full"
+              className='w-full'
               disabled={submitting}
             />
             <Button
@@ -322,9 +320,9 @@ export function ImageCropModal({
                 setOffset({ x: 0, y: 0 });
               }}
               disabled={submitting}
-              variant="outline"
-              size="xs"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600 disabled:opacity-50"
+              variant='outline'
+              size='xs'
+              className='inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600 disabled:opacity-50'
             >
               <RotateCcw size={12} />
               รีเซ็ต
@@ -332,13 +330,13 @@ export function ImageCropModal({
           </div>
         </div>
 
-        <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-end gap-2">
+        <div className='px-4 py-3 border-t border-slate-100 flex items-center justify-end gap-2'>
           <Button
             onClick={onCancel}
             disabled={submitting}
-            variant="outline"
-            size="sm"
-            className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-700 disabled:opacity-50"
+            variant='outline'
+            size='sm'
+            className='px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-700 disabled:opacity-50'
           >
             ยกเลิก
           </Button>
@@ -363,12 +361,12 @@ export function ImageCropModal({
                 setSubmitting(false);
               }
             }}
-            className="px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+            className='px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50'
             style={{ background: '#4F46E5' }}
           >
             {submitting ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Loader2 size={14} className="animate-spin" />
+              <span className='inline-flex items-center gap-1.5'>
+                <Loader2 size={14} className='animate-spin' />
                 กำลังบันทึก...
               </span>
             ) : (

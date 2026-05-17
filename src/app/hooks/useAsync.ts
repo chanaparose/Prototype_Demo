@@ -20,7 +20,7 @@ interface UseAsyncReturn<T> extends UseAsyncState<T> {
 export function useAsync<T>(
   asyncFunction: () => Promise<T>,
   immediate = true,
-  deps: React.DependencyList = []
+  deps: React.DependencyList = [],
 ): UseAsyncReturn<T> {
   const [state, setState] = useState<UseAsyncState<T>>({
     data: null,

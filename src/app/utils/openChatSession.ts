@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router';
-import { conversationsApi, messagesApi } from '../services/api';
+import { conversationsApi, messagesApi } from '@/services/api';
 import {
   buildSendPayload,
   chatRoomPath,
@@ -8,8 +8,8 @@ import {
   parseApiConversation,
   type ApiConversation,
   type ChatReference,
-} from './chatContract';
-import type { User } from '../stores';
+} from '@/utils/chatContract';
+import type { User } from '@/stores';
 
 type Row = Record<string, unknown>;
 
@@ -81,19 +81,16 @@ export async function openChatSession(
 
   const fm = firstMessage?.content?.trim();
   if (fm) {
-    await messagesApi.send(
-      conv.conv_id,
-      {
-        body: fm,
-        ...buildSendPayload({
-          conv,
-          currentUserId,
-          content: fm,
-          reference: firstMessage.reference ?? undefined,
-          messageType: 'TX',
-        }),
-      },
-    );
+    await messagesApi.send(conv.conv_id, {
+      body: fm,
+      ...buildSendPayload({
+        conv,
+        currentUserId,
+        content: fm,
+        reference: firstMessage.reference ?? undefined,
+        messageType: 'TX',
+      }),
+    });
     navigate(chatRoomPath(conv.conv_id));
     return String(conv.conv_id);
   }

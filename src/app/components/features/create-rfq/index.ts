@@ -1,6 +1,6 @@
-export { CreateRfqStep1 } from './CreateRfqStep1';
-export { CreateRfqStep2 } from './CreateRfqStep2';
-export { CreateRfqStep3Summary } from './CreateRfqStep3Summary';
+export { CreateRfqStep1 } from '@/components/features/create-rfq/CreateRfqStep1';
+export { CreateRfqStep2 } from '@/components/features/create-rfq/CreateRfqStep2';
+export { CreateRfqStep3Summary } from '@/components/features/create-rfq/CreateRfqStep3Summary';
 export {
   INITIAL_FORM,
   STEPS,
@@ -10,11 +10,11 @@ export {
   SHIPPING_ICONS,
   SUB_CATEGORY_PLACEHOLDERS,
   DEFAULT_PLACEHOLDER,
-} from './types';
+} from '@/components/features/create-rfq/types';
 export type {
   CreateRfqForm,
   SubCategory,
   Unit,
   Address,
   ShippingMethod,
-} from './types';
+} from '@/components/features/create-rfq/types';

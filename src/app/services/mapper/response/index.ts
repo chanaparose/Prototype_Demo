@@ -12,7 +12,7 @@ export type Mapper<TResponse, TModel> = (data: TResponse) => TModel;
  * Mapper with validation — checks if data exists before mapping
  */
 export function createMapper<TResponse, TModel>(
-  transform: (data: TResponse) => TModel
+  transform: (data: TResponse) => TModel,
 ): Mapper<TResponse, TModel> {
   return (data: TResponse): TModel => {
     if (!data) {
@@ -26,7 +26,7 @@ export function createMapper<TResponse, TModel>(
  * List mapper — maps array of items
  */
 export function createListMapper<TResponse, TModel>(
-  itemMapper: Mapper<TResponse, TModel>
+  itemMapper: Mapper<TResponse, TModel>,
 ): Mapper<TResponse[], TModel[]> {
   return (items: TResponse[]): TModel[] => {
     if (!Array.isArray(items)) {
@@ -40,7 +40,7 @@ export function createListMapper<TResponse, TModel>(
  * Nullable mapper — maps optional data
  */
 export function createNullableMapper<TResponse, TModel>(
-  mapper: Mapper<TResponse, TModel>
+  mapper: Mapper<TResponse, TModel>,
 ): Mapper<TResponse | null | undefined, TModel | null> {
   return (data: TResponse | null | undefined): TModel | null => {
     if (!data) {

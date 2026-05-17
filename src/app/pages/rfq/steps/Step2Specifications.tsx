@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { mediaApi } from '../../../services/api';
-import { DimensionInput } from '../../../shared/ui/DimensionInput';
-import type { RFQDraft } from '../useRFQDraft';
-import { Button } from '../../../components/ui/button';
+import { mediaApi } from '@/services/api';
+import { DimensionInput } from '@/shared/ui/DimensionInput';
+import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   draft: RFQDraft;
@@ -31,61 +31,66 @@ export function Step2Specifications({ draft, setDraft }: Props) {
   };
 
   return (
-    <div className="space-y-3">
-      <Button variant="unstyled"
-        type="button"
+    <div className='space-y-3'>
+      <Button
+        variant='unstyled'
+        type='button'
         onClick={() => setAdvanced((v) => !v)}
-        className="text-xs font-semibold text-violet-600"
+        className='text-xs font-semibold text-violet-600'
       >
         {advanced ? 'Basic' : 'Advanced'}
       </Button>
       <input
         value={draft.material_grade}
         onChange={(e) => setDraft({ material_grade: e.target.value })}
-        placeholder="วัตถุดิบ"
-        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        placeholder='วัตถุดิบ'
+        className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
       {advanced ? (
         <>
           <input
             value={draft.tolerance}
             onChange={(e) => setDraft({ tolerance: e.target.value })}
-            placeholder="Tolerance"
-            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            placeholder='Tolerance'
+            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           />
           <input
             value={draft.color_finish}
             onChange={(e) => setDraft({ color_finish: e.target.value })}
-            placeholder="Color / Finish"
-            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            placeholder='Color / Finish'
+            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           />
-          <DimensionInput value={draft.dimension_spec} onChange={(v) => setDraft({ dimension_spec: v })} />
+          <DimensionInput
+            value={draft.dimension_spec}
+            onChange={(v) => setDraft({ dimension_spec: v })}
+          />
           <input
             value={draft.packaging_spec}
             onChange={(e) => setDraft({ packaging_spec: e.target.value })}
-            placeholder="Packaging spec"
-            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            placeholder='Packaging spec'
+            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           />
         </>
       ) : null}
 
-      <div className="space-y-2">
+      <div className='space-y-2'>
         <input
           ref={ref}
-          type="file"
-          accept="image/*,.pdf"
-          className="hidden"
+          type='file'
+          accept='image/*,.pdf'
+          className='hidden'
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) void uploadOne(f);
             if (ref.current) ref.current.value = '';
           }}
         />
-        <Button variant="unstyled"
-          type="button"
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => ref.current?.click()}
           disabled={uploading || draft.reference_images.length >= 5}
-          className="rounded-xl border border-dashed border-gray-300 px-3 py-2 text-sm w-full"
+          className='rounded-xl border border-dashed border-gray-300 px-3 py-2 text-sm w-full'
         >
           {uploading
             ? 'กำลังอัปโหลด...'
@@ -94,28 +99,29 @@ export function Step2Specifications({ draft, setDraft }: Props) {
               : 'อัปโหลดไฟล์อ้างอิง (สูงสุด 5 ไฟล์)'}
         </Button>
         {draft.reference_images.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
             {draft.reference_images.map((u, idx) => (
               <div
                 key={u + idx}
-                className="relative aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-100"
+                className='relative aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-100'
               >
                 {!brokenImages[idx] ? (
                   <img
                     src={u}
                     alt={`reference-${idx + 1}`}
-                    className="w-full h-full object-cover"
+                    className='w-full h-full object-cover'
                     onError={() => setBrokenImages((prev) => ({ ...prev, [idx]: true }))}
                   />
                 ) : (
-                  <div className="w-full h-full px-2 flex items-center justify-center text-[11px] text-gray-600 text-center">
+                  <div className='w-full h-full px-2 flex items-center justify-center text-[11px] text-gray-600 text-center'>
                     เอกสารอ้างอิง #{idx + 1}
                   </div>
                 )}
-                <Button variant="unstyled"
-                  type="button"
+                <Button
+                  variant='unstyled'
+                  type='button'
                   onClick={() => removeReference(idx)}
-                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-xs leading-none"
+                  className='absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-xs leading-none'
                   aria-label={`ลบไฟล์อ้างอิง ${idx + 1}`}
                 >
                   ×

@@ -2,7 +2,7 @@
  * Admin APIs — Platform management, factories, orders, customers, settlements
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 
 // ─── Query String Helper ───────────────────────────────────
 function qs(params: Record<string, string | number | boolean | undefined | null>): string {
@@ -267,14 +267,10 @@ export const adminApi = {
         date_from: params?.date_from,
         date_to: params?.date_to,
         granularity: params?.granularity,
-      })}`
+      })}`,
     ),
 
-  dashboardTopFactories: (params?: {
-    date_from?: string;
-    date_to?: string;
-    limit?: number;
-  }) =>
+  dashboardTopFactories: (params?: { date_from?: string; date_to?: string; limit?: number }) =>
     httpClient.get<
       | AdminTopFactoryRow[]
       | {
@@ -287,7 +283,7 @@ export const adminApi = {
         date_from: params?.date_from,
         date_to: params?.date_to,
         limit: params?.limit,
-      })}`
+      })}`,
     ),
 
   listFactories: (params?: {
@@ -304,7 +300,7 @@ export const adminApi = {
         page: params?.page,
         page_size: params?.page_size,
         is_verified: params?.is_verified,
-      })}`
+      })}`,
     ),
 
   getFactory: (factoryId: number | string) =>
@@ -319,7 +315,7 @@ export const adminApi = {
   suspendFactory: (factoryId: number | string, reason?: string) =>
     httpClient.post<Record<string, unknown>>(
       `/admin/factories/${factoryId}/suspend`,
-      reason ? { reason } : {}
+      reason ? { reason } : {},
     ),
 
   unsuspendFactory: (factoryId: number | string) =>
@@ -350,10 +346,11 @@ export const adminApi = {
         search: params?.search,
         page: params?.page,
         page_size: params?.page_size,
-      })}`
+      })}`,
     ),
 
-  getRfq: (rfqId: number | string) => httpClient.get<Record<string, unknown>>(`/admin/rfqs/${rfqId}`),
+  getRfq: (rfqId: number | string) =>
+    httpClient.get<Record<string, unknown>>(`/admin/rfqs/${rfqId}`),
 
   updateRfqStatus: (rfqId: number | string, status: string) =>
     httpClient.patch<Record<string, unknown>>(`/admin/rfqs/${rfqId}/status`, { status }),
@@ -378,7 +375,7 @@ export const adminApi = {
         search: params?.search,
         page: params?.page,
         page_size: params?.page_size,
-      })}`
+      })}`,
     ),
 
   getOrder: (orderId: number | string) =>
@@ -392,7 +389,7 @@ export const adminApi = {
       `/admin/commission-rules${qs({
         factory_id: params?.factory_id,
         active_only: params?.active_only,
-      })}`
+      })}`,
     ),
 
   createCommissionRule: (body: {
@@ -408,14 +405,11 @@ export const adminApi = {
     httpClient.get<AdminCommissionExemption[]>(
       `/admin/commission-exemptions${qs({
         active_only: params?.active_only,
-      })}`
+      })}`,
     ),
 
-  createCommissionExemption: (body: {
-    factory_id: number;
-    reason: string;
-    expires_at?: string;
-  }) => httpClient.post<AdminCommissionExemption>('/admin/commission-exemptions', body),
+  createCommissionExemption: (body: { factory_id: number; reason: string; expires_at?: string }) =>
+    httpClient.post<AdminCommissionExemption>('/admin/commission-exemptions', body),
 
   deleteCommissionExemption: (exemptionId: number | string) =>
     httpClient.delete<void>(`/admin/commission-exemptions/${exemptionId}`),
@@ -423,12 +417,7 @@ export const adminApi = {
 
 // ─── Admin Customer API ────────────────────────────────────
 export const adminCustomerApi = {
-  list: (params?: {
-    search?: string;
-    is_active?: boolean;
-    limit?: number;
-    offset?: number;
-  }) =>
+  list: (params?: { search?: string; is_active?: boolean; limit?: number; offset?: number }) =>
     httpClient.get<{
       customers: AdminCustomerListItem[];
       total: number;
@@ -440,11 +429,10 @@ export const adminCustomerApi = {
         is_active: params?.is_active,
         limit: params?.limit,
         offset: params?.offset,
-      })}`
+      })}`,
     ),
 
-  getDetail: (userId: number) =>
-    httpClient.get<AdminCustomerDetail>(`/admin/customers/${userId}`),
+  getDetail: (userId: number) => httpClient.get<AdminCustomerDetail>(`/admin/customers/${userId}`),
 
   getWallet: (userId: number) =>
     httpClient.get<AdminCustomerWallet>(`/admin/customers/${userId}/wallet`),
@@ -459,7 +447,7 @@ export const adminCustomerApi = {
       `/admin/customers/${userId}/orders${qs({
         limit: params?.limit,
         offset: params?.offset,
-      })}`
+      })}`,
     ),
 
   topCustomers: (limit = 5) =>
@@ -480,6 +468,6 @@ export const adminSettlementApi = {
       `/admin/factories/${factoryId}/settlements${qs({
         limit: params?.limit,
         offset: params?.offset,
-      })}`
+      })}`,
     ),
 };

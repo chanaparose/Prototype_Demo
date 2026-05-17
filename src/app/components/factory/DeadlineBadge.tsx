@@ -5,8 +5,8 @@ import {
   deadlineTone,
   formatThaiDeadlineShort,
   type DeadlineTone,
-} from '../../utils/rfqDeadline';
-import { formatDeadline } from '../../utils/formatting';
+} from '@/utils/rfqDeadline';
+import { formatDeadline } from '@/utils/formatting';
 
 const TONE_STYLES: Record<DeadlineTone, { wrap: string }> = {
   ok: { wrap: 'bg-slate-100 text-slate-700 border-slate-200' },
@@ -43,7 +43,7 @@ export function DeadlineBadge({ deadlineIso, className = '' }: Props) {
     <span
       className={`inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 text-[11px] font-semibold tabular-nums ${st.wrap} ${className}`}
     >
-      {tone === 'urgent' ? <AlertTriangle size={12} className="shrink-0" aria-hidden /> : null}
+      {tone === 'urgent' ? <AlertTriangle size={12} className='shrink-0' aria-hidden /> : null}
       {label}
     </span>
   );

@@ -19,10 +19,7 @@ export const PROMO_SLIDES = [
   },
 ];
 
-export const EXPLORE_STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; bg: string }
-> = {
+export const EXPLORE_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   offers_received: { label: 'มีใบเสนอราคา', color: '#A656A0', bg: '#F2F2F2' },
   reviewing: { label: 'กำลังพิจารณา', color: '#F28A2E', bg: '#FFF4E8' },
   pending: { label: 'รอใบเสนอราคา', color: '#6B7280', bg: '#F3F4F6' },

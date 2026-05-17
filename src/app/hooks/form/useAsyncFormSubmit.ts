@@ -14,7 +14,7 @@ interface UseAsyncFormSubmitReturn {
  * @param onSubmit - Async function to handle form submission
  */
 export function useAsyncFormSubmit<T = any>(
-  onSubmit: (data: T) => Promise<void>
+  onSubmit: (data: T) => Promise<void>,
 ): UseAsyncFormSubmitReturn {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -35,7 +35,7 @@ export function useAsyncFormSubmit<T = any>(
         setIsSubmitting(false);
       }
     },
-    [onSubmit]
+    [onSubmit],
   );
 
   const reset = useCallback(() => {

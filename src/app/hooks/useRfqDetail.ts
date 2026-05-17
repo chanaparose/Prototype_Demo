@@ -7,30 +7,41 @@
  * Token ถูกแนบอัตโนมัติผ่าน api.ts (Authorization: Bearer <token>)
  */
 import React from 'react';
-import { useData, type Rfq, type RfqOffer, type Order } from '../stores';
-import { rfqsApi, ordersApi, masterApi, categoriesApi } from '../services/api';
-import { summarizeRfqAddress } from '../utils/rfqAddressSummary';
-import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
+import { useData, type Rfq, type RfqOffer, type Order } from '@/stores';
+import { rfqsApi, ordersApi, masterApi, categoriesApi } from '@/services/api';
+import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
 
 // ─── Status Code Mapping ───────────────────────────────────────
 // hasAccepted = มี quotation status AC อย่างน้อย 1 ใบ (แสดงว่า order ถูกสร้างแล้ว)
 const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): string => {
   switch (code.toUpperCase()) {
-    case 'OP': return hasQuotes ? 'offers_received' : 'pending';
-    case 'CL': return hasAccepted ? 'completed' : 'expired';
-    case 'CC': return 'cancelled';
-    default: return code.toLowerCase();
+    case 'OP':
+      return hasQuotes ? 'offers_received' : 'pending';
+    case 'CL':
+      return hasAccepted ? 'completed' : 'expired';
+    case 'CC':
+      return 'cancelled';
+    default:
+      return code.toLowerCase();
   }
 };
 
 // ─── Category Icon Mapping ─────────────────────────────────────
 const CATEGORY_ICON_MAP: Record<string, string> = {
-  'อาหารสัตว์': '🐾', 'อาหารเม็ดสัตว์': '🐾', 'อาหารเสริม': '💊',
-  'ของเล่นสัตว์เลี้ยง': '🎾', 'เสื้อผ้าสัตว์เลี้ยง': '👕',
-  'อุปกรณ์สัตว์เลี้ยง': '🦮', 'บรรจุภัณฑ์': '📦',
-  'ขนมสัตว์เลี้ยง': '🍖', 'ที่นอนและบ้าน': '🏠',
-  'ตู้ปลาและกรง': '🐟', 'กระเป๋าและรถเข็น': '🧳',
-  'ห้องน้ำและทราย': '🚿', 'อุปกรณ์อาบน้ำ': '🧴',
+  อาหารสัตว์: '🐾',
+  อาหารเม็ดสัตว์: '🐾',
+  อาหารเสริม: '💊',
+  ของเล่นสัตว์เลี้ยง: '🎾',
+  เสื้อผ้าสัตว์เลี้ยง: '👕',
+  อุปกรณ์สัตว์เลี้ยง: '🦮',
+  บรรจุภัณฑ์: '📦',
+  ขนมสัตว์เลี้ยง: '🍖',
+  ที่นอนและบ้าน: '🏠',
+  ตู้ปลาและกรง: '🐟',
+  กระเป๋าและรถเข็น: '🧳',
+  ห้องน้ำและทราย: '🚿',
+  อุปกรณ์อาบน้ำ: '🧴',
 };
 const guessCategoryIcon = (name: string) => {
   if (CATEGORY_ICON_MAP[name]) return CATEGORY_ICON_MAP[name];
@@ -115,9 +126,7 @@ function collectStringArrayFromUnknown(input: unknown): string[] {
     return [raw];
   }
   if (Array.isArray(input)) {
-    return input
-      .map((x) => String(x ?? '').trim())
-      .filter(Boolean);
+    return input.map((x) => String(x ?? '').trim()).filter(Boolean);
   }
   if (typeof input === 'object') {
     const o = input as Record<string, unknown>;
@@ -170,17 +179,12 @@ function extractSubCategoryNameFromRfqResponse(
   rawRfq: Record<string, unknown>,
 ): string {
   const fromRfq = String(
-    rawRfq.sub_category_name ??
-      rawRfq.subCategoryName ??
-      rawRfq.SubCategoryName ??
-      '',
+    rawRfq.sub_category_name ?? rawRfq.subCategoryName ?? rawRfq.SubCategoryName ?? '',
   ).trim();
   if (fromRfq) return fromRfq;
   if (!detailPayload) return '';
   const fromRoot = String(
-    detailPayload.sub_category_name ??
-      detailPayload.subCategoryName ??
-      '',
+    detailPayload.sub_category_name ?? detailPayload.subCategoryName ?? '',
   ).trim();
   if (fromRoot) return fromRoot;
   const inner = detailPayload.rfq;
@@ -407,10 +411,7 @@ export function useRfqDetail(rfqId: string | undefined) {
       const sampleQtyRaw = numberOrNull(rExtra.sample_qty, rExtra.sampleQty);
       const sampleQty =
         sampleQtyRaw != null && sampleQtyRaw > 0 ? Math.round(sampleQtyRaw) : undefined;
-      const inspectionType = firstNonEmptyString(
-        rExtra.inspection_type,
-        rExtra.inspectionType,
-      );
+      const inspectionType = firstNonEmptyString(rExtra.inspection_type, rExtra.inspectionType);
       const deliveryAddress = summarizeRfqAddress(rawRecord);
 
       const offers: RfqOffer[] = quotes.map((q) => ({
@@ -428,7 +429,12 @@ export function useRfqDetail(rfqId: string | undefined) {
           const vatAmount =
             vatAmountRaw > 0
               ? vatAmountRaw
-              : Math.max(0, ((subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost) * vatRate) / 100);
+              : Math.max(
+                  0,
+                  ((subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost) *
+                    vatRate) /
+                    100,
+                );
           const computedGrandTotal = Math.max(
             0,
             subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost + vatAmount,
@@ -447,51 +453,56 @@ export function useRfqDetail(rfqId: string | undefined) {
               : Math.max(0, grandTotal - platformCommissionAmount);
 
           return {
-        id: String(q.quote_id),
-        factoryId: String(q.factory_id),
-        factoryName: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
-        price: Math.round(grandTotal),
-        leadTime: q.lead_time_days,
-        rating: 0,
-        verified: true,
-        recommended: false,
-        aiReason: `เสนอราคาเมื่อ ${q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}`,
-        factoryHighlight: String(q.factory_highlight ?? '').trim(),
-        completedOrders: 0,
-        responseTime: '',
-        // Extra fields for BOQ
-        quoteStatus: q.status,
-        quotationDetail: {
-          quote_id: q.quote_id,
-          factory_name: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
-          price_per_piece: q.price_per_piece,
-          mold_cost: toolingMoldCost,
-          moq: qty > 0 ? qty : undefined,
-          lead_time_days: q.lead_time_days,
-          shipping_method:
-            shippingMethodName || `วิธีจัดส่ง #${String(q.shipping_method_id ?? '-')}`,
-          image_urls: collectUrlsFromUnknown(q.image_urls),
-          sample_cost: 0,
-          status: q.status === 'AC' ? 'Accepted' : q.status === 'RJ' ? 'Rejected' : q.status === 'EX' ? 'Expired' : 'Pending',
-          valid_until:
-            q.valid_until != null && String(q.valid_until).trim()
-              ? String(q.valid_until)
-              : '',
-          validity_days: Number.isFinite(Number(q.validity_days)) ? Number(q.validity_days) : 0,
-          subtotal,
-          discount_amount: discountAmount,
-          shipping_cost: shippingCost,
-          packaging_cost: packagingCost,
-          tooling_mold_cost: toolingMoldCost,
-          vat_rate: vatRate,
-          vat_amount: vatAmount,
-          grand_total: grandTotal,
-          platform_commission_rate: platformCommissionRate,
-          platform_commission_amount: platformCommissionAmount,
-          factory_net_receivable: factoryNet,
-          certifications: [],
-        },
-      };
+            id: String(q.quote_id),
+            factoryId: String(q.factory_id),
+            factoryName: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
+            price: Math.round(grandTotal),
+            leadTime: q.lead_time_days,
+            rating: 0,
+            verified: true,
+            recommended: false,
+            aiReason: `เสนอราคาเมื่อ ${q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}`,
+            factoryHighlight: String(q.factory_highlight ?? '').trim(),
+            completedOrders: 0,
+            responseTime: '',
+            // Extra fields for BOQ
+            quoteStatus: q.status,
+            quotationDetail: {
+              quote_id: q.quote_id,
+              factory_name: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
+              price_per_piece: q.price_per_piece,
+              mold_cost: toolingMoldCost,
+              moq: qty > 0 ? qty : undefined,
+              lead_time_days: q.lead_time_days,
+              shipping_method:
+                shippingMethodName || `วิธีจัดส่ง #${String(q.shipping_method_id ?? '-')}`,
+              image_urls: collectUrlsFromUnknown(q.image_urls),
+              sample_cost: 0,
+              status:
+                q.status === 'AC'
+                  ? 'Accepted'
+                  : q.status === 'RJ'
+                    ? 'Rejected'
+                    : q.status === 'EX'
+                      ? 'Expired'
+                      : 'Pending',
+              valid_until:
+                q.valid_until != null && String(q.valid_until).trim() ? String(q.valid_until) : '',
+              validity_days: Number.isFinite(Number(q.validity_days)) ? Number(q.validity_days) : 0,
+              subtotal,
+              discount_amount: discountAmount,
+              shipping_cost: shippingCost,
+              packaging_cost: packagingCost,
+              tooling_mold_cost: toolingMoldCost,
+              vat_rate: vatRate,
+              vat_amount: vatAmount,
+              grand_total: grandTotal,
+              platform_commission_rate: platformCommissionRate,
+              platform_commission_amount: platformCommissionAmount,
+              factory_net_receivable: factoryNet,
+              certifications: [],
+            },
+          };
         })(),
       }));
 
@@ -597,7 +608,9 @@ export function useRfqDetail(rfqId: string | undefined) {
               });
             }
           }
-        } catch { /* no orders found */ }
+        } catch {
+          /* no orders found */
+        }
       }
       setQuoteOrderMap(newQuoteOrderMap);
 

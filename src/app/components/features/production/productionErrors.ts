@@ -1,4 +1,4 @@
-import { ApiHttpError } from '../../../services/api';
+import { ApiHttpError } from '@/services/api';
 
 /** Map BE `error.code` to Thai copy (PRODUCTION_TRACKING_FE §7). */
 export function productionErrorToThai(code: string, details?: Record<string, unknown>): string {
@@ -44,7 +44,10 @@ export function productionErrorToThai(code: string, details?: Record<string, unk
   }
 }
 
-export function getProductionErrorMeta(err: unknown): { code: string | null; details?: Record<string, unknown> } {
+export function getProductionErrorMeta(err: unknown): {
+  code: string | null;
+  details?: Record<string, unknown>;
+} {
   if (!(err instanceof ApiHttpError) || err.body == null || typeof err.body !== 'object') {
     return { code: null };
   }
@@ -53,7 +56,10 @@ export function getProductionErrorMeta(err: unknown): { code: string | null; det
   if (errObj && typeof errObj === 'object') {
     const e = errObj as Record<string, unknown>;
     const code = typeof e.code === 'string' ? e.code : null;
-    const details = e.details && typeof e.details === 'object' ? (e.details as Record<string, unknown>) : undefined;
+    const details =
+      e.details && typeof e.details === 'object'
+        ? (e.details as Record<string, unknown>)
+        : undefined;
     return { code, details };
   }
   return { code: null };

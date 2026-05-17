@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/components/ui/button';
 
 type CollapsibleCardProps = {
   defaultOpen?: boolean;
@@ -35,8 +35,8 @@ export function CollapsibleCard({
     <div className={`rounded-2xl border border-gray-100 bg-white overflow-hidden ${className}`}>
       <Button
         onClick={handleToggle}
-        variant="ghost"
-        size="default"
+        variant='ghost'
+        size='default'
         className={`w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors ${headerClassName}`}
       >
         {header}

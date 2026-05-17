@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Send } from 'lucide-react';
-import { rfqsApi } from '../../../services/api';
-import type { QuotationRow } from '../../../types/rfq';
+import { rfqsApi } from '@/services/api';
+import type { QuotationRow } from '@/types/rfq';
 import { formatCurrency } from '@/utils/formatting';
-import { CollapsibleCard, StatusBadge } from '../../../shared/ui';
+import { CollapsibleCard, StatusBadge } from '@/shared/ui';
 
 interface Props {
   rfqId: number | string;
@@ -12,8 +12,7 @@ interface Props {
   factoryName?: string;
 }
 
-const fmt = (n: number) =>
-  formatCurrency(n, 'THB').replace('฿', '').trim();
+const fmt = (n: number) => formatCurrency(n, 'THB').replace('฿', '').trim();
 
 const paymentTermsLabel: Record<string, string> = {
   lc_at_sight: 'ชำระเต็ม 100% ก่อนผลิต',
@@ -65,9 +64,9 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-100 bg-white px-4 py-4">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <div className="w-4 h-4 border-2 border-gray-200 border-t-violet-400 rounded-full animate-spin" />
+      <div className='rounded-2xl border border-gray-100 bg-white px-4 py-4'>
+        <div className='flex items-center gap-2 text-sm text-gray-400'>
+          <div className='w-4 h-4 border-2 border-gray-200 border-t-violet-400 rounded-full animate-spin' />
           กำลังโหลดใบเสนอราคา...
         </div>
       </div>
@@ -98,112 +97,118 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
       defaultOpen={open}
       onOpenChange={setOpen}
       header={
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-gray-900">ใบเสนอราคา BOQ</span>
-          <StatusBadge variant="success" size="sm">
+        <div className='flex items-center gap-2'>
+          <span className='text-sm font-bold text-gray-900'>ใบเสนอราคา BOQ</span>
+          <StatusBadge variant='success' size='sm'>
             <CheckCircle size={10} /> ยอมรับแล้ว
           </StatusBadge>
         </div>
       }
-      className="rounded-2xl border border-gray-100 bg-white overflow-hidden"
+      className='rounded-2xl border border-gray-100 bg-white overflow-hidden'
     >
-      <div className="space-y-4">
-          {/* Factory header row */}
-          <div className="flex items-center gap-2.5 -mt-1">
-            <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-base shrink-0">
-              🏭
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">
-                {factoryName ?? `โรงงาน #${q.factory_id}`}
-              </p>
-              <p className="text-[10px] text-gray-400">ผู้รับผลิต · #{q.quote_id}</p>
-            </div>
+      <div className='space-y-4'>
+        {/* Factory header row */}
+        <div className='flex items-center gap-2.5 -mt-1'>
+          <div className='w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-base shrink-0'>
+            🏭
           </div>
-
-          {/* KPI tiles */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[
-              { label: 'ราคาต่อชิ้น', value: `฿${fmt(Number(q.price_per_piece ?? 0))}`, accent: true },
-              { label: 'Lead time (วัน)', value: String(q.lead_time_days ?? '-'), accent: false },
-              { label: 'ค่าสินค้ารวม (ก่อน VAT)', value: `฿${fmt(subtotal)}`, accent: false },
-              { label: 'อายุใบเสนอ', value: validityDays > 0 ? `${validityDays} วัน` : '-', accent: false },
-            ].map((tile) => (
-              <div key={tile.label} className="bg-gray-50 rounded-xl p-2.5 text-center">
-                <p
-                  className="text-sm font-bold"
-                  style={{ color: tile.accent ? '#7A4B94' : '#2E2252' }}
-                >
-                  {tile.value}
-                </p>
-                <p className="text-[9px] text-gray-500 mt-0.5">{tile.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Cost breakdown */}
-          <div className="rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-3 space-y-1.5">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-              รายละเอียดค่าใช้จ่าย
+          <div className='min-w-0'>
+            <p className='text-sm font-semibold text-gray-900 truncate'>
+              {factoryName ?? `โรงงาน #${q.factory_id}`}
             </p>
-
-            <Row label="ค่าสินค้ารวม" value={`฿${fmt(subtotal)}`} />
-            {shippingCost > 0 && <Row label="ค่าขนส่ง" value={`฿${fmt(shippingCost)}`} />}
-            {packagingCost > 0 && <Row label="ค่าบรรจุภัณฑ์" value={`฿${fmt(packagingCost)}`} />}
-            {toolingMoldCost > 0 && <Row label="ค่าแม่พิมพ์ / Tooling" value={`฿${fmt(toolingMoldCost)}`} />}
-            {discountAmount > 0 && (
-              <Row label="ส่วนลด" value={`-฿${fmt(discountAmount)}`} valueColor="text-emerald-600" />
-            )}
-
-            <div className="border-t border-gray-200 pt-1.5 mt-1">
-              <Row
-                label={`VAT ${vatRate > 0 ? `${vatRate}%` : ''}`}
-                value={`฿${fmt(vatAmount)}`}
-              />
-            </div>
-
-            <div className="border-t border-gray-200 pt-1.5 mt-1">
-              <Row
-                label="รวมทั้งหมด (Grand total)"
-                value={`฿${fmt(grandTotal)}`}
-                bold
-                valueColor="text-[#7A4B94]"
-              />
-            </div>
-
+            <p className='text-[10px] text-gray-400'>ผู้รับผลิต · #{q.quote_id}</p>
           </div>
+        </div>
 
-          {/* Meta info */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {paymentLabel && (
-              <div className="rounded-xl bg-violet-50 px-3 py-2">
-                <p className="text-[9px] text-gray-400 mb-0.5">เงื่อนไขชำระเงิน</p>
-                <p className="font-semibold text-violet-800">{paymentLabel}</p>
-              </div>
-            )}
-            {validUntil && (
-              <div className="rounded-xl bg-gray-50 px-3 py-2">
-                <p className="text-[9px] text-gray-400 mb-0.5">ใบเสนอราคาถึง</p>
-                <p className="font-semibold text-gray-800">{validUntil}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Images */}
-          {imageUrls.length > 0 && (
-            <div>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                รูปประกอบใบเสนอราคา
+        {/* KPI tiles */}
+        <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
+          {[
+            {
+              label: 'ราคาต่อชิ้น',
+              value: `฿${fmt(Number(q.price_per_piece ?? 0))}`,
+              accent: true,
+            },
+            { label: 'Lead time (วัน)', value: String(q.lead_time_days ?? '-'), accent: false },
+            { label: 'ค่าสินค้ารวม (ก่อน VAT)', value: `฿${fmt(subtotal)}`, accent: false },
+            {
+              label: 'อายุใบเสนอ',
+              value: validityDays > 0 ? `${validityDays} วัน` : '-',
+              accent: false,
+            },
+          ].map((tile) => (
+            <div key={tile.label} className='bg-gray-50 rounded-xl p-2.5 text-center'>
+              <p
+                className='text-sm font-bold'
+                style={{ color: tile.accent ? '#7A4B94' : '#2E2252' }}
+              >
+                {tile.value}
               </p>
-              <div className="grid grid-cols-3 gap-2">
-                {imageUrls.map((url) => (
-                  <div key={url} className="aspect-square rounded-xl overflow-hidden bg-gray-100">
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
+              <p className='text-[9px] text-gray-500 mt-0.5'>{tile.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Cost breakdown */}
+        <div className='rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-3 space-y-1.5'>
+          <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2'>
+            รายละเอียดค่าใช้จ่าย
+          </p>
+
+          <Row label='ค่าสินค้ารวม' value={`฿${fmt(subtotal)}`} />
+          {shippingCost > 0 && <Row label='ค่าขนส่ง' value={`฿${fmt(shippingCost)}`} />}
+          {packagingCost > 0 && <Row label='ค่าบรรจุภัณฑ์' value={`฿${fmt(packagingCost)}`} />}
+          {toolingMoldCost > 0 && (
+            <Row label='ค่าแม่พิมพ์ / Tooling' value={`฿${fmt(toolingMoldCost)}`} />
+          )}
+          {discountAmount > 0 && (
+            <Row label='ส่วนลด' value={`-฿${fmt(discountAmount)}`} valueColor='text-emerald-600' />
+          )}
+
+          <div className='border-t border-gray-200 pt-1.5 mt-1'>
+            <Row label={`VAT ${vatRate > 0 ? `${vatRate}%` : ''}`} value={`฿${fmt(vatAmount)}`} />
+          </div>
+
+          <div className='border-t border-gray-200 pt-1.5 mt-1'>
+            <Row
+              label='รวมทั้งหมด (Grand total)'
+              value={`฿${fmt(grandTotal)}`}
+              bold
+              valueColor='text-[#7A4B94]'
+            />
+          </div>
+        </div>
+
+        {/* Meta info */}
+        <div className='grid grid-cols-2 gap-2 text-xs'>
+          {paymentLabel && (
+            <div className='rounded-xl bg-violet-50 px-3 py-2'>
+              <p className='text-[9px] text-gray-400 mb-0.5'>เงื่อนไขชำระเงิน</p>
+              <p className='font-semibold text-violet-800'>{paymentLabel}</p>
             </div>
           )}
+          {validUntil && (
+            <div className='rounded-xl bg-gray-50 px-3 py-2'>
+              <p className='text-[9px] text-gray-400 mb-0.5'>ใบเสนอราคาถึง</p>
+              <p className='font-semibold text-gray-800'>{validUntil}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Images */}
+        {imageUrls.length > 0 && (
+          <div>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2'>
+              รูปประกอบใบเสนอราคา
+            </p>
+            <div className='grid grid-cols-3 gap-2'>
+              {imageUrls.map((url) => (
+                <div key={url} className='aspect-square rounded-xl overflow-hidden bg-gray-100'>
+                  <img src={url} alt='' className='w-full h-full object-cover' />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </CollapsibleCard>
   );
@@ -223,7 +228,7 @@ function Row({
   valueColor?: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className='flex items-center justify-between gap-2'>
       <span className={`text-[11px] ${muted ? 'text-gray-400' : 'text-gray-600'}`}>{label}</span>
       <span
         className={`text-[11px] ${bold ? 'font-bold' : 'font-semibold'} ${

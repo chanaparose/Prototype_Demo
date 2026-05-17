@@ -1,9 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
-import { formatDateTh } from '../../../../components/features/order-detail/utils';
-import { Button } from '../../../../components/ui/button';
-import type { DerivedCardState, FactoryOrderRow } from '../types';
+import { formatDateTh } from '@/components/features/order-detail/utils';
+import { Button } from '@/components/ui/button';
+import type {
+  DerivedCardState,
+  FactoryOrderRow,
+} from '@/pages/factory-portal/factory-orders/types';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: string }> = {
   PP: { label: 'รอชำระมัดจำ', badgeClass: 'bg-amber-100 text-amber-800', icon: '⏳' },
@@ -28,44 +31,70 @@ export function FactoryOrderCard({
   onPrimaryCta: (row: FactoryOrderRow, cta: DerivedCardState['primaryCta']) => void;
 }) {
   return (
-    <article className="bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm min-w-0">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="font-semibold text-gray-900 text-sm leading-snug truncate">
+    <article className='bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm min-w-0'>
+      <div className='flex items-start justify-between gap-2'>
+        <div className='min-w-0'>
+          <p className='font-semibold text-gray-900 text-sm leading-snug truncate'>
             {row.rfq?.title ?? `Order #${row.order_id}`}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">Order #{row.order_id}</p>
+          <p className='text-[11px] text-gray-400 mt-0.5'>Order #{row.order_id}</p>
         </div>
-        <div className="flex flex-wrap justify-end gap-1">
-          <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${STATUS_CONFIG[row.status].badgeClass}`}>
+        <div className='flex flex-wrap justify-end gap-1'>
+          <span
+            className={`text-[10px] px-2 py-1 rounded-full font-semibold ${STATUS_CONFIG[row.status].badgeClass}`}
+          >
             {STATUS_CONFIG[row.status].icon} {STATUS_CONFIG[row.status].label}
           </span>
-          {derived.flags.isOverdue ? <span className="text-[10px] px-2 py-1 rounded-full font-semibold bg-red-100 text-red-800">ล่าช้า {derived.flags.daysOverdue} วัน</span> : null}
-          {!derived.flags.isOverdue && derived.flags.isNearDeadline ? <span className="text-[10px] px-2 py-1 rounded-full font-semibold bg-amber-100 text-amber-800">ใกล้กำหนด</span> : null}
-          {derived.flags.hasRejected ? <span className="text-[10px] px-2 py-1 rounded-full font-semibold bg-red-100 text-red-800">ขอตรวจสอบใหม่</span> : null}
-          {derived.flags.isStaleUpdate ? <span className="text-[10px] px-2 py-1 rounded-full font-semibold bg-amber-100 text-amber-800">ยังไม่อัปเดต</span> : null}
+          {derived.flags.isOverdue ? (
+            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-red-100 text-red-800'>
+              ล่าช้า {derived.flags.daysOverdue} วัน
+            </span>
+          ) : null}
+          {!derived.flags.isOverdue && derived.flags.isNearDeadline ? (
+            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-amber-100 text-amber-800'>
+              ใกล้กำหนด
+            </span>
+          ) : null}
+          {derived.flags.hasRejected ? (
+            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-red-100 text-red-800'>
+              ขอตรวจสอบใหม่
+            </span>
+          ) : null}
+          {derived.flags.isStaleUpdate ? (
+            <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-amber-100 text-amber-800'>
+              ยังไม่อัปเดต
+            </span>
+          ) : null}
         </div>
       </div>
-      {row.customer?.display_name ? <p className="text-xs text-gray-500 mt-2">ลูกค้า: {row.customer.display_name}</p> : null}
-      <p className="text-xs text-gray-600 mt-1">
+      {row.customer?.display_name ? (
+        <p className='text-xs text-gray-500 mt-2'>ลูกค้า: {row.customer.display_name}</p>
+      ) : null}
+      <p className='text-xs text-gray-600 mt-1'>
         ฿{row.total_amount.toLocaleString('th-TH')}
-        {row.rfq?.quantity ? ` · ${row.rfq.quantity.toLocaleString('th-TH')} ${row.rfq.unit_name}` : ''}
+        {row.rfq?.quantity
+          ? ` · ${row.rfq.quantity.toLocaleString('th-TH')} ${row.rfq.unit_name}`
+          : ''}
         {row.estimated_delivery ? ` · กำหนดส่ง ${formatDateTh(row.estimated_delivery)}` : ''}
       </p>
       {row.production_summary ? (
-        <p className="text-xs text-gray-500 mt-1">
-          ขั้นปัจจุบัน: {row.production_summary.current_step_name_th ?? '—'} ({row.production_summary.completed_count}/{row.production_summary.total_count})
+        <p className='text-xs text-gray-500 mt-1'>
+          ขั้นปัจจุบัน: {row.production_summary.current_step_name_th ?? '—'} (
+          {row.production_summary.completed_count}/{row.production_summary.total_count})
         </p>
       ) : null}
-      <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-        <Link to={`/factory/orders/${row.order_id}`} className="inline-flex items-center gap-1 text-sm font-semibold text-gray-700">
+      <div className='mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-2'>
+        <Link
+          to={`/factory/orders/${row.order_id}`}
+          className='inline-flex items-center gap-1 text-sm font-semibold text-gray-700'
+        >
           ดูรายละเอียด <ChevronRight size={16} />
         </Link>
         {derived.primaryCta.kind !== 'view_only' ? (
           <Button
             disabled={derived.primaryCta.kind === 'waiting_customer'}
             onClick={() => onPrimaryCta(row, derived.primaryCta)}
-            size="sm"
+            size='sm'
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
               derived.primaryCta.kind === 'waiting_customer'
                 ? 'bg-gray-100 text-gray-500'

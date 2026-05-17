@@ -1,7 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Package, Calendar, DollarSign, Search, AlertTriangle } from 'lucide-react';
-import { adminApi, type AdminRfqRow } from '../../services/api';
-import { Button } from '../../components/ui/button';
+import {
+  ChevronDown,
+  ChevronUp,
+  Package,
+  Calendar,
+  DollarSign,
+  Search,
+  AlertTriangle,
+} from 'lucide-react';
+import { adminApi, type AdminRfqRow } from '@/services/api';
+import { Button } from '@/components/ui/button';
 
 type RfqStatusTab = 'all' | 'open' | 'matched' | 'closed';
 
@@ -77,8 +85,8 @@ function TableSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <tr key={i}>
           {Array.from({ length: 6 }).map((__, j) => (
-            <td key={j} className="px-4 py-3">
-              <div className="h-4 bg-slate-100 rounded animate-pulse" />
+            <td key={j} className='px-4 py-3'>
+              <div className='h-4 bg-slate-100 rounded animate-pulse' />
             </td>
           ))}
         </tr>
@@ -118,42 +126,55 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
 
   return (
     <tr>
-      <td colSpan={6} className="bg-indigo-50/50 px-6 py-4 border-b border-indigo-100">
+      <td colSpan={6} className='bg-indigo-50/50 px-6 py-4 border-b border-indigo-100'>
         {loading ? (
-          <div className="text-sm text-slate-500">กำลังโหลดรายละเอียด...</div>
+          <div className='text-sm text-slate-500'>กำลังโหลดรายละเอียด...</div>
         ) : error ? (
-          <div className="text-sm text-red-600">{error}</div>
+          <div className='text-sm text-red-600'>{error}</div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="flex items-start gap-2">
-                <Package size={14} className="text-indigo-500 mt-0.5 shrink-0" />
+            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+              <div className='flex items-start gap-2'>
+                <Package size={14} className='text-indigo-500 mt-0.5 shrink-0' />
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">สินค้า</p>
-                  <p className="text-sm text-slate-900 font-medium">{String(rfq.title ?? '-')}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">จำนวน: {Number(rfq.quantity ?? 0).toLocaleString()} ชิ้น</p>
-                  <p className="text-xs text-slate-500">หมวดหมู่: {String(rfq.category_name ?? '-')} / {String(rfq.sub_category_name ?? '-')}</p>
+                  <p className='text-[10px] text-slate-400 uppercase font-semibold'>สินค้า</p>
+                  <p className='text-sm text-slate-900 font-medium'>{String(rfq.title ?? '-')}</p>
+                  <p className='text-xs text-slate-500 mt-0.5'>
+                    จำนวน: {Number(rfq.quantity ?? 0).toLocaleString()} ชิ้น
+                  </p>
+                  <p className='text-xs text-slate-500'>
+                    หมวดหมู่: {String(rfq.category_name ?? '-')} /{' '}
+                    {String(rfq.sub_category_name ?? '-')}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <Calendar size={14} className="text-indigo-500 mt-0.5 shrink-0" />
+              <div className='flex items-start gap-2'>
+                <Calendar size={14} className='text-indigo-500 mt-0.5 shrink-0' />
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">กำหนดส่ง</p>
-                  <p className="text-sm text-slate-900 font-medium">{deliveryDate ? deliveryDate.slice(0, 10) : '-'}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">สร้างเมื่อ {String(rfq.created_at ?? '').slice(0, 10)}</p>
+                  <p className='text-[10px] text-slate-400 uppercase font-semibold'>กำหนดส่ง</p>
+                  <p className='text-sm text-slate-900 font-medium'>
+                    {deliveryDate ? deliveryDate.slice(0, 10) : '-'}
+                  </p>
+                  <p className='text-xs text-slate-400 mt-0.5'>
+                    สร้างเมื่อ {String(rfq.created_at ?? '').slice(0, 10)}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <DollarSign size={14} className="text-indigo-500 mt-0.5 shrink-0" />
+              <div className='flex items-start gap-2'>
+                <DollarSign size={14} className='text-indigo-500 mt-0.5 shrink-0' />
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-semibold">งบประมาณ</p>
-                  <p className="text-sm text-slate-900 font-bold">฿{Number(rfq.target_price ?? 0).toLocaleString('th-TH')}</p>
+                  <p className='text-[10px] text-slate-400 uppercase font-semibold'>งบประมาณ</p>
+                  <p className='text-sm text-slate-900 font-bold'>
+                    ฿{Number(rfq.target_price ?? 0).toLocaleString('th-TH')}
+                  </p>
                 </div>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-indigo-100">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold mb-1">หมายเหตุ</p>
-              <p className="text-sm text-slate-700 whitespace-pre-wrap">{String(rfq.details ?? rfq.description ?? '-')}</p>
+            <div className='mt-3 pt-3 border-t border-indigo-100'>
+              <p className='text-[10px] text-slate-400 uppercase font-semibold mb-1'>หมายเหตุ</p>
+              <p className='text-sm text-slate-700 whitespace-pre-wrap'>
+                {String(rfq.details ?? rfq.description ?? '-')}
+              </p>
             </div>
           </>
         )}
@@ -210,39 +231,44 @@ export function AdminRFQsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <p className="text-xs text-slate-400 font-medium">Admin / RFQ</p>
-        <h2 className="text-2xl font-bold text-slate-900 mt-1">จัดการ RFQ</h2>
+        <p className='text-xs text-slate-400 font-medium'>Admin / RFQ</p>
+        <h2 className='text-2xl font-bold text-slate-900 mt-1'>จัดการ RFQ</h2>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
-        <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div className='bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3'>
+        <div className='relative'>
+          <Search size={15} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
           <input
-            type="text"
-            placeholder="ค้นหา RFQ title, ลูกค้า..."
+            type='text'
+            placeholder='ค้นหา RFQ title, ลูกค้า...'
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className='w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500'
           />
         </div>
 
-        <div className="flex gap-1 flex-wrap">
+        <div className='flex gap-1 flex-wrap'>
           {STATUS_TABS.map((tab) => {
             const active = statusTab === tab.key;
             const count = counts[tab.key] ?? 0;
             return (
-              <Button variant="unstyled"
+              <Button
+                variant='unstyled'
                 key={tab.key}
-                type="button"
+                type='button'
                 onClick={() => setStatusTab(tab.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                  active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  active
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {tab.label}
-                <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                <span
+                  className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}
+                >
                   {count}
                 </span>
               </Button>
@@ -252,23 +278,35 @@ export function AdminRFQsPage() {
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+        <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2'>
+          <AlertTriangle className='w-4 h-4 mt-0.5 shrink-0' />
           <span>{error}</span>
         </div>
       ) : null}
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[700px]">
+      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
+        <div className='overflow-x-auto'>
+          <table className='w-full text-sm min-w-[700px]'>
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">RFQ ID</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">ผู้ซื้อ</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">โรงงาน</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">งบประมาณ</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">สถานะ</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">วันที่สร้าง</th>
+              <tr className='bg-slate-50 border-b border-slate-200'>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  RFQ ID
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  ผู้ซื้อ
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  โรงงาน
+                </th>
+                <th className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  งบประมาณ
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  สถานะ
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  วันที่สร้าง
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -276,7 +314,9 @@ export function AdminRFQsPage() {
                 <TableSkeleton />
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-sm text-slate-400">ไม่พบ RFQ ที่ตรงกับเงื่อนไข</td>
+                  <td colSpan={6} className='py-12 text-center text-sm text-slate-400'>
+                    ไม่พบ RFQ ที่ตรงกับเงื่อนไข
+                  </td>
                 </tr>
               ) : (
                 rows.map((rfq) => {
@@ -290,21 +330,39 @@ export function AdminRFQsPage() {
                         className={`hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-100 ${isExpanded ? 'bg-indigo-50/30' : ''}`}
                         onClick={() => toggleExpand(rfq.rfq_id)}
                       >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            {isExpanded ? <ChevronUp size={13} className="text-indigo-500 shrink-0" /> : <ChevronDown size={13} className="text-slate-400 shrink-0" />}
-                            <span className="font-mono text-xs text-indigo-600 font-semibold">#{rfq.rfq_id}</span>
+                        <td className='px-4 py-3'>
+                          <div className='flex items-center gap-2'>
+                            {isExpanded ? (
+                              <ChevronUp size={13} className='text-indigo-500 shrink-0' />
+                            ) : (
+                              <ChevronDown size={13} className='text-slate-400 shrink-0' />
+                            )}
+                            <span className='font-mono text-xs text-indigo-600 font-semibold'>
+                              #{rfq.rfq_id}
+                            </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-700 max-w-[180px] truncate">{rfq.buyer_name}</td>
-                        <td className="px-4 py-3 text-sm text-slate-500">
-                          {rfq.factory_name ?? <span className="text-slate-300 italic text-xs">ยังไม่จับคู่</span>}
+                        <td className='px-4 py-3 text-sm text-slate-700 max-w-[180px] truncate'>
+                          {rfq.buyer_name}
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums">฿{rfq.budget.toLocaleString('th-TH')}</td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${meta.cls}`}>{meta.label}</span>
+                        <td className='px-4 py-3 text-sm text-slate-500'>
+                          {rfq.factory_name ?? (
+                            <span className='text-slate-300 italic text-xs'>ยังไม่จับคู่</span>
+                          )}
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-400 tabular-nums">{rfq.created_at.slice(0, 10)}</td>
+                        <td className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
+                          ฿{rfq.budget.toLocaleString('th-TH')}
+                        </td>
+                        <td className='px-4 py-3'>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${meta.cls}`}
+                          >
+                            {meta.label}
+                          </span>
+                        </td>
+                        <td className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                          {rfq.created_at.slice(0, 10)}
+                        </td>
                       </tr>
                       {isExpanded ? <RfqDetailPanel rfqId={rfq.rfq_id} /> : null}
                     </React.Fragment>

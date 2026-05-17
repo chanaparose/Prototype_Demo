@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
-import { useProvinces } from '../../hooks/master/useProvinces';
-import { useDistricts } from '../../hooks/master/useDistricts';
-import { useSubDistricts, type SubDistrictOption } from '../../hooks/master/useSubDistricts';
+import { useProvinces } from '@/hooks/master/useProvinces';
+import { useDistricts } from '@/hooks/master/useDistricts';
+import { useSubDistricts, type SubDistrictOption } from '@/hooks/master/useSubDistricts';
 
 export type LbiAddressValue = {
   provinceId: string;
@@ -37,32 +37,32 @@ export function LbiAddressPicker({ value, onChange, onZipCodeAutoFill, disabled 
   }, [selectedSub, onZipCodeAutoFill]);
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className='grid gap-3 sm:grid-cols-3'>
       <Cell
-        label="จังหวัด *"
+        label='จังหวัด *'
         value={value.provinceId}
         loading={provincesQ.isLoading}
         disabled={disabled}
         options={provinces.map((p) => ({ id: p.id, name: p.name }))}
-        placeholder="เลือกจังหวัด"
+        placeholder='เลือกจังหวัด'
         onChange={(v) => onChange({ provinceId: v, districtId: '', subDistrictId: '' })}
       />
       <Cell
-        label="เขต/อำเภอ *"
+        label='เขต/อำเภอ *'
         value={value.districtId}
         loading={districtsQ.isLoading}
         disabled={disabled || !value.provinceId}
         options={districts.map((d) => ({ id: d.id, name: d.name }))}
-        placeholder="เลือกเขต/อำเภอ"
+        placeholder='เลือกเขต/อำเภอ'
         onChange={(v) => onChange({ ...value, districtId: v, subDistrictId: '' })}
       />
       <Cell
-        label="แขวง/ตำบล *"
+        label='แขวง/ตำบล *'
         value={value.subDistrictId}
         loading={subDistrictsQ.isLoading}
         disabled={disabled || !value.districtId}
         options={subDistricts.map((s) => ({ id: s.id, name: s.name }))}
-        placeholder="เลือกแขวง/ตำบล"
+        placeholder='เลือกแขวง/ตำบล'
         onChange={(v) => onChange({ ...value, subDistrictId: v })}
       />
     </div>
@@ -81,15 +81,15 @@ interface CellProps {
 
 function Cell({ label, value, loading, disabled, options, placeholder, onChange }: CellProps) {
   return (
-    <label className="block">
-      <span className="text-xs text-gray-500">{label}</span>
+    <label className='block'>
+      <span className='text-xs text-gray-500'>{label}</span>
       <select
-        className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60"
+        className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60'
         value={value}
         disabled={disabled || loading}
         onChange={(e) => onChange(e.target.value)}
       >
-        <option value="">{loading ? 'กำลังโหลด…' : placeholder}</option>
+        <option value=''>{loading ? 'กำลังโหลด…' : placeholder}</option>
         {options.map((o) => (
           <option key={o.id} value={String(o.id)}>
             {o.name}

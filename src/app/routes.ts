@@ -1,28 +1,28 @@
 import { createBrowserRouter, redirect } from 'react-router';
-import { Layout } from './components/layout';
-import { Explore } from './pages/explore';
-import { FactoryIdeas } from './pages/factory-ideas';
-import { FactoryDetail } from './pages/factories/FactoryDetail';
-import { ProductDetail } from './pages/product-detail';
-import { PromotionDetail } from './pages/promotion-detail';
-import { IdeaDetail } from './pages/idea-detail';
-import { RfqAndOrders } from './pages/rfq-and-orders';
-import { Messages } from './pages/messages';
-import { Profile } from './pages/profile';
-import { EditProfilePage } from './pages/profile/EditProfilePage';
-import { ChangePasswordPage } from './pages/profile/ChangePasswordPage';
-import { TransactionHistoryPage } from './pages/profile/TransactionHistoryPage';
-import { MyReviewsPage } from './pages/profile/MyReviewsPage';
-import { FavoriteShowcasesPage } from './pages/profile/FavoriteShowcasesPage';
-import { CreateRfq } from './pages/create-rfq';
-import { RFQDetail } from './pages/rfq-detail';
-import { OrderDetail } from './pages/order-detail';
-import { ChatRoom } from './pages/chat-room';
-import { Notifications } from './pages/notifications';
-import { FactoriesList } from './pages/factories/FactoriesList';
-import { Login } from './pages/login';
-import { RegisterFactoryPage } from './pages/auth';
-import { QuoteBuilder, QuoteDetailCustomer } from './pages/quote';
+import { Layout } from '@/components/layout';
+import { Explore } from '@/pages/explore';
+import { FactoryIdeas } from '@/pages/factory-ideas';
+import { FactoryDetail } from '@/pages/factories/FactoryDetail';
+import { ProductDetail } from '@/pages/product-detail';
+import { PromotionDetail } from '@/pages/promotion-detail';
+import { IdeaDetail } from '@/pages/idea-detail';
+import { RfqAndOrders } from '@/pages/rfq-and-orders';
+import { Messages } from '@/pages/messages';
+import { Profile } from '@/pages/profile';
+import { EditProfilePage } from '@/pages/profile/EditProfilePage';
+import { ChangePasswordPage } from '@/pages/profile/ChangePasswordPage';
+import { TransactionHistoryPage } from '@/pages/profile/TransactionHistoryPage';
+import { MyReviewsPage } from '@/pages/profile/MyReviewsPage';
+import { FavoriteShowcasesPage } from '@/pages/profile/FavoriteShowcasesPage';
+import { CreateRfq } from '@/pages/create-rfq';
+import { RFQDetail } from '@/pages/rfq-detail';
+import { OrderDetail } from '@/pages/order-detail';
+import { ChatRoom } from '@/pages/chat-room';
+import { Notifications } from '@/pages/notifications';
+import { FactoriesList } from '@/pages/factories/FactoriesList';
+import { Login } from '@/pages/login';
+import { RegisterFactoryPage } from '@/pages/auth';
+import { QuoteBuilder, QuoteDetailCustomer } from '@/pages/quote';
 import {
   CommissionConfig,
   AdminLayout,
@@ -34,11 +34,11 @@ import {
   AdminConfigPage,
   AdminCustomersPage,
   AdminCustomerDetailPage,
-} from './pages/admin';
-import { AuthGuard } from './components/AuthGuard';
-import { PublicDataOutlet } from './components/PublicDataOutlet';
-import { FactoryRoleGuard } from './components/factory/FactoryRoleGuard';
-import { FactoryVerifiedGuard } from './components/factory/FactoryVerifiedGuard';
+} from '@/pages/admin';
+import { AuthGuard } from '@/components/AuthGuard';
+import { PublicDataOutlet } from '@/components/PublicDataOutlet';
+import { FactoryRoleGuard } from '@/components/factory/FactoryRoleGuard';
+import { FactoryVerifiedGuard } from '@/components/factory/FactoryVerifiedGuard';
 import {
   FactoryPortalLayout,
   FactoryDashboardPage,
@@ -53,7 +53,7 @@ import {
   FactoryEditQuotationPage,
   FactoryQuotationsPage,
   FactoryShowcaseEditPage,
-} from './pages/factory-portal';
+} from '@/pages/factory-portal';
 
 export const router = createBrowserRouter([
   {
@@ -98,7 +98,10 @@ export const router = createBrowserRouter([
               { path: 'quotations/:id', Component: QuoteDetailCustomer },
               { path: 'rfqs/:id', Component: RFQDetail },
               { path: 'orders/:id', Component: OrderDetail },
-              { path: 'orders/:id/payment', loader: ({ params }) => redirect(`/orders/${params.id}`) },
+              {
+                path: 'orders/:id/payment',
+                loader: ({ params }) => redirect(`/orders/${params.id}`),
+              },
               { path: 'messages/:id', Component: ChatRoom },
               { path: 'chat-room', Component: ChatRoom },
               { path: 'chat-room/:id', Component: ChatRoom },

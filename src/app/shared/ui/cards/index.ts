@@ -1,3 +1,3 @@
-export { CollapsibleCard } from './CollapsibleCard';
-export { SectionCard } from './SectionCard';
-export { InfoBox } from './InfoBox';
+export { CollapsibleCard } from '@/shared/ui/cards/CollapsibleCard';
+export { SectionCard } from '@/shared/ui/cards/SectionCard';
+export { InfoBox } from '@/shared/ui/cards/InfoBox';

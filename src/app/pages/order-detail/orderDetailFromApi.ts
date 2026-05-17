@@ -1,6 +1,6 @@
-import type { ProductionLockContext } from '../../components/features/production/types';
-import type { LockReason } from './getOrderUiMode';
-import { getOrderUiMode } from './getOrderUiMode';
+import type { ProductionLockContext } from '@/components/features/production/types';
+import type { LockReason } from '@/pages/order-detail/getOrderUiMode';
+import { getOrderUiMode } from '@/pages/order-detail/getOrderUiMode';
 
 export type NextAction = {
   actor: string;
@@ -135,10 +135,7 @@ export function buildFallbackLockContext(
   };
 }
 
-export function normalizeLockReason(
-  fromApi: string | undefined,
-  apiStatus: string,
-): LockReason {
+export function normalizeLockReason(fromApi: string | undefined, apiStatus: string): LockReason {
   const r = String(fromApi ?? '').toUpperCase();
   if (r === 'PENDING_DEPOSIT' || r === 'DEPOSIT_EXPIRED' || r === 'ORDER_CANCELLED') {
     return r as LockReason;

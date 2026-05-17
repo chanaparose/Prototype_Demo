@@ -1,30 +1,41 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
-  ChevronLeft, Flag, MapPin, Phone, User,
-  CheckCircle2, Circle, AlertCircle, Clock, Package,
+  ChevronLeft,
+  Flag,
+  MapPin,
+  Phone,
+  User,
+  CheckCircle2,
+  Circle,
+  AlertCircle,
+  Clock,
+  Package,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { QuoteNestedDTO, RfqNestedDTO } from '../../types/api';
-import { useAuth } from '../../stores';
-import { getFactoryEntityId } from '../../utils/factoryUser';
-import { ordersApi } from '../../services/api';
-import { RfqReferenceCard } from '../../components/features/order-detail';
-import { useProductionTemplate } from '../../hooks/production/useProductionTemplate';
-import { useOrderProductionUpdates } from '../../hooks/production/useOrderProductionUpdates';
-import { ProductionHeader } from '../../components/features/production/ProductionHeader';
-import { ProductionTimeline } from '../../components/features/production/ProductionTimeline';
-import { UpdateStepDrawer, type CustomerShippingInfo } from '../../components/features/production/UpdateStepDrawer';
+import type { QuoteNestedDTO, RfqNestedDTO } from '@/types/api';
+import { useAuth } from '@/stores';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { ordersApi } from '@/services/api';
+import { RfqReferenceCard } from '@/components/features/order-detail';
+import { useProductionTemplate } from '@/hooks/production/useProductionTemplate';
+import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';
+import { ProductionHeader } from '@/components/features/production/ProductionHeader';
+import { ProductionTimeline } from '@/components/features/production/ProductionTimeline';
+import {
+  UpdateStepDrawer,
+  type CustomerShippingInfo,
+} from '@/components/features/production/UpdateStepDrawer';
 import {
   mergeTemplateWithUpdates,
   type MergedProductionStep,
-} from '../../components/features/production/types';
-import { deriveStepStates } from '../../components/features/production/stepDerivedState';
-import { getStepGuide } from '../../components/features/production/stepGuideConfig';
-import { useIsDesktop } from '../../hooks/useIsDesktop';
-import { StatusBadge } from '../../shared/ui';
-import { FactoryPageHeader } from './components/FactoryPageHeader';
-import { Button } from '../../components/ui/button';
+} from '@/components/features/production/types';
+import { deriveStepStates } from '@/components/features/production/stepDerivedState';
+import { getStepGuide } from '@/components/features/production/stepGuideConfig';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { StatusBadge } from '@/shared/ui';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { Button } from '@/components/ui/button';
 
 function unwrapOrder(raw: Record<string, unknown>): Record<string, unknown> {
   return (raw.order as Record<string, unknown>) ?? raw;
@@ -68,8 +79,11 @@ function fmtDateTime(input: unknown): string {
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return raw;
   return d.toLocaleString('th-TH', {
-    year: 'numeric', month: 'short', day: '2-digit',
-    hour: '2-digit', minute: '2-digit',
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -91,25 +105,20 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
     {};
 
   const buyer =
-    (order.buyer as Record<string, unknown>) ??
-    (order.customer as Record<string, unknown>) ??
-    {};
+    (order.buyer as Record<string, unknown>) ?? (order.customer as Record<string, unknown>) ?? {};
 
   return {
     recipientName:
-      String(addr.recipient_name ?? addr.name ?? buyer.name ?? order.buyer_name ?? '').trim() || undefined,
+      String(addr.recipient_name ?? addr.name ?? buyer.name ?? order.buyer_name ?? '').trim() ||
+      undefined,
     phone:
       String(addr.phone ?? addr.tel ?? buyer.phone ?? order.buyer_phone ?? '').trim() || undefined,
     addressLine:
       String(addr.address_detail ?? addr.address_line ?? addr.detail ?? '').trim() || undefined,
-    subDistrict:
-      String(addr.sub_district ?? addr.subdistrict ?? '').trim() || undefined,
-    district:
-      String(addr.district ?? '').trim() || undefined,
-    province:
-      String(addr.province ?? '').trim() || undefined,
-    postalCode:
-      String(addr.postal_code ?? addr.zip_code ?? '').trim() || undefined,
+    subDistrict: String(addr.sub_district ?? addr.subdistrict ?? '').trim() || undefined,
+    district: String(addr.district ?? '').trim() || undefined,
+    province: String(addr.province ?? '').trim() || undefined,
+    postalCode: String(addr.postal_code ?? addr.zip_code ?? '').trim() || undefined,
   };
 }
 
@@ -119,7 +128,14 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
 type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
 function StepStatusBadge({ state }: { state: StepState }) {
-  const map: Record<StepState, { label: string; variant: React.ComponentProps<typeof StatusBadge>['variant']; icon: React.ReactNode }> = {
+  const map: Record<
+    StepState,
+    {
+      label: string;
+      variant: React.ComponentProps<typeof StatusBadge>['variant'];
+      icon: React.ReactNode;
+    }
+  > = {
     completed: { label: 'เสร็จสิ้น', variant: 'success', icon: <CheckCircle2 size={12} /> },
     active: { label: 'กำลังดำเนินการ', variant: 'active', icon: <Clock size={12} /> },
     blocked: { label: 'รอดำเนินการ', variant: 'pending', icon: <AlertCircle size={12} /> },
@@ -128,7 +144,7 @@ function StepStatusBadge({ state }: { state: StepState }) {
   };
   const { label, variant, icon } = map[state];
   return (
-    <StatusBadge variant={variant} size="sm" icon={icon}>
+    <StatusBadge variant={variant} size='sm' icon={icon}>
       {label}
     </StatusBadge>
   );
@@ -143,45 +159,56 @@ interface NextActionCardProps {
   onUpdate: () => void;
 }
 
-function NextActionCard({ step, stepIndex, totalSteps, state, customerShipping, onUpdate }: NextActionCardProps) {
+function NextActionCard({
+  step,
+  stepIndex,
+  totalSteps,
+  state,
+  customerShipping,
+  onUpdate,
+}: NextActionCardProps) {
   const guide = getStepGuide(getStepId(step));
   const canUpdate = factoryCanUpdateStep(step);
   const stepId = getStepId(step);
   const isShipping = stepId === 5;
   const isQC = Boolean(step.template.is_payment_trigger);
 
-  const hasAddr = customerShipping.addressLine || customerShipping.phone || customerShipping.recipientName;
+  const hasAddr =
+    customerShipping.addressLine || customerShipping.phone || customerShipping.recipientName;
 
   return (
-    <section className="rounded-2xl overflow-hidden border border-indigo-200 shadow-md">
-
+    <section className='rounded-2xl overflow-hidden border border-indigo-200 shadow-md'>
       {/* Header bar */}
-      <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)' }}>
-        <div className="flex items-center gap-2">
-          <span className="text-xl leading-none">{guide.emoji}</span>
+      <div
+        className='px-4 py-3 flex items-center justify-between'
+        style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)' }}
+      >
+        <div className='flex items-center gap-2'>
+          <span className='text-xl leading-none'>{guide.emoji}</span>
           <div>
-            <p className="text-[10px] font-semibold text-indigo-200 uppercase tracking-wide">
+            <p className='text-[10px] font-semibold text-indigo-200 uppercase tracking-wide'>
               ขั้นตอนที่ {stepIndex + 1} / {totalSteps}
             </p>
-            <p className="text-sm font-bold text-white leading-tight">{step.template.step_name_th}</p>
+            <p className='text-sm font-bold text-white leading-tight'>
+              {step.template.step_name_th}
+            </p>
           </div>
         </div>
         <StepStatusBadge state={state} />
       </div>
 
-      <div className="bg-white p-4 space-y-3">
-
+      <div className='bg-white p-4 space-y-3'>
         {/* What to do */}
         <div>
-          <p className="text-xs font-bold text-slate-800">{guide.whatToDo}</p>
-          <p className="text-xs text-slate-500 mt-1 leading-relaxed">{guide.guidance}</p>
+          <p className='text-xs font-bold text-slate-800'>{guide.whatToDo}</p>
+          <p className='text-xs text-slate-500 mt-1 leading-relaxed'>{guide.guidance}</p>
         </div>
 
         {/* Payment trigger warning */}
         {isQC ? (
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 flex items-start gap-2">
-            <span className="text-base leading-none shrink-0 mt-0.5">💳</span>
-            <p className="text-xs text-amber-800">
+          <div className='rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 flex items-start gap-2'>
+            <span className='text-base leading-none shrink-0 mt-0.5'>💳</span>
+            <p className='text-xs text-amber-800'>
               <strong>การยืนยันขั้นนี้จะส่งคำขอชำระเงินส่วนที่เหลือให้ลูกค้าทันที</strong>
             </p>
           </div>
@@ -189,28 +216,38 @@ function NextActionCard({ step, stepIndex, totalSteps, state, customerShipping, 
 
         {/* Shipping address preview — step 5 */}
         {isShipping && hasAddr ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
-            <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-2 flex items-center gap-1">
+          <div className='rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5'>
+            <p className='text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-2 flex items-center gap-1'>
               <MapPin size={11} /> ที่อยู่จัดส่ง — สำหรับทำใบปะหน้าพัสดุ
             </p>
-            <div className="space-y-1">
+            <div className='space-y-1'>
               {customerShipping.recipientName ? (
-                <div className="flex items-center gap-1.5">
-                  <User size={11} className="text-amber-600 shrink-0" />
-                  <span className="text-xs font-semibold text-amber-900">{customerShipping.recipientName}</span>
+                <div className='flex items-center gap-1.5'>
+                  <User size={11} className='text-amber-600 shrink-0' />
+                  <span className='text-xs font-semibold text-amber-900'>
+                    {customerShipping.recipientName}
+                  </span>
                 </div>
               ) : null}
               {customerShipping.phone ? (
-                <div className="flex items-center gap-1.5">
-                  <Phone size={11} className="text-amber-600 shrink-0" />
-                  <span className="text-xs text-amber-800">{customerShipping.phone}</span>
+                <div className='flex items-center gap-1.5'>
+                  <Phone size={11} className='text-amber-600 shrink-0' />
+                  <span className='text-xs text-amber-800'>{customerShipping.phone}</span>
                 </div>
               ) : null}
               {customerShipping.addressLine ? (
-                <div className="flex items-start gap-1.5">
-                  <MapPin size={11} className="text-amber-500 shrink-0 mt-0.5" />
-                  <span className="text-xs text-amber-800 leading-relaxed">
-                    {[customerShipping.addressLine, customerShipping.subDistrict, customerShipping.district, customerShipping.province, customerShipping.postalCode].filter(Boolean).join(', ')}
+                <div className='flex items-start gap-1.5'>
+                  <MapPin size={11} className='text-amber-500 shrink-0 mt-0.5' />
+                  <span className='text-xs text-amber-800 leading-relaxed'>
+                    {[
+                      customerShipping.addressLine,
+                      customerShipping.subDistrict,
+                      customerShipping.district,
+                      customerShipping.province,
+                      customerShipping.postalCode,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
                   </span>
                 </div>
               ) : null}
@@ -219,29 +256,30 @@ function NextActionCard({ step, stepIndex, totalSteps, state, customerShipping, 
         ) : null}
 
         {/* Bullet preview (first 3 items) — dot list เหมือน UpdateStepDrawer */}
-        <ul className="space-y-1.5">
+        <ul className='space-y-1.5'>
           {guide.bulletPoints.slice(0, 3).map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-gray-700 leading-relaxed">
-              <span className="mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5" />
+            <li key={i} className='flex items-start gap-2 text-xs text-gray-700 leading-relaxed'>
+              <span className='mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5' />
               {item}
             </li>
           ))}
         </ul>
 
         {/* What happens after */}
-        <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 flex items-center gap-2">
-          <span className="text-sm">➡️</span>
-          <p className="text-[11px] text-slate-500 leading-relaxed">
-            <span className="font-semibold text-slate-700">เมื่อยืนยัน:</span> {guide.nextStepHint}
+        <div className='rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 flex items-center gap-2'>
+          <span className='text-sm'>➡️</span>
+          <p className='text-[11px] text-slate-500 leading-relaxed'>
+            <span className='font-semibold text-slate-700'>เมื่อยืนยัน:</span> {guide.nextStepHint}
           </p>
         </div>
 
         {/* CTA Button */}
         {canUpdate ? (
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={onUpdate}
-            className="w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm"
+            className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm'
             style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)' }}
           >
             <Package size={16} />
@@ -252,8 +290,8 @@ function NextActionCard({ step, stepIndex, totalSteps, state, customerShipping, 
                 : guide.confirmLabel}
           </Button>
         ) : (
-          <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-center">
-            <p className="text-xs text-emerald-700 font-medium">
+          <div className='rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-center'>
+            <p className='text-xs text-emerald-700 font-medium'>
               ⏳ {step.template.description ?? 'รอการยืนยันจากลูกค้าหรือระบบอัตโนมัติ'}
             </p>
           </div>
@@ -293,7 +331,9 @@ export function FactoryOrderDetailPage() {
     }
   }, [id]);
 
-  useEffect(() => { void loadOrder(); }, [loadOrder]);
+  useEffect(() => {
+    void loadOrder();
+  }, [loadOrder]);
 
   const tplQ = useProductionTemplate();
   const updQ = useOrderProductionUpdates(id);
@@ -307,15 +347,34 @@ export function FactoryOrderDetailPage() {
     () =>
       merged.map((m) => {
         const stepId = Number(m.template.step_id ?? 0);
-        if (stepId === 5) return { ...m, template: { ...m.template, step_name_th: 'บรรจุและจัดส่งสินค้า', description: 'ทำใบปะหน้าพัสดุ บรรจุสินค้า และบันทึกหลักฐานการจัดส่ง' } };
-        if (stepId === 6) return { ...m, template: { ...m.template, step_name_th: 'รอลูกค้ายืนยันรับสินค้า', description: 'ลูกค้ายืนยันรับสินค้า หรือระบบปิดอัตโนมัติหลัง 20 วัน' } };
+        if (stepId === 5)
+          return {
+            ...m,
+            template: {
+              ...m.template,
+              step_name_th: 'บรรจุและจัดส่งสินค้า',
+              description: 'ทำใบปะหน้าพัสดุ บรรจุสินค้า และบันทึกหลักฐานการจัดส่ง',
+            },
+          };
+        if (stepId === 6)
+          return {
+            ...m,
+            template: {
+              ...m.template,
+              step_name_th: 'รอลูกค้ายืนยันรับสินค้า',
+              description: 'ลูกค้ายืนยันรับสินค้า หรือระบบปิดอัตโนมัติหลัง 20 วัน',
+            },
+          };
         return m;
       }),
     [merged],
   );
 
   const orderStatus = updQ.data?.order_status ?? String(order.status ?? '').toUpperCase();
-  const derivedStates = useMemo(() => deriveStepStates(displayMerged, orderStatus), [displayMerged, orderStatus]);
+  const derivedStates = useMemo(
+    () => deriveStepStates(displayMerged, orderStatus),
+    [displayMerged, orderStatus],
+  );
 
   const activeStepIdx = useMemo(
     () => derivedStates.findIndex((d) => d === 'active' || d === 'blocked'),
@@ -326,18 +385,25 @@ export function FactoryOrderDetailPage() {
     return derivedStates.findIndex((d) => d === 'upcoming');
   }, [activeStepIdx, derivedStates]);
 
-  const activeStep = nextStepIdx >= 0 ? displayMerged[nextStepIdx] ?? null : null;
+  const activeStep = nextStepIdx >= 0 ? (displayMerged[nextStepIdx] ?? null) : null;
   const activeState = (nextStepIdx >= 0 ? derivedStates[nextStepIdx] : null) as StepState | null;
 
   const [drawerStep, setDrawerStep] = useState<MergedProductionStep | null>(null);
 
   const handleStepSubmit = useCallback(
     async (
-      body: { step_id: number; status: 'IP' | 'CD'; description?: string; image_urls: string[]; confirm_payment_trigger?: boolean },
+      body: {
+        step_id: number;
+        status: 'IP' | 'CD';
+        description?: string;
+        image_urls: string[];
+        confirm_payment_trigger?: boolean;
+      },
       opts?: { confirmPaymentTriggerHeader?: boolean },
     ) => {
       if (!id) return;
-      if (Number(body.step_id) > 5) throw new Error('ขั้นที่ 6 เป็นขั้นยืนยันรับสินค้าฝั่งลูกค้า/ระบบอัตโนมัติ');
+      if (Number(body.step_id) > 5)
+        throw new Error('ขั้นที่ 6 เป็นขั้นยืนยันรับสินค้าฝั่งลูกค้า/ระบบอัตโนมัติ');
       const headers =
         opts?.confirmPaymentTriggerHeader && body.status === 'CD' && body.confirm_payment_trigger
           ? { 'X-Confirm-Payment-Trigger': 'true' }
@@ -351,8 +417,13 @@ export function FactoryOrderDetailPage() {
   );
 
   const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as RfqNestedDTO) : null;
-  const quotation = order.quotation && typeof order.quotation === 'object' ? (order.quotation as QuoteNestedDTO) : null;
-  const title = String(rfq?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id ?? ''}`);
+  const quotation =
+    order.quotation && typeof order.quotation === 'object'
+      ? (order.quotation as QuoteNestedDTO)
+      : null;
+  const title = String(
+    rfq?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id ?? ''}`,
+  );
   const orderCode = String(order.order_no ?? order.order_id ?? id ?? '-');
   const status = String(order.status ?? '').toUpperCase();
   const isCompleted = status === 'CP' || status === 'CN';
@@ -366,7 +437,7 @@ export function FactoryOrderDetailPage() {
   if (!id) return null;
 
   return (
-    <div className="space-y-4 pb-24">
+    <div className='space-y-4 pb-24'>
       <FactoryPageHeader
         title={title}
         subtitle={`คำสั่งซื้อ #${orderCode}`}
@@ -375,47 +446,51 @@ export function FactoryOrderDetailPage() {
       />
 
       {/* Sticky top bar */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-y border-slate-200 px-4 h-14 flex items-center gap-3 rounded-xl">
-        <Button variant="unstyled"
-          type="button"
+      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-y border-slate-200 px-4 h-14 flex items-center gap-3 rounded-xl'>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => navigate('/factory/orders')}
-          className="flex items-center gap-1 text-sm font-medium text-indigo-700"
+          className='flex items-center gap-1 text-sm font-medium text-indigo-700'
         >
           <ChevronLeft size={18} /> กลับ
         </Button>
-        <span className="flex-1 text-center text-sm font-bold text-slate-900 truncate">รายละเอียดคำสั่งซื้อ</span>
+        <span className='flex-1 text-center text-sm font-bold text-slate-900 truncate'>
+          รายละเอียดคำสั่งซื้อ
+        </span>
         <span
-          className="text-[11px] font-bold px-2.5 py-1 rounded-full border"
+          className='text-[11px] font-bold px-2.5 py-1 rounded-full border'
           style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}
         >
           {statusLabel(status)}
         </span>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto">
+      <div className='w-full max-w-7xl mx-auto'>
         {error ? (
-          <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4">{error}</p>
+          <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4'>{error}</p>
         ) : null}
 
         {loading && !order.status ? (
-          <div className="flex justify-center py-16">
-            <div className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }} />
+          <div className='flex justify-center py-16'>
+            <div
+              className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
+              style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
+            />
           </div>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] gap-4 lg:gap-5 items-start">
-
+          <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] gap-4 lg:gap-5 items-start'>
             {/* ════════ LEFT ════════ */}
-            <div className="space-y-4 min-w-0">
-
+            <div className='space-y-4 min-w-0'>
               {/* Order Summary Card */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="min-w-0">
-                    <h2 className="text-base font-bold text-slate-900 truncate">{title}</h2>
-                    <p className="text-xs text-slate-400 mt-0.5">#{orderCode}</p>
+              <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+                <div className='flex items-start justify-between gap-2 mb-3'>
+                  <div className='min-w-0'>
+                    <h2 className='text-base font-bold text-slate-900 truncate'>{title}</h2>
+                    <p className='text-xs text-slate-400 mt-0.5'>#{orderCode}</p>
                   </div>
                   <span
-                    className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border"
+                    className='shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border'
                     style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}
                   >
                     {statusLabel(status)}
@@ -424,71 +499,90 @@ export function FactoryOrderDetailPage() {
 
                 {/* Progress bar */}
                 {totalSteps > 0 ? (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                  <div className='mb-4'>
+                    <div className='flex items-center justify-between text-xs text-slate-500 mb-1.5'>
                       <span>ความคืบหน้า</span>
-                      <span className="font-semibold text-indigo-700">{progressPct}% ({completedCount}/{totalSteps} ขั้นตอน)</span>
+                      <span className='font-semibold text-indigo-700'>
+                        {progressPct}% ({completedCount}/{totalSteps} ขั้นตอน)
+                      </span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div className='h-2 rounded-full bg-slate-100 overflow-hidden'>
                       <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #4F46E5, #7C3AED)' }}
+                        className='h-full rounded-full transition-all duration-700'
+                        style={{
+                          width: `${progressPct}%`,
+                          background: 'linear-gradient(90deg, #4F46E5, #7C3AED)',
+                        }}
                       />
                     </div>
                   </div>
                 ) : null}
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-xl bg-slate-50 px-3 py-2.5">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">มูลค่ารวม</p>
-                    <p className="font-bold text-slate-900 text-sm mt-0.5">
+                <div className='grid grid-cols-3 gap-3'>
+                  <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
+                    <p className='text-[10px] text-slate-500 uppercase tracking-wide'>มูลค่ารวม</p>
+                    <p className='font-bold text-slate-900 text-sm mt-0.5'>
                       ฿{Number(order.total_amount ?? 0).toLocaleString('th-TH')}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-slate-50 px-3 py-2.5">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">ชำระแล้ว</p>
-                    <p className="font-bold text-emerald-700 text-sm mt-0.5">
-                      ฿{Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}
+                  <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
+                    <p className='text-[10px] text-slate-500 uppercase tracking-wide'>ชำระแล้ว</p>
+                    <p className='font-bold text-emerald-700 text-sm mt-0.5'>
+                      ฿
+                      {Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString(
+                        'th-TH',
+                      )}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-slate-50 px-3 py-2.5">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">กำหนดส่ง</p>
-                    <p className="font-bold text-slate-900 text-sm mt-0.5">{fmtDate(order.estimated_delivery)}</p>
+                  <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
+                    <p className='text-[10px] text-slate-500 uppercase tracking-wide'>กำหนดส่ง</p>
+                    <p className='font-bold text-slate-900 text-sm mt-0.5'>
+                      {fmtDate(order.estimated_delivery)}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Order detail rows */}
-              <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-2.5">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-3">ข้อมูลคำสั่งซื้อ</p>
+              <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-2.5'>
+                <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-3'>
+                  ข้อมูลคำสั่งซื้อ
+                </p>
                 {[
                   { label: 'สร้างเมื่อ', value: fmtDateTime(order.created_at) },
                   { label: 'กำหนดส่ง', value: fmtDateTime(order.estimated_delivery) },
-                  { label: 'มูลค่ารวม', value: `฿${Number(order.total_amount ?? 0).toLocaleString('th-TH')}` },
-                  { label: 'ชำระแล้ว', value: `฿${Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}` },
+                  {
+                    label: 'มูลค่ารวม',
+                    value: `฿${Number(order.total_amount ?? 0).toLocaleString('th-TH')}`,
+                  },
+                  {
+                    label: 'ชำระแล้ว',
+                    value: `฿${Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}`,
+                  },
                 ].map(({ label, value }) => (
-                  <div key={label} className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-gray-500">{label}</span>
-                    <span className="text-sm font-medium text-right" style={{ color: '#2E2252' }}>{value}</span>
+                  <div key={label} className='flex items-center justify-between gap-2'>
+                    <span className='text-xs text-gray-500'>{label}</span>
+                    <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                      {value}
+                    </span>
                   </div>
                 ))}
               </section>
 
               {/* RFQ + Quotation spec */}
               {rfq ? (
-                <RfqReferenceCard rfq={rfq} quotation={quotation} variant="accordion" />
+                <RfqReferenceCard rfq={rfq} quotation={quotation} variant='accordion' />
               ) : null}
             </div>
 
             {/* ════════ RIGHT ════════ */}
-            <aside className="space-y-4 xl:sticky xl:top-20">
-
+            <aside className='space-y-4 xl:sticky xl:top-20'>
               {/* Next Action Card */}
               {isCompleted ? (
-                <section className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1">
-                  <p className="text-2xl">🎉</p>
-                  <p className="text-sm font-bold text-emerald-800">ออเดอร์นี้เสร็จสิ้นแล้ว</p>
-                  <p className="text-xs text-emerald-600">ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
+                <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
+                  <p className='text-2xl'>🎉</p>
+                  <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
+                  <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
                 </section>
               ) : activeStep != null && totalSteps > 0 ? (
                 <NextActionCard
@@ -502,29 +596,32 @@ export function FactoryOrderDetailPage() {
                   }}
                 />
               ) : totalSteps > 0 ? (
-                <section className="rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center">
-                  <p className="text-sm text-gray-500">ทุกขั้นตอนเสร็จสิ้น — รอลูกค้ายืนยัน</p>
+                <section className='rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center'>
+                  <p className='text-sm text-gray-500'>ทุกขั้นตอนเสร็จสิ้น — รอลูกค้ายืนยัน</p>
                 </section>
               ) : (
-                <section className="rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center">
-                  <p className="text-sm text-gray-400">กำลังโหลดขั้นตอน…</p>
+                <section className='rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center'>
+                  <p className='text-sm text-gray-400'>กำลังโหลดขั้นตอน…</p>
                 </section>
               )}
 
               {/* Production Timeline */}
-              <section className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Flag size={14} className="text-indigo-600" />
-                  <h2 className="text-sm font-bold text-slate-900">ความคืบหน้าการผลิต</h2>
+              <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
+                <div className='flex items-center gap-2'>
+                  <Flag size={14} className='text-indigo-600' />
+                  <h2 className='text-sm font-bold text-slate-900'>ความคืบหน้าการผลิต</h2>
                 </div>
 
                 {tplQ.isLoading || updQ.isLoading ? (
-                  <div className="flex items-center gap-2 py-6 justify-center text-gray-500 text-sm">
-                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }} />
+                  <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
+                    <div
+                      className='w-5 h-5 border-2 border-t-transparent rounded-full animate-spin'
+                      style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
+                    />
                     กำลังโหลด…
                   </div>
                 ) : merged.length === 0 ? (
-                  <p className="text-sm text-gray-400 px-1">ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
+                  <p className='text-sm text-gray-400 px-1'>ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
                 ) : (
                   <>
                     <ProductionHeader merged={displayMerged} orderStatus={orderStatus} />
@@ -536,8 +633,12 @@ export function FactoryOrderDetailPage() {
                       onOpenDrawer={(m) => {
                         if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
                       }}
-                      onOpenReject={() => { /* factory ไม่ reject ตัวเอง */ }}
-                      onPhotoClick={() => { /* TODO: lightbox */ }}
+                      onOpenReject={() => {
+                        /* factory ไม่ reject ตัวเอง */
+                      }}
+                      onPhotoClick={() => {
+                        /* TODO: lightbox */
+                      }}
                     />
                   </>
                 )}

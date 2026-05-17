@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../stores';
-import { getFactoryEntityId } from '../utils/factoryUser';
-import { daysUntilDeadline } from '../utils/rfqDeadline';
-import { rfqsApi, factoriesApi, masterApi, categoriesApi, addressesApi } from '../services/api';
-import type { RfqCardModel } from '../components/factory/RfqCard';
+import { useAuth } from '@/stores';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { daysUntilDeadline } from '@/utils/rfqDeadline';
+import { rfqsApi, factoriesApi, masterApi, categoriesApi, addressesApi } from '@/services/api';
+import type { RfqCardModel } from '@/components/factory/RfqCard';
 
 function innerRfq(row: Record<string, unknown>): Record<string, unknown> {
   const r = row.rfq;
@@ -68,7 +68,11 @@ export function useFactoryRfqBoard() {
         try {
           const fc = await factoriesApi.getCategories(fid);
           catIds = (Array.isArray(fc) ? fc : [])
-            .map((r) => Number((r as Record<string, unknown>).category_id ?? (r as Record<string, unknown>).id))
+            .map((r) =>
+              Number(
+                (r as Record<string, unknown>).category_id ?? (r as Record<string, unknown>).id,
+              ),
+            )
             .filter((n) => Number.isFinite(n) && n > 0);
         } catch {
           catIds = [];
@@ -123,25 +127,31 @@ export function useFactoryRfqBoard() {
           Number.isFinite(totalBudgetRaw) && totalBudgetRaw > 0
             ? totalBudgetRaw
             : budgetPerPiece != null &&
-              quantity != null &&
-              Number.isFinite(budgetPerPiece) &&
-              Number.isFinite(quantity)
+                quantity != null &&
+                Number.isFinite(budgetPerPiece) &&
+                Number.isFinite(quantity)
               ? budgetPerPiece * quantity
               : null;
 
         const categoryId = Number(inner.category_id ?? row.category_id ?? 0);
         const subCategoryId = Number(inner.sub_category_id ?? row.sub_category_id ?? 0);
-        const categoryName = String(inner.category_name ?? row.category_name ?? '').trim() || catNameById.get(categoryId) || '';
+        const categoryName =
+          String(inner.category_name ?? row.category_name ?? '').trim() ||
+          catNameById.get(categoryId) ||
+          '';
         const subCategoryName =
           String(inner.sub_category_name ?? row.sub_category_name ?? '').trim() ||
-          (Number.isFinite(subCategoryId) && subCategoryId > 0 ? subNameByKey.get(`${categoryId}:${subCategoryId}`) ?? '' : '');
+          (Number.isFinite(subCategoryId) && subCategoryId > 0
+            ? (subNameByKey.get(`${categoryId}:${subCategoryId}`) ?? '')
+            : '');
 
         const deadlineRaw = String(inner.required_delivery_date ?? '').trim();
         const deadlineIso = deadlineRaw || null;
         const dLeft = daysUntilDeadline(deadlineIso);
 
         const shipIdRaw = inner.shipping_method_id ?? row.shipping_method_id;
-        const shippingMethodId = shipIdRaw != null && Number(shipIdRaw) > 0 ? Number(shipIdRaw) : null;
+        const shippingMethodId =
+          shipIdRaw != null && Number(shipIdRaw) > 0 ? Number(shipIdRaw) : null;
         let shippingMethodName = String(inner.shipping_method_name ?? '').trim();
         if (!shippingMethodName && shippingMethodId != null) {
           shippingMethodName = sm.get(shippingMethodId) ?? '';
@@ -164,7 +174,7 @@ export function useFactoryRfqBoard() {
         const addressId = Number(inner.address_id ?? 0);
         const addressSummary =
           String(inner.address_summary ?? '').trim() ||
-          (Number.isFinite(addressId) && addressId > 0 ? addrById.get(addressId) ?? '' : '');
+          (Number.isFinite(addressId) && addressId > 0 ? (addrById.get(addressId) ?? '') : '');
 
         // ── Quotation overlay — ส่งมาจาก API โดยตรง ไม่ต้อง N+1 ──
         // Backend guarantees: AC rows are excluded, so my_quote_status is null / PD / RJ only
@@ -172,7 +182,8 @@ export function useFactoryRfqBoard() {
         const hasMyQuote = myQuoteStatusRaw != null && String(myQuoteStatusRaw).trim() !== '';
         const myQuoteStatus = hasMyQuote ? String(myQuoteStatusRaw).toUpperCase() : null;
         const myQuotedPriceRaw = Number(inner.my_quoted_price ?? row.my_quoted_price ?? NaN);
-        const myQuotedPrice = hasMyQuote && Number.isFinite(myQuotedPriceRaw) ? myQuotedPriceRaw : null;
+        const myQuotedPrice =
+          hasMyQuote && Number.isFinite(myQuotedPriceRaw) ? myQuotedPriceRaw : null;
 
         bases.push({
           id,
@@ -183,7 +194,8 @@ export function useFactoryRfqBoard() {
           subCategoryName,
           budgetPerPiece: Number.isFinite(budgetPerPiece!) ? budgetPerPiece : null,
           quantity: Number.isFinite(quantity!) ? quantity : null,
-          revenueApprox: revenueApprox != null && Number.isFinite(revenueApprox) ? revenueApprox : null,
+          revenueApprox:
+            revenueApprox != null && Number.isFinite(revenueApprox) ? revenueApprox : null,
           leadTargetDays,
           deadlineIso,
           shippingMethodName,

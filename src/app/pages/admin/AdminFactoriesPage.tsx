@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
-import { adminApi } from '../../services/api';
-import { Button } from '../../components/ui/button';
+import { adminApi } from '@/services/api';
+import { Button } from '@/components/ui/button';
 
 export type FactoryApprovalStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
@@ -96,48 +96,52 @@ function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: Confi
   const [reason, setReason] = useState('');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <h3 className="text-base font-bold text-slate-900 mb-1">
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+      <div className='absolute inset-0 bg-black/40' onClick={onCancel} />
+      <div className='relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6'>
+        <h3 className='text-base font-bold text-slate-900 mb-1'>
           {type === 'approve' ? 'ยืนยันการอนุมัติโรงงาน' : 'ยืนยันการปฏิเสธโรงงาน'}
         </h3>
-        <p className="text-sm text-slate-500 mb-4">
+        <p className='text-sm text-slate-500 mb-4'>
           {type === 'approve'
             ? `อนุมัติโรงงาน "${factory.factory_name}" ให้ใช้งานได้?`
             : `ปฏิเสธโรงงาน "${factory.factory_name}"?`}
         </p>
 
         {type === 'reject' && (
-          <div className="mb-4">
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              เหตุผล <span className="text-red-500">*</span>
+          <div className='mb-4'>
+            <label className='block text-xs font-semibold text-slate-700 mb-1.5'>
+              เหตุผล <span className='text-red-500'>*</span>
             </label>
             <textarea
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="ระบุเหตุผลอย่างน้อย 10 ตัวอักษร"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              placeholder='ระบุเหตุผลอย่างน้อย 10 ตัวอักษร'
+              className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
             />
           </div>
         )}
 
-        <div className="flex gap-3 justify-end">
-          <Button variant="unstyled"
-            type="button"
+        <div className='flex gap-3 justify-end'>
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={onCancel}
             disabled={submitting}
-            className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            className='px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors'
           >
             ยกเลิก
           </Button>
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => onConfirm(reason)}
             disabled={submitting || (type === 'reject' && reason.trim().length < 10)}
             className={`px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-40 ${
-              type === 'approve' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'
+              type === 'approve'
+                ? 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-red-600 hover:bg-red-700'
             }`}
           >
             {submitting ? 'กำลังบันทึก...' : type === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}
@@ -154,8 +158,8 @@ function TableSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <tr key={i}>
           {Array.from({ length: 7 }).map((__, j) => (
-            <td key={j} className="px-4 py-3">
-              <div className="h-4 bg-slate-100 rounded animate-pulse" />
+            <td key={j} className='px-4 py-3'>
+              <div className='h-4 bg-slate-100 rounded animate-pulse' />
             </td>
           ))}
         </tr>
@@ -172,7 +176,9 @@ export function AdminFactoriesPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [dialog, setDialog] = useState<{ type: FactoryActionType; factory: AdminFactory } | null>(null);
+  const [dialog, setDialog] = useState<{ type: FactoryActionType; factory: AdminFactory } | null>(
+    null,
+  );
 
   const loadFactories = async () => {
     setLoading(true);
@@ -234,41 +240,46 @@ export function AdminFactoriesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <p className="text-xs text-slate-400 font-medium">Admin / โรงงาน</p>
-        <h2 className="text-2xl font-bold text-slate-900 mt-1">จัดการโรงงาน</h2>
+        <p className='text-xs text-slate-400 font-medium'>Admin / โรงงาน</p>
+        <h2 className='text-2xl font-bold text-slate-900 mt-1'>จัดการโรงงาน</h2>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div className='bg-white rounded-xl border border-slate-200 p-4 shadow-sm'>
+        <div className='flex flex-col sm:flex-row gap-3'>
+          <div className='relative flex-1'>
+            <Search size={15} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
             <input
-              type="text"
-              placeholder="ค้นหาชื่อโรงงาน, อีเมล, เจ้าของ..."
+              type='text'
+              placeholder='ค้นหาชื่อโรงงาน, อีเมล, เจ้าของ...'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className='w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500'
             />
           </div>
         </div>
 
-        <div className="flex gap-1 mt-3 flex-wrap">
+        <div className='flex gap-1 mt-3 flex-wrap'>
           {STATUS_TABS.map((tab) => {
             const active = statusTab === tab.key;
             const count = counts[tab.key] ?? 0;
             return (
-              <Button variant="unstyled"
+              <Button
+                variant='unstyled'
                 key={tab.key}
-                type="button"
+                type='button'
                 onClick={() => setStatusTab(tab.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                  active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  active
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {tab.label}
-                <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                <span
+                  className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}
+                >
                   {count}
                 </span>
               </Button>
@@ -278,32 +289,46 @@ export function AdminFactoriesPage() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+        <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2'>
+          <AlertTriangle className='w-4 h-4 mt-0.5 shrink-0' />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[860px]">
+      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
+        <div className='overflow-x-auto'>
+          <table className='w-full text-sm min-w-[860px]'>
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">โรงงาน</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">เจ้าของ</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">อีเมล</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">โทรศัพท์</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">วันที่สมัคร</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">สถานะ</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+              <tr className='bg-slate-50 border-b border-slate-200'>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  โรงงาน
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  เจ้าของ
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  อีเมล
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  โทรศัพท์
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  วันที่สมัคร
+                </th>
+                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  สถานะ
+                </th>
+                <th className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className='divide-y divide-slate-100'>
               {loading ? (
                 <TableSkeleton />
               ) : factories.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-sm text-slate-400">
+                  <td colSpan={7} className='py-12 text-center text-sm text-slate-400'>
                     ไม่พบโรงงานที่ตรงกับเงื่อนไข
                   </td>
                 </tr>
@@ -311,57 +336,71 @@ export function AdminFactoriesPage() {
                 factories.map((factory) => {
                   const { label, cls } = STATUS_META[factory.approval_status];
                   return (
-                    <tr key={factory.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0">
+                    <tr key={factory.id} className='hover:bg-slate-50 transition-colors'>
+                      <td className='px-4 py-3'>
+                        <div className='flex items-center gap-3'>
+                          <div className='w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0'>
                             {factory.factory_name.charAt(0)}
                           </div>
                           <div>
-                            <Button variant="unstyled"
-                              type="button"
+                            <Button
+                              variant='unstyled'
+                              type='button'
                               onClick={() => navigate(`/admin/factories/${factory.factory_id}`)}
-                              className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline text-sm text-left"
+                              className='font-semibold text-indigo-600 hover:text-indigo-800 hover:underline text-sm text-left'
                             >
                               {factory.factory_name}
                             </Button>
-                            <p className="text-[11px] text-slate-400 mt-0.5">{factory.province} · {factory.business_type}</p>
+                            <p className='text-[11px] text-slate-400 mt-0.5'>
+                              {factory.province} · {factory.business_type}
+                            </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-700">{factory.owner_name}</td>
-                      <td className="px-4 py-3 text-sm text-slate-500">{factory.email}</td>
-                      <td className="px-4 py-3 text-sm text-slate-500 tabular-nums">{factory.phone}</td>
-                      <td className="px-4 py-3 text-sm text-slate-400 tabular-nums">{formatThaiDate(factory.registered_at)}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>
+                      <td className='px-4 py-3 text-sm text-slate-700'>{factory.owner_name}</td>
+                      <td className='px-4 py-3 text-sm text-slate-500'>{factory.email}</td>
+                      <td className='px-4 py-3 text-sm text-slate-500 tabular-nums'>
+                        {factory.phone}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className='px-4 py-3 text-sm text-slate-400 tabular-nums'>
+                        {formatThaiDate(factory.registered_at)}
+                      </td>
+                      <td className='px-4 py-3'>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}
+                        >
+                          {label}
+                        </span>
+                      </td>
+                      <td className='px-4 py-3'>
+                        <div className='flex items-center justify-end gap-1.5'>
                           {factory.approval_status === 'pending' && (
                             <>
-                              <Button variant="unstyled"
-                                type="button"
+                              <Button
+                                variant='unstyled'
+                                type='button'
                                 onClick={() => setDialog({ type: 'approve', factory })}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition-colors"
+                                className='flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition-colors'
                               >
                                 <CheckCircle size={13} />
                                 อนุมัติ
                               </Button>
-                              <Button variant="unstyled"
-                                type="button"
+                              <Button
+                                variant='unstyled'
+                                type='button'
                                 onClick={() => setDialog({ type: 'reject', factory })}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors"
+                                className='flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors'
                               >
                                 <XCircle size={13} />
                                 ปฏิเสธ
                               </Button>
                             </>
                           )}
-                          <Button variant="unstyled"
-                            type="button"
+                          <Button
+                            variant='unstyled'
+                            type='button'
                             onClick={() => navigate(`/admin/factories/${factory.factory_id}`)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200 transition-colors"
+                            className='flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200 transition-colors'
                           >
                             <Eye size={13} />
                             ดู
@@ -388,8 +427,8 @@ export function AdminFactoriesPage() {
       )}
 
       {loading && (
-        <div className="fixed bottom-6 right-6 flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm">
-          <Loader2 className="w-3 h-3 animate-spin" />
+        <div className='fixed bottom-6 right-6 flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm'>
+          <Loader2 className='w-3 h-3 animate-spin' />
           กำลังโหลดข้อมูลโรงงาน
         </div>
       )}

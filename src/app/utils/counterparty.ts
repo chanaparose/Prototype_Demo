@@ -1,4 +1,4 @@
-import type { ConversationDTO } from '../types/api';
+import type { ConversationDTO } from '@/types/api';
 
 export const CUSTOMER_AVATAR = '/assets/avatars/customer-default.svg';
 export const FACTORY_FALLBACK_AVATAR = '/assets/avatars/factory-fallback.svg';

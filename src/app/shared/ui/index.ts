@@ -1,14 +1,14 @@
 // Forms
-export { FormField } from './forms';
+export { FormField } from '@/shared/ui/forms';
 
 // Cards
-export { CollapsibleCard, SectionCard, InfoBox } from './cards';
+export { CollapsibleCard, SectionCard, InfoBox } from '@/shared/ui/cards';
 
 // Badges
-export { StatusBadge } from './badges';
+export { StatusBadge } from '@/shared/ui/badges';
 
 // Modals
-export { BaseModal } from './modals';
+export { BaseModal } from '@/shared/ui/modals';
 
 // Sections
-export { TabNavigation } from './sections';
+export { TabNavigation } from '@/shared/ui/sections';

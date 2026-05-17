@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { certificatesApi } from '../../services/api';
+import { certificatesApi } from '@/services/api';
 
 type Row = Record<string, unknown>;
 

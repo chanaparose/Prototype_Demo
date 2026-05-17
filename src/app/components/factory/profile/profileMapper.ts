@@ -1,4 +1,4 @@
-import type { ProfileFormValues } from './ProfileFormTypes';
+import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
 
 type Row = Record<string, unknown>;
 

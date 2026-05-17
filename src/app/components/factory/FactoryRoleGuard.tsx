@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router';
-import { useAuth } from '../../stores';
-import { isFactoryRole } from '../../utils/factoryUser';
+import { useAuth } from '@/stores';
+import { isFactoryRole } from '@/utils/factoryUser';
 
 /** อนุญาตเฉพาะผู้ใช้โรงงาน (role FT) */
 export function FactoryRoleGuard() {
@@ -9,9 +9,9 @@ export function FactoryRoleGuard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center">
+      <div className='min-h-[40vh] flex items-center justify-center'>
         <div
-          className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
+          className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
           style={{ borderColor: '#6C47FF', borderTopColor: 'transparent' }}
         />
       </div>
@@ -19,7 +19,7 @@ export function FactoryRoleGuard() {
   }
 
   if (!isFactoryRole(user)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to='/' replace />;
   }
 
   return <Outlet />;

@@ -1,6 +1,6 @@
-import type { RoomMessage } from '../../components/chat/MessageBubble';
-import type { UiConversation } from './types';
-import { parseChatInstant } from '../../utils/chatTime';
+import type { RoomMessage } from '@/components/chat/MessageBubble';
+import type { UiConversation } from '@/pages/messages/types';
+import { parseChatInstant } from '@/utils/chatTime';
 
 /**
  * Normalize an ISO-8601 / RFC-3339 timestamp so JavaScript's Date parser

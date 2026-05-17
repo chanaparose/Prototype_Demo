@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Search, FileText, MessageCircle, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
-import { Button } from '../../ui/button';
+import { Button } from '@/components/ui/button';
 
 /* ─── CSS animations ─────────────────────────────────────────────────────── */
 const ANIMATION_CSS = `
@@ -135,7 +135,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
     >
       {/* ── Animated orbs (soft pastel) ── */}
       <div
-        className="absolute -top-16 -right-16 w-72 h-72 rounded-full pointer-events-none"
+        className='absolute -top-16 -right-16 w-72 h-72 rounded-full pointer-events-none'
         style={{
           background: 'radial-gradient(circle, rgba(167,139,250,0.28) 0%, transparent 70%)',
           animation: 'hiw-float-a 10s ease-in-out infinite',
@@ -143,7 +143,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         }}
       />
       <div
-        className="absolute -bottom-12 -left-10 w-56 h-56 rounded-full pointer-events-none"
+        className='absolute -bottom-12 -left-10 w-56 h-56 rounded-full pointer-events-none'
         style={{
           background: 'radial-gradient(circle, rgba(253,186,116,0.28) 0%, transparent 70%)',
           animation: 'hiw-float-b 13s ease-in-out infinite',
@@ -151,7 +151,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         }}
       />
       <div
-        className="absolute top-1/2 -translate-y-1/2 left-1/3 w-44 h-44 rounded-full pointer-events-none"
+        className='absolute top-1/2 -translate-y-1/2 left-1/3 w-44 h-44 rounded-full pointer-events-none'
         style={{
           background: 'radial-gradient(circle, rgba(94,234,212,0.18) 0%, transparent 70%)',
           animation: 'hiw-float-c 16s ease-in-out infinite',
@@ -161,7 +161,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
 
       {/* ── Animated dot grid ── */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className='absolute inset-0 pointer-events-none'
         style={{
           backgroundImage: 'radial-gradient(circle, rgba(124,58,237,0.09) 1px, transparent 0)',
           backgroundSize: '28px 28px',
@@ -171,20 +171,20 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
 
       {/* ── Top shimmer accent bar ── */}
       <div
-        className="absolute top-0 left-0 right-0 h-[3px] pointer-events-none rounded-t-2xl"
+        className='absolute top-0 left-0 right-0 h-[3px] pointer-events-none rounded-t-2xl'
         style={{
           background: 'linear-gradient(90deg, #7C3AED 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
           animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
         }}
       />
 
-      <div className="relative z-10 p-3.5 sm:p-5 lg:p-7">
+      <div className='relative z-10 p-3.5 sm:p-5 lg:p-7'>
         {/* ── Header ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 mb-4 sm:mb-6 lg:mb-8">
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 mb-4 sm:mb-6 lg:mb-8'>
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className='flex items-center gap-2 mb-1.5'>
               <div
-                className="p-1.5 rounded-lg"
+                className='p-1.5 rounded-lg'
                 style={{
                   background: 'rgba(124,58,237,0.12)',
                   border: '1px solid rgba(124,58,237,0.22)',
@@ -194,25 +194,30 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                 <Sparkles size={13} style={{ color: '#7C3AED' }} />
               </div>
               <span
-                className="text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase"
+                className='text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase'
                 style={{ color: '#7C3AED', animation: 'hiw-badge-text 3s ease-in-out infinite' }}
               >
                 HOW IT WORKS
               </span>
             </div>
-            <h2 className="text-[#1E0A3C] text-lg sm:text-xl lg:text-2xl font-bold leading-tight">
+            <h2 className='text-[#1E0A3C] text-lg sm:text-xl lg:text-2xl font-bold leading-tight'>
               สั่งผลิตสินค้ากับ Tryly
             </h2>
-            <p className="mt-0.5 text-[12px] sm:text-sm text-[#6B5A8E]">
+            <p className='mt-0.5 text-[12px] sm:text-sm text-[#6B5A8E]'>
               ง่ายแค่ 4 ขั้นตอน ไม่ต้องมีประสบการณ์มาก่อน
             </p>
           </div>
 
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => window.dispatchEvent(new CustomEvent('tryly-open-tour'))}
-            className="hidden sm:flex shrink-0 items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', color: 'white', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
+            className='hidden sm:flex shrink-0 items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 hover:opacity-90'
+            style={{
+              background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)',
+              color: 'white',
+              boxShadow: '0 4px 14px rgba(162,56,255,0.30)',
+            }}
           >
             <span>สาธิตการใช้งาน</span>
             <ArrowRight size={15} />
@@ -220,17 +225,16 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         </div>
 
         {/* ── Steps grid ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
+        <div className='grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4'>
           {STEPS.map((step, idx) => {
             const Icon = step.icon;
             const isLast = idx === STEPS.length - 1;
             return (
-              <div key={step.num} className="relative">
-
+              <div key={step.num} className='relative'>
                 {/* Connector arrow — desktop only */}
                 {!isLast && (
                   <div
-                    className="hidden lg:flex absolute top-7 -right-2.5 z-10 items-center justify-center w-5 h-5 rounded-full"
+                    className='hidden lg:flex absolute top-7 -right-2.5 z-10 items-center justify-center w-5 h-5 rounded-full'
                     style={{
                       background: '#FFFFFF',
                       border: '1px solid rgba(124,58,237,0.18)',
@@ -243,10 +247,11 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                 )}
 
                 {/* Card */}
-                <Button variant="unstyled"
-                  type="button"
+                <Button
+                  variant='unstyled'
+                  type='button'
                   onClick={() => navigate(step.href)}
-                  className="w-full text-left rounded-xl p-2.5 sm:p-3.5 lg:p-4 transition-all duration-300 group active:scale-[0.97] relative"
+                  className='w-full text-left rounded-xl p-2.5 sm:p-3.5 lg:p-4 transition-all duration-300 group active:scale-[0.97] relative'
                   style={{
                     background: '#FFFFFF',
                     border: `1px solid ${step.borderColor}`,
@@ -269,46 +274,63 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                 >
                   {/* Colored top micro-bar */}
                   <div
-                    className="absolute top-0 left-4 right-4 h-[2px] rounded-full pointer-events-none"
-                    style={{ background: `linear-gradient(90deg, transparent, ${step.accentColor}70, transparent)` }}
+                    className='absolute top-0 left-4 right-4 h-[2px] rounded-full pointer-events-none'
+                    style={{
+                      background: `linear-gradient(90deg, transparent, ${step.accentColor}70, transparent)`,
+                    }}
                   />
 
                   {/* Icon + Badge row */}
-                  <div className="relative z-10 flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-3">
+                  <div className='relative z-10 flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-3'>
                     <div
-                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+                      className='w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6'
                       style={{ background: step.iconBg, border: `1px solid ${step.accentColor}30` }}
                     >
-                      <Icon size={13} className="sm:hidden" style={{ color: step.iconColor }} />
-                      <Icon size={17} className="hidden sm:block" style={{ color: step.iconColor }} />
+                      <Icon size={13} className='sm:hidden' style={{ color: step.iconColor }} />
+                      <Icon
+                        size={17}
+                        className='hidden sm:block'
+                        style={{ color: step.iconColor }}
+                      />
                     </div>
                     <span
-                      className="text-[9px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full"
-                      style={{ background: step.badgeBg, color: step.accentColor, border: `1px solid ${step.accentColor}30` }}
+                      className='text-[9px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full'
+                      style={{
+                        background: step.badgeBg,
+                        color: step.accentColor,
+                        border: `1px solid ${step.accentColor}30`,
+                      }}
                     >
-                      <span className="sm:hidden">#{step.num}</span>
-                      <span className="hidden sm:inline">ขั้นตอนที่ {step.num}</span>
+                      <span className='sm:hidden'>#{step.num}</span>
+                      <span className='hidden sm:inline'>ขั้นตอนที่ {step.num}</span>
                     </span>
                   </div>
 
                   {/* Title */}
-                  <div className="relative z-10 mb-1 sm:mb-2">
-                    <p className="text-[#1E0A3C] font-bold text-[12px] sm:text-[14px] lg:text-[15px] leading-snug">{step.title}</p>
-                    <p className="font-semibold text-[11px] sm:text-[13px]" style={{ color: step.accentColor }}>{step.subtitle}</p>
+                  <div className='relative z-10 mb-1 sm:mb-2'>
+                    <p className='text-[#1E0A3C] font-bold text-[12px] sm:text-[14px] lg:text-[15px] leading-snug'>
+                      {step.title}
+                    </p>
+                    <p
+                      className='font-semibold text-[11px] sm:text-[13px]'
+                      style={{ color: step.accentColor }}
+                    >
+                      {step.subtitle}
+                    </p>
                   </div>
 
                   {/* Description — hidden on mobile */}
-                  <p className="relative z-10 hidden sm:block text-[11px] sm:text-[12px] leading-relaxed mb-2 sm:mb-3 text-gray-500">
+                  <p className='relative z-10 hidden sm:block text-[11px] sm:text-[12px] leading-relaxed mb-2 sm:mb-3 text-gray-500'>
                     {step.desc}
                   </p>
 
                   {/* CTA */}
                   <span
-                    className="relative z-10 text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 group-hover:gap-1.5 transition-all"
+                    className='relative z-10 text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 group-hover:gap-1.5 transition-all'
                     style={{ color: step.accentColor }}
                   >
                     {step.action}
-                    <ArrowRight size={10} className="opacity-70" />
+                    <ArrowRight size={10} className='opacity-70' />
                   </span>
                 </Button>
               </div>
@@ -317,11 +339,15 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         </div>
 
         {/* ── Bottom CTA — mobile full-width ── */}
-        <Button variant="unstyled"
-          type="button"
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => window.dispatchEvent(new CustomEvent('tryly-open-tour'))}
-          className="sm:hidden mt-4 w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)', boxShadow: '0 4px 14px rgba(162,56,255,0.30)' }}
+          className='sm:hidden mt-4 w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98]'
+          style={{
+            background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)',
+            boxShadow: '0 4px 14px rgba(162,56,255,0.30)',
+          }}
         >
           <span>สาธิตการใช้งาน</span>
           <ArrowRight size={15} />

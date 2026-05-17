@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BaseModal } from '../../shared/ui';
-import { Button } from '../ui/button';
+import { BaseModal } from '@/shared/ui';
+import { Button } from '@/components/ui/button';
 
 type CertTypeOption = {
   id: number;
@@ -105,18 +105,18 @@ export function CertUploadModal({
       isOpen={open}
       onClose={onClose}
       title={mode === 'create' ? 'เพิ่มใบรับรอง' : 'แก้ไขใบรับรอง'}
-      placement="bottom"
-      size="lg"
-      className="sm:rounded-2xl max-w-lg max-h-[min(90vh,100dvh)]"
-      bodyClassName="p-4 sm:p-5 pb-6 space-y-4"
+      placement='bottom'
+      size='lg'
+      className='sm:rounded-2xl max-w-lg max-h-[min(90vh,100dvh)]'
+      bodyClassName='p-4 sm:p-5 pb-6 space-y-4'
       closeOnBackdropClick={!submitting}
-      footerClassName="p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2"
+      footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2'
       footer={
         <>
           <Button
             disabled={submitting}
             onClick={() => void submit(false)}
-            className="py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+            className='py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50'
             style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
           >
             {submitting ? 'กำลังบันทึก...' : 'บันทึก'}
@@ -125,8 +125,8 @@ export function CertUploadModal({
             <Button
               disabled={submitting}
               onClick={() => void submit(true)}
-              variant="outline"
-              className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
+              variant='outline'
+              className='py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50'
             >
               บันทึกและเพิ่มใบรับรองถัดไป
             </Button>
@@ -134,8 +134,8 @@ export function CertUploadModal({
             <Button
               onClick={onClose}
               disabled={submitting}
-              variant="outline"
-              className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
+              variant='outline'
+              className='py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50'
             >
               ยกเลิก
             </Button>
@@ -143,58 +143,58 @@ export function CertUploadModal({
         </>
       }
     >
-        {error ? (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-            {error}
-          </p>
-        ) : null}
+      {error ? (
+        <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
+          {error}
+        </p>
+      ) : null}
 
-        <label className="block">
-          <span className="text-xs text-gray-500">ประเภทใบรับรอง *</span>
-          <select
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-            value={certId}
-            onChange={(e) => setCertId(e.target.value)}
-          >
-            {certTypes.map((m) => (
-              <option key={m.id} value={String(m.id)}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-        </label>
+      <label className='block'>
+        <span className='text-xs text-gray-500'>ประเภทใบรับรอง *</span>
+        <select
+          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          value={certId}
+          onChange={(e) => setCertId(e.target.value)}
+        >
+          {certTypes.map((m) => (
+            <option key={m.id} value={String(m.id)}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+      </label>
 
-        <label className="block">
-          <span className="text-xs text-gray-500">เลขที่เอกสาร (ถ้ามี)</span>
-          <input
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-            value={certNumber}
-            onChange={(e) => setCertNumber(e.target.value)}
-          />
-        </label>
+      <label className='block'>
+        <span className='text-xs text-gray-500'>เลขที่เอกสาร (ถ้ามี)</span>
+        <input
+          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          value={certNumber}
+          onChange={(e) => setCertNumber(e.target.value)}
+        />
+      </label>
 
-        <label className="block">
-          <span className="text-xs text-gray-500">วันหมดอายุ *</span>
-          <input
-            type="date"
-            className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
-            value={expireDate}
-            onChange={(e) => setExpireDate(e.target.value)}
-          />
-        </label>
+      <label className='block'>
+        <span className='text-xs text-gray-500'>วันหมดอายุ *</span>
+        <input
+          type='date'
+          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          value={expireDate}
+          onChange={(e) => setExpireDate(e.target.value)}
+        />
+      </label>
 
-        <label className="block">
-          <span className="text-xs text-gray-500">
-            ไฟล์เอกสาร {mode === 'create' ? '*' : '(อัปโหลดใหม่หากต้องการแทนไฟล์เดิม)'}
-          </span>
-          <input
-            type="file"
-            accept="image/*,.pdf"
-            className="mt-1 text-sm block w-full"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
-          {file ? <p className="text-[11px] text-gray-500 mt-1">{file.name}</p> : null}
-        </label>
+      <label className='block'>
+        <span className='text-xs text-gray-500'>
+          ไฟล์เอกสาร {mode === 'create' ? '*' : '(อัปโหลดใหม่หากต้องการแทนไฟล์เดิม)'}
+        </span>
+        <input
+          type='file'
+          accept='image/*,.pdf'
+          className='mt-1 text-sm block w-full'
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
+        {file ? <p className='text-[11px] text-gray-500 mt-1'>{file.name}</p> : null}
+      </label>
     </BaseModal>
   );
 }

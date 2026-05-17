@@ -1,5 +1,5 @@
 // Currency formatting
-export * from './formatCurrency';
+export * from '@/utils/formatting/formatCurrency';
 
 // Date formatting
-export * from './formatDate';
+export * from '@/utils/formatting/formatDate';

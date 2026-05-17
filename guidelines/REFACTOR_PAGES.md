@@ -6,17 +6,17 @@
 
 ## สรุปลำดับความสำคัญ
 
-| หน้า | บรรทัด | ความสำคัญ | โฟลเดอร์ feature ที่แนะนำ |
-|------|--------|-----------|---------------------------|
-| **OrderDetail** | 524 | สูงมาก | `features/order-detail` |
-| **Explore** | 381 | สูง | `features/explore` |
-| **RFQDetail** | 376 | ปานกลาง | `features/rfq-detail` |
-| **CreateRfq** | 366 | ปานกลาง | `features/create-rfq` |
-| **FactoryProfile** | 324 | ปานกลาง | `features/factory-profile` |
-| **ChatRoom** | 274 | ต่ำ | (แยกเฉพาะส่วนใหญ่ถ้าต้องการ) |
-| **Profile** | 253 | ต่ำ | (แยกเฉพาะส่วนใหญ่ถ้าต้องการ) |
-| **FactoryIdeas** | 226 | ต่ำ | (แยก filters + list ได้) |
-| หน้าที่เหลือ | &lt; 175 | ไม่จำเป็น | - |
+| หน้า               | บรรทัด   | ความสำคัญ | โฟลเดอร์ feature ที่แนะนำ    |
+| ------------------ | -------- | --------- | ---------------------------- |
+| **OrderDetail**    | 524      | สูงมาก    | `features/order-detail`      |
+| **Explore**        | 381      | สูง       | `features/explore`           |
+| **RFQDetail**      | 376      | ปานกลาง   | `features/rfq-detail`        |
+| **CreateRfq**      | 366      | ปานกลาง   | `features/create-rfq`        |
+| **FactoryProfile** | 324      | ปานกลาง   | `features/factory-profile`   |
+| **ChatRoom**       | 274      | ต่ำ       | (แยกเฉพาะส่วนใหญ่ถ้าต้องการ) |
+| **Profile**        | 253      | ต่ำ       | (แยกเฉพาะส่วนใหญ่ถ้าต้องการ) |
+| **FactoryIdeas**   | 226      | ต่ำ       | (แยก filters + list ได้)     |
+| หน้าที่เหลือ       | &lt; 175 | ไม่จำเป็น | -                            |
 
 ---
 
@@ -26,12 +26,12 @@
 
 **ส่วนที่แยกได้:**
 
-| Component | หน้าที่ | ไฟล์ที่แนะนำ |
-|-----------|---------|----------------|
-| **OrderSummaryCard** | การ์ดสรุปคำสั่งซื้อ (สถานะ, โรงงาน, ความคืบหน้า, มูลค่า, จำนวน, กำหนดส่ง) | `features/order-detail/OrderSummaryCard.tsx` |
-| **OrderOverviewSection** | สถานะการชำระเงิน + RFQ ที่เกี่ยวข้อง + รายการโรงงานที่เคยเสนอราคา | `features/order-detail/OrderOverviewSection.tsx` |
-| **OrderTimelineSection** | รายการความคืบหน้า (timeline) | `features/order-detail/OrderTimelineSection.tsx` |
-| **OrderPhotoGallery** | Modal แสดงรูป / รายการรูป (ถ้ามี) | `features/order-detail/OrderPhotoGallery.tsx` |
+| Component                | หน้าที่                                                                   | ไฟล์ที่แนะนำ                                     |
+| ------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------ |
+| **OrderSummaryCard**     | การ์ดสรุปคำสั่งซื้อ (สถานะ, โรงงาน, ความคืบหน้า, มูลค่า, จำนวน, กำหนดส่ง) | `features/order-detail/OrderSummaryCard.tsx`     |
+| **OrderOverviewSection** | สถานะการชำระเงิน + RFQ ที่เกี่ยวข้อง + รายการโรงงานที่เคยเสนอราคา         | `features/order-detail/OrderOverviewSection.tsx` |
+| **OrderTimelineSection** | รายการความคืบหน้า (timeline)                                              | `features/order-detail/OrderTimelineSection.tsx` |
+| **OrderPhotoGallery**    | Modal แสดงรูป / รายการรูป (ถ้ามี)                                         | `features/order-detail/OrderPhotoGallery.tsx`    |
 
 **หน้า OrderDetail.tsx เหลือ:** Header, state (selectedPhoto, activeSection), แท็บภาพรวม/ความคืบหน้า, เรียก component ด้านบน + FAB
 
@@ -45,13 +45,13 @@
 
 **ส่วนที่แยกได้:**
 
-| Component | หน้าที่ | ไฟล์ที่แนะนำ |
-|-----------|---------|----------------|
-| **ExplorePromoCarousel** | สไลด์โปรโมชัน + ปุ่มคัดลอกโค้ด + indicators | `features/explore/ExplorePromoCarousel.tsx` |
-| **ExploreCategories** | แถวหมวดหมู่เลื่อนได้ | `features/explore/ExploreCategories.tsx` |
-| **ExploreFactoryGrid** | กริดโรงงานแนะนำ (การ์ดโรงงาน) | `features/explore/ExploreFactoryGrid.tsx` |
-| **ExploreIdeaArticles** | แถวบทความ Idea เลื่อนได้ | `features/explore/ExploreIdeaArticles.tsx` |
-| **ExploreRecentActivity** | บล็อกกิจกรรมล่าสุด (RFQ + Orders cards) | `features/explore/ExploreRecentActivity.tsx` |
+| Component                 | หน้าที่                                     | ไฟล์ที่แนะนำ                                 |
+| ------------------------- | ------------------------------------------- | -------------------------------------------- |
+| **ExplorePromoCarousel**  | สไลด์โปรโมชัน + ปุ่มคัดลอกโค้ด + indicators | `features/explore/ExplorePromoCarousel.tsx`  |
+| **ExploreCategories**     | แถวหมวดหมู่เลื่อนได้                        | `features/explore/ExploreCategories.tsx`     |
+| **ExploreFactoryGrid**    | กริดโรงงานแนะนำ (การ์ดโรงงาน)               | `features/explore/ExploreFactoryGrid.tsx`    |
+| **ExploreIdeaArticles**   | แถวบทความ Idea เลื่อนได้                    | `features/explore/ExploreIdeaArticles.tsx`   |
+| **ExploreRecentActivity** | บล็อกกิจกรรมล่าสุด (RFQ + Orders cards)     | `features/explore/ExploreRecentActivity.tsx` |
 
 **constants/utils:** ย้าย `PROMO_SLIDES`, `statusConfig` ไปที่ `features/explore/constants.ts` (หรือในไฟล์ที่ใช้)
 
@@ -67,11 +67,11 @@
 
 **ส่วนที่แยกได้:**
 
-| Component | หน้าที่ | ไฟล์ที่แนะนำ |
-|-----------|---------|----------------|
-| **RfqDetailStatusCard** | การ์ดสถานะ RFQ (หมวด, ชื่อ, สถานะ/จำนวนใบเสนอราคา) | `features/rfq-detail/RfqDetailStatusCard.tsx` |
-| **RfqDetailSpecs** | ส่วน collapsible รายละเอียด (คำอธิบาย, งบ, จำนวน, วัสดุ, deadline ฯลฯ) | `features/rfq-detail/RfqDetailSpecs.tsx` |
-| **RfqDetailOffersList** | รายการโรงงานที่เสนอราคา + การเลือกโรงงาน | `features/rfq-detail/RfqDetailOffersList.tsx` |
+| Component               | หน้าที่                                                                | ไฟล์ที่แนะนำ                                  |
+| ----------------------- | ---------------------------------------------------------------------- | --------------------------------------------- |
+| **RfqDetailStatusCard** | การ์ดสถานะ RFQ (หมวด, ชื่อ, สถานะ/จำนวนใบเสนอราคา)                     | `features/rfq-detail/RfqDetailStatusCard.tsx` |
+| **RfqDetailSpecs**      | ส่วน collapsible รายละเอียด (คำอธิบาย, งบ, จำนวน, วัสดุ, deadline ฯลฯ) | `features/rfq-detail/RfqDetailSpecs.tsx`      |
+| **RfqDetailOffersList** | รายการโรงงานที่เสนอราคา + การเลือกโรงงาน                               | `features/rfq-detail/RfqDetailOffersList.tsx` |
 
 **หน้า RFQDetail.tsx เหลือ:** Header, state (specsOpen, selectedOffer), data (rfq, orderForRfq), เรียก component ด้านบน + CTA
 
@@ -83,11 +83,11 @@
 
 **ส่วนที่แยกได้:**
 
-| Component | หน้าที่ | ไฟล์ที่แนะนำ |
-|-----------|---------|----------------|
-| **CreateRfqStep1** | ฟอร์ม step 1 (หมวด, ชื่อสินค้า, คำอธิบาย) | `features/create-rfq/CreateRfqStep1.tsx` |
-| **CreateRfqStep2** | ฟอร์ม step 2 (จำนวน, งบ, วัสดุ, deadline) | `features/create-rfq/CreateRfqStep2.tsx` |
-| **CreateRfqStep3Summary** | แสดงสรุป + ปุ่มส่งคำขอ | `features/create-rfq/CreateRfqStep3Summary.tsx` |
+| Component                 | หน้าที่                                   | ไฟล์ที่แนะนำ                                    |
+| ------------------------- | ----------------------------------------- | ----------------------------------------------- |
+| **CreateRfqStep1**        | ฟอร์ม step 1 (หมวด, ชื่อสินค้า, คำอธิบาย) | `features/create-rfq/CreateRfqStep1.tsx`        |
+| **CreateRfqStep2**        | ฟอร์ม step 2 (จำนวน, งบ, วัสดุ, deadline) | `features/create-rfq/CreateRfqStep2.tsx`        |
+| **CreateRfqStep3Summary** | แสดงสรุป + ปุ่มส่งคำขอ                    | `features/create-rfq/CreateRfqStep3Summary.tsx` |
 
 **หน้า CreateRfq.tsx เหลือ:** Header, Stepper, state (currentStep, form), updateForm, handleNext/handleBack, เลือกแสดง step ตาม currentStep
 
@@ -101,10 +101,10 @@
 
 **ส่วนที่แยกได้:**
 
-| Component | หน้าที่ | ไฟล์ที่แนะนำ |
-|-----------|---------|----------------|
-| **FactoryProfileHero** | รูป cover + ปุ่มกลับ/แชท + ชื่อโรงงาน + เรตติ้ง/ที่อยู่ | `features/factory-profile/FactoryProfileHero.tsx` |
-| **FactoryProfileStats** | แถวสถิติ 3 ช่อง (ขั้นต่ำผลิต, Lead time, งานสำเร็จ) | `features/factory-profile/FactoryProfileStats.tsx` |
+| Component                    | หน้าที่                                                         | ไฟล์ที่แนะนำ                                                                                                            |
+| ---------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **FactoryProfileHero**       | รูป cover + ปุ่มกลับ/แชท + ชื่อโรงงาน + เรตติ้ง/ที่อยู่         | `features/factory-profile/FactoryProfileHero.tsx`                                                                       |
+| **FactoryProfileStats**      | แถวสถิติ 3 ช่อง (ขั้นต่ำผลิต, Lead time, งานสำเร็จ)             | `features/factory-profile/FactoryProfileStats.tsx`                                                                      |
 | **FactoryProfileTabContent** | เนื้อหา 4 แท็บ: สินค้า, โปรโมชัน, บทความ, เกี่ยวกับโรงงาน+รีวิว | `features/factory-profile/FactoryProfileTabContent.tsx` (หรือแยกเป็น TabProducts, TabPromotions, TabArticles, TabAbout) |
 
 **utils:** `formatThaiDate` → `features/factory-profile/utils.ts`

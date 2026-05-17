@@ -26,16 +26,14 @@ export function InfoBox({
   className = '',
 }: InfoBoxProps) {
   return (
-    <div
-      className={`rounded-xl border px-4 py-3 ${variantStyles[variant]} ${className}`}
-    >
+    <div className={`rounded-xl border px-4 py-3 ${variantStyles[variant]} ${className}`}>
       {(icon || title) && (
-        <div className="flex items-center gap-2 mb-2">
-          {icon && <span className="text-lg shrink-0">{icon}</span>}
-          {title && <p className="text-sm font-semibold text-gray-900">{title}</p>}
+        <div className='flex items-center gap-2 mb-2'>
+          {icon && <span className='text-lg shrink-0'>{icon}</span>}
+          {title && <p className='text-sm font-semibold text-gray-900'>{title}</p>}
         </div>
       )}
-      <div className="text-sm text-gray-700">{children}</div>
+      <div className='text-sm text-gray-700'>{children}</div>
     </div>
   );
 }

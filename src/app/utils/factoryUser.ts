@@ -1,4 +1,4 @@
-import type { User } from '../stores';
+import type { User } from '@/stores';
 
 /** บทบาทโรงงานตาม API (register ใช้ FT) */
 export function isFactoryRole(user: User | null | undefined): boolean {
@@ -13,10 +13,7 @@ export function isFactoryRole(user: User | null | undefined): boolean {
 export function getFactoryEntityId(user: User | null | undefined): number | null {
   if (!user || !isFactoryRole(user)) return null;
   const raw =
-    user.factory_id ??
-    user.factoryId ??
-    (user as Record<string, unknown>).factory_id ??
-    user.id;
+    user.factory_id ?? user.factoryId ?? (user as Record<string, unknown>).factory_id ?? user.id;
   const n = Number(raw);
   return Number.isFinite(n) ? n : null;
 }

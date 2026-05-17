@@ -1,4 +1,7 @@
-import type { DerivedCardState, FactoryOrderRow } from './types';
+import type {
+  DerivedCardState,
+  FactoryOrderRow,
+} from '@/pages/factory-portal/factory-orders/types';
 
 function dayDiffFromNow(iso: string | null, now: Date): number | null {
   if (!iso) return null;
@@ -37,8 +40,17 @@ export function deriveOrderCardState(row: FactoryOrderRow, now: Date): DerivedCa
     s?.current_update_status === 'IP' &&
     s.current_step_id != null
   ) {
-    primaryCta = { kind: 'update_step', stepId: s.current_step_id, stepNameTh: s.current_step_name_th ?? 'ขั้นตอน' };
-  } else if (['PR', 'QC'].includes(row.status) && !!s && s.total_count > 0 && s.completed_count === s.total_count) {
+    primaryCta = {
+      kind: 'update_step',
+      stepId: s.current_step_id,
+      stepNameTh: s.current_step_name_th ?? 'ขั้นตอน',
+    };
+  } else if (
+    ['PR', 'QC'].includes(row.status) &&
+    !!s &&
+    s.total_count > 0 &&
+    s.completed_count === s.total_count
+  ) {
     primaryCta = { kind: 'start_qc' };
   } else if (row.status === 'SH') {
     primaryCta = { kind: 'mark_shipped' };
@@ -46,5 +58,8 @@ export function deriveOrderCardState(row: FactoryOrderRow, now: Date): DerivedCa
     primaryCta = { kind: 'waiting_customer' };
   }
 
-  return { flags: { isOverdue, daysOverdue, isNearDeadline, hasRejected, isStaleUpdate }, primaryCta };
+  return {
+    flags: { isOverdue, daysOverdue, isNearDeadline, hasRejected, isStaleUpdate },
+    primaryCta,
+  };
 }

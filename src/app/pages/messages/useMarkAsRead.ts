@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { conversationsApi } from '../../services/api';
+import { conversationsApi } from '@/services/api';
 
 /**
  * Idempotent mark-as-read per conversation while it stays active.

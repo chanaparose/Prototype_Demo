@@ -1,5 +1,5 @@
 import React from 'react';
-import { quotationApi, type QuotationBreakdown, type QuotationCreateInput } from '../../services/api';
+import { quotationApi, type QuotationBreakdown, type QuotationCreateInput } from '@/services/api';
 
 export function usePreviewBreakdown(state: Partial<QuotationCreateInput>) {
   const [loading, setLoading] = React.useState(false);

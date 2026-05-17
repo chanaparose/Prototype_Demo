@@ -2,8 +2,8 @@ import React from 'react';
 import { Wallet, QrCode, Landmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { ordersApi, walletApi } from '../../../services/api';
-import { BaseModal } from '../../../shared/ui';
+import { ordersApi, walletApi } from '@/services/api';
+import { BaseModal } from '@/shared/ui';
 import {
   ACCENT_ORANGE_DEEP,
   BORDER_WARM,
@@ -11,8 +11,8 @@ import {
   DEEP_PURPLE,
   PEACH_MIST,
   PLUM,
-} from '../rfq-and-orders/constants';
-import { Button } from '../../ui/button';
+} from '@/components/features/rfq-and-orders/constants';
+import { Button } from '@/components/ui/button';
 
 export type DepositPaymentMethod = 'WALLET' | 'PROMPTPAY' | 'BANK';
 
@@ -89,10 +89,15 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
         onClose();
       }
     } catch (err) {
-      const e = err as { status?: number; body?: { error_code?: string; message?: string; shortfall?: number; topup_url?: string } };
+      const e = err as {
+        status?: number;
+        body?: { error_code?: string; message?: string; shortfall?: number; topup_url?: string };
+      };
       const code = e?.body?.error_code;
       if (code === 'INSUFFICIENT_WALLET_BALANCE') {
-        toast.error(`ยอด Wallet ไม่พอ ขาดอีก ฿${Number(e.body?.shortfall ?? 0).toLocaleString('th-TH')}`);
+        toast.error(
+          `ยอด Wallet ไม่พอ ขาดอีก ฿${Number(e.body?.shortfall ?? 0).toLocaleString('th-TH')}`,
+        );
       } else if (code === 'DEPOSIT_EXPIRED') {
         toast.error('หมดกำหนดชำระเงินแล้ว');
       } else if (code === 'DEPOSIT_ALREADY_PAID') {
@@ -116,29 +121,31 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
     <BaseModal
       isOpen={open}
       onClose={onClose}
-      title="ชำระเงินเต็มจำนวน"
-      placement="bottom"
+      title='ชำระเงินเต็มจำนวน'
+      placement='bottom'
       footer={
-        <div className="w-full space-y-2">
+        <div className='w-full space-y-2'>
           {method === 'WALLET' && insufficient && !wallet.isPending ? (
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => {
                 onClose();
                 window.location.href = '/wallet/topup';
               }}
-              className="w-full rounded-xl py-3 text-sm font-semibold text-white"
+              className='w-full rounded-xl py-3 text-sm font-semibold text-white'
               style={{ background: PLUM }}
             >
               เติมเงินเข้า Wallet
             </Button>
           ) : null}
 
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             disabled={!canSubmit || submitting}
             onClick={handleSubmit}
-            className="w-full rounded-xl py-3 text-sm font-semibold text-white disabled:opacity-60"
+            className='w-full rounded-xl py-3 text-sm font-semibold text-white disabled:opacity-60'
             style={{ background: CTA_GRADIENT }}
           >
             {submitting
@@ -151,29 +158,27 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       }
     >
       <div
-        className="rounded-2xl border p-4 mb-4"
+        className='rounded-2xl border p-4 mb-4'
         style={{ borderColor: BORDER_WARM, background: PEACH_MIST }}
       >
-        <p className="text-[11px]" style={{ color: ACCENT_ORANGE_DEEP }}>
+        <p className='text-[11px]' style={{ color: ACCENT_ORANGE_DEEP }}>
           ยอดที่ต้องชำระ
         </p>
-        <p className="mt-0.5 text-2xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
+        <p className='mt-0.5 text-2xl font-semibold tabular-nums' style={{ color: DEEP_PURPLE }}>
           ฿{amount.toLocaleString('th-TH')}
         </p>
       </div>
 
-      <div className="pb-2">
-        <p className="text-xs font-semibold text-gray-600 mb-2">เลือกวิธีชำระ</p>
+      <div className='pb-2'>
+        <p className='text-xs font-semibold text-gray-600 mb-2'>เลือกวิธีชำระ</p>
 
         <MethodRow
           selected={method === 'WALLET'}
           onSelect={() => setMethod('WALLET')}
           icon={<Wallet size={18} style={{ color: PLUM }} />}
-          title="Wallet ของฉัน"
+          title='Wallet ของฉัน'
           subtitle={
-            wallet.isPending
-              ? 'กำลังโหลดยอดคงเหลือ…'
-              : `คงเหลือ ฿${good.toLocaleString('th-TH')}`
+            wallet.isPending ? 'กำลังโหลดยอดคงเหลือ…' : `คงเหลือ ฿${good.toLocaleString('th-TH')}`
           }
           warning={
             method === 'WALLET' && !wallet.isPending && insufficient
@@ -186,16 +191,16 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
           selected={method === 'PROMPTPAY'}
           onSelect={() => setMethod('PROMPTPAY')}
           icon={<QrCode size={18} style={{ color: PLUM }} />}
-          title="PromptPay QR"
-          subtitle="สแกน QR ผ่านแอปธนาคาร"
+          title='PromptPay QR'
+          subtitle='สแกน QR ผ่านแอปธนาคาร'
         />
 
         <MethodRow
           selected={method === 'BANK'}
           onSelect={() => setMethod('BANK')}
           icon={<Landmark size={18} style={{ color: PLUM }} />}
-          title="โอนผ่านบัญชีธนาคาร"
-          subtitle="แนบสลิปหลังชำระเงิน"
+          title='โอนผ่านบัญชีธนาคาร'
+          subtitle='แนบสลิปหลังชำระเงิน'
         />
       </div>
     </BaseModal>
@@ -218,32 +223,33 @@ function MethodRow({
   warning?: string | null;
 }) {
   return (
-    <Button variant="unstyled"
-      type="button"
+    <Button
+      variant='unstyled'
+      type='button'
       onClick={onSelect}
-      className="w-full flex items-center gap-3 rounded-2xl border p-3 mb-2 text-left transition-colors"
+      className='w-full flex items-center gap-3 rounded-2xl border p-3 mb-2 text-left transition-colors'
       style={{
         borderColor: selected ? PLUM : BORDER_WARM,
         background: selected ? '#F5F3FF' : 'white',
       }}
     >
       <span
-        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
         style={{ background: '#F5F3FF' }}
       >
         {icon}
       </span>
-      <span className="flex-1 min-w-0">
-        <span className="block text-sm font-semibold" style={{ color: DEEP_PURPLE }}>
+      <span className='flex-1 min-w-0'>
+        <span className='block text-sm font-semibold' style={{ color: DEEP_PURPLE }}>
           {title}
         </span>
-        <span className="block text-xs text-gray-500 mt-0.5 truncate">{subtitle}</span>
+        <span className='block text-xs text-gray-500 mt-0.5 truncate'>{subtitle}</span>
         {warning ? (
-          <span className="block text-[11px] font-semibold text-red-600 mt-0.5">{warning}</span>
+          <span className='block text-[11px] font-semibold text-red-600 mt-0.5'>{warning}</span>
         ) : null}
       </span>
       <span
-        className="w-4 h-4 rounded-full border-2 shrink-0"
+        className='w-4 h-4 rounded-full border-2 shrink-0'
         style={{
           borderColor: selected ? PLUM : '#D1D5DB',
           background: selected ? PLUM : 'transparent',

@@ -12,7 +12,8 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["./src/app/*"]
+      "@/*": ["./src/app/*"],
+      "@lib/*": ["./src/lib/*"]
     },
     "strict": true,
     "forceConsistentCasingInFileNames": true

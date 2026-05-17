@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatDateTh } from './utils';
+import { formatDateTh } from '@/components/features/order-detail/utils';
 
 export type OrderSummary = {
   id: string;
@@ -60,66 +60,66 @@ export function OrderSummaryCard({
 
   return (
     <div
-      className="rounded-2xl p-4 relative overflow-hidden"
+      className='rounded-2xl p-4 relative overflow-hidden'
       style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
     >
-      <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white" />
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3 gap-3">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className='absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white' />
+      <div className='relative z-10'>
+        <div className='flex items-center justify-between mb-3 gap-3'>
+          <div className='flex items-center gap-3 min-w-0 flex-1'>
             {relatedFactory?.image && (
               <img
                 src={relatedFactory.image}
-                alt=""
-                className="w-12 h-12 rounded-xl object-cover shrink-0"
+                alt=''
+                className='w-12 h-12 rounded-xl object-cover shrink-0'
               />
             )}
-            <div className="min-w-0">
-              <p className="text-white/80 text-[10px] truncate">{order.factoryName}</p>
-              <p className="text-white truncate" style={{ fontWeight: 700 }}>
+            <div className='min-w-0'>
+              <p className='text-white/80 text-[10px] truncate'>{order.factoryName}</p>
+              <p className='text-white truncate' style={{ fontWeight: 700 }}>
                 {order.projectName}
               </p>
             </div>
           </div>
           <span
-            className="px-2.5 py-1 rounded-full text-[10px]"
+            className='px-2.5 py-1 rounded-full text-[10px]'
             style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600 }}
           >
             {badgeLabel}
           </span>
         </div>
-        <div className="space-y-1.5 mb-3">
-          <div className="flex justify-between text-xs text-white/80">
+        <div className='space-y-1.5 mb-3'>
+          <div className='flex justify-between text-xs text-white/80'>
             <span>ความคืบหน้า</span>
             <span style={{ fontWeight: 700, color: '#fff' }}>{order.progress}%</span>
           </div>
-          <div className="h-2 bg-white/30 rounded-full overflow-hidden">
+          <div className='h-2 bg-white/30 rounded-full overflow-hidden'>
             <div
-              className="h-full bg-white rounded-full transition-all"
+              className='h-full bg-white rounded-full transition-all'
               style={{ width: `${order.progress}%` }}
             />
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className='flex gap-4'>
           <div>
-            <p className="text-white text-sm" style={{ fontWeight: 700 }}>
+            <p className='text-white text-sm' style={{ fontWeight: 700 }}>
               ฿{order.totalAmount.toLocaleString('th-TH')}
             </p>
-            <p className="text-white/70 text-[10px]">มูลค่ารวม</p>
+            <p className='text-white/70 text-[10px]'>มูลค่ารวม</p>
           </div>
-          <div className="w-px bg-white/30" />
+          <div className='w-px bg-white/30' />
           <div>
-            <p className="text-white text-sm" style={{ fontWeight: 700 }}>
+            <p className='text-white text-sm' style={{ fontWeight: 700 }}>
               {qtyText}
             </p>
-            <p className="text-white/70 text-[10px]">จำนวน</p>
+            <p className='text-white/70 text-[10px]'>จำนวน</p>
           </div>
-          <div className="w-px bg-white/30" />
+          <div className='w-px bg-white/30' />
           <div>
-            <p className="text-white text-sm" style={{ fontWeight: 700 }}>
+            <p className='text-white text-sm' style={{ fontWeight: 700 }}>
               {formatDateTh(order.estimatedDelivery)}
             </p>
-            <p className="text-white/70 text-[10px]">กำหนดส่ง</p>
+            <p className='text-white/70 text-[10px]'>กำหนดส่ง</p>
           </div>
         </div>
       </div>

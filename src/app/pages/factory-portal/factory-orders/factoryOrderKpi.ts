@@ -1,5 +1,10 @@
-import type { DerivedCardState, FactoryOrderRow, KpiCounts, TabId } from './types';
-import { matchTab } from './factoryOrderFilters';
+import type {
+  DerivedCardState,
+  FactoryOrderRow,
+  KpiCounts,
+  TabId,
+} from '@/pages/factory-portal/factory-orders/types';
+import { matchTab } from '@/pages/factory-portal/factory-orders/factoryOrderFilters';
 
 export function computeKpi(rows: FactoryOrderRow[], derived: DerivedCardState[]): KpiCounts {
   return {
@@ -10,10 +15,33 @@ export function computeKpi(rows: FactoryOrderRow[], derived: DerivedCardState[])
   };
 }
 
-export function countByTab(rows: FactoryOrderRow[], derived: DerivedCardState[]): Record<TabId, number> {
-  const tabs: TabId[] = ['all', 'needs_action', 'in_production', 'awaiting_customer', 'shipped', 'completed', 'cancelled'];
+export function countByTab(
+  rows: FactoryOrderRow[],
+  derived: DerivedCardState[],
+): Record<TabId, number> {
+  const tabs: TabId[] = [
+    'all',
+    'needs_action',
+    'in_production',
+    'awaiting_customer',
+    'shipped',
+    'completed',
+    'cancelled',
+  ];
   return tabs.reduce(
-    (acc, t) => ({ ...acc, [t]: t === 'all' ? rows.length : rows.filter((_, i) => matchTab(rows[i], derived[i], t)).length }),
-    { all: 0, needs_action: 0, in_production: 0, awaiting_customer: 0, shipped: 0, completed: 0, cancelled: 0 },
+    (acc, t) => ({
+      ...acc,
+      [t]:
+        t === 'all' ? rows.length : rows.filter((_, i) => matchTab(rows[i], derived[i], t)).length,
+    }),
+    {
+      all: 0,
+      needs_action: 0,
+      in_production: 0,
+      awaiting_customer: 0,
+      shipped: 0,
+      completed: 0,
+      cancelled: 0,
+    },
   );
 }

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles, MapPin, Star } from 'lucide-react';
-import { useAuth } from '../../stores';
-import { getFactoryEntityId } from '../../utils/factoryUser';
-import { showcasesApi } from '../../services/api';
-import { FactoryPageHeader } from './components/FactoryPageHeader';
-import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
-import { Button } from '../../components/ui/button';
+import { useAuth } from '@/stores';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { showcasesApi } from '@/services/api';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { Button } from '@/components/ui/button';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -38,7 +38,9 @@ function firstImage(r: Row): string | undefined {
     const f = imgs[0];
     if (typeof f === 'string') return f;
     if (f && typeof f === 'object') {
-      return String((f as Record<string, unknown>).url ?? (f as Record<string, unknown>).image_url ?? '');
+      return String(
+        (f as Record<string, unknown>).url ?? (f as Record<string, unknown>).image_url ?? '',
+      );
     }
   }
   return undefined;
@@ -86,7 +88,10 @@ export function FactoryShowcasesPage() {
   };
 
   const load = useCallback(async () => {
-    if (fid == null) { setLoading(false); return; }
+    if (fid == null) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -99,7 +104,9 @@ export function FactoryShowcasesPage() {
     }
   }, [fid, activeType]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const remove = async (r: Row) => {
     const id = rowId(r);
@@ -117,32 +124,35 @@ export function FactoryShowcasesPage() {
   };
 
   if (fid == null) {
-    return <p className="text-sm text-red-600 px-4 py-3 bg-red-50 rounded-xl">บัญชีนี้ไม่ใช่โรงงาน</p>;
+    return (
+      <p className='text-sm text-red-600 px-4 py-3 bg-red-50 rounded-xl'>บัญชีนี้ไม่ใช่โรงงาน</p>
+    );
   }
 
   const { btnLabel, empty, icon } = TAB_META[activeType];
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <FactoryPageHeader
-        title="โชว์เคสของฉัน"
-        subtitle="Factory Portal"
+        title='โชว์เคสของฉัน'
+        subtitle='Factory Portal'
         icon={Sparkles}
         count={`${rows.length} รายการ`}
         action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
       />
 
       {/* Tab bar */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200">
+      <div className='flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200'>
         {(['PD', 'PM', 'ID', 'MT'] as ShowcaseType[]).map((type) => {
           const meta = TAB_META[type];
           const active = activeType === type;
           return (
-            <Button variant="unstyled"
+            <Button
+              variant='unstyled'
               key={type}
-              type="button"
+              type='button'
               onClick={() => changeType(type)}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all"
+              className='flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all'
               style={{
                 backgroundColor: active ? '#4F46E5' : 'transparent',
                 color: active ? '#fff' : '#334155',
@@ -159,33 +169,38 @@ export function FactoryShowcasesPage() {
 
       {/* Error */}
       {error ? (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
+        <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
+          {error}
+        </p>
       ) : null}
 
       {/* Skeleton */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="rounded-2xl overflow-hidden border border-gray-100 bg-white">
-              <div className="aspect-video bg-gray-100 animate-pulse" />
-              <div className="p-3 space-y-2">
-                <div className="h-4 bg-gray-100 rounded-lg animate-pulse w-3/4" />
-                <div className="h-3 bg-gray-100 rounded-lg animate-pulse w-1/2" />
-                <div className="h-8 bg-gray-100 rounded-xl animate-pulse mt-3" />
+            <div key={i} className='rounded-2xl overflow-hidden border border-gray-100 bg-white'>
+              <div className='aspect-video bg-gray-100 animate-pulse' />
+              <div className='p-3 space-y-2'>
+                <div className='h-4 bg-gray-100 rounded-lg animate-pulse w-3/4' />
+                <div className='h-3 bg-gray-100 rounded-lg animate-pulse w-1/2' />
+                <div className='h-8 bg-gray-100 rounded-xl animate-pulse mt-3' />
               </div>
             </div>
           ))}
         </div>
       ) : rows.length === 0 ? (
         /* Empty state */
-        <div className="rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4">
-          <div className="text-5xl">{icon}</div>
-          <p className="text-base font-bold" style={{ color: '#2E2252' }}>{empty}</p>
-          <p className="text-sm text-gray-400">กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
-          <Button variant="unstyled"
-            type="button"
+        <div className='rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4'>
+          <div className='text-5xl'>{icon}</div>
+          <p className='text-base font-bold' style={{ color: '#2E2252' }}>
+            {empty}
+          </p>
+          <p className='text-sm text-gray-400'>กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors"
+            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors'
           >
             <Plus size={15} />
             {btnLabel}
@@ -193,18 +208,23 @@ export function FactoryShowcasesPage() {
         </div>
       ) : (
         /* Card grid */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {rows.map((r) => {
             const id = rowId(r);
             const img = firstImage(r);
             const statusKey = String(r.status ?? 'DR').toUpperCase() as ShowcaseStatus;
-            const { label: statusLabel, bg: statusBg, color: statusColor } = STATUS_META[statusKey] ?? STATUS_META.DR;
+            const {
+              label: statusLabel,
+              bg: statusBg,
+              color: statusColor,
+            } = STATUS_META[statusKey] ?? STATUS_META.DR;
             const ctx = contextLine(r, activeType);
             const catLine = [r.category_name, r.sub_category_name].filter(Boolean).join(' › ');
             const isDeleting = deletingId === id;
             const isIdea = activeType === 'ID';
             const likes = asPositiveInt(r.like_count ?? r.likes ?? r.likes_count);
-            const locationLine = String(r.factory_location ?? r.province_name ?? catLine ?? '—').trim() || '—';
+            const locationLine =
+              String(r.factory_location ?? r.province_name ?? catLine ?? '—').trim() || '—';
             const rating = Number(r.rating_avg ?? r.factory_rating_avg ?? 0);
             const reviews = asPositiveInt(r.review_count ?? r.reviews ?? 0);
             const moq = asPositiveInt(r.moq ?? 0);
@@ -212,101 +232,119 @@ export function FactoryShowcasesPage() {
             return (
               <article
                 key={id}
-                className={isIdea
-                  ? 'group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
-                  : 'bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'}
+                className={
+                  isIdea
+                    ? 'group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
+                    : 'bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col'
+                }
               >
                 {!isIdea ? (
                   <>
-                    <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                    <div className='aspect-[4/3] bg-gray-100 relative overflow-hidden'>
                       {img ? (
                         <ImageWithFallback
                           src={img}
                           alt={String(r.title ?? '')}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                         />
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-300">
+                        <div className='w-full h-full flex flex-col items-center justify-center gap-2 text-gray-300'>
                           <ImageIcon size={28} strokeWidth={1.5} />
-                          <span className="text-[10px]">ไม่มีภาพ</span>
+                          <span className='text-[10px]'>ไม่มีภาพ</span>
                         </div>
                       )}
                       <span
-                        className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
-                        style={{ backgroundColor: activeType === 'MT' ? '#0EA5A4' : activeType === 'PM' ? '#F28A2E' : '#5185D4' }}
+                        className='absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
+                        style={{
+                          backgroundColor:
+                            activeType === 'MT'
+                              ? '#0EA5A4'
+                              : activeType === 'PM'
+                                ? '#F28A2E'
+                                : '#5185D4',
+                        }}
                       >
-                        {activeType === 'MT' ? 'วัตถุดิบ' : activeType === 'PM' ? 'โปรโมชัน' : 'สินค้า'}
+                        {activeType === 'MT'
+                          ? 'วัตถุดิบ'
+                          : activeType === 'PM'
+                            ? 'โปรโมชัน'
+                            : 'สินค้า'}
                       </span>
                     </div>
-                    <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
-                      <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
+                    <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                      <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
                         {String(r.title ?? '—')}
                       </p>
-                      <div className="flex items-center gap-0.5 mt-0.5">
-                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                        <span className="text-gray-500 text-[10px] truncate">{locationLine}</span>
+                      <div className='flex items-center gap-0.5 mt-0.5'>
+                        <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                        <span className='text-gray-500 text-[10px] truncate'>{locationLine}</span>
                       </div>
-                      <div className="mt-auto pt-1 border-t border-gray-50">
-                        <div className="flex items-center justify-between min-w-0">
-                          <div className="flex items-center gap-0.5 min-w-0">
-                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
-                            <span className="text-gray-700 text-[10px] font-semibold">{rating.toFixed(1)}</span>
-                            <span className="text-gray-400 text-[9px] truncate">({reviews})</span>
+                      <div className='mt-auto pt-1 border-t border-gray-50'>
+                        <div className='flex items-center justify-between min-w-0'>
+                          <div className='flex items-center gap-0.5 min-w-0'>
+                            <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                            <span className='text-gray-700 text-[10px] font-semibold'>
+                              {rating.toFixed(1)}
+                            </span>
+                            <span className='text-gray-400 text-[9px] truncate'>({reviews})</span>
                           </div>
-                          <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {moq}</span>
+                          <span className='text-gray-400 text-[8px] shrink-0'>ขั้นต่ำ {moq}</span>
                         </div>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="px-3 pt-3 pb-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white bg-violet-600">
+                  <div className='px-3 pt-3 pb-2'>
+                    <div className='flex items-center gap-2 mb-2'>
+                      <span className='px-2 py-0.5 rounded-full text-[9px] font-bold text-white bg-violet-600'>
                         ไอเดีย
                       </span>
                       <span
-                        className="rounded-full text-[10px] font-semibold px-2 py-0.5"
+                        className='rounded-full text-[10px] font-semibold px-2 py-0.5'
                         style={{ backgroundColor: statusBg, color: statusColor }}
                       >
                         {statusLabel}
                       </span>
                     </div>
-                    <p className="font-semibold text-sm line-clamp-2 leading-snug text-slate-900 min-h-[40px]">
+                    <p className='font-semibold text-sm line-clamp-2 leading-snug text-slate-900 min-h-[40px]'>
                       {String(r.title ?? '—')}
                     </p>
-                    <div className="border-t border-gray-100 mt-3 pt-2">
-                      <div className="flex items-center justify-between gap-2 text-[11px] text-gray-500">
-                        <p className="min-w-0 flex-1 text-xs font-semibold text-[#2E2252] line-clamp-1">
-                          {String(r.factory_name ?? user?.factory_name ?? user?.name ?? 'โรงงานของคุณ')}
+                    <div className='border-t border-gray-100 mt-3 pt-2'>
+                      <div className='flex items-center justify-between gap-2 text-[11px] text-gray-500'>
+                        <p className='min-w-0 flex-1 text-xs font-semibold text-[#2E2252] line-clamp-1'>
+                          {String(
+                            r.factory_name ?? user?.factory_name ?? user?.name ?? 'โรงงานของคุณ',
+                          )}
                         </p>
-                         
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-2 px-3 pb-3">
-                  <Button variant="unstyled"
-                    type="button"
+                <div className='flex gap-2 px-3 pb-3'>
+                  <Button
+                    variant='unstyled'
+                    type='button'
                     onClick={() =>
                       navigate(`/factory/showcases/${id}/edit`, {
                         state: { from: `${location.pathname}${location.search}` },
                       })
                     }
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors"
+                    className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors'
                     style={{ backgroundColor: '#EEF2FF', color: '#4338CA' }}
                   >
                     <Pencil size={13} />
                     แก้ไข
                   </Button>
-                  <Button variant="unstyled"
-                    type="button"
+                  <Button
+                    variant='unstyled'
+                    type='button'
                     onClick={() => void remove(r)}
                     disabled={isDeleting}
-                    className="p-2 rounded-xl border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40"
-                    aria-label="ลบ"
-                    title="ลบ"
+                    className='p-2 rounded-xl border border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40'
+                    aria-label='ลบ'
+                    title='ลบ'
                   >
                     <Trash2 size={15} />
                   </Button>

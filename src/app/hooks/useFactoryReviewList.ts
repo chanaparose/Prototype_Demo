@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { reviewsApi } from '../services/api';
+import { reviewsApi } from '@/services/api';
 
 export type FactoryReviewItem = {
   id: string;
@@ -17,13 +17,7 @@ function mapReviewRow(raw: Record<string, unknown>): FactoryReviewItem | null {
   const fullName = `${firstName} ${lastName}`.trim();
   const reviewer = String(
     fullName ||
-      String(
-        raw.reviewer_name ??
-          raw.reviewer ??
-          raw.user_name ??
-          raw.display_name ??
-          'ลูกค้า',
-      ),
+      String(raw.reviewer_name ?? raw.reviewer ?? raw.user_name ?? raw.display_name ?? 'ลูกค้า'),
   ).trim();
   return {
     id,

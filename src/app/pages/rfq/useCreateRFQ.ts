@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { rfqsApi, type RFQCreateInput } from '../../services/api';
+import { rfqsApi, type RFQCreateInput } from '@/services/api';
 
 export function useCreateRFQ() {
   return useMutation({
@@ -11,7 +11,11 @@ export function useCreateRFQ() {
         throw new Error('กรุณาระบุที่อยู่จัดส่ง');
       }
       const shippingMethodId = payload.shipping_method_id;
-      if (!shippingMethodId || !Number.isFinite(Number(shippingMethodId)) || Number(shippingMethodId) <= 0) {
+      if (
+        !shippingMethodId ||
+        !Number.isFinite(Number(shippingMethodId)) ||
+        Number(shippingMethodId) <= 0
+      ) {
         throw new Error('กรุณาเลือกวิธีจัดส่ง');
       }
       // backend handoff: allowlist only fields in docs/RFQ_FE_HANDOFF.md
@@ -28,7 +32,9 @@ export function useCreateRFQ() {
             : undefined,
         material_grade: payload.material_grade?.trim() || undefined,
         reference_images: Array.isArray(payload.reference_images)
-          ? payload.reference_images.filter((u) => typeof u === 'string' && u.trim().length > 0).slice(0, 5)
+          ? payload.reference_images
+              .filter((u) => typeof u === 'string' && u.trim().length > 0)
+              .slice(0, 5)
           : [],
         address_id: Number(addressId),
         delivery_address_id: Number(addressId),

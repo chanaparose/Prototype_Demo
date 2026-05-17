@@ -17,7 +17,7 @@ export function IncotermSelect({ value, onChange, className }: Props) {
       onChange={(e) => onChange((e.target.value || undefined) as Incoterm | undefined)}
       className={className ?? 'w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'}
     >
-      <option value="">เลือก Incoterm</option>
+      <option value=''>เลือก Incoterm</option>
       {OPTIONS.map((it) => (
         <option key={it} value={it}>
           {it}

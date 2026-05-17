@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router';
-import { useAuth } from '../stores';
-import { isTourActive, subscribeTourActive } from '../utils/tourMocks';
+import { useAuth } from '@/stores';
+import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 
 export function AuthGuard() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -13,20 +13,20 @@ export function AuthGuard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-3">
+      <div className='min-h-screen flex items-center justify-center bg-gray-50'>
+        <div className='flex flex-col items-center gap-3'>
           <div
-            className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
+            className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
             style={{ borderColor: '#6C47FF', borderTopColor: 'transparent' }}
           />
-          <p className="text-sm text-gray-500">กำลังโหลด...</p>
+          <p className='text-sm text-gray-500'>กำลังโหลด...</p>
         </div>
       </div>
     );
   }
 
   if (!isAuthenticated && !tourOn) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to='/login' replace />;
   }
 
   return <Outlet />;

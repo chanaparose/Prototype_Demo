@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowRight, Check, CreditCard, FileText, X } from 'lucide-react';
-import { ImageWithFallback } from '../shared';
-import type { ChatReference, ChatReferenceType } from '../../utils/chatContract';
-import { ReferenceChip } from './ReferenceChip';
-import { normalizeIso } from '../../pages/messages/selectors';
-import { formatChatTime } from '../../utils/chatTime';
+import { ImageWithFallback } from '@/components/shared';
+import type { ChatReference, ChatReferenceType } from '@/utils/chatContract';
+import { ReferenceChip } from '@/components/chat/ReferenceChip';
+import { normalizeIso } from '@/pages/messages/selectors';
+import { formatChatTime } from '@/utils/chatTime';
 import { formatCurrency } from '@/utils/formatting';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 /** Tiny inline spinner for the "sending" status on optimistic bubbles. */
 function SendingSpinner({ color }: { color: string }) {
@@ -15,14 +15,14 @@ function SendingSpinner({ color }: { color: string }) {
     <svg
       width={10}
       height={10}
-      viewBox="0 0 24 24"
-      fill="none"
+      viewBox='0 0 24 24'
+      fill='none'
       stroke={color}
       strokeWidth={3}
-      className="animate-spin shrink-0"
-      aria-label="กำลังส่ง"
+      className='animate-spin shrink-0'
+      aria-label='กำลังส่ง'
     >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" strokeLinecap="round" />
+      <path d='M21 12a9 9 0 1 1-6.219-8.56' strokeLinecap='round' />
     </svg>
   );
 }
@@ -92,7 +92,10 @@ function parseQuoteData(raw: unknown): RoomMessage['quoteData'] | undefined {
   };
 }
 
-function pickImageUrl(r: Record<string, unknown>, mt: RoomMessage['message_type']): string | undefined {
+function pickImageUrl(
+  r: Record<string, unknown>,
+  mt: RoomMessage['message_type'],
+): string | undefined {
   if (mt !== 'IM') return undefined;
   const u =
     (typeof r.image_url === 'string' && r.image_url) ||
@@ -112,7 +115,8 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
   const message_id = String(r.message_id ?? r.id ?? '');
   const content = String(r.content ?? r.text ?? r.body ?? '');
   const rawMessageType = String(r.message_type ?? r.type ?? 'TX');
-  const message_type = rawMessageType === rawMessageType.toUpperCase() ? rawMessageType : rawMessageType.toLowerCase();
+  const message_type =
+    rawMessageType === rawMessageType.toUpperCase() ? rawMessageType : rawMessageType.toLowerCase();
   const sender_id = Number(r.sender_id ?? r.senderId ?? 0);
   const receiver_id = Number(r.receiver_id ?? r.receiverId ?? 0);
   if (!Number.isFinite(sender_id)) return null;
@@ -120,12 +124,7 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
   const refType = String(r.reference_type ?? '').toUpperCase() as RoomMessage['reference_type'];
   const reference_id = Number(r.reference_id ?? 0);
   const reference_title = String(
-    r.reference_title ??
-      r.ref_title ??
-      r.rfq_title ??
-      r.showcase_title ??
-      r.order_title ??
-      '',
+    r.reference_title ?? r.ref_title ?? r.rfq_title ?? r.showcase_title ?? r.order_title ?? '',
   ).trim();
 
   const createdAtRaw = String(r.created_at ?? r.sent_at ?? '');
@@ -148,7 +147,10 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
     mt = 'TX';
   }
 
-  let qd = mt === 'QT' || mt === 'quotation_card' ? parseQuoteData(r.quote_data ?? r.quoteData) : undefined;
+  let qd =
+    mt === 'QT' || mt === 'quotation_card'
+      ? parseQuoteData(r.quote_data ?? r.quoteData)
+      : undefined;
   if ((mt === 'QT' || mt === 'quotation_card') && !qd) {
     qd = parseQuoteData((r as Record<string, unknown>).quote);
   }
@@ -168,14 +170,20 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
     key: message_id || `k-${sender_id}-${createdAtNorm || createdAtRaw}-${content.slice(0, 6)}`,
     sender_id,
     receiver_id: Number.isFinite(receiver_id) ? receiver_id : 0,
-    content: content || (mt === 'QT' || mt === 'quotation_card' ? 'ใบเสนอราคา' : mt === 'rfq_card' ? 'คำขอ RFQ' : ''),
+    content:
+      content ||
+      (mt === 'QT' || mt === 'quotation_card' ? 'ใบเสนอราคา' : mt === 'rfq_card' ? 'คำขอ RFQ' : ''),
     // Store the normalized ISO (ms-precision) so date comparisons and sorting
     // work correctly in all browsers (Safari rejects >3 fractional digits).
     created_at: createdAtNorm || createdAtRaw,
     display_time,
     message_type: mt,
     reference_type:
-      refType === 'PD' || refType === 'PM' || refType === 'ID' || refType === 'RQ' || refType === 'OD'
+      refType === 'PD' ||
+      refType === 'PM' ||
+      refType === 'ID' ||
+      refType === 'RQ' ||
+      refType === 'OD'
         ? refType
         : '',
     reference_id: Number.isFinite(reference_id) ? reference_id : 0,
@@ -201,8 +209,10 @@ export function MessageBubble({
 
   if (msg.message_type === 'system') {
     return (
-      <div className="flex justify-center">
-        <span className="text-[11px] text-gray-600 bg-gray-100 px-3 py-1 rounded-full">{msg.content}</span>
+      <div className='flex justify-center'>
+        <span className='text-[11px] text-gray-600 bg-gray-100 px-3 py-1 rounded-full'>
+          {msg.content}
+        </span>
       </div>
     );
   }
@@ -210,14 +220,17 @@ export function MessageBubble({
   if (msg.message_type === 'rfq_card') {
     const rfqId = Number(msg.reference_id ?? 0);
     return (
-      <div className="flex justify-center">
-        <div className="bg-white border-l-4 border-[#7A4B94] rounded-2xl p-4 shadow-sm max-w-[320px] w-full">
-          <p className="text-[10px] font-semibold text-[#7A4B94] uppercase tracking-wide mb-1">คำขอ RFQ</p>
-          <p className="text-sm font-bold text-gray-900">{msg.content || `RFQ #${rfqId}`}</p>
-          <div className="border-t border-gray-100 my-3" />
-          <Button variant="unstyled"
-            type="button"
-            className="text-sm font-semibold text-[#7A4B94] flex items-center gap-1 hover:underline"
+      <div className='flex justify-center'>
+        <div className='bg-white border-l-4 border-[#7A4B94] rounded-2xl p-4 shadow-sm max-w-[320px] w-full'>
+          <p className='text-[10px] font-semibold text-[#7A4B94] uppercase tracking-wide mb-1'>
+            คำขอ RFQ
+          </p>
+          <p className='text-sm font-bold text-gray-900'>{msg.content || `RFQ #${rfqId}`}</p>
+          <div className='border-t border-gray-100 my-3' />
+          <Button
+            variant='unstyled'
+            type='button'
+            className='text-sm font-semibold text-[#7A4B94] flex items-center gap-1 hover:underline'
             onClick={() => {
               if (!Number.isFinite(rfqId) || rfqId <= 0) return;
               navigate(viewerRole === 'FT' ? `/factory/rfqs/${rfqId}` : `/rfqs/${rfqId}`);
@@ -234,11 +247,8 @@ export function MessageBubble({
     const q = msg.quoteData;
     const qId = Number(q.quotationId ?? msg.reference_id ?? 0);
     const rfqId =
-      Number(
-        (msg.reference_type === 'RQ' ? msg.reference_id : 0) ??
-          q.rfqId ??
-          0,
-      ) || Number(q.rfqId ?? 0);
+      Number((msg.reference_type === 'RQ' ? msg.reference_id : 0) ?? q.rfqId ?? 0) ||
+      Number(q.rfqId ?? 0);
     const factoryId = Number(q.factoryId ?? 0);
     const qStatus = String(q.status ?? 'pending').toLowerCase();
     const canOpen = qId > 0;
@@ -247,37 +257,38 @@ export function MessageBubble({
     const statusPill = (() => {
       if (qStatus === 'accepted' || qStatus === 'ac') {
         return (
-          <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-50 inline-flex items-center gap-1">
+          <span className='text-[11px] px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-50 inline-flex items-center gap-1'>
             <Check size={12} /> ยืนยันแล้ว
           </span>
         );
       }
       if (qStatus === 'rejected' || qStatus === 'rj') {
         return (
-          <span className="text-[11px] px-2.5 py-1 rounded-full bg-red-400/20 text-red-50 inline-flex items-center gap-1">
+          <span className='text-[11px] px-2.5 py-1 rounded-full bg-red-400/20 text-red-50 inline-flex items-center gap-1'>
             <X size={12} /> ปฏิเสธแล้ว
           </span>
         );
       }
       if (qStatus === 'expired') {
         return (
-          <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/15 text-white/80">
+          <span className='text-[11px] px-2.5 py-1 rounded-full bg-white/15 text-white/80'>
             หมดอายุ
           </span>
         );
       }
       // pending / pd
       return (
-        <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-white">
+        <span className='text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-white'>
           {viewerRole === 'FT' ? 'รอลูกค้ายืนยัน' : 'รอตรวจสอบ'}
         </span>
       );
     })();
 
     return (
-      <div className="flex justify-center">
-        <Button variant="unstyled"
-          type="button"
+      <div className='flex justify-center'>
+        <Button
+          variant='unstyled'
+          type='button'
           disabled={viewerRole === 'CT' ? rfqId <= 0 : !canOpen}
           onClick={() => {
             if (viewerRole === 'CT' && rfqId > 0) {
@@ -290,37 +301,43 @@ export function MessageBubble({
             }
             if (canOpen) navigate(quotationPath);
           }}
-          className="w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm text-left disabled:cursor-default enabled:hover:shadow-md enabled:active:scale-[0.99] transition-all"
+          className='w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm text-left disabled:cursor-default enabled:hover:shadow-md enabled:active:scale-[0.99] transition-all'
           style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
-          aria-label="ดูรายละเอียดใบเสนอราคา"
+          aria-label='ดูรายละเอียดใบเสนอราคา'
         >
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <CreditCard size={16} className="text-yellow-300" />
-                <span className="text-white text-xs" style={{ fontWeight: 700 }}>ใบเสนอราคาทางการ</span>
+          <div className='p-4'>
+            <div className='flex items-center justify-between mb-3'>
+              <div className='flex items-center gap-2'>
+                <CreditCard size={16} className='text-yellow-300' />
+                <span className='text-white text-xs' style={{ fontWeight: 700 }}>
+                  ใบเสนอราคาทางการ
+                </span>
               </div>
               {statusPill}
             </div>
-            <div className="flex gap-3 mb-4">
-              <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>{formatCurrency(q.price, 'THB')}</p>
-                <p className="text-white/70 text-[9px]">ราคารวม</p>
+            <div className='flex gap-3 mb-4'>
+              <div className='flex-1 bg-white/20 rounded-xl p-2.5 text-center'>
+                <p className='text-white' style={{ fontWeight: 700 }}>
+                  {formatCurrency(q.price, 'THB')}
+                </p>
+                <p className='text-white/70 text-[9px]'>ราคารวม</p>
               </div>
-              <div className="flex-1 bg-white/20 rounded-xl p-2.5 text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>{q.leadTime} วัน</p>
-                <p className="text-white/70 text-[9px]">lead time</p>
+              <div className='flex-1 bg-white/20 rounded-xl p-2.5 text-center'>
+                <p className='text-white' style={{ fontWeight: 700 }}>
+                  {q.leadTime} วัน
+                </p>
+                <p className='text-white/70 text-[9px]'>lead time</p>
               </div>
             </div>
-            <p className="text-white/60 text-[10px] text-center">ใช้ได้ถึง {q.validUntil || '-'}</p>
+            <p className='text-white/60 text-[10px] text-center'>ใช้ได้ถึง {q.validUntil || '-'}</p>
             {canOpen ? (
-              <div className="mt-3 flex items-center justify-center gap-1 text-[11px] text-white/90 font-semibold">
+              <div className='mt-3 flex items-center justify-center gap-1 text-[11px] text-white/90 font-semibold'>
                 <span>ดูรายละเอียด</span>
                 <ArrowRight size={12} />
               </div>
             ) : null}
             {msg.display_time ? (
-              <p className="text-white/40 text-[9px] text-center mt-2">{msg.display_time}</p>
+              <p className='text-white/40 text-[9px] text-center mt-2'>{msg.display_time}</p>
             ) : null}
           </div>
         </Button>
@@ -332,26 +349,47 @@ export function MessageBubble({
     return (
       <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} gap-2`}>
         {!isMine && (
-          <ImageWithFallback src={peerAvatarUrl} alt="" className="w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100" />
+          <ImageWithFallback
+            src={peerAvatarUrl}
+            alt=''
+            className='w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100'
+          />
         )}
-        <div className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
+        <div
+          className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}
+        >
           <div
             className={`rounded-2xl overflow-hidden ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
             style={{ background: isMine ? '#7A4B94' : '#F3F4F6' }}
           >
-            <ImageWithFallback src={msg.imageUrl} alt="" className="max-w-full max-h-64 object-cover block" />
+            <ImageWithFallback
+              src={msg.imageUrl}
+              alt=''
+              className='max-w-full max-h-64 object-cover block'
+            />
             {msg.content.trim() ? (
-              <p className="text-sm px-4 py-2 whitespace-pre-wrap break-words" style={{ color: isMine ? '#fff' : '#1F2937' }}>
+              <p
+                className='text-sm px-4 py-2 whitespace-pre-wrap break-words'
+                style={{ color: isMine ? '#fff' : '#1F2937' }}
+              >
                 {msg.content}
               </p>
             ) : null}
-            <p className="text-[10px] px-4 pb-2 flex items-center gap-1" style={{ color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+            <p
+              className='text-[10px] px-4 pb-2 flex items-center gap-1'
+              style={{
+                color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
+                justifyContent: isMine ? 'flex-end' : 'flex-start',
+              }}
+            >
               {msg.status === 'sending' ? (
                 <SendingSpinner color={isMine ? '#fff' : '#9CA3AF'} />
               ) : null}
               <span>{msg.display_time}</span>
-              {msg.status === 'error' ? <span className="ml-1 text-red-200">!</span> : null}
-              {isMine && msg.status === 'ok' && msg.is_read ? <span className="ml-1">อ่านแล้ว</span> : null}
+              {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}
+              {isMine && msg.status === 'ok' && msg.is_read ? (
+                <span className='ml-1'>อ่านแล้ว</span>
+              ) : null}
             </p>
           </div>
         </div>
@@ -360,7 +398,9 @@ export function MessageBubble({
   }
 
   const refChip =
-    msg.reference_type && ['PD', 'PM', 'ID', 'RQ', 'OD'].includes(msg.reference_type) && msg.reference_id > 0 ? (
+    msg.reference_type &&
+    ['PD', 'PM', 'ID', 'RQ', 'OD'].includes(msg.reference_type) &&
+    msg.reference_id > 0 ? (
       <ReferenceChip
         reference={{ type: msg.reference_type, id: msg.reference_id } as ChatReference}
         titleFallback={msg.reference_title || msg.content || undefined}
@@ -370,21 +410,38 @@ export function MessageBubble({
   return (
     <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} gap-2`}>
       {!isMine && (
-        <ImageWithFallback src={peerAvatarUrl} alt="" className="w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100" />
+        <ImageWithFallback
+          src={peerAvatarUrl}
+          alt=''
+          className='w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100'
+        />
       )}
       <div className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
         <div
           className={`px-4 py-2.5 rounded-2xl ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
           style={{ background: isMine ? '#7A4B94' : '#F3F4F6' }}
         >
-          <p className="text-sm whitespace-pre-wrap break-words" style={{ color: isMine ? '#fff' : '#1F2937' }}>{msg.content}</p>
-          <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+          <p
+            className='text-sm whitespace-pre-wrap break-words'
+            style={{ color: isMine ? '#fff' : '#1F2937' }}
+          >
+            {msg.content}
+          </p>
+          <p
+            className='text-[10px] mt-0.5 flex items-center gap-1'
+            style={{
+              color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
+              justifyContent: isMine ? 'flex-end' : 'flex-start',
+            }}
+          >
             {msg.status === 'sending' ? (
               <SendingSpinner color={isMine ? '#fff' : '#9CA3AF'} />
             ) : null}
             <span>{msg.display_time}</span>
-            {msg.status === 'error' ? <span className="ml-1 text-red-200">!</span> : null}
-            {isMine && msg.status === 'ok' && msg.is_read ? <span className="ml-1">อ่านแล้ว</span> : null}
+            {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}
+            {isMine && msg.status === 'ok' && msg.is_read ? (
+              <span className='ml-1'>อ่านแล้ว</span>
+            ) : null}
           </p>
         </div>
         {refChip}

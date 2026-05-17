@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '../../stores';
-import { ApiHttpError, masterApi, factoriesApi } from '../../services/api';
+import { useAuth } from '@/stores';
+import { ApiHttpError, masterApi, factoriesApi } from '@/services/api';
 
 export interface FormState {
   factory_name: string;
@@ -86,9 +86,12 @@ export function useRegisterFactory() {
   const [apiError, setApiError] = useState<string | null>(null);
   const fieldRefs = useRef<Partial<Record<keyof FormState, HTMLElement | null>>>({});
 
-  const setFieldRef = useCallback((key: keyof FormState) => (el: HTMLElement | null) => {
-    fieldRefs.current[key] = el;
-  }, []);
+  const setFieldRef = useCallback(
+    (key: keyof FormState) => (el: HTMLElement | null) => {
+      fieldRefs.current[key] = el;
+    },
+    [],
+  );
 
   const fetchFactoryTypes = useCallback(() => {
     setFactoryTypesLoading(true);
@@ -119,7 +122,10 @@ export function useRegisterFactory() {
   const validateField = useCallback(
     (k: keyof FormState, values: FormState = form): string | undefined => {
       // Skip account-related fields when user is already logged in
-      if (isAuthenticated && (k === 'email' || k === 'phone' || k === 'password' || k === 'confirmPassword')) {
+      if (
+        isAuthenticated &&
+        (k === 'email' || k === 'phone' || k === 'password' || k === 'confirmPassword')
+      ) {
         return undefined;
       }
       const t = values.factory_name.trim();
@@ -175,14 +181,17 @@ export function useRegisterFactory() {
 
   const activeFieldOrder = isAuthenticated ? FIELD_ORDER_LOGGED_IN : FIELD_ORDER_FULL;
 
-  const scrollToFirstError = useCallback((err: FormErrors) => {
-    for (const k of activeFieldOrder) {
-      if (err[k]) {
-        fieldRefs.current[k]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        break;
+  const scrollToFirstError = useCallback(
+    (err: FormErrors) => {
+      for (const k of activeFieldOrder) {
+        if (err[k]) {
+          fieldRefs.current[k]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          break;
+        }
       }
-    }
-  }, [activeFieldOrder]);
+    },
+    [activeFieldOrder],
+  );
 
   const blurField = useCallback(
     (k: keyof FormState) => {

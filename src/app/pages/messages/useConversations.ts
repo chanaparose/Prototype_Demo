@@ -1,19 +1,25 @@
 import { useEffect, useState, useCallback } from 'react';
-import { conversationsApi } from '../../services/api';
-import { useAuth } from '../../stores';
-import type { ConversationDTO } from '../../types/api';
-import { getCurrentUserId } from '../../utils/chatContract';
-import { resolveCounterparty } from '../../utils/counterparty';
-import { unreadForViewer, UiConversation } from './types';
-import { sortConversations } from './selectors';
+import { conversationsApi } from '@/services/api';
+import { useAuth } from '@/stores';
+import type { ConversationDTO } from '@/types/api';
+import { getCurrentUserId } from '@/utils/chatContract';
+import { resolveCounterparty } from '@/utils/counterparty';
+import { unreadForViewer, UiConversation } from '@/pages/messages/types';
+import { sortConversations } from '@/pages/messages/selectors';
 
 function rowToConversation(r: Record<string, unknown>): ConversationDTO | null {
   const conv_id = Number(r.conv_id ?? r.conversation_id ?? r.id);
   if (!Number.isFinite(conv_id)) return null;
   const customerId = Number(r.customer_id ?? r.customerId ?? 0);
   const factoryId = Number(r.factory_id ?? r.factoryId ?? 0);
-  const customerObj = (r.customer && typeof r.customer === 'object' ? r.customer : {}) as Record<string, unknown>;
-  const factoryObj = (r.factory && typeof r.factory === 'object' ? r.factory : {}) as Record<string, unknown>;
+  const customerObj = (r.customer && typeof r.customer === 'object' ? r.customer : {}) as Record<
+    string,
+    unknown
+  >;
+  const factoryObj = (r.factory && typeof r.factory === 'object' ? r.factory : {}) as Record<
+    string,
+    unknown
+  >;
   return {
     conv_id,
     customer_id: Number.isFinite(customerId) ? customerId : 0,

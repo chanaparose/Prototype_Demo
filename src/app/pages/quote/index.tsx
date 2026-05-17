@@ -1,2 +1,2 @@
-export { QuoteBuilder } from './QuoteBuilder';
-export { QuoteDetailCustomer } from './QuoteDetail.customer';
+export { QuoteBuilder } from '@/pages/quote/QuoteBuilder';
+export { QuoteDetailCustomer } from '@/pages/quote/QuoteDetail.customer';

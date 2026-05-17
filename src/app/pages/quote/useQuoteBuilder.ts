@@ -1,5 +1,5 @@
 import React from 'react';
-import type { QuotationCreateInput } from '../../services/api';
+import type { QuotationCreateInput } from '@/services/api';
 
 export type QuoteBuilderState = QuotationCreateInput;
 

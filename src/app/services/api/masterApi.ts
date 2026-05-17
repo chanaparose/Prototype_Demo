@@ -2,7 +2,7 @@
  * Master Data API — Categories, units, certifications, etc
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 import type {
   CategoryDTO,
   SubCategoryDTO,
@@ -11,7 +11,7 @@ import type {
   ShippingMethodDTO,
   FactoryTypeDTO,
   MaterialDTO,
-} from './types';
+} from '@/services/api/types';
 
 export const categoriesApi = {
   list: () => httpClient.get<CategoryDTO[]>('/categories'),
@@ -44,8 +44,7 @@ export const masterApi = {
   getCertifications: () => httpClient.get<CertificationDTO[]>('/master/certifications'),
 
   /** GET /master/shipping-methods */
-  getShippingMethods: () =>
-    httpClient.get<ShippingMethodDTO[]>('/master/shipping-methods'),
+  getShippingMethods: () => httpClient.get<ShippingMethodDTO[]>('/master/shipping-methods'),
 
   /** GET /master/factory-types */
   getFactoryTypes: () => httpClient.get<FactoryTypeDTO[]>('/master/factory-types'),
@@ -64,8 +63,7 @@ export const addressesApi = {
 
   get: (id: string | number) => httpClient.get<unknown>(`/addresses/${id}`),
 
-  create: (data: Record<string, unknown>) =>
-    httpClient.post<unknown>('/addresses', data),
+  create: (data: Record<string, unknown>) => httpClient.post<unknown>('/addresses', data),
 
   update: (id: string | number, data: Record<string, unknown>) =>
     httpClient.put<unknown>(`/addresses/${id}`, data),
@@ -79,6 +77,5 @@ export const addressesApi = {
   getDefault: () => httpClient.get<unknown>('/addresses/default'),
 
   /** Set default address */
-  setDefault: (id: string | number) =>
-    httpClient.post<void>(`/addresses/${id}/set-default`, {}),
+  setDefault: (id: string | number) => httpClient.post<void>(`/addresses/${id}/set-default`, {}),
 };

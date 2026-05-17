@@ -1,19 +1,25 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '../../../stores';
-import { useIsDesktop } from '../../../hooks/useIsDesktop';
-import { useProductionTemplate } from '../../../hooks/production/useProductionTemplate';
-import { useOrderProductionUpdates } from '../../../hooks/production/useOrderProductionUpdates';
-import { usePostProductionUpdate } from '../../../hooks/production/usePostProductionUpdate';
-import { useRejectProductionUpdate } from '../../../hooks/production/useRejectProductionUpdate';
-import { useOrderDetail } from '../../../pages/order-detail/OrderDetailContext';
-import { ProductionLockedState } from '../order-detail/locked-states/ProductionLockedState';
-import { mergeTemplateWithUpdates, type MergedProductionStep } from './types';
-import { ProductionHeader } from './ProductionHeader';
-import { ProductionTimeline } from './ProductionTimeline';
-import { UpdateStepDrawer } from './UpdateStepDrawer';
-import { RejectConfirmModal } from './RejectConfirmModal';
-import { getProductionErrorMeta, productionErrorMessage } from './productionErrors';
+import { useAuth } from '@/stores';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useProductionTemplate } from '@/hooks/production/useProductionTemplate';
+import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';
+import { usePostProductionUpdate } from '@/hooks/production/usePostProductionUpdate';
+import { useRejectProductionUpdate } from '@/hooks/production/useRejectProductionUpdate';
+import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
+import { ProductionLockedState } from '@/components/features/order-detail/locked-states/ProductionLockedState';
+import {
+  mergeTemplateWithUpdates,
+  type MergedProductionStep,
+} from '@/components/features/production/types';
+import { ProductionHeader } from '@/components/features/production/ProductionHeader';
+import { ProductionTimeline } from '@/components/features/production/ProductionTimeline';
+import { UpdateStepDrawer } from '@/components/features/production/UpdateStepDrawer';
+import { RejectConfirmModal } from '@/components/features/production/RejectConfirmModal';
+import {
+  getProductionErrorMeta,
+  productionErrorMessage,
+} from '@/components/features/production/productionErrors';
 
 function isFactoryRole(role: string | undefined): boolean {
   return role === 'FT' || role === 'FACTORY';
@@ -35,13 +41,8 @@ export function OrderProductionTab({
   onContactFactory,
 }: Props) {
   const { user } = useAuth();
-  const {
-    effectiveProductionLocked,
-    effectiveLockReason,
-    lockContextMerged,
-    production,
-    uiMode,
-  } = useOrderDetail();
+  const { effectiveProductionLocked, effectiveLockReason, lockContextMerged, production, uiMode } =
+    useOrderDetail();
 
   const isFactory = isFactoryRole(user?.role);
   const isCustomer = !isFactory;
@@ -134,19 +135,19 @@ export function OrderProductionTab({
 
   if (tplQ.isLoading || updQ.isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-3">
+      <div className='flex flex-col items-center justify-center py-16 gap-3'>
         <div
-          className="w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mb-3"
+          className='w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mb-3'
           style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
         />
-        <p className="text-sm text-gray-500">กำลังโหลดการผลิต…</p>
+        <p className='text-sm text-gray-500'>กำลังโหลดการผลิต…</p>
       </div>
     );
   }
 
   if (tplQ.isError) {
     return (
-      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">
+      <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3'>
         {productionErrorMessage(tplQ.error)}
       </p>
     );
@@ -154,18 +155,18 @@ export function OrderProductionTab({
 
   if (updQ.isError) {
     return (
-      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">
+      <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3'>
         {productionErrorMessage(updQ.error)}
       </p>
     );
   }
 
   if (!tplQ.data?.length) {
-    return <p className="text-sm text-gray-500">ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>;
+    return <p className='text-sm text-gray-500'>ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>;
   }
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <ProductionHeader merged={merged} orderStatus={orderStatus} />
       <ProductionTimeline
         merged={merged}

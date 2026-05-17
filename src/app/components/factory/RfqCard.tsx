@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send } from 'lucide-react';
-import { DeadlineBadge } from './DeadlineBadge';
+import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
 import { formatCurrency, formatCompactNumber } from '@/utils/formatting';
 
 export type RfqCardModel = {
@@ -112,18 +112,18 @@ export function RfqCard({
       <Link
         to={`/factory/rfqs/${row.id}`}
         state={{ from: `${location.pathname}${location.search}` }}
-        className="flex flex-col bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow min-w-0 text-left"
+        className='flex flex-col bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow min-w-0 text-left'
       >
         {/* BOQ status banner */}
         <div
-          className="flex items-center gap-2 px-4 py-2.5 text-[12px] font-semibold border-b"
+          className='flex items-center gap-2 px-4 py-2.5 text-[12px] font-semibold border-b'
           style={{ background: boqInfo.bg, color: boqInfo.text, borderColor: boqInfo.border }}
         >
           {boqInfo.icon}
           <span>{boqInfo.label}</span>
           {row.myQuotedPrice != null ? (
             <span
-              className="ml-auto flex items-center gap-1 text-[13px] font-bold"
+              className='ml-auto flex items-center gap-1 text-[13px] font-bold'
               style={{ color: boqInfo.text }}
             >
               <Send size={11} />
@@ -133,40 +133,50 @@ export function RfqCard({
         </div>
 
         {/* Card body */}
-        <div className="flex gap-3 sm:gap-4 p-3 sm:p-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+        <div className='flex gap-3 sm:gap-4 p-3 sm:p-4'>
+          <div className='w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'>
             {row.thumbUrl ? (
-              <img src={row.thumbUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+              <img
+                src={row.thumbUrl}
+                alt=''
+                className='w-full h-full object-cover'
+                loading='lazy'
+              />
             ) : (
-              <ImageIcon className="text-gray-300" size={24} aria-hidden />
+              <ImageIcon className='text-gray-300' size={24} aria-hidden />
             )}
           </div>
-          <div className="flex-1 min-w-0 py-0.5">
-            <div className="flex items-center gap-2">
-              <p className="text-[11px] text-gray-400 font-medium">#{row.id}</p>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+          <div className='flex-1 min-w-0 py-0.5'>
+            <div className='flex items-center gap-2'>
+              <p className='text-[11px] text-gray-400 font-medium'>#{row.id}</p>
+              <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100'>
                 {requestKindLabel(row.requestKind)}
               </span>
             </div>
-            <p className="font-bold text-gray-900 truncate text-sm sm:text-base">{row.title}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{breadcrumb}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-700">
+            <p className='font-bold text-gray-900 truncate text-sm sm:text-base'>{row.title}</p>
+            <p className='text-xs text-gray-500 mt-0.5'>{breadcrumb}</p>
+            <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-700'>
               <span>
-                <span className="text-gray-500">💰</span>{' '}
-                <span className="font-semibold">งบ {budgetStr} × {qtyStr}</span>
-                {rev ? <span className="text-gray-500"> · {rev}</span> : null}
+                <span className='text-gray-500'>💰</span>{' '}
+                <span className='font-semibold'>
+                  งบ {budgetStr} × {qtyStr}
+                </span>
+                {rev ? <span className='text-gray-500'> · {rev}</span> : null}
               </span>
               {row.deadlineIso ? (
-                <span className="inline-flex items-center gap-1">
-                  <span className="text-gray-500">📅</span>
+                <span className='inline-flex items-center gap-1'>
+                  <span className='text-gray-500'>📅</span>
                   <DeadlineBadge deadlineIso={row.deadlineIso} />
                 </span>
               ) : null}
             </div>
-            <div className="mt-3 flex items-center justify-end">
-              <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: '#4F46E5' }}>
+            <div className='mt-3 flex items-center justify-end'>
+              <span
+                className='inline-flex items-center gap-1 text-xs font-semibold'
+                style={{ color: '#4F46E5' }}
+              >
                 ดูรายละเอียด BOQ
-                <ChevronRight size={15} className="text-indigo-400" />
+                <ChevronRight size={15} className='text-indigo-400' />
               </span>
             </div>
           </div>
@@ -179,51 +189,50 @@ export function RfqCard({
     <Link
       to={`/factory/rfqs/${row.id}`}
       state={{ from: `${location.pathname}${location.search}` }}
-      className="flex gap-3 sm:gap-4 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 hover:shadow-md transition-shadow min-w-0 text-left"
+      className='flex gap-3 sm:gap-4 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 hover:shadow-md transition-shadow min-w-0 text-left'
     >
-      <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+      <div className='w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'>
         {row.thumbUrl ? (
-          <img src={row.thumbUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img src={row.thumbUrl} alt='' className='w-full h-full object-cover' loading='lazy' />
         ) : (
-          <ImageIcon className="text-gray-300" size={28} aria-hidden />
+          <ImageIcon className='text-gray-300' size={28} aria-hidden />
         )}
       </div>
-      <div className="flex-1 min-w-0 py-0.5">
-        <div className="flex items-center gap-2">
-          <p className="text-[11px] text-gray-400 font-medium">#{row.id}</p>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+      <div className='flex-1 min-w-0 py-0.5'>
+        <div className='flex items-center gap-2'>
+          <p className='text-[11px] text-gray-400 font-medium'>#{row.id}</p>
+          <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100'>
             {requestKindLabel(row.requestKind)}
           </span>
         </div>
-        <p className="font-bold text-gray-900 truncate text-sm sm:text-base">{row.title}</p>
-        <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{breadcrumb}</p>
-        <div className="mt-2 space-y-1 text-xs text-gray-700">
+        <p className='font-bold text-gray-900 truncate text-sm sm:text-base'>{row.title}</p>
+        <p className='text-xs text-gray-600 mt-0.5 line-clamp-2'>{breadcrumb}</p>
+        <div className='mt-2 space-y-1 text-xs text-gray-700'>
           <p>
-            <span className="text-gray-500">💰</span>{' '}
-            <span className="font-semibold text-gray-900">
+            <span className='text-gray-500'>💰</span>{' '}
+            <span className='font-semibold text-gray-900'>
               งบ {budgetStr} × {qtyStr}
             </span>
-            {rev ? <span className="text-gray-600"> · {rev}</span> : null}
+            {rev ? <span className='text-gray-600'> · {rev}</span> : null}
           </p>
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className='flex flex-wrap items-center gap-x-2 gap-y-1'>
             {row.leadTargetDays != null && row.leadTargetDays > 0 ? (
               <span>
-                <span className="text-gray-500">⏱</span> ต้องการ {row.leadTargetDays} วัน
+                <span className='text-gray-500'>⏱</span> ต้องการ {row.leadTargetDays} วัน
               </span>
             ) : null}
             {row.deadlineIso ? (
-              <span className="inline-flex items-center gap-1">
-                <span className="text-gray-500">📅</span>
+              <span className='inline-flex items-center gap-1'>
+                <span className='text-gray-500'>📅</span>
                 <DeadlineBadge deadlineIso={row.deadlineIso} />
               </span>
             ) : null}
           </p>
           <p>
-            <span className="text-gray-500">🚚</span> {row.shippingMethodName || '—'}
-
+            <span className='text-gray-500'>🚚</span> {row.shippingMethodName || '—'}
           </p>
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <div className='mt-3 flex flex-wrap items-center justify-between gap-2'>
           <span
             className={`text-[11px] font-semibold px-2 py-1 rounded-lg ${
               row.hasMyQuote ? 'bg-violet-100 text-violet-800' : 'bg-gray-100 text-gray-600'
@@ -231,9 +240,12 @@ export function RfqCard({
           >
             สถานะ: {statusLabel}
           </span>
-          <span className="inline-flex items-center gap-1 text-xs font-semibold shrink-0" style={{ color: '#A238FF' }}>
+          <span
+            className='inline-flex items-center gap-1 text-xs font-semibold shrink-0'
+            style={{ color: '#A238FF' }}
+          >
             {row.hasMyQuote ? 'ดู →' : 'ดูและเสนอราคา →'}
-            <ChevronRight size={16} className="text-violet-400" />
+            <ChevronRight size={16} className='text-violet-400' />
           </span>
         </div>
       </div>

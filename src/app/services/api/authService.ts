@@ -3,9 +3,14 @@
  * Pattern: Request Type → API Call → Response → Mapper → Model
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 import { mapAuthResponse } from '@/services/mapper/response/auth';
-import { LoginRequest, RegisterRequest, ForgotPasswordRequest, ResetPasswordRequest } from '@/types/api/request/auth';
+import {
+  LoginRequest,
+  RegisterRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from '@/types/api/request/auth';
 import { IAuthResponse } from '@/types/model';
 
 /**
@@ -30,7 +35,10 @@ export const loginUser = async (payload: LoginRequest): Promise<IAuthResponse> =
  */
 export const registerUser = async (payload: RegisterRequest): Promise<IAuthResponse> => {
   try {
-    const res = await httpClient.post<{ data?: Record<string, unknown> }>('/auth/register', payload);
+    const res = await httpClient.post<{ data?: Record<string, unknown> }>(
+      '/auth/register',
+      payload,
+    );
 
     if (!res?.data) {
       throw new Error('Failed to register');
@@ -45,7 +53,9 @@ export const registerUser = async (payload: RegisterRequest): Promise<IAuthRespo
 /**
  * Request password reset
  */
-export const forgotPassword = async (payload: ForgotPasswordRequest): Promise<{ message: string }> => {
+export const forgotPassword = async (
+  payload: ForgotPasswordRequest,
+): Promise<{ message: string }> => {
   try {
     const res = await httpClient.post<{ message: string }>('/auth/forgot-password', payload);
 
@@ -64,7 +74,9 @@ export const forgotPassword = async (payload: ForgotPasswordRequest): Promise<{ 
 /**
  * Reset password with token
  */
-export const resetPassword = async (payload: ResetPasswordRequest): Promise<{ message: string }> => {
+export const resetPassword = async (
+  payload: ResetPasswordRequest,
+): Promise<{ message: string }> => {
   try {
     const res = await httpClient.post<{ message?: string }>('/auth/reset-password', payload);
 

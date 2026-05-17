@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { ImagePlus, X } from 'lucide-react';
-import { mediaApi } from '../../../services/api';
-import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '../../../utils/reviewImageUrls';
-import { Button } from '../../ui/button';
+import { mediaApi } from '@/services/api';
+import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   urls: string[];
@@ -53,29 +53,31 @@ export function ReviewImageAttachments({
   if (urls.length === 0 && !editable) return null;
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
+    <div className='space-y-2'>
+      <div className='flex flex-wrap gap-2'>
         {urls.map((url, idx) => (
           <div
             key={`${url}-${idx}`}
-            className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0"
+            className='relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0'
           >
             {onPreviewUrl ? (
-              <Button variant="unstyled"
-                type="button"
-                className="w-full h-full block"
+              <Button
+                variant='unstyled'
+                type='button'
+                className='w-full h-full block'
                 onClick={() => onPreviewUrl(url)}
               >
-                <img src={url} alt="" className="w-full h-full object-cover" />
+                <img src={url} alt='' className='w-full h-full object-cover' />
               </Button>
             ) : (
-              <img src={url} alt="" className="w-full h-full object-cover" />
+              <img src={url} alt='' className='w-full h-full object-cover' />
             )}
             {editable ? (
-              <Button variant="unstyled"
-                type="button"
-                className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
-                aria-label="ลบรูป"
+              <Button
+                variant='unstyled'
+                type='button'
+                className='absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center'
+                aria-label='ลบรูป'
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -91,20 +93,21 @@ export function ReviewImageAttachments({
           <>
             <input
               ref={inputRef}
-              type="file"
-              accept="image/*"
+              type='file'
+              accept='image/*'
               multiple
-              className="hidden"
+              className='hidden'
               onChange={(e) => {
                 void addFiles(e.target.files);
                 e.target.value = '';
               }}
             />
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               disabled={uploading}
               onClick={() => inputRef.current?.click()}
-              className="w-16 h-16 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 text-[10px] gap-0.5 disabled:opacity-50"
+              className='w-16 h-16 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 text-[10px] gap-0.5 disabled:opacity-50'
             >
               <ImagePlus size={18} />
               {uploading ? '…' : 'เพิ่ม'}
@@ -113,7 +116,7 @@ export function ReviewImageAttachments({
         ) : null}
       </div>
       {editable ? (
-        <p className="text-[10px] text-gray-400">แนบรูปได้ไม่เกิน {REVIEW_IMAGE_MAX} รูป</p>
+        <p className='text-[10px] text-gray-400'>แนบรูปได้ไม่เกิน {REVIEW_IMAGE_MAX} รูป</p>
       ) : null}
     </div>
   );

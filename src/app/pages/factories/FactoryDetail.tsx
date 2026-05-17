@@ -1,8 +1,8 @@
 import React from 'react';
-import { useIsDesktop } from '../../hooks/useIsDesktop';
-import { useFactoryProfile } from '../../hooks/useFactoryProfile';
-import { FactoryDetailMobile } from './FactoryDetail.mobile';
-import { FactoryDetailDesktop } from './FactoryDetail.desktop';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useFactoryProfile } from '@/hooks/useFactoryProfile';
+import { FactoryDetailMobile } from '@/pages/factories/FactoryDetail.mobile';
+import { FactoryDetailDesktop } from '@/pages/factories/FactoryDetail.desktop';
 
 export function FactoryDetail() {
   const isDesktop = useIsDesktop();

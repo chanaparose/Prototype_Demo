@@ -17,7 +17,7 @@ interface UseFetchDataReturn<T> extends UseFetchDataState<T> {
  */
 export function useFetchData<T>(
   fetcher: () => Promise<T>,
-  deps: React.DependencyList = []
+  deps: React.DependencyList = [],
 ): UseFetchDataReturn<T> {
   const [state, setState] = useState<UseFetchDataState<T>>({
     data: null,

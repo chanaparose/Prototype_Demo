@@ -41,6 +41,7 @@ Health:   GET https://wemake-server.onrender.com/health → { "status": "ok" }
 ```
 
 **Auth header:**
+
 ```http
 Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
@@ -54,82 +55,82 @@ Content-Type: application/json
 
 ### ✅ Frontend เชื่อมต่อแล้ว (มีใน api.ts)
 
-| # | Endpoint | Frontend function | หน้าที่ใช้ |
-|---|----------|-------------------|-----------|
-| 1 | `POST /auth/login` | `authApi.login()` | Login |
-| 2 | `POST /auth/register` | `authApi.register()` | Register |
-| 3 | `POST /auth/forgot-password` | `authApi.forgotPassword()` | Forgot Password |
-| 4 | `POST /auth/reset-password` | `authApi.resetPassword()` | Reset Password |
-| 5 | `GET /frontend/mock-data` | `frontendApi.getMockData()` | DataContext (ทุกหน้า) |
-| 6 | `GET /frontend/bootstrap` | `frontendApi.getBootstrap()` | DataContext |
-| 7 | `GET /frontend/me` | `frontendApi.getMe()` | Profile |
-| 8 | `GET /frontend/factories` | `frontendApi.getFactories()` | Factory List |
-| 9 | `GET /frontend/factories/:id` | `frontendApi.getFactory()` | Factory Profile |
-| 10 | `GET /frontend/rfqs/:id` | `frontendApi.getRfq()` | RFQ Detail |
-| 11 | `GET /frontend/orders/:id` | `frontendApi.getOrder()` | Order Detail |
-| 12 | `GET /frontend/messages/threads` | `frontendApi.getMessageThreads()` | Messages |
-| 13 | `GET /categories` | `categoriesApi.list()` | Create RFQ |
-| 14 | `GET /factories` | `factoriesApi.list()` | Factories CRUD |
-| 15 | `POST /rfqs` | `rfqsApi.create()` | Create RFQ |
-| 16 | `GET /rfqs` | `rfqsApi.list()` | RFQ List |
-| 17 | `GET /rfqs/:id` | `rfqsApi.get()` | RFQ Detail |
-| 18 | `POST /rfqs/:id/images` | `rfqsApi.addImage()` | RFQ Images |
-| 19 | `PATCH /rfqs/:id/cancel` | `rfqsApi.cancel()` | Cancel RFQ |
-| 20 | `POST /rfqs/:id/quotations` | `rfqsApi.createQuotation()` | Create Quotation |
-| 21 | `GET /rfqs/:id/quotations` | `rfqsApi.listQuotations()` | List Quotations |
-| 22 | `POST /orders` | `ordersApi.create()` | Create Order |
-| 23 | `GET /orders` | `ordersApi.list()` | Order List |
-| 24 | `GET /orders/:id` | `ordersApi.get()` | Order Detail |
-| 25 | `PATCH /orders/:id/status` | `ordersApi.updateStatus()` | Update Order |
-| 26 | `POST /orders/:id/production-updates` | `ordersApi.addProductionUpdate()` | Production |
-| 27 | `GET /orders/:id/production-updates` | `ordersApi.listProductionUpdates()` | Production |
-| 28 | `POST /messages` | `messagesApi.send()` | Chat Room |
-| 29 | `GET /messages` | `messagesApi.list()` | Chat Room |
-| 30 | `GET /messages/threads` | `messagesApi.threads()` | Messages List |
-| 31 | `GET /wallets/me` | `walletApi.getMe()` | Profile/Wallet |
-| 32 | `GET /master/provinces` | `masterApi.provinces()` | Address form |
-| 33 | `GET /master/districts` | `masterApi.districts()` | Address form |
-| 34 | `GET /master/sub-districts` | `masterApi.subDistricts()` | Address form |
-| 35 | `GET /master/factory-types` | `masterApi.factoryTypes()` | Register Factory |
-| 36 | `GET /master/product-categories` | `masterApi.productCategories()` | Create RFQ / Factory Ideas filter |
-| 37 | `GET /master/production-steps` | `masterApi.productionSteps()` | Production tracking |
-| 38 | `GET /master/units` | `masterApi.units()` | Create RFQ |
-| 39 | `GET /master/shipping-methods` | `masterApi.shippingMethods()` | Quotation form |
+| #   | Endpoint                              | Frontend function                   | หน้าที่ใช้                        |
+| --- | ------------------------------------- | ----------------------------------- | --------------------------------- |
+| 1   | `POST /auth/login`                    | `authApi.login()`                   | Login                             |
+| 2   | `POST /auth/register`                 | `authApi.register()`                | Register                          |
+| 3   | `POST /auth/forgot-password`          | `authApi.forgotPassword()`          | Forgot Password                   |
+| 4   | `POST /auth/reset-password`           | `authApi.resetPassword()`           | Reset Password                    |
+| 5   | `GET /frontend/mock-data`             | `frontendApi.getMockData()`         | DataContext (ทุกหน้า)             |
+| 6   | `GET /frontend/bootstrap`             | `frontendApi.getBootstrap()`        | DataContext                       |
+| 7   | `GET /frontend/me`                    | `frontendApi.getMe()`               | Profile                           |
+| 8   | `GET /frontend/factories`             | `frontendApi.getFactories()`        | Factory List                      |
+| 9   | `GET /frontend/factories/:id`         | `frontendApi.getFactory()`          | Factory Profile                   |
+| 10  | `GET /frontend/rfqs/:id`              | `frontendApi.getRfq()`              | RFQ Detail                        |
+| 11  | `GET /frontend/orders/:id`            | `frontendApi.getOrder()`            | Order Detail                      |
+| 12  | `GET /frontend/messages/threads`      | `frontendApi.getMessageThreads()`   | Messages                          |
+| 13  | `GET /categories`                     | `categoriesApi.list()`              | Create RFQ                        |
+| 14  | `GET /factories`                      | `factoriesApi.list()`               | Factories CRUD                    |
+| 15  | `POST /rfqs`                          | `rfqsApi.create()`                  | Create RFQ                        |
+| 16  | `GET /rfqs`                           | `rfqsApi.list()`                    | RFQ List                          |
+| 17  | `GET /rfqs/:id`                       | `rfqsApi.get()`                     | RFQ Detail                        |
+| 18  | `POST /rfqs/:id/images`               | `rfqsApi.addImage()`                | RFQ Images                        |
+| 19  | `PATCH /rfqs/:id/cancel`              | `rfqsApi.cancel()`                  | Cancel RFQ                        |
+| 20  | `POST /rfqs/:id/quotations`           | `rfqsApi.createQuotation()`         | Create Quotation                  |
+| 21  | `GET /rfqs/:id/quotations`            | `rfqsApi.listQuotations()`          | List Quotations                   |
+| 22  | `POST /orders`                        | `ordersApi.create()`                | Create Order                      |
+| 23  | `GET /orders`                         | `ordersApi.list()`                  | Order List                        |
+| 24  | `GET /orders/:id`                     | `ordersApi.get()`                   | Order Detail                      |
+| 25  | `PATCH /orders/:id/status`            | `ordersApi.updateStatus()`          | Update Order                      |
+| 26  | `POST /orders/:id/production-updates` | `ordersApi.addProductionUpdate()`   | Production                        |
+| 27  | `GET /orders/:id/production-updates`  | `ordersApi.listProductionUpdates()` | Production                        |
+| 28  | `POST /messages`                      | `messagesApi.send()`                | Chat Room                         |
+| 29  | `GET /messages`                       | `messagesApi.list()`                | Chat Room                         |
+| 30  | `GET /messages/threads`               | `messagesApi.threads()`             | Messages List                     |
+| 31  | `GET /wallets/me`                     | `walletApi.getMe()`                 | Profile/Wallet                    |
+| 32  | `GET /master/provinces`               | `masterApi.provinces()`             | Address form                      |
+| 33  | `GET /master/districts`               | `masterApi.districts()`             | Address form                      |
+| 34  | `GET /master/sub-districts`           | `masterApi.subDistricts()`          | Address form                      |
+| 35  | `GET /master/factory-types`           | `masterApi.factoryTypes()`          | Register Factory                  |
+| 36  | `GET /master/product-categories`      | `masterApi.productCategories()`     | Create RFQ / Factory Ideas filter |
+| 37  | `GET /master/production-steps`        | `masterApi.productionSteps()`       | Production tracking               |
+| 38  | `GET /master/units`                   | `masterApi.units()`                 | Create RFQ                        |
+| 39  | `GET /master/shipping-methods`        | `masterApi.shippingMethods()`       | Quotation form                    |
 
 ### ✅ เพิ่งเชื่อมต่อใหม่ (อัพเดต 2026-04-01)
 
-| # | Endpoint | Frontend function | หน้าที่ใช้ | สถานะ |
-|---|----------|-------------------|-----------|-------|
-| 40 | `GET /frontend/explore` | `frontendApi.getExplore()` | Explore (aggregated) | ✅ ต่อแล้ว + fallback |
-| 41 | `GET /frontend/products` | `frontendApi.getProducts()` | Explore สินค้าแนะนำ | ✅ ต่อแล้ว (fallback) |
-| 42 | `GET /frontend/promotions` | `frontendApi.getPromotions()` | Explore โปรโมชัน | ✅ ต่อแล้ว (fallback) |
-| 43 | `GET /frontend/promo-codes` | `frontendApi.getPromoCodes()` | Explore โค้ดส่วนลด | ✅ ต่อแล้ว + Carousel |
-| 44 | `GET /promo-slides` | `promoSlidesApi.list()` | Explore banner carousel | ✅ ต่อแล้ว |
-| 45 | `GET /showcases` | `showcasesApi.list()` | Factory Ideas | ✅ api.ts พร้อม |
-| 46 | `POST /showcases` | `showcasesApi.create()` | Factory Dashboard | ✅ api.ts พร้อม |
-| 47 | `GET /conversations` | `conversationsApi.list()` | Messages | ✅ api.ts พร้อม |
-| 48 | `GET /conversations/:id` | `conversationsApi.get()` | Chat Room | ✅ api.ts พร้อม |
-| 49 | `POST /conversations` | `conversationsApi.create()` | Chat Room สร้างใหม่ | ✅ api.ts พร้อม |
-| 50 | `GET /messages?conv_id=` | `messagesApi.listByConversation()` | Chat Room | ✅ api.ts พร้อม |
-| 51 | `GET /notifications` | `notificationsApi.list()` | Notifications | ✅ api.ts พร้อม |
-| 52 | `PATCH /notifications/:id/read` | `notificationsApi.markAsRead()` | Notifications | ✅ api.ts พร้อม |
-| 53 | `GET /favorites` | `favoritesApi.list()` | Profile/Favorites | ✅ api.ts พร้อม |
-| 54 | `POST /favorites` | `favoritesApi.add()` | Product/Idea Detail | ✅ api.ts พร้อม |
-| 55 | `DELETE /favorites/:showcase_id` | `favoritesApi.remove()` | Favorites | ✅ api.ts พร้อม |
-| 56 | `GET /factories/:id/reviews` | `reviewsApi.listByFactory()` | Factory Profile | ✅ api.ts พร้อม |
-| 57 | `POST /factories/:id/reviews` | `reviewsApi.create()` | Order Complete | ✅ api.ts พร้อม |
-| 58 | `GET /factories/:id/certificates` | `certificatesApi.listByFactory()` | Factory Profile | ✅ api.ts พร้อม |
-| 59 | `POST /factories/:id/certificates` | `certificatesApi.create()` | Factory Dashboard | ✅ api.ts พร้อม |
-| 60 | `GET /quotations/:id` | `quotationsApi.get()` | Quotation Detail | ✅ api.ts พร้อม |
-| 61 | `PATCH /quotations/:id/status` | `quotationsApi.updateStatus()` | Accept/Reject | ✅ api.ts พร้อม |
-| 62 | `GET /addresses` | `addressesApi.list()` | Profile/Create RFQ | ✅ api.ts พร้อม |
-| 63 | `POST /addresses` | `addressesApi.create()` | Profile | ✅ api.ts พร้อม |
-| 64 | `PATCH /addresses/:id` | `addressesApi.update()` | Profile | ✅ api.ts พร้อม |
-| 65 | `POST /transactions` | `transactionsApi.create()` | Payment | ✅ api.ts พร้อม |
-| 66 | `GET /transactions` | `transactionsApi.list()` | Wallet | ✅ api.ts พร้อม |
-| 67 | `PATCH /transactions/:id/status` | `transactionsApi.updateStatus()` | Admin | ✅ api.ts พร้อม |
-| 68 | `PATCH /production-updates/:id` | `productionUpdatesApi.patch()` | Edit Update | ✅ api.ts พร้อม |
-| 69 | `POST /media/upload` | `mediaApi.upload()` | Upload รูปภาพ | ✅ api.ts พร้อม (multipart) |
+| #   | Endpoint                           | Frontend function                  | หน้าที่ใช้              | สถานะ                       |
+| --- | ---------------------------------- | ---------------------------------- | ----------------------- | --------------------------- |
+| 40  | `GET /frontend/explore`            | `frontendApi.getExplore()`         | Explore (aggregated)    | ✅ ต่อแล้ว + fallback       |
+| 41  | `GET /frontend/products`           | `frontendApi.getProducts()`        | Explore สินค้าแนะนำ     | ✅ ต่อแล้ว (fallback)       |
+| 42  | `GET /frontend/promotions`         | `frontendApi.getPromotions()`      | Explore โปรโมชัน        | ✅ ต่อแล้ว (fallback)       |
+| 43  | `GET /frontend/promo-codes`        | `frontendApi.getPromoCodes()`      | Explore โค้ดส่วนลด      | ✅ ต่อแล้ว + Carousel       |
+| 44  | `GET /promo-slides`                | `promoSlidesApi.list()`            | Explore banner carousel | ✅ ต่อแล้ว                  |
+| 45  | `GET /showcases`                   | `showcasesApi.list()`              | Factory Ideas           | ✅ api.ts พร้อม             |
+| 46  | `POST /showcases`                  | `showcasesApi.create()`            | Factory Dashboard       | ✅ api.ts พร้อม             |
+| 47  | `GET /conversations`               | `conversationsApi.list()`          | Messages                | ✅ api.ts พร้อม             |
+| 48  | `GET /conversations/:id`           | `conversationsApi.get()`           | Chat Room               | ✅ api.ts พร้อม             |
+| 49  | `POST /conversations`              | `conversationsApi.create()`        | Chat Room สร้างใหม่     | ✅ api.ts พร้อม             |
+| 50  | `GET /messages?conv_id=`           | `messagesApi.listByConversation()` | Chat Room               | ✅ api.ts พร้อม             |
+| 51  | `GET /notifications`               | `notificationsApi.list()`          | Notifications           | ✅ api.ts พร้อม             |
+| 52  | `PATCH /notifications/:id/read`    | `notificationsApi.markAsRead()`    | Notifications           | ✅ api.ts พร้อม             |
+| 53  | `GET /favorites`                   | `favoritesApi.list()`              | Profile/Favorites       | ✅ api.ts พร้อม             |
+| 54  | `POST /favorites`                  | `favoritesApi.add()`               | Product/Idea Detail     | ✅ api.ts พร้อม             |
+| 55  | `DELETE /favorites/:showcase_id`   | `favoritesApi.remove()`            | Favorites               | ✅ api.ts พร้อม             |
+| 56  | `GET /factories/:id/reviews`       | `reviewsApi.listByFactory()`       | Factory Profile         | ✅ api.ts พร้อม             |
+| 57  | `POST /factories/:id/reviews`      | `reviewsApi.create()`              | Order Complete          | ✅ api.ts พร้อม             |
+| 58  | `GET /factories/:id/certificates`  | `certificatesApi.listByFactory()`  | Factory Profile         | ✅ api.ts พร้อม             |
+| 59  | `POST /factories/:id/certificates` | `certificatesApi.create()`         | Factory Dashboard       | ✅ api.ts พร้อม             |
+| 60  | `GET /quotations/:id`              | `quotationsApi.get()`              | Quotation Detail        | ✅ api.ts พร้อม             |
+| 61  | `PATCH /quotations/:id/status`     | `quotationsApi.updateStatus()`     | Accept/Reject           | ✅ api.ts พร้อม             |
+| 62  | `GET /addresses`                   | `addressesApi.list()`              | Profile/Create RFQ      | ✅ api.ts พร้อม             |
+| 63  | `POST /addresses`                  | `addressesApi.create()`            | Profile                 | ✅ api.ts พร้อม             |
+| 64  | `PATCH /addresses/:id`             | `addressesApi.update()`            | Profile                 | ✅ api.ts พร้อม             |
+| 65  | `POST /transactions`               | `transactionsApi.create()`         | Payment                 | ✅ api.ts พร้อม             |
+| 66  | `GET /transactions`                | `transactionsApi.list()`           | Wallet                  | ✅ api.ts พร้อม             |
+| 67  | `PATCH /transactions/:id/status`   | `transactionsApi.updateStatus()`   | Admin                   | ✅ api.ts พร้อม             |
+| 68  | `PATCH /production-updates/:id`    | `productionUpdatesApi.patch()`     | Edit Update             | ✅ api.ts พร้อม             |
+| 69  | `POST /media/upload`               | `mediaApi.upload()`                | Upload รูปภาพ           | ✅ api.ts พร้อม (multipart) |
 
 > **หมายเหตุ**: "api.ts พร้อม" = function ถูกเพิ่มใน `api.ts` แล้ว พร้อมให้หน้า UI เรียกใช้ได้ทันที แต่ยังไม่ได้ wire เข้า component (เพราะบาง feature ยังไม่มี UI)
 
@@ -140,6 +141,7 @@ Content-Type: application/json
 ### `POST /auth/register`
 
 **Customer (CT):**
+
 ```json
 {
   "role": "CT",
@@ -152,6 +154,7 @@ Content-Type: application/json
 ```
 
 **Factory (FT):**
+
 ```json
 {
   "role": "FT",
@@ -165,6 +168,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 { "token": "JWT_TOKEN", "user": { "user_id": 1, "role": "CT", "email": "...", ... } }
 ```
@@ -198,6 +202,7 @@ Response: เหมือน register
 > ดึงข้อมูลทั้งหมดสำหรับ frontend ในเส้นเดียว (ปัจจุบันใช้เป็นหลัก)
 
 **Response:**
+
 ```json
 {
   "currentUser": { "id": "u1", "name": "...", "avatar": "...", ... },
@@ -233,9 +238,16 @@ Response: เหมือน register
 
 ```json
 {
-  "id": 1, "role": "CT", "name": "Somchai Jaidee", "company": "...",
-  "email": "...", "phone": "...", "avatar": "...",
-  "walletBalance": 5000, "pendingBalance": 0, "memberSince": "2026"
+  "id": 1,
+  "role": "CT",
+  "name": "Somchai Jaidee",
+  "company": "...",
+  "email": "...",
+  "phone": "...",
+  "avatar": "...",
+  "walletBalance": 5000,
+  "pendingBalance": 0,
+  "memberSince": "2026"
 }
 ```
 
@@ -280,55 +292,76 @@ Response: เหมือน register
 ### `GET /frontend/messages/threads`
 
 ```json
-[{
-  "referenceType": "RFQ", "referenceId": "1",
-  "counterpartId": 2, "counterpart": "โรงงาน A",
-  "projectName": "ผลิตอาหารแมว",
-  "lastMessage": "...", "lastMessageAt": "...",
-  "unread": 3, "hasQuote": true, "avatar": "..."
-}]
+[
+  {
+    "referenceType": "RFQ",
+    "referenceId": "1",
+    "counterpartId": 2,
+    "counterpart": "โรงงาน A",
+    "projectName": "ผลิตอาหารแมว",
+    "lastMessage": "...",
+    "lastMessageAt": "...",
+    "unread": 3,
+    "hasQuote": true,
+    "avatar": "..."
+  }
+]
 ```
 
 ### `GET /frontend/products` ❌ ยังไม่ได้ต่อ
 
 > สินค้าแนะนำในหน้า Explore
 
-| Query Param | Type | Default | Description |
-|-------------|------|---------|-------------|
-| `limit` | int | 8 | จำนวนสินค้า |
-| `category_id` | string | - | กรองตามหมวดหมู่ |
+| Query Param   | Type   | Default | Description     |
+| ------------- | ------ | ------- | --------------- |
+| `limit`       | int    | 8       | จำนวนสินค้า     |
+| `category_id` | string | -       | กรองตามหมวดหมู่ |
 
 ```json
-[{
-  "id": "p1", "title": "อาหารแมว Holistic สูตรไก่-แอปเปิล",
-  "price": "฿1,200.00", "image_url": "https://...",
-  "discount": "-15%", "factory_id": "f1"
-}]
+[
+  {
+    "id": "p1",
+    "title": "อาหารแมว Holistic สูตรไก่-แอปเปิล",
+    "price": "฿1,200.00",
+    "image_url": "https://...",
+    "discount": "-15%",
+    "factory_id": "f1"
+  }
+]
 ```
 
 ### `GET /frontend/promotions` ❌ ยังไม่ได้ต่อ
 
-| Query Param | Type | Default | Description |
-|-------------|------|---------|-------------|
-| `limit` | int | 4 | จำนวนโปรโมชัน |
+| Query Param | Type | Default | Description   |
+| ----------- | ---- | ------- | ------------- |
+| `limit`     | int  | 4       | จำนวนโปรโมชัน |
 
 ```json
-[{
-  "id": "rp1", "title": "แพ็กเกจอาบน้ำ-ตัดขน VIP",
-  "description": "บริการดูแลความสะอาดแบบพรีเมียม",
-  "price": "฿850.00", "image_url": "https://...",
-  "tag": "บริการ", "factory_id": "f1"
-}]
+[
+  {
+    "id": "rp1",
+    "title": "แพ็กเกจอาบน้ำ-ตัดขน VIP",
+    "description": "บริการดูแลความสะอาดแบบพรีเมียม",
+    "price": "฿850.00",
+    "image_url": "https://...",
+    "tag": "บริการ",
+    "factory_id": "f1"
+  }
+]
 ```
 
 ### `GET /frontend/promo-codes` ❌ ยังไม่ได้ต่อ
 
 ```json
-[{
-  "id": "1", "title": "ลด 15% ค่าผลิตครั้งแรก",
-  "subtitle": "ใช้โค้ดนี้เมื่อสร้าง RFQ ใหม่ หมดเขต 31 มี.ค. 2026",
-  "code": "FIRST15", "valid_until": "2026-03-31"
-}]
+[
+  {
+    "id": "1",
+    "title": "ลด 15% ค่าผลิตครั้งแรก",
+    "subtitle": "ใช้โค้ดนี้เมื่อสร้าง RFQ ใหม่ หมดเขต 31 มี.ค. 2026",
+    "code": "FIRST15",
+    "valid_until": "2026-03-31"
+  }
+]
 ```
 
 ### `GET /frontend/explore` ❌ ยังไม่ได้ต่อ
@@ -354,18 +387,28 @@ Response: เหมือน register
 
 ### `GET /master/product-categories` ⭐ สำคัญ — ใช้ใน Explore + Factory Ideas
 
-| Query Param | Type | Description |
-|-------------|------|-------------|
+| Query Param          | Type  | Description                               |
+| -------------------- | ----- | ----------------------------------------- |
 | `parent_category_id` | int64 | กรอง sub-categories (ไม่ส่ง = ดึงทั้งหมด) |
 
 ```json
 [
-  { "category_id": 1, "parent_category_id": null, "category_name": "อาหารสัตว์เลี้ยง", "status": "1" },
+  {
+    "category_id": 1,
+    "parent_category_id": null,
+    "category_name": "อาหารสัตว์เลี้ยง",
+    "status": "1"
+  },
   { "category_id": 2, "parent_category_id": null, "category_name": "อาหารเสริม", "status": "1" },
   { "category_id": 3, "parent_category_id": null, "category_name": "ของเล่น", "status": "1" },
   { "category_id": 4, "parent_category_id": null, "category_name": "เสื้อผ้า", "status": "1" },
   { "category_id": 6, "parent_category_id": null, "category_name": "แพ็คเกจจิ้ง", "status": "1" },
-  { "category_id": 11, "parent_category_id": null, "category_name": "ขนมสัตว์เลี้ยง", "status": "1" }
+  {
+    "category_id": 11,
+    "parent_category_id": null,
+    "category_name": "ขนมสัตว์เลี้ยง",
+    "status": "1"
+  }
 ]
 ```
 
@@ -380,13 +423,30 @@ Response: เหมือน register
 ### `GET /master/districts?province_id={id}`
 
 ```json
-[{ "row_id": 1001, "province_id": 1, "name_th": "เขตพระนคร", "name_en": "Phra Nakhon", "status": "1" }]
+[
+  {
+    "row_id": 1001,
+    "province_id": 1,
+    "name_th": "เขตพระนคร",
+    "name_en": "Phra Nakhon",
+    "status": "1"
+  }
+]
 ```
 
 ### `GET /master/sub-districts?district_id={id}`
 
 ```json
-[{ "row_id": 100101, "district_id": 1001, "name_th": "พระบรมมหาราชวัง", "name_en": "...", "zip_code": "10200", "status": "1" }]
+[
+  {
+    "row_id": 100101,
+    "district_id": 1001,
+    "name_th": "พระบรมมหาราชวัง",
+    "name_en": "...",
+    "zip_code": "10200",
+    "status": "1"
+  }
+]
 ```
 
 ### `GET /master/factory-types`
@@ -398,7 +458,15 @@ Response: เหมือน register
 ### `GET /master/production-steps?factory_type_id={id}`
 
 ```json
-[{ "step_id": 1, "factory_type_id": 1, "step_name": "ยืนยันคำสั่งซื้อ", "sequence": 1, "status": "1" }]
+[
+  {
+    "step_id": 1,
+    "factory_type_id": 1,
+    "step_name": "ยืนยันคำสั่งซื้อ",
+    "sequence": 1,
+    "status": "1"
+  }
+]
 ```
 
 ### `GET /master/units`
@@ -438,10 +506,18 @@ Response: เหมือน register
 ### `GET /factories`
 
 ```json
-[{
-  "id": "uuid", "name": "...", "email": "...", "phone": "...",
-  "address": "...", "description": "...", "created_at": "...", "updated_at": "..."
-}]
+[
+  {
+    "id": "uuid",
+    "name": "...",
+    "email": "...",
+    "phone": "...",
+    "address": "...",
+    "description": "...",
+    "created_at": "...",
+    "updated_at": "..."
+  }
+]
 ```
 
 ### `GET /factories/:id`
@@ -465,7 +541,16 @@ Response: `204 No Content`
 ### `GET /factories/:factory_id/reviews` ❌ ยังไม่ได้ต่อ
 
 ```json
-[{ "review_id": 1, "factory_id": 1, "user_id": 2, "rating": 5, "comment": "...", "created_at": "..." }]
+[
+  {
+    "review_id": 1,
+    "factory_id": 1,
+    "user_id": 2,
+    "rating": 5,
+    "comment": "...",
+    "created_at": "..."
+  }
+]
 ```
 
 ### `POST /factories/:factory_id/reviews` ❌ ยังไม่ได้ต่อ
@@ -477,17 +562,28 @@ Response: `204 No Content`
 ### `GET /factories/:factory_id/certificates` ❌ ยังไม่ได้ต่อ
 
 ```json
-[{
-  "map_id": 1, "factory_id": 1, "cert_id": 1,
-  "document_url": "https://...", "expire_date": "2027-01-01",
-  "cert_number": "GMP-001", "verify_status": "AC"
-}]
+[
+  {
+    "map_id": 1,
+    "factory_id": 1,
+    "cert_id": 1,
+    "document_url": "https://...",
+    "expire_date": "2027-01-01",
+    "cert_number": "GMP-001",
+    "verify_status": "AC"
+  }
+]
 ```
 
 ### `POST /factories/:factory_id/certificates` ❌ ยังไม่ได้ต่อ
 
 ```json
-{ "cert_id": 1, "document_url": "https://...", "expire_date": "2027-01-01", "cert_number": "GMP-001" }
+{
+  "cert_id": 1,
+  "document_url": "https://...",
+  "expire_date": "2027-01-01",
+  "cert_number": "GMP-001"
+}
 ```
 
 ---
@@ -498,18 +594,26 @@ Response: `204 No Content`
 
 ### `GET /showcases?type={content_type}`
 
-| Query Param | Type | Description |
-|-------------|------|-------------|
-| `type` | string | `product`, `promotion`, `idea` หรือว่าง = ทั้งหมด |
+| Query Param | Type   | Description                                       |
+| ----------- | ------ | ------------------------------------------------- |
+| `type`      | string | `product`, `promotion`, `idea` หรือว่าง = ทั้งหมด |
 
 ```json
-[{
-  "showcase_id": 1, "factory_id": 1,
-  "content_type": "PR", "title": "...", "excerpt": "...",
-  "image_url": "https://...", "category_id": 3,
-  "min_order": 500, "lead_time_days": 21, "likes_count": 45,
-  "created_at": "..."
-}]
+[
+  {
+    "showcase_id": 1,
+    "factory_id": 1,
+    "content_type": "PR",
+    "title": "...",
+    "excerpt": "...",
+    "image_url": "https://...",
+    "category_id": 3,
+    "min_order": 500,
+    "lead_time_days": 21,
+    "likes_count": 45,
+    "created_at": "..."
+  }
+]
 ```
 
 ### `POST /showcases`
@@ -534,9 +638,12 @@ Response: `204 No Content`
 
 ```json
 {
-  "category_id": 1, "title": "ผลิตอาหารแมว",
-  "quantity": 5000, "unit_id": 1,
-  "budget_per_piece": 25.00, "details": "...",
+  "category_id": 1,
+  "title": "ผลิตอาหารแมว",
+  "quantity": 5000,
+  "unit_id": 1,
+  "budget_per_piece": 25.0,
+  "details": "...",
   "address_id": 1
 }
 ```
@@ -569,20 +676,29 @@ Response: updated RFQ with status `CC`
 
 ```json
 {
-  "price_per_piece": 22.50, "mold_cost": 5000,
-  "lead_time_days": 21, "shipping_method_id": 1
+  "price_per_piece": 22.5,
+  "mold_cost": 5000,
+  "lead_time_days": 21,
+  "shipping_method_id": 1
 }
 ```
 
 ### `GET /rfqs/:rfq_id/quotations`
 
 ```json
-[{
-  "quote_id": 1, "rfq_id": 1, "factory_id": 2,
-  "price_per_piece": 22.50, "mold_cost": 5000,
-  "lead_time_days": 21, "shipping_method_id": 1,
-  "status": "PD", "create_time": "..."
-}]
+[
+  {
+    "quote_id": 1,
+    "rfq_id": 1,
+    "factory_id": 2,
+    "price_per_piece": 22.5,
+    "mold_cost": 5000,
+    "lead_time_days": 21,
+    "shipping_method_id": 1,
+    "status": "PD",
+    "create_time": "..."
+  }
+]
 ```
 
 ### `GET /quotations/:quotation_id` ❌ ยังไม่ได้ต่อ
@@ -630,7 +746,16 @@ Status codes: `PR` (production), `QC` (quality check), `SH` (shipped), `CP` (com
 ### `GET /orders/:order_id/production-updates`
 
 ```json
-[{ "update_id": 1, "order_id": 1, "step_id": 2, "description": "...", "image_url": "...", "created_at": "..." }]
+[
+  {
+    "update_id": 1,
+    "order_id": 1,
+    "step_id": 2,
+    "description": "...",
+    "image_url": "...",
+    "created_at": "..."
+  }
+]
 ```
 
 ### `PATCH /production-updates/:update_id` ❌ ยังไม่ได้ต่อ
@@ -642,11 +767,18 @@ Status codes: `PR` (production), `QC` (quality check), `SH` (shipped), `CP` (com
 ### `GET /conversations`
 
 ```json
-[{
-  "conv_id": 1, "customer_id": 1, "factory_id": 2,
-  "last_message": "...", "unread_customer": 2, "unread_factory": 0,
-  "has_quote": true, "updated_at": "..."
-}]
+[
+  {
+    "conv_id": 1,
+    "customer_id": 1,
+    "factory_id": 2,
+    "last_message": "...",
+    "unread_customer": 2,
+    "unread_factory": 0,
+    "has_quote": true,
+    "updated_at": "..."
+  }
+]
 ```
 
 ### `GET /conversations/:conv_id`
@@ -665,8 +797,10 @@ Status codes: `PR` (production), `QC` (quality check), `SH` (shipped), `CP` (com
 
 ```json
 {
-  "reference_type": "RFQ", "reference_id": "1",
-  "receiver_id": 2, "content": "สวัสดีครับ ขอรายละเอียดเพิ่มเติม",
+  "reference_type": "RFQ",
+  "reference_id": "1",
+  "receiver_id": 2,
+  "content": "สวัสดีครับ ขอรายละเอียดเพิ่มเติม",
   "attachment_url": "https://..."
 }
 ```
@@ -684,12 +818,19 @@ Status codes: `PR` (production), `QC` (quality check), `SH` (shipped), `CP` (com
 ### `GET /notifications`
 
 ```json
-[{
-  "noti_id": 1, "user_id": 1, "type": "RF",
-  "title": "ได้รับใบเสนอราคาใหม่", "message": "...",
-  "link_to": "/rfqs/1", "is_read": false,
-  "reference_id": 1, "created_at": "..."
-}]
+[
+  {
+    "noti_id": 1,
+    "user_id": 1,
+    "type": "RF",
+    "title": "ได้รับใบเสนอราคาใหม่",
+    "message": "...",
+    "link_to": "/rfqs/1",
+    "is_read": false,
+    "reference_id": 1,
+    "created_at": "..."
+  }
+]
 ```
 
 ### `PATCH /notifications/:noti_id/read`
@@ -723,7 +864,7 @@ Response: `{ "success": true }`
 ### `GET /wallets/me`
 
 ```json
-{ "wallet_id": 1, "user_id": 1, "good_fund": 5000.00, "pending_fund": 2500.00 }
+{ "wallet_id": 1, "user_id": 1, "good_fund": 5000.0, "pending_fund": 2500.0 }
 ```
 
 ---
@@ -733,7 +874,7 @@ Response: `{ "success": true }`
 ### `POST /transactions`
 
 ```json
-{ "wallet_id": 1, "order_id": 1, "type": "DP", "amount": 32500.00 }
+{ "wallet_id": 1, "order_id": 1, "type": "DP", "amount": 32500.0 }
 ```
 
 Type codes: `DP` (deposit), `WD` (withdraw), `BU` (buy), `SC` (success), `RF` (refund)
@@ -755,12 +896,19 @@ Status codes: `ST` (start), `PT` (paid), `RJ` (rejected)
 ### `GET /addresses`
 
 ```json
-[{
-  "address_id": 1, "user_id": 1, "address_type": "C",
-  "address_detail": "123/45 ถ.สุขุมวิท",
-  "sub_district_id": 100101, "district_id": 1001, "province_id": 1,
-  "zip_code": "10200", "is_default": true
-}]
+[
+  {
+    "address_id": 1,
+    "user_id": 1,
+    "address_type": "C",
+    "address_detail": "123/45 ถ.สุขุมวิท",
+    "sub_district_id": 100101,
+    "district_id": 1001,
+    "province_id": 1,
+    "zip_code": "10200",
+    "is_default": true
+  }
+]
 ```
 
 Address type: `C` (customer), `M` (manufacturer)
@@ -769,9 +917,13 @@ Address type: `C` (customer), `M` (manufacturer)
 
 ```json
 {
-  "address_type": "C", "address_detail": "123/45 ถ.สุขุมวิท",
-  "sub_district_id": 100101, "district_id": 1001, "province_id": 1,
-  "zip_code": "10200", "is_default": true
+  "address_type": "C",
+  "address_detail": "123/45 ถ.สุขุมวิท",
+  "sub_district_id": 100101,
+  "district_id": 1001,
+  "province_id": 1,
+  "zip_code": "10200",
+  "is_default": true
 }
 ```
 
@@ -801,8 +953,10 @@ Partial update
 
 ```json
 {
-  "cert_id": 1, "document_url": "https://...",
-  "expire_date": "2027-01-01", "cert_number": "GMP-001"
+  "cert_id": 1,
+  "document_url": "https://...",
+  "expire_date": "2027-01-01",
+  "cert_number": "GMP-001"
 }
 ```
 
@@ -820,6 +974,7 @@ Field: file (binary)
 ```
 
 **Response:**
+
 ```json
 { "url": "/uploads/filename.jpg" }
 ```
@@ -835,11 +990,16 @@ Field: file (binary)
 > Banner carousel ในหน้า Explore — ดึงจากตาราง `promo_slides`
 
 ```json
-[{
-  "slide_id": 1, "title": "ลด 15% ค่าผลิตครั้งแรก",
-  "subtitle": "ใช้โค้ดนี้เมื่อสร้าง RFQ ใหม่",
-  "code": "FIRST15", "image_url": "https://...", "status": "1"
-}]
+[
+  {
+    "slide_id": 1,
+    "title": "ลด 15% ค่าผลิตครั้งแรก",
+    "subtitle": "ใช้โค้ดนี้เมื่อสร้าง RFQ ใหม่",
+    "code": "FIRST15",
+    "image_url": "https://...",
+    "status": "1"
+  }
+]
 ```
 
 ---
@@ -897,9 +1057,9 @@ promo_slides (slide_id, title, subtitle, code, image_url, status)
 
 ### ตาราง categories vs lbi_product_categories
 
-| Table | Source | ใช้ที่ไหน |
-|-------|--------|----------|
-| `categories` (003) | `category_id`, `name` | RFQs (`rfqs.category_id`) |
+| Table                          | Source                                               | ใช้ที่ไหน                                    |
+| ------------------------------ | ---------------------------------------------------- | -------------------------------------------- |
+| `categories` (003)             | `category_id`, `name`                                | RFQs (`rfqs.category_id`)                    |
 | `lbi_product_categories` (005) | `category_id`, `parent_category_id`, `category_name` | Master lookup, Explore, Factory Ideas filter |
 
 > **สำคัญ**: 2 ตารางนี้แยกกัน — `categories` ใช้ใน RFQ flow, `lbi_product_categories` ใช้ใน master/lookup
@@ -908,17 +1068,17 @@ promo_slides (slide_id, title, subtitle, code, image_url, status)
 
 ## สรุปลำดับความสำคัญในการเชื่อมต่อ
 
-| Priority | กลุ่ม | Endpoints | เหตุผล |
-|----------|-------|-----------|--------|
-| 🔴 สูง | Explore content | `GET /frontend/explore` หรือ `/products` + `/promotions` + `/promo-codes` | แทน hardcoded data ในหน้า Explore |
-| 🔴 สูง | Promo slides | `GET /promo-slides` | แทน PROMO_SLIDES ใน constants.ts |
-| 🔴 สูง | Showcases | `GET /showcases` | ใช้ใน Factory Ideas แทน mock-data |
-| 🟡 กลาง | Conversations | `GET/POST /conversations` | ระบบแชทเต็มรูปแบบ |
-| 🟡 กลาง | Notifications | `GET /notifications` + `PATCH .../read` | ระบบแจ้งเตือน |
-| 🟡 กลาง | Favorites | `GET/POST/DELETE /favorites` | ระบบรายการโปรด |
-| 🟡 กลาง | Addresses | `GET/POST/PATCH /addresses` | จัดการที่อยู่ |
-| 🟡 กลาง | Transactions | `GET/POST /transactions` | ระบบชำระเงิน |
-| 🟢 ต่ำ | Reviews | `GET/POST /factories/:id/reviews` | รีวิวโรงงาน |
-| 🟢 ต่ำ | Certificates | `GET/POST /factories/:id/certificates` | ใบรับรองโรงงาน |
-| 🟢 ต่ำ | Media | `POST /media/upload` | อัปโหลดรูปภาพ |
-| 🟢 ต่ำ | Quotation CRUD | `GET/PATCH /quotations/:id` | จัดการใบเสนอราคา |
+| Priority | กลุ่ม           | Endpoints                                                                 | เหตุผล                            |
+| -------- | --------------- | ------------------------------------------------------------------------- | --------------------------------- |
+| 🔴 สูง   | Explore content | `GET /frontend/explore` หรือ `/products` + `/promotions` + `/promo-codes` | แทน hardcoded data ในหน้า Explore |
+| 🔴 สูง   | Promo slides    | `GET /promo-slides`                                                       | แทน PROMO_SLIDES ใน constants.ts  |
+| 🔴 สูง   | Showcases       | `GET /showcases`                                                          | ใช้ใน Factory Ideas แทน mock-data |
+| 🟡 กลาง  | Conversations   | `GET/POST /conversations`                                                 | ระบบแชทเต็มรูปแบบ                 |
+| 🟡 กลาง  | Notifications   | `GET /notifications` + `PATCH .../read`                                   | ระบบแจ้งเตือน                     |
+| 🟡 กลาง  | Favorites       | `GET/POST/DELETE /favorites`                                              | ระบบรายการโปรด                    |
+| 🟡 กลาง  | Addresses       | `GET/POST/PATCH /addresses`                                               | จัดการที่อยู่                     |
+| 🟡 กลาง  | Transactions    | `GET/POST /transactions`                                                  | ระบบชำระเงิน                      |
+| 🟢 ต่ำ   | Reviews         | `GET/POST /factories/:id/reviews`                                         | รีวิวโรงงาน                       |
+| 🟢 ต่ำ   | Certificates    | `GET/POST /factories/:id/certificates`                                    | ใบรับรองโรงงาน                    |
+| 🟢 ต่ำ   | Media           | `POST /media/upload`                                                      | อัปโหลดรูปภาพ                     |
+| 🟢 ต่ำ   | Quotation CRUD  | `GET/PATCH /quotations/:id`                                               | จัดการใบเสนอราคา                  |

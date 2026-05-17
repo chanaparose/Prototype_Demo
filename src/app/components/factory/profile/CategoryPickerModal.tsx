@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useProductCategories } from '../../../hooks/master/useProductCategories';
-import { categoriesApi } from '../../../services/api';
-import { BaseModal } from '../../../shared/ui';
-import { Button } from '../../ui/button';
+import { useProductCategories } from '@/hooks/master/useProductCategories';
+import { categoriesApi } from '@/services/api';
+import { BaseModal } from '@/shared/ui';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   open: boolean;
@@ -94,19 +94,19 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
     <BaseModal
       isOpen={open}
       onClose={onClose}
-      title="เลือกหมวดหมู่หลัก"
-      placement="bottom"
-      size="lg"
-      className="sm:rounded-2xl max-w-lg"
-      bodyClassName="p-4 sm:p-5 space-y-4"
+      title='เลือกหมวดหมู่หลัก'
+      placement='bottom'
+      size='lg'
+      className='sm:rounded-2xl max-w-lg'
+      bodyClassName='p-4 sm:p-5 space-y-4'
       closeOnBackdropClick={!confirming}
-      footerClassName="p-4 sm:p-5 pt-2 grid grid-cols-[1fr_auto] gap-2"
+      footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-[1fr_auto] gap-2'
       footer={
         <>
           <Button
             onClick={handleConfirm}
             disabled={confirming}
-            className="py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60"
+            className='py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60'
             style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
           >
             {confirming ? 'กำลังโหลด…' : `ยืนยัน (${selected.length})`}
@@ -114,40 +114,38 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
           <Button
             onClick={onClose}
             disabled={confirming}
-            variant="outline"
-            className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-60"
+            variant='outline'
+            className='px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-60'
           >
             ยกเลิก
           </Button>
         </>
       }
     >
-        {isLoading ? (
-          <p className="text-sm text-gray-400">กำลังโหลด…</p>
-        ) : isError ? (
-          <p className="text-sm text-red-600">โหลดไม่สำเร็จ</p>
-        ) : categories.length === 0 ? (
-          <p className="text-sm text-gray-400">ไม่พบข้อมูลหมวด</p>
-        ) : (
-          <ul className="space-y-1 max-h-[50vh] overflow-y-auto">
-            {categories.map((c) => (
-              <li key={c.id}>
-                <label className="flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(c.id)}
-                    onChange={() => toggle(c.id)}
-                    className="rounded border-gray-300"
-                  />
-                  {c.name}
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
-        {confirmError && (
-          <p className="text-xs text-red-600">{confirmError}</p>
-        )}
+      {isLoading ? (
+        <p className='text-sm text-gray-400'>กำลังโหลด…</p>
+      ) : isError ? (
+        <p className='text-sm text-red-600'>โหลดไม่สำเร็จ</p>
+      ) : categories.length === 0 ? (
+        <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
+      ) : (
+        <ul className='space-y-1 max-h-[50vh] overflow-y-auto'>
+          {categories.map((c) => (
+            <li key={c.id}>
+              <label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
+                <input
+                  type='checkbox'
+                  checked={selected.includes(c.id)}
+                  onChange={() => toggle(c.id)}
+                  className='rounded border-gray-300'
+                />
+                {c.name}
+              </label>
+            </li>
+          ))}
+        </ul>
+      )}
+      {confirmError && <p className='text-xs text-red-600'>{confirmError}</p>}
     </BaseModal>
   );
 }

@@ -2,7 +2,7 @@
  * Factory API — Factory profile and showcase management
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 import type {
   FactoryBase,
   FactoryProfile,
@@ -11,13 +11,12 @@ import type {
   FactorySubCategoriesPayload,
   FactoryDashboardResponse,
   FactoryAnalyticsResponse,
-} from './types';
+} from '@/services/api/types';
 
 export const factoriesApi = {
   list: () => httpClient.get<FactoryBase[]>('/factories'),
 
-  get: (id: string | number) =>
-    httpClient.get<FactoryWithDetails>(`/factories/${id}`),
+  get: (id: string | number) => httpClient.get<FactoryWithDetails>(`/factories/${id}`),
 
   create: (data: FactoryProfile) => httpClient.post<FactoryBase>('/factories/', data),
 

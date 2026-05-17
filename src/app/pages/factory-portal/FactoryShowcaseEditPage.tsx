@@ -4,27 +4,27 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
 import { ChevronLeft } from 'lucide-react';
 
-import { mediaApi, showcasesApi } from '../../services/api';
-import { useEditForm } from '../../hooks/forms/useEditForm';
-import { useBeforeUnload } from '../../hooks/forms/useBeforeUnload';
-import { FormSkeleton } from '../../components/common/FormSkeleton';
-import { MarkdownEditor } from '../../components/common/MarkdownEditor';
-import { useLbiCategoriesByScope } from '../../hooks/master/useLbiCategoriesByScope';
-import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
-import { useAuth } from '../../stores';
-import { getFactoryEntityId } from '../../utils/factoryUser';
-import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
-import { mapLinkedShowcasesErrorToThai, partitionLinkedShowcases } from '../../utils/linkedShowcases';
-import { ImageCropModal } from '../../components/common/ImageCropModal';
-import { ShowcaseTypeSelector } from '../../components/factory/showcase/ShowcaseTypeSelector';
+import { mediaApi, showcasesApi } from '@/services/api';
+import { useEditForm } from '@/hooks/forms/useEditForm';
+import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
+import { FormSkeleton } from '@/components/common/FormSkeleton';
+import { MarkdownEditor } from '@/components/common/MarkdownEditor';
+import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
+import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
+import { useAuth } from '@/stores';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
+import { mapLinkedShowcasesErrorToThai, partitionLinkedShowcases } from '@/utils/linkedShowcases';
+import { ImageCropModal } from '@/components/common/ImageCropModal';
+import { ShowcaseTypeSelector } from '@/components/factory/showcase/ShowcaseTypeSelector';
 import {
   ShowcaseCategoryFields,
   ShowcaseImageManager,
   ShowcaseTypeBadge,
   type ShowcaseStatus,
   type ShowcaseType,
-} from './components/ShowcaseFormShared';
-import { Button } from '../../components/ui/button';
+} from '@/pages/factory-portal/components/ShowcaseFormShared';
+import { Button } from '@/components/ui/button';
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -167,7 +167,9 @@ export function FactoryShowcaseEditPage() {
   const [uploading, setUploading] = React.useState(false);
   const [cropFile, setCropFile] = React.useState<File | null>(null);
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
-  const [persistedImageIdByUrl, setPersistedImageIdByUrl] = React.useState<Record<string, number>>({});
+  const [persistedImageIdByUrl, setPersistedImageIdByUrl] = React.useState<Record<string, number>>(
+    {},
+  );
   const [selectedShowcaseIds, setSelectedShowcaseIds] = React.useState<number[]>([]);
   const [linkedShowcaseError, setLinkedShowcaseError] = React.useState('');
   const didHydrateFromServerRef = React.useRef(false);
@@ -176,26 +178,31 @@ export function FactoryShowcaseEditPage() {
     didHydrateFromServerRef.current = false;
   }, [id]);
 
-  const removeImage = useCallback(async (urlToRemove: string) => {
-    // Optimistic UI
-    setImageUrls((prev) => prev.filter((u) => u !== urlToRemove));
+  const removeImage = useCallback(
+    async (urlToRemove: string) => {
+      // Optimistic UI
+      setImageUrls((prev) => prev.filter((u) => u !== urlToRemove));
 
-    const imageId = persistedImageIdByUrl[urlToRemove];
-    if (!id || !Number.isFinite(imageId) || imageId <= 0) return;
+      const imageId = persistedImageIdByUrl[urlToRemove];
+      if (!id || !Number.isFinite(imageId) || imageId <= 0) return;
 
-    try {
-      await showcasesApi.deleteImage(id, imageId);
-      setPersistedImageIdByUrl((prev) => {
-        const next = { ...prev };
-        delete next[urlToRemove];
-        return next;
-      });
-    } catch (e) {
-      // Revert on failure
-      setImageUrls((prev) => (prev.includes(urlToRemove) ? prev : [...prev, urlToRemove].slice(0, 5)));
-      setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
-    }
-  }, [id, persistedImageIdByUrl]);
+      try {
+        await showcasesApi.deleteImage(id, imageId);
+        setPersistedImageIdByUrl((prev) => {
+          const next = { ...prev };
+          delete next[urlToRemove];
+          return next;
+        });
+      } catch (e) {
+        // Revert on failure
+        setImageUrls((prev) =>
+          prev.includes(urlToRemove) ? prev : [...prev, urlToRemove].slice(0, 5),
+        );
+        setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
+      }
+    },
+    [id, persistedImageIdByUrl],
+  );
 
   const { form, isLoading, isError, refetch } = useEditForm<ShowcaseFormValues, Raw>({
     queryKey: ['showcase', id] as const,
@@ -234,10 +241,13 @@ export function FactoryShowcaseEditPage() {
   }, [location.state, contentType]);
 
   const categoryScope: 'PD' | 'MT' =
-    contentType === 'MT' ? 'MT'
-    : contentType === 'ID' ? idScope
-    : contentType === 'PM' ? pmScope
-    : 'PD';
+    contentType === 'MT'
+      ? 'MT'
+      : contentType === 'ID'
+        ? idScope
+        : contentType === 'PM'
+          ? pmScope
+          : 'PD';
   const categoriesQ = useLbiCategoriesByScope(categoryScope);
 
   const subIds = useMemo(
@@ -246,12 +256,13 @@ export function FactoryShowcaseEditPage() {
   );
   const subsResult = useSubCategoriesByCategories(subIds);
   const subOptions =
-    selectedCategoryId != null ? subsResult.byCategory.get(selectedCategoryId) ?? [] : [];
+    selectedCategoryId != null ? (subsResult.byCategory.get(selectedCategoryId) ?? []) : [];
 
   React.useEffect(() => {
     if (!id) return;
     let active = true;
-    void showcasesApi.listImages(id)
+    void showcasesApi
+      .listImages(id)
       .then((rows) => {
         if (!active) return;
         const arr = (Array.isArray(rows) ? rows : []) as Record<string, unknown>[];
@@ -271,146 +282,153 @@ export function FactoryShowcaseEditPage() {
     };
   }, [id]);
 
-  const save = useCallback(async (submitStatus: 'DR' | 'AC') => {
-    if (!id) return;
-    const v = form.getValues();
-    if (!v.title.trim()) {
-      setError('กรุณากรอกชื่อรายการ');
-      return;
-    }
-    if (submitStatus === 'AC' && v.content_type !== 'ID') {
-      if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
-        setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
+  const save = useCallback(
+    async (submitStatus: 'DR' | 'AC') => {
+      if (!id) return;
+      const v = form.getValues();
+      if (!v.title.trim()) {
+        setError('กรุณากรอกชื่อรายการ');
         return;
       }
-    }
-    if (v.content_type === 'PM') {
-      if (submitStatus === 'AC') {
-        if (v.promo_price == null || Number(v.promo_price) <= 0) {
-          setError('กรุณากรอกราคาโปรโมชันให้มากกว่า 0');
-          return;
-        }
-        if (v.base_price != null && Number(v.base_price) > 0 && Number(v.promo_price) > Number(v.base_price)) {
-          setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
+      if (submitStatus === 'AC' && v.content_type !== 'ID') {
+        if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
+          setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
           return;
         }
       }
-      if (!v.start_date || !v.end_date) {
-        setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
-        return;
+      if (v.content_type === 'PM') {
+        if (submitStatus === 'AC') {
+          if (v.promo_price == null || Number(v.promo_price) <= 0) {
+            setError('กรุณากรอกราคาโปรโมชันให้มากกว่า 0');
+            return;
+          }
+          if (
+            v.base_price != null &&
+            Number(v.base_price) > 0 &&
+            Number(v.promo_price) > Number(v.base_price)
+          ) {
+            setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
+            return;
+          }
+        }
+        if (!v.start_date || !v.end_date) {
+          setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
+          return;
+        }
+        if (v.end_date < v.start_date) {
+          setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
+          return;
+        }
       }
-      if (v.end_date < v.start_date) {
-        setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
-        return;
+      setSaving(true);
+      setError('');
+      setLinkedShowcaseError('');
+      const coverUrl = imageUrls[0] ?? '';
+      const base = {
+        content_type: v.content_type,
+        status: submitStatus,
+        title: v.title.trim(),
+        excerpt: v.content_type === 'ID' ? undefined : v.excerpt.trim() || undefined,
+        content: v.content.trim() || undefined,
+        image_url: coverUrl || undefined,
+        category_id: v.category_id ?? undefined,
+        sub_category_id: v.sub_category_id ?? undefined,
+        lead_time_days: v.lead_time_days ?? undefined,
+        linked_showcases: [...imageUrls, ...selectedShowcaseIds],
+      };
+
+      const payload: Record<string, unknown> =
+        v.content_type === 'ID'
+          ? base
+          : v.content_type === 'PM'
+            ? {
+                ...base,
+                moq: v.moq ?? undefined,
+                base_price: v.base_price ?? undefined,
+                promo_price: v.promo_price ?? undefined,
+                start_date: v.start_date || undefined,
+                end_date: v.end_date || undefined,
+              }
+            : {
+                ...base,
+                moq: v.moq ?? undefined,
+                base_price: v.base_price ?? undefined,
+              };
+
+      try {
+        await showcasesApi.update(id, payload);
+        const existingRaw = await showcasesApi.listImages(id).catch(() => []);
+        const existing = (Array.isArray(existingRaw) ? existingRaw : [])
+          .map((r) => {
+            const row = (r ?? {}) as Record<string, unknown>;
+            const imageId = Number(row.image_id ?? row.id ?? 0);
+            const imageUrl = String(row.image_url ?? row.url ?? '').trim();
+            const sortOrder = Number(row.sort_order ?? 0);
+            if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
+            return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
+          })
+          .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
+
+        const desiredUrls = imageUrls.slice(0, 5);
+        const desiredSet = new Set(desiredUrls);
+        const existingSet = new Set(existing.map((x) => x.imageUrl));
+
+        await Promise.all(
+          existing
+            .filter((x) => !desiredSet.has(x.imageUrl))
+            .map((x) => showcasesApi.deleteImage(id, x.imageId).catch(() => undefined)),
+        );
+
+        await Promise.all(
+          desiredUrls
+            .filter((url) => !existingSet.has(url))
+            .map((url, idx) =>
+              showcasesApi
+                .addImage(id, { image_url: url, sort_order: idx + 1 })
+                .catch(() => undefined),
+            ),
+        );
+
+        const refreshedRaw = await showcasesApi.listImages(id).catch(() => []);
+        const refreshed = (Array.isArray(refreshedRaw) ? refreshedRaw : [])
+          .map((r) => {
+            const row = (r ?? {}) as Record<string, unknown>;
+            const imageId = Number(row.image_id ?? row.id ?? 0);
+            const imageUrl = String(row.image_url ?? row.url ?? '').trim();
+            const sortOrder = Number(row.sort_order ?? 0);
+            if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
+            return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
+          })
+          .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
+
+        await Promise.all(
+          desiredUrls.map((url, idx) => {
+            const row = refreshed.find((x) => x.imageUrl === url);
+            if (!row) return Promise.resolve();
+            const nextSort = idx + 1;
+            if (row.sortOrder === nextSort) return Promise.resolve();
+            return showcasesApi
+              .updateImage(id, row.imageId, { sort_order: nextSort })
+              .catch(() => undefined);
+          }),
+        );
+
+        await Promise.all([
+          qc.invalidateQueries({ queryKey: ['showcase', id] }),
+          qc.invalidateQueries({ queryKey: ['showcases'] }),
+        ]);
+        navigate('/factory/showcases', { replace: true });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
+        const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
+        if (linkedMsg) setLinkedShowcaseError(linkedMsg);
+        setError(msg);
+      } finally {
+        setSaving(false);
       }
-    }
-    setSaving(true);
-    setError('');
-    setLinkedShowcaseError('');
-    const coverUrl = imageUrls[0] ?? '';
-    const base = {
-      content_type: v.content_type,
-      status: submitStatus,
-      title: v.title.trim(),
-      excerpt: v.content_type === 'ID' ? undefined : v.excerpt.trim() || undefined,
-      content: v.content.trim() || undefined,
-      image_url: coverUrl || undefined,
-      category_id: v.category_id ?? undefined,
-      sub_category_id: v.sub_category_id ?? undefined,
-      lead_time_days: v.lead_time_days ?? undefined,
-      linked_showcases: [...imageUrls, ...selectedShowcaseIds],
-    };
-
-    const payload: Record<string, unknown> =
-      v.content_type === 'ID'
-        ? base
-        : v.content_type === 'PM'
-          ? {
-              ...base,
-              moq: v.moq ?? undefined,
-              base_price: v.base_price ?? undefined,
-              promo_price: v.promo_price ?? undefined,
-              start_date: v.start_date || undefined,
-              end_date: v.end_date || undefined,
-            }
-          : {
-              ...base,
-              moq: v.moq ?? undefined,
-              base_price: v.base_price ?? undefined,
-            };
-
-    try {
-      await showcasesApi.update(id, payload);
-      const existingRaw = await showcasesApi.listImages(id).catch(() => []);
-      const existing = (Array.isArray(existingRaw) ? existingRaw : [])
-        .map((r) => {
-          const row = (r ?? {}) as Record<string, unknown>;
-          const imageId = Number(row.image_id ?? row.id ?? 0);
-          const imageUrl = String(row.image_url ?? row.url ?? '').trim();
-          const sortOrder = Number(row.sort_order ?? 0);
-          if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
-          return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
-        })
-        .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
-
-      const desiredUrls = imageUrls.slice(0, 5);
-      const desiredSet = new Set(desiredUrls);
-      const existingSet = new Set(existing.map((x) => x.imageUrl));
-
-      await Promise.all(
-        existing
-          .filter((x) => !desiredSet.has(x.imageUrl))
-          .map((x) => showcasesApi.deleteImage(id, x.imageId).catch(() => undefined)),
-      );
-
-      await Promise.all(
-        desiredUrls
-          .filter((url) => !existingSet.has(url))
-          .map((url, idx) =>
-            showcasesApi
-              .addImage(id, { image_url: url, sort_order: idx + 1 })
-              .catch(() => undefined),
-          ),
-      );
-
-      const refreshedRaw = await showcasesApi.listImages(id).catch(() => []);
-      const refreshed = (Array.isArray(refreshedRaw) ? refreshedRaw : [])
-        .map((r) => {
-          const row = (r ?? {}) as Record<string, unknown>;
-          const imageId = Number(row.image_id ?? row.id ?? 0);
-          const imageUrl = String(row.image_url ?? row.url ?? '').trim();
-          const sortOrder = Number(row.sort_order ?? 0);
-          if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
-          return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
-        })
-        .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
-
-      await Promise.all(
-        desiredUrls.map((url, idx) => {
-          const row = refreshed.find((x) => x.imageUrl === url);
-          if (!row) return Promise.resolve();
-          const nextSort = idx + 1;
-          if (row.sortOrder === nextSort) return Promise.resolve();
-          return showcasesApi
-            .updateImage(id, row.imageId, { sort_order: nextSort })
-            .catch(() => undefined);
-        }),
-      );
-
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: ['showcase', id] }),
-        qc.invalidateQueries({ queryKey: ['showcases'] }),
-      ]);
-      navigate('/factory/showcases', { replace: true });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
-      const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
-      if (linkedMsg) setLinkedShowcaseError(linkedMsg);
-      setError(msg);
-    } finally {
-      setSaving(false);
-    }
-  }, [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath]);
+    },
+    [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath],
+  );
 
   const onBack = useCallback(() => {
     if (form.formState.isDirty) {
@@ -427,17 +445,19 @@ export function FactoryShowcaseEditPage() {
 
   /* content_type is read-only on edit — derived from loaded data */
   const titleValue = form.watch('title');
-  const canPublish = (titleValue ?? '').trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
+  const canPublish =
+    (titleValue ?? '').trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
 
   if (!id || fid == null) return null;
   if (isError) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-sm text-red-600 mb-3">โหลดไม่สำเร็จ</p>
-        <Button variant="unstyled"
-          type="button"
+      <div className='py-12 text-center'>
+        <p className='text-sm text-red-600 mb-3'>โหลดไม่สำเร็จ</p>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => void refetch()}
-          className="px-4 py-2 rounded-xl border text-sm"
+          className='px-4 py-2 rounded-xl border text-sm'
         >
           ลองใหม่
         </Button>
@@ -447,14 +467,14 @@ export function FactoryShowcaseEditPage() {
   if (isLoading) return <FormSkeleton sections={4} />;
 
   return (
-    <form className="max-w-6xl mx-auto w-full min-w-0 pb-28" style={{ backgroundColor: '#F8F6FA' }}>
-
+    <form className='max-w-6xl mx-auto w-full min-w-0 pb-28' style={{ backgroundColor: '#F8F6FA' }}>
       {/* ── Sticky top bar ── */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3">
-        <Button variant="unstyled"
-          type="button"
+      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3'>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={onBack}
-          className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+          className='flex items-center gap-1.5 text-sm font-medium transition-colors'
           style={{ color: '#4F46E5' }}
         >
           <ChevronLeft size={18} /> กลับ
@@ -463,22 +483,23 @@ export function FactoryShowcaseEditPage() {
         {/* Fixed type badge — not editable */}
         <ShowcaseTypeBadge type={contentType} />
 
-        <Button variant="unstyled"
-          type="button"
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => void save('DR')}
           disabled={saving}
-          className="text-sm font-semibold disabled:opacity-40 transition-colors whitespace-nowrap"
+          className='text-sm font-semibold disabled:opacity-40 transition-colors whitespace-nowrap'
           style={{ color: '#4F46E5' }}
         >
           บันทึกร่าง
         </Button>
       </div>
 
-      <div className="px-4 py-5">
+      <div className='px-4 py-5'>
         <ImageCropModal
           open={cropFile != null}
           file={cropFile}
-          title="จัดตำแหน่งภาพ Showcase"
+          title='จัดตำแหน่งภาพ Showcase'
           // Lock crop frame to 4:3 for showcase uploader/editor consistency.
           aspect={4 / 3}
           outputWidth={1600}
@@ -500,12 +521,14 @@ export function FactoryShowcaseEditPage() {
           }}
         />
         {error ? (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
+          <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
+            {error}
+          </p>
         ) : null}
 
-        <div className="space-y-5 min-w-0">
-            {/* Cover (PD/PM only) sits LEFT; title + main info sit RIGHT on xl. */}
-            <div className="flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5">
+        <div className='space-y-5 min-w-0'>
+          {/* Cover (PD/PM only) sits LEFT; title + main info sit RIGHT on xl. */}
+          <div className='flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5'>
             {contentType !== 'ID' ? (
               <ShowcaseImageManager
                 imageUrls={imageUrls}
@@ -516,222 +539,254 @@ export function FactoryShowcaseEditPage() {
             ) : null}
 
             {/* Right column: title + main info (sits beside cover on xl) */}
-            <div className="flex-1 min-w-0 space-y-5">
-            {/* ── Title & excerpt (card) ── */}
-            <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4">
-              <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
-              <input
-                className="w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow"
-                placeholder="ชื่อ *"
-                {...form.register('title', { required: true })}
-              />
-              {contentType !== 'ID' ? (
+            <div className='flex-1 min-w-0 space-y-5'>
+              {/* ── Title & excerpt (card) ── */}
+              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
+                <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
                 <input
-                  className="w-full text-sm text-gray-500 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow"
-                  placeholder="คำโปรย (excerpt) — ประโยคสั้นๆ บอกจุดเด่น"
-                  {...form.register('excerpt')}
+                  className='w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
+                  placeholder='ชื่อ *'
+                  {...form.register('title', { required: true })}
                 />
-              ) : null}
-            </section>
-
-            <ShowcaseCategoryFields
-              contentType={contentType}
-              idScope={idScope}
-              pmScope={pmScope}
-              onIdScopeChange={(scope) => {
-                setIdScope(scope);
-                form.setValue('category_id', null, { shouldDirty: true });
-                form.setValue('sub_category_id', null, { shouldDirty: true });
-              }}
-              onPmScopeChange={(scope) => {
-                setPmScope(scope);
-                form.setValue('category_id', null, { shouldDirty: true });
-                form.setValue('sub_category_id', null, { shouldDirty: true });
-              }}
-              categoryValue={selectedCategoryId}
-              subCategoryValue={form.watch('sub_category_id')}
-              onCategoryChange={(value) => {
-                form.setValue('category_id', value, { shouldDirty: true });
-                form.setValue('sub_category_id', null, { shouldDirty: true });
-              }}
-              onSubCategoryChange={(value) => form.setValue('sub_category_id', value, { shouldDirty: true })}
-              categoriesQ={categoriesQ}
-              subOptions={subOptions}
-              subCategoriesLoading={subsResult.isLoading}
-              statusValue={form.watch('status')}
-              onStatusChange={(value: ShowcaseStatus) => form.setValue('status', value, { shouldDirty: true })}
-            />
-
-            <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4">
-          {/* Row 2: MOQ | Lead time | Price (PD/PM only) */}
-          {contentType !== 'ID' && (
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block">
-                <span className="text-xs text-gray-500 mb-1.5 block">MOQ</span>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
-                  {...form.register('moq', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-gray-500 mb-1.5 block">Lead time (วัน)</span>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
-                  {...form.register('lead_time_days', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-gray-500 mb-1.5 block">ราคา (฿)</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
-                  {...form.register('base_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-                />
-              </label>
-            </div>
-          )}
-
-          {/* Row 3: Promo price | Start date | End date (PM only) */}
-          {contentType === 'PM' && (
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block">
-                <span className="text-xs text-gray-500 mb-1.5 block">ราคาโปรโมชัน (฿)</span>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
-                  {...form.register('promo_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
-                  placeholder="0.00"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-gray-500 mb-1.5 block">วันที่เริ่มโปร</span>
-                <input
-                  type="date"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
-                  {...form.register('start_date')}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-gray-500 mb-1.5 block">วันที่สิ้นสุดโปร</span>
-                <input
-                  type="date"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none"
-                  {...form.register('end_date')}
-                />
-              </label>
-            </div>
-          )}
-            </section>
-            </div>
-            </div>
-
-            {/* ── Section card: รายละเอียด (full width below cover/info) ── */}
-            <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">รายละเอียด</p>
-              <Controller
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <MarkdownEditor
-                    label="รายละเอียด (Markdown)"
-                    value={field.value ?? ''}
-                    onChange={field.onChange}
-                    minHeight={300}
-                    disabled={form.getValues('status') === 'AR'}
+                {contentType !== 'ID' ? (
+                  <input
+                    className='w-full text-sm text-gray-500 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
+                    placeholder='คำโปรย (excerpt) — ประโยคสั้นๆ บอกจุดเด่น'
+                    {...form.register('excerpt')}
                   />
-                )}
+                ) : null}
+              </section>
+
+              <ShowcaseCategoryFields
+                contentType={contentType}
+                idScope={idScope}
+                pmScope={pmScope}
+                onIdScopeChange={(scope) => {
+                  setIdScope(scope);
+                  form.setValue('category_id', null, { shouldDirty: true });
+                  form.setValue('sub_category_id', null, { shouldDirty: true });
+                }}
+                onPmScopeChange={(scope) => {
+                  setPmScope(scope);
+                  form.setValue('category_id', null, { shouldDirty: true });
+                  form.setValue('sub_category_id', null, { shouldDirty: true });
+                }}
+                categoryValue={selectedCategoryId}
+                subCategoryValue={form.watch('sub_category_id')}
+                onCategoryChange={(value) => {
+                  form.setValue('category_id', value, { shouldDirty: true });
+                  form.setValue('sub_category_id', null, { shouldDirty: true });
+                }}
+                onSubCategoryChange={(value) =>
+                  form.setValue('sub_category_id', value, { shouldDirty: true })
+                }
+                categoriesQ={categoriesQ}
+                subOptions={subOptions}
+                subCategoriesLoading={subsResult.isLoading}
+                statusValue={form.watch('status')}
+                onStatusChange={(value: ShowcaseStatus) =>
+                  form.setValue('status', value, { shouldDirty: true })
+                }
               />
-            </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <p className="text-sm font-semibold text-gray-900">การเผยแพร่</p>
-                <p className="mt-1 text-xs text-gray-500">
-                  อัปเดตข้อมูลแล้วกดเผยแพร่เพื่อให้หน้าลูกค้าเห็นข้อมูลล่าสุด
-                </p>
-                <div className="mt-4 space-y-2">
-                  <Button variant="unstyled"
-                    type="button"
-                    onClick={() => void save('DR')}
-                    disabled={saving}
-                    className="w-full py-2.5 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors"
-                    style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
-                  >
-                    บันทึกร่าง
-                  </Button>
-                  <Button variant="unstyled"
-                    type="button"
-                    onClick={() => void save('AC')}
-                    disabled={saving || !canPublish}
-                    className="w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm"
-                    style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
-                  >
-                    เผยแพร่
-                  </Button>
-                </div>
+              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
+                {/* Row 2: MOQ | Lead time | Price (PD/PM only) */}
+                {contentType !== 'ID' && (
+                  <div className='grid gap-3 sm:grid-cols-3'>
+                    <label className='block'>
+                      <span className='text-xs text-gray-500 mb-1.5 block'>MOQ</span>
+                      <input
+                        type='number'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        {...form.register('moq', {
+                          setValueAs: (v) => (v === '' ? null : Number(v)),
+                        })}
+                      />
+                    </label>
+                    <label className='block'>
+                      <span className='text-xs text-gray-500 mb-1.5 block'>Lead time (วัน)</span>
+                      <input
+                        type='number'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        {...form.register('lead_time_days', {
+                          setValueAs: (v) => (v === '' ? null : Number(v)),
+                        })}
+                      />
+                    </label>
+                    <label className='block'>
+                      <span className='text-xs text-gray-500 mb-1.5 block'>ราคา (฿)</span>
+                      <input
+                        type='number'
+                        step='0.01'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        {...form.register('base_price', {
+                          setValueAs: (v) => (v === '' ? null : Number(v)),
+                        })}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {/* Row 3: Promo price | Start date | End date (PM only) */}
+                {contentType === 'PM' && (
+                  <div className='grid gap-3 sm:grid-cols-3'>
+                    <label className='block'>
+                      <span className='text-xs text-gray-500 mb-1.5 block'>ราคาโปรโมชัน (฿)</span>
+                      <input
+                        type='number'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        {...form.register('promo_price', {
+                          setValueAs: (v) => (v === '' ? null : Number(v)),
+                        })}
+                        placeholder='0.00'
+                      />
+                    </label>
+                    <label className='block'>
+                      <span className='text-xs text-gray-500 mb-1.5 block'>วันที่เริ่มโปร</span>
+                      <input
+                        type='date'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        {...form.register('start_date')}
+                      />
+                    </label>
+                    <label className='block'>
+                      <span className='text-xs text-gray-500 mb-1.5 block'>วันที่สิ้นสุดโปร</span>
+                      <input
+                        type='date'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        {...form.register('end_date')}
+                      />
+                    </label>
+                  </div>
+                )}
+              </section>
+            </div>
+          </div>
+
+          {/* ── Section card: รายละเอียด (full width below cover/info) ── */}
+          <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
+            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
+              รายละเอียด
+            </p>
+            <Controller
+              control={form.control}
+              name='content'
+              render={({ field }) => (
+                <MarkdownEditor
+                  label='รายละเอียด (Markdown)'
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  minHeight={300}
+                  disabled={form.getValues('status') === 'AR'}
+                />
+              )}
+            />
+          </section>
+
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+            <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm'>
+              <p className='text-sm font-semibold text-gray-900'>การเผยแพร่</p>
+              <p className='mt-1 text-xs text-gray-500'>
+                อัปเดตข้อมูลแล้วกดเผยแพร่เพื่อให้หน้าลูกค้าเห็นข้อมูลล่าสุด
+              </p>
+              <div className='mt-4 space-y-2'>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => void save('DR')}
+                  disabled={saving}
+                  className='w-full py-2.5 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors'
+                  style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
+                >
+                  บันทึกร่าง
+                </Button>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => void save('AC')}
+                  disabled={saving || !canPublish}
+                  className='w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
+                  style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
+                >
+                  เผยแพร่
+                </Button>
               </div>
+            </div>
 
-              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">สถานะฟอร์ม</p>
-                <div className="mt-3 space-y-2 text-sm text-gray-700">
-                  <div className="flex items-center justify-between">
-                    <span>ชื่อรายการ</span>
-                    <span className={(titleValue ?? '').trim() ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
-                      {(titleValue ?? '').trim() ? 'พร้อม' : 'ยังไม่ครบ'}
+            <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm'>
+              <p className='text-xs font-semibold text-gray-400 uppercase tracking-wide'>
+                สถานะฟอร์ม
+              </p>
+              <div className='mt-3 space-y-2 text-sm text-gray-700'>
+                <div className='flex items-center justify-between'>
+                  <span>ชื่อรายการ</span>
+                  <span
+                    className={
+                      (titleValue ?? '').trim()
+                        ? 'text-emerald-600 font-semibold'
+                        : 'text-amber-600 font-semibold'
+                    }
+                  >
+                    {(titleValue ?? '').trim() ? 'พร้อม' : 'ยังไม่ครบ'}
+                  </span>
+                </div>
+                {contentType !== 'ID' ? (
+                  <div className='flex items-center justify-between'>
+                    <span>ภาพปก</span>
+                    <span
+                      className={
+                        imageUrls.length > 0
+                          ? 'text-emerald-600 font-semibold'
+                          : 'text-amber-600 font-semibold'
+                      }
+                    >
+                      {imageUrls.length > 0 ? `${imageUrls.length}/5` : 'ยังไม่เพิ่ม'}
                     </span>
                   </div>
-                  {contentType !== 'ID' ? (
-                    <div className="flex items-center justify-between">
-                      <span>ภาพปก</span>
-                      <span className={imageUrls.length > 0 ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
-                        {imageUrls.length > 0 ? `${imageUrls.length}/5` : 'ยังไม่เพิ่ม'}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
+                ) : null}
               </div>
             </div>
+          </div>
 
-            {contentType === 'ID' ? (
-              <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3">
-                <label className="block text-sm font-semibold text-[#2E2252]">
-                  อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
-                </label>
-                <p className="text-xs text-gray-500">
-                  เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
-                </p>
-                <RelatedShowcasePicker
-                  factoryId={fid}
-                  value={selectedShowcaseIds}
-                  onChange={setSelectedShowcaseIds}
-                  max={5}
-                  disabled={saving}
-                  errorText={linkedShowcaseError}
-                />
-              </section>
-            ) : null}
+          {contentType === 'ID' ? (
+            <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
+              <label className='block text-sm font-semibold text-[#2E2252]'>
+                อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
+              </label>
+              <p className='text-xs text-gray-500'>
+                เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
+              </p>
+              <RelatedShowcasePicker
+                factoryId={fid}
+                value={selectedShowcaseIds}
+                onChange={setSelectedShowcaseIds}
+                max={5}
+                disabled={saving}
+                errorText={linkedShowcaseError}
+              />
+            </section>
+          ) : null}
         </div>
       </div>
 
       {/* ── Sticky bottom bar ── */}
-      <div className="sticky xl:hidden bottom-0 z-10 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
-        <Button variant="unstyled"
-          type="button"
+      <div className='sticky xl:hidden bottom-0 z-10 bg-white border-t border-gray-100 px-4 py-3 flex gap-3'>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => void save('DR')}
           disabled={saving}
-          className="flex-1 py-3 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors"
+          className='flex-1 py-3 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors'
           style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
         >
           บันทึกร่าง
         </Button>
-        <Button variant="unstyled"
-          type="button"
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => void save('AC')}
           disabled={saving || !canPublish}
-          className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm"
+          className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
           style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
         >
           เผยแพร่

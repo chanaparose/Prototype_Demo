@@ -8,13 +8,10 @@
  */
 import React from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
-import { addressesApi, masterApi } from '../../../services/api';
-import {
-  AddressFormModal,
-  type AddressFormPayload,
-} from '../../../components/factory/AddressFormModal';
-import type { RFQDraft } from '../useRFQDraft';
-import { Button } from '../../../components/ui/button';
+import { addressesApi, masterApi } from '@/services/api';
+import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
+import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
+import { Button } from '@/components/ui/button';
 
 /* ── Types ── */
 type Address = {
@@ -105,7 +102,8 @@ export function Step3Commercial({ draft, setDraft }: Props) {
     });
 
     // โหลด shipping methods
-    void masterApi.shippingMethods()
+    void masterApi
+      .shippingMethods()
       .then((raw) => {
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         const mapped: ShippingMethod[] = arr
@@ -116,7 +114,9 @@ export function Step3Commercial({ draft, setDraft }: Props) {
           .filter((m) => m.id > 0 && m.name);
         if (mapped.length > 0) setShippingMethods(mapped);
       })
-      .catch(() => {/* ใช้ fallback */});
+      .catch(() => {
+        /* ใช้ fallback */
+      });
   }, [loadAddresses]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── เพิ่มที่อยู่ใหม่ ── */
@@ -143,34 +143,34 @@ export function Step3Commercial({ draft, setDraft }: Props) {
 
   /* ── Render ── */
   return (
-    <div className="space-y-5">
-
+    <div className='space-y-5'>
       {/* ══ 1. ที่อยู่จัดส่ง ══ */}
       <div>
-        <p className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5">
-          <MapPin size={14} className="text-violet-500" />
-          ที่อยู่จัดส่งสินค้า <span className="text-red-400 ml-0.5">*</span>
+        <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
+          <MapPin size={14} className='text-violet-500' />
+          ที่อยู่จัดส่งสินค้า <span className='text-red-400 ml-0.5'>*</span>
         </p>
 
         {addrLoading ? (
-          <div className="space-y-2">
-            <div className="h-14 rounded-xl bg-gray-100 animate-pulse" />
-            <div className="h-14 rounded-xl bg-gray-100 animate-pulse opacity-50" />
+          <div className='space-y-2'>
+            <div className='h-14 rounded-xl bg-gray-100 animate-pulse' />
+            <div className='h-14 rounded-xl bg-gray-100 animate-pulse opacity-50' />
           </div>
         ) : addresses.length === 0 ? (
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => setModalOpen(true)}
-            className="w-full border-2 border-dashed border-gray-200 rounded-xl p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all"
+            className='w-full border-2 border-dashed border-gray-200 rounded-xl p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all'
           >
-            <div className="w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center">
-              <Plus size={20} className="text-violet-500" />
+            <div className='w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center'>
+              <Plus size={20} className='text-violet-500' />
             </div>
-            <span className="text-[13px] font-semibold text-gray-600">เพิ่มที่อยู่จัดส่ง</span>
-            <span className="text-[10px] text-gray-400">จำเป็นต้องมีที่อยู่สำหรับจัดส่งสินค้า</span>
+            <span className='text-[13px] font-semibold text-gray-600'>เพิ่มที่อยู่จัดส่ง</span>
+            <span className='text-[10px] text-gray-400'>จำเป็นต้องมีที่อยู่สำหรับจัดส่งสินค้า</span>
           </Button>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className='flex flex-col gap-2'>
             {addresses.map((addr) => {
               const active = draft.delivery_address_id === addr.id;
               const label = [
@@ -183,9 +183,10 @@ export function Step3Commercial({ draft, setDraft }: Props) {
                 .filter(Boolean)
                 .join(', ');
               return (
-                <Button variant="unstyled"
+                <Button
+                  variant='unstyled'
                   key={addr.id}
-                  type="button"
+                  type='button'
                   onClick={() => setDraft({ delivery_address_id: addr.id })}
                   className={`w-full text-left p-3.5 rounded-xl border-2 transition-all ${
                     active
@@ -193,30 +194,35 @@ export function Step3Commercial({ draft, setDraft }: Props) {
                       : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 active:scale-[0.98]'
                   }`}
                 >
-                  <div className="flex items-start gap-2.5">
+                  <div className='flex items-start gap-2.5'>
                     <MapPin
                       size={15}
                       className={`shrink-0 mt-0.5 ${active ? 'text-violet-500' : 'text-gray-400'}`}
                     />
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-[12px] leading-relaxed ${active ? 'text-violet-800 font-semibold' : 'text-gray-600'}`}>
+                    <div className='flex-1 min-w-0'>
+                      <p
+                        className={`text-[12px] leading-relaxed ${active ? 'text-violet-800 font-semibold' : 'text-gray-600'}`}
+                      >
                         {label}
                       </p>
                       {addr.isDefault && (
-                        <span className="inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">
+                        <span className='inline-block mt-1 text-[9px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600'>
                           ค่าเริ่มต้น
                         </span>
                       )}
                     </div>
-                    {active && <CheckCircle2 size={17} className="text-violet-500 shrink-0 mt-0.5" />}
+                    {active && (
+                      <CheckCircle2 size={17} className='text-violet-500 shrink-0 mt-0.5' />
+                    )}
                   </div>
                 </Button>
               );
             })}
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => setModalOpen(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all"
+              className='w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all'
             >
               <Plus size={14} />
               เพิ่มที่อยู่ใหม่
@@ -227,20 +233,21 @@ export function Step3Commercial({ draft, setDraft }: Props) {
 
       {/* ══ 2. วิธีจัดส่ง ══ */}
       <div>
-        <p className="text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5">
-          <Truck size={14} className="text-violet-500" />
-          วิธีจัดส่งที่ต้องการ <span className="text-red-400 ml-0.5">*</span>
+        <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
+          <Truck size={14} className='text-violet-500' />
+          วิธีจัดส่งที่ต้องการ <span className='text-red-400 ml-0.5'>*</span>
         </p>
-        <p className="text-[11px] text-gray-400 mb-2">
+        <p className='text-[11px] text-gray-400 mb-2'>
           โรงงานจะเห็นข้อมูลนี้เพื่อออกใบเสนอราคาที่ถูกต้อง
         </p>
-        <div className="flex flex-col gap-1.5">
+        <div className='flex flex-col gap-1.5'>
           {shippingMethods.map((method) => {
             const active = draft.shipping_method_id === method.id;
             return (
-              <Button variant="unstyled"
+              <Button
+                variant='unstyled'
                 key={method.id}
-                type="button"
+                type='button'
                 onClick={() => setDraft({ shipping_method_id: method.id })}
                 className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
                   active
@@ -248,14 +255,18 @@ export function Step3Commercial({ draft, setDraft }: Props) {
                     : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 active:scale-[0.98]'
                 }`}
               >
-                <span className="text-lg leading-none shrink-0">
+                <span className='text-lg leading-none shrink-0'>
                   {SHIPPING_ICONS[method.id] ?? '📦'}
                 </span>
-                <span className={`text-[13px] font-medium flex-1 ${active ? 'text-violet-800' : 'text-gray-600'}`}>
+                <span
+                  className={`text-[13px] font-medium flex-1 ${active ? 'text-violet-800' : 'text-gray-600'}`}
+                >
                   {method.name}
                 </span>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-violet-500' : 'border-gray-300'}`}>
-                  {active && <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />}
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-violet-500' : 'border-gray-300'}`}
+                >
+                  {active && <div className='w-2.5 h-2.5 rounded-full bg-violet-500' />}
                 </div>
               </Button>
             );
@@ -265,25 +276,25 @@ export function Step3Commercial({ draft, setDraft }: Props) {
 
       {/* ══ 3. Lead time (optional) ══ */}
       <div>
-        <p className="text-[13px] font-bold text-gray-700 mb-2">
-          ระยะเวลาผลิตที่ต้องการ (วัน)
-        </p>
+        <p className='text-[13px] font-bold text-gray-700 mb-2'>ระยะเวลาผลิตที่ต้องการ (วัน)</p>
         <input
-          type="number"
+          type='number'
           min={1}
           value={draft.target_lead_time_days ?? ''}
           onChange={(e) => setDraft({ target_lead_time_days: Number(e.target.value) || undefined })}
-          placeholder="ระยะเวลาผลิตที่ต้องการ (วัน)"
-          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+          placeholder='ระยะเวลาผลิตที่ต้องการ (วัน)'
+          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
         />
       </div>
 
       {/* ── AddressFormModal ── */}
       <AddressFormModal
         open={modalOpen}
-        mode="create"
+        mode='create'
         saving={saving}
-        onClose={() => { if (!saving) setModalOpen(false); }}
+        onClose={() => {
+          if (!saving) setModalOpen(false);
+        }}
         onSubmit={handleAddAddress}
       />
     </div>

@@ -8,9 +8,9 @@ import {
   type LoginPayload,
   type RegisterCustomerPayload,
   type RegisterFactoryPayload,
-} from '../services/api';
-import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '../utils/tourMocks';
-import type { User } from './types';
+} from '@/services/api';
+import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
+import type { User } from '@/stores/types';
 
 const logAuthDebug = (...args: unknown[]) => {
   if (import.meta.env.DEV) {
@@ -58,7 +58,10 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
     fetchUser();
   } else {
     try {
-      if (sessionStorage.getItem('auth_token_expired') === '1' && window.location.pathname !== '/login') {
+      if (
+        sessionStorage.getItem('auth_token_expired') === '1' &&
+        window.location.pathname !== '/login'
+      ) {
         sessionStorage.removeItem('auth_token_expired');
         window.location.href = '/login';
       }

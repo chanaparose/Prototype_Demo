@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RFQDraft } from '../useRFQDraft';
+import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 
 type SubCategory = {
   id: number;
@@ -32,19 +32,19 @@ export function Step1Basic({
         : 'รายละเอียดงาน *';
   const showSubCategory = mode !== 'MS';
   return (
-    <div className="space-y-3">
+    <div className='space-y-3'>
       <input
         value={draft.title}
         onChange={(e) => setDraft({ title: e.target.value })}
-        placeholder="ชื่อสินค้า *"
-        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        placeholder='ชื่อสินค้า *'
+        className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
       <textarea
         value={draft.description}
         onChange={(e) => setDraft({ description: e.target.value })}
         placeholder={descriptionPlaceholder}
         rows={4}
-        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
       <div className={`${showSubCategory ? 'grid grid-cols-3' : 'grid grid-cols-2'} gap-2`}>
         <select
@@ -55,9 +55,9 @@ export function Step1Basic({
               sub_category_id: undefined,
             })
           }
-          className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+          className='rounded-xl border border-gray-200 px-3 py-2 text-sm'
         >
-          <option value="">หมวดหมู่ *</option>
+          <option value=''>หมวดหมู่ *</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -69,9 +69,9 @@ export function Step1Basic({
             value={draft.sub_category_id ?? ''}
             onChange={(e) => setDraft({ sub_category_id: Number(e.target.value) || undefined })}
             disabled={!draft.category_id || subCategoriesLoading}
-            className="rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-100"
+            className='rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-100'
           >
-            <option value="">
+            <option value=''>
               {subCategoriesLoading ? 'กำลังโหลดหมวดย่อย...' : 'หมวดย่อย (ไม่บังคับ)'}
             </option>
             {subCategories.map((s) => (
@@ -83,21 +83,21 @@ export function Step1Basic({
           </select>
         ) : null}
         <input
-          type="number"
+          type='number'
           min={1}
           value={draft.qty ?? ''}
           onChange={(e) => setDraft({ qty: Number(e.target.value) || null })}
-          placeholder="จำนวน *"
-          className="rounded-xl border border-gray-200 px-3 py-2 text-sm"
+          placeholder='จำนวน *'
+          className='rounded-xl border border-gray-200 px-3 py-2 text-sm'
         />
       </div>
       <input
-        type="number"
+        type='number'
         min={0}
         value={draft.target_price ?? ''}
         onChange={(e) => setDraft({ target_price: Number(e.target.value) || undefined })}
-        placeholder="งบประมาณรวม"
-        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        placeholder='งบประมาณรวม'
+        className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
     </div>
   );

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Search, RefreshCw } from 'lucide-react';
-import { ChatPartyHeader } from '../../components/features/chat/ChatPartyHeader';
-import type { UiConversation } from './types';
-import { formatConversationTime } from './types';
-import { Button } from '../../components/ui/button';
+import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
+import type { UiConversation } from '@/pages/messages/types';
+import { formatConversationTime } from '@/pages/messages/types';
+import { Button } from '@/components/ui/button';
 
 type MessagesMobileProps = {
   searchText: string;
@@ -18,17 +18,17 @@ type MessagesMobileProps = {
 
 function ListSkeleton() {
   return (
-    <div className="space-y-3">
+    <div className='space-y-3'>
       {[0, 1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="bg-white rounded-2xl p-4 border border-gray-50 animate-pulse flex gap-3"
+          className='bg-white rounded-2xl p-4 border border-gray-50 animate-pulse flex gap-3'
         >
-          <div className="w-12 h-12 rounded-2xl bg-gray-200 shrink-0" />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
-            <div className="h-3 bg-gray-100 rounded w-1/3" />
-            <div className="h-3 bg-gray-100 rounded w-4/5" />
+          <div className='w-12 h-12 rounded-2xl bg-gray-200 shrink-0' />
+          <div className='flex-1 space-y-2'>
+            <div className='h-4 bg-gray-200 rounded w-1/2' />
+            <div className='h-3 bg-gray-100 rounded w-1/3' />
+            <div className='h-3 bg-gray-100 rounded w-4/5' />
           </div>
         </div>
       ))}
@@ -48,18 +48,18 @@ export function MessagesMobile({
   const navigate = useNavigate();
 
   return (
-    <div className="px-4 pt-5 pb-4">
+    <div className='px-4 pt-5 pb-4'>
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className='flex items-center justify-between mb-5'>
         <div>
-          <p className="text-[10px] uppercase tracking-wider" style={{ color: '#7A4B94' }}>สื่อสาร</p>
-          <div className="flex items-center gap-2">
-            <h1 style={{ fontWeight: 700, color: '#2E2252' }}>
-              ข้อความ
-            </h1>
+          <p className='text-[10px] uppercase tracking-wider' style={{ color: '#7A4B94' }}>
+            สื่อสาร
+          </p>
+          <div className='flex items-center gap-2'>
+            <h1 style={{ fontWeight: 700, color: '#2E2252' }}>ข้อความ</h1>
             {totalUnread > 0 && (
               <span
-                className="w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px]"
+                className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px]'
                 style={{ background: '#E38844', fontWeight: 700 }}
               >
                 {totalUnread}
@@ -70,26 +70,27 @@ export function MessagesMobile({
       </div>
 
       {/* Search */}
-      <div className="flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 mb-5">
-        <Search size={18} className="text-gray-400 shrink-0" />
+      <div className='flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 mb-5'>
+        <Search size={18} className='text-gray-400 shrink-0' />
         <input
-          type="text"
+          type='text'
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          placeholder="ค้นหาการสนทนา..."
-          className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400"
+          placeholder='ค้นหาการสนทนา...'
+          className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
         />
       </div>
 
       {loading ? (
         <ListSkeleton />
       ) : error ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-          <p className="text-sm text-gray-600 px-4">{error}</p>
-          <Button variant="unstyled"
-            type="button"
+        <div className='flex flex-col items-center justify-center py-12 text-center gap-3'>
+          <p className='text-sm text-gray-600 px-4'>{error}</p>
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => void onReload()}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+            className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white'
             style={{ background: '#7A4B94' }}
           >
             <RefreshCw size={16} />
@@ -99,7 +100,7 @@ export function MessagesMobile({
       ) : filtered.length === 0 ? (
         <MobileEmptyState />
       ) : (
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {filtered.map((conv) => (
             <ConversationCard
               key={conv.id}
@@ -113,16 +114,10 @@ export function MessagesMobile({
   );
 }
 
-function ConversationCard({
-  conv,
-  onClick,
-}: {
-  conv: UiConversation;
-  onClick: () => void;
-}) {
+function ConversationCard({ conv, onClick }: { conv: UiConversation; onClick: () => void }) {
   return (
     <div
-      role="button"
+      role='button'
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => {
@@ -131,39 +126,44 @@ function ConversationCard({
           onClick();
         }
       }}
-      className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98]"
+      className='bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98]'
     >
-      <div className="space-y-1.5">
+      <div className='space-y-1.5'>
         <ChatPartyHeader
           view={conv.view}
-          density="row"
+          density='row'
           trailing={
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-[10px] text-gray-400">
+            <div className='flex flex-col items-end gap-1'>
+              <span className='text-[10px] text-gray-400'>
                 {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
               </span>
               {conv.unread > 0 ? (
-                <span className="px-1.5 py-0.5 rounded-full bg-[#A238FF] text-white text-[10px]">
+                <span className='px-1.5 py-0.5 rounded-full bg-[#A238FF] text-white text-[10px]'>
                   {conv.unread}
                 </span>
               ) : null}
             </div>
           }
         />
-        <div className="pl-[56px]">
-          <p className="text-[10px] mb-1 truncate" style={{ color: '#7A4B94' }}>{conv.rfqName}</p>
-          <p className="text-xs truncate max-w-[220px]" style={{ color: conv.unread > 0 ? '#374151' : '#9CA3AF' }}>
+        <div className='pl-[56px]'>
+          <p className='text-[10px] mb-1 truncate' style={{ color: '#7A4B94' }}>
+            {conv.rfqName}
+          </p>
+          <p
+            className='text-xs truncate max-w-[220px]'
+            style={{ color: conv.unread > 0 ? '#374151' : '#9CA3AF' }}
+          >
             {conv.lastMessage}
           </p>
         </div>
       </div>
       {conv.hasQuote && (
         <div
-          className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl"
+          className='mt-3 flex items-center gap-2 px-3 py-2 rounded-xl'
           style={{ background: '#FFF4E8' }}
         >
-          <span className="text-sm">💰</span>
-          <span className="text-xs" style={{ color: '#E38844', fontWeight: 600 }}>
+          <span className='text-sm'>💰</span>
+          <span className='text-xs' style={{ color: '#E38844', fontWeight: 600 }}>
             มีใบเสนอราคาใหม่ — กดเพื่อดู
           </span>
         </div>
@@ -174,19 +174,19 @@ function ConversationCard({
 
 function MobileEmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className='flex flex-col items-center justify-center py-16 text-center'>
       <div
-        className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4"
+        className='w-20 h-20 rounded-3xl flex items-center justify-center mb-4'
         style={{ background: 'linear-gradient(135deg, #F8F6FA, rgba(122,75,148,0.12))' }}
       >
-        <span className="text-3xl" style={{ color: '#7A4B94' }}>
+        <span className='text-3xl' style={{ color: '#7A4B94' }}>
           💬
         </span>
       </div>
-      <p className="mb-1" style={{ fontWeight: 600, color: '#2E2252' }}>
+      <p className='mb-1' style={{ fontWeight: 600, color: '#2E2252' }}>
         ยังไม่มีข้อความ
       </p>
-      <p className="text-sm text-gray-500 max-w-[200px]">
+      <p className='text-sm text-gray-500 max-w-[200px]'>
         ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ
       </p>
     </div>

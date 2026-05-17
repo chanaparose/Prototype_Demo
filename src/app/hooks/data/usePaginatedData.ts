@@ -27,7 +27,7 @@ interface UsePaginatedDataReturn<T> extends PaginationState {
 export function usePaginatedData<T>(
   fetcher: (page: number, limit: number) => Promise<{ items: T[]; total: number }>,
   initialPage = 1,
-  initialLimit = 20
+  initialLimit = 20,
 ): UsePaginatedDataReturn<T> {
   const [data, setData] = useState<T[]>([]);
   const [page, setPage] = useState(initialPage);

@@ -1,4 +1,4 @@
-export { useFetchData } from './useFetchData';
-export { usePaginatedData } from './usePaginatedData';
-export { useDebounceSearch } from './useDebounceSearch';
-export { useInfiniteScroll } from './useInfiniteScroll';
+export { useFetchData } from '@/hooks/data/useFetchData';
+export { usePaginatedData } from '@/hooks/data/usePaginatedData';
+export { useDebounceSearch } from '@/hooks/data/useDebounceSearch';
+export { useInfiniteScroll } from '@/hooks/data/useInfiniteScroll';

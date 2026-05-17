@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router';
 import { Lock } from 'lucide-react';
-import { useAuth } from '../../stores';
+import { useAuth } from '@/stores';
 
 export type FactoryVerifyStatus = 'AP' | 'PD' | 'RJ';
 
@@ -29,20 +29,20 @@ export function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
   ).trim();
 
   return (
-    <div className="max-w-lg mx-auto py-10 sm:py-14 px-4">
-      <div className="rounded-2xl border border-violet-200 bg-violet-50/70 p-6 sm:p-8 text-center shadow-sm">
-        <Lock className="w-10 h-10 mx-auto text-violet-600 mb-3" strokeWidth={2} aria-hidden />
-        <h2 className="text-lg font-bold text-gray-900 mb-2">
+    <div className='max-w-lg mx-auto py-10 sm:py-14 px-4'>
+      <div className='rounded-2xl border border-violet-200 bg-violet-50/70 p-6 sm:p-8 text-center shadow-sm'>
+        <Lock className='w-10 h-10 mx-auto text-violet-600 mb-3' strokeWidth={2} aria-hidden />
+        <h2 className='text-lg font-bold text-gray-900 mb-2'>
           {status === 'RJ' ? 'บัญชีโรงงานไม่ผ่านการตรวจสอบ' : 'โรงงานอยู่ระหว่างตรวจสอบ'}
         </h2>
-        <p className="text-sm text-gray-600 leading-relaxed mb-5">
+        <p className='text-sm text-gray-600 leading-relaxed mb-5'>
           {status === 'RJ'
             ? reason || 'กรุณาปรับข้อมูลและส่งตรวจสอบใหม่จากหน้าโปรไฟล์'
             : 'เมื่อแอดมินอนุมัติแล้ว คุณจะใช้งาน Showcase, กระดาน RFQ, ใบเสนอราคา และออเดอร์ได้'}
         </p>
         <Link
-          to="/factory/profile"
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-95"
+          to='/factory/profile'
+          className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-95'
           style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
         >
           {status === 'RJ' ? 'แก้ไขและส่งใหม่' : 'ไปที่โปรไฟล์'}

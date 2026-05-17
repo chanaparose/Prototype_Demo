@@ -18,16 +18,11 @@ interface UseAccordionReturn {
  */
 export function useAccordion(
   multiExpand = true,
-  defaultExpanded: string[] = []
+  defaultExpanded: string[] = [],
 ): UseAccordionReturn {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(
-    new Set(defaultExpanded)
-  );
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(defaultExpanded));
 
-  const isExpanded = useCallback(
-    (itemId: string) => expandedItems.has(itemId),
-    [expandedItems]
-  );
+  const isExpanded = useCallback((itemId: string) => expandedItems.has(itemId), [expandedItems]);
 
   const toggleItem = useCallback(
     (itemId: string) => {
@@ -42,7 +37,7 @@ export function useAccordion(
         return next;
       });
     },
-    [multiExpand]
+    [multiExpand],
   );
 
   const expandItem = useCallback((itemId: string) => {

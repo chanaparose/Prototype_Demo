@@ -1,20 +1,30 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import { useData } from '../stores';
+import { useData } from '@/stores';
 import type {
   Factory,
   FactoryProfile,
   FactoryReview,
   FactoryShowcase,
   IdeaArticle,
-} from '../stores';
-import type { TabId } from '../components/features/factory-profile';
-import { conversationsApi, factoriesApi, frontendApi, reviewsApi, showcasesApi } from '../services/api';
-import { normalizeReviewImageUrls } from '../utils/reviewImageUrls';
-import { normShowcase } from './useShowcases';
-import { pickFactoryCoverUrl } from '../utils/normalizeFactoryRow';
+} from '@/stores';
+import type { TabId } from '@/components/features/factory-profile';
+import {
+  conversationsApi,
+  factoriesApi,
+  frontendApi,
+  reviewsApi,
+  showcasesApi,
+} from '@/services/api';
+import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
+import { normShowcase } from '@/hooks/useShowcases';
+import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
 
-function mapFactoryFromApi(row: Record<string, unknown>, id: string, fallback?: Factory | null): Factory {
+function mapFactoryFromApi(
+  row: Record<string, unknown>,
+  id: string,
+  fallback?: Factory | null,
+): Factory {
   const b = fallback ?? undefined;
   const ftn = String(row.factory_type_name ?? row.factoryTypeName ?? '').trim();
   const coverImageUrl = pickFactoryCoverUrl(row) || String(b?.coverImageUrl ?? '').trim();
@@ -52,7 +62,9 @@ function mapProfileFromApi(
     : Array.isArray(p.acceptedProductTypes)
       ? p.acceptedProductTypes.map(String)
       : (b?.acceptedProductTypes ?? []);
-  const certs = Array.isArray(p.certificates) ? p.certificates.map(String) : (b?.certificates ?? []);
+  const certs = Array.isArray(p.certificates)
+    ? p.certificates.map(String)
+    : (b?.certificates ?? []);
   return {
     factoryId: String(p.factory_id ?? factoryId),
     address: addr,
@@ -212,10 +224,9 @@ export function useFactoryProfile() {
         });
 
         const certArr = extractNestedArray(raw, rawF, 'certificates');
-        apiCertificates = certArr.filter((x): x is Record<string, unknown> => x != null && typeof x === 'object') as Record<
-          string,
-          unknown
-        >[];
+        apiCertificates = certArr.filter(
+          (x): x is Record<string, unknown> => x != null && typeof x === 'object',
+        ) as Record<string, unknown>[];
       }
 
       let profile: FactoryProfile | null = profFallback ?? null;
@@ -233,13 +244,17 @@ export function useFactoryProfile() {
         factory = mapFactoryFromApi(rawF, fid, factory ?? fb);
 
         const rawP =
-          res.profile && typeof res.profile === 'object' ? (res.profile as Record<string, unknown>) : null;
+          res.profile && typeof res.profile === 'object'
+            ? (res.profile as Record<string, unknown>)
+            : null;
         profile =
           rawP && Object.keys(rawP).length > 0
             ? mapProfileFromApi(rawP, fid, profFallback ?? null)
             : (profFallback ?? null);
 
-        const revRows = Array.isArray(res.reviews) ? (res.reviews as Record<string, unknown>[]) : [];
+        const revRows = Array.isArray(res.reviews)
+          ? (res.reviews as Record<string, unknown>[])
+          : [];
         reviews = revRows
           .map((r) => mapReviewFromApi(r, fid))
           .filter((x): x is FactoryReview => x != null);
@@ -327,7 +342,7 @@ export function useFactoryProfile() {
     [data.factories, id],
   );
 
-  const factory = api.status === 'ok' ? api.factory : contextFactory ?? null;
+  const factory = api.status === 'ok' ? api.factory : (contextFactory ?? null);
   const profile =
     api.status === 'ok'
       ? api.profile

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../../components/ui/button';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   options: string[];
@@ -9,29 +9,29 @@ type Props = {
 
 export function CertificationChips({ options, value, onChange }: Props) {
   return (
-    <div className="flex flex-wrap gap-2" role="listbox" aria-label="certifications">
+    <div className='flex flex-wrap gap-2' role='listbox' aria-label='certifications'>
       {options.map((opt, idx) => {
         const active = value.includes(opt);
         return (
           <Button
             key={opt}
-            role="option"
+            role='option'
             aria-selected={active}
             tabIndex={0}
-            onClick={() =>
-              onChange(active ? value.filter((v) => v !== opt) : [...value, opt])
-            }
+            onClick={() => onChange(active ? value.filter((v) => v !== opt) : [...value, opt])}
             onKeyDown={(e) => {
               if (e.key === ' ') {
                 e.preventDefault();
                 onChange(active ? value.filter((v) => v !== opt) : [...value, opt]);
               }
               if (e.key === 'ArrowRight') {
-                const next = document.querySelectorAll<HTMLButtonElement>('[role="option"]')[idx + 1];
+                const next =
+                  document.querySelectorAll<HTMLButtonElement>('[role="option"]')[idx + 1];
                 next?.focus();
               }
               if (e.key === 'ArrowLeft') {
-                const prev = document.querySelectorAll<HTMLButtonElement>('[role="option"]')[idx - 1];
+                const prev =
+                  document.querySelectorAll<HTMLButtonElement>('[role="option"]')[idx - 1];
                 prev?.focus();
               }
             }}

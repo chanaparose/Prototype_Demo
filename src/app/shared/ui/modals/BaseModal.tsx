@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/components/ui/button';
 
 type BaseModalProps = {
   isOpen: boolean;
@@ -36,7 +36,8 @@ const sizeStyles = {
 
 const contentClasses = {
   center: 'rounded-2xl shadow-2xl max-h-[90vh] w-full overflow-auto',
-  right: 'rounded-l-2xl lg:rounded-2xl shadow-2xl h-full lg:h-auto lg:max-h-[90vh] w-full overflow-auto',
+  right:
+    'rounded-l-2xl lg:rounded-2xl shadow-2xl h-full lg:h-auto lg:max-h-[90vh] w-full overflow-auto',
   bottom: 'rounded-t-2xl lg:rounded-2xl shadow-2xl max-h-[90vh] w-full lg:w-auto overflow-auto',
 };
 
@@ -72,15 +73,17 @@ export function BaseModal({
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className={`flex items-center justify-between px-4 py-3 border-b border-gray-100 ${headerClassName}`}>
-              {title && <h2 className="text-sm font-semibold text-gray-900">{title}</h2>}
+            <div
+              className={`flex items-center justify-between px-4 py-3 border-b border-gray-100 ${headerClassName}`}
+            >
+              {title && <h2 className='text-sm font-semibold text-gray-900'>{title}</h2>}
               {showCloseButton && (
                 <Button
                   onClick={onClose}
-                  variant="ghost"
-                  size="icon-sm"
-                  className="ml-auto"
-                  aria-label="Close"
+                  variant='ghost'
+                  size='icon-sm'
+                  className='ml-auto'
+                  aria-label='Close'
                 >
                   <X size={16} />
                 </Button>

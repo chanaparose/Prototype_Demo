@@ -1,22 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { X, ChevronRight, Clock } from 'lucide-react';
+import { ordersApi } from '@/services/api';
+import { useFactoryOrdersData } from '@/pages/factory-portal/factory-orders/useFactoryOrdersData';
+import { deriveOrderCardState } from '@/pages/factory-portal/factory-orders/deriveOrderCardState';
+import { computeKpi, countByTab } from '@/pages/factory-portal/factory-orders/factoryOrderKpi';
 import {
-  X,
-  ChevronRight,
-  Clock,
-} from 'lucide-react';
-import { ordersApi } from '../../services/api';
-import { useFactoryOrdersData } from './factory-orders/useFactoryOrdersData';
-import { deriveOrderCardState } from './factory-orders/deriveOrderCardState';
-import { computeKpi, countByTab } from './factory-orders/factoryOrderKpi';
-import { matchTab, searchMatch, sortCompare } from './factory-orders/factoryOrderFilters';
-import type { FactoryOrderRow, SortKey, TabId } from './factory-orders/types';
-import { FactoryOrderCard } from './factory-orders/components/FactoryOrderCard';
-import { FactoryOrdersEmptyState } from './factory-orders/components/FactoryOrdersEmptyState';
-import { FactoryOrdersFilterBar } from './factory-orders/components/FactoryOrdersFilterBar';
-import { FactoryOrdersKpiStrip } from './factory-orders/components/FactoryOrdersKpiStrip';
-import { FactoryPageHeader } from './components/FactoryPageHeader';
-import { Button } from '../../components/ui/button';
+  matchTab,
+  searchMatch,
+  sortCompare,
+} from '@/pages/factory-portal/factory-orders/factoryOrderFilters';
+import type { FactoryOrderRow, SortKey, TabId } from '@/pages/factory-portal/factory-orders/types';
+import { FactoryOrderCard } from '@/pages/factory-portal/factory-orders/components/FactoryOrderCard';
+import { FactoryOrdersEmptyState } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersEmptyState';
+import { FactoryOrdersFilterBar } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersFilterBar';
+import { FactoryOrdersKpiStrip } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersKpiStrip';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { Button } from '@/components/ui/button';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
 const INDIGO = '#4F46E5';
@@ -47,8 +47,8 @@ function TableSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <tr key={i}>
           {Array.from({ length: 7 }).map((__, j) => (
-            <td key={j} className="px-4 py-3">
-              <div className="h-4 bg-gray-100 rounded-lg animate-pulse" />
+            <td key={j} className='px-4 py-3'>
+              <div className='h-4 bg-gray-100 rounded-lg animate-pulse' />
             </td>
           ))}
         </tr>
@@ -95,13 +95,20 @@ export function FactoryOrdersPage() {
   /* ─── Loading state ─────────────────────────────────────────────── */
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <FactoryPageHeader title="คำสั่งซื้อ" subtitle="Factory / คำสั่งซื้อ" count={`${rows.length} รายการ`} />
-        <div className="space-y-3">
-          <div className="h-24 rounded-2xl border border-gray-100 bg-white animate-pulse" />
-          <div className="space-y-3">
+      <div className='space-y-4'>
+        <FactoryPageHeader
+          title='คำสั่งซื้อ'
+          subtitle='Factory / คำสั่งซื้อ'
+          count={`${rows.length} รายการ`}
+        />
+        <div className='space-y-3'>
+          <div className='h-24 rounded-2xl border border-gray-100 bg-white animate-pulse' />
+          <div className='space-y-3'>
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-40 rounded-2xl border border-gray-100 bg-white animate-pulse" />
+              <div
+                key={i}
+                className='h-40 rounded-2xl border border-gray-100 bg-white animate-pulse'
+              />
             ))}
           </div>
         </div>
@@ -111,21 +118,25 @@ export function FactoryOrdersPage() {
 
   /* ─── Main render ───────────────────────────────────────────────── */
   return (
-    <div className="space-y-4 pb-8">
-      <FactoryPageHeader title="คำสั่งซื้อ" subtitle="Factory / คำสั่งซื้อ" count={`${rows.length} รายการ`} />
+    <div className='space-y-4 pb-8'>
+      <FactoryPageHeader
+        title='คำสั่งซื้อ'
+        subtitle='Factory / คำสั่งซื้อ'
+        count={`${rows.length} รายการ`}
+      />
 
-      <div className="space-y-4">
-
+      <div className='space-y-4'>
         {/* ── Error ───────────────────────────────────────────────── */}
         {isError ? (
           <div
-            role="alert"
-            className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-2xl px-4 py-3 flex items-center justify-between gap-3"
+            role='alert'
+            className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-2xl px-4 py-3 flex items-center justify-between gap-3'
           >
             <span>{error instanceof Error ? error.message : 'โหลดออเดอร์ไม่สำเร็จ'}</span>
-            <Button variant="unstyled"
-              type="button"
-              className="px-3 py-1.5 rounded-xl bg-white border border-red-200 text-red-700 text-xs font-semibold"
+            <Button
+              variant='unstyled'
+              type='button'
+              className='px-3 py-1.5 rounded-xl bg-white border border-red-200 text-red-700 text-xs font-semibold'
               onClick={() => void refetch()}
             >
               ลองใหม่
@@ -156,22 +167,28 @@ export function FactoryOrdersPage() {
         />
 
         {/* ── Desktop table ────────────────────────────────────────── */}
-        <div className="hidden md:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[760px]">
+        <div className='hidden md:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
+          <div className='overflow-x-auto'>
+            <table className='w-full text-sm min-w-[760px]'>
               <thead>
-                <tr className="bg-slate-50">
-                  {['Order ID', 'ชื่อสินค้า', 'ลูกค้า', 'มูลค่า', 'สถานะ', 'กำหนดส่ง', 'Actions'].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
-                        style={{ color: '#6B7280' }}
-                      >
-                        {h}
-                      </th>
-                    ),
-                  )}
+                <tr className='bg-slate-50'>
+                  {[
+                    'Order ID',
+                    'ชื่อสินค้า',
+                    'ลูกค้า',
+                    'มูลค่า',
+                    'สถานะ',
+                    'กำหนดส่ง',
+                    'Actions',
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider'
+                      style={{ color: '#6B7280' }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -179,7 +196,7 @@ export function FactoryOrdersPage() {
                   <TableSkeleton />
                 ) : filteredRows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-14 text-center text-sm text-gray-400">
+                    <td colSpan={7} className='py-14 text-center text-sm text-gray-400'>
                       ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข
                     </td>
                   </tr>
@@ -195,45 +212,53 @@ export function FactoryOrdersPage() {
                     return (
                       <tr
                         key={row.order_id}
-                        className="border-t border-gray-50 transition-colors"
+                        className='border-t border-gray-50 transition-colors'
                         style={{ cursor: 'default' }}
                         onMouseEnter={(e) =>
-                          ((e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#F8FAFC')
+                          ((e.currentTarget as HTMLTableRowElement).style.backgroundColor =
+                            '#F8FAFC')
                         }
                         onMouseLeave={(e) =>
                           ((e.currentTarget as HTMLTableRowElement).style.backgroundColor = '')
                         }
                       >
-                        <td className="px-4 py-3 font-mono text-xs font-semibold" style={{ color: INDIGO }}>
+                        <td
+                          className='px-4 py-3 font-mono text-xs font-semibold'
+                          style={{ color: INDIGO }}
+                        >
                           #{row.order_id}
                         </td>
                         <td
-                          className="px-4 py-3 text-sm font-medium max-w-[180px] truncate"
+                          className='px-4 py-3 text-sm font-medium max-w-[180px] truncate'
                           style={{ color: SLATE_DARK }}
                         >
                           {row.rfq?.title ?? `สินค้า #${row.order_id}`}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500 max-w-[140px] truncate">
+                        <td className='px-4 py-3 text-sm text-gray-500 max-w-[140px] truncate'>
                           {row.customer?.display_name ?? '-'}
                         </td>
-                        <td className="px-4 py-3 text-sm font-semibold tabular-nums" style={{ color: SLATE_DARK }}>
+                        <td
+                          className='px-4 py-3 text-sm font-semibold tabular-nums'
+                          style={{ color: SLATE_DARK }}
+                        >
                           ฿{row.total_amount.toLocaleString('th-TH')}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className='px-4 py-3'>
                           <span
                             className={`rounded-full text-[11px] font-semibold px-2.5 py-1 ${meta.cls}`}
                           >
                             {meta.label}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 flex items-center gap-1">
-                          <Clock size={12} className="shrink-0" />
+                        <td className='px-4 py-3 text-xs text-gray-500 flex items-center gap-1'>
+                          <Clock size={12} className='shrink-0' />
                           {deadline}
                         </td>
-                        <td className="px-4 py-3">
-                          <Button variant="unstyled"
-                            type="button"
-                            className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
+                        <td className='px-4 py-3'>
+                          <Button
+                            variant='unstyled'
+                            type='button'
+                            className='flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors'
                             style={{ color: INDIGO, backgroundColor: `${INDIGO}15` }}
                             onClick={() => {
                               navigate(`/factory/orders/${row.order_id}`);
@@ -252,7 +277,7 @@ export function FactoryOrdersPage() {
         </div>
 
         {/* ── Mobile card list ─────────────────────────────────────── */}
-        <ul className="md:hidden grid grid-cols-1 gap-3">
+        <ul className='md:hidden grid grid-cols-1 gap-3'>
           {filteredRows.length === 0 ? (
             <FactoryOrdersEmptyState
               hasAnyRows={rows.length > 0}
@@ -263,7 +288,7 @@ export function FactoryOrdersPage() {
             filteredRows.map(({ row, derived: d }) => (
               <li
                 key={row.order_id}
-                className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                className='rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
               >
                 <FactoryOrderCard
                   row={row}
@@ -279,42 +304,44 @@ export function FactoryOrdersPage() {
             ))
           )}
         </ul>
-
       </div>
 
       {/* ══ Update-step modal (unchanged logic) ═══════════════════════ */}
       {updateModal ? (
-        <div className="fixed inset-0 z-[70]">
-          <Button variant="unstyled"
-            type="button"
-            className="absolute inset-0 bg-black/40"
+        <div className='fixed inset-0 z-[70]'>
+          <Button
+            variant='unstyled'
+            type='button'
+            className='absolute inset-0 bg-black/40'
             onClick={() => setUpdateModal(null)}
           />
-          <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-bold" style={{ color: SLATE_DARK }}>
+          <div className='absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3'>
+            <div className='flex items-center justify-between'>
+              <h2 className='font-bold' style={{ color: SLATE_DARK }}>
                 อัปเดตขั้น {updateModal.row.production_summary?.current_step_name_th}
               </h2>
-              <Button variant="unstyled"
-                type="button"
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={() => setUpdateModal(null)}
-                className="p-1 rounded-lg hover:bg-gray-100"
+                className='p-1 rounded-lg hover:bg-gray-100'
               >
                 <X size={18} />
               </Button>
             </div>
             <textarea
-              className="w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]"
-              placeholder="รายละเอียดความคืบหน้า"
+              className='w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]'
+              placeholder='รายละเอียดความคืบหน้า'
               value={updateModal.notes}
               onChange={(e) =>
                 setUpdateModal((prev) => (prev ? { ...prev, notes: e.target.value } : prev))
               }
             />
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               disabled={updateModal.busy || !updateModal.notes.trim()}
-              className="w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50"
+              className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
               style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #334155 100%)' }}
               onClick={async () => {
                 setUpdateModal((prev) => (prev ? { ...prev, busy: true } : prev));
@@ -341,45 +368,48 @@ export function FactoryOrdersPage() {
 
       {/* ══ Ship modal (unchanged logic) ══════════════════════════════ */}
       {shipModal ? (
-        <div className="fixed inset-0 z-[70]">
-          <Button variant="unstyled"
-            type="button"
-            className="absolute inset-0 bg-black/40"
+        <div className='fixed inset-0 z-[70]'>
+          <Button
+            variant='unstyled'
+            type='button'
+            className='absolute inset-0 bg-black/40'
             onClick={() => setShipModal(null)}
           />
-          <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-bold" style={{ color: SLATE_DARK }}>
+          <div className='absolute inset-x-4 sm:inset-x-auto sm:right-6 sm:w-[460px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl p-4 space-y-3'>
+            <div className='flex items-center justify-between'>
+              <h2 className='font-bold' style={{ color: SLATE_DARK }}>
                 บันทึกจัดส่ง #{shipModal.row.order_id}
               </h2>
-              <Button variant="unstyled"
-                type="button"
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={() => setShipModal(null)}
-                className="p-1 rounded-lg hover:bg-gray-100"
+                className='p-1 rounded-lg hover:bg-gray-100'
               >
                 <X size={18} />
               </Button>
             </div>
             <input
-              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]"
-              placeholder="เลขพัสดุ"
+              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]'
+              placeholder='เลขพัสดุ'
               value={shipModal.tracking}
               onChange={(e) =>
                 setShipModal((prev) => (prev ? { ...prev, tracking: e.target.value } : prev))
               }
             />
             <textarea
-              className="w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]"
-              placeholder="หมายเหตุ (ไม่บังคับ)"
+              className='w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]'
+              placeholder='หมายเหตุ (ไม่บังคับ)'
               value={shipModal.note}
               onChange={(e) =>
                 setShipModal((prev) => (prev ? { ...prev, note: e.target.value } : prev))
               }
             />
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               disabled={shipModal.busy || !shipModal.tracking.trim()}
-              className="w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50"
+              className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
               style={{
                 background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
                 boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
@@ -404,7 +434,6 @@ export function FactoryOrdersPage() {
           </div>
         </div>
       ) : null}
-
     </div>
   );
 }

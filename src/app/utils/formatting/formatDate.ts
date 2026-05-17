@@ -1,6 +1,6 @@
 export function formatDate(
   dateInput: string | Date | null | undefined,
-  format: string = 'dd/MM/yyyy'
+  format: string = 'dd/MM/yyyy',
 ): string {
   if (!dateInput) return '-';
 
@@ -29,9 +29,7 @@ export function formatChatTime(isoString: string): string {
   }).format(date);
 }
 
-export function formatDeadline(
-  dateInput: string | Date | null | undefined
-): string {
+export function formatDeadline(dateInput: string | Date | null | undefined): string {
   if (!dateInput) return '';
 
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
@@ -43,9 +41,7 @@ export function formatDeadline(
   }).format(date);
 }
 
-export function formatThaiDate(
-  dateInput: string | Date | null | undefined
-): string {
+export function formatThaiDate(dateInput: string | Date | null | undefined): string {
   if (!dateInput) return '-';
 
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;

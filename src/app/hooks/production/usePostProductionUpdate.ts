@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ordersApi } from '../../services/api';
-import type { ProductionUpdatesBundle } from '../../components/features/production/types';
+import { ordersApi } from '@/services/api';
+import type { ProductionUpdatesBundle } from '@/components/features/production/types';
 
 type PostBody = {
   step_id: number;
@@ -29,13 +29,7 @@ export function usePostProductionUpdate(orderId: string | undefined) {
   const key = ['order', orderId, 'production-updates'] as const;
 
   return useMutation({
-    mutationFn: async ({
-      body,
-      confirmHeader,
-    }: {
-      body: PostBody;
-      confirmHeader?: boolean;
-    }) => {
+    mutationFn: async ({ body, confirmHeader }: { body: PostBody; confirmHeader?: boolean }) => {
       const headers =
         confirmHeader && body.status === 'CD' && body.confirm_payment_trigger
           ? { 'X-Confirm-Payment-Trigger': 'true' }

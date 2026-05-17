@@ -3,7 +3,7 @@
  */
 
 import { IOrder } from '@/types/model';
-import { createMapper } from './index';
+import { createMapper } from '@/services/mapper/response/index';
 
 /**
  * Raw order data from API
@@ -55,7 +55,12 @@ export const mapOrderResponse = createMapper<OrderResponse, IOrder>((data) => {
           },
           price: quotationData.price_per_piece || quotationData.price || 0,
           leadTime: quotationData.lead_time_days || quotationData.leadTime || 0,
-          status: quotationData.status === 'AC' ? 'accepted' : quotationData.status === 'RJ' ? 'rejected' : 'pending',
+          status:
+            quotationData.status === 'AC'
+              ? 'accepted'
+              : quotationData.status === 'RJ'
+                ? 'rejected'
+                : 'pending',
         }
       : undefined,
     status: data.status || '',

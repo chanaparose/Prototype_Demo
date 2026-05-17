@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { reviewsApi } from '../services/api';
+import { reviewsApi } from '@/services/api';
 
 export type FactoryReviewSummary = {
   factory_id: number;
@@ -8,7 +8,9 @@ export type FactoryReviewSummary = {
   rating_breakdown: Record<string, number>;
 };
 
-function normalizeSummary(raw: Record<string, unknown> | null | undefined): FactoryReviewSummary | null {
+function normalizeSummary(
+  raw: Record<string, unknown> | null | undefined,
+): FactoryReviewSummary | null {
   if (!raw) return null;
   const factoryId = Number(raw.factory_id ?? 0);
   const average = Number(raw.average_rating ?? 0);
@@ -36,7 +38,10 @@ export function useFactoryReviewSummary(factoryId: string | number | null | unde
     queryKey: ['factory', String(factoryId), 'reviews-summary'] as const,
     enabled,
     queryFn: async () => {
-      const raw = (await reviewsApi.summaryByFactory(factoryId as string | number)) as Record<string, unknown>;
+      const raw = (await reviewsApi.summaryByFactory(factoryId as string | number)) as Record<
+        string,
+        unknown
+      >;
       return normalizeSummary(raw);
     },
     staleTime: 60_000,

@@ -1,14 +1,14 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
-import { addressesApi, categoriesApi, masterApi, rfqsApi } from '../../services/api';
-import { useCreateRFQ } from './useCreateRFQ';
-import { useRFQDraft } from './useRFQDraft';
-import { Step1Basic } from './steps/Step1Basic';
-import { Step2Specifications } from './steps/Step2Specifications';
-import { Step3Commercial } from './steps/Step3Commercial';
-import { Step4QualityReview } from './steps/Step4QualityReview';
-import { Button } from '../../components/ui/button';
+import { addressesApi, categoriesApi, masterApi, rfqsApi } from '@/services/api';
+import { useCreateRFQ } from '@/pages/rfq/useCreateRFQ';
+import { useRFQDraft } from '@/pages/rfq/useRFQDraft';
+import { Step1Basic } from '@/pages/rfq/steps/Step1Basic';
+import { Step2Specifications } from '@/pages/rfq/steps/Step2Specifications';
+import { Step3Commercial } from '@/pages/rfq/steps/Step3Commercial';
+import { Step4QualityReview } from '@/pages/rfq/steps/Step4QualityReview';
+import { Button } from '@/components/ui/button';
 
 const step1Schema = z.object({
   title: z.string().min(1),
@@ -22,8 +22,8 @@ const step2Schema = z.object({
 });
 
 const step3Schema = z.object({
-  delivery_address_id: z.number().int().positive(),  // maps to address_id on submit
-  shipping_method_id: z.number().int().positive(),   // required — factory ต้องรู้วิธีจัดส่ง
+  delivery_address_id: z.number().int().positive(), // maps to address_id on submit
+  shipping_method_id: z.number().int().positive(), // required — factory ต้องรู้วิธีจัดส่ง
   target_lead_time_days: z.number().optional(),
 });
 
@@ -166,22 +166,23 @@ export function RFQCreateWizard() {
     }
     let active = true;
     setMatchingLoading(true);
-    void rfqsApi.previewFactories({
-      kind: draft.request_kind,
-      category_id: cid,
-      sub_category_id:
-        draft.sub_category_id != null && Number.isFinite(Number(draft.sub_category_id))
-          ? Number(draft.sub_category_id)
-          : undefined,
-    })
+    void rfqsApi
+      .previewFactories({
+        kind: draft.request_kind,
+        category_id: cid,
+        sub_category_id:
+          draft.sub_category_id != null && Number.isFinite(Number(draft.sub_category_id))
+            ? Number(draft.sub_category_id)
+            : undefined,
+      })
       .then((raw) => {
         if (!active) return;
         const n = Number(
           (raw as Record<string, unknown>)?.match_count ??
-          (raw as Record<string, unknown>)?.count ??
-          (raw as Record<string, unknown>)?.total ??
-          (raw as Record<string, unknown>)?.matched_factory_count ??
-          0,
+            (raw as Record<string, unknown>)?.count ??
+            (raw as Record<string, unknown>)?.total ??
+            (raw as Record<string, unknown>)?.matched_factory_count ??
+            0,
         );
         setMatchCount(Number.isFinite(n) ? n : 0);
       })
@@ -198,7 +199,8 @@ export function RFQCreateWizard() {
 
   React.useEffect(() => {
     let active = true;
-    void addressesApi.list()
+    void addressesApi
+      .list()
       .then((raw) => {
         if (!active) return;
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
@@ -212,7 +214,9 @@ export function RFQCreateWizard() {
             String(r.district_name ?? r.district ?? '').trim(),
             String(r.province_name ?? r.province ?? '').trim(),
             String(r.zip_code ?? '').trim(),
-          ].filter(Boolean).join(', ');
+          ]
+            .filter(Boolean)
+            .join(', ');
           mapped[id] = label || `ที่อยู่ #${id}`;
         }
         setAddressMap(mapped);
@@ -221,7 +225,8 @@ export function RFQCreateWizard() {
         if (active) setAddressMap({});
       });
 
-    void masterApi.shippingMethods()
+    void masterApi
+      .shippingMethods()
       .then((raw) => {
         if (!active) return;
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
@@ -276,7 +281,8 @@ export function RFQCreateWizard() {
     const withinKindQty =
       kind === 'PS' ? qty >= 1 && qty <= 10 : kind === 'MS' ? qty >= 1 && qty <= 5 : qty > 0;
     if (!withinKindQty) return false;
-    if ((kind === 'PS' || kind === 'MS') && (draft.description?.trim()?.length ?? 0) < 20) return false;
+    if ((kind === 'PS' || kind === 'MS') && (draft.description?.trim()?.length ?? 0) < 20)
+      return false;
     if (kind === 'MS' && !matchingLoading && (matchCount ?? 0) <= 0) return false;
     return blockingIssues.length === 0;
   }, [blockingIssues, draft, matchingLoading, matchCount]);
@@ -310,10 +316,7 @@ export function RFQCreateWizard() {
     return INSPECTION_LABEL[draft.inspection_type] ?? draft.inspection_type;
   }, [draft.inspection_type]);
 
-  const categoryOptions = React.useMemo(
-    () => modeCategories,
-    [modeCategories],
-  );
+  const categoryOptions = React.useMemo(() => modeCategories, [modeCategories]);
 
   const optionalMissing = React.useMemo(() => {
     const missing: string[] = [];
@@ -350,58 +353,70 @@ export function RFQCreateWizard() {
   };
 
   const kind = draft.request_kind ?? 'PR';
-  const kindLabel = kind === 'PS' ? 'ขอตัวอย่างสินค้า' : kind === 'MS' ? 'ขอตัวอย่างวัตถุดิบ' : 'ขอราคาผลิต OEM';
+  const kindLabel =
+    kind === 'PS' ? 'ขอตัวอย่างสินค้า' : kind === 'MS' ? 'ขอตัวอย่างวัตถุดิบ' : 'ขอราคาผลิต OEM';
   const isSampleMode = kind === 'PS' || kind === 'MS';
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 pb-28">
-      <div className="mb-4">
-        <h1 className="text-xl font-bold text-[#2E2252]">สร้างคำขอใบเสนอราคา (RFQ)</h1>
-        <p className="text-sm text-gray-500 mt-1">{step === 0 ? 'กรอกรายละเอียดที่โรงงานต้องรู้' : 'ตรวจสอบข้อมูลก่อนส่ง'}</p>
+    <div className='max-w-5xl mx-auto px-4 py-6 pb-28'>
+      <div className='mb-4'>
+        <h1 className='text-xl font-bold text-[#2E2252]'>สร้างคำขอใบเสนอราคา (RFQ)</h1>
+        <p className='text-sm text-gray-500 mt-1'>
+          {step === 0 ? 'กรอกรายละเอียดที่โรงงานต้องรู้' : 'ตรวจสอบข้อมูลก่อนส่ง'}
+        </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-        <div className="mb-4">
-          <div className="flex items-center gap-2">
+      <div className='bg-white rounded-2xl border border-gray-100 p-4 mb-4'>
+        <div className='mb-4'>
+          <div className='flex items-center gap-2'>
             {STEPS.map((s, i) => (
-              <Button variant="unstyled"
+              <Button
+                variant='unstyled'
                 key={s}
-                type="button"
+                type='button'
                 onClick={() => {
                   if (i === 0 || isFormValid) setStep(i);
                 }}
                 aria-current={step === i ? 'step' : undefined}
                 className={`px-3 py-1 rounded-full text-xs ${
-                  step === i ? 'bg-violet-600 text-white font-semibold' : 'bg-gray-100 text-gray-600'
+                  step === i
+                    ? 'bg-violet-600 text-white font-semibold'
+                    : 'bg-gray-100 text-gray-600'
                 }`}
               >
                 {i + 1}. {s}
               </Button>
             ))}
           </div>
-          <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-            <div className="h-full bg-violet-600 transition-all" style={{ width: `${((step + 1) / 2) * 100}%` }} />
+          <div className='mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden'>
+            <div
+              className='h-full bg-violet-600 transition-all'
+              style={{ width: `${((step + 1) / 2) * 100}%` }}
+            />
           </div>
         </div>
 
         {step === 0 ? (
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <section
-              data-tour="request-kind"
-              className="rounded-xl border border-gray-100 p-3 sm:p-4"
+              data-tour='request-kind'
+              className='rounded-xl border border-gray-100 p-3 sm:p-4'
             >
-              <p className="text-sm font-semibold text-[#2E2252] mb-2">ประเภทคำขอ</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {([
-                  { id: 'PR', label: 'ขอราคาผลิต OEM' },
-                  { id: 'PS', label: 'ขอตัวอย่างสินค้า' },
-                  { id: 'MS', label: 'ขอตัวอย่างวัตถุดิบ' },
-                ] as const).map((opt) => {
+              <p className='text-sm font-semibold text-[#2E2252] mb-2'>ประเภทคำขอ</p>
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
+                {(
+                  [
+                    { id: 'PR', label: 'ขอราคาผลิต OEM' },
+                    { id: 'PS', label: 'ขอตัวอย่างสินค้า' },
+                    { id: 'MS', label: 'ขอตัวอย่างวัตถุดิบ' },
+                  ] as const
+                ).map((opt) => {
                   const active = kind === opt.id;
                   return (
-                    <Button variant="unstyled"
+                    <Button
+                      variant='unstyled'
                       key={opt.id}
-                      type="button"
+                      type='button'
                       onClick={() =>
                         setDraft({
                           request_kind: opt.id,
@@ -420,14 +435,15 @@ export function RFQCreateWizard() {
                 })}
               </div>
               {isSampleMode ? (
-                <p className="text-xs text-gray-500 mt-2">
-                  โหมดตัวอย่าง: กรุณาระบุรายละเอียดสินค้า/วัตถุดิบให้ชัดเจนในช่องรายละเอียด (อย่างน้อย 20 ตัวอักษร)
+                <p className='text-xs text-gray-500 mt-2'>
+                  โหมดตัวอย่าง: กรุณาระบุรายละเอียดสินค้า/วัตถุดิบให้ชัดเจนในช่องรายละเอียด
+                  (อย่างน้อย 20 ตัวอักษร)
                 </p>
               ) : null}
             </section>
 
-            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
-              <p className="text-sm font-semibold text-[#2E2252] mb-3">ข้อมูลสินค้า</p>
+            <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
+              <p className='text-sm font-semibold text-[#2E2252] mb-3'>ข้อมูลสินค้า</p>
               <Step1Basic
                 draft={draft}
                 setDraft={setDraft}
@@ -438,121 +454,165 @@ export function RFQCreateWizard() {
               />
             </section>
 
-            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
-              <p className="text-sm font-semibold text-[#2E2252] mb-3">สเปกเพิ่มเติม</p>
+            <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
+              <p className='text-sm font-semibold text-[#2E2252] mb-3'>สเปกเพิ่มเติม</p>
               <Step2Specifications draft={draft} setDraft={setDraft} />
             </section>
 
-            <section className={`rounded-xl border p-3 sm:p-4 ${kind === 'MS' ? 'border-emerald-100 bg-emerald-50' : 'border-violet-100 bg-violet-50'}`}>
-              <p className={`text-sm font-semibold ${kind === 'MS' ? 'text-emerald-700' : 'text-violet-700'}`}>
+            <section
+              className={`rounded-xl border p-3 sm:p-4 ${kind === 'MS' ? 'border-emerald-100 bg-emerald-50' : 'border-violet-100 bg-violet-50'}`}
+            >
+              <p
+                className={`text-sm font-semibold ${kind === 'MS' ? 'text-emerald-700' : 'text-violet-700'}`}
+              >
                 {matchingLoading
                   ? 'กำลังค้นหาโรงงานที่ตรงสเปก...'
                   : `พบ ${matchCount ?? 0} โรงงานที่ตรงกับสเปก`}
               </p>
               {!matchingLoading && kind === 'MS' && (matchCount ?? 0) <= 0 ? (
-                <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2">
-                  <p className="text-xs font-semibold text-amber-800">ยังไม่มีโรงงานที่ลงทะเบียนวัตถุดิบนี้</p>
-                  <p className="text-xs text-amber-700 mt-0.5">ลองเปลี่ยนเป็นโหมดขอราคาผลิต OEM หรือเลือกหมวดวัตถุดิบอื่น</p>
+                <div className='mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2'>
+                  <p className='text-xs font-semibold text-amber-800'>
+                    ยังไม่มีโรงงานที่ลงทะเบียนวัตถุดิบนี้
+                  </p>
+                  <p className='text-xs text-amber-700 mt-0.5'>
+                    ลองเปลี่ยนเป็นโหมดขอราคาผลิต OEM หรือเลือกหมวดวัตถุดิบอื่น
+                  </p>
                 </div>
               ) : null}
             </section>
 
-            <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
-              <p className="text-sm font-semibold text-[#2E2252] mb-3">เงื่อนไขส่งมอบ</p>
+            <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
+              <p className='text-sm font-semibold text-[#2E2252] mb-3'>เงื่อนไขส่งมอบ</p>
               <Step3Commercial draft={draft} setDraft={setDraft} />
             </section>
 
             {!isSampleMode ? (
-              <section className="rounded-xl border border-gray-100 p-3 sm:p-4">
-                <p className="text-sm font-semibold text-[#2E2252] mb-3">เงื่อนไขคุณภาพ</p>
+              <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
+                <p className='text-sm font-semibold text-[#2E2252] mb-3'>เงื่อนไขคุณภาพ</p>
                 <Step4QualityReview draft={draft} setDraft={setDraft} />
               </section>
             ) : null}
             {!isFormValid && blockingIssues.length > 0 ? (
-              <section className="rounded-xl border border-amber-200 bg-amber-50 p-3 sm:p-4">
-                <p className="text-sm font-semibold text-amber-800">ยังไปขั้นถัดไปไม่ได้</p>
-                <p className="text-xs text-amber-700 mt-1">{blockingIssues[0]}</p>
+              <section className='rounded-xl border border-amber-200 bg-amber-50 p-3 sm:p-4'>
+                <p className='text-sm font-semibold text-amber-800'>ยังไปขั้นถัดไปไม่ได้</p>
+                <p className='text-xs text-amber-700 mt-1'>{blockingIssues[0]}</p>
               </section>
             ) : null}
           </div>
         ) : (
-          <div className="space-y-4 text-sm">
-            <section className="rounded-xl border border-gray-100 p-4">
-              <p className="font-semibold text-[#2E2252] mb-3">ข้อมูลสินค้า</p>
-              <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
-                <p><span className="text-gray-500">ชื่อสินค้า:</span> {draft.title || '-'}</p>
-                <p><span className="text-gray-500">หมวดหมู่:</span> {categoryName}</p>
-                <p><span className="text-gray-500">หมวดย่อย:</span> {subCategoryName}</p>
-                <p><span className="text-gray-500">ประเภทคำขอ:</span> {kindLabel}</p>
-                <p><span className="text-gray-500">จำนวน:</span> {draft.qty ?? '-'}</p>
+          <div className='space-y-4 text-sm'>
+            <section className='rounded-xl border border-gray-100 p-4'>
+              <p className='font-semibold text-[#2E2252] mb-3'>ข้อมูลสินค้า</p>
+              <div className='grid sm:grid-cols-2 gap-2 text-gray-700'>
+                <p>
+                  <span className='text-gray-500'>ชื่อสินค้า:</span> {draft.title || '-'}
+                </p>
+                <p>
+                  <span className='text-gray-500'>หมวดหมู่:</span> {categoryName}
+                </p>
+                <p>
+                  <span className='text-gray-500'>หมวดย่อย:</span> {subCategoryName}
+                </p>
+                <p>
+                  <span className='text-gray-500'>ประเภทคำขอ:</span> {kindLabel}
+                </p>
+                <p>
+                  <span className='text-gray-500'>จำนวน:</span> {draft.qty ?? '-'}
+                </p>
               </div>
-              <p className="mt-2"><span className="text-gray-500">รายละเอียด:</span> {draft.description || '-'}</p>
+              <p className='mt-2'>
+                <span className='text-gray-500'>รายละเอียด:</span> {draft.description || '-'}
+              </p>
             </section>
 
-            <section className="rounded-xl border border-gray-100 p-4">
-              <p className="font-semibold text-[#2E2252] mb-3">เงื่อนไขส่งมอบและงบ</p>
-              <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
-                <p><span className="text-gray-500">งบประมาณรวม:</span> {draft.target_price ?? '-'}</p>
-                <p><span className="text-gray-500">ระยะเวลาผลิต:</span> {draft.target_lead_time_days ?? '-'} วัน</p>
-                <p><span className="text-gray-500">ที่อยู่จัดส่ง:</span> {deliveryAddressLabel}</p>
-                <p><span className="text-gray-500">วิธีจัดส่ง:</span> {shippingMethodLabel}</p>
+            <section className='rounded-xl border border-gray-100 p-4'>
+              <p className='font-semibold text-[#2E2252] mb-3'>เงื่อนไขส่งมอบและงบ</p>
+              <div className='grid sm:grid-cols-2 gap-2 text-gray-700'>
+                <p>
+                  <span className='text-gray-500'>งบประมาณรวม:</span> {draft.target_price ?? '-'}
+                </p>
+                <p>
+                  <span className='text-gray-500'>ระยะเวลาผลิต:</span>{' '}
+                  {draft.target_lead_time_days ?? '-'} วัน
+                </p>
+                <p>
+                  <span className='text-gray-500'>ที่อยู่จัดส่ง:</span> {deliveryAddressLabel}
+                </p>
+                <p>
+                  <span className='text-gray-500'>วิธีจัดส่ง:</span> {shippingMethodLabel}
+                </p>
               </div>
             </section>
 
             {!isSampleMode ? (
-              <section className="rounded-xl border border-gray-100 p-4">
-                <p className="font-semibold text-[#2E2252] mb-3">สเปกและคุณภาพ</p>
-                <div className="grid sm:grid-cols-2 gap-2 text-gray-700">
-                  <p><span className="text-gray-500">วัตถุดิบ:</span> {draft.material_grade || '-'}</p>
-                  <p><span className="text-gray-500">Certifications:</span> {draft.certifications_required.join(', ') || '-'}</p>
-                  <p><span className="text-gray-500">รูปแบบตรวจคุณภาพ:</span> {inspectionTypeLabel}</p>
+              <section className='rounded-xl border border-gray-100 p-4'>
+                <p className='font-semibold text-[#2E2252] mb-3'>สเปกและคุณภาพ</p>
+                <div className='grid sm:grid-cols-2 gap-2 text-gray-700'>
+                  <p>
+                    <span className='text-gray-500'>วัตถุดิบ:</span> {draft.material_grade || '-'}
+                  </p>
+                  <p>
+                    <span className='text-gray-500'>Certifications:</span>{' '}
+                    {draft.certifications_required.join(', ') || '-'}
+                  </p>
+                  <p>
+                    <span className='text-gray-500'>รูปแบบตรวจคุณภาพ:</span> {inspectionTypeLabel}
+                  </p>
                 </div>
-                <p className="mt-2 text-gray-500">รูปอ้างอิง: {draft.reference_images.length} รูป</p>
+                <p className='mt-2 text-gray-500'>
+                  รูปอ้างอิง: {draft.reference_images.length} รูป
+                </p>
               </section>
             ) : (
-              <section className="rounded-xl border border-gray-100 p-4">
-                <p className="font-semibold text-[#2E2252] mb-2">ยืนยันการขอตัวอย่าง</p>
-                <label className="flex items-start gap-2 text-sm text-gray-700">
+              <section className='rounded-xl border border-gray-100 p-4'>
+                <p className='font-semibold text-[#2E2252] mb-2'>ยืนยันการขอตัวอย่าง</p>
+                <label className='flex items-start gap-2 text-sm text-gray-700'>
                   <input
-                    type="checkbox"
+                    type='checkbox'
                     checked={acceptSampleTerms}
                     onChange={(e) => setAcceptSampleTerms(e.target.checked)}
-                    className="mt-1"
+                    className='mt-1'
                   />
-                  <span>ยอมรับเงื่อนไขการสั่งตัวอย่าง และยืนยันว่ารายละเอียดเพียงพอให้โรงงานประเมินได้</span>
+                  <span>
+                    ยอมรับเงื่อนไขการสั่งตัวอย่าง และยืนยันว่ารายละเอียดเพียงพอให้โรงงานประเมินได้
+                  </span>
                 </label>
-                <p className="mt-2 text-gray-500">รูปอ้างอิง: {draft.reference_images.length} รูป</p>
+                <p className='mt-2 text-gray-500'>
+                  รูปอ้างอิง: {draft.reference_images.length} รูป
+                </p>
               </section>
             )}
-
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 z-30">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
-          <Button variant="unstyled"
-            type="button"
+      <div className='fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 z-30'>
+        <div className='max-w-5xl mx-auto flex items-center justify-between gap-3'>
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
-            className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium"
+            className='px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium'
           >
             {step === 0 ? 'ย้อนกลับ' : 'ย้อนกลับแก้ไข'}
           </Button>
           {step === 0 ? (
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => setStep(1)}
               disabled={!isFormValid}
-              className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50"
+              className='px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50'
             >
               ถัดไป: ตรวจสอบข้อมูล
             </Button>
           ) : (
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => void submit()}
               disabled={!isFormValid || create.isPending || (isSampleMode && !acceptSampleTerms)}
-              className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50"
+              className='px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50'
             >
               {create.isPending ? 'กำลังส่ง...' : 'ส่งคำขอราคา'}
             </Button>

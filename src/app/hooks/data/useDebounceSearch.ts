@@ -16,7 +16,7 @@ interface UseDebounceSearchReturn<T> {
  */
 export function useDebounceSearch<T>(
   searcher: (query: string) => Promise<T[]>,
-  debounceDelay = 300
+  debounceDelay = 300,
 ): UseDebounceSearchReturn<T> {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');

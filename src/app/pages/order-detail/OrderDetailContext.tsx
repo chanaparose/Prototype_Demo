@@ -1,16 +1,20 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useData } from '../../stores';
-import type { Order } from '../../stores';
+import { useData } from '@/stores';
+import type { Order } from '@/stores';
 import type {
   ProductionLockContext,
   ProductionUpdatesBundle,
-} from '../../components/features/production/types';
-import { mapOrderStatusFromApi, guessOrderProgress } from '../../utils/orderCustomerStatus';
-import { useOrderDetailQuery } from '../../hooks/order-detail/useOrderDetailQuery';
-import { useOrderProductionUpdates } from '../../hooks/production/useOrderProductionUpdates';
-import { getOrderUiMode, type LockReason, type OrderUiMode } from './getOrderUiMode';
+} from '@/components/features/production/types';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
+import { useOrderDetailQuery } from '@/hooks/order-detail/useOrderDetailQuery';
+import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';
+import {
+  getOrderUiMode,
+  type LockReason,
+  type OrderUiMode,
+} from '@/pages/order-detail/getOrderUiMode';
 import {
   buildFallbackLockContext,
   normalizeLockReason,
@@ -19,8 +23,8 @@ import {
   parsePaymentSchedule,
   type NextAction,
   type PaymentScheduleItem,
-} from './orderDetailFromApi';
-import type { QuoteNestedDTO, RfqNestedDTO } from '../../types/api';
+} from '@/pages/order-detail/orderDetailFromApi';
+import type { QuoteNestedDTO, RfqNestedDTO } from '@/types/api';
 function unwrapOrderPayload(raw: unknown): Record<string, unknown> {
   if (!raw || typeof raw !== 'object') return {};
   const r = raw as Record<string, unknown>;
@@ -148,7 +152,11 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
         (s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT',
       )?.amount;
       if (Number.isFinite(staged) && Number(staged) > 0) return Number(staged);
-      if (nextAction?.amount != null && Number.isFinite(nextAction.amount) && nextAction.amount > 0) {
+      if (
+        nextAction?.amount != null &&
+        Number.isFinite(nextAction.amount) &&
+        nextAction.amount > 0
+      ) {
         return nextAction.amount;
       }
       return mappedOrder.totalAmount;
@@ -214,23 +222,23 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
 
   if (orderQ.isPending && !orderQ.data) {
     return (
-      <div className="min-h-[40vh] flex flex-col items-center justify-center px-4">
+      <div className='min-h-[40vh] flex flex-col items-center justify-center px-4'>
         <div
-          className="w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mb-3"
+          className='w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mb-3'
           style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
         />
-        <p className="text-sm text-gray-500">กำลังโหลดคำสั่งซื้อ…</p>
+        <p className='text-sm text-gray-500'>กำลังโหลดคำสั่งซื้อ…</p>
       </div>
     );
   }
 
   if (orderQ.isError || !value) {
     return (
-      <div className="min-h-[40vh] flex flex-col items-center justify-center px-4">
-        <p className="text-sm text-gray-500 mb-4 text-center">ไม่พบคำสั่งซื้อจากระบบ</p>
+      <div className='min-h-[40vh] flex flex-col items-center justify-center px-4'>
+        <p className='text-sm text-gray-500 mb-4 text-center'>ไม่พบคำสั่งซื้อจากระบบ</p>
         <Link
-          to="/orders"
-          className="px-6 py-3 rounded-xl text-white font-semibold text-center inline-block"
+          to='/orders'
+          className='px-6 py-3 rounded-xl text-white font-semibold text-center inline-block'
           style={{ background: '#A238FF' }}
         >
           กลับไปรายการคำสั่งซื้อ

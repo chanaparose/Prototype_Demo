@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { renderMarkdown } from './safeMarkdown';
+import { renderMarkdown } from '@/shared/markdown/safeMarkdown';
 
 type Props = {
   source: string;

@@ -1,29 +1,29 @@
-import type { Factory, RfqOffer, Rfq, Conversation } from './types';
-import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
-import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
+import type { Factory, RfqOffer, Rfq, Conversation } from '@/stores/types';
+import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
 
 export { normalizeFactoryRow, mapOrderStatusFromApi, guessOrderProgress };
 
 const CATEGORY_ICON_MAP: Record<string, string> = {
-  'อาหารสัตว์': '🐾',
-  'อาหารเม็ดสัตว์': '🐾',
-  'อาหารเสริม': '💊',
-  'ของเล่นสัตว์เลี้ยง': '🎾',
-  'เสื้อผ้าสัตว์เลี้ยง': '👕',
+  อาหารสัตว์: '🐾',
+  อาหารเม็ดสัตว์: '🐾',
+  อาหารเสริม: '💊',
+  ของเล่นสัตว์เลี้ยง: '🎾',
+  เสื้อผ้าสัตว์เลี้ยง: '👕',
   'เสื้อผ้า/สิ่งทอ': '👕',
-  'อุปกรณ์สัตว์เลี้ยง': '🦮',
+  อุปกรณ์สัตว์เลี้ยง: '🦮',
   'สายจูง อุปกรณ์': '🦮',
-  'บรรจุภัณฑ์': '📦',
-  'แพ็กเกจจิ้ง': '📦',
-  'เครื่องสำอาง': '✨',
-  'อุปกรณ์อาบน้ำ': '🧴',
-  'เฟอร์นิเจอร์': '🏠',
-  'ที่นอนและบ้าน': '🏠',
-  'พลาสติก': '🔩',
-  'ขนมสัตว์เลี้ยง': '🍖',
-  'ตู้ปลาและกรง': '🐟',
-  'กระเป๋าและรถเข็น': '🧳',
-  'ห้องน้ำและทราย': '🚿',
+  บรรจุภัณฑ์: '📦',
+  แพ็กเกจจิ้ง: '📦',
+  เครื่องสำอาง: '✨',
+  อุปกรณ์อาบน้ำ: '🧴',
+  เฟอร์นิเจอร์: '🏠',
+  ที่นอนและบ้าน: '🏠',
+  พลาสติก: '🔩',
+  ขนมสัตว์เลี้ยง: '🍖',
+  ตู้ปลาและกรง: '🐟',
+  กระเป๋าและรถเข็น: '🧳',
+  ห้องน้ำและทราย: '🚿',
 };
 
 export function guessCategoryIcon(catName: string): string {
@@ -93,8 +93,7 @@ function mapRowToRfqOffer(
   const explicitPrice = Number(q.price ?? q.total_price ?? 0);
   const pricePerPiece = Number(q.price_per_piece ?? 0);
   const mold = Number(q.mold_cost ?? 0);
-  const price =
-    explicitPrice > 0 ? explicitPrice : pricePerPiece * quantity + mold;
+  const price = explicitPrice > 0 ? explicitPrice : pricePerPiece * quantity + mold;
   const st = String(q.status ?? 'PD').toUpperCase();
   return {
     id,
@@ -144,7 +143,10 @@ function parseRfqImageList(raw: unknown): string[] {
   return out;
 }
 
-function extractRfqImageUrls(apiRoot: Record<string, unknown>, row: Record<string, unknown>): string[] {
+function extractRfqImageUrls(
+  apiRoot: Record<string, unknown>,
+  row: Record<string, unknown>,
+): string[] {
   const nested =
     apiRoot.rfq && typeof apiRoot.rfq === 'object' && !Array.isArray(apiRoot.rfq)
       ? (apiRoot.rfq as Record<string, unknown>)

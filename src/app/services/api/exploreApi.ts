@@ -2,8 +2,8 @@
  * Explore API — Frontend aggregated data endpoints
  */
 
-import { httpClient } from './httpClient';
-import type { ExploreResponse, PromoSlidesResponse } from './types';
+import { httpClient } from '@/services/api/httpClient';
+import type { ExploreResponse, PromoSlidesResponse } from '@/services/api/types';
 
 export interface FrontendBootstrapResponse {
   currentUser: Record<string, unknown>;
@@ -48,8 +48,7 @@ export const frontendApi = {
     return httpClient.get<unknown[]>(`/frontend/products?${params}`);
   },
 
-  getPromotions: (limit = 4) =>
-    httpClient.get<unknown[]>(`/frontend/promotions?limit=${limit}`),
+  getPromotions: (limit = 4) => httpClient.get<unknown[]>(`/frontend/promotions?limit=${limit}`),
 
   getPromoCodes: () => httpClient.get<unknown[]>('/frontend/promo-codes'),
 };

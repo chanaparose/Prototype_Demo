@@ -25,8 +25,7 @@ export interface QueryTableRequest<TFilter = Record<string, unknown>> {
 }
 
 export interface ListRequest<TFilter = Record<string, unknown>>
-  extends PaginationRequest,
-    SortRequest {
+  extends PaginationRequest, SortRequest {
   search?: string;
   filters?: TFilter;
 }

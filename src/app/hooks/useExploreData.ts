@@ -1,6 +1,6 @@
 import React from 'react';
-import { frontendApi, promoSlidesApi, showcasesApi } from '../services/api';
-import { useExploreCategoriesFromApi } from './useExploreCategoriesFromApi';
+import { frontendApi, promoSlidesApi, showcasesApi } from '@/services/api';
+import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi';
 
 type UseExploreDataOptions = { enablePageApis?: boolean };
 
@@ -101,10 +101,10 @@ function parseLinkedShowcasesFirstImage(raw: unknown): string {
 
 function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
   const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
-  const linkedFirstImage = parseLinkedShowcasesFirstImage(
-    r.linked_showcases ?? r.linkedShowcases,
-  );
-  const ctRaw = String(r.content_type ?? r.type ?? '').trim().toUpperCase();
+  const linkedFirstImage = parseLinkedShowcasesFirstImage(r.linked_showcases ?? r.linkedShowcases);
+  const ctRaw = String(r.content_type ?? r.type ?? '')
+    .trim()
+    .toUpperCase();
   return {
     id: String(r.showcase_id ?? r.id ?? ''),
     factoryId: String(r.factory_id ?? ''),
@@ -127,8 +127,13 @@ function normShowcase(r: Record<string, unknown>): NormalisedShowcase {
 }
 
 type NormArticle = {
-  id: string; title: string; excerpt: string;
-  image: string; tag: string; factoryName: string; likes: number;
+  id: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  tag: string;
+  factoryName: string;
+  likes: number;
 };
 
 function normArticle(r: Record<string, unknown>): NormArticle {
@@ -245,24 +250,32 @@ export function useExploreData(options?: UseExploreDataOptions) {
         .getExplore()
         .then((data) => {
           if (cancelled) return;
-          const c = (Array.isArray(data.promo_codes) ? data.promo_codes : []) as Record<string, unknown>[];
+          const c = (Array.isArray(data.promo_codes) ? data.promo_codes : []) as Record<
+            string,
+            unknown
+          >[];
           setPromoCodes(c.map(normSlide).filter((v) => v.id && v.title));
         })
         .catch(() => {});
 
       // 3) Promo slides → /promo-slides
-      const p3 = promoSlidesApi.list().then((raw) => {
-        if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        setPromoSlides(arr.map(normSlide).filter((s) => s.id && s.title));
-      }).catch(() => {});
+      const p3 = promoSlidesApi
+        .list()
+        .then((raw) => {
+          if (cancelled) return;
+          const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+          setPromoSlides(arr.map(normSlide).filter((s) => s.id && s.title));
+        })
+        .catch(() => {});
 
       await Promise.allSettled([pPd, pPm, pId, pMt, p2, p3]);
       if (!cancelled) setIsLoading(false);
     }
 
     fetchAll();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [enablePageApis]);
 
   const productShowcases = React.useMemo(() => pdShowcases, [pdShowcases]);
@@ -306,8 +319,10 @@ export function useExploreData(options?: UseExploreDataOptions) {
   }, [promoSlides, promoCodes]);
 
   return {
-    searchText, setSearchText,
-    copiedId, setCopiedId,
+    searchText,
+    setSearchText,
+    copiedId,
+    setCopiedId,
 
     // API-only data (โรงงานบน Explore → useData().factories จาก bootstrap)
     ideaArticles,

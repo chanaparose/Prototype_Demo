@@ -36,19 +36,22 @@ export const MOBILE_PRIMARY_TAB_BAR =
   'linear-gradient(135deg, #F5F0FF 0%, #FFF8F2 48%, #FFF0E5 100%)';
 
 /** ปุ่ม CTA — ไล่มิดไนท์ → พลัม → แม็กนีตา */
-export const CTA_GRADIENT =
-  'linear-gradient(135deg, #1A0F2E 0%, #4A267D 45%, #A238FF 100%)';
+export const CTA_GRADIENT = 'linear-gradient(135deg, #1A0F2E 0%, #4A267D 45%, #A238FF 100%)';
 
 export const BADGE_ALERT_BG = '#FF7A00';
 
 export const PROGRESS_GRADIENT_ACTIVE =
   'linear-gradient(90deg, #6D28D9 0%, #A238FF 45%, #F28A2E 100%)';
 
-export const PROGRESS_COMPLETED =
-  'linear-gradient(90deg, #2D1B4E 0%, #6D28D9 100%)';
+export const PROGRESS_COMPLETED = 'linear-gradient(90deg, #2D1B4E 0%, #6D28D9 100%)';
 
 export type RfqFilterId = 'pending' | 'has_quote' | 'cancelled_expired';
-export type OrderFilterId = 'pending_payment' | 'in_production' | 'shipped' | 'completed' | 'cancelled_expired';
+export type OrderFilterId =
+  | 'pending_payment'
+  | 'in_production'
+  | 'shipped'
+  | 'completed'
+  | 'cancelled_expired';
 
 /** ธีมแท็บกรอง RFQ — แยกสีตามแท็บ */
 export const RFQ_FILTER_THEME: Record<

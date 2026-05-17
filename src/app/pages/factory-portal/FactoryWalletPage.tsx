@@ -10,9 +10,9 @@ import {
   Clock,
   AlertCircle,
 } from 'lucide-react';
-import { walletApi, transactionsApi } from '../../services/api';
-import { FactoryPageHeader } from './components/FactoryPageHeader';
-import { Button } from '../../components/ui/button';
+import { walletApi, transactionsApi } from '@/services/api';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
+import { Button } from '@/components/ui/button';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
 const NAVY = '#2E2252';
@@ -60,9 +60,11 @@ function txLabel(type: string): string {
 
 function statusBadgeCls(status: string) {
   const s = String(status ?? '').toUpperCase();
-  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED') return 'bg-emerald-100 text-emerald-700';
+  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED')
+    return 'bg-emerald-100 text-emerald-700';
   if (s === 'PT' || s === 'PENDING' || s === 'PROCESSING') return 'bg-amber-100 text-amber-700';
-  if (s === 'RJ' || s === 'FL' || s === 'FAILED' || s === 'CN' || s === 'CANCELLED') return 'bg-red-100 text-red-600';
+  if (s === 'RJ' || s === 'FL' || s === 'FAILED' || s === 'CN' || s === 'CANCELLED')
+    return 'bg-red-100 text-red-600';
   return 'bg-gray-100 text-gray-500';
 }
 
@@ -90,17 +92,17 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-4">
+    <div className='rounded-2xl border border-gray-100 bg-white shadow-sm p-4'>
       <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+        className='w-9 h-9 rounded-xl flex items-center justify-center mb-3'
         style={{ backgroundColor: `${accent}1A` }}
       >
         <Icon size={17} style={{ color: accent }} />
       </div>
-      <p className="text-lg font-bold tabular-nums" style={{ color: NAVY }}>
+      <p className='text-lg font-bold tabular-nums' style={{ color: NAVY }}>
         {value}
       </p>
-      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      <p className='text-xs text-gray-500 mt-0.5'>{label}</p>
     </div>
   );
 }
@@ -116,9 +118,9 @@ function TxRow({ t }: { t: NormTx }) {
   const sLabel = statusLabel(t.status);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] transition-colors">
+    <div className='flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] transition-colors'>
       <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
         style={{ backgroundColor: credit ? 'rgba(5,150,105,0.1)' : 'rgba(220,38,38,0.1)' }}
       >
         {credit ? (
@@ -127,19 +129,16 @@ function TxRow({ t }: { t: NormTx }) {
           <ArrowUpRight size={16} style={{ color: '#DC2626' }} />
         )}
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate" style={{ color: NAVY }}>
+      <div className='flex-1 min-w-0'>
+        <p className='text-sm font-medium truncate' style={{ color: NAVY }}>
           {desc}
         </p>
-        <p className="text-xs text-gray-400">
+        <p className='text-xs text-gray-400'>
           {dateStr} {ref}
         </p>
       </div>
-      <div className="text-right shrink-0">
-        <p
-          className="text-sm font-bold"
-          style={{ color: credit ? '#059669' : '#DC2626' }}
-        >
+      <div className='text-right shrink-0'>
+        <p className='text-sm font-bold' style={{ color: credit ? '#059669' : '#DC2626' }}>
           {credit ? '+' : '-'}฿{t.amount.toLocaleString('th-TH')}
         </p>
         <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${sBadgeCls}`}>
@@ -183,7 +182,10 @@ export function FactoryWalletPage() {
         raw = await transactionsApi.list().catch(() => []);
       }
       const arr = (Array.isArray(raw) ? raw : []) as TxRow[];
-      const apiTx = arr.map(normTx).filter((t) => t.id).slice(0, 30);
+      const apiTx = arr
+        .map(normTx)
+        .filter((t) => t.id)
+        .slice(0, 30);
       setTx(apiTx);
       setLastRefreshedAt(new Date());
     } catch (e) {
@@ -215,10 +217,7 @@ export function FactoryWalletPage() {
     [tx],
   );
   const totalWithdrawn = useMemo(
-    () =>
-      tx
-        .filter((t) => !isCredit(t.type))
-        .reduce((s, t) => s + t.amount, 0),
+    () => tx.filter((t) => !isCredit(t.type)).reduce((s, t) => s + t.amount, 0),
     [tx],
   );
   const pendingWithdrawals = useMemo(
@@ -237,13 +236,13 @@ export function FactoryWalletPage() {
   /* ─── Loading state ─────────────────────────────────────────────── */
   if (loading) {
     return (
-      <div className="space-y-4">
-        <FactoryPageHeader title="กระเป๋าเงิน" subtitle="Factory / Wallet" icon={Wallet} />
-        <div className="space-y-4">
-          <div className="h-48 rounded-2xl bg-white animate-pulse" />
-          <div className="grid grid-cols-3 gap-3">
+      <div className='space-y-4'>
+        <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
+        <div className='space-y-4'>
+          <div className='h-48 rounded-2xl bg-white animate-pulse' />
+          <div className='grid grid-cols-3 gap-3'>
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-24 rounded-2xl bg-white animate-pulse" />
+              <div key={i} className='h-24 rounded-2xl bg-white animate-pulse' />
             ))}
           </div>
         </div>
@@ -256,20 +255,18 @@ export function FactoryWalletPage() {
   const pendingDisplay = (pending ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 });
 
   return (
-    <div className="space-y-4 pb-8">
-      <FactoryPageHeader title="กระเป๋าเงิน" subtitle="Factory / Wallet" icon={Wallet} />
+    <div className='space-y-4 pb-8'>
+      <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
 
-      <div className="space-y-5">
-
+      <div className='space-y-5'>
         {/* ── Refresh row ──────────────────────────────────────────── */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>
-            อัปเดต: {lastRefreshedAt ? lastRefreshedAt.toLocaleTimeString('th-TH') : '-'}
-          </span>
-          <Button variant="unstyled"
-            type="button"
+        <div className='flex items-center justify-between text-xs text-gray-500'>
+          <span>อัปเดต: {lastRefreshedAt ? lastRefreshedAt.toLocaleTimeString('th-TH') : '-'}</span>
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={() => void load()}
-            className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium"
+            className='flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium'
           >
             <RefreshCw size={12} />
             รีเฟรช
@@ -278,42 +275,52 @@ export function FactoryWalletPage() {
 
         {/* ── Error ───────────────────────────────────────────────── */}
         {error ? (
-          <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
-            <AlertCircle size={16} className="shrink-0" />
+          <div className='flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3'>
+            <AlertCircle size={16} className='shrink-0' />
             <span>{error} — แสดงข้อมูลตัวอย่างแทน</span>
           </div>
         ) : null}
 
         {/* ── Balance card (flat style) ────────────────────────────── */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500 mb-0.5">ยอดคงเหลือ</p>
-          <p className="text-4xl font-bold tabular-nums text-slate-900">฿{balanceDisplay}</p>
+        <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
+          <p className='text-sm text-slate-500 mb-0.5'>ยอดคงเหลือ</p>
+          <p className='text-4xl font-bold tabular-nums text-slate-900'>฿{balanceDisplay}</p>
 
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-              <p className="text-xs text-slate-500">รอดำเนินการ</p>
-              <p className="text-base font-semibold tabular-nums text-slate-800">฿{pendingDisplay}</p>
+          <div className='mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3'>
+            <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
+              <p className='text-xs text-slate-500'>รอดำเนินการ</p>
+              <p className='text-base font-semibold tabular-nums text-slate-800'>
+                ฿{pendingDisplay}
+              </p>
             </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-              <p className="text-xs text-slate-500">รายได้รวมเดือนนี้</p>
-              <p className="text-base font-semibold tabular-nums text-slate-800">
+            <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
+              <p className='text-xs text-slate-500'>รายได้รวมเดือนนี้</p>
+              <p className='text-base font-semibold tabular-nums text-slate-800'>
                 ฿{thisMonthEarned.toLocaleString('th-TH')}
               </p>
             </div>
           </div>
 
-          <div className="mt-5 flex gap-3">
-            <Button variant="unstyled"
-              type="button"
-              onClick={() => { setWithdrawAmount(''); setWithdrawError(''); setWithdrawModal(true); }}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+          <div className='mt-5 flex gap-3'>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => {
+                setWithdrawAmount('');
+                setWithdrawError('');
+                setWithdrawModal(true);
+              }}
+              className='flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors'
             >
               ถอนเงิน
             </Button>
-            <Button variant="unstyled"
-              type="button"
-              onClick={() => document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() =>
+                document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })
+              }
+              className='flex-1 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors'
             >
               ประวัติการถอน
             </Button>
@@ -321,22 +328,22 @@ export function FactoryWalletPage() {
         </div>
 
         {/* ── Stats row ────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className='grid grid-cols-3 gap-3'>
           <StatCard
             icon={TrendingUp}
-            label="รายได้รวม"
+            label='รายได้รวม'
             value={`฿${totalEarned.toLocaleString('th-TH')}`}
-            accent="#059669"
+            accent='#059669'
           />
           <StatCard
             icon={BarChart3}
-            label="ถอนแล้ว"
+            label='ถอนแล้ว'
             value={`฿${totalWithdrawn.toLocaleString('th-TH')}`}
             accent={ORANGE}
           />
           <StatCard
             icon={Clock}
-            label="รอรับ"
+            label='รอรับ'
             value={`฿${(pending ?? 0).toLocaleString('th-TH')}`}
             accent={TEAL}
           />
@@ -344,21 +351,21 @@ export function FactoryWalletPage() {
 
         {/* ── PromptPay notice ──────────────────────────────────────── */}
         <div
-          className="rounded-2xl border px-4 py-3 text-sm"
+          className='rounded-2xl border px-4 py-3 text-sm'
           style={{ borderColor: '#C4B5D4', backgroundColor: '#F3EEF8', color: '#4A267D' }}
         >
-          <p className="font-semibold mb-0.5">เติมเงิน / ถอนเงิน (PromptPay)</p>
-          <p className="text-xs opacity-80 leading-relaxed">
+          <p className='font-semibold mb-0.5'>เติมเงิน / ถอนเงิน (PromptPay)</p>
+          <p className='text-xs opacity-80 leading-relaxed'>
             ฟลว์ PromptPay กำลังพัฒนา — ดูยอดและประวัติธุรกรรมด้านล่างได้จาก API ที่มีอยู่
           </p>
         </div>
 
         {/* ── Pending withdrawals section ───────────────────────────── */}
         {pendingWithdrawals.length > 0 && (
-          <section className="rounded-2xl border border-amber-100 bg-amber-50 overflow-hidden">
-            <div className="px-4 py-3 border-b border-amber-100 flex items-center gap-2">
+          <section className='rounded-2xl border border-amber-100 bg-amber-50 overflow-hidden'>
+            <div className='px-4 py-3 border-b border-amber-100 flex items-center gap-2'>
               <Clock size={15} style={{ color: '#D97706' }} />
-              <h2 className="text-sm font-bold" style={{ color: '#92400E' }}>
+              <h2 className='text-sm font-bold' style={{ color: '#92400E' }}>
                 รายการถอนเงินรอดำเนินการ
               </h2>
             </div>
@@ -366,13 +373,13 @@ export function FactoryWalletPage() {
               {pendingWithdrawals.map((t) => (
                 <li
                   key={t.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 border-t border-amber-100 first:border-t-0"
+                  className='flex items-center justify-between gap-3 px-4 py-3 border-t border-amber-100 first:border-t-0'
                 >
                   <div>
-                    <p className="text-sm font-medium" style={{ color: NAVY }}>
+                    <p className='text-sm font-medium' style={{ color: NAVY }}>
                       {t.description || 'ถอนเงิน'}
                     </p>
-                    <p className="text-xs text-amber-700">
+                    <p className='text-xs text-amber-700'>
                       {t.date
                         ? new Date(t.date).toLocaleDateString('th-TH', {
                             day: 'numeric',
@@ -383,11 +390,11 @@ export function FactoryWalletPage() {
                       · {t.reference || '-'}
                     </p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-amber-700">
+                  <div className='text-right shrink-0'>
+                    <p className='text-sm font-bold text-amber-700'>
                       -฿{t.amount.toLocaleString('th-TH')}
                     </p>
-                    <span className="text-[11px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
+                    <span className='text-[11px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full'>
                       รอดำเนินการ
                     </span>
                   </div>
@@ -398,17 +405,20 @@ export function FactoryWalletPage() {
         )}
 
         {/* ── Transaction history section ───────────────────────────── */}
-        <section id="tx-section" className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+        <section
+          id='tx-section'
+          className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'
+        >
           {/* Header + filter tabs */}
-          <div className="px-4 pt-4 pb-3 border-b border-gray-50">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold" style={{ color: NAVY }}>
+          <div className='px-4 pt-4 pb-3 border-b border-gray-50'>
+            <div className='flex items-center justify-between mb-3'>
+              <h2 className='text-sm font-bold' style={{ color: NAVY }}>
                 ประวัติธุรกรรม
               </h2>
-              <span className="text-xs text-gray-400">{filteredTx.length} รายการ</span>
+              <span className='text-xs text-gray-400'>{filteredTx.length} รายการ</span>
             </div>
             {/* Filter tabs */}
-            <div className="flex gap-1.5">
+            <div className='flex gap-1.5'>
               {(
                 [
                   { key: 'all', label: 'ทั้งหมด' },
@@ -418,11 +428,12 @@ export function FactoryWalletPage() {
               ).map(({ key, label }) => {
                 const active = filterType === key;
                 return (
-                  <Button variant="unstyled"
+                  <Button
+                    variant='unstyled'
                     key={key}
-                    type="button"
+                    type='button'
                     onClick={() => setFilterType(key)}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+                    className='px-3 py-1.5 rounded-xl text-xs font-semibold transition-all'
                     style={
                       active
                         ? {
@@ -442,7 +453,7 @@ export function FactoryWalletPage() {
 
           {/* Transaction rows */}
           {filteredTx.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-10">ไม่มีรายการ</p>
+            <p className='text-sm text-gray-400 text-center py-10'>ไม่มีรายการ</p>
           ) : (
             <div>
               {filteredTx.map((t) => (
@@ -451,60 +462,62 @@ export function FactoryWalletPage() {
             </div>
           )}
         </section>
-
-      </div>{/* end px-4 wrapper */}
+      </div>
+      {/* end px-4 wrapper */}
 
       {/* ══ Withdrawal modal (bottom sheet) ══════════════════════════ */}
       {withdrawModal ? (
-        <div className="fixed inset-0 z-[70]">
-          <Button variant="unstyled"
-            type="button"
-            className="absolute inset-0 bg-black/50"
+        <div className='fixed inset-0 z-[70]'>
+          <Button
+            variant='unstyled'
+            type='button'
+            className='absolute inset-0 bg-black/50'
             onClick={() => setWithdrawModal(false)}
           />
-          <div className="absolute inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[420px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden">
+          <div className='absolute inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[420px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden'>
             {/* Handle bar */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-gray-200" />
+            <div className='flex justify-center pt-3 pb-1'>
+              <div className='w-10 h-1 rounded-full bg-gray-200' />
             </div>
-            <div className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold" style={{ color: NAVY }}>
+            <div className='p-5 space-y-4'>
+              <div className='flex items-center justify-between'>
+                <h2 className='text-base font-bold' style={{ color: NAVY }}>
                   ถอนเงิน
                 </h2>
-                <Button variant="unstyled"
-                  type="button"
+                <Button
+                  variant='unstyled'
+                  type='button'
                   onClick={() => setWithdrawModal(false)}
-                  className="p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+                  className='p-1.5 rounded-xl hover:bg-gray-100 transition-colors'
                 >
-                  <X size={18} className="text-gray-500" />
+                  <X size={18} className='text-gray-500' />
                 </Button>
               </div>
 
               {/* Balance info */}
               <div
-                className="rounded-xl p-3 flex items-center justify-between"
+                className='rounded-xl p-3 flex items-center justify-between'
                 style={{ backgroundColor: `${TEAL}15` }}
               >
-                <p className="text-sm" style={{ color: TEAL }}>
+                <p className='text-sm' style={{ color: TEAL }}>
                   ยอดคงเหลือที่ถอนได้
                 </p>
-                <p className="font-bold tabular-nums" style={{ color: TEAL }}>
+                <p className='font-bold tabular-nums' style={{ color: TEAL }}>
                   ฿{(good ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
               {/* Amount input */}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                <label className='block text-xs font-semibold text-gray-600 mb-1.5'>
                   จำนวนที่ต้องการถอน
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500">
+                <div className='relative'>
+                  <span className='absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500'>
                     ฿
                   </span>
                   <input
-                    type="number"
+                    type='number'
                     min={500}
                     max={good ?? 0}
                     value={withdrawAmount}
@@ -512,44 +525,44 @@ export function FactoryWalletPage() {
                       setWithdrawAmount(e.target.value);
                       setWithdrawError('');
                     }}
-                    placeholder="500"
-                    className="w-full pl-7 pr-3 py-3 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#0D9488]"
+                    placeholder='500'
+                    className='w-full pl-7 pr-3 py-3 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#0D9488]'
                     style={{ color: NAVY }}
                   />
                 </div>
-                <p className="text-xs text-gray-400 mt-1">ขั้นต่ำ ฿500</p>
+                <p className='text-xs text-gray-400 mt-1'>ขั้นต่ำ ฿500</p>
               </div>
 
               {/* Destination account */}
-              <div className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-3">
-                <p className="text-xs font-semibold text-gray-500 mb-0.5">บัญชีปลายทาง</p>
-                <p className="text-sm font-medium" style={{ color: NAVY }}>
+              <div className='rounded-xl border border-gray-100 bg-gray-50 px-3 py-3'>
+                <p className='text-xs font-semibold text-gray-500 mb-0.5'>บัญชีปลายทาง</p>
+                <p className='text-sm font-medium' style={{ color: NAVY }}>
                   PromptPay — จากโปรไฟล์
                 </p>
-                <p className="text-xs text-gray-400">
-                  (ข้อมูลบัญชีโหลดจาก profile API อัตโนมัติ)
-                </p>
+                <p className='text-xs text-gray-400'>(ข้อมูลบัญชีโหลดจาก profile API อัตโนมัติ)</p>
               </div>
 
               {/* Error */}
               {withdrawError ? (
-                <p className="text-xs text-red-600 flex items-center gap-1">
+                <p className='text-xs text-red-600 flex items-center gap-1'>
                   <AlertCircle size={12} />
                   {withdrawError}
                 </p>
               ) : null}
 
               {/* Action buttons */}
-              <div className="flex gap-3 pt-1">
-                <Button variant="unstyled"
-                  type="button"
+              <div className='flex gap-3 pt-1'>
+                <Button
+                  variant='unstyled'
+                  type='button'
                   onClick={() => setWithdrawModal(false)}
-                  className="flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                  className='flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors'
                 >
                   ยกเลิก
                 </Button>
-                <Button variant="unstyled"
-                  type="button"
+                <Button
+                  variant='unstyled'
+                  type='button'
                   disabled={withdrawBusy}
                   onClick={async () => {
                     const amt = Number(withdrawAmount);
@@ -573,7 +586,7 @@ export function FactoryWalletPage() {
                       setWithdrawBusy(false);
                     }
                   }}
-                  className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90"
+                  className='flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90'
                   style={{
                     background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
                     boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
@@ -586,7 +599,6 @@ export function FactoryWalletPage() {
           </div>
         </div>
       ) : null}
-
     </div>
   );
 }

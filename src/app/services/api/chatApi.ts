@@ -2,25 +2,21 @@
  * Chat & Messaging API — Conversations and messages
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 import type {
   MessageDTO,
   MessageSendPayload,
   ThreadResponse,
   ConversationDTO,
-} from './types';
+} from '@/services/api/types';
 
 export const conversationsApi = {
   list: () => httpClient.get<ConversationDTO[]>('/conversations'),
 
-  get: (convId: string | number) =>
-    httpClient.get<ConversationDTO>(`/conversations/${convId}`),
+  get: (convId: string | number) => httpClient.get<ConversationDTO>(`/conversations/${convId}`),
 
-  create: (data: {
-    customer_id?: number;
-    factory_id?: number;
-    rfq_id?: number;
-  }) => httpClient.post<ConversationDTO>('/conversations', data),
+  create: (data: { customer_id?: number; factory_id?: number; rfq_id?: number }) =>
+    httpClient.post<ConversationDTO>('/conversations', data),
 
   /** Mark all messages as read for a conversation */
   markAsRead: (convId: string | number) =>
@@ -55,8 +51,7 @@ export const notificationsApi = {
 
   get: (id: string | number) => httpClient.get<unknown>(`/notifications/${id}`),
 
-  markAsRead: (id: string | number) =>
-    httpClient.post<void>(`/notifications/${id}/mark-read`, {}),
+  markAsRead: (id: string | number) => httpClient.post<void>(`/notifications/${id}/mark-read`, {}),
 
   markAllAsRead: () => httpClient.post<void>('/notifications/mark-all-read', {}),
 

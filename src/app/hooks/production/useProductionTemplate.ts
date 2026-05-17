@@ -1,6 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { productionApi } from '../../services/api';
-import { parseStepTemplates, type ProductionStepTemplate } from '../../components/features/production/types';
+import { productionApi } from '@/services/api';
+import {
+  parseStepTemplates,
+  type ProductionStepTemplate,
+} from '@/components/features/production/types';
 
 export function useProductionTemplate() {
   return useQuery({

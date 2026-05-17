@@ -3,7 +3,7 @@
  */
 
 import { IUser, IAuthResponse } from '@/types/model';
-import { createMapper } from './index';
+import { createMapper } from '@/services/mapper/response/index';
 
 /**
  * Raw user data from API

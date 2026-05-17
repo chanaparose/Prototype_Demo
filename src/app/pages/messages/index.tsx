@@ -1,11 +1,11 @@
 import React from 'react';
-import { useIsDesktop } from '../../hooks/useIsDesktop';
-import { MessagesMobile } from './Messages.mobile';
-import { MessagesDesktop } from './Messages.desktop';
-import { useConversations } from './useConversations';
-import { useMarkAsRead } from './useMarkAsRead';
-import { sortConversations } from './selectors';
-import type { UiConversation } from './types';
+import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { MessagesMobile } from '@/pages/messages/Messages.mobile';
+import { MessagesDesktop } from '@/pages/messages/Messages.desktop';
+import { useConversations } from '@/pages/messages/useConversations';
+import { useMarkAsRead } from '@/pages/messages/useMarkAsRead';
+import { sortConversations } from '@/pages/messages/selectors';
+import type { UiConversation } from '@/pages/messages/types';
 
 export function Messages() {
   const isDesktop = useIsDesktop();
@@ -37,17 +37,12 @@ export function Messages() {
     const list = !q
       ? items
       : items.filter(
-          (c) =>
-            c.view.title.toLowerCase().includes(q) ||
-            c.rfqName.toLowerCase().includes(q),
+          (c) => c.view.title.toLowerCase().includes(q) || c.rfqName.toLowerCase().includes(q),
         );
     return sortConversations(list);
   }, [searchText, items]);
 
-  const totalUnread = React.useMemo(
-    () => items.reduce((s, c) => s + c.unread, 0),
-    [items],
-  );
+  const totalUnread = React.useMemo(() => items.reduce((s, c) => s + c.unread, 0), [items]);
 
   const selectedConversation = React.useMemo((): UiConversation | null => {
     if (!selectedId) return null;

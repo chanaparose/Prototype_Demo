@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../../../components/ui/button';
+import { Button } from '@/components/ui/button';
 
 type TabItem = {
   id: string;
@@ -29,25 +29,23 @@ export function TabNavigation({
         <Button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          variant="ghost"
-          size="default"
+          variant='ghost'
+          size='default'
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${tabClassName} ${
-            activeTabId === tab.id
-              ? 'text-gray-900'
-              : 'text-gray-600 hover:text-gray-900'
+            activeTabId === tab.id ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {tab.icon}
             <span>{tab.label}</span>
             {tab.count != null && (
-              <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+              <span className='ml-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700'>
                 {tab.count}
               </span>
             )}
           </div>
           {activeTabId === tab.id && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-500" />
+            <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-violet-500' />
           )}
         </Button>
       ))}

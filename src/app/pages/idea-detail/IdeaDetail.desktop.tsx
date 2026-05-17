@@ -1,6 +1,9 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '../../components/features/showcase-detail';
-import { useNavigate } from "react-router";
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  SHOWCASE_DETAIL_BRAND as BRAND,
+  formatShowcaseThaiDate as formatThaiDate,
+} from '@/components/features/showcase-detail';
+import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -10,24 +13,22 @@ import {
   Heart,
   MapPin,
   MessageCircle,
-} from "lucide-react";
-import { ImageWithFallback } from "../../components/shared";
-import { useIdeaDetailShowcase } from "../../hooks/useShowcaseDetailPage";
-import { useStartChatWithFactory } from "../../hooks/useStartChatWithFactory";
-import { useAuth } from "../../stores";
-import { useData, type FactoryShowcase } from "../../stores";
-import { MarkdownBody } from "../../shared/markdown/MarkdownBody";
-import { showcasesApi } from "../../services/api";
-import { normShowcase } from "../../hooks/useShowcases";
-import { RelatedShowcasesSection } from "../../components/features/idea-detail/RelatedShowcasesSection";
-import { Button } from '../../components/ui/button';
+} from 'lucide-react';
+import { ImageWithFallback } from '@/components/shared';
+import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
+import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
+import { useAuth } from '@/stores';
+import { useData, type FactoryShowcase } from '@/stores';
+import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
+import { showcasesApi } from '@/services/api';
+import { normShowcase } from '@/hooks/useShowcases';
+import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
+import { Button } from '@/components/ui/button';
 
 const CARD = {
-  purple: "#7A4B94",
-  blue: "#2E2252",
+  purple: '#7A4B94',
+  blue: '#2E2252',
 } as const;
-
-
 
 export function IdeaDetailDesktop() {
   const navigate = useNavigate();
@@ -49,11 +50,11 @@ export function IdeaDetailDesktop() {
     let cancelled = false;
     void (async () => {
       try {
-        const rows = await showcasesApi.list("ID");
+        const rows = await showcasesApi.list('ID');
         if (cancelled) return;
         const list = (Array.isArray(rows) ? rows : [])
           .map((r) => normShowcase((r ?? {}) as Record<string, unknown>))
-          .filter((s) => s.contentType === "idea" && s.id !== item.id)
+          .filter((s) => s.contentType === 'idea' && s.id !== item.id)
           .slice(0, 5);
         setRelatedIdeas(list);
       } catch {
@@ -68,11 +69,11 @@ export function IdeaDetailDesktop() {
   if (loading) {
     return (
       <div
-        className="hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex"
+        className='hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex'
         style={{ background: BRAND.purpleSoft }}
       >
         <span
-          className="h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"
+          className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
           aria-hidden
         />
       </div>
@@ -82,168 +83,161 @@ export function IdeaDetailDesktop() {
   if (!item || !resolvedId) {
     return (
       <div
-        className="hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]"
+        className='hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]'
         style={{ background: BRAND.purpleSoft }}
       >
-        <Button variant="unstyled"
-          type="button"
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={handleBack}
-          aria-label="กลับไป"
-          className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium"
+          aria-label='กลับไป'
+          className='mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium'
           style={{ color: BRAND.purple }}
         >
-          <ArrowLeft className="w-4 h-4" /> กลับ
+          <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
-        <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
-          <p className="text-4xl mb-3">💡</p>
-          <p className="text-[14px] text-gray-500 font-medium">
-            {error || "ไม่พบบทความไอเดีย"}
-          </p>
+        <div className='bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm'>
+          <p className='text-4xl mb-3'>💡</p>
+          <p className='text-[14px] text-gray-500 font-medium'>{error || 'ไม่พบบทความไอเดีย'}</p>
         </div>
       </div>
     );
   }
 
-  const isSelfFactory = String(user?.id ?? "") === String(item.factoryId ?? "");
-  const canChat = !isSelfFactory && String(item.factoryId ?? "").trim() !== "";
-  const markdown = String(item.content ?? "").trim();
+  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
+  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
+  const markdown = String(item.content ?? '').trim();
   const subName = item.sub_category_name?.trim() ?? null;
 
   return (
     <div
-      className="hidden lg:block min-h-[calc(100vh-4rem)]"
+      className='hidden lg:block min-h-[calc(100vh-4rem)]'
       style={{ background: BRAND.purpleSoft }}
     >
-      <div className="px-8 pt-5 pb-3">
-        <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
-          <Button variant="unstyled"
-            type="button"
+      <div className='px-8 pt-5 pb-3'>
+        <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={handleBack}
-            className="inline-flex items-center gap-1 font-medium hover:opacity-80"
+            className='inline-flex items-center gap-1 font-medium hover:opacity-80'
             style={{ color: BRAND.purple }}
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> กลับ
+            <ArrowLeft className='w-3.5 h-3.5' /> กลับ
           </Button>
-          <Chevron className="w-3 h-3 text-gray-300" />
-          <span>{item.category || "บทความไอเดีย"}</span>
+          <Chevron className='w-3 h-3 text-gray-300' />
+          <span>{item.category || 'บทความไอเดีย'}</span>
           {subName ? (
             <>
-              <Chevron className="w-3 h-3 text-gray-300" />
+              <Chevron className='w-3 h-3 text-gray-300' />
               <span>{subName}</span>
             </>
           ) : null}
-          <Chevron className="w-3 h-3 text-gray-300" />
-          <span className="truncate max-w-[32rem]" style={{ color: BRAND.ink }}>
+          <Chevron className='w-3 h-3 text-gray-300' />
+          <span className='truncate max-w-[32rem]' style={{ color: BRAND.ink }}>
             {item.title}
           </span>
         </div>
       </div>
 
-      <div className="px-8 pb-10 space-y-3">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
+      <div className='px-8 pb-10 space-y-3'>
+        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-4'>
+          <div className='space-y-3'>
+            <div className='flex flex-wrap items-center gap-2'>
               <span
-                className="inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-semibold"
-                style={{ background: "#FFF4E8", color: BRAND.orange }}
+                className='inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-semibold'
+                style={{ background: '#FFF4E8', color: BRAND.orange }}
               >
                 บทความไอเดีย
               </span>
               {item.category ? (
-                <span className="inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-medium text-gray-500 border border-gray-200">
+                <span className='inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-medium text-gray-500 border border-gray-200'>
                   {item.category}
                 </span>
               ) : null}
             </div>
 
-            <h1
-              className="text-[28px] leading-tight font-bold"
-              style={{ color: BRAND.ink }}
-            >
+            <h1 className='text-[28px] leading-tight font-bold' style={{ color: BRAND.ink }}>
               {item.title}
             </h1>
 
-            <div className="inline-flex items-center gap-1.5 text-[12px] text-gray-500">
-              <CalendarDays className="w-3.5 h-3.5" />
+            <div className='inline-flex items-center gap-1.5 text-[12px] text-gray-500'>
+              <CalendarDays className='w-3.5 h-3.5' />
               เผยแพร่ {formatThaiDate(item.postedAt)}
             </div>
           </div>
         </div>
 
-        <article className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
+        <article className='bg-white rounded-2xl p-8 border border-gray-100 shadow-sm'>
           <MarkdownBody
             source={markdown}
-            className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+            className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
           />
         </article>
 
-        <div className="rounded-xl border border-gray-200 p-3 bg-white">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-14 h-14 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
+        <div className='rounded-xl border border-gray-200 p-3 bg-white'>
+          <div className='flex items-center gap-3 min-w-0'>
+            <div className='w-14 h-14 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0'>
               <ImageWithFallback
-                src={factory?.image ?? ""}
-                fallbackSrc={item.factoryImageUrl ?? ""}
+                src={factory?.image ?? ''}
+                fallbackSrc={item.factoryImageUrl ?? ''}
                 alt={item.factoryName}
-                className="w-full h-full object-cover"
+                className='w-full h-full object-cover'
               />
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <p
-                  className="text-[20px] font-bold truncate"
-                  style={{ color: BRAND.ink }}
-                >
+            <div className='min-w-0 flex-1'>
+              <div className='flex items-center gap-1.5'>
+                <p className='text-[20px] font-bold truncate' style={{ color: BRAND.ink }}>
                   {item.factoryName}
                 </p>
                 {factory?.verified ? (
-                  <BadgeCheck
-                    className="w-3.5 h-3.5 shrink-0"
-                    style={{ color: BRAND.purple }}
-                  />
+                  <BadgeCheck className='w-3.5 h-3.5 shrink-0' style={{ color: BRAND.purple }} />
                 ) : null}
               </div>
-              <p className="text-[14px] text-gray-500 truncate">
-                {factory?.specialization || "โรงงานผู้ผลิต"}
+              <p className='text-[14px] text-gray-500 truncate'>
+                {factory?.specialization || 'โรงงานผู้ผลิต'}
               </p>
-              <p className="text-[13px] text-gray-500 mt-0.5 inline-flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" /> {factory?.location ?? "-"}
+              <p className='text-[13px] text-gray-500 mt-0.5 inline-flex items-center gap-1'>
+                <MapPin className='w-3.5 h-3.5' /> {factory?.location ?? '-'}
               </p>
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className='mt-3 grid grid-cols-2 gap-2'>
             {canChat ? (
-              <Button variant="unstyled"
-                type="button"
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={() =>
                   void startChat(item.factoryId, {
-                    type: "ID",
+                    type: 'ID',
                     id: Number(resolvedId),
                     title: item.title,
                   })
                 }
                 disabled={starting}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-bold text-white disabled:opacity-70"
+                className='inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-bold text-white disabled:opacity-70'
                 style={{ background: BRAND.purple }}
               >
                 {starting ? (
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
                 ) : (
-                  <MessageCircle className="w-4 h-4" />
+                  <MessageCircle className='w-4 h-4' />
                 )}
                 แชทกับโรงงาน
               </Button>
             ) : null}
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => navigate(`/factories/${item.factoryId}`)}
-              className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold border ${canChat ? "" : "col-span-2"}`}
+              className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold border ${canChat ? '' : 'col-span-2'}`}
               style={{
-                borderColor: "rgba(122,75,148,0.30)",
+                borderColor: 'rgba(122,75,148,0.30)',
                 color: BRAND.purple,
               }}
             >
-              ดูโปรไฟล์โรงงาน <ArrowUpRight className="w-4 h-4" />
+              ดูโปรไฟล์โรงงาน <ArrowUpRight className='w-4 h-4' />
             </Button>
           </div>
         </div>
@@ -252,86 +246,70 @@ export function IdeaDetailDesktop() {
           linkedShowcases={item.linkedShowcases}
           onItemClick={(s) =>
             navigate(
-              s.contentType === "promotion"
+              s.contentType === 'promotion'
                 ? `/factory-ideas/promotions/${s.id}`
                 : `/factory-ideas/products/${s.id}`,
             )
           }
         />
 
-        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2
-            className="text-[16px] font-bold mb-4"
-            style={{ color: "#2E2252" }}
-          >
+        <section className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6'>
+          <h2 className='text-[16px] font-bold mb-4' style={{ color: '#2E2252' }}>
             บทความที่น่าสนใจให้อ่านต่อ
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             {relatedIdeas.map((next) => {
-              const relFactory = data.factories.find(
-                (f) => f.id === next.factoryId,
-              );
-              const excerpt = next.excerpt || next.description || "";
+              const relFactory = data.factories.find((f) => f.id === next.factoryId);
+              const excerpt = next.excerpt || next.description || '';
               return (
                 <article
                   key={next.id}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4"
+                  className='group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4'
                   onClick={() =>
-                    navigate(
-                      `/idea-detail?showcase_id=${encodeURIComponent(next.id)}`,
-                    )
+                    navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
                   }
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className='flex items-center gap-2 mb-2'>
                     <span
-                      className="px-2 py-0.5 rounded-full text-[9px] font-bold text-white"
+                      className='px-2 py-0.5 rounded-full text-[9px] font-bold text-white'
                       style={{ backgroundColor: CARD.purple }}
                     >
                       ไอเดีย
                     </span>
-                    <span className="text-[10px] text-gray-400 truncate">
-                      {next.factoryName}
-                    </span>
+                    <span className='text-[10px] text-gray-400 truncate'>{next.factoryName}</span>
                   </div>
                   <h3
-                    className="text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors"
+                    className='text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors'
                     style={{ color: CARD.blue }}
                   >
                     {next.title}
                   </h3>
-                  <p className="text-[12px] text-gray-500 mt-1 line-clamp-3">
-                    {excerpt || " "}
-                  </p>
-                  <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
-                    <Button variant="unstyled"
-                      type="button"
+                  <p className='text-[12px] text-gray-500 mt-1 line-clamp-3'>{excerpt || ' '}</p>
+                  <div className='pt-2 mt-3 border-t border-gray-100 space-y-1.5'>
+                    <Button
+                      variant='unstyled'
+                      type='button'
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/factories/${next.factoryId}`);
                       }}
-                      className="flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90"
+                      className='flex items-center gap-1 w-full min-w-0 text-left text-[10px] font-semibold transition-colors hover:opacity-90'
                       style={{ color: CARD.blue }}
                     >
-                      <span className="truncate">{next.factoryName}</span>
+                      <span className='truncate'>{next.factoryName}</span>
                       {relFactory?.verified ? (
-                        <BadgeCheck
-                          className="w-3 h-3 shrink-0"
-                          style={{ color: CARD.purple }}
-                        />
+                        <BadgeCheck className='w-3 h-3 shrink-0' style={{ color: CARD.purple }} />
                       ) : null}
                     </Button>
-                    <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
-                      <span className="min-w-0 truncate">
-                        MOQ{" "}
-                        <span
-                          className="font-semibold tabular-nums"
-                          style={{ color: CARD.blue }}
-                        >
+                    <div className='flex items-center justify-between gap-2 text-[10px] text-gray-400'>
+                      <span className='min-w-0 truncate'>
+                        MOQ{' '}
+                        <span className='font-semibold tabular-nums' style={{ color: CARD.blue }}>
                           {next.minOrder}
                         </span>
                       </span>
-                      <span className="flex items-center gap-0.5 shrink-0 tabular-nums">
-                        <Heart className="w-2.5 h-2.5 shrink-0" />
+                      <span className='flex items-center gap-0.5 shrink-0 tabular-nums'>
+                        <Heart className='w-2.5 h-2.5 shrink-0' />
                         {next.likes}
                       </span>
                     </div>

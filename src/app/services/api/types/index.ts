@@ -3,22 +3,22 @@
  */
 
 // Auth
-export * from './auth.types';
+export * from '@/services/api/types/auth.types';
 
 // RFQ
-export * from './rfq.types';
+export * from '@/services/api/types/rfq.types';
 
 // Order
-export * from './order.types';
+export * from '@/services/api/types/order.types';
 
 // Factory
-export * from './factory.types';
+export * from '@/services/api/types/factory.types';
 
 // Chat & Messaging
-export * from './chat.types';
+export * from '@/services/api/types/chat.types';
 
 // Explore
-export * from './explore.types';
+export * from '@/services/api/types/explore.types';
 
 // Master Data
-export * from './master.types';
+export * from '@/services/api/types/master.types';

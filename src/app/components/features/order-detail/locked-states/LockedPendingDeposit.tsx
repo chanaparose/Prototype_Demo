@@ -7,10 +7,10 @@ import {
   DEEP_PURPLE,
   PEACH_MIST,
   PLUM,
-} from '../../rfq-and-orders/constants';
-import type { ProductionLockContext } from '../../production/types';
-import { diffDaysFromNow, formatDateTh } from '../utils';
-import { Button } from '../../../ui/button';
+} from '@/components/features/rfq-and-orders/constants';
+import type { ProductionLockContext } from '@/components/features/production/types';
+import { diffDaysFromNow, formatDateTh } from '@/components/features/order-detail/utils';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   ctx: ProductionLockContext;
@@ -40,43 +40,49 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
   };
 
   return (
-    <div className="w-full max-w-md mx-auto text-center px-1">
-      <div className="mb-3 sm:mb-4 text-4xl sm:text-5xl" aria-hidden>
+    <div className='w-full max-w-md mx-auto text-center px-1'>
+      <div className='mb-3 sm:mb-4 text-4xl sm:text-5xl' aria-hidden>
         🔒
       </div>
-      <h2 className="text-lg font-semibold" style={{ color: DEEP_PURPLE }}>
+      <h2 className='text-lg font-semibold' style={{ color: DEEP_PURPLE }}>
         การผลิตยังไม่เริ่มต้น
       </h2>
-      <p className="mt-2 text-sm text-gray-600">โรงงานจะเริ่มผลิตหลังได้รับการชำระเงิน</p>
+      <p className='mt-2 text-sm text-gray-600'>โรงงานจะเริ่มผลิตหลังได้รับการชำระเงิน</p>
 
       <div
-        className="mt-6 rounded-2xl border p-5 text-left"
+        className='mt-6 rounded-2xl border p-5 text-left'
         style={{ borderColor: BORDER_WARM, background: PEACH_MIST }}
       >
-        <p className="text-xs" style={{ color: ACCENT_ORANGE_DEEP }}>💰 ยอดที่ต้องชำระ</p>
-        <p className="mt-1 text-xl font-semibold tabular-nums" style={{ color: DEEP_PURPLE }}>
+        <p className='text-xs' style={{ color: ACCENT_ORANGE_DEEP }}>
+          💰 ยอดที่ต้องชำระ
+        </p>
+        <p className='mt-1 text-xl font-semibold tabular-nums' style={{ color: DEEP_PURPLE }}>
           ฿{amount.toLocaleString('th-TH')}
         </p>
         {due ? (
-          <p className={`mt-2 text-xs ${isUrgent ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+          <p
+            className={`mt-2 text-xs ${isUrgent ? 'text-red-600 font-semibold' : 'text-gray-600'}`}
+          >
             ครบกำหนด {formatDateTh(due)} • เหลือ {daysLeft} วัน
           </p>
         ) : null}
       </div>
 
-      <Button variant="unstyled"
-        type="button"
+      <Button
+        variant='unstyled'
+        type='button'
         onClick={pay}
-        className="mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white"
+        className='mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white'
         style={{ background: CTA_GRADIENT }}
       >
         ชำระเงิน →
       </Button>
 
-      <Button variant="unstyled"
-        type="button"
+      <Button
+        variant='unstyled'
+        type='button'
         onClick={() => (onBackToOverview ? onBackToOverview() : navigate('/orders'))}
-        className="mt-3 w-full rounded-xl py-3 text-sm font-medium"
+        className='mt-3 w-full rounded-xl py-3 text-sm font-medium'
         style={{ color: PLUM }}
       >
         กลับไปหน้าภาพรวม

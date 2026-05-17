@@ -69,10 +69,7 @@ export function activateTourMocks(scenario: TourScenario): void {
   }
 }
 
-export function getTourMockResponse(
-  endpoint: string,
-  method: string = 'GET',
-): unknown | undefined {
+export function getTourMockResponse(endpoint: string, method: string = 'GET'): unknown | undefined {
   if (activeMocks.length === 0) return undefined;
   for (const m of activeMocks) {
     if ((m.method ?? 'GET') !== method.toUpperCase()) continue;
@@ -154,8 +151,14 @@ const SHOWCASE_14 = {
   factory_rating: TOUR_FACTORY.rating,
   factory_verified: true,
   images: [
-    { image_id: 1, url: 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=800&h=800&fit=crop' },
-    { image_id: 2, url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=800&fit=crop' },
+    {
+      image_id: 1,
+      url: 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=800&h=800&fit=crop',
+    },
+    {
+      image_id: 2,
+      url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=800&h=800&fit=crop',
+    },
   ],
   linked_showcases: [],
 };
@@ -163,7 +166,10 @@ const SHOWCASE_14 = {
 const PRODUCT_MOCKS: MockEntry[] = [
   { match: '/showcases/14', body: SHOWCASE_14 },
   // Some pages call factory + factory's other showcases
-  { match: `/factories/${TOUR_FACTORY.factory_id}`, body: { ...TOUR_FACTORY, profile: TOUR_FACTORY } },
+  {
+    match: `/factories/${TOUR_FACTORY.factory_id}`,
+    body: { ...TOUR_FACTORY, profile: TOUR_FACTORY },
+  },
   { match: new RegExp(`^/factories/${TOUR_FACTORY.factory_id}/showcases`), body: [SHOWCASE_14] },
   // Reviews + view-count update — quietly succeed
   { match: '/showcases/14/view', method: 'POST', body: { ok: true } },

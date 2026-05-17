@@ -2,8 +2,8 @@
  * Orders API — Order management
  */
 
-import { httpClient } from './httpClient';
-import type { OrderDetailDTO, OrderCreatePayload, OrderUpdatePayload } from './types';
+import { httpClient } from '@/services/api/httpClient';
+import type { OrderDetailDTO, OrderCreatePayload, OrderUpdatePayload } from '@/services/api/types';
 
 export const ordersApi = {
   list: () => httpClient.get<OrderDetailDTO[]>('/orders'),

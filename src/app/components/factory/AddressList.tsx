@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 type Row = Record<string, unknown>;
 
@@ -60,13 +60,14 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
   }, [addresses]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-gray-800">รายการที่อยู่</h3>
-        <Button variant="unstyled"
-          type="button"
+    <div className='space-y-4'>
+      <div className='flex items-center justify-between gap-2'>
+        <h3 className='text-sm font-semibold text-gray-800'>รายการที่อยู่</h3>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={onCreate}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+          className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white'
           style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
         >
           <Plus size={14} />
@@ -75,14 +76,14 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
       </div>
 
       {addresses.length === 0 ? (
-        <p className="text-sm text-gray-400">ยังไม่มีที่อยู่ในระบบ</p>
+        <p className='text-sm text-gray-400'>ยังไม่มีที่อยู่ในระบบ</p>
       ) : null}
 
       {(['M', 'B', 'S'] as const).map((type) => (
-        <div key={type} className="space-y-2">
-          <p className="text-xs font-semibold text-gray-600">{TYPE_LABEL[type]}</p>
+        <div key={type} className='space-y-2'>
+          <p className='text-xs font-semibold text-gray-600'>{TYPE_LABEL[type]}</p>
           {grouped[type].length === 0 ? (
-            <p className="text-xs text-gray-400">ไม่มีรายการ</p>
+            <p className='text-xs text-gray-400'>ไม่มีรายการ</p>
           ) : (
             grouped[type].map((row, idx) => {
               const id = String(row.address_id ?? row.id ?? `${type}-${idx}`);
@@ -90,43 +91,48 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
               return (
                 <div
                   key={id}
-                  className="rounded-xl border border-gray-100 px-3 py-3 bg-white flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2"
+                  className='rounded-xl border border-gray-100 px-3 py-3 bg-white flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2'
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-gray-900">{TYPE_LABEL[type]}</span>
+                  <div className='min-w-0'>
+                    <div className='flex items-center gap-2 flex-wrap'>
+                      <span className='text-sm font-medium text-gray-900'>{TYPE_LABEL[type]}</span>
                       {isDefault ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200'>
                           ค่าเริ่มต้น
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-sm text-gray-700 mt-1 whitespace-pre-line">{String(row.address_detail ?? '—')}</p>
-                    <p className="text-xs text-gray-500 mt-1">{displayLocation(row)}</p>
+                    <p className='text-sm text-gray-700 mt-1 whitespace-pre-line'>
+                      {String(row.address_detail ?? '—')}
+                    </p>
+                    <p className='text-xs text-gray-500 mt-1'>{displayLocation(row)}</p>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className='flex items-center gap-1.5 shrink-0'>
                     {!isDefault ? (
-                      <Button variant="unstyled"
-                        type="button"
+                      <Button
+                        variant='unstyled'
+                        type='button'
                         onClick={() => onSetDefault(row)}
-                        className="px-2.5 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 text-xs font-semibold hover:bg-emerald-50"
+                        className='px-2.5 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 text-xs font-semibold hover:bg-emerald-50'
                       >
                         ตั้งเป็นค่าเริ่มต้น
                       </Button>
                     ) : null}
-                    <Button variant="unstyled"
-                      type="button"
+                    <Button
+                      variant='unstyled'
+                      type='button'
                       onClick={() => onEdit(row)}
-                      className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
-                      aria-label="แก้ไขที่อยู่"
+                      className='p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50'
+                      aria-label='แก้ไขที่อยู่'
                     >
                       <Pencil size={14} />
                     </Button>
-                    <Button variant="unstyled"
-                      type="button"
+                    <Button
+                      variant='unstyled'
+                      type='button'
                       onClick={() => onDelete(row)}
-                      className="p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50"
-                      aria-label="ลบที่อยู่"
+                      className='p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50'
+                      aria-label='ลบที่อยู่'
                     >
                       <Trash2 size={14} />
                     </Button>

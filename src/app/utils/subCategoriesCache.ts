@@ -15,7 +15,7 @@
  * ─────────────────────────────────────────────────────────────────
  */
 
-import { categoriesApi } from '../services/api';
+import { categoriesApi } from '@/services/api';
 
 export type SubCategoryRow = { id: string; name: string; sortOrder: number };
 
@@ -52,9 +52,7 @@ const pending = new Map<string, Promise<SubCategoryRow[]>>();
  * - In-flight → returns the same Promise (no duplicate request).
  * - Cold → sends GET, caches result, returns Promise.
  */
-export function loadSubCategories(
-  categoryId: string | number,
-): Promise<SubCategoryRow[]> {
+export function loadSubCategories(categoryId: string | number): Promise<SubCategoryRow[]> {
   const key = String(categoryId);
   if (key === '' || key === 'all') return Promise.resolve([]);
 
@@ -83,18 +81,14 @@ export function loadSubCategories(
 }
 
 /** Fire-and-forget prefetch for many categories in parallel. */
-export function prefetchSubCategoriesFor(
-  categoryIds: ReadonlyArray<string | number>,
-): void {
+export function prefetchSubCategoriesFor(categoryIds: ReadonlyArray<string | number>): void {
   for (const id of categoryIds) {
     void loadSubCategories(id);
   }
 }
 
 /** Synchronous peek — returns resolved data if ready, else null. */
-export function getCachedSubCategoriesSync(
-  categoryId: string | number,
-): SubCategoryRow[] | null {
+export function getCachedSubCategoriesSync(categoryId: string | number): SubCategoryRow[] | null {
   return resolved.get(String(categoryId)) ?? null;
 }
 

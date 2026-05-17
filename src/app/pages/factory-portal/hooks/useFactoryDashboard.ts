@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../../../stores';
-import { getFactoryEntityId } from '../../../utils/factoryUser';
-import { rfqsApi, ordersApi, quotationsApi, walletApi, factoriesApi } from '../../../services/api';
+import { useAuth } from '@/stores';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { rfqsApi, ordersApi, quotationsApi, walletApi, factoriesApi } from '@/services/api';
 
 export type AnalyticsTimeframe = 'daily' | 'weekly' | 'monthly';
 
@@ -135,8 +135,7 @@ function buildSeries(
   const periods = periodsFor(tf);
   const n = periods.length;
   const rfqTotal = opRfqs.length;
-  const repliesTotal =
-    fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
+  const repliesTotal = fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
   const rfqFallback = n > 0 ? Math.max(1, Math.round(rfqTotal / n)) : 0;
   const replyFallback = n > 0 ? Math.max(1, Math.round(repliesTotal / n)) : 0;
 
@@ -284,9 +283,11 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
   }, [allOrders, fid]);
 
   const summary: AnalyticsSummary = useMemo(() => {
-    const pendingFund = wallet != null ? Number(wallet.pending_fund ?? wallet.pendingBalance ?? 0) : 0;
+    const pendingFund =
+      wallet != null ? Number(wallet.pending_fund ?? wallet.pendingBalance ?? 0) : 0;
     const rfq_received_client = opRfqs.length;
-    const rfq_replies_client = fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
+    const rfq_replies_client =
+      fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
     let revenue_client = 0;
     let closed_orders_client = 0;
     for (const row of mineOrders) {
@@ -300,8 +301,7 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
     const pending_quotations_client =
       fid != null
         ? myQuotes.filter(
-            (q) =>
-              quoteFactoryId(q) === fid && String(q.status ?? 'PD').toUpperCase() === 'PD',
+            (q) => quoteFactoryId(q) === fid && String(q.status ?? 'PD').toUpperCase() === 'PD',
           ).length
         : 0;
 
@@ -323,7 +323,9 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
       ? Number(A.total_quotations ?? A.rfq_received_total ?? rfq_received_client)
       : rfq_received_client;
     const rfq_replies_total = hasA
-      ? Number(A.accepted_quotes ?? A.accepted_quotes_count ?? A.rfq_replies_total ?? rfq_replies_client)
+      ? Number(
+          A.accepted_quotes ?? A.accepted_quotes_count ?? A.rfq_replies_total ?? rfq_replies_client,
+        )
       : rfq_replies_client;
     const pending_quotations_total = hasD
       ? Number(D.pending_quotations_total ?? D.pending_quotations ?? pending_quotations_client)

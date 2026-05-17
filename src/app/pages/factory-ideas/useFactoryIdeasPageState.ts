@@ -1,29 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
-import { useData } from '../../stores';
-import type { Factory } from '../../stores';
-import { factoriesApi, masterApi } from '../../services/api';
-import { useFavorites } from '../../hooks/useFavorites';
-import { useFactoryIdeasCategorySelection } from '../../hooks/useFactoryIdeasCategoryFromUrl';
-import { showcaseQueryTypeFromTab, useShowcases } from '../../hooks/useShowcases';
-import { fetchExploreCategoriesMerged } from '../../utils/exploreCategoriesFromApi';
+import { useData } from '@/stores';
+import type { Factory } from '@/stores';
+import { factoriesApi, masterApi } from '@/services/api';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useFactoryIdeasCategorySelection } from '@/hooks/useFactoryIdeasCategoryFromUrl';
+import { showcaseQueryTypeFromTab, useShowcases } from '@/hooks/useShowcases';
+import { fetchExploreCategoriesMerged } from '@/utils/exploreCategoriesFromApi';
 import {
   factoryIdeasCategoryOptionSelected,
   parseMasterProductCategories,
   showcaseMatchesSelectedCategoryId,
-} from '../../utils/exploreToFactoryIdeasCategory';
-import { logFactoryIdeasCategory } from '../../utils/debugFactoryIdeasCategory';
+} from '@/utils/exploreToFactoryIdeasCategory';
+import { logFactoryIdeasCategory } from '@/utils/debugFactoryIdeasCategory';
 import {
   getCachedSubCategoriesSync,
   loadSubCategories,
   prefetchSubCategoriesFor,
-} from '../../utils/subCategoriesCache';
+} from '@/utils/subCategoriesCache';
 import {
   getFactoryIdeaDetailPath,
   normalizeFactoryIdeaFactory,
   type FactoryIdeasContentType,
-} from '../../components/features/factory-ideas/factoryIdeasTheme';
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
 
 type CategoryRow = { id: string; name: string };
 type SubCategoryRow = { id: string; name: string; sortOrder: number };
@@ -56,13 +56,23 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   const isFactoryTab = selectedType === 'factory';
   const isMaterialTab = selectedType === 'material';
   const showcaseApiType = isFactoryTab ? undefined : showcaseQueryTypeFromTab(selectedType);
-  const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({ type: showcaseApiType });
-  const { effectiveCategoryId, applyCategory } =
-    useFactoryIdeasCategorySelection(data.categories, apiCategoriesAll);
+  const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
+    type: showcaseApiType,
+  });
+  const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
+    data.categories,
+    apiCategoriesAll,
+  );
 
   useEffect(() => {
     const t = searchParams.get('type');
-    if (t === 'product' || t === 'promotion' || t === 'idea' || t === 'material' || t === 'factory') {
+    if (
+      t === 'product' ||
+      t === 'promotion' ||
+      t === 'idea' ||
+      t === 'material' ||
+      t === 'factory'
+    ) {
       setSelectedType(t);
     }
   }, [searchParams]);
@@ -96,7 +106,10 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
         if (isMaterialTab) {
           const raw = (await masterApi.lbiCategories('MT')) as unknown as Record<string, unknown>;
           if (cancelled) return;
-          const arr = (Array.isArray(raw.categories) ? raw.categories : []) as Record<string, unknown>[];
+          const arr = (Array.isArray(raw.categories) ? raw.categories : []) as Record<
+            string,
+            unknown
+          >[];
           const rows = arr
             .map((c) => ({ id: String(c.category_id ?? c.id ?? ''), name: String(c.name ?? '') }))
             .filter((r) => r.id && r.name);
@@ -302,7 +315,8 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     const q = searchText.trim().toLowerCase();
     return pageShowcases
       .filter((item) => {
-        const hideIdeaFromAll = mode === 'default' && selectedType === 'all' && item.contentType === 'idea';
+        const hideIdeaFromAll =
+          mode === 'default' && selectedType === 'all' && item.contentType === 'idea';
         const byType =
           mode === 'idea'
             ? item.contentType === 'idea'
@@ -322,7 +336,13 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
           String(item.sub_category_id) !== selectedSubCategoryId
         );
         if (!q) return !hideIdeaFromAll && byType && byCategory && bySubCategory;
-        const haystack = [item.title, item.excerpt, item.factoryName, item.category, ...(item.tags ?? [])]
+        const haystack = [
+          item.title,
+          item.excerpt,
+          item.factoryName,
+          item.category,
+          ...(item.tags ?? []),
+        ]
           .join(' ')
           .toLowerCase();
         return !hideIdeaFromAll && byType && byCategory && bySubCategory && haystack.includes(q);
@@ -332,15 +352,38 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
 
   const visibleItems = useMemo(
     () => (isFactoryTab ? [] : filterShowcases('default')),
-    [searchText, selectedType, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, categoryRowsForMatching, isFactoryTab],
+    [
+      searchText,
+      selectedType,
+      effectiveCategoryId,
+      selectedSubCategoryId,
+      pageShowcases,
+      apiCategoriesAll,
+      categoryRowsForMatching,
+      isFactoryTab,
+    ],
   );
   const visibleIdeaItems = useMemo(
     () => filterShowcases('idea'),
-    [searchText, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, categoryRowsForMatching],
+    [
+      searchText,
+      effectiveCategoryId,
+      selectedSubCategoryId,
+      pageShowcases,
+      apiCategoriesAll,
+      categoryRowsForMatching,
+    ],
   );
   const visibleMaterialItems = useMemo(
     () => filterShowcases('material'),
-    [searchText, effectiveCategoryId, selectedSubCategoryId, pageShowcases, apiCategoriesAll, categoryRowsForMatching],
+    [
+      searchText,
+      effectiveCategoryId,
+      selectedSubCategoryId,
+      pageShowcases,
+      apiCategoriesAll,
+      categoryRowsForMatching,
+    ],
   );
 
   const visibleFactories = useMemo(() => {
@@ -348,7 +391,9 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     const q = searchText.trim().toLowerCase();
     return factoryList.filter((f) => {
       if (!q) return true;
-      const haystack = [f.name, f.location, f.specialization, ...(f.tags ?? [])].join(' ').toLowerCase();
+      const haystack = [f.name, f.location, f.specialization, ...(f.tags ?? [])]
+        .join(' ')
+        .toLowerCase();
       return haystack.includes(q);
     });
   }, [searchText, selectedType, factoryList]);
@@ -359,7 +404,8 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
       ? visibleIdeaItems.length
       : selectedType === 'material'
         ? visibleMaterialItems.length
-        : visibleItems.length + (selectedType === 'all' ? visibleFactories.length + visibleIdeaItems.length : 0);
+        : visibleItems.length +
+          (selectedType === 'all' ? visibleFactories.length + visibleIdeaItems.length : 0);
 
   const closeCategoryMenu = () => {
     setCategoryMenuOpen(false);

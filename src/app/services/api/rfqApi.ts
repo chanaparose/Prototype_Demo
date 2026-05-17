@@ -2,14 +2,14 @@
  * RFQ API — Request for Quote management
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 import type {
   RfqListItem,
   RfqDetailResponse,
   RfqCreatePayload,
   QuotationRow,
   QuotationHistoryEntry,
-} from './types';
+} from '@/services/api/types';
 
 export const rfqsApi = {
   list: () => httpClient.get<RfqListItem[]>('/rfqs'),
@@ -34,7 +34,7 @@ export const rfqsApi = {
   /** Get with images */
   getWithImages: (id: string | number) =>
     httpClient.get<RfqDetailResponse & { images: Array<{ image_id: string; url: string }> }>(
-      `/rfqs/${id}/with-images`
+      `/rfqs/${id}/with-images`,
     ),
 };
 

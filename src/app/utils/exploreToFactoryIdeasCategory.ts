@@ -1,4 +1,4 @@
-import { categoryIdsMatch, TILE_DB_ID_TO_CONTEXT_ID } from './exploreCategoriesFromApi';
+import { categoryIdsMatch, TILE_DB_ID_TO_CONTEXT_ID } from '@/utils/exploreCategoriesFromApi';
 
 /** เทียบ id หมวดจาก API (ตัวเลข / string) กับค่าใน URL หรือ dropdown รวมแม็ป DB id ↔ context id */
 function categoryIdsEquivalent(a: string, b: string): boolean {
@@ -93,9 +93,7 @@ export function buildFactoryIdeasCategoryHref(
 ): string {
   const showcaseName =
     EXPLORE_CARD_LABEL_TO_SHOWCASE_CATEGORY[exploreCardLabel] ?? exploreCardLabel;
-  const byName = categories.find(
-    (c) => c.name === showcaseName || c.name === exploreCardLabel,
-  );
+  const byName = categories.find((c) => c.name === showcaseName || c.name === exploreCardLabel);
   if (byName) {
     return `/factory-ideas?category_id=${encodeURIComponent(byName.id)}`;
   }

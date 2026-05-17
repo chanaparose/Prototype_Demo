@@ -1,1 +1,1 @@
-export { ImageWithFallback } from './ImageWithFallback';
+export { ImageWithFallback } from '@/components/shared/ImageWithFallback';

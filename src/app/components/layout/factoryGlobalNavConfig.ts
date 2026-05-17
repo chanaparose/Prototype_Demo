@@ -91,14 +91,9 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
   },
 ];
 
-export function isFactorySidebarNavActive(
-  pathname: string,
-  item: FactorySidebarNavItem,
-): boolean {
+export function isFactorySidebarNavActive(pathname: string, item: FactorySidebarNavItem): boolean {
   if (Array.isArray(item.extraActivePaths)) {
-    const hit = item.extraActivePaths.some(
-      (p) => pathname === p || pathname.startsWith(`${p}/`),
-    );
+    const hit = item.extraActivePaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
     if (hit) return true;
   }
   if (item.activeMatch === 'exact') {

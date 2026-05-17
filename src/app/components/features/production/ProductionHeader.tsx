@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import type { MergedProductionStep } from './types';
-import { deriveStepStates } from './stepDerivedState';
+import type { MergedProductionStep } from '@/components/features/production/types';
+import { deriveStepStates } from '@/components/features/production/stepDerivedState';
 
 function orderStatusLabel(code: string): string {
   const u = code.toUpperCase();
@@ -44,7 +44,7 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
   }, [derived]);
 
   const currentName =
-    currentIdx >= 0 ? merged[currentIdx]?.template.step_name_th ?? '—' : 'เสร็จสิ้นทุกขั้นตอน';
+    currentIdx >= 0 ? (merged[currentIdx]?.template.step_name_th ?? '—') : 'เสร็จสิ้นทุกขั้นตอน';
 
   const currentState = currentIdx >= 0 ? derived[currentIdx] : 'completed';
 
@@ -72,9 +72,9 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-bold text-gray-900">ความคืบหน้าการผลิต</p>
+    <div className='bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-3'>
+      <div className='flex flex-wrap items-center justify-between gap-2'>
+        <p className='text-sm font-bold text-gray-900'>ความคืบหน้าการผลิต</p>
         <span
           className={`text-[11px] font-semibold px-2 py-1 rounded-lg ${pillClass}`}
           aria-label={`สถานะคำสั่งซื้อ ${orderStatusLabel(orderStatus)}`}
@@ -83,22 +83,22 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
         </span>
       </div>
       <div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className='h-2 bg-gray-100 rounded-full overflow-hidden'>
           <div
-            className="h-full rounded-full transition-all"
+            className='h-full rounded-full transition-all'
             style={{ width: `${pct}%`, background: '#7C3AED' }}
           />
         </div>
-        <p className="text-xs text-gray-600 mt-1.5">
+        <p className='text-xs text-gray-600 mt-1.5'>
           {done}/{total} ขั้นตอน
         </p>
       </div>
       <div>
-        <p className="text-[10px] text-gray-500 uppercase">ขั้นปัจจุบัน</p>
-        <p className="text-sm font-semibold text-gray-900">{currentName}</p>
+        <p className='text-[10px] text-gray-500 uppercase'>ขั้นปัจจุบัน</p>
+        <p className='text-sm font-semibold text-gray-900'>{currentName}</p>
       </div>
       {lastIso ? (
-        <p className="text-xs text-gray-500">อัปเดตล่าสุด {formatRelativeTh(lastIso)}</p>
+        <p className='text-xs text-gray-500'>อัปเดตล่าสุด {formatRelativeTh(lastIso)}</p>
       ) : null}
     </div>
   );

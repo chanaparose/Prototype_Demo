@@ -9,6 +9,7 @@
 ## 🎯 What Was Created
 
 ### Directory Structure
+
 ```
 src/app/shared/ui/
 ├── forms/
@@ -36,21 +37,22 @@ src/app/shared/ui/
 
 ## 📦 Components Created
 
-| # | Component | Purpose | Impact |
-|---|-----------|---------|--------|
-| 1 | **FormField** | Wraps form inputs with label, error, helper text | Saves ~30 lines per form field |
-| 2 | **CollapsibleCard** | Expandable card with header toggle | Saves ~20-30 lines per card |
-| 3 | **StatusBadge** | Consolidated badge variants (6+ colors) | Replaces 20+ inline badge patterns |
-| 4 | **BaseModal** | Modal/drawer wrapper | Saves 50-100 lines per modal |
-| 5 | **SectionCard** | Section card with icon, title, badge | Saves ~60-80 lines per section |
-| 6 | **InfoBox** | Info display box | Saves ~30-40 lines per box |
-| 7 | **TabNavigation** | Tab navigation with counts | Saves ~40-50 lines per tab group |
+| #   | Component           | Purpose                                          | Impact                             |
+| --- | ------------------- | ------------------------------------------------ | ---------------------------------- |
+| 1   | **FormField**       | Wraps form inputs with label, error, helper text | Saves ~30 lines per form field     |
+| 2   | **CollapsibleCard** | Expandable card with header toggle               | Saves ~20-30 lines per card        |
+| 3   | **StatusBadge**     | Consolidated badge variants (6+ colors)          | Replaces 20+ inline badge patterns |
+| 4   | **BaseModal**       | Modal/drawer wrapper                             | Saves 50-100 lines per modal       |
+| 5   | **SectionCard**     | Section card with icon, title, badge             | Saves ~60-80 lines per section     |
+| 6   | **InfoBox**         | Info display box                                 | Saves ~30-40 lines per box         |
+| 7   | **TabNavigation**   | Tab navigation with counts                       | Saves ~40-50 lines per tab group   |
 
 ---
 
 ## ✅ Refactoring Done
 
 ### 1. OrderBOQCard (Completed)
+
 - **Before:** 244 lines with inline collapsible logic
 - **After:** 224 lines using CollapsibleCard
 - **Savings:** 20 lines
@@ -64,6 +66,7 @@ src/app/shared/ui/
 ## 🚀 Next Priority Refactorings
 
 ### High Impact (>100 lines saved each)
+
 1. **QuotationCreateForm** (~150 lines saved)
    - Replace ~15 form label patterns with FormField
    - Files: QuotationCreateForm.tsx
@@ -89,6 +92,7 @@ src/app/shared/ui/
    - Expected: ~269 + 193 = 462 lines
 
 ### Medium Impact (50-100 lines saved each)
+
 5. **AddressFormModal** (~80 lines saved)
    - Use BaseModal wrapper
    - Use FormField for address inputs
@@ -108,6 +112,7 @@ src/app/shared/ui/
 ## 📊 Refactoring Impact Summary
 
 ### Lines Saved Potential
+
 ```
 Current work done:           20 lines ✅
 QuotationCreateForm:        150 lines
@@ -122,6 +127,7 @@ TOTAL POTENTIAL:           ~970 lines saved
 ```
 
 ### Code Quality Improvements
+
 - ✅ Consistent styling across all components
 - ✅ Reduced code duplication
 - ✅ Easier maintenance and updates
@@ -134,42 +140,40 @@ TOTAL POTENTIAL:           ~970 lines saved
 ## 🛠️ How to Use These Components
 
 ### Example 1: Use FormField in a form
+
 ```tsx
 import { FormField } from '@/shared/ui';
 
-<FormField label="ราคาต่อชิ้น" required error={errors.price?.message}>
-  <input type="number" {...register('price')} />
-</FormField>
+<FormField label='ราคาต่อชิ้น' required error={errors.price?.message}>
+  <input type='number' {...register('price')} />
+</FormField>;
 ```
 
 ### Example 2: Use CollapsibleCard
+
 ```tsx
 import { CollapsibleCard, StatusBadge } from '@/shared/ui';
 
 <CollapsibleCard
   header={
-    <div className="flex items-center justify-between w-full">
+    <div className='flex items-center justify-between w-full'>
       <span>ใบเสนอราคา #001</span>
-      <StatusBadge variant="success">ยอมรับแล้ว</StatusBadge>
+      <StatusBadge variant='success'>ยอมรับแล้ว</StatusBadge>
     </div>
   }
 >
   {/* Content */}
-</CollapsibleCard>
+</CollapsibleCard>;
 ```
 
 ### Example 3: Use BaseModal
+
 ```tsx
 import { BaseModal } from '@/shared/ui';
 
-<BaseModal
-  isOpen={isOpen}
-  onClose={onClose}
-  title="Add Address"
-  footer={<button>Submit</button>}
->
+<BaseModal isOpen={isOpen} onClose={onClose} title='Add Address' footer={<button>Submit</button>}>
   {/* Modal content */}
-</BaseModal>
+</BaseModal>;
 ```
 
 **👉 Full guide:** See `SHARED_UI_COMPONENTS.md` for comprehensive documentation
@@ -211,7 +215,7 @@ import { BaseModal } from '@/shared/ui';
 
 ✅ **All builds passing** - 3,148 modules transformed  
 ✅ **No errors** - Components ready to use  
-✅ **Export structure verified** - All components properly exported  
+✅ **Export structure verified** - All components properly exported
 
 ---
 

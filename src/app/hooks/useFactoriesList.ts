@@ -1,8 +1,8 @@
 import React from 'react';
-import { useData } from '../stores';
-import type { Factory } from '../stores';
-import { factoriesApi } from '../services/api';
-import { normalizeFactoryRow } from '../utils/normalizeFactoryRow';
+import { useData } from '@/stores';
+import type { Factory } from '@/stores';
+import { factoriesApi } from '@/services/api';
+import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';
 
 export type FactoryFilterState = {
   searchText: string;
@@ -25,9 +25,7 @@ export function useFactoriesList() {
       .then((raw) => {
         if (cancelled) return;
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped = arr
-          .map((row) => normalizeFactoryRow(row))
-          .filter((f) => f.id && f.name);
+        const mapped = arr.map((row) => normalizeFactoryRow(row)).filter((f) => f.id && f.name);
         setApiFactories(mapped);
       })
       .catch((err) => {
@@ -53,15 +51,16 @@ export function useFactoriesList() {
   });
 
   const uniqueLocations = React.useMemo(
-    () => Array.from(new Set(allFactories.map((f) => f.location))).filter(Boolean).sort(),
+    () =>
+      Array.from(new Set(allFactories.map((f) => f.location)))
+        .filter(Boolean)
+        .sort(),
     [allFactories],
   );
 
-  const setSearchText = (value: string) =>
-    setFilters((prev) => ({ ...prev, searchText: value }));
+  const setSearchText = (value: string) => setFilters((prev) => ({ ...prev, searchText: value }));
 
-  const setLocation = (value: string) =>
-    setFilters((prev) => ({ ...prev, location: value }));
+  const setLocation = (value: string) => setFilters((prev) => ({ ...prev, location: value }));
 
   const setVerifiedOnly = (value: boolean) =>
     setFilters((prev) => ({ ...prev, verifiedOnly: value }));

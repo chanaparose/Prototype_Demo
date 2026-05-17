@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { useData } from '../stores';
-import type { FactoryShowcase } from '../stores';
-import { showcasesApi } from '../services/api';
-import { normShowcase } from './useShowcases';
+import { useData } from '@/stores';
+import type { FactoryShowcase } from '@/stores';
+import { showcasesApi } from '@/services/api';
+import { normShowcase } from '@/hooks/useShowcases';
 
 export function showcaseIdMatches(a: string, b: string): boolean {
   const sa = String(a).trim();
@@ -181,7 +181,14 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         const uniq = new Map<string, FactoryShowcase>();
         for (const row of buckets) {
           if (!row.id || row.id === currentId) continue;
-          if (!(row.contentType === 'product' || row.contentType === 'promotion' || row.contentType === 'material')) continue;
+          if (
+            !(
+              row.contentType === 'product' ||
+              row.contentType === 'promotion' ||
+              row.contentType === 'material'
+            )
+          )
+            continue;
           if (!uniq.has(row.id)) uniq.set(row.id, row);
         }
         if (!cancelled) setRelatedApiShowcases([...uniq.values()].slice(0, 8));
@@ -198,7 +205,9 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     if (!item || kind === 'idea') return [] as FactoryShowcase[];
     const allByType = data.factoryShowcases.filter(
       (s) =>
-        (s.contentType === 'product' || s.contentType === 'promotion' || s.contentType === 'material') &&
+        (s.contentType === 'product' ||
+          s.contentType === 'promotion' ||
+          s.contentType === 'material') &&
         s.id !== item.id,
     );
     const sameSub = allByType.filter((s) => {

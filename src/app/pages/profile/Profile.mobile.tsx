@@ -20,11 +20,11 @@ import {
   Plus,
   Home,
 } from 'lucide-react';
-import { useData } from '../../stores';
-import { useAuth } from '../../stores';
-import { profileApi, addressesApi } from '../../services/api';
-import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
-import { Button } from '../../components/ui/button';
+import { useData } from '@/stores';
+import { useAuth } from '@/stores';
+import { profileApi, addressesApi } from '@/services/api';
+import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
+import { Button } from '@/components/ui/button';
 
 type ProfileMenuItem = {
   icon: typeof User;
@@ -127,7 +127,8 @@ function mapTxLabel(row: Record<string, unknown>): string {
   const refType = String(row.reference_type ?? '').toLowerCase();
   const refId = Number(row.reference_id ?? 0);
   if (txType === 'BU') {
-    if (refType === 'order' && Number.isFinite(refId) && refId > 0) return `สั่งซื้อ Order #${refId}`;
+    if (refType === 'order' && Number.isFinite(refId) && refId > 0)
+      return `สั่งซื้อ Order #${refId}`;
     return 'สั่งซื้อ';
   }
   if (txType === 'DP') return 'มัดจำ';
@@ -149,14 +150,15 @@ function normTransaction(r: Record<string, unknown>, isCustomer: boolean): Walle
   else if (direction === 'out') type = 'debit';
   else {
     const txType = String(r.transaction_type ?? r.type ?? '').toLowerCase();
-    type =
-      txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
+    type = txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
   }
   const rawDate = String(r.created_at ?? r.date ?? '');
   let date = rawDate;
   if (rawDate && !Number.isNaN(Date.parse(rawDate))) {
     date = new Date(rawDate).toLocaleDateString('th-TH', {
-      day: 'numeric', month: 'short', year: 'numeric',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
     });
   }
   return {
@@ -173,7 +175,11 @@ export function ProfileMobile() {
   const data = useData();
   const { logout } = useAuth();
   const currentUser = data.currentUser;
-  const role = String((currentUser as { role?: unknown; user_type?: unknown } | null)?.role ?? (currentUser as { user_type?: unknown } | null)?.user_type ?? '').toUpperCase();
+  const role = String(
+    (currentUser as { role?: unknown; user_type?: unknown } | null)?.role ??
+      (currentUser as { user_type?: unknown } | null)?.user_type ??
+      '',
+  ).toUpperCase();
   const isCustomer = role === 'CT' || role === 'CUSTOMER';
   const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
   const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
@@ -205,12 +211,16 @@ export function ProfileMobile() {
       setShowAddressForm(false);
       // refetch
       const raw = (await addressesApi.list()) as Record<string, unknown>[];
-      setAddresses(raw.map((r) => ({
-        id: String(r.address_id ?? r.id ?? ''),
-        label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
-        detail: String(r.address_detail ?? r.detail ?? ''),
-        isDefault: Boolean(r.is_default ?? false),
-      })).filter((a) => a.id));
+      setAddresses(
+        raw
+          .map((r) => ({
+            id: String(r.address_id ?? r.id ?? ''),
+            label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+            detail: String(r.address_detail ?? r.detail ?? ''),
+            isDefault: Boolean(r.is_default ?? false),
+          }))
+          .filter((a) => a.id),
+      );
     } catch {
       // silent fail
     } finally {
@@ -220,20 +230,29 @@ export function ProfileMobile() {
 
   useEffect(() => {
     let cancelled = false;
-    addressesApi.list()
+    addressesApi
+      .list()
       .then((raw) => {
         if (cancelled) return;
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        setAddresses(arr.map((r) => ({
-          id: String(r.address_id ?? r.id ?? ''),
-          label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
-          detail: String(r.address_detail ?? r.detail ?? ''),
-          isDefault: Boolean(r.is_default ?? false),
-        })).filter((a) => a.id));
+        setAddresses(
+          arr
+            .map((r) => ({
+              id: String(r.address_id ?? r.id ?? ''),
+              label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+              detail: String(r.address_detail ?? r.detail ?? ''),
+              isDefault: Boolean(r.is_default ?? false),
+            }))
+            .filter((a) => a.id),
+        );
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setAddressesLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setAddressesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -244,7 +263,12 @@ export function ProfileMobile() {
       .then((raw) => {
         if (cancelled) return;
         const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
-        setWalletTransactions(data.map((row) => normTransaction(row, isCustomer)).filter((t) => t.id).slice(0, 5));
+        setWalletTransactions(
+          data
+            .map((row) => normTransaction(row, isCustomer))
+            .filter((t) => t.id)
+            .slice(0, 5),
+        );
       })
       .catch(() => {})
       .finally(() => {
@@ -256,145 +280,149 @@ export function ProfileMobile() {
   }, [isCustomer]);
 
   if (!currentUser) {
-    return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-400 text-sm">กำลังโหลด...</p></div>;
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <p className='text-gray-400 text-sm'>กำลังโหลด...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="pb-4">
-      <div className="px-4 pt-5 mb-5">
-        <div className="flex items-center justify-between mb-4">
+    <div className='pb-4'>
+      <div className='px-4 pt-5 mb-5'>
+        <div className='flex items-center justify-between mb-4'>
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">
-              บัญชี
-            </p>
-            <h1 className="text-gray-900" style={{ fontWeight: 700 }}>
+            <p className='text-[10px] text-gray-400 uppercase tracking-wider'>บัญชี</p>
+            <h1 className='text-gray-900' style={{ fontWeight: 700 }}>
               โปรไฟล์
             </h1>
           </div>
         </div>
 
         <div
-          className="rounded-3xl p-5 relative overflow-hidden"
+          className='rounded-3xl p-5 relative overflow-hidden'
           style={{
-            background:
-              'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 60%, #A78BFA 100%)',
+            background: 'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 60%, #A78BFA 100%)',
           }}
         >
-          <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20 bg-white" />
-          <div className="absolute right-4 bottom-0 w-16 h-16 rounded-full opacity-15 bg-white" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/30 bg-[#EFEAF7]">
+          <div className='absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20 bg-white' />
+          <div className='absolute right-4 bottom-0 w-16 h-16 rounded-full opacity-15 bg-white' />
+          <div className='relative z-10'>
+            <div className='flex items-center gap-3 mb-4'>
+              <div className='relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/30 bg-[#EFEAF7]'>
                 <img
                   src={HARDCODED_CUSTOMER_PROFILE_SRC}
-                  alt="avatar"
-                  className="absolute inset-0 w-full h-full object-cover object-center"
+                  alt='avatar'
+                  className='absolute inset-0 w-full h-full object-cover object-center'
                 />
               </div>
               <div>
-                <p className="text-white" style={{ fontWeight: 700 }}>
+                <p className='text-white' style={{ fontWeight: 700 }}>
                   {currentUser.name}
                 </p>
-                <p className="text-white/70 text-xs">{currentUser.company}</p>
+                <p className='text-white/70 text-xs'>{currentUser.company}</p>
                 <div
-                  className="flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full w-fit"
+                  className='flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full w-fit'
                   style={{ background: 'rgba(255,255,255,0.2)' }}
                 >
-                  <span className="text-yellow-300 text-[10px]">✓</span>
-                  <span className="text-white text-[10px]">Verified Member</span>
+                  <span className='text-yellow-300 text-[10px]'>✓</span>
+                  <span className='text-white text-[10px]'>Verified Member</span>
                 </div>
               </div>
             </div>
-            <div className="flex gap-4">
-              <div className="text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>
+            <div className='flex gap-4'>
+              <div className='text-center'>
+                <p className='text-white' style={{ fontWeight: 700 }}>
                   {completedOrders}
                 </p>
-                <p className="text-white/70 text-[10px]">คำสั่งซื้อ</p>
+                <p className='text-white/70 text-[10px]'>คำสั่งซื้อ</p>
               </div>
-              <div className="w-px bg-white/30" />
-              <div className="text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>
+              <div className='w-px bg-white/30' />
+              <div className='text-center'>
+                <p className='text-white' style={{ fontWeight: 700 }}>
                   4.8
                 </p>
-                <p className="text-white/70 text-[10px]">คะแนน</p>
+                <p className='text-white/70 text-[10px]'>คะแนน</p>
               </div>
-              <div className="w-px bg-white/30" />
-              <div className="text-center">
-                <p className="text-white" style={{ fontWeight: 700 }}>
+              <div className='w-px bg-white/30' />
+              <div className='text-center'>
+                <p className='text-white' style={{ fontWeight: 700 }}>
                   ฿{(totalSpent / 1000).toFixed(0)}K
                 </p>
-                <p className="text-white/70 text-[10px]">ใช้จ่ายรวม</p>
+                <p className='text-white/70 text-[10px]'>ใช้จ่ายรวม</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 space-y-4">
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+      <div className='px-4 space-y-4'>
+        <div className='bg-white rounded-2xl p-4 shadow-sm'>
+          <div className='flex items-center justify-between mb-4'>
+            <div className='flex items-center gap-2'>
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className='w-9 h-9 rounded-xl flex items-center justify-center'
                 style={{ background: '#EDE9FF' }}
               >
                 <Wallet size={18} style={{ color: '#6C47FF' }} />
               </div>
-              <p className="text-sm text-gray-900" style={{ fontWeight: 700 }}>
+              <p className='text-sm text-gray-900' style={{ fontWeight: 700 }}>
                 กระเป๋าเงิน
               </p>
             </div>
           </div>
 
-          <div className="mb-4">
-            <p className="text-[10px] text-gray-400 mb-1">ยอดคงเหลือ</p>
-            <p className="text-2xl text-gray-900" style={{ fontWeight: 700 }}>
+          <div className='mb-4'>
+            <p className='text-[10px] text-gray-400 mb-1'>ยอดคงเหลือ</p>
+            <p className='text-2xl text-gray-900' style={{ fontWeight: 700 }}>
               ฿{currentUser.walletBalance.toLocaleString()}
             </p>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-[10px]" style={{ color: '#F59E0B' }}>
+            <div className='flex items-center gap-1 mt-1'>
+              <span className='text-[10px]' style={{ color: '#F59E0B' }}>
                 รอดำเนินการ: ฿{currentUser.pendingBalance.toLocaleString()}
               </span>
             </div>
           </div>
 
-          <div className="flex gap-2 mb-4">
-            <Button variant="unstyled"
-              className="flex-1 py-2.5 rounded-xl text-xs text-white"
+          <div className='flex gap-2 mb-4'>
+            <Button
+              variant='unstyled'
+              className='flex-1 py-2.5 rounded-xl text-xs text-white'
               style={{ background: '#6C47FF', fontWeight: 600 }}
             >
               + เติมเงิน
             </Button>
-            <Button variant="unstyled"
-              className="flex-1 py-2.5 rounded-xl text-xs border"
+            <Button
+              variant='unstyled'
+              className='flex-1 py-2.5 rounded-xl text-xs border'
               style={{ borderColor: '#6C47FF', color: '#6C47FF', fontWeight: 600 }}
             >
               ถอนเงิน
             </Button>
           </div>
 
-          <div className="space-y-2.5">
-            <div className="flex justify-between items-end mb-4">
-              <h3 className="text-base font-bold text-slate-800">รายการล่าสุด</h3>
-              <Button variant="unstyled"
-                type="button"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]"
+          <div className='space-y-2.5'>
+            <div className='flex justify-between items-end mb-4'>
+              <h3 className='text-base font-bold text-slate-800'>รายการล่าสุด</h3>
+              <Button
+                variant='unstyled'
+                type='button'
+                className='inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]'
                 onClick={() => navigate('/profile/transactions')}
               >
                 ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
               </Button>
             </div>
             {txLoading ? (
-              <p className="text-xs text-gray-400 text-center py-3">กำลังโหลด...</p>
+              <p className='text-xs text-gray-400 text-center py-3'>กำลังโหลด...</p>
             ) : walletTransactions.length === 0 ? (
-              <p className="text-xs text-gray-400 text-center py-3">ยังไม่มีรายการ</p>
+              <p className='text-xs text-gray-400 text-center py-3'>ยังไม่มีรายการ</p>
             ) : (
               walletTransactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
+                <div key={tx.id} className='flex items-center justify-between'>
+                  <div className='flex items-center gap-2.5'>
                     <div
-                      className="w-8 h-8 rounded-xl flex items-center justify-center"
+                      className='w-8 h-8 rounded-xl flex items-center justify-center'
                       style={{
                         background: tx.type === 'credit' ? '#DCFCE7' : '#FEE2E2',
                       }}
@@ -407,16 +435,16 @@ export function ProfileMobile() {
                     </div>
                     <div>
                       <p
-                        className="text-xs text-gray-700 truncate max-w-[160px]"
+                        className='text-xs text-gray-700 truncate max-w-[160px]'
                         style={{ fontWeight: 500 }}
                       >
                         {tx.label}
                       </p>
-                      <p className="text-[10px] text-gray-400">{tx.date}</p>
+                      <p className='text-[10px] text-gray-400'>{tx.date}</p>
                     </div>
                   </div>
                   <p
-                    className="text-xs shrink-0"
+                    className='text-xs shrink-0'
                     style={{
                       fontWeight: 700,
                       color: tx.type === 'credit' ? '#22C55E' : '#EF4444',
@@ -433,72 +461,75 @@ export function ProfileMobile() {
         {menuSections.map((section, sectionIndex) => (
           <div
             key={section.title ?? `section-${sectionIndex}`}
-            className="bg-white rounded-2xl shadow-sm overflow-hidden"
+            className='bg-white rounded-2xl shadow-sm overflow-hidden'
           >
             {section.title ? (
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
+              <p className='text-[10px] text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2'>
                 {section.title}
               </p>
             ) : null}
             {section.items.map((item, idx) => (
-              <Button variant="unstyled"
+              <Button
+                variant='unstyled'
                 key={item.label}
-                type="button"
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                type='button'
+                className='w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors'
                 style={{ borderTop: idx > 0 ? '1px solid #F9FAFB' : 'none' }}
                 onClick={() => {
                   if (item.to) navigate(item.to);
                 }}
               >
-                <div className="flex items-center gap-3">
+                <div className='flex items-center gap-3'>
                   <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    className='w-9 h-9 rounded-xl flex items-center justify-center'
                     style={{ background: item.bg }}
                   >
                     <item.icon size={17} style={{ color: item.color }} />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm text-gray-900" style={{ fontWeight: 500 }}>
+                  <div className='text-left'>
+                    <p className='text-sm text-gray-900' style={{ fontWeight: 500 }}>
                       {item.label}
                     </p>
-                    <p className="text-[10px] text-gray-400">{item.sub}</p>
+                    <p className='text-[10px] text-gray-400'>{item.sub}</p>
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-gray-300" />
+                <ChevronRight size={16} className='text-gray-300' />
               </Button>
             ))}
           </div>
         ))}
 
         {/* ── Addresses ── */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-4 pt-3 pb-2">
-            <div className="flex items-center gap-2">
+        <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>
+          <div className='flex items-center justify-between px-4 pt-3 pb-2'>
+            <div className='flex items-center gap-2'>
               <Home size={15} style={{ color: '#6C47FF' }} />
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider">ที่อยู่จัดส่ง</p>
+              <p className='text-[10px] text-gray-400 uppercase tracking-wider'>ที่อยู่จัดส่ง</p>
             </div>
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               onClick={() => setShowAddressForm((v) => !v)}
-              className="flex items-center gap-0.5 text-[10px] font-semibold text-[#6C47FF]"
+              className='flex items-center gap-0.5 text-[10px] font-semibold text-[#6C47FF]'
             >
               <Plus size={12} /> เพิ่ม
             </Button>
           </div>
           {showAddressForm && (
-            <div className="px-4 pb-3 flex gap-2">
+            <div className='px-4 pb-3 flex gap-2'>
               <input
-                type="text"
+                type='text'
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
-                placeholder="กรอกที่อยู่จัดส่ง..."
-                className="flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30"
+                placeholder='กรอกที่อยู่จัดส่ง...'
+                className='flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30'
               />
-              <Button variant="unstyled"
-                type="button"
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={addAddress}
                 disabled={addingAddress || !newAddress.trim()}
-                className="px-3 py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50"
+                className='px-3 py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50'
                 style={{ background: '#6C47FF' }}
               >
                 {addingAddress ? '...' : 'บันทึก'}
@@ -506,20 +537,20 @@ export function ProfileMobile() {
             </div>
           )}
           {addressesLoading ? (
-            <p className="text-xs text-gray-400 text-center py-3">กำลังโหลด...</p>
+            <p className='text-xs text-gray-400 text-center py-3'>กำลังโหลด...</p>
           ) : addresses.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center pb-3">ยังไม่มีที่อยู่</p>
+            <p className='text-xs text-gray-400 text-center pb-3'>ยังไม่มีที่อยู่</p>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className='divide-y divide-gray-50'>
               {addresses.map((addr) => (
-                <div key={addr.id} className="flex items-start gap-3 px-4 py-3">
-                  <MapPin size={14} className="text-[#6C47FF] mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-700 capitalize">{addr.label}</p>
-                    <p className="text-[11px] text-gray-500 truncate">{addr.detail}</p>
+                <div key={addr.id} className='flex items-start gap-3 px-4 py-3'>
+                  <MapPin size={14} className='text-[#6C47FF] mt-0.5 shrink-0' />
+                  <div className='flex-1 min-w-0'>
+                    <p className='text-xs font-semibold text-gray-700 capitalize'>{addr.label}</p>
+                    <p className='text-[11px] text-gray-500 truncate'>{addr.detail}</p>
                   </div>
                   {addr.isDefault && (
-                    <span className="text-[9px] font-bold text-[#6C47FF] bg-violet-50 px-1.5 py-0.5 rounded-full shrink-0">
+                    <span className='text-[9px] font-bold text-[#6C47FF] bg-violet-50 px-1.5 py-0.5 rounded-full shrink-0'>
                       หลัก
                     </span>
                   )}
@@ -529,16 +560,20 @@ export function ProfileMobile() {
           )}
         </div>
 
-        <Button variant="unstyled"
-          onClick={() => { logout(); navigate('/login', { replace: true }); }}
-          className="w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]"
+        <Button
+          variant='unstyled'
+          onClick={() => {
+            logout();
+            navigate('/login', { replace: true });
+          }}
+          className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]'
           style={{ color: '#EF4444', fontWeight: 600 }}
         >
           <LogOut size={18} />
           ออกจากระบบ
         </Button>
 
-        <p className="text-center text-[10px] text-gray-400 pb-2">
+        <p className='text-center text-[10px] text-gray-400 pb-2'>
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}
         </p>
       </div>

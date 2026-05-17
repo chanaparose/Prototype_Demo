@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { useAuth } from './useAuthStore';
+import { useAuth } from '@/stores/useAuthStore';
 import {
   frontendApi,
   notificationsApi,
   conversationsApi,
   rfqsApi,
   walletApi,
-} from '../services/api';
+} from '@/services/api';
 import {
   normalizeFactoryRow,
   mapOrderStatusFromApi,
@@ -14,7 +14,7 @@ import {
   guessCategoryIcon,
   normalizeRfqRecord,
   mapConversationRowsFromApi,
-} from './utils';
+} from '@/stores/utils';
 import type {
   Category,
   Factory,
@@ -27,7 +27,7 @@ import type {
   Conversation,
   Notification,
   CurrentUser,
-} from './types';
+} from '@/stores/types';
 
 export interface DataState {
   currentUser: CurrentUser | null;
@@ -131,9 +131,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         category: String(r.category ?? '') || (linkedRfq?.category ?? ''),
         status,
         progress:
-          Number(r.progress ?? 0) > 0
-            ? Number(r.progress ?? 0)
-            : guessOrderProgress(status),
+          Number(r.progress ?? 0) > 0 ? Number(r.progress ?? 0) : guessOrderProgress(status),
         totalAmount: Number(r.totalAmount ?? r.total_amount ?? 0),
         depositPaid: Number(r.depositPaid ?? r.deposit_paid ?? r.deposit_amount ?? 0),
         quantity: Number(r.quantity ?? 0) || (linkedRfq?.quantity ?? 0),
@@ -151,30 +149,41 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
       ]);
 
       const boot = bootstrapRes.status === 'fulfilled' ? bootstrapRes.value : null;
-      const rawNotifs = notifRes.status === 'fulfilled'
-        ? (Array.isArray(notifRes.value) ? notifRes.value : []) as Record<string, unknown>[]
-        : [];
-      const rawConvs = convsRes.status === 'fulfilled'
-        ? (Array.isArray(convsRes.value) ? convsRes.value : []) as Record<string, unknown>[]
-        : [];
+      const rawNotifs =
+        notifRes.status === 'fulfilled'
+          ? ((Array.isArray(notifRes.value) ? notifRes.value : []) as Record<string, unknown>[])
+          : [];
+      const rawConvs =
+        convsRes.status === 'fulfilled'
+          ? ((Array.isArray(convsRes.value) ? convsRes.value : []) as Record<string, unknown>[])
+          : [];
 
-      const mappedNotifs: Notification[] = rawNotifs.map((r) => ({
-        id: String(r.notification_id ?? r.id ?? ''),
-        type: String(r.type ?? ''),
-        title: String(r.title ?? ''),
-        message: String(r.message ?? r.body ?? ''),
-        time: String(r.created_at ?? r.time ?? ''),
-        read: Boolean(r.is_read ?? r.read ?? false),
-        linkTo: String(r.link_to ?? r.linkTo ?? ''),
-        avatar: String(r.avatar ?? ''),
-        rfqId: r.rfq_id ? String(r.rfq_id) : undefined,
-        orderId: r.order_id ? String(r.order_id) : undefined,
-        conversationId: r.conversation_id ? String(r.conversation_id) : undefined,
-      })).filter((n) => n.id);
+      const mappedNotifs: Notification[] = rawNotifs
+        .map((r) => ({
+          id: String(r.notification_id ?? r.id ?? ''),
+          type: String(r.type ?? ''),
+          title: String(r.title ?? ''),
+          message: String(r.message ?? r.body ?? ''),
+          time: String(r.created_at ?? r.time ?? ''),
+          read: Boolean(r.is_read ?? r.read ?? false),
+          linkTo: String(r.link_to ?? r.linkTo ?? ''),
+          avatar: String(r.avatar ?? ''),
+          rfqId: r.rfq_id ? String(r.rfq_id) : undefined,
+          orderId: r.order_id ? String(r.order_id) : undefined,
+          conversationId: r.conversation_id ? String(r.conversation_id) : undefined,
+        }))
+        .filter((n) => n.id);
 
       const mappedConvs: Conversation[] = mapConversationRowsFromApi(rawConvs);
 
-      console.info('[DataStore] bootstrap:', bootstrapRes.status, '| notifs:', rawNotifs.length, '| convs:', rawConvs.length);
+      console.info(
+        '[DataStore] bootstrap:',
+        bootstrapRes.status,
+        '| notifs:',
+        rawNotifs.length,
+        '| convs:',
+        rawConvs.length,
+      );
 
       const factoryList: Factory[] = (() => {
         const raw = boot?.factories;
@@ -330,7 +339,15 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
                 )
               : [];
             const gp = (s: string, v: number) =>
-              v > 0 ? v : s === 'in_production' ? 35 : s === 'shipped' ? 85 : s === 'completed' ? 100 : 0;
+              v > 0
+                ? v
+                : s === 'in_production'
+                  ? 35
+                  : s === 'shipped'
+                    ? 85
+                    : s === 'completed'
+                      ? 100
+                      : 0;
             const mapO = (r: Record<string, unknown>): Order => {
               const rfqId = String(r.rfqId ?? r.rfq_id ?? '');
               const status = String(r.status ?? 'in_production');

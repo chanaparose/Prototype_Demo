@@ -1,5 +1,5 @@
 import React from 'react';
-import { OrderDetailMobile } from './OrderDetail.mobile';
+import { OrderDetailMobile } from '@/pages/order-detail/OrderDetail.mobile';
 
 /**
  * Desktop layout shell only. All data hooks live in OrderDetailMobileBody so they run
@@ -7,9 +7,9 @@ import { OrderDetailMobile } from './OrderDetail.mobile';
  */
 export function OrderDetailDesktop() {
   return (
-    <div className="hidden lg:block max-w-6xl mx-auto px-6 py-4">
-      <div className="space-y-4">
-        <main className="w-full space-y-4">
+    <div className='hidden lg:block max-w-6xl mx-auto px-6 py-4'>
+      <div className='space-y-4'>
+        <main className='w-full space-y-4'>
           <OrderDetailMobile />
         </main>
       </div>

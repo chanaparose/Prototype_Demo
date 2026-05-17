@@ -1,8 +1,8 @@
-export { ShowcaseHeroGallery } from './ShowcaseHeroGallery';
+export { ShowcaseHeroGallery } from '@/components/features/showcase-detail/ShowcaseHeroGallery';
 export {
   SHOWCASE_DETAIL_BRAND,
   daysBetween,
   formatShowcaseTHB,
   formatShowcaseThaiDate,
   normalizeShowcaseMarkdown,
-} from './showcaseDetailShared';
+} from '@/components/features/showcase-detail/showcaseDetailShared';

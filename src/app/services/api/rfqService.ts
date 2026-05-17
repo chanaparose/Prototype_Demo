@@ -3,7 +3,7 @@
  * Pattern: Request Type → API Call → Response → Mapper → Model
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
 import { QueryTableRequest } from '@/types/api/request/query';
 import { IRFQ, IQuotation, IPaginatedList } from '@/types/model';
 
@@ -16,10 +16,9 @@ export const fetchRFQs = async ({
   query: QueryTableRequest;
 }): Promise<IPaginatedList<IRFQ>> => {
   try {
-    const res = await httpClient.post<{ data?: { items?: unknown[]; total?: number; page?: number; limit?: number } }>(
-      '/rfqs/list',
-      { ...query }
-    );
+    const res = await httpClient.post<{
+      data?: { items?: unknown[]; total?: number; page?: number; limit?: number };
+    }>('/rfqs/list', { ...query });
 
     if (!res?.data) {
       throw new Error('Failed to fetch RFQs');
@@ -121,10 +120,7 @@ export const fetchQuotations = async (rfqId: string | number): Promise<IQuotatio
  */
 export const acceptQuotation = async (quoteId: string | number): Promise<{ orderId: string }> => {
   try {
-    const res = await httpClient.post<Record<string, unknown>>(
-      `/quotations/${quoteId}/accept`,
-      {}
-    );
+    const res = await httpClient.post<Record<string, unknown>>(`/quotations/${quoteId}/accept`, {});
 
     if (!res) {
       throw new Error('Failed to accept quotation');

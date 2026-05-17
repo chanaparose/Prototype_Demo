@@ -42,10 +42,10 @@ export function ImageWithFallback(props: ImageWithFallbackProps) {
         className={`inline-block bg-gray-100 text-center align-middle ${className ?? ''}`}
         style={style}
       >
-        <div className="flex h-full w-full items-center justify-center">
+        <div className='flex h-full w-full items-center justify-center'>
           <img
             src={ERROR_IMG_SRC}
-            alt="Error loading image"
+            alt='Error loading image'
             {...rest}
             data-original-url={primary || undefined}
             data-fallback-url={fallback || undefined}

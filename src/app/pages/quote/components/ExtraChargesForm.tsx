@@ -21,19 +21,19 @@ export function ExtraChargesForm(props: Props) {
     tooling_mold_cost: props.tooling_mold_cost,
   };
   const row = (key: keyof Omit<Props, 'onChange'>, label: string) => (
-    <label className="block">
-      <span className="text-xs text-gray-500">{label}</span>
+    <label className='block'>
+      <span className='text-xs text-gray-500'>{label}</span>
       <input
-        type="number"
+        type='number'
         value={props[key] as number}
         onChange={(e) => props.onChange({ ...charges, [key]: Number(e.target.value) || 0 })}
-        className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+        className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
     </label>
   );
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 space-y-3">
-      <p className="text-sm font-bold text-gray-900">Extra Charges</p>
+    <div className='rounded-2xl border border-gray-100 bg-white p-4 space-y-3'>
+      <p className='text-sm font-bold text-gray-900'>Extra Charges</p>
       {row('discount_amount', 'Discount amount')}
       {row('shipping_cost', 'Shipping cost')}
       {row('packaging_cost', 'Packaging cost')}

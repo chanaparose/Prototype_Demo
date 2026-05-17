@@ -17,15 +17,10 @@ export function summarizeRfqAddress(rfq: Record<string, unknown>): string {
     if (line) return line;
   }
   const flat = String(
-    rfq.address_summary ??
-      rfq.shipping_address_summary ??
-      rfq.destination_summary ??
-      '',
+    rfq.address_summary ?? rfq.shipping_address_summary ?? rfq.destination_summary ?? '',
   ).trim();
   if (flat) return flat;
-  const prov = String(
-    rfq.province_name ?? rfq.provinceName ?? rfq.shipping_province ?? '',
-  ).trim();
+  const prov = String(rfq.province_name ?? rfq.provinceName ?? rfq.shipping_province ?? '').trim();
   const dist = String(rfq.district_name ?? rfq.districtName ?? '').trim();
   if (prov && dist) return `${prov} · ${dist}`;
   return prov || dist;

@@ -1,2 +1,2 @@
-export { RegisterFactoryPage } from './RegisterFactoryPage';
-export { useRegisterFactory } from './useRegisterFactory';
+export { RegisterFactoryPage } from '@/pages/auth/RegisterFactoryPage';
+export { useRegisterFactory } from '@/pages/auth/useRegisterFactory';

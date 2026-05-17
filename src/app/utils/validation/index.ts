@@ -1,5 +1,5 @@
 // Zod schemas
-export * from './schemas';
+export * from '@/utils/validation/schemas';
 
 // Validation functions
-export * from './validators';
+export * from '@/utils/validation/validators';

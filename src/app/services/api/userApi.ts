@@ -2,7 +2,26 @@
  * User API — Profile, wallet, favorites, reviews
  */
 
-import { httpClient } from './httpClient';
+import { httpClient } from '@/services/api/httpClient';
+
+type ProfileReviewListParams = {
+  page?: number;
+  limit?: number;
+};
+
+type ProfileReviewListResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  data: unknown[];
+};
+
+function buildProfileReviewQuery(params: ProfileReviewListParams = {}) {
+  return new URLSearchParams({
+    page: String(params.page ?? 1),
+    limit: String(params.limit ?? 50),
+  });
+}
 
 export const profileApi = {
   getMe: () => httpClient.get<Record<string, unknown>>('/profile/me'),
@@ -33,6 +52,16 @@ export const profileApi = {
     });
     return httpClient.get<unknown[]>(`/profile/reviews?${params}`);
   },
+
+  myReviews: (params?: ProfileReviewListParams) =>
+    httpClient.get<ProfileReviewListResponse>(
+      `/profile/reviews?${buildProfileReviewQuery(params)}`,
+    ),
+
+  receivedReviews: (params?: ProfileReviewListParams) =>
+    httpClient.get<ProfileReviewListResponse>(
+      `/profile/reviews/received?${buildProfileReviewQuery(params)}`,
+    ),
 };
 
 export const walletApi = {
@@ -73,11 +102,9 @@ export const walletApi = {
 export const favoritesApi = {
   list: () => httpClient.get<unknown[]>('/favorites'),
 
-  add: (showcase_id: string | number) =>
-    httpClient.post<void>('/favorites', { showcase_id }),
+  add: (showcase_id: string | number) => httpClient.post<void>('/favorites', { showcase_id }),
 
-  remove: (showcase_id: string | number) =>
-    httpClient.delete<void>(`/favorites/${showcase_id}`),
+  remove: (showcase_id: string | number) => httpClient.delete<void>(`/favorites/${showcase_id}`),
 
   isFavorite: (showcase_id: string | number) =>
     httpClient.get<{
@@ -118,17 +145,13 @@ export const reviewsApi = {
 
 export const certificatesApi = {
   list: (factoryId?: string | number) => {
-    const endpoint = factoryId
-      ? `/certificates?factory_id=${factoryId}`
-      : '/certificates';
+    const endpoint = factoryId ? `/certificates?factory_id=${factoryId}` : '/certificates';
     return httpClient.get<unknown[]>(endpoint);
   },
 
-  upload: (formData: FormData) =>
-    httpClient.postForm<unknown>('/certificates/upload', formData),
+  upload: (formData: FormData) => httpClient.postForm<unknown>('/certificates/upload', formData),
 
-  delete: (certId: string | number) =>
-    httpClient.delete<void>(`/certificates/${certId}`),
+  delete: (certId: string | number) => httpClient.delete<void>(`/certificates/${certId}`),
 };
 
 export const transactionsApi = {

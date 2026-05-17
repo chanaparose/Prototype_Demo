@@ -1,2 +1,1 @@
-export { ChatRoom, ChatRoomEmbedded } from './ChatRoom.tsx';
-
+export { ChatRoom, ChatRoomEmbedded } from '@/pages/chat-room/ChatRoom.tsx';

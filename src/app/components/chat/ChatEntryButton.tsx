@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MessageCircle } from 'lucide-react';
-import { useAuth } from '../../stores';
-import { openChatSession } from '../../utils/openChatSession';
-import { getCurrentUserId, type ChatReference } from '../../utils/chatContract';
-import { Button } from '../ui/button';
+import { useAuth } from '@/stores';
+import { openChatSession } from '@/utils/openChatSession';
+import { getCurrentUserId, type ChatReference } from '@/utils/chatContract';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   factoryId: number;
@@ -60,17 +60,18 @@ export function ChatEntryButton({
       : 'inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 bg-white disabled:opacity-60';
 
   return (
-    <Button variant="unstyled"
-      type="button"
+    <Button
+      variant='unstyled'
+      type='button'
       onClick={() => void onClick()}
       disabled={disabled || loading}
       className={`${base} ${className}`}
       style={variant === 'primary' ? { background: '#7A4B94' } : undefined}
     >
       {loading ? (
-        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        <span className='w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin' />
       ) : (
-        <MessageCircle className="w-4 h-4" />
+        <MessageCircle className='w-4 h-4' />
       )}
       {label}
     </Button>

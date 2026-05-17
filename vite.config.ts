@@ -1,12 +1,12 @@
-import { defineConfig, loadEnv } from 'vite'
-import path from 'path'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig, loadEnv } from 'vite';
+import path from 'path';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   // loadEnv อ่าน .env.local ก่อน .env → ใช้สลับ local/production โดยไม่แก้โค้ด
-  const env = loadEnv(mode, process.cwd(), '')
-  const BE_URL = env.VITE_BE_URL || 'https://wemake-server.onrender.com'
+  const env = loadEnv(mode, process.cwd(), '');
+  const BE_URL = env.VITE_BE_URL || 'https://wemake-server.onrender.com';
 
   return {
     plugins: [
@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src/app'),
+        '@lib': path.resolve(__dirname, './src/lib'),
       },
     },
 
@@ -37,5 +38,5 @@ export default defineConfig(({ mode }) => {
 
     // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
     assetsInclude: ['**/*.svg', '**/*.csv'],
-  }
-})
+  };
+});

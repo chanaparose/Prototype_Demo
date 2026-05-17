@@ -1,5 +1,5 @@
-import type { ConversationDTO } from '../../types/api';
-import type { CounterpartyView } from '../../utils/counterparty';
+import type { ConversationDTO } from '@/types/api';
+import type { CounterpartyView } from '@/utils/counterparty';
 
 export type UiConversation = {
   id: string;

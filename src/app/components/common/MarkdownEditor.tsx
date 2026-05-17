@@ -1,25 +1,25 @@
 import React, { useRef, useState } from 'react';
-import { useDisclosure, useToggle } from '../../hooks/ui';
-import { 
-  Quote, 
-  Minus, 
-  Paperclip, 
-  Bold, 
-  Italic, 
-  Code, 
-  Heading, 
-  List, 
-  ListOrdered, 
-  Link, 
-  Table as TableIcon, 
+import { useDisclosure, useToggle } from '@/hooks/ui';
+import {
+  Quote,
+  Minus,
+  Paperclip,
+  Bold,
+  Italic,
+  Code,
+  Heading,
+  List,
+  ListOrdered,
+  Link,
+  Table as TableIcon,
   Image as ImageIcon,
   LayoutTemplate,
-  CheckCircle2
+  CheckCircle2,
 } from 'lucide-react';
-import { mediaApi } from '../../services/api';
-import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
-import { BaseModal } from '../../shared/ui';
-import { Button } from '../ui/button';
+import { mediaApi } from '@/services/api';
+import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
+import { BaseModal } from '@/shared/ui';
+import { Button } from '@/components/ui/button';
 
 // ---------------------------------------------------------------------------
 // ข้อมูลเทมเพลต (สามารถเพิ่ม/ลด ได้ตามต้องการ)
@@ -47,7 +47,7 @@ const TEMPLATES = [
 | --- | --- |
 | **ขั้นต่ำการผลิต (MOQ)** | [เช่น เริ่มต้นเพียง 500 กิโลกรัม / 1,000 ซอง] |
 | **ระยะเวลาพัฒนาสูตร** | [เช่น 14 - 30 วัน] |
-| **ระยะเวลาผลิตจริง** | [เช่น 30 - 45 วัน หลังยืนยันแบบ] |`
+| **ระยะเวลาผลิตจริง** | [เช่น 30 - 45 วัน หลังยืนยันแบบ] |`,
   },
   {
     id: 'factory_materials',
@@ -69,7 +69,7 @@ const TEMPLATES = [
 ## 🛡️ มาตรฐานความปลอดภัย (Safety Standards)
 - ✅ [เช่น ปราศจากผลพลอยได้จากสัตว์ (By-Products)]
 - ✅ [เช่น ไม่ใส่สี กลิ่นสังเคราะห์ หรือวัตถุกันเสีย]
-- ✅ [เช่น ผ่านการตรวจวิเคราะห์ทางห้องปฏิบัติการ (Lab Tested)]`
+- ✅ [เช่น ผ่านการตรวจวิเคราะห์ทางห้องปฏิบัติการ (Lab Tested)]`,
   },
   {
     id: 'pet_trends_article',
@@ -95,8 +95,8 @@ const TEMPLATES = [
 **📌 สรุป:**
 [เขียนสรุปสั้นๆ เช่น การจับเทรนด์เหล่านี้มาพัฒนาเป็นสินค้าใหม่ จะช่วยให้แบรนด์ของคุณแตกต่างและเติบโตได้อย่างยั่งยืนในตลาด]
 
-*สนใจเริ่มต้นทำแบรนด์สินค้าตามเทรนด์เหล่านี้ ปรึกษาเราได้เลย!*`
-  }
+*สนใจเริ่มต้นทำแบรนด์สินค้าตามเทรนด์เหล่านี้ ปรึกษาเราได้เลย!*`,
+  },
 ];
 
 interface MarkdownEditorProps {
@@ -131,7 +131,11 @@ export function MarkdownEditor({
   const { state: focused, open: focusOn, close: focusOff } = useToggle(false);
 
   // Template modal state
-  const { isOpen: isTemplateModalOpen, onOpen: openTemplate, onClose: closeTemplate } = useDisclosure();
+  const {
+    isOpen: isTemplateModalOpen,
+    onOpen: openTemplate,
+    onClose: closeTemplate,
+  } = useDisclosure();
   const [activeTemplateIndex, setActiveTemplateIndex] = useState(0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -156,7 +160,10 @@ export function MarkdownEditor({
           const cursorPos = s + prefix.length;
           textareaRef.current.setSelectionRange(cursorPos, cursorPos);
         } else {
-          textareaRef.current.setSelectionRange(s + prefix.length, s + prefix.length + selected.length);
+          textareaRef.current.setSelectionRange(
+            s + prefix.length,
+            s + prefix.length + selected.length,
+          );
         }
       }
     });
@@ -202,19 +209,19 @@ export function MarkdownEditor({
   };
 
   return (
-    <div className="relative">
-      {label ? <p className="text-xs text-gray-500 mb-1">{label}</p> : null}
+    <div className='relative'>
+      {label ? <p className='text-xs text-gray-500 mb-1'>{label}</p> : null}
       <div
         className={`rounded-xl border bg-white overflow-hidden ${
           focused ? 'border-orange-300 shadow-[inset_2px_0_0_#fb923c]' : 'border-gray-200'
         }`}
       >
-        <div className="px-3 pt-2 pb-2 flex items-center justify-end border-b border-gray-100">
-          <div className="flex items-center gap-2">
+        <div className='px-3 pt-2 pb-2 flex items-center justify-end border-b border-gray-100'>
+          <div className='flex items-center gap-2'>
             <Button
               onClick={() => setTab('write')}
-              variant="outline"
-              size="xs"
+              variant='outline'
+              size='xs'
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'write'
                   ? 'bg-orange-50 border-orange-200 text-orange-700'
@@ -225,8 +232,8 @@ export function MarkdownEditor({
             </Button>
             <Button
               onClick={() => setTab('preview')}
-              variant="outline"
-              size="xs"
+              variant='outline'
+              size='xs'
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'preview'
                   ? 'bg-orange-50 border-orange-200 text-orange-700'
@@ -241,44 +248,158 @@ export function MarkdownEditor({
         {tab === 'write' ? (
           <>
             {/* Toolbar */}
-            <div className="px-2 py-1.5 border-b border-gray-100 flex items-center flex-wrap gap-2 bg-white">
-              
-              <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
-                <Button onClick={() => applyInsert('**', '**')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวหนา (Bold)"><Bold size={15} /></Button>
-                <Button onClick={() => applyInsert('_', '_')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวเอียง (Italic)"><Italic size={15} /></Button>
-                <Button onClick={() => applyInsert('`', '`')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ไฮไลท์โค้ด (Inline Code)"><Code size={15} /></Button>
-              </div>
-
-              <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
-                <Button onClick={() => applyInsert('\n### ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="หัวข้อ (Heading)"><Heading size={15} /></Button>
-                <Button onClick={() => applyInsert('\n> ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="คำคม (Blockquote)"><Quote size={15} /></Button>
-                <Button onClick={() => applyInsert('\n\n---\n\n')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="เส้นคั่น (Divider)"><Minus size={15} /></Button>
-              </div>
-
-              <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
-                <Button onClick={() => applyInsert('\n- ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการแบบจุด (Bullet List)"><List size={15} /></Button>
-                <Button onClick={() => applyInsert('\n1. ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการตัวเลข (Numbered List)"><ListOrdered size={15} /></Button>
-              </div>
-
-              <div className="flex items-center gap-0.5">
-                <Button onClick={() => applyInsert('[', '](url)')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกลิงก์ (Link)"><Link size={15} /></Button>
-                <Button onClick={() => applyTemplate('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกตาราง (Table)"><TableIcon size={15} /></Button>
-                <Button onClick={() => fileRef.current?.click()} disabled={disabled || uploading} variant="ghost" size="sm" className="inline-flex items-center gap-1.5 p-1.5 px-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แนบรูปภาพ (Image)">
-                  <ImageIcon size={15} />
-                  {uploading && <span className="text-xs font-medium text-orange-600">กำลังอัปโหลด...</span>}
+            <div className='px-2 py-1.5 border-b border-gray-100 flex items-center flex-wrap gap-2 bg-white'>
+              <div className='flex items-center gap-0.5 pr-2 border-r border-gray-200'>
+                <Button
+                  onClick={() => applyInsert('**', '**')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='ตัวหนา (Bold)'
+                >
+                  <Bold size={15} />
                 </Button>
-                <label htmlFor="file-input" className="hidden">อัปโหลดรูปภาพ</label>
-                <input id="file-input" ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }} aria-label="อัปโหลดรูปภาพ" />
+                <Button
+                  onClick={() => applyInsert('_', '_')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='ตัวเอียง (Italic)'
+                >
+                  <Italic size={15} />
+                </Button>
+                <Button
+                  onClick={() => applyInsert('`', '`')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='ไฮไลท์โค้ด (Inline Code)'
+                >
+                  <Code size={15} />
+                </Button>
+              </div>
+
+              <div className='flex items-center gap-0.5 pr-2 border-r border-gray-200'>
+                <Button
+                  onClick={() => applyInsert('\n### ')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='หัวข้อ (Heading)'
+                >
+                  <Heading size={15} />
+                </Button>
+                <Button
+                  onClick={() => applyInsert('\n> ')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='คำคม (Blockquote)'
+                >
+                  <Quote size={15} />
+                </Button>
+                <Button
+                  onClick={() => applyInsert('\n\n---\n\n')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='เส้นคั่น (Divider)'
+                >
+                  <Minus size={15} />
+                </Button>
+              </div>
+
+              <div className='flex items-center gap-0.5 pr-2 border-r border-gray-200'>
+                <Button
+                  onClick={() => applyInsert('\n- ')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='รายการแบบจุด (Bullet List)'
+                >
+                  <List size={15} />
+                </Button>
+                <Button
+                  onClick={() => applyInsert('\n1. ')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='รายการตัวเลข (Numbered List)'
+                >
+                  <ListOrdered size={15} />
+                </Button>
+              </div>
+
+              <div className='flex items-center gap-0.5'>
+                <Button
+                  onClick={() => applyInsert('[', '](url)')}
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='แทรกลิงก์ (Link)'
+                >
+                  <Link size={15} />
+                </Button>
+                <Button
+                  onClick={() =>
+                    applyTemplate('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')
+                  }
+                  disabled={disabled}
+                  variant='ghost'
+                  size='icon-xs'
+                  className='p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='แทรกตาราง (Table)'
+                >
+                  <TableIcon size={15} />
+                </Button>
+                <Button
+                  onClick={() => fileRef.current?.click()}
+                  disabled={disabled || uploading}
+                  variant='ghost'
+                  size='sm'
+                  className='inline-flex items-center gap-1.5 p-1.5 px-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40'
+                  title='แนบรูปภาพ (Image)'
+                >
+                  <ImageIcon size={15} />
+                  {uploading && (
+                    <span className='text-xs font-medium text-orange-600'>กำลังอัปโหลด...</span>
+                  )}
+                </Button>
+                <label htmlFor='file-input' className='hidden'>
+                  อัปโหลดรูปภาพ
+                </label>
+                <input
+                  id='file-input'
+                  ref={fileRef}
+                  type='file'
+                  accept='image/*'
+                  className='hidden'
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    e.target.value = '';
+                    void onPickImage(f);
+                  }}
+                  aria-label='อัปโหลดรูปภาพ'
+                />
               </div>
 
               {/* ปุ่มเปิด Modal เลือกเทมเพลต */}
-              <div className="ml-auto flex items-center">
+              <div className='ml-auto flex items-center'>
                 <Button
-                  onClick={() => openTemplate()} 
-                  disabled={disabled} 
-                  variant="outline"
-                  size="sm"
-                  className="inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-[13px] font-medium transition-colors" 
+                  onClick={() => openTemplate()}
+                  disabled={disabled}
+                  variant='outline'
+                  size='sm'
+                  className='inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-[13px] font-medium transition-colors'
                 >
                   <LayoutTemplate size={14} />
                   เลือกเทมเพลต...
@@ -287,13 +408,19 @@ export function MarkdownEditor({
             </div>
 
             {/* Guideline */}
-            <div className="px-3 py-2 border-b border-gray-100 bg-gray-50/60 flex flex-col gap-1 text-[11px] text-gray-500">
-              <div className="flex items-center justify-between">
+            <div className='px-3 py-2 border-b border-gray-100 bg-gray-50/60 flex flex-col gap-1 text-[11px] text-gray-500'>
+              <div className='flex items-center justify-between'>
                 <p>
-                  <span className="font-semibold text-gray-700 mr-1">💡 ทิปส์:</span> 
-                  ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, สร้างตารางด้วย <code>|</code>, หรือเลือกเทมเพลตเพื่อประหยัดเวลา
+                  <span className='font-semibold text-gray-700 mr-1'>💡 ทิปส์:</span>
+                  ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, สร้างตารางด้วย <code>|</code>,
+                  หรือเลือกเทมเพลตเพื่อประหยัดเวลา
                 </p>
-                <a href="https://www.markdownguide.org/basic-syntax/" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-600 hover:underline inline-flex items-center gap-1">
+                <a
+                  href='https://www.markdownguide.org/basic-syntax/'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-orange-500 hover:text-orange-600 hover:underline inline-flex items-center gap-1'
+                >
                   ดูไกด์ไลน์ Markdown ทั้งหมด
                 </a>
               </div>
@@ -301,25 +428,25 @@ export function MarkdownEditor({
 
             <textarea
               ref={textareaRef}
-              className="w-full resize-y font-mono text-sm px-3 py-3 border-0 outline-none leading-relaxed text-gray-700"
+              className='w-full resize-y font-mono text-sm px-3 py-3 border-0 outline-none leading-relaxed text-gray-700'
               style={{ minHeight: `${minHeight}px` }}
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              placeholder={placeholder || "พิมพ์เนื้อหาของคุณที่นี่ รองรับ Markdown..."}
+              placeholder={placeholder || 'พิมพ์เนื้อหาของคุณที่นี่ รองรับ Markdown...'}
               disabled={disabled}
               onFocus={focusOn}
               onBlur={focusOff}
             />
           </>
         ) : (
-          <div className="px-4 py-3 min-h-[200px]">
+          <div className='px-4 py-3 min-h-[200px]'>
             {value.trim() ? (
               <MarkdownBody
                 source={normalizeMarkdownContent(value)}
-                className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
+                className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
               />
             ) : (
-              <p className="text-[13px] text-gray-400">ยังไม่มีรายละเอียดเพิ่มเติม</p>
+              <p className='text-[13px] text-gray-400'>ยังไม่มีรายละเอียดเพิ่มเติม</p>
             )}
           </div>
         )}
@@ -331,25 +458,25 @@ export function MarkdownEditor({
       <BaseModal
         isOpen={isTemplateModalOpen}
         onClose={closeTemplate}
-        title="เลือกเทมเพลตเริ่มต้น"
-        size="xl"
-        className="max-w-5xl flex flex-col overflow-hidden"
-        bodyClassName="p-0 flex flex-1 overflow-hidden flex-col md:flex-row"
-        headerClassName="bg-gray-50/50"
-        overlayClassName="bg-black/60 backdrop-blur-sm"
-        footerClassName="px-5 py-4 bg-gray-50/50 justify-end gap-3"
+        title='เลือกเทมเพลตเริ่มต้น'
+        size='xl'
+        className='max-w-5xl flex flex-col overflow-hidden'
+        bodyClassName='p-0 flex flex-1 overflow-hidden flex-col md:flex-row'
+        headerClassName='bg-gray-50/50'
+        overlayClassName='bg-black/60 backdrop-blur-sm'
+        footerClassName='px-5 py-4 bg-gray-50/50 justify-end gap-3'
         footer={
           <>
             <Button
               onClick={() => closeTemplate()}
-              variant="ghost"
-              className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+              variant='ghost'
+              className='px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-200 transition-colors'
             >
               ยกเลิก
             </Button>
             <Button
               onClick={handleSelectTemplate}
-              className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-sm transition-colors flex items-center gap-2"
+              className='px-6 py-2 rounded-lg text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-sm transition-colors flex items-center gap-2'
             >
               <CheckCircle2 size={16} />
               นำเทมเพลตนี้ไปใช้
@@ -357,57 +484,65 @@ export function MarkdownEditor({
           </>
         }
       >
-            <div className="hidden">
-              <LayoutTemplate size={20} className="text-orange-500" />
-            </div>
+        <div className='hidden'>
+          <LayoutTemplate size={20} className='text-orange-500' />
+        </div>
 
-            {/* Modal Body: Split Screen */}
-            <>
-              
-              {/* Left Side: Template List */}
-              <div className="w-full md:w-1/3 border-r border-gray-100 bg-gray-50/30 overflow-y-auto p-4 flex flex-col gap-3">
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 px-1">รูปแบบที่มีให้เลือก</p>
-                {TEMPLATES.map((tpl, idx) => (
-                  <Button
-                    key={tpl.id}
-                    onClick={() => setActiveTemplateIndex(idx)}
-                    variant="outline"
-                    className={`text-left p-4 rounded-xl border transition-all duration-200 relative overflow-hidden ${
-                      activeTemplateIndex === idx 
-                        ? 'bg-orange-50 border-orange-300 ring-1 ring-orange-300 shadow-sm' 
-                        : 'bg-white border-gray-200 hover:border-orange-200 hover:shadow-sm'
-                    }`}
+        {/* Modal Body: Split Screen */}
+        <>
+          {/* Left Side: Template List */}
+          <div className='w-full md:w-1/3 border-r border-gray-100 bg-gray-50/30 overflow-y-auto p-4 flex flex-col gap-3'>
+            <p className='text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 px-1'>
+              รูปแบบที่มีให้เลือก
+            </p>
+            {TEMPLATES.map((tpl, idx) => (
+              <Button
+                key={tpl.id}
+                onClick={() => setActiveTemplateIndex(idx)}
+                variant='outline'
+                className={`text-left p-4 rounded-xl border transition-all duration-200 relative overflow-hidden ${
+                  activeTemplateIndex === idx
+                    ? 'bg-orange-50 border-orange-300 ring-1 ring-orange-300 shadow-sm'
+                    : 'bg-white border-gray-200 hover:border-orange-200 hover:shadow-sm'
+                }`}
+              >
+                <div className='flex justify-between items-start mb-1'>
+                  <h4
+                    className={`font-medium ${activeTemplateIndex === idx ? 'text-orange-800' : 'text-gray-800'}`}
                   >
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className={`font-medium ${activeTemplateIndex === idx ? 'text-orange-800' : 'text-gray-800'}`}>
-                        {tpl.title}
-                      </h4>
-                      {activeTemplateIndex === idx && (
-                        <CheckCircle2 size={18} className="text-orange-500 shrink-0" />
-                      )}
-                    </div>
-                    <p className={`text-[13px] leading-snug ${activeTemplateIndex === idx ? 'text-orange-600/80' : 'text-gray-500'}`}>
-                      {tpl.description}
-                    </p>
-                  </Button>
-                ))}
-              </div>
-
-              {/* Right Side: Live Preview */}
-              <div className="w-full md:w-2/3 bg-white flex flex-col overflow-hidden">
-                <div className="px-6 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between shadow-sm z-10">
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">ตัวอย่างการแสดงผล (Preview)</span>
-                  <span className="text-[11px] text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">ทดลองอ่านได้</span>
+                    {tpl.title}
+                  </h4>
+                  {activeTemplateIndex === idx && (
+                    <CheckCircle2 size={18} className='text-orange-500 shrink-0' />
+                  )}
                 </div>
-                <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-                  <MarkdownBody
-                    source={normalizeMarkdownContent(TEMPLATES[activeTemplateIndex].content)}
-                    className="max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]"
-                  />
-                </div>
-              </div>
+                <p
+                  className={`text-[13px] leading-snug ${activeTemplateIndex === idx ? 'text-orange-600/80' : 'text-gray-500'}`}
+                >
+                  {tpl.description}
+                </p>
+              </Button>
+            ))}
+          </div>
 
-            </>
+          {/* Right Side: Live Preview */}
+          <div className='w-full md:w-2/3 bg-white flex flex-col overflow-hidden'>
+            <div className='px-6 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between shadow-sm z-10'>
+              <span className='text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                ตัวอย่างการแสดงผล (Preview)
+              </span>
+              <span className='text-[11px] text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full'>
+                ทดลองอ่านได้
+              </span>
+            </div>
+            <div className='p-6 overflow-y-auto flex-1 custom-scrollbar'>
+              <MarkdownBody
+                source={normalizeMarkdownContent(TEMPLATES[activeTemplateIndex].content)}
+                className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
+              />
+            </div>
+          </div>
+        </>
       </BaseModal>
     </div>
   );

@@ -15,7 +15,7 @@ export function OrderPendingPaymentSection(props: Props) {
   const { depositAmount } = props;
   if (!Number.isFinite(depositAmount) || depositAmount <= 0) {
     return (
-      <p className="text-sm text-amber-900 bg-amber-50 rounded-xl px-4 py-3 border border-amber-200">
+      <p className='text-sm text-amber-900 bg-amber-50 rounded-xl px-4 py-3 border border-amber-200'>
         ไม่พบยอดที่ต้องชำระจากระบบ — ติดต่อฝ่ายสนับสนุน
       </p>
     );

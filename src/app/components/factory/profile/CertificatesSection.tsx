@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, Download } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useFactoryCerts } from '../../../hooks/factory/useFactoryCerts';
-import { useMasterCerts, type CertTypeOption } from '../../../hooks/master/useMasterCerts';
-import { certificatesApi, mediaApi } from '../../../services/api';
-import { CertStatusBadge } from '../CertStatusBadge';
-import { CertUploadModal, type CertFormSubmitValue } from '../CertUploadModal';
-import { Button } from '../../ui/button';
+import { useFactoryCerts } from '@/hooks/factory/useFactoryCerts';
+import { useMasterCerts, type CertTypeOption } from '@/hooks/master/useMasterCerts';
+import { certificatesApi, mediaApi } from '@/services/api';
+import { CertStatusBadge } from '@/components/factory/CertStatusBadge';
+import { CertUploadModal, type CertFormSubmitValue } from '@/components/factory/CertUploadModal';
+import { Button } from '@/components/ui/button';
 
 type Row = Record<string, unknown>;
 
@@ -111,9 +111,9 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
   return (
     <div>
       {certs.length === 0 ? (
-        <p className="text-sm text-gray-400">ยังไม่มีใบรับรอง</p>
+        <p className='text-sm text-gray-400'>ยังไม่มีใบรับรอง</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className='space-y-2'>
           {certs.map((c, i) => {
             const key = String(certRowId(c) ?? i);
             const docUrl = certDocUrl(c);
@@ -121,27 +121,27 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
             return (
               <li
                 key={key}
-                className="text-sm border border-gray-100 rounded-xl px-3 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                className='text-sm border border-gray-100 rounded-xl px-3 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-gray-900">
+                <div className='min-w-0'>
+                  <div className='flex items-center gap-2 flex-wrap'>
+                    <span className='font-semibold text-gray-900'>
                       {certTypeDisplay(c, masterCertTypes)}
                     </span>
                     <CertStatusBadge status={String(c.verify_status ?? c.status ?? 'PD')} />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className='text-xs text-gray-500 mt-1'>
                     เลขที่เอกสาร: {String(c.cert_number ?? '—')}
                     {expire ? ` · หมดอายุ: ${expire}` : ''}
                   </p>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className='flex items-center gap-1.5 shrink-0'>
                   {docUrl ? (
                     <a
                       href={docUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                      target='_blank'
+                      rel='noreferrer'
+                      className='inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50'
                     >
                       <Download size={13} /> ดาวน์โหลด
                     </a>
@@ -152,19 +152,19 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
                       setEditing(c);
                       setModalOpen(true);
                     }}
-                    variant="outline"
-                    size="icon-sm"
-                    className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
-                    aria-label="แก้ไข"
+                    variant='outline'
+                    size='icon-sm'
+                    className='p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50'
+                    aria-label='แก้ไข'
                   >
                     <Pencil size={14} />
                   </Button>
                   <Button
                     onClick={() => void remove(c)}
-                    variant="outline"
-                    size="icon-sm"
-                    className="p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50"
-                    aria-label="ลบ"
+                    variant='outline'
+                    size='icon-sm'
+                    className='p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50'
+                    aria-label='ลบ'
                   >
                     <Trash2 size={14} />
                   </Button>

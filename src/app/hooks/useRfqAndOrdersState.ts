@@ -8,12 +8,12 @@
  * ข้อมูล category name / factory name ดึงจาก DataContext (bootstrap) สำหรับ enrich
  */
 import React from 'react';
-import { useAuth } from '../stores';
-import { useData, type Rfq, type Order } from '../stores';
-import { rfqsApi, ordersApi } from '../services/api';
-import { mapOrderStatusFromApi, guessOrderProgress } from '../utils/orderCustomerStatus';
-import { getRfqFilterId } from '../components/features/rfq-and-orders';
-import type { RfqFilterId, OrderFilterId } from '../components/features/rfq-and-orders';
+import { useAuth } from '@/stores';
+import { useData, type Rfq, type Order } from '@/stores';
+import { rfqsApi, ordersApi } from '@/services/api';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
+import { getRfqFilterId } from '@/components/features/rfq-and-orders';
+import type { RfqFilterId, OrderFilterId } from '@/components/features/rfq-and-orders';
 
 type PrimaryTab = 'rfq' | 'orders';
 
@@ -43,18 +43,20 @@ const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): s
 
 // ─── Category Icon Mapping ─────────────────────────────────────
 const CATEGORY_ICON_MAP: Record<string, string> = {
-  'อาหารสัตว์': '🐾', 'อาหารเม็ดสัตว์': '🐾',
-  'อาหารเสริม': '💊',
-  'ของเล่นสัตว์เลี้ยง': '🎾',
-  'เสื้อผ้าสัตว์เลี้ยง': '👕',
-  'อุปกรณ์สัตว์เลี้ยง': '🦮',
-  'บรรจุภัณฑ์': '📦', 'ผลิตภัณฑ์บำรุง': '✨',
-  'ขนมสัตว์เลี้ยง': '🍖',
-  'ที่นอนและบ้าน': '🏠',
-  'ตู้ปลาและกรง': '🐟',
-  'กระเป๋าและรถเข็น': '🧳',
-  'ห้องน้ำและทราย': '🚿',
-  'อุปกรณ์อาบน้ำ': '🧴',
+  อาหารสัตว์: '🐾',
+  อาหารเม็ดสัตว์: '🐾',
+  อาหารเสริม: '💊',
+  ของเล่นสัตว์เลี้ยง: '🎾',
+  เสื้อผ้าสัตว์เลี้ยง: '👕',
+  อุปกรณ์สัตว์เลี้ยง: '🦮',
+  บรรจุภัณฑ์: '📦',
+  ผลิตภัณฑ์บำรุง: '✨',
+  ขนมสัตว์เลี้ยง: '🍖',
+  ที่นอนและบ้าน: '🏠',
+  ตู้ปลาและกรง: '🐟',
+  กระเป๋าและรถเข็น: '🧳',
+  ห้องน้ำและทราย: '🚿',
+  อุปกรณ์อาบน้ำ: '🧴',
 };
 const guessCategoryIcon = (name: string) => {
   if (CATEGORY_ICON_MAP[name]) return CATEGORY_ICON_MAP[name];
@@ -122,12 +124,8 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   }, [dataCtx.factories]);
 
   // ─── Local state ─────────────────────────────────────────────
-  const [primaryTab, setPrimaryTab] = React.useState<PrimaryTab>(
-    initial?.primaryTab ?? 'rfq',
-  );
-  const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(
-    initial?.rfqFilter ?? 'pending',
-  );
+  const [primaryTab, setPrimaryTab] = React.useState<PrimaryTab>(initial?.primaryTab ?? 'rfq');
+  const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
   const [orderFilter, setOrderFilter] = React.useState<OrderFilterId>(
     initial?.orderFilter ?? 'pending_payment',
   );
@@ -142,7 +140,10 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const fetchRfqs = React.useCallback(async () => {
     try {
       const rawList = (await rfqsApi.list()) as RawRfq[] | null;
-      if (!Array.isArray(rawList)) { setRfqs([]); return; }
+      if (!Array.isArray(rawList)) {
+        setRfqs([]);
+        return;
+      }
 
       // Fetch quotations per RFQ in parallel (for offer count + status mapping)
       const withQuotes = await Promise.all(
@@ -157,7 +158,9 @@ export function useRfqAndOrdersState(initial?: InitialState) {
               const nested = obj.quotations ?? obj.data ?? obj.items ?? obj.results;
               if (Array.isArray(nested)) quotes = nested as RawQuotation[];
             }
-          } catch { /* no quotes */ }
+          } catch {
+            /* no quotes */
+          }
           return { raw: r, quotes };
         }),
       );
@@ -165,18 +168,21 @@ export function useRfqAndOrdersState(initial?: InitialState) {
       const mapped: Rfq[] = withQuotes.map(({ raw, quotes }) => {
         const catName = categoryMap.get(String(raw.category_id)) ?? '';
         const totalBudget = Number(
-          raw.target_price ?? raw.budget_total ?? (raw as Record<string, unknown>).total_budget ?? 0,
+          raw.target_price ??
+            raw.budget_total ??
+            (raw as Record<string, unknown>).total_budget ??
+            0,
         );
         const legacyBudgetPerPiece = Number((raw as Record<string, unknown>).budget_per_piece ?? 0);
         const budget = Math.round(
           (Number.isFinite(totalBudget) && totalBudget > 0 ? totalBudget : 0) ||
-            (legacyBudgetPerPiece > 0 && raw.quantity > 0 ? legacyBudgetPerPiece * raw.quantity : 0),
+            (legacyBudgetPerPiece > 0 && raw.quantity > 0
+              ? legacyBudgetPerPiece * raw.quantity
+              : 0),
         );
         const hasAccepted = quotes.some((q) => String(q.status ?? '').toUpperCase() === 'AC');
         const status = mapRfqStatus(raw.status, quotes.length > 0, hasAccepted);
-        const createdDate = raw.created_at
-          ? raw.created_at.split('T')[0]
-          : '';
+        const createdDate = raw.created_at ? raw.created_at.split('T')[0] : '';
 
         return {
           id: String(raw.rfq_id),
@@ -219,7 +225,10 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const fetchOrders = React.useCallback(async () => {
     try {
       const rawList = (await ordersApi.list()) as RawOrder[] | null;
-      if (!Array.isArray(rawList)) { setOrders([]); return; }
+      if (!Array.isArray(rawList)) {
+        setOrders([]);
+        return;
+      }
 
       // We need project name from rfqs. If rfqs is already loaded, use it.
       // Also build a quote_id → rfq_id mapping from rfqs' offers
@@ -229,9 +238,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
         const deliveryDate = raw.estimated_delivery
           ? String(raw.estimated_delivery).split('T')[0]
           : '';
-        const createdDate = raw.created_at
-          ? raw.created_at.split('T')[0]
-          : '';
+        const createdDate = raw.created_at ? raw.created_at.split('T')[0] : '';
 
         // Try to find related RFQ for project name
         // Orders store quote_id, not rfq_id directly — we look for matching rfq via offers
@@ -240,9 +247,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
         let rfqId = '';
         let quantity = 0;
         for (const rfq of rfqs) {
-          const matchOffer = rfq.offers.find(
-            (o) => String(o.id) === String(raw.quote_id),
-          );
+          const matchOffer = rfq.offers.find((o) => String(o.id) === String(raw.quote_id));
           if (matchOffer) {
             projectName = rfq.projectName;
             category = rfq.category;
@@ -322,12 +327,10 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const rfqTagCounts = React.useMemo(
     () => ({
       pending: rfqs.filter((r) => r.status === 'pending').length,
-      has_quote: rfqs.filter(
-        (r) => r.status === 'offers_received' || r.status === 'reviewing',
-      ).length,
-      cancelled_expired: rfqs.filter(
-        (r) => r.status === 'cancelled' || r.status === 'expired',
-      ).length,
+      has_quote: rfqs.filter((r) => r.status === 'offers_received' || r.status === 'reviewing')
+        .length,
+      cancelled_expired: rfqs.filter((r) => r.status === 'cancelled' || r.status === 'expired')
+        .length,
     }),
     [rfqs],
   );

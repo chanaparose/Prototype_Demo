@@ -11,10 +11,7 @@ interface UseLocalStorageReturn<T> {
  * @param key - localStorage key
  * @param initialValue - Default value if key doesn't exist
  */
-export function useLocalStorage<T = any>(
-  key: string,
-  initialValue?: T
-): UseLocalStorageReturn<T> {
+export function useLocalStorage<T = any>(key: string, initialValue?: T): UseLocalStorageReturn<T> {
   const [value, setValue] = useState<T | null>(() => {
     try {
       const item = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
@@ -39,7 +36,7 @@ export function useLocalStorage<T = any>(
         console.error(`Failed to set localStorage key "${key}"`);
       }
     },
-    [key]
+    [key],
   );
 
   const clear = useCallback(() => {

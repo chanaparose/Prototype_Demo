@@ -4,11 +4,11 @@ import {
   ACCENT_ORANGE_DEEP,
   CTA_GRADIENT,
   PEACH_MIST,
-} from '../rfq-and-orders/constants';
-import { diffDaysFromNow, formatDateTh } from './utils';
-import type { NextAction, PaymentScheduleItem } from '../../../pages/order-detail/orderDetailFromApi';
+} from '@/components/features/rfq-and-orders/constants';
+import { diffDaysFromNow, formatDateTh } from '@/components/features/order-detail/utils';
+import type { NextAction, PaymentScheduleItem } from '@/pages/order-detail/orderDetailFromApi';
 import { formatCurrency } from '@/utils/formatting';
-import { Button } from '../../ui/button';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   nextAction: NextAction | null;
@@ -54,28 +54,30 @@ export function OrderActionBanner({
 
   return (
     <div
-      className="sticky top-0 z-20 -mx-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 border-b border-amber-100/80 px-4 py-3"
+      className='sticky top-0 z-20 -mx-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 border-b border-amber-100/80 px-4 py-3'
       style={{ background: urgencyBg }}
     >
-      <div className="flex items-start gap-2 sm:items-center sm:flex-1 min-w-0">
-        <span className="text-lg shrink-0" aria-hidden>
+      <div className='flex items-start gap-2 sm:items-center sm:flex-1 min-w-0'>
+        <span className='text-lg shrink-0' aria-hidden>
           🟠
         </span>
-        <div className="text-sm min-w-0">
-          <p className="font-semibold" style={{ color: ACCENT_ORANGE_DEEP }}>
+        <div className='text-sm min-w-0'>
+          <p className='font-semibold' style={{ color: ACCENT_ORANGE_DEEP }}>
             {headline}
           </p>
-          <p className="text-gray-700 mt-0.5 break-words">
-            <span className="font-medium">{formatCurrency(amount, 'THB')}</span>
+          <p className='text-gray-700 mt-0.5 break-words'>
+            <span className='font-medium'>{formatCurrency(amount, 'THB')}</span>
             {due ? (
               <>
-                <span className="text-gray-500"> · </span>
+                <span className='text-gray-500'> · </span>
                 <span>
                   {variant === 'deposit_expired'
                     ? `ชำระเงินได้ถึงวันที่ ${formatDateTh(due)}`
                     : `ครบกำหนด ${formatDateTh(due)}`}
                 </span>
-                <span className={`${daysLeft <= 1 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+                <span
+                  className={`${daysLeft <= 1 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}
+                >
                   {' '}
                   (เหลือ {daysLeft} วัน)
                 </span>
@@ -84,10 +86,11 @@ export function OrderActionBanner({
           </p>
         </div>
       </div>
-      <Button variant="unstyled"
-        type="button"
+      <Button
+        variant='unstyled'
+        type='button'
         onClick={onCta}
-        className="w-full sm:w-auto shrink-0 rounded-lg px-4 py-2.5 sm:py-1.5 text-xs font-semibold text-white"
+        className='w-full sm:w-auto shrink-0 rounded-lg px-4 py-2.5 sm:py-1.5 text-xs font-semibold text-white'
         style={{ background: CTA_GRADIENT }}
       >
         {ctaLabel} →

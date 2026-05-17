@@ -1,2 +1,2 @@
 // Content types
-export * from './contentTypes';
+export * from '@/utils/constants/contentTypes';

@@ -21,7 +21,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from 'lucide-react';
-import type { ShowcaseSection, FactoryShowcase } from '../stores';
+import type { ShowcaseSection, FactoryShowcase } from '@/stores';
 
 /** Map icon_name strings stored in DB → Lucide icon components */
 const ICON_MAP: Record<string, LucideIcon> = {

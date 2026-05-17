@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { masterApi } from '../../services/api';
+import { masterApi } from '@/services/api';
 
 export interface CategoryOption {
   id: number;
@@ -12,7 +12,9 @@ export function useLbiCategoriesByScope(scope: 'PD' | 'MT') {
     queryFn: async () => {
       const raw = await masterApi.lbiCategories(scope);
       const obj = raw as Record<string, unknown>;
-      const arr = (Array.isArray(obj.categories) ? obj.categories : Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const arr = (
+        Array.isArray(obj.categories) ? obj.categories : Array.isArray(raw) ? raw : []
+      ) as Record<string, unknown>[];
       return arr
         .map((r): CategoryOption | null => {
           const id = Number(r.category_id ?? r.id);

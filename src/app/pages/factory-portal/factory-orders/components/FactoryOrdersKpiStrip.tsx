@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '../../../../components/ui/button';
-import type { KpiCounts } from '../types';
+import { Button } from '@/components/ui/button';
+import type { KpiCounts } from '@/pages/factory-portal/factory-orders/types';
 
 type KpiKey = keyof KpiCounts;
 
@@ -12,7 +12,7 @@ export function FactoryOrdersKpiStrip({
   onSelectKpi: (key: KpiKey) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
       {[
         ['needs_action', 'ต้องดำเนินการ', false],
         ['in_production', 'กำลังผลิต', false],
@@ -21,11 +21,13 @@ export function FactoryOrdersKpiStrip({
       ].map(([id, label, danger]) => (
         <Button
           key={id}
-          variant="outline"
+          variant='outline'
           className={`rounded-2xl p-3 text-left border ${danger ? 'border-red-100 bg-red-50' : 'border-gray-100 bg-white'}`}
           onClick={() => onSelectKpi(id as KpiKey)}
         >
-          <p className={`text-2xl font-bold ${danger ? 'text-red-700' : 'text-gray-900'}`}>{kpi[id as KpiKey]}</p>
+          <p className={`text-2xl font-bold ${danger ? 'text-red-700' : 'text-gray-900'}`}>
+            {kpi[id as KpiKey]}
+          </p>
           <p className={`text-xs ${danger ? 'text-red-700' : 'text-gray-500'}`}>{label}</p>
         </Button>
       ))}

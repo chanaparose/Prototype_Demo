@@ -13,7 +13,7 @@ import {
   FileText,
   AlertTriangle,
 } from 'lucide-react';
-import { useAuth } from '../../stores';
+import { useAuth } from '@/stores';
 import {
   adminApi,
   adminConfigApi,
@@ -22,9 +22,9 @@ import {
   type AdminSettlementListItem,
   type FactoryConfigResponse,
   type PlatformConfigItem,
-} from '../../services/api';
-import type { FactoryApprovalStatus } from './AdminFactoriesPage';
-import { Button } from '../../components/ui/button';
+} from '@/services/api';
+import type { FactoryApprovalStatus } from '@/pages/admin/AdminFactoriesPage';
+import { Button } from '@/components/ui/button';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
 
@@ -120,7 +120,9 @@ function mapDetail(raw: Record<string, unknown>): AdminFactoryDetailState {
 
   const factoryId = Number(factory.factory_id ?? factory.id ?? raw.factory_id ?? 0);
   const approvalStatus = toLocalStatus(factory.approval_status);
-  const registeredAt = String(factory.submitted_at ?? factory.created_at ?? factory.registered_at ?? '');
+  const registeredAt = String(
+    factory.submitted_at ?? factory.created_at ?? factory.registered_at ?? '',
+  );
 
   const timeline: TimelineRow[] = [
     { status: 'submitted', timestamp: registeredAt || '', note: 'ส่งใบสมัครเข้ามา' },
@@ -131,10 +133,10 @@ function mapDetail(raw: Record<string, unknown>): AdminFactoryDetailState {
         approvalStatus === 'rejected'
           ? String(factory.rejection_reason ?? 'ปฏิเสธโดยผู้ดูแล')
           : approvalStatus === 'approved'
-          ? 'อนุมัติโดยผู้ดูแลระบบ'
-          : approvalStatus === 'suspended'
-          ? 'ระงับการใช้งานโดยผู้ดูแลระบบ'
-          : 'รอการตรวจสอบจากทีม Admin',
+            ? 'อนุมัติโดยผู้ดูแลระบบ'
+            : approvalStatus === 'suspended'
+              ? 'ระงับการใช้งานโดยผู้ดูแลระบบ'
+              : 'รอการตรวจสอบจากทีม Admin',
     },
   ].filter((r) => r.timestamp);
 
@@ -156,11 +158,13 @@ function mapDetail(raw: Record<string, unknown>): AdminFactoryDetailState {
       docs.length > 0
         ? docs.map((d) => ({
             name: String(d.cert_name ?? d.name ?? 'เอกสารโรงงาน'),
-            status: String(d.status ?? d.is_verified ?? '').toLowerCase() === 'verified' || Boolean(d.is_verified)
-              ? 'verified'
-              : String(d.document_url ?? d.url ?? '').trim()
-              ? 'uploaded'
-              : 'missing',
+            status:
+              String(d.status ?? d.is_verified ?? '').toLowerCase() === 'verified' ||
+              Boolean(d.is_verified)
+                ? 'verified'
+                : String(d.document_url ?? d.url ?? '').trim()
+                  ? 'uploaded'
+                  : 'missing',
             url: String(d.document_url ?? d.url ?? ''),
           }))
         : [
@@ -349,49 +353,69 @@ export function AdminFactoryDetailPage() {
 
   const statusChip = useMemo(() => {
     if (factory.approval_status === 'approved') {
-      return <span className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">Approved</span>;
+      return (
+        <span className='px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold'>
+          Approved
+        </span>
+      );
     }
     if (factory.approval_status === 'rejected') {
-      return <span className="px-3 py-1.5 rounded-full bg-red-100 text-red-700 text-sm font-bold">Rejected</span>;
+      return (
+        <span className='px-3 py-1.5 rounded-full bg-red-100 text-red-700 text-sm font-bold'>
+          Rejected
+        </span>
+      );
     }
     if (factory.approval_status === 'suspended') {
-      return <span className="px-3 py-1.5 rounded-full bg-slate-200 text-slate-700 text-sm font-bold">Suspended</span>;
+      return (
+        <span className='px-3 py-1.5 rounded-full bg-slate-200 text-slate-700 text-sm font-bold'>
+          Suspended
+        </span>
+      );
     }
-    return <span className="px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-sm font-bold">รอ Approve</span>;
+    return (
+      <span className='px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-sm font-bold'>
+        รอ Approve
+      </span>
+    );
   }, [factory.approval_status]);
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       <div>
-        <Button variant="unstyled"
-          type="button"
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => navigate('/admin/factories')}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors mb-2"
+          className='flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors mb-2'
         >
           <ChevronLeft size={14} />
           กลับไปรายการโรงงาน
         </Button>
-        <p className="text-xs text-slate-400 font-medium">Admin / โรงงาน / รายละเอียด</p>
-        <h2 className="text-2xl font-bold text-slate-900 mt-1">{factory.factory_name}</h2>
+        <p className='text-xs text-slate-400 font-medium'>Admin / โรงงาน / รายละเอียด</p>
+        <h2 className='text-2xl font-bold text-slate-900 mt-1'>{factory.factory_name}</h2>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+        <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2'>
+          <AlertTriangle className='w-4 h-4 mt-0.5 shrink-0' />
           <span>{error}</span>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-0 border-b border-slate-200">
-        {([
-          { key: 'info',        label: 'ข้อมูลโรงงาน' },
-          { key: 'config',      label: 'Config' },
-          { key: 'settlements', label: 'Settlement' },
-        ] as const).map((t) => (
-          <Button variant="unstyled"
+      <div className='flex gap-0 border-b border-slate-200'>
+        {(
+          [
+            { key: 'info', label: 'ข้อมูลโรงงาน' },
+            { key: 'config', label: 'Config' },
+            { key: 'settlements', label: 'Settlement' },
+          ] as const
+        ).map((t) => (
+          <Button
+            variant='unstyled'
             key={t.key}
-            type="button"
+            type='button'
             onClick={() => setActiveTab(t.key)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === t.key
@@ -409,26 +433,28 @@ export function AdminFactoryDetailPage() {
       ) : null}
 
       {activeTab === 'config' && factory.factory_id ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5">
+        <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5'>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Config ค่าคอมมิชชัน</h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <h3 className='text-sm font-bold text-slate-900'>Config ค่าคอมมิชชัน</h3>
+            <p className='text-xs text-slate-400 mt-1'>
               การเปลี่ยน config มีผลกับ quotation ที่สร้างใหม่เท่านั้น
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-200 p-4 bg-slate-50">
-            <p className="text-xs text-slate-500 mb-2">Config ปัจจุบัน</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-              <p className="text-slate-700 font-medium">ชื่อ: {currentConfig?.label ?? '-'}</p>
-              <p className="text-slate-700">คอม: {currentConfig?.default_commission_rate ?? 0}%</p>
-              <p className="text-slate-700">VAT: {currentConfig?.vat_rate ?? 0}%</p>
+          <div className='rounded-lg border border-slate-200 p-4 bg-slate-50'>
+            <p className='text-xs text-slate-500 mb-2'>Config ปัจจุบัน</p>
+            <div className='grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm'>
+              <p className='text-slate-700 font-medium'>ชื่อ: {currentConfig?.label ?? '-'}</p>
+              <p className='text-slate-700'>คอม: {currentConfig?.default_commission_rate ?? 0}%</p>
+              <p className='text-slate-700'>VAT: {currentConfig?.vat_rate ?? 0}%</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">เปลี่ยน Config</label>
+              <label className='block text-xs font-semibold text-slate-700 mb-1.5'>
+                เปลี่ยน Config
+              </label>
               <select
                 value={selectedConfigId === '' ? '' : String(selectedConfigId)}
                 onChange={(e) => {
@@ -437,34 +463,38 @@ export function AdminFactoryDetailPage() {
                   else setSelectedConfigId(Number(v));
                 }}
                 disabled={!canAssignConfig}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50"
+                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50'
               >
-                <option value="">เลือก Config Package</option>
-                <option value="0">กลับเป็นมาตรฐาน (ใช้ default จากระบบ)</option>
+                <option value=''>เลือก Config Package</option>
+                <option value='0'>กลับเป็นมาตรฐาน (ใช้ default จากระบบ)</option>
                 {configList.map((cfg) => (
                   <option key={cfg.config_id} value={cfg.config_id}>
-                    [{cfg.config_id}] {cfg.label ?? `Commission ${cfg.default_commission_rate}% / VAT ${cfg.vat_rate}%`} — คอม {cfg.default_commission_rate}%
+                    [{cfg.config_id}]{' '}
+                    {cfg.label ??
+                      `Commission ${cfg.default_commission_rate}% / VAT ${cfg.vat_rate}%`}{' '}
+                    — คอม {cfg.default_commission_rate}%
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">หมายเหตุ</label>
+              <label className='block text-xs font-semibold text-slate-700 mb-1.5'>หมายเหตุ</label>
               <input
                 value={configNote}
                 onChange={(e) => setConfigNote(e.target.value)}
                 disabled={!canAssignConfig}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50"
-                placeholder="ระบุเหตุผลการเปลี่ยน config"
+                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50'
+                placeholder='ระบุเหตุผลการเปลี่ยน config'
               />
             </div>
           </div>
 
-          <Button variant="unstyled"
-            type="button"
+          <Button
+            variant='unstyled'
+            type='button'
             onClick={handleSaveFactoryConfig}
             disabled={!canAssignConfig || savingConfig || isFactoryConfigSelectionUnchanged}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60"
+            className='flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60'
           >
             <Save size={14} />
             {savingConfig ? 'กำลังบันทึก...' : savedConfig ? 'บันทึกแล้ว ✓' : 'บันทึก'}
@@ -473,158 +503,209 @@ export function AdminFactoryDetailPage() {
       ) : null}
 
       {activeTab === 'info' && (
-      <><div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100">ข้อมูลโรงงาน</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoRow icon={Building2} label="ชื่อโรงงาน" value={factory.factory_name} />
-              <InfoRow icon={Building2} label="ประเภทธุรกิจ" value={factory.business_type} />
-              <InfoRow icon={Mail} label="อีเมล" value={factory.email} />
-              <InfoRow icon={Phone} label="โทรศัพท์" value={factory.phone} />
-              <InfoRow icon={MapPin} label="จังหวัด" value={factory.province} />
-              <InfoRow icon={FileText} label="เลขที่ภาษี" value={factory.tax_id} />
-              <InfoRow icon={Clock} label="วันที่สมัคร" value={formatDateTime(factory.registered_at)} />
-              <InfoRow icon={CheckCircle} label="ยืนยันตัวตน" value={factory.is_verified ? 'ยืนยันแล้ว' : 'ยังไม่ยืนยัน'} />
-              <div className="sm:col-span-2">
-                <InfoRow icon={MapPin} label="ที่อยู่" value={factory.address} />
-              </div>
-              {factory.website ? (
-                <div className="sm:col-span-2">
-                  <InfoRow icon={Building2} label="เว็บไซต์" value={factory.website} />
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100">เอกสารแนบ</h3>
-            <div className="space-y-2.5">
-              {factory.documents.length === 0 ? (
-                <p className="text-sm text-slate-400">ยังไม่มีเอกสารที่เชื่อมกับโรงงานนี้</p>
-              ) : (
-                factory.documents.map((doc) => {
-                  const meta = DOC_STATUS_META[doc.status];
-                  return (
-                    <div key={`${doc.name}-${doc.url || ''}`} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                      <div className="flex items-center gap-2.5">
-                        <FileText size={15} className="text-slate-400" />
-                        <span className="text-sm text-slate-700">{doc.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {doc.url ? (
-                          <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-600 hover:underline">
-                            เปิดไฟล์
-                          </a>
-                        ) : null}
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${meta.cls}`}>{meta.label}</span>
-                      </div>
+        <>
+          <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
+            <div className='xl:col-span-2 space-y-6'>
+              <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <h3 className='text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100'>
+                  ข้อมูลโรงงาน
+                </h3>
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                  <InfoRow icon={Building2} label='ชื่อโรงงาน' value={factory.factory_name} />
+                  <InfoRow icon={Building2} label='ประเภทธุรกิจ' value={factory.business_type} />
+                  <InfoRow icon={Mail} label='อีเมล' value={factory.email} />
+                  <InfoRow icon={Phone} label='โทรศัพท์' value={factory.phone} />
+                  <InfoRow icon={MapPin} label='จังหวัด' value={factory.province} />
+                  <InfoRow icon={FileText} label='เลขที่ภาษี' value={factory.tax_id} />
+                  <InfoRow
+                    icon={Clock}
+                    label='วันที่สมัคร'
+                    value={formatDateTime(factory.registered_at)}
+                  />
+                  <InfoRow
+                    icon={CheckCircle}
+                    label='ยืนยันตัวตน'
+                    value={factory.is_verified ? 'ยืนยันแล้ว' : 'ยังไม่ยืนยัน'}
+                  />
+                  <div className='sm:col-span-2'>
+                    <InfoRow icon={MapPin} label='ที่อยู่' value={factory.address} />
+                  </div>
+                  {factory.website ? (
+                    <div className='sm:col-span-2'>
+                      <InfoRow icon={Building2} label='เว็บไซต์' value={factory.website} />
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
+                  ) : null}
+                </div>
+              </div>
 
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">สถานะการอนุมัติ</h3>
-            <div className="flex items-center gap-2 mb-4">{statusChip}</div>
-            <div className="space-y-2">
-              {factory.approval_status === 'pending' && canApprove ? (
-                <>
-                  <Button variant="unstyled"
-                    type="button"
-                    onClick={handleApprove}
-                    disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-60"
-                  >
-                    <CheckCircle size={15} />
-                    อนุมัติโรงงาน
-                  </Button>
-                  <Button variant="unstyled"
-                    type="button"
-                    onClick={handleReject}
-                    disabled={saving}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-100 disabled:opacity-60"
-                  >
-                    <XCircle size={15} />
-                    ปฏิเสธ
-                  </Button>
-                </>
-              ) : null}
-
-              {canSuspend ? (
-                <Button variant="unstyled"
-                  type="button"
-                  onClick={handleSuspendToggle}
-                  disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-60"
-                >
-                  {factory.approval_status === 'suspended' ? 'ยกเลิกระงับโรงงาน' : 'ระงับโรงงาน'}
-                </Button>
-              ) : null}
-
-              {canSuspend ? (
-                <Button variant="unstyled"
-                  type="button"
-                  onClick={handleToggleVerification}
-                  disabled={saving}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-60"
-                >
-                  {factory.is_verified ? 'ยกเลิกยืนยันตัวตน' : 'ยืนยันตัวตนโรงงาน'}
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            <h3 className="text-sm font-bold text-slate-900 mb-4">ประวัติการดำเนินการ</h3>
-            <div className="relative">
-              <div className="absolute left-4 top-0 bottom-0 w-px bg-slate-200" />
-              <div className="space-y-4">
-                {factory.timeline.length === 0 ? (
-                  <p className="text-sm text-slate-400 pl-8">ยังไม่มีประวัติ</p>
-                ) : (
-                  factory.timeline.map((event, i) => {
-                    const meta = STATUS_META[event.status] ?? STATUS_META.pending;
-                    const Icon = meta.icon;
-                    const isLast = i === factory.timeline.length - 1;
-                    return (
-                      <div key={`${event.status}-${event.timestamp}-${i}`} className="flex gap-3 pl-2">
-                        <div className={`w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center shrink-0 z-10 mt-0.5 ${isLast ? 'border-indigo-400' : 'border-slate-300'}`}>
-                          <Icon size={10} className={isLast ? 'text-indigo-500' : 'text-slate-400'} />
+              <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <h3 className='text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100'>
+                  เอกสารแนบ
+                </h3>
+                <div className='space-y-2.5'>
+                  {factory.documents.length === 0 ? (
+                    <p className='text-sm text-slate-400'>ยังไม่มีเอกสารที่เชื่อมกับโรงงานนี้</p>
+                  ) : (
+                    factory.documents.map((doc) => {
+                      const meta = DOC_STATUS_META[doc.status];
+                      return (
+                        <div
+                          key={`${doc.name}-${doc.url || ''}`}
+                          className='flex items-center justify-between py-2 border-b border-slate-50 last:border-0'
+                        >
+                          <div className='flex items-center gap-2.5'>
+                            <FileText size={15} className='text-slate-400' />
+                            <span className='text-sm text-slate-700'>{doc.name}</span>
+                          </div>
+                          <div className='flex items-center gap-2'>
+                            {doc.url ? (
+                              <a
+                                href={doc.url}
+                                target='_blank'
+                                rel='noreferrer'
+                                className='text-xs text-indigo-600 hover:underline'
+                              >
+                                เปิดไฟล์
+                              </a>
+                            ) : null}
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${meta.cls}`}
+                            >
+                              {meta.label}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-xs font-semibold ${meta.cls}`}>{meta.label}</p>
-                          {event.note ? <p className="text-xs text-slate-500 mt-0.5">{event.note}</p> : null}
-                          <p className="text-[10px] text-slate-400 mt-1 tabular-nums">{formatDateTime(event.timestamp)}</p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className='space-y-6'>
+              <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <h3 className='text-sm font-bold text-slate-900 mb-4'>สถานะการอนุมัติ</h3>
+                <div className='flex items-center gap-2 mb-4'>{statusChip}</div>
+                <div className='space-y-2'>
+                  {factory.approval_status === 'pending' && canApprove ? (
+                    <>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        onClick={handleApprove}
+                        disabled={saving}
+                        className='w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-60'
+                      >
+                        <CheckCircle size={15} />
+                        อนุมัติโรงงาน
+                      </Button>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        onClick={handleReject}
+                        disabled={saving}
+                        className='w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-100 disabled:opacity-60'
+                      >
+                        <XCircle size={15} />
+                        ปฏิเสธ
+                      </Button>
+                    </>
+                  ) : null}
+
+                  {canSuspend ? (
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      onClick={handleSuspendToggle}
+                      disabled={saving}
+                      className='w-full flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-60'
+                    >
+                      {factory.approval_status === 'suspended'
+                        ? 'ยกเลิกระงับโรงงาน'
+                        : 'ระงับโรงงาน'}
+                    </Button>
+                  ) : null}
+
+                  {canSuspend ? (
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      onClick={handleToggleVerification}
+                      disabled={saving}
+                      className='w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-60'
+                    >
+                      {factory.is_verified ? 'ยกเลิกยืนยันตัวตน' : 'ยืนยันตัวตนโรงงาน'}
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className='bg-white rounded-xl border border-slate-200 shadow-sm p-6'>
+                <h3 className='text-sm font-bold text-slate-900 mb-4'>ประวัติการดำเนินการ</h3>
+                <div className='relative'>
+                  <div className='absolute left-4 top-0 bottom-0 w-px bg-slate-200' />
+                  <div className='space-y-4'>
+                    {factory.timeline.length === 0 ? (
+                      <p className='text-sm text-slate-400 pl-8'>ยังไม่มีประวัติ</p>
+                    ) : (
+                      factory.timeline.map((event, i) => {
+                        const meta = STATUS_META[event.status] ?? STATUS_META.pending;
+                        const Icon = meta.icon;
+                        const isLast = i === factory.timeline.length - 1;
+                        return (
+                          <div
+                            key={`${event.status}-${event.timestamp}-${i}`}
+                            className='flex gap-3 pl-2'
+                          >
+                            <div
+                              className={`w-5 h-5 rounded-full bg-white border-2 flex items-center justify-center shrink-0 z-10 mt-0.5 ${isLast ? 'border-indigo-400' : 'border-slate-300'}`}
+                            >
+                              <Icon
+                                size={10}
+                                className={isLast ? 'text-indigo-500' : 'text-slate-400'}
+                              />
+                            </div>
+                            <div className='flex-1 min-w-0'>
+                              <p className={`text-xs font-semibold ${meta.cls}`}>{meta.label}</p>
+                              {event.note ? (
+                                <p className='text-xs text-slate-500 mt-0.5'>{event.note}</p>
+                              ) : null}
+                              <p className='text-[10px] text-slate-400 mt-1 tabular-nums'>
+                                {formatDateTime(event.timestamp)}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {loading ? <div className="text-sm text-slate-500">กำลังโหลดข้อมูล...</div> : null}
-      </>)}
+          {loading ? <div className='text-sm text-slate-500'>กำลังโหลดข้อมูล...</div> : null}
+        </>
+      )}
     </div>
   );
 }
 
-function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}) {
   return (
-    <div className="flex items-start gap-2.5">
-      <Icon size={14} className="text-slate-400 mt-0.5 shrink-0" />
+    <div className='flex items-start gap-2.5'>
+      <Icon size={14} className='text-slate-400 mt-0.5 shrink-0' />
       <div>
-        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{label}</p>
-        <p className="text-sm text-slate-900 font-medium">{value || '-'}</p>
+        <p className='text-[10px] text-slate-400 font-medium uppercase tracking-wide'>{label}</p>
+        <p className='text-sm text-slate-900 font-medium'>{value || '-'}</p>
       </div>
     </div>
   );
@@ -633,10 +714,10 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label:
 // ─── Settlements Tab ──────────────────────────────────────────────────────────
 
 const SETTLEMENT_STATUS: Record<string, { label: string; cls: string }> = {
-  PE: { label: 'รอโอน',          cls: 'bg-amber-50 text-amber-700' },
+  PE: { label: 'รอโอน', cls: 'bg-amber-50 text-amber-700' },
   PR: { label: 'กำลังประมวลผล', cls: 'bg-blue-50 text-blue-700' },
-  CP: { label: 'โอนแล้ว',       cls: 'bg-emerald-50 text-emerald-700' },
-  FL: { label: 'ล้มเหลว',       cls: 'bg-red-50 text-red-700' },
+  CP: { label: 'โอนแล้ว', cls: 'bg-emerald-50 text-emerald-700' },
+  FL: { label: 'ล้มเหลว', cls: 'bg-red-50 text-red-700' },
 };
 
 const SETTLE_LIMIT = 20;
@@ -666,7 +747,7 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+      <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-2'>
         <AlertTriangle size={14} />
         {error}
       </div>
@@ -674,59 +755,70 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+    <div className='space-y-4'>
+      <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
+        <div className='overflow-x-auto'>
+          <table className='w-full text-sm'>
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Settlement ID</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Order</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500">จำนวน</th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-500">สถานะ</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">วันที่</th>
+              <tr className='bg-slate-50 border-b border-slate-200'>
+                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                  Settlement ID
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>Order</th>
+                <th className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>จำนวน</th>
+                <th className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
+                  สถานะ
+                </th>
+                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>วันที่</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className='divide-y divide-slate-50'>
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <tr key={i}>
                     {Array.from({ length: 5 }).map((__, j) => (
-                      <td key={j} className="px-4 py-3">
-                        <div className="h-4 bg-slate-100 rounded animate-pulse" />
+                      <td key={j} className='px-4 py-3'>
+                        <div className='h-4 bg-slate-100 rounded animate-pulse' />
                       </td>
                     ))}
                   </tr>
                 ))
               ) : settlements.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">
+                  <td colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
                     ยังไม่มี Settlement
                   </td>
                 </tr>
               ) : (
                 settlements.map((s) => {
-                  const st = SETTLEMENT_STATUS[s.status] ?? { label: s.status, cls: 'bg-slate-100 text-slate-500' };
+                  const st = SETTLEMENT_STATUS[s.status] ?? {
+                    label: s.status,
+                    cls: 'bg-slate-100 text-slate-500',
+                  };
                   return (
                     <tr key={s.settlement_id}>
-                      <td className="px-4 py-3 text-xs text-slate-400 font-mono">#{s.settlement_id}</td>
-                      <td className="px-4 py-3">
+                      <td className='px-4 py-3 text-xs text-slate-400 font-mono'>
+                        #{s.settlement_id}
+                      </td>
+                      <td className='px-4 py-3'>
                         <Link
                           to={`/admin/orders/${s.order_id}`}
-                          className="text-indigo-600 font-semibold text-xs hover:underline"
+                          className='text-indigo-600 font-semibold text-xs hover:underline'
                         >
                           #{s.order_id}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums">
+                      <td className='px-4 py-3 text-right font-semibold tabular-nums'>
                         ฿{Number(s.amount || 0).toLocaleString('th-TH')}
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${st.cls}`}>
+                      <td className='px-4 py-3 text-center'>
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${st.cls}`}
+                        >
                           {st.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-slate-400">
+                      <td className='px-4 py-3 text-xs text-slate-400'>
                         {s.created_at ? new Date(s.created_at).toLocaleDateString('th-TH') : '—'}
                       </td>
                     </tr>
@@ -739,19 +831,23 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button variant="unstyled"
+        <div className='flex items-center justify-center gap-2'>
+          <Button
+            variant='unstyled'
             disabled={page === 0 || loading}
             onClick={() => setPage((p) => p - 1)}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50"
+            className='px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50'
           >
             ← ก่อนหน้า
           </Button>
-          <span className="text-sm text-slate-500">หน้า {page + 1} / {totalPages}</span>
-          <Button variant="unstyled"
+          <span className='text-sm text-slate-500'>
+            หน้า {page + 1} / {totalPages}
+          </span>
+          <Button
+            variant='unstyled'
             disabled={page + 1 >= totalPages || loading}
             onClick={() => setPage((p) => p + 1)}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50"
+            className='px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50'
           >
             ถัดไป →
           </Button>

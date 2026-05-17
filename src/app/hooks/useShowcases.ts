@@ -4,9 +4,9 @@
  * Optional `type` uses server filter: PD | PM | ID | MT. Omit for full list (ทั้งหมด).
  */
 import { useState, useEffect, useMemo } from 'react';
-import { showcasesApi } from '../services/api';
-import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '../stores';
-import { partitionLinkedShowcases } from '../utils/linkedShowcases';
+import { showcasesApi } from '@/services/api';
+import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '@/stores';
+import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';
 
@@ -49,16 +49,15 @@ function parseImageUrls(raw: unknown): string[] {
 
 export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
   const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
-  const leadTime =
-    leadRaw != null && leadRaw !== ''
-      ? String(leadRaw)
-      : '';
+  const leadTime = leadRaw != null && leadRaw !== '' ? String(leadRaw) : '';
   const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
   const { imageUrls: linkedImageUrls, showcaseIds } = partitionLinkedShowcases(
     r.linked_showcases ?? r.linkedShowcases,
   );
   const linkedFirstImage = linkedImageUrls[0] ?? '';
-  const ctRaw = String(r.content_type ?? r.type ?? '').trim().toUpperCase();
+  const ctRaw = String(r.content_type ?? r.type ?? '')
+    .trim()
+    .toUpperCase();
   const firstImage =
     ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM'
       ? linkedFirstImage || imageUrls[0] || String(r.image_url ?? r.image ?? '').trim()
@@ -66,9 +65,7 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
 
   const catIdRaw = r.category_id ?? r.categoryId;
   const categoryId =
-    catIdRaw != null && String(catIdRaw).trim() !== ''
-      ? String(catIdRaw).trim()
-      : undefined;
+    catIdRaw != null && String(catIdRaw).trim() !== '' ? String(catIdRaw).trim() : undefined;
 
   const subRaw = r.sub_category_id ?? r.subCategoryId;
   let sub_category_id: number | undefined;
@@ -78,9 +75,7 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
   }
   const subNameRaw = r.sub_category_name ?? r.subCategoryName;
   const sub_category_name =
-    subNameRaw != null && String(subNameRaw).trim() !== ''
-      ? String(subNameRaw)
-      : null;
+    subNameRaw != null && String(subNameRaw).trim() !== '' ? String(subNameRaw) : null;
 
   const factoryImageUrl = String(r.factory_image_url ?? r.factoryImageUrl ?? '').trim();
   const fr = r.factory_rating ?? r.factoryRating;
@@ -112,21 +107,27 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
     ...(r.promo_price != null && Number.isFinite(Number(r.promo_price))
       ? { promoPrice: Number(r.promo_price) }
       : {}),
-    ...(r.start_date != null && String(r.start_date).trim() !== '' ? { startDate: String(r.start_date) } : {}),
-    ...(r.end_date != null && String(r.end_date).trim() !== '' ? { endDate: String(r.end_date) } : {}),
+    ...(r.start_date != null && String(r.start_date).trim() !== ''
+      ? { startDate: String(r.start_date) }
+      : {}),
+    ...(r.end_date != null && String(r.end_date).trim() !== ''
+      ? { endDate: String(r.end_date) }
+      : {}),
     ...(r.status != null && String(r.status).trim() !== '' ? { status: String(r.status) } : {}),
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
     ...(factoryImageUrl ? { factoryImageUrl } : {}),
     ...(factoryRating != null ? { factoryRating } : {}),
     ...(factoryVerified ? { factoryVerified } : {}),
-    ...(r.description != null && String(r.description).trim() !== '' ? { description: String(r.description) } : {}),
+    ...(r.description != null && String(r.description).trim() !== ''
+      ? { description: String(r.description) }
+      : {}),
     ...(r.price_range != null && String(r.price_range).trim() !== ''
       ? { priceRange: String(r.price_range) }
       : r.priceRange != null && String(r.priceRange).trim() !== ''
         ? { priceRange: String(r.priceRange) }
         : {}),
     ...(Array.isArray(r.sections) && r.sections.length > 0
-      ? { sections: r.sections as import('../stores').ShowcaseSection[] }
+      ? { sections: r.sections as import('@/stores').ShowcaseSection[] }
       : {}),
     ...(Array.isArray(r.images) && r.images.length > 0
       ? { images: r.images as ShowcaseImageRow[] }
@@ -140,7 +141,7 @@ export function normShowcase(r: Record<string, unknown>): FactoryShowcase {
           })) as ShowcaseSpecRow[],
         }
       : {}),
-    ...((linkedImageUrls.length > 0 || showcaseIds.length > 0)
+    ...(linkedImageUrls.length > 0 || showcaseIds.length > 0
       ? { linkedShowcases: [...linkedImageUrls, ...showcaseIds] }
       : {}),
   };
@@ -161,17 +162,15 @@ function extractShowcaseRows(raw: unknown): Record<string, unknown>[] {
   const rows: unknown[] = Array.isArray(raw)
     ? raw
     : Array.isArray((top as Record<string, unknown> | null)?.showcases)
-      ? (top as Record<string, unknown>).showcases as unknown[]
+      ? ((top as Record<string, unknown>).showcases as unknown[])
       : Array.isArray((top as Record<string, unknown> | null)?.data)
-        ? (top as Record<string, unknown>).data as unknown[]
+        ? ((top as Record<string, unknown>).data as unknown[])
         : Array.isArray((top as Record<string, unknown> | null)?.items)
-          ? (top as Record<string, unknown>).items as unknown[]
+          ? ((top as Record<string, unknown>).items as unknown[])
           : Array.isArray((top as Record<string, unknown> | null)?.results)
-            ? (top as Record<string, unknown>).results as unknown[]
+            ? ((top as Record<string, unknown>).results as unknown[])
             : [];
-  return rows
-    .map(unwrapShowcaseRow)
-    .filter((r): r is Record<string, unknown> => r != null);
+  return rows.map(unwrapShowcaseRow).filter((r): r is Record<string, unknown> => r != null);
 }
 
 type CacheEntry = { data: FactoryShowcase[]; ts: number };

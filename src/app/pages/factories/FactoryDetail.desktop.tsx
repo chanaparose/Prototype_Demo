@@ -5,12 +5,12 @@ import {
   FactoryProfileHero,
   FactoryProfileTabContent,
   type TabId,
-} from '../../components/features/factory-profile';
-import { ImageWithFallback } from '../../components/shared';
-import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
-import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
-import { useAuth } from '../../stores';
-import { Button } from '../../components/ui/button';
+} from '@/components/features/factory-profile';
+import { ImageWithFallback } from '@/components/shared';
+import type { useFactoryProfile } from '@/hooks/useFactoryProfile';
+import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
+import { useAuth } from '@/stores';
+import { Button } from '@/components/ui/button';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailDesktopProps = { state: FactoryDetailState };
@@ -66,9 +66,9 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
   if (detailLoading && !factory) {
     return (
-      <div className="hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 pb-20 lg:flex">
+      <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 pb-20 lg:flex'>
         <span
-          className="h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"
+          className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
           aria-hidden
         />
       </div>
@@ -77,35 +77,40 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
   if (!factory) {
     return (
-      <div className="hidden min-h-[calc(100vh-4rem)] bg-gray-50 px-8 pb-20 pt-8 lg:block">
-        <Button variant="unstyled"
-          type="button"
+      <div className='hidden min-h-[calc(100vh-4rem)] bg-gray-50 px-8 pb-20 pt-8 lg:block'>
+        <Button
+          variant='unstyled'
+          type='button'
           onClick={() => navigate('/explore')}
-          className="mb-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-purple-600 transition-colors hover:text-purple-800"
+          className='mb-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-purple-600 transition-colors hover:text-purple-800'
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className='h-4 w-4' />
           กลับหน้าหลัก
         </Button>
-        <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
-          <p className="mb-3 text-4xl">🏭</p>
-          <p className="text-[14px] font-medium text-gray-500">ไม่พบข้อมูลโรงงาน</p>
+        <div className='rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm'>
+          <p className='mb-3 text-4xl'>🏭</p>
+          <p className='text-[14px] font-medium text-gray-500'>ไม่พบข้อมูลโรงงาน</p>
         </div>
       </div>
     );
   }
 
   const statItems = [
-    { icon: <Clock size={14} className="text-purple-500" />, label: 'Lead Time', value: factory.leadTime },
     {
-      icon: <CheckCircle2 size={14} className="text-purple-500" />,
+      icon: <Clock size={14} className='text-purple-500' />,
+      label: 'Lead Time',
+      value: factory.leadTime,
+    },
+    {
+      icon: <CheckCircle2 size={14} className='text-purple-500' />,
       label: 'งานสำเร็จ',
       value: `${factory.completedOrders} ออเดอร์`,
     },
   ];
 
   return (
-    <div className="hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex">
-      <div className="px-8 pt-6">
+    <div className='hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex'>
+      <div className='px-8 pt-6'>
         <FactoryProfileHero
           factory={factory}
           onBack={handleBack}
@@ -115,17 +120,17 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
         />
       </div>
 
-      <div className="border-b border-gray-100 bg-white px-8 py-4">
-        <div className="flex flex-wrap items-center gap-6">
-          <div className="flex items-center gap-5">
+      <div className='border-b border-gray-100 bg-white px-8 py-4'>
+        <div className='flex flex-wrap items-center gap-6'>
+          <div className='flex items-center gap-5'>
             {statItems.map((s) => (
-              <div key={s.label} className="flex items-center gap-1.5">
+              <div key={s.label} className='flex items-center gap-1.5'>
                 {s.icon}
                 <div>
-                  <p className="mb-0.5 text-[9px] font-normal uppercase leading-none tracking-wide text-gray-400">
+                  <p className='mb-0.5 text-[9px] font-normal uppercase leading-none tracking-wide text-gray-400'>
                     {s.label}
                   </p>
-                  <p className="text-[12px] font-bold leading-none text-gray-800">{s.value}</p>
+                  <p className='text-[12px] font-bold leading-none text-gray-800'>{s.value}</p>
                 </div>
               </div>
             ))}
@@ -133,12 +138,12 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
           {profile && (profile.certificates ?? []).length > 0 && (
             <>
-              <div className="h-8 w-px shrink-0 bg-gray-100" />
-              <div className="flex flex-wrap items-center gap-2">
+              <div className='h-8 w-px shrink-0 bg-gray-100' />
+              <div className='flex flex-wrap items-center gap-2'>
                 {(profile.certificates ?? []).map((c) => (
                   <span
                     key={c}
-                    className="rounded-full border border-purple-100 bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700"
+                    className='rounded-full border border-purple-100 bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700'
                   >
                     {c}
                   </span>
@@ -149,12 +154,12 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
           {factory.tags && factory.tags.length > 0 && (
             <>
-              <div className="h-8 w-px shrink-0 bg-gray-100" />
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className='h-8 w-px shrink-0 bg-gray-100' />
+              <div className='flex flex-wrap items-center gap-1.5'>
                 {factory.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500"
+                    className='rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500'
                   >
                     {tag}
                   </span>
@@ -162,13 +167,11 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
               </div>
             </>
           )}
-
-           
         </div>
       </div>
 
-      <div className="flex-1 px-8 py-6">
-        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className='flex-1 px-8 py-6'>
+        <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm'>
           <FactoryProfileTabContent
             activeTab={activeTab}
             onTabChange={setActiveTab as (tab: TabId) => void}

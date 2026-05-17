@@ -1,7 +1,4 @@
-export function formatCurrency(
-  value: number,
-  currencyCode: string = 'THB'
-): string {
+export function formatCurrency(value: number, currencyCode: string = 'THB'): string {
   return new Intl.NumberFormat('th-TH', {
     style: 'currency',
     currency: currencyCode,

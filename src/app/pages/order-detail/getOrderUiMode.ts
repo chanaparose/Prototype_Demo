@@ -2,11 +2,7 @@
  * ORDER_DETAIL_PP_STATE_FE §2 — derive UI from API `order.status` only (never from production_updates.length).
  */
 
-export type LockReason =
-  | 'PENDING_DEPOSIT'
-  | 'DEPOSIT_EXPIRED'
-  | 'ORDER_CANCELLED'
-  | 'UNKNOWN';
+export type LockReason = 'PENDING_DEPOSIT' | 'DEPOSIT_EXPIRED' | 'ORDER_CANCELLED' | 'UNKNOWN';
 
 export type OrderUiMode = {
   productionLocked: boolean;

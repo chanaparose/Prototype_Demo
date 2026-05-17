@@ -1,8 +1,8 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
-import { quotationsApi } from '../../../services/api';
-import type { QuotationHistoryEntry } from '../../../types/rfq';
-import { Button } from '../../ui/button';
+import { quotationsApi } from '@/services/api';
+import type { QuotationHistoryEntry } from '@/types/rfq';
+import { Button } from '@/components/ui/button';
 
 type QuotationHistoryPanelProps = {
   quotationId: string | number;
@@ -36,7 +36,8 @@ function normalizeHistoryRow(row: unknown): QuotationHistoryEntry | null {
   const r = row as Record<string, unknown>;
   const historyId = Number(r.history_id ?? 0);
   const quoteId = Number(r.quote_id ?? 0);
-  if (!Number.isFinite(historyId) || historyId <= 0 || !Number.isFinite(quoteId) || quoteId <= 0) return null;
+  if (!Number.isFinite(historyId) || historyId <= 0 || !Number.isFinite(quoteId) || quoteId <= 0)
+    return null;
   return {
     history_id: historyId,
     quote_id: quoteId,
@@ -63,7 +64,8 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
     if (!quotationId) return;
     setLoading(true);
     setFetched(false);
-    quotationsApi.history(quotationId)
+    quotationsApi
+      .history(quotationId)
       .then((data) => {
         const arr = Array.isArray(data) ? data : [];
         const mapped = arr
@@ -81,17 +83,18 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
   if (fetched && history.length <= 1) return null;
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-      <Button variant="unstyled"
-        type="button"
+    <div className='border border-gray-200 rounded-xl overflow-hidden bg-white'>
+      <Button
+        variant='unstyled'
+        type='button'
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+        className='w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors'
       >
-        <div className="flex items-center gap-2">
+        <div className='flex items-center gap-2'>
           <Clock size={16} style={{ color: '#6366F1' }} />
-          <span className="text-sm font-semibold text-gray-700">ประวัติการแก้ไขใบเสนอราคา</span>
+          <span className='text-sm font-semibold text-gray-700'>ประวัติการแก้ไขใบเสนอราคา</span>
           {fetched && history.length > 0 ? (
-            <span className="text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">
+            <span className='text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full'>
               {history.length} รายการ
             </span>
           ) : null}
@@ -100,9 +103,9 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
       </Button>
 
       {open ? (
-        <div className="divide-y divide-gray-100">
+        <div className='divide-y divide-gray-100'>
           {loading ? (
-            <div className="px-4 py-6 text-center text-sm text-gray-400">กำลังโหลด...</div>
+            <div className='px-4 py-6 text-center text-sm text-gray-400'>กำลังโหลด...</div>
           ) : (
             history.map((h) => <HistoryItem key={h.history_id} entry={h} />)
           )}
@@ -126,44 +129,46 @@ function HistoryItem({ entry }: { entry: QuotationHistoryEntry }) {
     : '-';
 
   return (
-    <div className="px-4 py-3">
-      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: `${color}18`, color }}>
+    <div className='px-4 py-3'>
+      <div className='flex items-center gap-2 mb-1.5 flex-wrap'>
+        <span
+          className='text-xs font-semibold px-2 py-0.5 rounded-full'
+          style={{ background: `${color}18`, color }}
+        >
           {label}
         </span>
-        <span className="text-xs text-gray-500">v{entry.version_after}</span>
-        <span className="text-xs text-gray-400 ml-auto">{date}</span>
+        <span className='text-xs text-gray-500'>v{entry.version_after}</span>
+        <span className='text-xs text-gray-400 ml-auto'>{date}</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-3 text-xs text-gray-600 mb-1">
+      <div className='grid grid-cols-1 sm:grid-cols-3 gap-x-3 text-xs text-gray-600 mb-1'>
         {entry.price_per_piece != null ? (
           <div>
-            <span className="text-gray-400">ราคา/ชิ้น </span>
-            <span className="font-medium">฿{entry.price_per_piece.toLocaleString()}</span>
+            <span className='text-gray-400'>ราคา/ชิ้น </span>
+            <span className='font-medium'>฿{entry.price_per_piece.toLocaleString()}</span>
           </div>
         ) : null}
         {entry.mold_cost != null ? (
           <div>
-            <span className="text-gray-400">แม่พิมพ์ </span>
-            <span className="font-medium">฿{entry.mold_cost.toLocaleString()}</span>
+            <span className='text-gray-400'>แม่พิมพ์ </span>
+            <span className='font-medium'>฿{entry.mold_cost.toLocaleString()}</span>
           </div>
         ) : null}
         {entry.lead_time_days != null ? (
           <div>
-            <span className="text-gray-400">Lead Time </span>
-            <span className="font-medium">{entry.lead_time_days} วัน</span>
+            <span className='text-gray-400'>Lead Time </span>
+            <span className='font-medium'>{entry.lead_time_days} วัน</span>
           </div>
         ) : null}
       </div>
 
       {entry.status ? (
-        <div className="text-xs text-gray-500 mb-0.5">
-          สถานะ: <span className="font-medium">{STATUS_LABEL[entry.status] ?? entry.status}</span>
+        <div className='text-xs text-gray-500 mb-0.5'>
+          สถานะ: <span className='font-medium'>{STATUS_LABEL[entry.status] ?? entry.status}</span>
         </div>
       ) : null}
 
-      {entry.reason ? <div className="text-xs text-gray-500 italic">"{entry.reason}"</div> : null}
+      {entry.reason ? <div className='text-xs text-gray-500 italic'>"{entry.reason}"</div> : null}
     </div>
   );
 }
-

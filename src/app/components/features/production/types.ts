@@ -76,7 +76,8 @@ export function parseStepTemplates(raw: unknown): ProductionStepTemplate[] {
     out.push({
       step_id,
       step_code: String(r.step_code ?? ''),
-      step_name_th: String(r.step_name_th ?? r.step_name ?? r.name_th ?? '').trim() || `ขั้น #${step_id}`,
+      step_name_th:
+        String(r.step_name_th ?? r.step_name ?? r.name_th ?? '').trim() || `ขั้น #${step_id}`,
       step_name_en: r.step_name_en != null ? String(r.step_name_en) : undefined,
       sort_order: Number(r.sort_order ?? r.sequence ?? 0) || 0,
       min_photos: Math.max(0, Number(r.min_photos ?? r.minPhotos ?? 0) || 0),
@@ -96,8 +97,7 @@ export function parseUpdateRow(row: Record<string, unknown>): ProductionUpdateRo
       ? [String(row.image_url)]
       : [];
   const st = String(row.status ?? 'PD').toUpperCase();
-  const status: ProductionStepStatus =
-    st === 'IP' || st === 'CD' || st === 'RJ' ? st : 'PD';
+  const status: ProductionStepStatus = st === 'IP' || st === 'CD' || st === 'RJ' ? st : 'PD';
   return {
     update_id: row.update_id != null ? Number(row.update_id) : null,
     step_id: Number(row.step_id ?? row.stepId ?? 0),
@@ -107,8 +107,7 @@ export function parseUpdateRow(row: Record<string, unknown>): ProductionUpdateRo
     image_urls,
     completed_at: row.completed_at != null ? String(row.completed_at) : null,
     rejected_reason: row.rejected_reason != null ? String(row.rejected_reason) : null,
-    updated_by_user_id:
-      row.updated_by_user_id != null ? Number(row.updated_by_user_id) : null,
+    updated_by_user_id: row.updated_by_user_id != null ? Number(row.updated_by_user_id) : null,
     last_updated_at: row.last_updated_at != null ? String(row.last_updated_at) : null,
   };
 }

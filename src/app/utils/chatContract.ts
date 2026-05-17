@@ -1,4 +1,4 @@
-import type { User } from '../stores';
+import type { User } from '@/stores';
 
 export type ChatReferenceType = 'RQ' | 'OD' | 'PD' | 'PM' | 'ID';
 
@@ -110,9 +110,11 @@ export function parseApiConversation(row: Record<string, unknown>): ApiConversat
   if (!Number.isFinite(conv_id) || conv_id <= 0) return null;
   const customer_id = Number(row.customer_id ?? row.customerId ?? 0);
   const factory_id = Number(row.factory_id ?? row.factoryId ?? 0);
-  const customerObj = (row.customer && typeof row.customer === 'object'
-    ? (row.customer as Record<string, unknown>)
-    : {}) as Record<string, unknown>;
+  const customerObj = (
+    row.customer && typeof row.customer === 'object'
+      ? (row.customer as Record<string, unknown>)
+      : {}
+  ) as Record<string, unknown>;
   const customerFirst = customerObj.first_name != null ? String(customerObj.first_name).trim() : '';
   const customerLast = customerObj.last_name != null ? String(customerObj.last_name).trim() : '';
   const customerFullName = [customerFirst, customerLast].filter(Boolean).join(' ').trim();

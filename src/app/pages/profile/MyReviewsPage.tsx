@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, Star, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { profileApi, reviewsApi } from '../../services/api';
-import { useAuth } from '../../stores';
-import { ReviewImageAttachments } from '../../components/features/reviews/ReviewImageAttachments';
-import { normalizeReviewImageUrls } from '../../utils/reviewImageUrls';
-import { Button } from '../../components/ui/button';
+import { profileApi, reviewsApi } from '@/services/api';
+import { useAuth } from '@/stores';
+import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
+import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
+import { Button } from '@/components/ui/button';
 
 type ReviewItem = {
   review_id: number;
@@ -41,15 +41,17 @@ export function MyReviewsPage() {
           : await profileApi.myReviews({ page: 1, limit: 20 });
       const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
       setItems(
-        data.map((row) => ({
-          review_id: Number(row.review_id ?? row.id ?? 0),
-          factory_name: String(row.factory_name ?? row.factory ?? ''),
-          rating: Number(row.rating ?? 0),
-          comment: String(row.comment ?? ''),
-          created_at: String(row.created_at ?? ''),
-          is_editable: Boolean(row.is_editable),
-          image_urls: normalizeReviewImageUrls(row.image_urls),
-        })).filter((r) => Number.isFinite(r.review_id) && r.review_id > 0),
+        data
+          .map((row) => ({
+            review_id: Number(row.review_id ?? row.id ?? 0),
+            factory_name: String(row.factory_name ?? row.factory ?? ''),
+            rating: Number(row.rating ?? 0),
+            comment: String(row.comment ?? ''),
+            created_at: String(row.created_at ?? ''),
+            is_editable: Boolean(row.is_editable),
+            image_urls: normalizeReviewImageUrls(row.image_urls),
+          }))
+          .filter((r) => Number.isFinite(r.review_id) && r.review_id > 0),
       );
     } finally {
       setLoading(false);
@@ -99,46 +101,67 @@ export function MyReviewsPage() {
   };
 
   return (
-    <div className="space-y-4 pb-24">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2">
-        <Button variant="unstyled" type="button" onClick={() => navigate(-1)} className="text-slate-600"><ChevronLeft size={18} /></Button>
-        <p className="text-sm font-bold text-slate-900">รีวิวของฉัน</p>
+    <div className='space-y-4 pb-24'>
+      <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2'>
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => navigate(-1)}
+          className='text-slate-600'
+          aria-label='ย้อนกลับ'
+        >
+          <ChevronLeft size={18} />
+        </Button>
+        <p className='text-sm font-bold text-slate-900'>รีวิวของฉัน</p>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        {loading ? <p className="text-sm text-slate-500">กำลังโหลด...</p> : items.length === 0 ? (
-          <p className="text-sm text-slate-500">ยังไม่มีรีวิว — เขียนรีวิวหลังรับสินค้าแล้ว</p>
+      <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
+        {loading ? (
+          <p className='text-sm text-slate-500'>กำลังโหลด...</p>
+        ) : items.length === 0 ? (
+          <p className='text-sm text-slate-500'>ยังไม่มีรีวิว — เขียนรีวิวหลังรับสินค้าแล้ว</p>
         ) : (
-          <ul className="space-y-3">
+          <ul className='space-y-3'>
             {items.map((r) => (
-              <li key={r.review_id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-900">{r.factory_name || 'โรงงาน'}</p>
-                  <p className="text-[11px] text-slate-500">{r.created_at ? new Date(r.created_at).toLocaleDateString('th-TH') : '-'}</p>
+              <li
+                key={r.review_id}
+                className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-3'
+              >
+                <div className='flex items-center justify-between gap-2'>
+                  <p className='text-sm font-semibold text-slate-900'>
+                    {r.factory_name || 'โรงงาน'}
+                  </p>
+                  <p className='text-[11px] text-slate-500'>
+                    {r.created_at ? new Date(r.created_at).toLocaleDateString('th-TH') : '-'}
+                  </p>
                 </div>
-                <p className="text-[12px] text-amber-500">{'★'.repeat(Math.max(1, Math.min(5, r.rating)))}</p>
-                <p className="text-sm text-slate-700">{r.comment || '-'}</p>
+                <p className='text-[12px] text-amber-500'>
+                  {'★'.repeat(Math.max(1, Math.min(5, r.rating)))}
+                </p>
+                <p className='text-sm text-slate-700'>{r.comment || '-'}</p>
                 <ReviewImageAttachments
                   urls={r.image_urls}
                   onPreviewUrl={(u) => window.open(u, '_blank', 'noopener,noreferrer')}
                 />
                 {r.is_editable ? (
-                  <div className="mt-2 flex gap-2">
-                    <Button variant="unstyled"
-                      type="button"
+                  <div className='mt-2 flex gap-2'>
+                    <Button
+                      variant='unstyled'
+                      type='button'
                       onClick={() => openEdit(r)}
-                      className="px-2.5 py-1 rounded-lg border border-slate-200 text-xs text-slate-700"
+                      className='px-2.5 py-1 rounded-lg border border-slate-200 text-xs text-slate-700'
                     >
                       แก้ไข
                     </Button>
-                    <Button variant="unstyled"
-                      type="button"
+                    <Button
+                      variant='unstyled'
+                      type='button'
                       onClick={async () => {
                         if (!window.confirm('ลบรีวิวนี้?')) return;
                         await reviewsApi.delete(r.review_id);
                         await load();
                       }}
-                      className="px-2.5 py-1 rounded-lg border border-red-200 text-xs text-red-600"
+                      className='px-2.5 py-1 rounded-lg border border-red-200 text-xs text-red-600'
                     >
                       ลบ
                     </Button>
@@ -151,26 +174,28 @@ export function MyReviewsPage() {
       </div>
 
       {editOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-slate-900">แก้ไขรีวิว</p>
-              <Button variant="unstyled"
-                type="button"
+        <div className='fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4'>
+          <div className='w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl p-4 space-y-3'>
+            <div className='flex items-center justify-between'>
+              <p className='text-sm font-bold text-slate-900'>แก้ไขรีวิว</p>
+              <Button
+                variant='unstyled'
+                type='button'
                 onClick={() => setEditOpen(false)}
-                className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500"
-                aria-label="ปิด"
+                className='w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500'
+                aria-label='ปิด'
               >
                 <X size={16} />
               </Button>
             </div>
-            <div className="flex items-center gap-1">
+            <div className='flex items-center gap-1'>
               {[1, 2, 3, 4, 5].map((s) => (
-                <Button variant="unstyled"
+                <Button
+                  variant='unstyled'
                   key={s}
-                  type="button"
+                  type='button'
                   onClick={() => setEditRating(s)}
-                  className="p-0.5"
+                  className='p-0.5'
                   aria-label={`${s} ดาว`}
                 >
                   <Star
@@ -181,23 +206,24 @@ export function MyReviewsPage() {
               ))}
             </div>
             <textarea
+              aria-label='ข้อความรีวิว'
               value={editComment}
               onChange={(e) => setEditComment(e.target.value)}
               maxLength={1000}
               rows={4}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300"
+              className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300'
             />
             <ReviewImageAttachments
               urls={editImages}
               onChange={setEditImages}
               onUploadError={(msg) => toast.error(msg)}
             />
-            <Button variant="unstyled"
-              type="button"
+            <Button
+              variant='unstyled'
+              type='button'
               disabled={editSaving}
               onClick={() => void saveEdit()}
-              className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-60"
-              style={{ background: '#6C47FF' }}
+              className='w-full rounded-xl bg-[#6C47FF] py-2.5 text-sm font-semibold text-white disabled:opacity-60'
             >
               {editSaving ? 'กำลังบันทึก…' : 'บันทึก'}
             </Button>

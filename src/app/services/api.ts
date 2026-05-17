@@ -24,7 +24,7 @@
  */
 
 // Re-export everything from the new api modules
-export * from './api/index';
+export * from '@/services/api/index';
 
 // Backward compatibility: also export as `api` object
-export { httpClient as api } from './api/httpClient';
+export { httpClient as api } from '@/services/api/httpClient';
