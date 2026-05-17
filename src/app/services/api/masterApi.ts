@@ -1,49 +1,48 @@
-/**
- * Master Data API — Categories, units, certifications, etc
- */
-
 import { httpClient } from '@/services/api/httpClient';
-import { type CategoryDTO, type SubCategoryDTO, type UnitDTO, type CertificationDTO, type ShippingMethodDTO, type FactoryTypeDTO, type MaterialDTO } from '@/services/api/types/master.types';
+import type {
+  ICategoryResponse,
+  ICertificationResponse,
+  IFactoryTypeResponse,
+  IMaterialResponse,
+  IShippingMethodResponse,
+  ISubCategoryResponse,
+  IUnitResponse,
+} from '@/services/api/types/master.types';
 
 export const categoriesApi = {
-  list: () => httpClient.get<CategoryDTO[]>('/categories'),
+  list: () => httpClient.get<ICategoryResponse[]>('/categories'),
 
-  get: (id: string | number) => httpClient.get<CategoryDTO>(`/categories/${id}`),
+  get: (id: string | number) => httpClient.get<ICategoryResponse>(`/categories/${id}`),
 
   subCategories: (categoryId: string | number) =>
-    httpClient.get<SubCategoryDTO[]>(`/categories/${categoryId}/sub-categories`),
+    httpClient.get<ISubCategoryResponse[]>(`/categories/${categoryId}/sub-categories`),
 };
 
 export const masterApi = {
-  /** Aggregated master data endpoint */
   getAll: () =>
     httpClient.get<{
-      categories?: CategoryDTO[];
-      units?: UnitDTO[];
-      certifications?: CertificationDTO[];
-      shipping_methods?: ShippingMethodDTO[];
-      factory_types?: FactoryTypeDTO[];
+      categories?: ICategoryResponse[];
+      units?: IUnitResponse[];
+      certifications?: ICertificationResponse[];
+      shipping_methods?: IShippingMethodResponse[];
+      factory_types?: IFactoryTypeResponse[];
     }>('/master'),
 
-  getCategories: () => httpClient.get<CategoryDTO[]>('/master/categories'),
+  getCategories: () => httpClient.get<ICategoryResponse[]>('/master/categories'),
 
-  /** GET /master/units */
-  getUnits: () => httpClient.get<UnitDTO[]>('/master/units'),
+  getUnits: () => httpClient.get<IUnitResponse[]>('/master/units'),
 
-  /** GET /master/certifications */
-  getCertifications: () => httpClient.get<CertificationDTO[]>('/master/certifications'),
+  getCertifications: () => httpClient.get<ICertificationResponse[]>('/master/certifications'),
 
-  getShippingMethods: () => httpClient.get<ShippingMethodDTO[]>('/master/shipping-methods'),
+  getShippingMethods: () => httpClient.get<IShippingMethodResponse[]>('/master/shipping-methods'),
 
-  /** GET /master/factory-types */
-  getFactoryTypes: () => httpClient.get<FactoryTypeDTO[]>('/master/factory-types'),
+  getFactoryTypes: () => httpClient.get<IFactoryTypeResponse[]>('/master/factory-types'),
 
-  /** GET /master/materials */
   getMaterials: (categoryId?: string | number) => {
     const endpoint = categoryId
       ? `/master/materials?category_id=${categoryId}`
       : '/master/materials';
-    return httpClient.get<MaterialDTO[]>(endpoint);
+    return httpClient.get<IMaterialResponse[]>(endpoint);
   },
 };
 
@@ -62,9 +61,7 @@ export const addressesApi = {
 
   delete: (id: string | number) => httpClient.delete<void>(`/addresses/${id}`),
 
-  /** Get user's default address */
   getDefault: () => httpClient.get<unknown>('/addresses/default'),
 
-  /** Set default address */
   setDefault: (id: string | number) => httpClient.post<void>(`/addresses/${id}/set-default`, {}),
 };

@@ -1,80 +1,42 @@
+import { format as formatDateFns, isValid, parseISO } from 'date-fns';
+import { th } from 'date-fns/locale';
+
+function parseDateInput(dateInput: string | Date | null | undefined): Date | null {
+  if (!dateInput) return null;
+  if (dateInput instanceof Date) return isValid(dateInput) ? dateInput : null;
+  const trimmed = String(dateInput).trim();
+  if (!trimmed) return null;
+  const fromIso = parseISO(trimmed);
+  if (isValid(fromIso)) return fromIso;
+  const fallback = new Date(trimmed);
+  return isValid(fallback) ? fallback : null;
+}
+
+/** dd/MM/yyyy (พ.ศ. ผ่าน locale th) */
 export function formatDate(
   dateInput: string | Date | null | undefined,
-  format: string = 'dd/MM/yyyy',
+  pattern = 'dd/MM/yyyy',
 ): string {
-  if (!dateInput) return '-';
+  const date = parseDateInput(dateInput);
+  if (!date) return '-';
+  return formatDateFns(date, pattern, { locale: th });
+}
 
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (!(date instanceof Date) || isNaN(date.getTime())) return '-';
-
-  const formatter = new Intl.DateTimeFormat('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  return formatter.format(date);
+/** yyyy-MM-dd — แทน `.slice(0, 10)` */
+export function formatIsoDate(dateInput: string | Date | null | undefined): string {
+  const date = parseDateInput(dateInput);
+  if (!date) return '-';
+  return formatDateFns(date, 'yyyy-MM-dd');
 }
 
 export function formatDateTime(dateInput: string | Date | null | undefined): string {
-  if (!dateInput) return '-';
-
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (!(date instanceof Date) || isNaN(date.getTime())) return '-';
-
-  return new Intl.DateTimeFormat('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(date);
-}
-
-export function formatChatTime(isoString: string): string {
-  if (!isoString) return '';
-
-  const date = new Date(isoString);
-  if (!(date instanceof Date) || isNaN(date.getTime())) return '';
-
-  return new Intl.DateTimeFormat('th-TH', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(date);
+  const date = parseDateInput(dateInput);
+  if (!date) return '-';
+  return formatDateFns(date, 'd MMM yyyy HH:mm', { locale: th });
 }
 
 export function formatDeadline(dateInput: string | Date | null | undefined): string {
-  if (!dateInput) return '';
-
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (!(date instanceof Date) || isNaN(date.getTime())) return '';
-
-  return new Intl.DateTimeFormat('th-TH', {
-    month: 'short',
-    day: 'numeric',
-  }).format(date);
-}
-
-export function formatThaiDate(dateInput: string | Date | null | undefined): string {
-  if (!dateInput) return '-';
-
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (!(date instanceof Date) || isNaN(date.getTime())) return '-';
-
-  return new Intl.DateTimeFormat('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
-}
-
-export function isOverdue(dateInput: string | Date | null | undefined): boolean {
-  if (!dateInput) return false;
-
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (!(date instanceof Date) || isNaN(date.getTime())) return false;
-
-  return date < new Date();
+  const date = parseDateInput(dateInput);
+  if (!date) return '';
+  return formatDateFns(date, 'd MMM', { locale: th });
 }

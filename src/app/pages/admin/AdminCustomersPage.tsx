@@ -20,6 +20,7 @@ import {
   TableRow,
   TableSkeletonRows,
 } from '@/components/ui/table';
+import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -31,7 +32,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 function toCurrency(n: number) {
-  return `฿${Number(n || 0).toLocaleString('th-TH')}`;
+  return formatCurrencyNoDecimals(Number(n || 0));
 }
 
 const LIMIT = 20;
@@ -97,7 +98,7 @@ export function AdminCustomersPage() {
         </div>
         {!loading && (
           <span className='text-sm text-slate-500 font-medium'>
-            {total.toLocaleString('th-TH')} คน
+            {formatCompactNumber(total)} คน
           </span>
         )}
       </div>

@@ -1,13 +1,12 @@
 import {
   mapShowcaseFromApi,
-  normShowcase,
   showcaseQueryTypeFromTab,
   type ShowcaseApiType,
 } from '@/domain/showcase/mappers/mapShowcase';
 import { useShowcasesQuery } from '@/domain/showcase/queries/useShowcasesQuery';
 
 export type { ShowcaseApiType };
-export { mapShowcaseFromApi, normShowcase, showcaseQueryTypeFromTab };
+export { mapShowcaseFromApi, showcaseQueryTypeFromTab };
 
 export function useShowcases(options?: { type?: ShowcaseApiType }) {
   const q = useShowcasesQuery(options?.type);

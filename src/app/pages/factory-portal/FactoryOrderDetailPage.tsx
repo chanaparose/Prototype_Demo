@@ -13,7 +13,7 @@ import {
   Package,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { QuoteNestedDTO, RfqNestedDTO } from '@/types/api';
+import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { ordersApi } from '@/services/api/ordersApi';
@@ -403,10 +403,10 @@ export function FactoryOrderDetailPage() {
     [id, qc, loadOrder],
   );
 
-  const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as RfqNestedDTO) : null;
+  const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as IRfqNestedResponse) : null;
   const quotation =
     order.quotation && typeof order.quotation === 'object'
-      ? (order.quotation as QuoteNestedDTO)
+      ? (order.quotation as IQuoteNestedResponse)
       : null;
   const title = String(
     rfq?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id ?? ''}`,

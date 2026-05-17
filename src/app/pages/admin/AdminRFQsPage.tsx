@@ -9,6 +9,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { type AdminRfqRow } from '@/services/api/adminApi';
+import { formatIsoDate } from '@/utils/formatting/formatDate';
+import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import {
   useAdminRfqDetailQuery,
   useAdminRfqListQuery,
@@ -112,7 +114,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
                   <p className='text-[10px] text-slate-400 uppercase font-semibold'>สินค้า</p>
                   <p className='text-sm text-slate-900 font-medium'>{String(rfq.title ?? '-')}</p>
                   <p className='text-xs text-slate-500 mt-0.5'>
-                    จำนวน: {Number(rfq.quantity ?? 0).toLocaleString()} ชิ้น
+                    จำนวน: {formatCompactNumber(Number(rfq.quantity ?? 0))} ชิ้น
                   </p>
                   <p className='text-xs text-slate-500'>
                     หมวดหมู่: {String(rfq.category_name ?? '-')} /{' '}
@@ -125,10 +127,10 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
                 <div>
                   <p className='text-[10px] text-slate-400 uppercase font-semibold'>กำหนดส่ง</p>
                   <p className='text-sm text-slate-900 font-medium'>
-                    {deliveryDate ? deliveryDate.slice(0, 10) : '-'}
+                    {deliveryDate ? formatIsoDate(deliveryDate) : '-'}
                   </p>
                   <p className='text-xs text-slate-400 mt-0.5'>
-                    สร้างเมื่อ {String(rfq.created_at ?? '').slice(0, 10)}
+                    สร้างเมื่อ {formatIsoDate(rfq.created_at as string)}
                   </p>
                 </div>
               </div>
@@ -137,7 +139,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
                 <div>
                   <p className='text-[10px] text-slate-400 uppercase font-semibold'>งบประมาณ</p>
                   <p className='text-sm text-slate-900 font-bold'>
-                    ฿{Number(rfq.target_price ?? 0).toLocaleString('th-TH')}
+                    ฿{formatCompactNumber(Number(rfq.target_price ?? 0))}
                   </p>
                 </div>
               </div>
@@ -314,7 +316,7 @@ export function AdminRFQsPage() {
                           )}
                         </TableCell>
                         <TableCell className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
-                          ฿{rfq.budget.toLocaleString('th-TH')}
+                          ฿{formatCompactNumber(rfq.budget)}
                         </TableCell>
                         <TableCell className='px-4 py-3'>
                           <span
@@ -324,7 +326,7 @@ export function AdminRFQsPage() {
                           </span>
                         </TableCell>
                         <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
-                          {rfq.created_at.slice(0, 10)}
+                          {formatIsoDate(rfq.created_at)}
                         </TableCell>
                       </TableRow>
                       {isExpanded ? <RfqDetailPanel rfqId={rfq.rfq_id} /> : null}

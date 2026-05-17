@@ -1,4 +1,4 @@
-import { type User } from '@/stores/types';
+import type { IUser } from '@/domain/auth/types/user.model';
 
 export type ChatReferenceType = 'RQ' | 'OD' | 'PD' | 'PM' | 'ID';
 
@@ -50,7 +50,7 @@ export type MessagesSendBody = {
   attachment_url?: string;
 };
 
-export function getCurrentUserId(user: User | null): number | null {
+export function getCurrentUserId(user: IUser | null): number | null {
   if (!user) return null;
   const raw = (user as { user_id?: unknown }).user_id ?? user.id;
   const n = Number(raw);

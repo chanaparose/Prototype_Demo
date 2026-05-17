@@ -9,11 +9,11 @@ import {
   type ApiConversation,
   type ChatReference,
 } from '@/utils/chatContract';
-import { type User } from '@/stores/types';
+import type { IUser } from '@/domain/auth/types/user.model';
 
 type Row = Record<string, unknown>;
 
-export async function findOrCreateConversation(
+async function findOrCreateConversation(
   customerUserId: number,
   factoryEntityId: number,
 ): Promise<ApiConversation | null> {
@@ -59,7 +59,7 @@ export type OpenChatSessionOptions = {
 
 export async function openChatSession(
   navigate: NavigateFunction,
-  user: User | null,
+  user: IUser | null,
   params: OpenChatSessionOptions,
 ): Promise<string | null> {
   const currentUserId = getCurrentUserId(user);

@@ -1,10 +1,30 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, CheckSquare, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { adminConfigApi, type PlatformConfigItem, type UpdatePlatformConfigRequest } from '@/services/api/adminApi';
+import {
+  adminDefaultCommissionSchema,
+  adminGeneralConfigSchema,
+  adminNewConfigSchema,
+  type AdminDefaultCommissionFormValues,
+  type AdminGeneralConfigFormValues,
+  type AdminNewConfigFormValues,
+} from '@/domain/admin/schemas/adminConfig.schema';
+import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
+import { formatDate } from '@/utils/formatting/formatDate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import {
   Table,
   TableBody,
@@ -28,12 +48,6 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'verification', label: 'การยืนยันโรงงาน' },
 ];
 
-interface GeneralConfig {
-  platform_name: string;
-  contact_email: string;
-  support_phone: string;
-}
-
 interface VerificationRequirement {
   id: string;
   label: string;
@@ -55,9 +69,7 @@ function configLabel(cfg: PlatformConfigItem): string {
 
 function fmtDate(input?: string | null): string {
   if (!input) return '—';
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
-  return d.toLocaleDateString('th-TH');
+  return formatDate(input);
 }
 
 function SaveButton({
@@ -96,24 +108,33 @@ export function AdminConfigPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [general, setGeneral] = useState<GeneralConfig>({
-    platform_name: 'baowu Manufacturing',
-    contact_email: 'support@baowu.co.th',
-    support_phone: '-',
+  const generalForm = useForm<AdminGeneralConfigFormValues>({
+    resolver: zodResolver(adminGeneralConfigSchema),
+    defaultValues: {
+      platform_name: 'baowu Manufacturing',
+      contact_email: 'support@baowu.co.th',
+      support_phone: '-',
+    },
   });
   const [savingGeneral, setSavingGeneral] = useState(false);
   const [savedGeneral, setSavedGeneral] = useState(false);
 
   const [configs, setConfigs] = useState<PlatformConfigItem[]>([]);
-  const [defaultForm, setDefaultForm] = useState({ label: '', commission: '', vat: '' });
+  const defaultCommissionForm = useForm<AdminDefaultCommissionFormValues>({
+    resolver: zodResolver(adminDefaultCommissionSchema),
+    defaultValues: { label: '', commission: '', vat: '' },
+  });
   const [savingDefault, setSavingDefault] = useState(false);
   const [savedDefault, setSavedDefault] = useState(false);
 
-  const [newConfig, setNewConfig] = useState({
-    label: '',
-    default_commission_rate: '',
-    vat_rate: '7',
-    effective_to: '',
+  const newConfigForm = useForm<AdminNewConfigFormValues>({
+    resolver: zodResolver(adminNewConfigSchema),
+    defaultValues: {
+      label: '',
+      default_commission_rate: '',
+      vat_rate: '7',
+      effective_to: '',
+    },
   });
   const [savingConfig, setSavingConfig] = useState(false);
 
@@ -130,12 +151,12 @@ export function AdminConfigPage() {
 
   useEffect(() => {
     if (!defaultConfig) return;
-    setDefaultForm({
+    defaultCommissionForm.reset({
       label: defaultConfig.label ?? 'มาตรฐาน (Default)',
       commission: String(defaultConfig.default_commission_rate),
       vat: String(defaultConfig.vat_rate),
     });
-  }, [defaultConfig]);
+  }, [defaultConfig, defaultCommissionForm]);
 
   const loadData = async () => {
     setLoading(true);
@@ -154,7 +175,7 @@ export function AdminConfigPage() {
     void loadData();
   }, []);
 
-  const handleSaveGeneral = async () => {
+  const onSaveGeneral = generalForm.handleSubmit(async () => {
     if (!isSA) return;
     setSavingGeneral(true);
     setTimeout(() => {
@@ -162,17 +183,17 @@ export function AdminConfigPage() {
       setSavedGeneral(true);
       setTimeout(() => setSavedGeneral(false), 2200);
     }, 400);
-  };
+  });
 
-  const handleSaveDefault = async () => {
+  const handleSaveDefault = defaultCommissionForm.handleSubmit(async (values) => {
     if (!isSA || !defaultConfig) return;
     setSavingDefault(true);
     setError('');
     try {
       const payload: UpdatePlatformConfigRequest = {
-        label: defaultForm.label.trim(),
-        default_commission_rate: Number(defaultForm.commission),
-        vat_rate: Number(defaultForm.vat),
+        label: values.label.trim(),
+        default_commission_rate: Number(values.commission),
+        vat_rate: Number(values.vat),
       };
       const updated = await adminConfigApi.updateConfig(defaultConfig.config_id, payload);
       setConfigs((prev) => prev.map((c) => (c.config_id === updated.config_id ? updated : c)));
@@ -183,33 +204,36 @@ export function AdminConfigPage() {
     } finally {
       setSavingDefault(false);
     }
-  };
+  });
 
-  const handleCreateConfig = async () => {
+  const handleCreateConfig = newConfigForm.handleSubmit(async (values) => {
     if (!isSA) return;
-    const label = newConfig.label.trim();
-    const commission = Number(newConfig.default_commission_rate);
-    const vat = Number(newConfig.vat_rate || '7');
-    if (!label || !Number.isFinite(commission)) return;
+    const commission = Number(values.default_commission_rate);
+    const vat = Number(values.vat_rate || '7');
 
     setSavingConfig(true);
     setError('');
     try {
       const created = await adminConfigApi.createConfig({
-        label,
+        label: values.label.trim(),
         default_commission_rate: commission,
         vat_rate: Number.isFinite(vat) ? vat : 7,
         currency_code: 'THB',
-        effective_to: newConfig.effective_to || null,
+        effective_to: values.effective_to || null,
       });
       setConfigs((prev) => [...prev, created]);
-      setNewConfig({ label: '', default_commission_rate: '', vat_rate: '7', effective_to: '' });
+      newConfigForm.reset({
+        label: '',
+        default_commission_rate: '',
+        vat_rate: '7',
+        effective_to: '',
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'สร้าง config พิเศษไม่สำเร็จ');
     } finally {
       setSavingConfig(false);
     }
-  };
+  });
 
   const handleDeleteConfig = async (configId: number) => {
     if (!isSA || configId === defaultConfig?.config_id) return;
@@ -268,43 +292,66 @@ export function AdminConfigPage() {
           {loading ? <p className='text-sm text-slate-500'>กำลังโหลดการตั้งค่า...</p> : null}
 
           {!loading && activeTab === 'general' ? (
+            <Form {...generalForm}>
             <div className='space-y-5 max-w-lg'>
               {!isSA ? (
                 <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5'>
                   เฉพาะ Super Admin เท่านั้นที่แก้ไขการตั้งค่าทั่วไปได้
                 </div>
               ) : null}
-              <Field
-                label='ชื่อแพลตฟอร์ม'
-                value={general.platform_name}
-                disabled={!isSA}
-                onChange={(v) => setGeneral((p) => ({ ...p, platform_name: v }))}
+              <FormField
+                control={generalForm.control}
+                name='platform_name'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อแพลตฟอร์ม</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <Field
-                label='อีเมลติดต่อ'
-                value={general.contact_email}
-                type='email'
-                disabled={!isSA}
-                onChange={(v) => setGeneral((p) => ({ ...p, contact_email: v }))}
+              <FormField
+                control={generalForm.control}
+                name='contact_email'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs font-semibold text-slate-700'>อีเมลติดต่อ</FormLabel>
+                    <FormControl>
+                      <Input {...field} type='email' disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <Field
-                label='โทรศัพท์สนับสนุน'
-                value={general.support_phone}
-                disabled={!isSA}
-                onChange={(v) => setGeneral((p) => ({ ...p, support_phone: v }))}
+              <FormField
+                control={generalForm.control}
+                name='support_phone'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs font-semibold text-slate-700'>โทรศัพท์สนับสนุน</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
               {isSA ? (
                 <SaveButton
                   saving={savingGeneral}
                   saved={savedGeneral}
-                  onClick={handleSaveGeneral}
+                  onClick={() => void onSaveGeneral()}
                   text='บันทึกการตั้งค่าทั่วไป'
                 />
               ) : null}
             </div>
+            </Form>
           ) : null}
 
           {!loading && activeTab === 'commission' ? (
+            <Form {...defaultCommissionForm}>
             <div className='space-y-5 max-w-xl'>
               <div>
                 <h4 className='text-sm font-bold text-slate-900'>ค่าคอม & VAT — Config มาตรฐาน</h4>
@@ -318,36 +365,64 @@ export function AdminConfigPage() {
                 </div>
               ) : null}
 
-              <Field
-                label='ชื่อ Config'
-                value={defaultForm.label}
-                disabled={!isSA}
-                onChange={(v) => setDefaultForm((p) => ({ ...p, label: v }))}
+              <FormField
+                control={defaultCommissionForm.control}
+                name='label'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อ Config</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                <RateField
-                  label='ค่าคอมมิชชัน (%)'
-                  value={defaultForm.commission}
-                  disabled={!isSA}
-                  onChange={(v) => setDefaultForm((p) => ({ ...p, commission: v }))}
+                <FormField
+                  control={defaultCommissionForm.control}
+                  name='commission'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-xs font-semibold text-slate-700'>ค่าคอมมิชชัน (%)</FormLabel>
+                      <FormControl>
+                        <div className='relative'>
+                          <Input {...field} type='number' min={0} max={100} step={0.1} disabled={!isSA} className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50' />
+                          <Percent size={12} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400' />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <RateField
-                  label='VAT (%)'
-                  value={defaultForm.vat}
-                  disabled={!isSA}
-                  onChange={(v) => setDefaultForm((p) => ({ ...p, vat: v }))}
+                <FormField
+                  control={defaultCommissionForm.control}
+                  name='vat'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-xs font-semibold text-slate-700'>VAT (%)</FormLabel>
+                      <FormControl>
+                        <div className='relative'>
+                          <Input {...field} type='number' min={0} max={100} step={0.1} disabled={!isSA} className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50' />
+                          <Percent size={12} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400' />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
               {isSA ? (
                 <SaveButton
                   saving={savingDefault}
                   saved={savedDefault}
-                  onClick={handleSaveDefault}
+                  onClick={() => void handleSaveDefault()}
                   disabled={!defaultConfig}
                   text='บันทึก Config มาตรฐาน'
                 />
               ) : null}
             </div>
+            </Form>
           ) : null}
 
           {!loading && activeTab === 'configpackages' ? (
@@ -396,10 +471,10 @@ export function AdminConfigPage() {
                             {isDefault ? <span className='text-xs text-slate-400'>🔒</span> : null}
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm text-right tabular-nums text-indigo-700 font-bold'>
-                            {Number(cfg.default_commission_rate).toLocaleString('th-TH')}%
+                            {formatCompactNumber(Number(cfg.default_commission_rate))}%
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm text-right tabular-nums'>
-                            {Number(cfg.vat_rate).toLocaleString('th-TH')}%
+                            {formatCompactNumber(Number(cfg.vat_rate))}%
                           </TableCell>
                           <TableCell className='px-4 py-3 text-xs text-slate-500'>
                             {fmtDate(cfg.effective_to)}
@@ -426,46 +501,77 @@ export function AdminConfigPage() {
               </div>
 
               {isSA ? (
+                <Form {...newConfigForm}>
                 <div className='bg-slate-50 rounded-xl border border-slate-200 p-4'>
                   <p className='text-xs font-semibold text-slate-700 mb-3'>
                     เพิ่ม Config พิเศษใหม่
                   </p>
                   <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                    <Field
-                      label='ชื่อ Config'
-                      value={newConfig.label}
-                      onChange={(v) => setNewConfig((p) => ({ ...p, label: v }))}
+                    <FormField
+                      control={newConfigForm.control}
+                      name='label'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อ Config</FormLabel>
+                          <FormControl>
+                            <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    <Field
-                      label='หมดอายุ'
-                      value={newConfig.effective_to}
-                      type='date'
-                      onChange={(v) => setNewConfig((p) => ({ ...p, effective_to: v }))}
+                    <FormField
+                      control={newConfigForm.control}
+                      name='effective_to'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>หมดอายุ</FormLabel>
+                          <FormControl>
+                            <Input {...field} type='date' className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    <RateField
-                      label='ค่าคอม (%)'
-                      value={newConfig.default_commission_rate}
-                      onChange={(v) => setNewConfig((p) => ({ ...p, default_commission_rate: v }))}
+                    <FormField
+                      control={newConfigForm.control}
+                      name='default_commission_rate'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>ค่าคอม (%)</FormLabel>
+                          <FormControl>
+                            <Input {...field} type='number' min={0} max={100} step={0.1} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    <RateField
-                      label='VAT (%)'
-                      value={newConfig.vat_rate}
-                      onChange={(v) => setNewConfig((p) => ({ ...p, vat_rate: v }))}
+                    <FormField
+                      control={newConfigForm.control}
+                      name='vat_rate'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>VAT (%)</FormLabel>
+                          <FormControl>
+                            <Input {...field} type='number' min={0} max={100} step={0.1} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
                   <Button
                     variant='unstyled'
                     type='button'
                     onClick={() => void handleCreateConfig()}
-                    disabled={
-                      savingConfig || !newConfig.label.trim() || !newConfig.default_commission_rate
-                    }
+                    disabled={savingConfig}
                     className='mt-3 flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
                   >
                     <Plus size={14} />
                     {savingConfig ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
                   </Button>
                 </div>
+                </Form>
               ) : null}
             </div>
           ) : null}

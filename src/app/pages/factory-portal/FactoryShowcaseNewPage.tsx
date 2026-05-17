@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useSearchParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 import { showcasesApi, mediaApi } from '@/services/api/factoryApi';
@@ -21,34 +23,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-type FormValues = {
-  title: string;
-  excerpt: string;
-  content: string;
-  category_id: string;
-  sub_category_id: string;
-  moq: string;
-  lead_time_days: string;
-  base_price: string;
-  promo_price: string;
-  start_date: string;
-  end_date: string;
-};
-
-const EMPTY: FormValues = {
-  title: '',
-  excerpt: '',
-  content: '',
-  category_id: '',
-  sub_category_id: '',
-  moq: '',
-  lead_time_days: '',
-  base_price: '',
-  promo_price: '',
-  start_date: '',
-  end_date: '',
-};
+import {
+  showcaseFormEmptyValues,
+  showcaseFormSchema,
+  validateShowcasePublish,
+  type ShowcaseContentType,
+  type ShowcaseFormValues,
+} from '@/domain/showcase/schemas/showcaseForm.schema';
 
 export function FactoryShowcaseNewPage() {
   const navigate = useNavigate();
@@ -61,7 +42,12 @@ export function FactoryShowcaseNewPage() {
     return t === 'PM' || t === 'ID' || t === 'MT' ? t : 'PD';
   })();
 
-  const [form, setForm] = useState<FormValues>(EMPTY);
+  const { watch, setValue, getValues } = useForm<ShowcaseFormValues>({
+    resolver: zodResolver(showcaseFormSchema),
+    defaultValues: showcaseFormEmptyValues,
+    mode: 'onSubmit',
+  });
+  const form = watch();
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedShowcaseIds, setSelectedShowcaseIds] = useState<number[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -95,8 +81,8 @@ export function FactoryShowcaseNewPage() {
       ? (subsResult.byCategory.get(selectedCategoryId) ?? [])
       : [];
 
-  const setField = <K extends keyof FormValues>(key: K, value: FormValues[K]) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const setField = <K extends keyof ShowcaseFormValues>(key: K, value: ShowcaseFormValues[K]) =>
+    setValue(key, value);
 
   const onPickImage = async (file: File | null) => {
     if (!file || imageUrls.length >= 5) return;
@@ -105,74 +91,57 @@ export function FactoryShowcaseNewPage() {
 
   const removeImage = (idx: number) => setImageUrls((prev) => prev.filter((_, i) => i !== idx));
 
-  const buildPayload = (status: 'DR' | 'AC'): Record<string, unknown> => {
+  const buildPayload = (
+    status: 'DR' | 'AC',
+    values: ShowcaseFormValues = getValues(),
+  ): Record<string, unknown> => {
     const base = {
       content_type: contentType,
       status,
-      title: form.title.trim(),
-      excerpt: contentType !== 'ID' ? form.excerpt.trim() || undefined : undefined,
-      content: form.content.trim() || undefined,
+      title: values.title.trim(),
+      excerpt: contentType !== 'ID' ? values.excerpt.trim() || undefined : undefined,
+      content: values.content.trim() || undefined,
       image_url: imageUrls[0] ?? undefined,
-      category_id: form.category_id ? Number(form.category_id) : undefined,
-      sub_category_id: form.sub_category_id ? Number(form.sub_category_id) : undefined,
-      lead_time_days: form.lead_time_days ? Number(form.lead_time_days) : undefined,
+      category_id: values.category_id ? Number(values.category_id) : undefined,
+      sub_category_id: values.sub_category_id ? Number(values.sub_category_id) : undefined,
+      lead_time_days: values.lead_time_days ? Number(values.lead_time_days) : undefined,
       linked_showcases: [...imageUrls, ...selectedShowcaseIds],
     };
     if (contentType === 'ID') return base;
     const withPrice = {
       ...base,
-      moq: form.moq ? Number(form.moq) : undefined,
-      base_price: form.base_price ? Number(form.base_price) : undefined,
+      moq: values.moq ? Number(values.moq) : undefined,
+      base_price: values.base_price ? Number(values.base_price) : undefined,
     };
     if (contentType === 'PM') {
       return {
         ...withPrice,
-        promo_price: form.promo_price ? Number(form.promo_price) : undefined,
-        start_date: form.start_date || undefined,
-        end_date: form.end_date || undefined,
+        promo_price: values.promo_price ? Number(values.promo_price) : undefined,
+        start_date: values.start_date || undefined,
+        end_date: values.end_date || undefined,
       };
     }
     return withPrice;
   };
 
   const onSubmit = async (status: 'DR' | 'AC') => {
-    if (!form.title.trim()) {
-      setError('กรุณากรอกชื่อ');
+    const values = getValues();
+    const publishError = validateShowcasePublish(values, {
+      contentType: contentType as ShowcaseContentType,
+      status,
+      imageCount: imageUrls.length,
+    });
+    if (publishError) {
+      setError(publishError);
       return;
-    }
-    if (contentType !== 'ID' && status === 'AC') {
-      if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
-        setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
-        return;
-      }
-    }
-    if (contentType === 'PM' && status === 'AC') {
-      if (!form.promo_price || Number(form.promo_price) <= 0) {
-        setError('กรุณากรอกราคาโปรโมชัน (฿) ให้มากกว่า 0');
-        return;
-      }
-      if (
-        form.base_price &&
-        Number(form.base_price) > 0 &&
-        Number(form.promo_price) > Number(form.base_price)
-      ) {
-        setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
-        return;
-      }
-      if (!form.start_date || !form.end_date) {
-        setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
-        return;
-      }
-      if (form.end_date < form.start_date) {
-        setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
-        return;
-      }
     }
     setSaving(true);
     setError('');
     setLinkedShowcaseError('');
     try {
-      await showcasesApi.create(buildPayload(status) as Parameters<typeof showcasesApi.create>[0]);
+      await showcasesApi.create(
+        buildPayload(status, values) as Parameters<typeof showcasesApi.create>[0],
+      );
 
       navigate('/factory/showcases', { replace: true });
     } catch (e) {

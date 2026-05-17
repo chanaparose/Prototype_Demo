@@ -101,7 +101,6 @@ const TOUR_CUSTOMER = {
   last_name: 'สาธิต',
 };
 
-export const TOUR_GUEST_USER_ID = TOUR_CUSTOMER.user_id;
 export const TOUR_GUEST_USER = {
   id: TOUR_CUSTOMER.user_id,
   user_id: TOUR_CUSTOMER.user_id,

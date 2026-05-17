@@ -19,7 +19,7 @@ import { useData } from '@/stores/useDataStore';
 import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { showcasesApi } from '@/services/api/factoryApi';
-import { normShowcase } from '@/hooks/useShowcases';
+import { mapShowcaseFromApi } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
 
@@ -59,7 +59,7 @@ export function IdeaDetailMobile() {
         const rows = await showcasesApi.list('ID');
         if (cancelled) return;
         const list = (Array.isArray(rows) ? rows : [])
-          .map((r) => normShowcase((r ?? {}) as Record<string, unknown>))
+          .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
           .filter((s) => s.contentType === 'idea' && s.id !== item.id)
           .slice(0, 5);
         setRelatedIdeas(list);

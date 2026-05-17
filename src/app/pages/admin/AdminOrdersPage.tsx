@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
 import { adminApi, type AdminOrderRow } from '@/services/api/adminApi';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -148,19 +149,19 @@ export function AdminOrdersPage() {
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
         <SummaryCard
           label='ยอดรวมทั้งหมด'
-          value={`฿${summary.total.toLocaleString('th-TH')}`}
+          value={formatCurrencyNoDecimals(summary.total)}
           cls='border-indigo-200 bg-indigo-50'
           labelCls='text-indigo-600'
         />
         <SummaryCard
           label='ค่าคอมมิชชัน'
-          value={`฿${summary.commission.toLocaleString('th-TH')}`}
+          value={formatCurrencyNoDecimals(summary.commission)}
           cls='border-emerald-200 bg-emerald-50'
           labelCls='text-emerald-600'
         />
         <SummaryCard
           label='VAT รวม'
-          value={`฿${summary.vat.toLocaleString('th-TH')}`}
+          value={formatCurrencyNoDecimals(summary.vat)}
           cls='border-violet-200 bg-violet-50'
           labelCls='text-violet-600'
         />
@@ -307,17 +308,17 @@ export function AdminOrdersPage() {
                         {order.factory}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
-                        ฿{order.total_amount.toLocaleString('th-TH')}
+                        {formatCurrencyNoDecimals(order.total_amount)}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-sm text-indigo-700 font-semibold text-right tabular-nums'>
                         {order.commission_amount > 0 ? (
-                          `฿${order.commission_amount.toLocaleString('th-TH')}`
+                          formatCurrencyNoDecimals(order.commission_amount)
                         ) : (
                           <span className='text-slate-300 font-normal text-xs'>ยกเว้น</span>
                         )}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-sm text-violet-700 font-semibold text-right tabular-nums'>
-                        ฿{order.vat_amount.toLocaleString('th-TH')}
+                        {formatCurrencyNoDecimals(order.vat_amount)}
                       </TableCell>
                       <TableCell className='px-4 py-3'>
                         <span
@@ -341,13 +342,13 @@ export function AdminOrdersPage() {
                     รวม {rows.length} รายการ
                   </TableCell>
                   <TableCell className='px-4 py-3 text-sm font-bold text-indigo-900 text-right tabular-nums'>
-                    ฿{summary.total.toLocaleString('th-TH')}
+                    {formatCurrencyNoDecimals(summary.total)}
                   </TableCell>
                   <TableCell className='px-4 py-3 text-sm font-bold text-indigo-700 text-right tabular-nums'>
-                    ฿{summary.commission.toLocaleString('th-TH')}
+                    {formatCurrencyNoDecimals(summary.commission)}
                   </TableCell>
                   <TableCell className='px-4 py-3 text-sm font-bold text-violet-700 text-right tabular-nums'>
-                    ฿{summary.vat.toLocaleString('th-TH')}
+                    {formatCurrencyNoDecimals(summary.vat)}
                   </TableCell>
                   <TableCell colSpan={2} />
                 </TableRow>

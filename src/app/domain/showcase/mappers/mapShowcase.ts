@@ -172,9 +172,6 @@ export async function fetchAndMapShowcaseList(type?: ShowcaseApiType): Promise<F
   return arr.map(mapShowcaseFromApi).filter((s) => s.id && s.title);
 }
 
-/** @deprecated Use mapShowcaseFromApi */
-export const normShowcase = mapShowcaseFromApi;
-
 export function showcaseQueryTypeFromTab(
   tab: 'all' | 'product' | 'promotion' | 'idea' | 'material' | 'factory',
 ): ShowcaseApiType | undefined {

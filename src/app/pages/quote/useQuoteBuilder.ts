@@ -1,7 +1,7 @@
 import React from 'react';
-import type { QuotationCreateInput } from '@/services/api/types/rfq.types';
+import type { IQuotationCreateRequest } from '@/services/api/types/rfq.types';
 
-export type QuoteBuilderState = QuotationCreateInput;
+export type QuoteBuilderState = IQuotationCreateRequest;
 
 const initialState: QuoteBuilderState = {
   rfq_id: 0,

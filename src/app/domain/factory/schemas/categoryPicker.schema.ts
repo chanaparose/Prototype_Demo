@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-export const categorySelectionSchema = z.object({
+const categorySelectionSchema = z.object({
   categoryIds: z
     .array(z.number().int().positive())
     .min(1, 'เลือกอย่างน้อย 1 หมวดหมู่'),
 });
 
-export const subCategorySelectionSchema = z.object({
+const subCategorySelectionSchema = z.object({
   subCategoryIds: z
     .array(z.number().int().positive())
     .min(1, 'เลือกอย่างน้อย 1 หมวดหมู่ย่อย'),

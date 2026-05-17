@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppSheetDialog } from '@/components/ui/app-sheet-dialog';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -40,7 +40,7 @@ export function SubCategoryPickerModal({
     }
   }, [open, initialSelected]);
 
-  if (!open || categoryId == null) return null;
+  if (categoryId == null) return null;
 
   const toggle = (id: number) => {
     if (!Number.isFinite(id) || id <= 0) return;
@@ -52,15 +52,14 @@ export function SubCategoryPickerModal({
   const selectedInScope = subs.filter((s) => working.includes(s.id)).length;
 
   return (
-    <BaseModal
-      isOpen={open}
-      onClose={onClose}
+    <AppSheetDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
       title='เลือกหมวดย่อย'
-      placement='bottom'
-      size='lg'
-      className='sm:rounded-2xl max-w-lg'
+      className='sm:max-w-lg'
       bodyClassName='p-4 sm:p-5 space-y-4'
-      footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-[1fr_auto] gap-2'
       footer={
         <ModalFooter
           layout='grid-compact'
@@ -107,6 +106,6 @@ export function SubCategoryPickerModal({
           </ul>
         ) : null}
       </FormField>
-    </BaseModal>
+    </AppSheetDialog>
   );
 }

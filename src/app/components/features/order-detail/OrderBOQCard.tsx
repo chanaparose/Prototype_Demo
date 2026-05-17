@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Send } from 'lucide-react';
 import { rfqsApi } from '@/services/api/rfqApi';
-import type { QuotationRow } from '@/types/rfq';
+import type { IQuotationResponse } from '@/services/api/types/rfq.types';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { CollapsibleCard } from '@/shared/ui/cards/CollapsibleCard';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
@@ -26,7 +26,7 @@ const paymentTermsLabel: Record<string, string> = {
 
 export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) {
   const [open, setOpen] = useState(true);
-  const [quotation, setQuotation] = useState<QuotationRow | null>(null);
+  const [quotation, setQuotation] = useState<IQuotationResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 

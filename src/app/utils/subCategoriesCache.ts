@@ -62,9 +62,3 @@ export function prefetchSubCategoriesFor(categoryIds: ReadonlyArray<string | num
 export function getCachedSubCategoriesSync(categoryId: string | number): SubCategoryRow[] | null {
   return resolved.get(String(categoryId)) ?? null;
 }
-
-/** Testing / hot-reload helper — drops every cache. */
-export function clearSubCategoriesCache(): void {
-  resolved.clear();
-  pending.clear();
-}

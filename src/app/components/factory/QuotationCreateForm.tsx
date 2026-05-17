@@ -18,7 +18,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { rfqsApi, quotationsApi, quotationApi } from '@/services/api/rfqApi';
 import { mediaApi } from '@/services/api/factoryApi';
-import type { QuotationBreakdown } from '@/services/api/types/rfq.types';
+import type { IQuotationBreakdown } from '@/services/api/types/rfq.types';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import { hoursUntilDeadline } from '@/utils/rfqDeadline';
@@ -136,7 +136,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       return w;
     }, [priceWatch, leadWatch, budgetPerPiece, targetDaysCustomer, deadlineIso]);
 
-    const [preview, setPreview] = useState<QuotationBreakdown | null>(null);
+    const [preview, setPreview] = useState<IQuotationBreakdown | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
     const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 

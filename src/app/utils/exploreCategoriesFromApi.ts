@@ -14,7 +14,7 @@ export const TILE_DB_ID_TO_CONTEXT_ID: Record<string, string> = {
   '6': 'other',
 };
 
-export function extractCategoriesArray(raw: unknown): unknown[] {
+function extractCategoriesArray(raw: unknown): unknown[] {
   if (Array.isArray(raw)) return raw;
   if (!raw || typeof raw !== 'object') return [];
   const o = raw as Record<string, unknown>;

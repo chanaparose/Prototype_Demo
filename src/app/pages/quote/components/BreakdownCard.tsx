@@ -1,11 +1,11 @@
 import React from 'react';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import type { PlatformConfig } from '@/services/api/adminApi';
-import type { QuotationBreakdown } from '@/services/api/types/rfq.types';
+import type { IQuotationBreakdown } from '@/services/api/types/rfq.types';
 
 type Props = {
   loading: boolean;
-  breakdown: QuotationBreakdown | null;
+  breakdown: IQuotationBreakdown | null;
   platformConfig?: PlatformConfig | null;
 };
 

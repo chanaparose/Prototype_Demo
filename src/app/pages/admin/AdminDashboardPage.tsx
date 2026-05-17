@@ -23,6 +23,10 @@ import {
   Cell,
   Legend,
 } from 'recharts';
+import {
+  formatCompactNumber,
+  formatCurrencyNoDecimals,
+} from '@/utils/formatting/formatCurrency';
 import { EMPTY_ADMIN_DASHBOARD } from '@/domain/admin/mappers/mapAdminDashboard';
 import { useAdminDashboardQuery } from '@/domain/admin/queries/useAdminDashboardQuery';
 import { useAdminTopCustomersQuery } from '@/domain/admin/queries/useAdminTopCustomersQuery';
@@ -47,7 +51,7 @@ interface KpiCard {
 }
 
 function toCurrency(value: number): string {
-  return `฿${Number(value || 0).toLocaleString('th-TH')}`;
+  return formatCurrencyNoDecimals(value);
 }
 
 function orderStatusMeta(status: string): { label: string; cls: string } {
@@ -132,7 +136,7 @@ function TopCustomersWidget() {
               </Link>
               <div className='text-right shrink-0'>
                 <p className='text-sm font-semibold text-indigo-700'>
-                  ฿{Number(c.total_spend || 0).toLocaleString('th-TH')}
+                  {formatCurrencyNoDecimals(Number(c.total_spend || 0))}
                 </p>
                 <p className='text-xs text-slate-400'>{c.total_orders} ออเดอร์</p>
               </div>
@@ -193,21 +197,21 @@ export function AdminDashboardPage() {
       },
       {
         label: 'คำสั่งซื้อทั้งหมด',
-        value: totalOrders.toLocaleString('th-TH'),
+        value: formatCompactNumber(totalOrders),
         icon: ShoppingCart,
         iconBg: 'bg-blue-100',
         iconColor: 'text-blue-600',
       },
       {
         label: 'RFQ ใหม่',
-        value: totalRfqs.toLocaleString('th-TH'),
+        value: formatCompactNumber(totalRfqs),
         icon: ClipboardList,
         iconBg: 'bg-amber-100',
         iconColor: 'text-amber-600',
       },
       {
         label: 'โรงงานรอ Approve',
-        value: pendingFactories.toLocaleString('th-TH'),
+        value: formatCompactNumber(pendingFactories),
         icon: Factory,
         iconBg: 'bg-rose-100',
         iconColor: 'text-rose-600',

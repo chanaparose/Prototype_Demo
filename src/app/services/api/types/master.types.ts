@@ -1,8 +1,4 @@
-/**
- * Master Data API Types (Categories, Units, etc)
- */
-
-export interface CategoryDTO {
+export interface ICategoryResponse {
   id?: number;
   category_id?: number;
   name: string;
@@ -14,7 +10,7 @@ export interface CategoryDTO {
   sub_categories_count?: number;
 }
 
-export interface SubCategoryDTO {
+export interface ISubCategoryResponse {
   id?: number;
   sub_category_id?: number;
   category_id: number;
@@ -26,7 +22,7 @@ export interface SubCategoryDTO {
   sort_order?: number;
 }
 
-export interface UnitDTO {
+export interface IUnitResponse {
   id?: number;
   unit_id?: number;
   name: string;
@@ -34,7 +30,7 @@ export interface UnitDTO {
   abbreviation?: string;
 }
 
-export interface CertificationDTO {
+export interface ICertificationResponse {
   id?: number;
   certification_id?: number;
   name: string;
@@ -42,21 +38,21 @@ export interface CertificationDTO {
   description?: string;
 }
 
-export interface ShippingMethodDTO {
+export interface IShippingMethodResponse {
   id?: number;
   shipping_method_id?: number;
   name: string;
   description?: string;
 }
 
-export interface FactoryTypeDTO {
+export interface IFactoryTypeResponse {
   id?: number;
   factory_type_id?: number;
   name: string;
   description?: string;
 }
 
-export interface MaterialDTO {
+export interface IMaterialResponse {
   id?: number;
   material_id?: number;
   name: string;
@@ -64,11 +60,11 @@ export interface MaterialDTO {
   category_id?: number;
 }
 
-export interface MasterDataResponse {
-  categories?: CategoryDTO[];
-  units?: UnitDTO[];
-  certifications?: CertificationDTO[];
-  shipping_methods?: ShippingMethodDTO[];
-  factory_types?: FactoryTypeDTO[];
-  materials?: MaterialDTO[];
+export interface IMasterDataResponse {
+  categories?: ICategoryResponse[];
+  units?: IUnitResponse[];
+  certifications?: ICertificationResponse[];
+  shipping_methods?: IShippingMethodResponse[];
+  factory_types?: IFactoryTypeResponse[];
+  materials?: IMaterialResponse[];
 }

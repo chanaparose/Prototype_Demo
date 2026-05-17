@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { quotationsApi } from '@/services/api/rfqApi';
-import type { QuotationHistoryEntry } from '@/types/rfq';
+import type { IQuotationHistoryEntry } from '@/services/api/types/rfq.types';
 import { QUOTATION_STATUS_LABEL } from '@/domain/rfq/constants';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDateTime } from '@/utils/formatting/formatDate';
@@ -28,7 +28,7 @@ function toNum(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function normalizeHistoryRow(row: unknown): QuotationHistoryEntry | null {
+function normalizeHistoryRow(row: unknown): IQuotationHistoryEntry | null {
   if (!row || typeof row !== 'object') return null;
   const r = row as Record<string, unknown>;
   const historyId = Number(r.history_id ?? 0);
@@ -38,7 +38,7 @@ function normalizeHistoryRow(row: unknown): QuotationHistoryEntry | null {
   return {
     history_id: historyId,
     quote_id: quoteId,
-    event_type: String(r.event_type ?? 'UP') as QuotationHistoryEntry['event_type'],
+    event_type: String(r.event_type ?? 'UP') as IQuotationHistoryEntry['event_type'],
     version_after: Number(r.version_after ?? 0),
     price_per_piece: toNum(r.price_per_piece),
     mold_cost: toNum(r.mold_cost),
@@ -53,7 +53,7 @@ function normalizeHistoryRow(row: unknown): QuotationHistoryEntry | null {
 
 export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProps) {
   const [open, setOpen] = React.useState(false);
-  const [history, setHistory] = React.useState<QuotationHistoryEntry[]>([]);
+  const [history, setHistory] = React.useState<IQuotationHistoryEntry[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [fetched, setFetched] = React.useState(false);
 
@@ -67,7 +67,7 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
         const arr = Array.isArray(data) ? data : [];
         const mapped = arr
           .map(normalizeHistoryRow)
-          .filter((v): v is QuotationHistoryEntry => v != null);
+          .filter((v): v is IQuotationHistoryEntry => v != null);
         setHistory(mapped);
       })
       .catch(() => setHistory([]))
@@ -112,7 +112,7 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
   );
 }
 
-function HistoryItem({ entry }: { entry: QuotationHistoryEntry }) {
+function HistoryItem({ entry }: { entry: IQuotationHistoryEntry }) {
   const label = EVENT_LABEL[entry.event_type] ?? entry.event_type;
   const color = EVENT_COLOR[entry.event_type] ?? 'var(--neutral-subtle)';
   const date = entry.created_at ? formatDateTime(entry.created_at) : '-';

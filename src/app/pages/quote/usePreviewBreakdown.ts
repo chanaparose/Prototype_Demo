@@ -1,11 +1,11 @@
 import React from 'react';
 import { quotationApi } from '@/services/api/rfqApi';
-import type { QuotationBreakdown, QuotationCreateInput } from '@/services/api/types/rfq.types';
+import type { IQuotationBreakdown, IQuotationCreateRequest } from '@/services/api/types/rfq.types';
 
-export function usePreviewBreakdown(state: Partial<QuotationCreateInput>) {
+export function usePreviewBreakdown(state: Partial<IQuotationCreateRequest>) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [breakdown, setBreakdown] = React.useState<QuotationBreakdown | null>(null);
+  const [breakdown, setBreakdown] = React.useState<IQuotationBreakdown | null>(null);
 
   React.useEffect(() => {
     let mounted = true;

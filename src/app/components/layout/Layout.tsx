@@ -22,6 +22,7 @@ import {
   isFactorySidebarNavActive,
 } from '@/components/layout/factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 
@@ -139,7 +140,7 @@ export function Layout() {
                       className='text-xs font-bold tabular-nums max-w-[4.5rem] truncate'
                       style={{ color: '#0F172A' }}
                     >
-                      ฿{(data.currentUser?.walletBalance ?? 0).toLocaleString()}
+                      {formatCurrencyNoDecimals(data.currentUser?.walletBalance ?? 0)}
                     </span>
                   </Link>
                 ) : null}

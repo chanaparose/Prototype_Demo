@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { masterKeys } from '@/lib/queryKeys';
 import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { categoriesApi } from '@/services/api/masterApi';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppSheetDialog } from '@/components/ui/app-sheet-dialog';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -52,8 +52,6 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
     }
   }, [open, initialSelected]);
 
-  if (!open) return null;
-
   const toggle = (id: number) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id].sort((a, b) => a - b),
@@ -99,16 +97,14 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
   };
 
   return (
-    <BaseModal
-      isOpen={open}
-      onClose={onClose}
+    <AppSheetDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
       title='เลือกหมวดหมู่หลัก'
-      placement='bottom'
-      size='lg'
-      className='sm:rounded-2xl max-w-lg'
+      className='sm:max-w-lg'
       bodyClassName='p-4 sm:p-5 space-y-4'
-      closeOnBackdropClick={!confirming}
-      footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-[1fr_auto] gap-2'
       footer={
         <ModalFooter
           layout='grid-compact'
@@ -150,6 +146,6 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
           </ul>
         ) : null}
       </FormField>
-    </BaseModal>
+    </AppSheetDialog>
   );
 }

@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { rfqsApi } from '@/services/api/rfqApi';
-import { type RFQCreateInput } from '@/services/api/types/rfq.types';
+import { type IRfqWizardCreateInput } from '@/services/api/types/rfq.types';
 
 export function useCreateRFQ() {
   return useMutation({
-    mutationFn: async (payload: RFQCreateInput) => {
+    mutationFn: async (payload: IRfqWizardCreateInput) => {
       const kind = payload.request_kind ?? 'PR';
       const isSample = kind === 'PS' || kind === 'MS';
       const addressId = payload.address_id ?? payload.delivery_address_id;

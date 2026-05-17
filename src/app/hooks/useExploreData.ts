@@ -1,82 +1,102 @@
-import React from 'react';
-import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi';
+import { useMemo, useState } from 'react';
+import { useData } from '@/stores/useDataStore';
 import {
-  EMPTY_EXPLORE_PAGE_DATA,
   exploreShowcaseToArticle,
-  type ExploreShowcase,
+  type IExploreShowcase,
 } from '@/domain/explore/mappers/mapExploreShowcase';
 import { useExplorePageDataQuery } from '@/domain/explore/queries/useExplorePageDataQuery';
+import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi';
+import {
+  mergeCategoryLists,
+  type ExploreCategoryItem,
+} from '@/utils/exploreCategoriesFromApi';
 
 type UseExploreDataOptions = { enablePageApis?: boolean };
 
-export type { ExploreShowcase };
+export type { IExploreShowcase };
 
 export function useExploreData(options?: UseExploreDataOptions) {
-  const enablePageApis = options?.enablePageApis !== false;
+  const { categories, isLoading: dataLoading } = useData();
+  const enablePageApis = options?.enablePageApis ?? true;
+
+  const [searchText, setSearchText] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
   const {
-    merged: exploreCategoriesMerged,
+    merged: exploreCategoriesFromApi,
     loading: exploreCategoriesLoading,
     error: exploreCategoriesError,
     reload: reloadExploreCategories,
   } = useExploreCategoriesFromApi({ enabled: enablePageApis });
 
-  const [searchText, setSearchText] = React.useState('');
-  const [copiedId, setCopiedId] = React.useState<string | null>(null);
-
   const exploreQ = useExplorePageDataQuery(enablePageApis);
-  const exploreData = exploreQ.data ?? EMPTY_EXPLORE_PAGE_DATA;
-  const isLoading = exploreQ.isLoading;
+  const exploreData = exploreQ.data;
 
-  const { pdShowcases, pmShowcases, idShowcases, mtShowcases, promoSlides, promoCodes } =
-    exploreData;
-
-  const productShowcases = React.useMemo(() => pdShowcases, [pdShowcases]);
-  const promotionShowcases = React.useMemo(() => pmShowcases, [pmShowcases]);
-  const materialShowcases = React.useMemo(() => mtShowcases, [mtShowcases]);
-
-  const ideaArticles = React.useMemo(
-    () => idShowcases.map(exploreShowcaseToArticle),
-    [idShowcases],
+  const bootstrapCategories = useMemo<ExploreCategoryItem[]>(
+    () =>
+      categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        parentId: null,
+      })),
+    [categories],
   );
 
-  const showcases = React.useMemo(() => {
-    const byId = new Map<string, ExploreShowcase>();
-    for (const s of [...pdShowcases, ...pmShowcases, ...idShowcases, ...mtShowcases]) {
+  const exploreCategoriesMerged = useMemo(
+    () => mergeCategoryLists(exploreCategoriesFromApi, bootstrapCategories),
+    [exploreCategoriesFromApi, bootstrapCategories],
+  );
+
+  const productShowcases = useMemo<IExploreShowcase[]>(
+    () => exploreData?.pdShowcases ?? [],
+    [exploreData?.pdShowcases],
+  );
+
+  const promotionShowcases = useMemo<IExploreShowcase[]>(
+    () => exploreData?.pmShowcases ?? [],
+    [exploreData?.pmShowcases],
+  );
+
+  const materialShowcases = useMemo<IExploreShowcase[]>(
+    () => exploreData?.mtShowcases ?? [],
+    [exploreData?.mtShowcases],
+  );
+
+  const showcases = useMemo<IExploreShowcase[]>(() => {
+    const merged = [...productShowcases, ...promotionShowcases, ...materialShowcases];
+    const byId = new Map<string, IExploreShowcase>();
+    for (const s of merged) {
       if (!byId.has(s.id)) byId.set(s.id, s);
     }
     return [...byId.values()];
-  }, [pdShowcases, pmShowcases, idShowcases, mtShowcases]);
+  }, [productShowcases, promotionShowcases, materialShowcases]);
 
-  const allPromoSlides = React.useMemo(() => {
-    const merged = [...promoSlides, ...promoCodes];
-    const seen = new Set<string>();
-    return merged.filter((s) => {
-      if (seen.has(s.id)) return false;
-      seen.add(s.id);
-      return true;
-    });
-  }, [promoSlides, promoCodes]);
+  const ideaArticles = useMemo(
+    () => (exploreData?.idShowcases ?? []).map(exploreShowcaseToArticle),
+    [exploreData?.idShowcases],
+  );
+
+  const promoSlides = exploreData?.promoSlides ?? [];
+
+  const isLoading =
+    dataLoading || (enablePageApis && (exploreQ.isFetching || exploreCategoriesLoading));
 
   return {
     searchText,
     setSearchText,
     copiedId,
     setCopiedId,
-
+    categories,
     ideaArticles,
+    showcases,
     productShowcases,
     promotionShowcases,
     materialShowcases,
-    showcases,
-    promoSlides: allPromoSlides,
-
-    categories: exploreCategoriesMerged,
+    promoSlides,
     exploreCategoriesMerged,
     exploreCategoriesLoading,
     exploreCategoriesError,
     reloadExploreCategories,
-
     isLoading,
-    refetchExplore: exploreQ.refetch,
   };
 }

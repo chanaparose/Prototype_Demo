@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
-import type { QuotationRow } from '@/types/rfq';
+import type { IQuotationResponse } from '@/services/api/types/rfq.types';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { rfqsApi, quotationsApi, factoryRfqsApi } from '@/services/api/rfqApi';
 import { conversationsApi, messagesApi } from '@/services/api/chatApi';
@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
-type QuoteRow = QuotationRow & {
+type QuoteRow = IQuotationResponse & {
   factoryId?: number | string;
   id?: number | string;
   mold_cost?: number | string;

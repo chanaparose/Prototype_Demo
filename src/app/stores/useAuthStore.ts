@@ -1,32 +1,39 @@
 import { create } from 'zustand';
-import { authApi } from '@/services/api/authApi';
+import {
+  fetchCurrentUserAction,
+  loginAction,
+  registerAction,
+} from '@/domain/auth/api/authActions';
 import { getToken, setToken, removeToken } from '@/services/api/tokenManager';
-import { frontendApi } from '@/services/api/exploreApi';
-import { type LoginPayload, type RegisterCustomerPayload, type RegisterFactoryPayload } from '@/services/api/types/auth.types';
+import type {
+  ILoginRequest,
+  IRegisterCustomerRequest,
+  IRegisterFactoryRequest,
+} from '@/services/api/types/auth.types';
+import type { IUser } from '@/domain/auth/types/user.model';
 import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
-import type { User } from '@/stores/types';
 
-export interface AuthState {
-  user: User | null;
+export interface IAuthState {
+  user: IUser | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
 
-export interface AuthActions {
-  login: (payload: LoginPayload) => Promise<void>;
-  register: (payload: RegisterCustomerPayload | RegisterFactoryPayload) => Promise<void>;
+export interface IAuthActions {
+  login: (request: ILoginRequest) => Promise<void>;
+  register: (request: IRegisterCustomerRequest | IRegisterFactoryRequest) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   setLoading: (loading: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState & AuthActions>((set) => {
+export const useAuthStore = create<IAuthState & IAuthActions>((set) => {
   const fetchUser = async () => {
     try {
-      const data = await frontendApi.getMe();
+      const user = await fetchCurrentUserAction();
       set({
-        user: data as unknown as User,
+        user,
         isAuthenticated: true,
         isLoading: false,
       });
@@ -40,7 +47,6 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
     }
   };
 
-  // Initialize auth on store creation
   const token = getToken();
   if (token) {
     fetchUser();
@@ -67,54 +73,26 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => {
 
     setLoading: (loading) => set({ isLoading: loading }),
 
-    login: async (payload: LoginPayload) => {
-      const response = (await authApi.login(payload)) as Record<string, unknown>;
-
-      const tokenStr = String(response.token ?? response.access_token ?? '').trim();
-      if (!tokenStr) {
-        throw new Error('เซิร์ฟเวอร์ไม่ได้ส่ง token กลับมา — กรุณาลองใหม่');
-      }
-
-      const user = (response.user as Record<string, unknown> | undefined) || {};
-      setToken(tokenStr);
+    login: async (request: ILoginRequest) => {
+      const session = await loginAction(request);
+      setToken(session.token);
       set({
-        user: user as unknown as User,
-        token: tokenStr,
+        user: session.user,
+        token: session.token,
         isAuthenticated: true,
         isLoading: false,
       });
-
-      try {
-        const fullUser = await frontendApi.getMe();
-        set({ user: fullUser as unknown as User });
-      } catch {
-        // Keep the basic login payload when profile hydration is unavailable.
-      }
     },
 
-    register: async (payload: RegisterCustomerPayload | RegisterFactoryPayload) => {
-      const response = (await authApi.register(payload)) as Record<string, unknown>;
-
-      const tokenStr = String(response.token ?? response.access_token ?? '').trim();
-      if (!tokenStr) {
-        throw new Error('เซิร์ฟเวอร์ไม่ได้ส่ง token กลับมา — กรุณาลองใหม่');
-      }
-
-      const user = (response.user as Record<string, unknown> | undefined) || {};
-      setToken(tokenStr);
+    register: async (request: IRegisterCustomerRequest | IRegisterFactoryRequest) => {
+      const session = await registerAction(request);
+      setToken(session.token);
       set({
-        user: user as unknown as User,
-        token: tokenStr,
+        user: session.user,
+        token: session.token,
         isAuthenticated: true,
         isLoading: false,
       });
-
-      try {
-        const fullUser = await frontendApi.getMe();
-        set({ user: fullUser as unknown as User });
-      } catch {
-        // Keep the basic register payload when profile hydration is unavailable.
-      }
     },
 
     logout: () => {
@@ -135,7 +113,7 @@ export function useAuth() {
   if (tourOn && !state.user) {
     return {
       ...state,
-      user: TOUR_GUEST_USER as unknown as User,
+      user: TOUR_GUEST_USER as unknown as IUser,
       isAuthenticated: true,
     };
   }

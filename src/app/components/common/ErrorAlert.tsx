@@ -1,41 +1,36 @@
 import * as React from 'react';
 
+import { Alert, alertVariants } from '@/components/ui/alert';
 import { cn } from '@lib/utils';
+import type { VariantProps } from 'class-variance-authority';
 
-type ErrorAlertSize = 'sm' | 'md';
+type ErrorAlertSize = NonNullable<VariantProps<typeof alertVariants>['size']>;
 
-type ErrorAlertProps = Omit<React.ComponentProps<'p'>, 'children'> & {
+type ErrorAlertProps = Omit<React.ComponentProps<'div'>, 'children'> & {
   children: React.ReactNode;
   size?: ErrorAlertSize;
   action?: React.ReactNode;
+  variant?: NonNullable<VariantProps<typeof alertVariants>['variant']>;
 };
 
-const sizeStyles: Record<ErrorAlertSize, string> = {
-  sm: 'text-xs px-3 py-2',
-  md: 'text-sm px-4 py-3',
-};
-
-function ErrorAlert({ children, className, size = 'md', action, ...props }: ErrorAlertProps) {
-  const styles = cn(
-    'text-red-600 bg-red-50 border border-red-100 rounded-xl',
-    sizeStyles[size],
-    action && 'flex items-center justify-between gap-3',
-    className,
-  );
-
-  if (action) {
-    return (
-      <div role='alert' className={styles}>
-        <span>{children}</span>
-        {action}
-      </div>
-    );
-  }
-
+function ErrorAlert({
+  children,
+  className,
+  size = 'md',
+  action,
+  variant = 'destructive',
+  ...props
+}: ErrorAlertProps) {
   return (
-    <p role='alert' className={styles} {...props}>
-      {children}
-    </p>
+    <Alert
+      variant={variant}
+      size={size}
+      className={cn(action && 'flex items-center justify-between gap-3', className)}
+      {...props}
+    >
+      <span className='min-w-0'>{children}</span>
+      {action}
+    </Alert>
   );
 }
 

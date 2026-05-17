@@ -1,9 +1,9 @@
-/**
- * Orders API — Order management
- */
-
 import { httpClient } from '@/services/api/httpClient';
-import { type OrderDetailDTO, type OrderCreatePayload, type OrderUpdatePayload } from '@/services/api/types/order.types';
+import type {
+  IOrderCreateRequest,
+  IOrderDetailResponse,
+  IOrderUpdateRequest,
+} from '@/services/api/types/order.types';
 
 type ProductionUpdatePayload = Record<string, unknown>;
 
@@ -18,32 +18,31 @@ type ProductionUpdatesBundleDTO = {
 };
 
 export const ordersApi = {
-  list: () => httpClient.get<OrderDetailDTO[]>('/orders'),
+  list: () => httpClient.get<IOrderDetailResponse[]>('/orders'),
 
-  get: (id: string | number) => httpClient.get<OrderDetailDTO>(`/orders/${id}`),
+  get: (id: string | number) => httpClient.get<IOrderDetailResponse>(`/orders/${id}`),
 
   create: (quoteId: string | number) =>
-    httpClient.post<OrderDetailDTO>('/orders', { quote_id: Number(quoteId) }),
+    httpClient.post<IOrderDetailResponse>('/orders', {
+      quote_id: Number(quoteId),
+    } satisfies IOrderCreateRequest),
 
-  update: (id: string | number, data: OrderUpdatePayload) =>
-    httpClient.patch<OrderDetailDTO>(`/orders/${id}`, data),
+  update: (id: string | number, data: IOrderUpdateRequest) =>
+    httpClient.patch<IOrderDetailResponse>(`/orders/${id}`, data),
 
   delete: (id: string | number) => httpClient.delete<void>(`/orders/${id}`),
 
-  /** Get orders for current user */
   getMyOrders: () =>
     httpClient.get<{
-      orders: OrderDetailDTO[];
+      orders: IOrderDetailResponse[];
       total: number;
     }>('/orders/me'),
 
-  /** Get order by quote ID */
   getByQuoteId: (quoteId: string | number) =>
-    httpClient.get<OrderDetailDTO | null>(`/orders/quote/${quoteId}`),
+    httpClient.get<IOrderDetailResponse | null>(`/orders/quote/${quoteId}`),
 
-  /** Accept a quote and create order (shorthand) */
   acceptQuote: (quoteId: string | number) =>
-    httpClient.post<OrderDetailDTO>(`/orders/accept-quote/${quoteId}`, {}),
+    httpClient.post<IOrderDetailResponse>(`/orders/accept-quote/${quoteId}`, {}),
 
   getProductionUpdatesBundle: (orderId: string | number) =>
     httpClient.get<ProductionUpdatesBundleDTO>(`/orders/${orderId}/production-updates`),

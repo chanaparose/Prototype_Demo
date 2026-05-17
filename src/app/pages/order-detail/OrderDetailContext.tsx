@@ -24,7 +24,7 @@ import {
   type NextAction,
   type PaymentScheduleItem,
 } from '@/pages/order-detail/orderDetailFromApi';
-import type { QuoteNestedDTO, RfqNestedDTO } from '@/types/api';
+import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 function unwrapOrderPayload(raw: unknown): Record<string, unknown> {
   if (!raw || typeof raw !== 'object') return {};
   const r = raw as Record<string, unknown>;
@@ -85,8 +85,8 @@ export type OrderDetailContextValue = {
   lockContextMerged: ProductionLockContext;
 
   rfqSummary: RfqSummaryInfo | null;
-  rfq: RfqNestedDTO | null;
-  quotation: QuoteNestedDTO | null;
+  rfq: IRfqNestedResponse | null;
+  quotation: IQuoteNestedResponse | null;
   refetchAll: () => Promise<void>;
 };
 
@@ -210,11 +210,11 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       rfqSummary: extractRfqSummary(row),
       rfq:
         row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
-          ? (row.rfq as RfqNestedDTO)
+          ? (row.rfq as IRfqNestedResponse)
           : null,
       quotation:
         row.quotation && typeof row.quotation === 'object' && !Array.isArray(row.quotation)
-          ? (row.quotation as QuoteNestedDTO)
+          ? (row.quotation as IQuoteNestedResponse)
           : null,
       refetchAll,
     };

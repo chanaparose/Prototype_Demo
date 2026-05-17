@@ -1,19 +1,17 @@
-/**
- * Auth API — Login, Register, Password Reset
- */
-
 import { httpClient } from '@/services/api/httpClient';
-import { type LoginPayload, type RegisterCustomerPayload, type RegisterFactoryPayload, type AuthResponse, type ForgotPasswordResponse } from '@/services/api/types/auth.types';
+import type {
+  IAuthResponse,
+  ILoginRequest,
+  IRegisterCustomerRequest,
+  IRegisterFactoryRequest,
+} from '@/services/api/types/auth.types';
 
-export const authApi = {
-  login: (payload: LoginPayload) => httpClient.post<AuthResponse>('/auth/login', payload),
+export function postLogin(request: ILoginRequest) {
+  return httpClient.post<IAuthResponse>('/auth/login', request);
+}
 
-  register: (payload: RegisterCustomerPayload | RegisterFactoryPayload) =>
-    httpClient.post<AuthResponse>('/auth/register', payload),
-
-  forgotPassword: (email: string) =>
-    httpClient.post<ForgotPasswordResponse>('/auth/forgot-password', { email }),
-
-  resetPassword: (token: string, new_password: string) =>
-    httpClient.post<void>('/auth/reset-password', { token, new_password }),
-};
+export function postRegister(
+  request: IRegisterCustomerRequest | IRegisterFactoryRequest,
+) {
+  return httpClient.post<IAuthResponse>('/auth/register', request);
+}

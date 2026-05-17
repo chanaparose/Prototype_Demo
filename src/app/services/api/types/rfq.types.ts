@@ -1,12 +1,8 @@
-/**
- * RFQ API Types
- */
-
 export type RfqStatus = 'OP' | 'CL' | 'CC';
 export type QuotationStatus = 'PD' | 'AC' | 'RJ';
 export type QuotationEventType = 'CR' | 'UP' | 'ST';
 
-export interface RfqListItem {
+export interface IRfqListItem {
   rfq_id: number;
   user_id: number;
   category_id: number;
@@ -35,11 +31,11 @@ export interface RfqListItem {
   inspection_type?: 'self' | 'third_party' | 'buyer_onsite';
 }
 
-export interface RfqDetailResponse {
-  rfq: RfqListItem;
+export interface IRfqDetailResponse {
+  rfq: IRfqListItem;
 }
 
-export interface RfqCreatePayload {
+export interface IRfqCreateRequest {
   category_id: number;
   sub_category_id?: number;
   title: string;
@@ -56,7 +52,7 @@ export interface RfqCreatePayload {
   inspection_type?: 'self' | 'third_party' | 'buyer_onsite';
 }
 
-export interface QuotationRow {
+export interface IQuotationResponse {
   quote_id: number;
   rfq_id: number;
   factory_id: number;
@@ -87,7 +83,7 @@ export interface QuotationRow {
   payment_terms?: string | null;
 }
 
-export type QuotationHistoryEntry = {
+export type IQuotationHistoryEntry = {
   history_id: number;
   quote_id: number;
   event_type: QuotationEventType;
@@ -102,8 +98,7 @@ export type QuotationHistoryEntry = {
   created_at: string;
 };
 
-/** Line item for quotation create / preview */
-export interface QuotationLineItem {
+export interface IQuotationLineItem {
   item_no?: number;
   description: string;
   qty: number;
@@ -112,9 +107,9 @@ export interface QuotationLineItem {
   discount_pct?: number;
 }
 
-export interface QuotationCreateInput {
+export interface IQuotationCreateRequest {
   rfq_id: number;
-  items: QuotationLineItem[];
+  items: IQuotationLineItem[];
   discount_amount?: number;
   shipping_cost?: number;
   packaging_cost?: number;
@@ -122,7 +117,7 @@ export interface QuotationCreateInput {
   validity_days?: number;
 }
 
-export interface QuotationBreakdown {
+export interface IQuotationBreakdown {
   subtotal: number;
   shipping_cost: number;
   packaging_cost: number;
@@ -134,8 +129,7 @@ export interface QuotationBreakdown {
   platform_commission_rate: number;
 }
 
-/** RFQ wizard create payload (superset of API body) */
-export interface RFQCreateInput {
+export interface IRfqWizardCreateInput {
   title: string;
   description?: string;
   category_id: number | string;

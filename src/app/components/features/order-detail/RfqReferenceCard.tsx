@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import type { RfqNestedDTO, QuoteNestedDTO } from '@/types/api';
+import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 
 interface Props {
-  rfq: RfqNestedDTO;
+  rfq: IRfqNestedResponse;
   variant?: 'accordion';
   defaultOpen?: boolean;
   /** Optional quotation details to show alongside the RFQ spec */
-  quotation?: QuoteNestedDTO | null;
+  quotation?: IQuoteNestedResponse | null;
 }
 
 export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) {
@@ -289,7 +289,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
             const q = {
               ...(quotation as unknown as Record<string, unknown>),
               ...(quotationDetail ?? {}),
-            } as QuoteNestedDTO & Record<string, unknown>;
+            } as IQuoteNestedResponse & Record<string, unknown>;
             const pricePerPiece = Number(q.price_per_piece ?? 0);
             const qty = Math.max(0, Number(data.quantity ?? rfq.quantity ?? 0) || 0);
             const subtotalRaw = Number(q.subtotal ?? 0);

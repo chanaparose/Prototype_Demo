@@ -1,11 +1,11 @@
 import React from 'react';
-import type { QuotationCreateInput } from '@/services/api/types/rfq.types';
+import type { IQuotationCreateRequest } from '@/services/api/types/rfq.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 type Props = {
-  items: QuotationCreateInput['items'];
-  onChange: (items: QuotationCreateInput['items']) => void;
+  items: IQuotationCreateRequest['items'];
+  onChange: (items: IQuotationCreateRequest['items']) => void;
 };
 
 export function LineItemTable({ items, onChange }: Props) {

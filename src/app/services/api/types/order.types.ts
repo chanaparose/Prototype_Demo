@@ -1,15 +1,11 @@
-/**
- * Order API Types
- */
-
 export type OrderStatus = 'PP' | 'PE' | 'PD' | 'PR' | 'QC' | 'SH' | 'CP' | 'CN';
 
-export interface RfqImageDTO {
+export interface IRfqImageResponse {
   image_id: string;
   image_url: string;
 }
 
-export interface RfqNestedDTO {
+export interface IRfqNestedResponse {
   rfq_id: number;
   title: string;
   details: string;
@@ -20,17 +16,17 @@ export interface RfqNestedDTO {
   category_name: string;
   deadline_date?: string | null;
   created_at: string;
-  images: RfqImageDTO[];
+  images: IRfqImageResponse[];
 }
 
-export interface QuoteNestedDTO {
+export interface IQuoteNestedResponse {
   quote_id: number;
   price_per_piece: number;
   mold_cost: number;
   lead_time_days: number;
 }
 
-export interface OrderDetailDTO {
+export interface IOrderDetailResponse {
   order_id: number;
   quote_id: number;
   user_id: number;
@@ -42,15 +38,15 @@ export interface OrderDetailDTO {
   estimated_delivery?: string | null;
   created_at: string;
   updated_at: string;
-  rfq?: RfqNestedDTO | null;
-  quotation?: QuoteNestedDTO | null;
+  rfq?: IRfqNestedResponse | null;
+  quotation?: IQuoteNestedResponse | null;
 }
 
-export interface OrderCreatePayload {
+export interface IOrderCreateRequest {
   quote_id: number;
 }
 
-export interface OrderUpdatePayload {
+export interface IOrderUpdateRequest {
   status?: OrderStatus;
   estimated_delivery?: string;
 }

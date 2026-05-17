@@ -1,0 +1,81 @@
+import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { frontendApi } from '@/services/api/exploreApi';
+import { useAuth } from '@/stores/useAuthStore';
+import type {
+  AuthLoginFormValues,
+  AuthRegisterFormValues,
+} from '@/domain/auth/schemas/authForm.schema';
+import { getErrorMessage } from '@/lib/apiError';
+
+async function navigateAfterAuth(navigate: ReturnType<typeof useNavigate>) {
+  try {
+    const me = (await frontendApi.getMe()) as Record<string, unknown>;
+    const role = String(me.role ?? '').toUpperCase();
+    navigate(role === 'FT' ? '/factory' : '/', { replace: true });
+  } catch {
+    navigate('/', { replace: true });
+  }
+}
+
+export function useLoginSubmission() {
+  const navigate = useNavigate();
+  const { login, register } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const submitLogin = useCallback(
+    async (values: AuthLoginFormValues): Promise<boolean> => {
+      setIsSubmitting(true);
+      setError('');
+      try {
+        await login(values);
+        await navigateAfterAuth(navigate);
+        return true;
+      } catch (err) {
+        console.error('[Login Error]', err);
+        setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'));
+        return false;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [login, navigate],
+  );
+
+  const submitRegister = useCallback(
+    async (values: AuthRegisterFormValues): Promise<boolean> => {
+      setIsSubmitting(true);
+      setError('');
+      try {
+        await register({
+          role: 'CT',
+          email: values.email,
+          phone: values.phone,
+          password: values.password,
+          first_name: values.first_name,
+          last_name: values.last_name,
+        });
+        await navigateAfterAuth(navigate);
+        return true;
+      } catch (err) {
+        console.error('[Register Error]', err);
+        setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'));
+        return false;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [register, navigate],
+  );
+
+  const clearError = useCallback(() => setError(''), []);
+
+  return {
+    submitLogin,
+    submitRegister,
+    isSubmitting,
+    error,
+    clearError,
+  };
+}

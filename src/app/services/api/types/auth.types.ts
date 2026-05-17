@@ -1,22 +1,18 @@
-/**
- * Auth API Types
- */
-
-export type LoginPayload = {
+export interface ILoginRequest {
   email: string;
   password: string;
-};
+}
 
-export type RegisterCustomerPayload = {
+export interface IRegisterCustomerRequest {
   role: 'CT';
   email: string;
   phone: string;
   password: string;
   first_name: string;
   last_name: string;
-};
+}
 
-export type RegisterFactoryPayload = {
+export interface IRegisterFactoryRequest {
   role: 'FT';
   email: string;
   phone: string;
@@ -24,16 +20,10 @@ export type RegisterFactoryPayload = {
   factory_name: string;
   factory_type_id: number;
   tax_id: string;
-};
+}
 
-export type AuthResponse = {
+export interface IAuthResponse {
   token: string;
   user: Record<string, unknown>;
-  /** Present when registering as factory (role FT). */
   factory?: Record<string, unknown>;
-};
-
-export type ForgotPasswordResponse = {
-  message: string;
-  reset_token?: string;
-};
+}

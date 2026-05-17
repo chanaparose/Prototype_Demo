@@ -23,6 +23,7 @@ import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 
@@ -196,10 +197,10 @@ export function DesktopSidebar() {
             </span>
           </div>
           <p className='text-base font-bold' style={{ color: '#0F172A' }}>
-            ฿{currentUser?.walletBalance.toLocaleString()}
+            {formatCurrencyNoDecimals(currentUser?.walletBalance ?? 0)}
           </p>
           <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-indigo)' }}>
-            รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
+            รอดำเนินการ {formatCurrencyNoDecimals(currentUser?.pendingBalance ?? 0)}
           </p>
         </Link>
       ) : isAuthenticated ? (
@@ -216,10 +217,10 @@ export function DesktopSidebar() {
             <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
           </div>
           <p className='text-base font-bold' style={{ color: 'var(--brand-navy-deep)' }}>
-            ฿{currentUser?.walletBalance.toLocaleString()}
+            {formatCurrencyNoDecimals(currentUser?.walletBalance ?? 0)}
           </p>
           <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-purple)' }}>
-            รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
+            รอดำเนินการ {formatCurrencyNoDecimals(currentUser?.pendingBalance ?? 0)}
           </p>
         </div>
       ) : (
