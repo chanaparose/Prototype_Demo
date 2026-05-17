@@ -1,5 +1,12 @@
 export type ExploreContentType = 'product' | 'promotion' | 'idea' | 'material';
 
+/** Domain model สำหรับหมวดหมู่บนหน้า Explore (camelCase หลัง map จาก API) */
+export type IExploreCategory = {
+  id: string;
+  name: string;
+  parentId?: string | null;
+};
+
 /** Domain model สำหรับการ์ด showcase บนหน้า Explore (camelCase หลัง map จาก API) */
 export type IExploreShowcase = {
   id: string;

@@ -3,8 +3,8 @@ import { Input } from '@/components/ui/input';
 import React from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
+import { mapAddressFromApi } from '@/domain/shared/mappers/mapAddressFromApi';
 import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
-import { pickScalarString } from '@/utils/pickScalarString';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';
@@ -36,18 +36,6 @@ type Props = {
   setDraft: (next: Partial<RFQDraft>) => void;
 };
 
-function mapAddress(r: Record<string, unknown>): Address {
-  return {
-    id: Number(r.address_id ?? r.id ?? 0),
-    addressDetail: pickScalarString(r.address_detail),
-    subDistrict: pickScalarString(r.sub_district_name, r.sub_district),
-    district: pickScalarString(r.district_name, r.district),
-    province: pickScalarString(r.province_name, r.province),
-    zipCode: pickScalarString(r.zip_code),
-    isDefault: Boolean(r.is_default ?? false),
-  };
-}
-
 const FALLBACK_SHIPPING: ShippingMethod[] = [
   { id: 1, name: 'ลูกค้ารับเองที่โรงงาน' },
   { id: 2, name: 'ขนส่งเอกชน' },
@@ -70,7 +58,9 @@ export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
     try {
       const raw = await addressesApi.list();
       const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-      const mapped = arr.map(mapAddress).filter((a) => a.id > 0);
+      const mapped = arr
+        .map(mapAddressFromApi)
+        .filter((a): a is Address => a != null);
       setAddresses(mapped);
       return mapped;
     } catch {

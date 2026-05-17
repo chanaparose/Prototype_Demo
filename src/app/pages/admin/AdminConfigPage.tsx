@@ -3,7 +3,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, CheckSquare, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
-import { adminConfigApi, type PlatformConfigItem, type UpdatePlatformConfigRequest } from '@/services/api/adminApi';
+import { adminConfigApi } from '@/services/api/adminApi';
+import type {
+  IPlatformConfigItemResponse,
+  IUpdatePlatformConfigRequest,
+} from '@/services/api/types/admin.types';
 import {
   adminDefaultCommissionSchema,
   adminGeneralConfigSchema,
@@ -62,7 +66,7 @@ const DEFAULT_REQUIREMENTS: VerificationRequirement[] = [
   { id: 'address', label: 'ต้องมีที่อยู่จดทะเบียน', enabled: true },
 ];
 
-function configLabel(cfg: PlatformConfigItem): string {
+function configLabel(cfg: IPlatformConfigItemResponse): string {
   if (cfg.label && cfg.label.trim()) return cfg.label;
   return `Commission ${cfg.default_commission_rate}% / VAT ${cfg.vat_rate}%`;
 }
@@ -119,7 +123,7 @@ export function AdminConfigPage() {
   const [savingGeneral, setSavingGeneral] = useState(false);
   const [savedGeneral, setSavedGeneral] = useState(false);
 
-  const [configs, setConfigs] = useState<PlatformConfigItem[]>([]);
+  const [configs, setConfigs] = useState<IPlatformConfigItemResponse[]>([]);
   const defaultCommissionForm = useForm<AdminDefaultCommissionFormValues>({
     resolver: zodResolver(adminDefaultCommissionSchema),
     defaultValues: { label: '', commission: '', vat: '' },
@@ -190,7 +194,7 @@ export function AdminConfigPage() {
     setSavingDefault(true);
     setError('');
     try {
-      const payload: UpdatePlatformConfigRequest = {
+      const payload: IUpdatePlatformConfigRequest = {
         label: values.label.trim(),
         default_commission_rate: Number(values.commission),
         vat_rate: Number(values.vat),

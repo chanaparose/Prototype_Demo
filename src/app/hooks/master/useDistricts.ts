@@ -1,21 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { masterKeys } from '@/lib/queryKeys';
+import { mapDistrictOption, type MasterAddressOption } from '@/domain/master/mappers/mapAddressMaster';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
 
-export interface DistrictOption {
-  id: number;
-  name: string;
-}
-
-function toOption(r: Row): DistrictOption | null {
-  const id = Number(r.district_id ?? r.row_id ?? r.id);
-  if (!Number.isFinite(id) || id <= 0) return null;
-  const name = String(r.district_name ?? r.name_th ?? r.name ?? r.name_en ?? '').trim();
-  if (!name) return null;
-  return { id, name };
-}
+export type DistrictOption = MasterAddressOption;
 
 export function useDistricts(provinceId: number | string | null | undefined) {
   const pid = Number(provinceId);
@@ -27,7 +17,7 @@ export function useDistricts(provinceId: number | string | null | undefined) {
       const raw = await masterApi.districts(pid);
       const arr = (Array.isArray(raw) ? raw : []) as Row[];
       return arr
-        .map(toOption)
+        .map(mapDistrictOption)
         .filter((x): x is DistrictOption => x != null)
         .sort((a, b) => a.name.localeCompare(b.name, 'th'));
     },

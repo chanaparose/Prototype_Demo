@@ -1,6 +1,10 @@
 import React, { useMemo } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  formatAddressLocation,
+  mapAddressFromApi,
+} from '@/domain/shared/mappers/mapAddressFromApi';
 
 type Row = Record<string, unknown>;
 
@@ -19,28 +23,14 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 function rowType(row: Row): 'M' | 'B' | 'S' {
-  const t = String(row.address_type ?? '').toUpperCase();
+  const t = mapAddressFromApi(row)?.addressType ?? '';
   if (t === 'B' || t === 'S') return t;
   return 'M';
 }
 
 function displayLocation(row: Row): string {
-  const province = String(row.province_name ?? '').trim();
-  const district = String(row.district_name ?? '').trim();
-  const subDistrict = String(row.sub_district_name ?? '').trim();
-  const zip = String(row.zip_code ?? '').trim();
-
-  // Bangkok uses แขวง/เขต; other provinces use ตำบล/อำเภอ
-  const isBangkok = /กรุงเทพ/.test(province);
-  const subDistrictLabel = isBangkok ? 'แขวง' : 'ตำบล';
-  const districtLabel = isBangkok ? 'เขต' : 'อำเภอ';
-
-  const parts: string[] = [];
-  if (subDistrict) parts.push(`${subDistrictLabel}${subDistrict}`);
-  if (district) parts.push(`${districtLabel}${district}`);
-  if (province) parts.push(`จ.${province}`);
-  if (zip) parts.push(zip);
-  return parts.length > 0 ? parts.join(' ') : '—';
+  const address = mapAddressFromApi(row);
+  return address ? formatAddressLocation(address) : '—';
 }
 
 export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefault }: Props) {
@@ -81,8 +71,9 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
             <p className='text-xs text-gray-400'>ไม่มีรายการ</p>
           ) : (
             grouped[type].map((row, idx) => {
-              const id = String(row.address_id ?? row.id ?? `${type}-${idx}`);
-              const isDefault = Boolean(row.is_default);
+              const address = mapAddressFromApi(row);
+              const id = String(address?.id ?? `${type}-${idx}`);
+              const isDefault = Boolean(address?.isDefault);
               return (
                 <div
                   key={id}
@@ -98,7 +89,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
                       ) : null}
                     </div>
                     <p className='text-sm text-gray-700 mt-1 whitespace-pre-line'>
-                      {String(row.address_detail ?? '—')}
+                      {address?.addressDetail || '—'}
                     </p>
                     <p className='text-xs text-gray-500 mt-1'>{displayLocation(row)}</p>
                   </div>

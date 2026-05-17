@@ -1,9 +1,9 @@
-import {
-  adminApi,
-  type AdminOrderRow,
-  type AdminRevenueChartResponse,
-  type AdminRfqRow,
-} from '@/services/api/adminApi';
+import { adminApi } from '@/services/api/adminApi';
+import type {
+  IAdminOrderListResponse,
+  IAdminRevenueChartResponse,
+  IAdminRfqListResponse,
+} from '@/services/api/types/admin.types';
 
 export type AdminChartRow = {
   month: string;
@@ -14,8 +14,8 @@ export type AdminChartRow = {
 export type AdminDashboardData = {
   summary: Record<string, unknown>;
   revenueRows: AdminChartRow[];
-  recentOrders: AdminOrderRow[];
-  recentRfqs: AdminRfqRow[];
+  recentOrders: IAdminOrderListResponse[];
+  recentRfqs: IAdminRfqListResponse[];
 };
 
 export const EMPTY_ADMIN_DASHBOARD: AdminDashboardData = {
@@ -48,7 +48,7 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
 
   const revenueObj =
     revenueRaw && typeof revenueRaw === 'object'
-      ? (revenueRaw as AdminRevenueChartResponse)
+      ? (revenueRaw as IAdminRevenueChartResponse)
       : null;
   const sourceRows =
     revenueObj && Array.isArray(revenueObj.data)
@@ -63,7 +63,7 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
   return {
     summary,
     revenueRows: revenueRows.slice(-6),
-    recentOrders: parseRows<AdminOrderRow>(ordersRaw).slice(0, 5),
-    recentRfqs: parseRows<AdminRfqRow>(rfqsRaw).slice(0, 5),
+    recentOrders: parseRows<IAdminOrderListResponse>(ordersRaw).slice(0, 5),
+    recentRfqs: parseRows<IAdminRfqListResponse>(rfqsRaw).slice(0, 5),
   };
 }

@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { adminCustomerApi, type AdminTopCustomer } from '@/services/api/adminApi';
+import { adminCustomerApi } from '@/services/api/adminApi';
+import type { IAdminTopCustomerResponse } from '@/services/api/types/admin.types';
 import { adminKeys } from '@/lib/queryKeys';
 
-export async function fetchAdminTopCustomers(limit = 5): Promise<AdminTopCustomer[]> {
+export async function fetchAdminTopCustomers(limit = 5): Promise<IAdminTopCustomerResponse[]> {
   const res = await adminCustomerApi.topCustomers(limit);
-  const data = res as unknown as { top_customers?: AdminTopCustomer[] };
+  const data = res as unknown as { top_customers?: IAdminTopCustomerResponse[] };
   return data.top_customers ?? [];
 }
 

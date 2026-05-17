@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Users, Search, AlertTriangle } from 'lucide-react';
-import { adminCustomerApi, type AdminCustomerListItem } from '@/services/api/adminApi';
+import { adminCustomerApi } from '@/services/api/adminApi';
+import type { IAdminCustomerListItemResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -44,7 +45,7 @@ export function AdminCustomersPage() {
   const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
   const [page, setPage] = useState(0);
 
-  const [customers, setCustomers] = useState<AdminCustomerListItem[]>([]);
+  const [customers, setCustomers] = useState<IAdminCustomerListItemResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,7 +64,7 @@ export function AdminCustomersPage() {
       .list({ search: debouncedSearch, is_active: isActive, limit: LIMIT, offset: page * LIMIT })
       .then((res) => {
         if (ac.signal.aborted) return;
-        const data = res as unknown as { customers: AdminCustomerListItem[]; total: number };
+        const data = res as unknown as { customers: IAdminCustomerListItemResponse[]; total: number };
         setCustomers(data.customers ?? []);
         setTotal(data.total ?? 0);
       })

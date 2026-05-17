@@ -1,21 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { masterKeys } from '@/lib/queryKeys';
+import { mapProvinceOption, type MasterAddressOption } from '@/domain/master/mappers/mapAddressMaster';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
 
-export interface ProvinceOption {
-  id: number;
-  name: string;
-}
-
-function toOption(r: Row): ProvinceOption | null {
-  const id = Number(r.province_id ?? r.row_id ?? r.id);
-  if (!Number.isFinite(id) || id <= 0) return null;
-  const name = String(r.province_name ?? r.name_th ?? r.name ?? r.name_en ?? '').trim();
-  if (!name) return null;
-  return { id, name };
-}
+export type ProvinceOption = MasterAddressOption;
 
 export function useProvinces() {
   return useQuery({
@@ -24,7 +14,7 @@ export function useProvinces() {
       const raw = await masterApi.provinces();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];
       return arr
-        .map(toOption)
+        .map(mapProvinceOption)
         .filter((x): x is ProvinceOption => x != null)
         .sort((a, b) => a.name.localeCompare(b.name, 'th'));
     },

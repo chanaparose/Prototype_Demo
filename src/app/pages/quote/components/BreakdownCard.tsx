@@ -1,12 +1,12 @@
 import React from 'react';
 import { MoneyText } from '@/shared/ui/MoneyText';
-import type { PlatformConfig } from '@/services/api/adminApi';
+import type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
 import type { IQuotationBreakdown } from '@/services/api/types/rfq.types';
 
 type Props = {
   loading: boolean;
   breakdown: IQuotationBreakdown | null;
-  platformConfig?: PlatformConfig | null;
+  platformConfig?: IPlatformConfigResponse | null;
 };
 
 function Row({ label, value, currency }: { label: string; value: number; currency: string }) {

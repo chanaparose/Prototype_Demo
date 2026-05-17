@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
+import { pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -82,16 +83,16 @@ function getRows(raw: unknown): Record<string, unknown>[] {
 function mapFactory(row: Record<string, unknown>): AdminFactory {
   const factoryId = Number(row.factory_id ?? row.id ?? 0);
   return {
-    id: String(factoryId || row.id || ''),
+    id: pickScalarString(factoryId || row.id),
     factory_id: factoryId,
-    factory_name: String(row.factory_name ?? row.name ?? '-'),
-    owner_name: String(row.owner_name ?? row.contact_name ?? row.full_name ?? '-'),
-    email: String(row.owner_email ?? row.email ?? '-'),
-    phone: String(row.owner_phone ?? row.phone ?? '-'),
-    registered_at: String(row.submitted_at ?? row.registered_at ?? row.created_at ?? ''),
+    factory_name: pickScalarString(row.factory_name, row.name, '-'),
+    owner_name: pickScalarString(row.owner_name, row.contact_name, row.full_name, '-'),
+    email: pickScalarString(row.owner_email, row.email, '-'),
+    phone: pickScalarString(row.owner_phone, row.phone, '-'),
+    registered_at: pickScalarString(row.submitted_at, row.registered_at, row.created_at),
     approval_status: toLocalStatus(row.approval_status),
-    business_type: String(row.business_type_name ?? row.business_type ?? '-'),
-    province: String(row.province_name ?? row.province ?? '-'),
+    business_type: pickScalarString(row.business_type_name, row.business_type, '-'),
+    province: pickScalarString(row.province_name, row.province, '-'),
     is_verified: Boolean(row.is_verified ?? false),
   };
 }

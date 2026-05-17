@@ -1,10 +1,9 @@
 import { categoriesApi, masterApi } from '@/services/api/masterApi';
+import { mapExploreCategoryFromApi } from '@/domain/explore/mappers/mapExploreCategory';
+import type { IExploreCategory } from '@/domain/explore/types/explore.model';
+import type { IExploreCategoryResponse } from '@/services/api/types/explore.types';
 
-export type ExploreCategoryItem = {
-  id: string;
-  name: string;
-  parentId?: string | null;
-};
+export type ExploreCategoryItem = IExploreCategory;
 
 export const TILE_DB_ID_TO_CONTEXT_ID: Record<string, string> = {
   '1': 'pet_food',
@@ -40,21 +39,8 @@ export function parseCategoriesResponse(raw: unknown): ExploreCategoryItem[] {
   const parsed: ExploreCategoryItem[] = [];
   for (const item of rows) {
     if (!item || typeof item !== 'object') continue;
-    const o = item as Record<string, unknown>;
-    const idRaw =
-      o.id ??
-      o.category_id ??
-      o.categoryId ??
-      o.lbi_category_id ??
-      o.product_category_id ??
-      o.lbi_product_category_id;
-    const nameRaw = o.name ?? o.name_th ?? o.name_en ?? o.category_name ?? o.title ?? o.label;
-    const id = idRaw != null ? String(idRaw).trim() : '';
-    const name = typeof nameRaw === 'string' ? nameRaw.trim() : String(nameRaw ?? '').trim();
-    if (!id || !name) continue;
-    const p = o.parent_id ?? o.parentId;
-    const parentId = p == null || p === '' ? null : String(p);
-    parsed.push({ id, name, parentId });
+    const mapped = mapExploreCategoryFromApi(item as IExploreCategoryResponse);
+    if (mapped) parsed.push(mapped);
   }
 
   const dedupe = new Map<string, ExploreCategoryItem>();

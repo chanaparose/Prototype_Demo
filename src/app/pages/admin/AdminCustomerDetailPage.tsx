@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
 import { ArrowLeft, User, AlertTriangle } from 'lucide-react';
-import { adminCustomerApi, type AdminCustomerDetail, type AdminCustomerWallet, type AdminWalletTxItem, type AdminCustomerOrderItem } from '@/services/api/adminApi';
+import { adminCustomerApi } from '@/services/api/adminApi';
+import type {
+  IAdminCustomerDetailResponse,
+  IAdminCustomerOrderItemResponse,
+  IAdminCustomerWalletResponse,
+  IAdminWalletTxItemResponse,
+} from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -91,7 +97,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CustomerInfoTab({ detail }: { detail: AdminCustomerDetail }) {
+function CustomerInfoTab({ detail }: { detail: IAdminCustomerDetailResponse }) {
   return (
     <div className='space-y-5'>
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
@@ -119,7 +125,7 @@ function CustomerInfoTab({ detail }: { detail: AdminCustomerDetail }) {
 }
 
 function CustomerWalletTab({ userId }: { userId: number }) {
-  const [wallet, setWallet] = useState<AdminCustomerWallet | null>(null);
+  const [wallet, setWallet] = useState<IAdminCustomerWalletResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -127,7 +133,7 @@ function CustomerWalletTab({ userId }: { userId: number }) {
     setLoading(true);
     adminCustomerApi
       .getWallet(userId)
-      .then((res) => setWallet(res as unknown as AdminCustomerWallet))
+      .then((res) => setWallet(res as unknown as IAdminCustomerWalletResponse))
       .catch((e) => setError(e instanceof Error ? e.message : 'โหลด wallet ไม่สำเร็จ'))
       .finally(() => setLoading(false));
   }, [userId]);
@@ -188,7 +194,7 @@ function CustomerWalletTab({ userId }: { userId: number }) {
                   </TableCell>
                 </TableRow>
               ) : (
-                wallet.transactions.map((tx: AdminWalletTxItem) => {
+                wallet.transactions.map((tx: IAdminWalletTxItemResponse) => {
                   const ttype = TX_TYPE[tx.type] ?? {
                     label: tx.type,
                     color: 'slate',
@@ -229,7 +235,7 @@ function CustomerWalletTab({ userId }: { userId: number }) {
 const ORDER_LIMIT = 10;
 
 function CustomerOrdersTab({ userId }: { userId: number }) {
-  const [orders, setOrders] = useState<AdminCustomerOrderItem[]>([]);
+  const [orders, setOrders] = useState<IAdminCustomerOrderItemResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -240,7 +246,7 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
     adminCustomerApi
       .getOrders(userId, { limit: ORDER_LIMIT, offset: page * ORDER_LIMIT })
       .then((res) => {
-        const data = res as unknown as { orders: AdminCustomerOrderItem[]; total: number };
+        const data = res as unknown as { orders: IAdminCustomerOrderItemResponse[]; total: number };
         setOrders(data.orders ?? []);
         setTotal(data.total ?? 0);
       })
@@ -375,7 +381,7 @@ export function AdminCustomerDetailPage() {
   const navigate = useNavigate();
   const userId = Number(id);
 
-  const [detail, setDetail] = useState<AdminCustomerDetail | null>(null);
+  const [detail, setDetail] = useState<IAdminCustomerDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tab, setTab] = useState<TabKey>('info');
@@ -385,7 +391,7 @@ export function AdminCustomerDetailPage() {
     setLoading(true);
     adminCustomerApi
       .getDetail(userId)
-      .then((res) => setDetail(res as unknown as AdminCustomerDetail))
+      .then((res) => setDetail(res as unknown as IAdminCustomerDetailResponse))
       .catch((e) => setError(e instanceof Error ? e.message : 'โหลดข้อมูลลูกค้าไม่สำเร็จ'))
       .finally(() => setLoading(false));
   }, [userId]);

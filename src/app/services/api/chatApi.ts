@@ -1,36 +1,37 @@
-/**
- * Chat & Messaging API — Conversations and messages
- */
-
 import { httpClient } from '@/services/api/httpClient';
-import { type MessageDTO, type MessageSendPayload, type ThreadResponse, type ConversationDTO } from '@/services/api/types/chat.types';
+import type {
+  IConversationResponse,
+  IMessageResponse,
+  IMessageSendRequest,
+  ThreadResponse,
+} from '@/services/api/types/chat.types';
 
 export const conversationsApi = {
-  list: () => httpClient.get<ConversationDTO[]>('/conversations'),
+  list: () => httpClient.get<IConversationResponse[]>('/conversations'),
 
-  get: (convId: string | number) => httpClient.get<ConversationDTO>(`/conversations/${convId}`),
+  get: (convId: string | number) => httpClient.get<IConversationResponse>(`/conversations/${convId}`),
 
   create: (data: { customer_id?: number; factory_id?: number; rfq_id?: number }) =>
-    httpClient.post<ConversationDTO>('/conversations', data),
+    httpClient.post<IConversationResponse>('/conversations', data),
 
   markAsRead: (convId: string | number) =>
     httpClient.post<void>(`/conversations/${convId}/mark-read`, {}),
 };
 
 export const messagesApi = {
-  send: (convId: string | number, payload: MessageSendPayload) =>
-    httpClient.post<MessageDTO>(`/conversations/${convId}/messages`, payload),
+  send: (convId: string | number, payload: IMessageSendRequest) =>
+    httpClient.post<IMessageResponse>(`/conversations/${convId}/messages`, payload),
 
   list: (convId: string | number, limit = 50, offset = 0) => {
     const params = new URLSearchParams({
       limit: String(limit),
       offset: String(offset),
     });
-    return httpClient.get<MessageDTO[]>(`/conversations/${convId}/messages?${params}`);
+    return httpClient.get<IMessageResponse[]>(`/conversations/${convId}/messages?${params}`);
   },
 
   get: (convId: string | number, msgId: string | number) =>
-    httpClient.get<MessageDTO>(`/conversations/${convId}/messages/${msgId}`),
+    httpClient.get<IMessageResponse>(`/conversations/${convId}/messages/${msgId}`),
 
   delete: (convId: string | number, msgId: string | number) =>
     httpClient.delete<void>(`/conversations/${convId}/messages/${msgId}`),

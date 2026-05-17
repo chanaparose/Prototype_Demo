@@ -1,8 +1,37 @@
 import type { Category, Factory } from '@/stores/types';
-import type { ExploreCategoryItem } from '@/utils/exploreCategoriesFromApi';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
+import type { IExploreCategory } from '@/domain/explore/types/explore.model';
+import type { IExploreCategoryResponse } from '@/services/api/types/explore.types';
+import { pickScalarString } from '@/utils/pickScalarString';
 
-export function mapStoreCategoryToExploreCategory(category: Category): ExploreCategoryItem {
+export function mapExploreCategoryFromApi(row: IExploreCategoryResponse): IExploreCategory | null {
+  const source = row as Record<string, unknown>;
+  const id = pickScalarString(
+    source.id,
+    source.category_id,
+    source.categoryId,
+    source.lbi_category_id,
+    source.product_category_id,
+    source.lbi_product_category_id,
+  );
+  const name = pickScalarString(
+    source.name,
+    source.name_th,
+    source.name_en,
+    source.category_name,
+    source.title,
+    source.label,
+  );
+  if (!id || !name) return null;
+  const parentId = pickScalarString(source.parent_id, source.parentId);
+  return {
+    id,
+    name,
+    parentId: parentId || null,
+  };
+}
+
+export function mapStoreCategoryToExploreCategory(category: Category): IExploreCategory {
   return {
     id: category.id,
     name: category.name,
@@ -10,7 +39,7 @@ export function mapStoreCategoryToExploreCategory(category: Category): ExploreCa
   };
 }
 
-export function mapStoreCategoriesToExplore(categories: Category[]): ExploreCategoryItem[] {
+export function mapStoreCategoriesToExplore(categories: Category[]): IExploreCategory[] {
   return categories.map(mapStoreCategoryToExploreCategory);
 }
 

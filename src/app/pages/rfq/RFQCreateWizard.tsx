@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { addressesApi, categoriesApi, masterApi } from '@/services/api/masterApi';
+import { formatAddressLabel, mapAddressFromApi } from '@/domain/shared/mappers/mapAddressFromApi';
 import { mapShippingMethodsToRecord } from '@/domain/master/mappers/mapShippingMethod';
 import { pickScalarString } from '@/utils/pickScalarString';
 import { rfqsApi } from '@/services/api/rfqApi';
@@ -91,7 +92,7 @@ export function RFQCreateWizard() {
         const mapped = arr
           .map((r) => ({
             id: Number(r.sub_category_id ?? r.id ?? 0),
-            name: String(r.sub_category_name ?? r.name ?? r.name_th ?? '').trim(),
+            name: pickScalarString(r.sub_category_name, r.name, r.name_th),
             sortOrder: Number(r.sort_order ?? r.sortOrder ?? NaN),
           }))
           .filter((s) => Number.isFinite(s.id) && s.id > 0 && s.name);
@@ -130,7 +131,7 @@ export function RFQCreateWizard() {
             const r = item as Record<string, unknown>;
             return {
               id: Number(r.category_id ?? r.id ?? 0),
-              name: String(r.category_name ?? r.name ?? r.name_th ?? '').trim(),
+              name: pickScalarString(r.category_name, r.name, r.name_th),
             };
           })
           .filter((c) => Number.isFinite(c.id) && c.id > 0 && c.name);
@@ -211,18 +212,9 @@ export function RFQCreateWizard() {
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         const mapped: Record<number, string> = {};
         for (const r of arr) {
-          const id = Number(r.address_id ?? r.id ?? 0);
-          if (!Number.isFinite(id) || id <= 0) continue;
-          const label = [
-            pickScalarString(r.address_detail),
-            pickScalarString(r.sub_district_name, r.sub_district),
-            pickScalarString(r.district_name, r.district),
-            pickScalarString(r.province_name, r.province),
-            pickScalarString(r.zip_code),
-          ]
-            .filter(Boolean)
-            .join(', ');
-          mapped[id] = label || `ที่อยู่ #${id}`;
+          const address = mapAddressFromApi(r);
+          if (!address) continue;
+          mapped[address.id] = formatAddressLabel(address) || `ที่อยู่ #${address.id}`;
         }
         setAddressMap(mapped);
       })

@@ -4,18 +4,10 @@ import type {
   IOrderDetailResponse,
   IOrderUpdateRequest,
 } from '@/services/api/types/order.types';
-
-type ProductionUpdatePayload = Record<string, unknown>;
-
-type ProductionUpdatesBundleDTO = {
-  order_id: number;
-  order_status: string;
-  updates: unknown[];
-  production_locked?: boolean;
-  lock_reason?: string;
-  lock_context?: unknown;
-  template_preview?: unknown[];
-};
+import type {
+  IProductionUpdateRequest,
+  IProductionUpdatesBundleResponse,
+} from '@/services/api/types/production.types';
 
 export const ordersApi = {
   list: () => httpClient.get<IOrderDetailResponse[]>('/orders'),
@@ -45,11 +37,11 @@ export const ordersApi = {
     httpClient.post<IOrderDetailResponse>(`/orders/accept-quote/${quoteId}`, {}),
 
   getProductionUpdatesBundle: (orderId: string | number) =>
-    httpClient.get<ProductionUpdatesBundleDTO>(`/orders/${orderId}/production-updates`),
+    httpClient.get<IProductionUpdatesBundleResponse>(`/orders/${orderId}/production-updates`),
 
   postProductionUpdate: (
     orderId: string | number,
-    data: ProductionUpdatePayload,
+    data: IProductionUpdateRequest,
     headers?: Record<string, string>,
   ) => httpClient.post<unknown>(`/orders/${orderId}/production-updates`, data, headers),
 };

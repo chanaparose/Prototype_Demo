@@ -51,6 +51,11 @@ export const exploreKeys = {
   pageData: () => [...exploreKeys.all, 'page-data'] as const,
 };
 
+export const chatKeys = {
+  all: ['chat'] as const,
+  conversations: () => [...chatKeys.all, 'conversations'] as const,
+};
+
 export const adminKeys = {
   all: ['admin'] as const,
   dashboard: () => [...adminKeys.all, 'dashboard'] as const,

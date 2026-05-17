@@ -8,9 +8,10 @@ import {
   Search,
   AlertTriangle,
 } from 'lucide-react';
-import { type AdminRfqRow } from '@/services/api/adminApi';
+import type { IAdminRfqListResponse } from '@/services/api/types/admin.types';
 import { formatIsoDate } from '@/utils/formatting/formatDate';
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
+import { pickScalarString } from '@/utils/pickScalarString';
 import {
   useAdminRfqDetailQuery,
   useAdminRfqListQuery,
@@ -50,7 +51,7 @@ function toApiStatus(tab: RfqStatusTab): string | undefined {
 }
 
 function toUiStatus(raw: string): 'open' | 'matched' | 'closed' {
-  const s = String(raw || '').toUpperCase();
+  const s = pickScalarString(raw).toUpperCase();
   if (s === 'CL' || s === 'CC') return 'closed';
   if (s === 'MT' || s === 'MATCHED') return 'matched';
   return 'open';
@@ -69,18 +70,18 @@ const STATUS_TABS: { key: RfqStatusTab; label: string }[] = [
   { key: 'closed', label: 'ปิด' },
 ];
 
-function mapRfq(row: AdminRfqRow): AdminRfqView {
+function mapRfq(row: IAdminRfqListResponse): AdminRfqView {
   return {
-    rfq_id: String(row.rfq_id),
-    buyer_name: String(row.customer_name ?? '-'),
+    rfq_id: pickScalarString(row.rfq_id),
+    buyer_name: pickScalarString(row.customer_name, '-'),
     factory_name: undefined,
     budget: Number(row.target_price ?? 0),
-    status: String(row.status ?? 'OP'),
-    created_at: String(row.created_at ?? ''),
-    title: String(row.title ?? '-'),
+    status: pickScalarString(row.status, 'OP'),
+    created_at: pickScalarString(row.created_at),
+    title: pickScalarString(row.title, '-'),
     quantity: Number(row.quantity ?? 0),
-    category: String(row.category_name ?? '-'),
-    sub_category: String(row.sub_category_name ?? '-'),
+    category: pickScalarString(row.category_name, '-'),
+    sub_category: pickScalarString(row.sub_category_name, '-'),
   };
 }
 

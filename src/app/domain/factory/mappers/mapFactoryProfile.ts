@@ -11,6 +11,7 @@ import { reviewsApi } from '@/services/api/userApi';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
+import { pickScalarString } from '@/utils/pickScalarString';
 
 export type FactorySubCategoryPair = { categoryLabel: string; subLabel: string };
 
@@ -33,7 +34,7 @@ export type FactoryProfileFallbacks = {
 function nameFromCatRow(row: unknown): string | null {
   if (!row || typeof row !== 'object') return null;
   const o = row as Record<string, unknown>;
-  const n = String(o.name ?? o.category_name ?? o.sub_category_name ?? '').trim();
+  const n = pickScalarString(o.name, o.category_name, o.sub_category_name);
   return n || null;
 }
 
@@ -53,26 +54,26 @@ function mapFactoryFromApi(
   fallback?: Factory | null,
 ): Factory {
   const b = fallback ?? undefined;
-  const ftn = String(row.factory_type_name ?? row.factoryTypeName ?? '').trim();
-  const coverImageUrl = pickFactoryCoverUrl(row) || String(b?.coverImageUrl ?? '').trim();
-  let image = String(row.image_url ?? row.image ?? row.logo_url ?? '').trim();
-  if (!image) image = String(b?.image ?? '').trim();
+  const ftn = pickScalarString(row.factory_type_name, row.factoryTypeName);
+  const coverImageUrl = pickFactoryCoverUrl(row) || pickScalarString(b?.coverImageUrl);
+  let image = pickScalarString(row.image_url, row.image, row.logo_url);
+  if (!image) image = pickScalarString(b?.image);
   if (!image && coverImageUrl) image = coverImageUrl;
   return {
-    id: String(row.id ?? row.factory_id ?? id),
-    name: String(row.name ?? row.factory_name ?? b?.name ?? ''),
-    location: String(row.location ?? row.province_name ?? row.city ?? b?.location ?? ''),
+    id: pickScalarString(row.id, row.factory_id, id),
+    name: pickScalarString(row.name, row.factory_name, b?.name),
+    location: pickScalarString(row.location, row.province_name, row.city, b?.location),
     rating: Number(row.avg_rating ?? row.rating ?? b?.rating ?? 0),
     reviews: Number(row.review_count ?? row.reviews ?? b?.reviews ?? 0),
-    specialization: String(row.specialization ?? row.description ?? b?.specialization ?? ''),
+    specialization: pickScalarString(row.specialization, row.description, b?.specialization),
     tags: Array.isArray(row.tags) ? row.tags.map(String) : (b?.tags ?? []),
     minOrder: Number(row.min_order ?? row.minOrder ?? b?.minOrder ?? 0),
-    leadTime: String(row.lead_time ?? row.leadTime ?? b?.leadTime ?? ''),
+    leadTime: pickScalarString(row.lead_time, row.leadTime, b?.leadTime),
     image,
     ...(coverImageUrl ? { coverImageUrl } : {}),
     verified: Boolean(row.is_verified ?? row.verified ?? b?.verified ?? false),
     completedOrders: Number(row.completed_orders ?? row.completedOrders ?? b?.completedOrders ?? 0),
-    priceRange: String(row.price_range ?? row.priceRange ?? b?.priceRange ?? ''),
+    priceRange: pickScalarString(row.price_range, row.priceRange, b?.priceRange),
     ...(ftn ? { factoryTypeName: ftn } : {}),
   };
 }
@@ -83,7 +84,7 @@ function mapProfileFromApi(
   fallback?: FactoryProfile | null,
 ): FactoryProfile {
   const b = fallback;
-  const addr = String(p.address ?? p.address_detail ?? b?.address ?? '');
+  const addr = pickScalarString(p.address, p.address_detail, b?.address);
   const types = Array.isArray(p.accepted_product_types)
     ? p.accepted_product_types.map(String)
     : Array.isArray(p.acceptedProductTypes)
@@ -93,7 +94,7 @@ function mapProfileFromApi(
     ? p.certificates.map(String)
     : (b?.certificates ?? []);
   return {
-    factoryId: String(p.factory_id ?? factoryId),
+    factoryId: pickScalarString(p.factory_id, factoryId),
     address: addr,
     acceptedProductTypes: types,
     certificates: certs,
@@ -104,32 +105,32 @@ function mapReviewFromApi(
   r: Record<string, unknown>,
   factoryId: string,
 ): FactoryReview | null {
-  const rid = String(r.id ?? r.review_id ?? '');
+  const rid = pickScalarString(r.id, r.review_id);
   if (!rid) return null;
   const userId = Number(r.user_id ?? r.userId ?? 0);
-  const firstName = String(r.first_name ?? r.firstName ?? '').trim();
-  const lastName = String(r.last_name ?? r.lastName ?? '').trim();
+  const firstName = pickScalarString(r.first_name, r.firstName);
+  const lastName = pickScalarString(r.last_name, r.lastName);
   const fullName = `${firstName} ${lastName}`.trim();
   const fallbackByUserId = Number.isFinite(userId) && userId > 0 ? `ผู้ใช้ #${userId}` : '';
-  const reviewer = String(
-    fullName ||
-      r.reviewer_name ||
-      r.reviewer ||
-      r.user_name ||
-      r.display_name ||
-      fallbackByUserId ||
-      'ลูกค้า',
-  ).trim();
+  const reviewer = pickScalarString(
+    fullName,
+    r.reviewer_name,
+    r.reviewer,
+    r.user_name,
+    r.display_name,
+    fallbackByUserId,
+    'ลูกค้า',
+  );
   const imageUrls = normalizeReviewImageUrls(r.image_urls);
   return {
     id: rid,
     factoryId,
     reviewer,
     rating: Number(r.rating ?? 0),
-    comment: String(r.comment ?? r.text ?? ''),
-    date: String(r.created_at ?? r.date ?? ''),
+    comment: pickScalarString(r.comment, r.text),
+    date: pickScalarString(r.created_at, r.date),
     helpfulCount: Number(r.helpful_count ?? r.useful_count ?? 0),
-    optionText: String(r.option_text ?? r.variant ?? r.sku_option ?? '').trim() || undefined,
+    optionText: pickScalarString(r.option_text, r.variant, r.sku_option) || undefined,
     ...(imageUrls.length > 0 ? { imageUrls } : {}),
   };
 }
@@ -138,7 +139,7 @@ export async function fetchAndMapFactoryProfile(
   factoryId: string,
   fallbacks: FactoryProfileFallbacks = {},
 ): Promise<FactoryProfileDetail> {
-  const fid = String(factoryId);
+  const fid = pickScalarString(factoryId);
   const fb = fallbacks.factory ?? null;
   const profFallback = fallbacks.profile ?? null;
 
@@ -186,15 +187,15 @@ export async function fetchAndMapFactoryProfile(
       if (!row || typeof row !== 'object') continue;
       const o = row as Record<string, unknown>;
       pushPair(
-        String(o.category_name ?? o.parent_category_name ?? ''),
-        String(o.sub_category_name ?? o.name ?? ''),
+        pickScalarString(o.category_name, o.parent_category_name),
+        pickScalarString(o.sub_category_name, o.name),
       );
     }
     for (const row of extractNestedArray(raw, rawF, 'sub_categories')) {
       if (!row || typeof row !== 'object') continue;
       const o = row as Record<string, unknown>;
-      const cat = String(o.category_name ?? o.parent_category_name ?? '').trim();
-      const sub = String(o.sub_category_name ?? o.name ?? '').trim();
+      const cat = pickScalarString(o.category_name, o.parent_category_name);
+      const sub = pickScalarString(o.sub_category_name, o.name);
       if (cat && sub) pushPair(cat, sub);
     }
 
@@ -258,7 +259,7 @@ export async function fetchAndMapFactoryProfile(
         .map((row) => mapShowcaseFromApi(row))
         .filter((s) => s.id && s.title)
         .map((s) => {
-          if (!s.factoryId) s.factoryId = String(factoryId);
+          if (!s.factoryId) s.factoryId = fid;
           return s;
         });
       if (fromApi.length > 0) showcases = fromApi;
@@ -311,6 +312,6 @@ export async function createFactoryConversation(
     customer_id: Number(customerId),
     factory_id: Number(factoryId),
   })) as Record<string, unknown>;
-  const id = String(res.conversation_id ?? res.id ?? '').trim();
+  const id = pickScalarString(res.conversation_id, res.id);
   return id || null;
 }

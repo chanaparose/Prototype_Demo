@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
-import { adminApi, type AdminOrderRow } from '@/services/api/adminApi';
+import { adminApi } from '@/services/api/adminApi';
+import type { IAdminOrderListResponse } from '@/services/api/types/admin.types';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,34 +47,34 @@ const STATUS_TABS: { key: OrderStatusTab; label: string; apiStatus?: string }[] 
 ];
 
 function inferTab(status: string): OrderStatusTab {
-  const s = String(status || '').toUpperCase();
+  const s = pickScalarString(status).toUpperCase();
   if (s === 'CM' || s === 'DONE' || s === 'COMPLETED') return 'completed';
   if (s === 'CL' || s === 'CANCELLED') return 'cancelled';
   if (s === 'OP' || s === 'PENDING' || s === 'PD') return 'pending';
   return 'processing';
 }
 
-function toRows(raw: unknown): AdminOrderRow[] {
-  if (Array.isArray(raw)) return raw as AdminOrderRow[];
+function toRows(raw: unknown): IAdminOrderListResponse[] {
+  if (Array.isArray(raw)) return raw as IAdminOrderListResponse[];
   if (raw && typeof raw === 'object') {
     const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as AdminOrderRow[];
-    if (Array.isArray(obj.data)) return obj.data as AdminOrderRow[];
-    if (Array.isArray(obj.rows)) return obj.rows as AdminOrderRow[];
+    if (Array.isArray(obj.items)) return obj.items as IAdminOrderListResponse[];
+    if (Array.isArray(obj.data)) return obj.data as IAdminOrderListResponse[];
+    if (Array.isArray(obj.rows)) return obj.rows as IAdminOrderListResponse[];
   }
   return [];
 }
 
-function mapOrder(row: AdminOrderRow): AdminOrderView {
+function mapOrder(row: IAdminOrderListResponse): AdminOrderView {
   return {
-    order_id: String(row.order_id),
-    buyer: String(row.customer_name ?? '-'),
-    factory: String(row.factory_name ?? '-'),
+    order_id: pickScalarString(row.order_id),
+    buyer: pickScalarString(row.customer_name, '-'),
+    factory: pickScalarString(row.factory_name, '-'),
     total_amount: Number(row.total_amount ?? 0),
     commission_amount: Number(row.platform_commission_amount ?? 0),
     vat_amount: Number(row.vat_amount ?? 0),
-    status: String(row.status ?? 'OP'),
-    created_at: String(row.created_at ?? ''),
+    status: pickScalarString(row.status, 'OP'),
+    created_at: pickScalarString(row.created_at),
   };
 }
 

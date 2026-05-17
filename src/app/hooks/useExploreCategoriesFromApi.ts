@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import type { ExploreCategoryItem } from '@/utils/exploreCategoriesFromApi';
+import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import { fetchExploreCategoriesListOnly } from '@/utils/exploreCategoriesFromApi';
 
 export type ExploreCategoriesApiState = {
-  merged: ExploreCategoryItem[];
+  merged: IExploreCategory[];
   loading: boolean;
   error: string | null;
   reload: () => void;
@@ -13,7 +13,7 @@ type Options = { enabled?: boolean };
 
 export function useExploreCategoriesFromApi(options?: Options): ExploreCategoriesApiState {
   const enabled = options?.enabled !== false;
-  const [merged, setMerged] = useState<ExploreCategoryItem[]>([]);
+  const [merged, setMerged] = useState<IExploreCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

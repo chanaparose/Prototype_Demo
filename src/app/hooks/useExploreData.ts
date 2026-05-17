@@ -5,15 +5,15 @@ import {
   mapStoreFactoriesToExplore,
 } from '@/domain/explore/mappers/mapExploreCategory';
 import { exploreShowcaseToArticle } from '@/domain/explore/mappers/mapExploreShowcase';
-import type { IExploreShowcase } from '@/domain/explore/types/explore.model';
+import type { IExploreCategory, IExploreShowcase } from '@/domain/explore/types/explore.model';
 import { useExplorePageDataQuery } from '@/domain/explore/queries/useExplorePageDataQuery';
 import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi';
-import { mergeCategoryLists, type ExploreCategoryItem } from '@/utils/exploreCategoriesFromApi';
+import { mergeCategoryLists } from '@/utils/exploreCategoriesFromApi';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 
 type UseExploreDataOptions = { enablePageApis?: boolean };
 
-export type { IExploreShowcase, IExploreArticle, IExploreSlide } from '@/domain/explore/types/explore.model';
+export type { IExploreCategory, IExploreShowcase, IExploreArticle, IExploreSlide } from '@/domain/explore/types/explore.model';
 
 export function useExploreData(options?: UseExploreDataOptions) {
   const { categories, factories, isLoading: dataLoading } = useData();
@@ -32,7 +32,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
   const exploreQ = useExplorePageDataQuery(enablePageApis);
   const exploreData = exploreQ.data;
 
-  const exploreBootstrapCategories = useMemo<ExploreCategoryItem[]>(
+  const exploreBootstrapCategories = useMemo<IExploreCategory[]>(
     () => mapStoreCategoriesToExplore(categories),
     [categories],
   );

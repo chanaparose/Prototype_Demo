@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { adminApi, type AdminRfqRow } from '@/services/api/adminApi';
+import { adminApi } from '@/services/api/adminApi';
+import type { IAdminRfqListResponse } from '@/services/api/types/admin.types';
 import { adminKeys } from '@/lib/queryKeys';
 
-export function parseAdminRfqRows(raw: unknown): AdminRfqRow[] {
-  if (Array.isArray(raw)) return raw as AdminRfqRow[];
+export function parseAdminRfqRows(raw: unknown): IAdminRfqListResponse[] {
+  if (Array.isArray(raw)) return raw as IAdminRfqListResponse[];
   if (raw && typeof raw === 'object') {
     const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as AdminRfqRow[];
-    if (Array.isArray(obj.data)) return obj.data as AdminRfqRow[];
-    if (Array.isArray(obj.rows)) return obj.rows as AdminRfqRow[];
+    if (Array.isArray(obj.items)) return obj.items as IAdminRfqListResponse[];
+    if (Array.isArray(obj.data)) return obj.data as IAdminRfqListResponse[];
+    if (Array.isArray(obj.rows)) return obj.rows as IAdminRfqListResponse[];
   }
   return [];
 }

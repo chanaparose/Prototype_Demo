@@ -1,5 +1,6 @@
 import React from 'react';
-import { platformConfigApi, type PlatformConfig } from '@/services/api/adminApi';
+import { platformConfigApi } from '@/services/api/adminApi';
+import type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,7 @@ type FormState = {
   vat_rate: number;
 };
 
-function fromConfig(c: PlatformConfig): FormState {
+function fromConfig(c: IPlatformConfigResponse): FormState {
   return {
     default_commission_rate: c.default_commission_rate,
     promo_enabled: c.promo_commission_rate != null,
@@ -28,8 +29,8 @@ function fromConfig(c: PlatformConfig): FormState {
 }
 
 export function CommissionConfig() {
-  const [active, setActive] = React.useState<PlatformConfig | null>(null);
-  const [history, setHistory] = React.useState<PlatformConfig[]>([]);
+  const [active, setActive] = React.useState<IPlatformConfigResponse | null>(null);
+  const [history, setHistory] = React.useState<IPlatformConfigResponse[]>([]);
   const [form, setForm] = React.useState<FormState | null>(null);
   const [saving, setSaving] = React.useState(false);
 

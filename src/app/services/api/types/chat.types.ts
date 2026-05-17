@@ -1,15 +1,11 @@
-/**
- * Chat & Messaging API Types
- */
-
-export interface CustomerPartyInfoDTO {
+export interface ICustomerPartyInfoResponse {
   user_id: number;
   first_name: string;
   last_name: string;
   display_name: string;
 }
 
-export interface FactoryPartyInfoDTO {
+export interface IFactoryPartyInfoResponse {
   user_id: number;
   factory_name: string;
   image_url: string;
@@ -17,7 +13,7 @@ export interface FactoryPartyInfoDTO {
   specialization: string;
 }
 
-export interface ConversationDTO {
+export interface IConversationResponse {
   conv_id: number;
   customer_id: number;
   factory_id: number;
@@ -26,13 +22,13 @@ export interface ConversationDTO {
   unread_factory: number;
   has_quote: boolean;
   updated_at: string;
-  customer: CustomerPartyInfoDTO;
-  factory: FactoryPartyInfoDTO;
+  customer: ICustomerPartyInfoResponse;
+  factory: IFactoryPartyInfoResponse;
   viewer_role?: 'CT' | 'FT';
   counterparty_user_id?: number;
 }
 
-export interface MessageDTO {
+export interface IMessageResponse {
   msg_id: number;
   conv_id: number;
   sender_id: number;
@@ -48,7 +44,7 @@ export interface MessageDTO {
   }>;
 }
 
-export interface MessageSendPayload {
+export interface IMessageSendRequest {
   body: string;
   rfq_id?: number;
   quote_id?: number;
@@ -60,6 +56,12 @@ export interface ThreadResponse {
   customer_id: number;
   factory_id: number;
   subject: string;
-  messages: MessageDTO[];
+  messages: IMessageResponse[];
   created_at: string;
 }
+
+export type CustomerPartyInfoDTO = ICustomerPartyInfoResponse;
+export type FactoryPartyInfoDTO = IFactoryPartyInfoResponse;
+export type ConversationDTO = IConversationResponse;
+export type MessageDTO = IMessageResponse;
+export type MessageSendPayload = IMessageSendRequest;

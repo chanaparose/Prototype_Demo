@@ -1,17 +1,16 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
-import type { ExploreCategoryItem } from '@/utils/exploreCategoriesFromApi';
+import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import { exploreDisplayNameForTile } from '@/utils/exploreCategoriesFromApi';
 import { EXPLORE_CATEGORY_TILES } from '@/components/features/explore/exploreCategoryTilesConfig';
 import { Button } from '@/components/ui/button';
 
-export type CategoryItem = ExploreCategoryItem;
+export type CategoryItem = IExploreCategory;
 
 type ExploreCategoriesProps = {
   /** สำรองชื่อจาก bundle (เช่น mock-data) ถ้า API ยังไม่มี id นั้น */
   categories?: CategoryItem[];
-  /** จาก GET /categories เท่านั้น (โหลดที่ useExploreData → useExploreCategoriesFromApi) */
   mergedFromApi: CategoryItem[];
   apiLoading: boolean;
   apiError: string | null;
@@ -24,7 +23,7 @@ export function ExploreCategories({
   apiLoading,
   apiError,
   onRetryCategoriesApi,
-}: ExploreCategoriesProps) {
+}: Readonly<ExploreCategoriesProps>) {
   const tiles = useMemo(
     () =>
       EXPLORE_CATEGORY_TILES.map((cfg) => ({

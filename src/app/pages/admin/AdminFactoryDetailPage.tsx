@@ -14,7 +14,12 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
-import { adminApi, adminConfigApi, adminFactoryConfigApi, adminSettlementApi, type AdminSettlementListItem, type FactoryConfigResponse, type PlatformConfigItem } from '@/services/api/adminApi';
+import { adminApi, adminConfigApi, adminFactoryConfigApi, adminSettlementApi } from '@/services/api/adminApi';
+import type {
+  IAdminSettlementListItemResponse,
+  IFactoryConfigResponse,
+  IPlatformConfigItemResponse,
+} from '@/services/api/types/admin.types';
 import type { FactoryApprovalStatus } from '@/pages/admin/AdminFactoriesPage';
 import { Button } from '@/components/ui/button';
 import {
@@ -195,8 +200,8 @@ export function AdminFactoryDetailPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'info' | 'config' | 'settlements'>('info');
 
-  const [configList, setConfigList] = useState<PlatformConfigItem[]>([]);
-  const [currentConfig, setCurrentConfig] = useState<FactoryConfigResponse | null>(null);
+  const [configList, setConfigList] = useState<IPlatformConfigItemResponse[]>([]);
+  const [currentConfig, setCurrentConfig] = useState<IFactoryConfigResponse | null>(null);
   /** ค่า '' = ยังไม่โหลด / ยังไม่เลือก; 0 = reset กลับ default ตาม BE (`config_id: 0`) */
   const [selectedConfigId, setSelectedConfigId] = useState<number | ''>('');
   const [configNote, setConfigNote] = useState('');
@@ -722,7 +727,7 @@ const SETTLEMENT_STATUS: Record<string, { label: string; cls: string }> = {
 const SETTLE_LIMIT = 20;
 
 function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
-  const [settlements, setSettlements] = useState<AdminSettlementListItem[]>([]);
+  const [settlements, setSettlements] = useState<IAdminSettlementListItemResponse[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -734,7 +739,7 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
     adminSettlementApi
       .listByFactory(factoryId, { limit: SETTLE_LIMIT, offset: page * SETTLE_LIMIT })
       .then((res) => {
-        const data = res as unknown as { settlements: AdminSettlementListItem[]; total: number };
+        const data = res as unknown as { settlements: IAdminSettlementListItemResponse[]; total: number };
         setSettlements(data.settlements ?? []);
         setTotal(data.total ?? 0);
       })

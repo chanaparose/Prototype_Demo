@@ -19,11 +19,11 @@ function Row({
   icon,
   label,
   value,
-}: {
+}: Readonly<{
   icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
-}) {
+}>) {
   return (
     <div className='flex items-center justify-between gap-3 py-2'>
       <span className='inline-flex items-center gap-2 text-[12px]' style={{ color: LABEL_COLOR }}>
@@ -39,7 +39,7 @@ function Row({
   );
 }
 
-export function StrictSpecsBlock({ showcase }: Props) {
+export function StrictSpecsBlock({ showcase }: Readonly<Props>) {
   const moq =
     showcase.moq != null && showcase.moq > 0 ? `${formatCompactNumber(showcase.moq)} ชิ้น` : '—';
   const lead =
