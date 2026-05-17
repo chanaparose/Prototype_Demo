@@ -334,12 +334,17 @@ export function FactoryDashboardPage() {
   const lineChartHeight = isDesktop ? 280 : 220;
   const barChartHeight = isDesktop ? 260 : 220;
   const barXAxisProps = isDesktop
-    ? { angle: -25 as const, textAnchor: 'end' as const, height: 56, tick: { fontSize: 10 } }
+    ? {
+        angle: -25 as const,
+        textAnchor: 'end' as const,
+        height: 56,
+        tick: { fontSize: 10, fill: SLATE },
+      }
     : {
         angle: 0 as const,
         textAnchor: 'middle' as const,
         height: 36,
-        tick: { fontSize: 9 },
+        tick: { fontSize: 9, fill: SLATE },
         interval: 'preserveStartEnd' as const,
       };
 
@@ -571,7 +576,6 @@ export function FactoryDashboardPage() {
                 <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
                 <XAxis
                   dataKey='label'
-                  tick={{ fill: SLATE }}
                   interval={0}
                   {...barXAxisProps}
                   axisLine={false}
@@ -791,7 +795,6 @@ export function FactoryDashboardPage() {
               <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
               <XAxis
                 dataKey='label'
-                tick={{ fill: SLATE }}
                 interval={0}
                 {...barXAxisProps}
                 axisLine={false}

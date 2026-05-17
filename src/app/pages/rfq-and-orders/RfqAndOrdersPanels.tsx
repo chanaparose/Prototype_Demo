@@ -23,13 +23,10 @@ import {
   PLUM,
   PLUM_SOFT_BG,
   DEEP_PURPLE,
-  ACCENT_ORANGE_BG,
   ACCENT_ORANGE_DEEP,
   ACCENT_ORANGE,
   PEACH_MIST,
   BORDER_WARM,
-  MOBILE_PRIMARY_TAB_BAR,
-  CTA_GRADIENT,
   RFQ_STATUS_DISPLAY,
   ORDER_STATUS_CONFIG,
   ORDER_MOBILE_TAB_THEME,
@@ -128,22 +125,14 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
         </div>
 
         {totalOffers === 0 ? (
-          /* ยังไม่มีโรงงานตอบ */
-          <div
-            className='flex items-center gap-2 py-2 px-3 rounded-xl mb-3'
-            style={{ background: 'var(--neutral-warm-surface)' }}
-          >
+          <div className='mb-3 flex items-center gap-2 rounded-xl bg-[var(--neutral-warm-surface)] px-3 py-2'>
             <Factory size={13} className='text-gray-300 shrink-0' />
             <span className='text-xs text-gray-400'>ยังไม่มีโรงงานตอบรับ</span>
           </div>
         ) : (
-          /* มีโรงงานตอบแล้ว */
           <div className='mb-3'>
             <div className='flex items-center gap-2 mb-2 flex-wrap'>
-              <span
-                className='inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold'
-                style={{ background: '#EDE9FB', color: PLUM }}
-              >
+              <span className='inline-flex items-center gap-1.5 rounded-full bg-[#EDE9FB] px-2.5 py-1 text-xs font-bold text-[var(--brand-violet-deep)]'>
                 <Factory size={11} />
                 {totalOffers} โรงงานตอบแล้ว
               </span>
@@ -161,10 +150,7 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           </div>
         )}
 
-        <div
-          className='flex items-center justify-between pt-2 border-t text-xs'
-          style={{ borderColor: BORDER_WARM }}
-        >
+        <div className='flex items-center justify-between border-t border-[rgba(196,164,132,0.4)] pt-2 text-xs'>
           <div className='flex items-center gap-3 text-gray-500'>
             <span className='flex items-center gap-1'>
               <FileText size={11} className='text-gray-300' />
@@ -195,15 +181,9 @@ function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
 
   return (
     <Link to={`/rfqs/${rfq.id}`} className='block group'>
-      <div
-        className='flex items-center justify-between py-3 px-3 rounded-xl border bg-white/80 hover:bg-white transition-all'
-        style={{ borderColor: BORDER_WARM }}
-      >
+      <div className='flex items-center justify-between rounded-xl border border-[rgba(196,164,132,0.4)] bg-white/80 px-3 py-3 transition-all hover:bg-white'>
         <div className='flex items-center gap-2.5 min-w-0 flex-1'>
-          <div
-            className='w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm'
-            style={{ background: 'var(--neutral-muted)' }}
-          >
+          <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--neutral-muted)] text-sm'>
             {rfq.categoryIcon ?? <FileText size={14} className='text-gray-400' />}
           </div>
           <div className='min-w-0'>
@@ -267,32 +247,22 @@ export function RfqPanel({
         <Button
           variant='unstyled'
           onClick={() => navigate('/create-rfq')}
-          className='fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30'
-          style={{ background: CTA_GRADIENT, boxShadow: '0 6px 20px rgba(162,56,255,0.35)' }}
+          className='fixed bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#1A0F2E_0%,#4A267D_45%,var(--brand-purple)_100%)] shadow-[0_6px_20px_rgba(162,56,255,0.35)] transition-transform active:scale-95'
         >
           <Plus size={24} className='text-white' />
         </Button>
       )}
 
       <div
-        className={`flex items-center justify-between mb-3 ${isDesktop ? 'min-h-[56px] rounded-xl border px-3 py-2' : ''}`}
-        style={isDesktop ? { borderColor: BORDER_WARM, background: '#F9F8FC' } : undefined}
+        className={`mb-3 flex items-center justify-between ${isDesktop ? 'min-h-[56px] rounded-xl border border-[rgba(196,164,132,0.4)] bg-[#F9F8FC] px-3 py-2' : ''}`}
       >
         <div className='flex items-center gap-2 flex-wrap'>
-          <h3 className='text-sm font-bold' style={{ color: DEEP_PURPLE }}>
-            กำลังดำเนินการ
-          </h3>
-          <span
-            className='text-[10px] px-2 py-0.5 rounded-full font-bold'
-            style={{ background: PRIMARY_BG, color: PRIMARY_COLOR }}
-          >
+          <h3 className='text-sm font-bold text-[var(--brand-navy-deep)]'>กำลังดำเนินการ</h3>
+          <span className='rounded-full bg-[var(--brand-lavender)] px-2 py-0.5 text-[10px] font-bold text-[var(--brand-purple)]'>
             {activeRfqs.length}
           </span>
           {totalPendingReview > 0 && (
-            <span
-              className='flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold'
-              style={{ background: PEACH_MIST, color: ACCENT_ORANGE_DEEP }}
-            >
+            <span className='flex items-center gap-1 rounded-full bg-[var(--surface-peach-mist)] px-2 py-0.5 text-[10px] font-bold text-[var(--brand-orange-vivid)]'>
               <AlertCircle size={9} />
               {totalPendingReview} รอตอบ
             </span>
@@ -301,15 +271,9 @@ export function RfqPanel({
       </div>
 
       {activeRfqs.length === 0 ? (
-        <div
-          className='flex flex-col items-center justify-center py-12 text-center rounded-2xl border mb-4'
-          style={{ borderColor: BORDER_WARM, background: '#FDFCFF' }}
-        >
-          <div
-            className='w-14 h-14 rounded-2xl flex items-center justify-center mb-3'
-            style={{ background: PRIMARY_BG }}
-          >
-            <FileText size={24} style={{ color: PRIMARY_COLOR }} />
+        <div className='mb-4 flex flex-col items-center justify-center rounded-2xl border border-[rgba(196,164,132,0.4)] bg-[#FDFCFF] py-12 text-center'>
+          <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)]'>
+            <FileText size={24} className='text-[var(--brand-purple)]' />
           </div>
           <p className='text-gray-700 font-semibold text-sm mb-1'>
             ยังไม่มีคำขอราคาที่ดำเนินการอยู่
@@ -317,8 +281,7 @@ export function RfqPanel({
           <p className='text-xs text-gray-400 mb-4'>สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน</p>
           <Link
             to='/create-rfq'
-            className='py-2 px-5 rounded-xl text-white font-bold text-sm shadow-md'
-            style={{ background: CTA_GRADIENT }}
+            className='rounded-xl bg-[linear-gradient(135deg,#1A0F2E_0%,#4A267D_45%,var(--brand-purple)_100%)] px-5 py-2 text-sm font-bold text-white shadow-md'
           >
             สร้างคำขอราคา
           </Link>
@@ -344,19 +307,17 @@ export function RfqPanel({
             }}
           >
             <span className='flex items-center gap-2'>
-              <History size={14} style={{ color: PLUM }} />
+              <History size={14} className='text-[var(--brand-violet-deep)]' />
               ประวัติใบขอราคา
-              <span
-                className='text-[10px] px-1.5 py-0.5 rounded-full font-bold'
-                style={{ background: PLUM_SOFT_BG, color: PLUM }}
-              >
+              <span className='rounded-full bg-[var(--brand-violet-soft)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--brand-violet-deep)]'>
                 {historyRfqs.length}
               </span>
             </span>
             <ChevronDown
               size={16}
-              className='transition-transform duration-200'
-              style={{ transform: historyOpen ? 'rotate(180deg)' : 'rotate(0deg)', color: PLUM }}
+              className={`text-[var(--brand-violet-deep)] transition-transform duration-200 ${
+                historyOpen ? 'rotate-180' : ''
+              }`}
             />
           </Button>
 
@@ -410,14 +371,9 @@ export function OrderPanel({
         <Button
           variant='unstyled'
           onClick={() => setOrderFilter('pending_payment')}
-          className='w-full flex items-center gap-2 px-3 py-2.5 rounded-xl mb-3 text-left border'
-          style={{
-            background: 'var(--surface-orange-pale)',
-            borderColor: ACCENT_ORANGE,
-            color: ACCENT_ORANGE_DEEP,
-          }}
+          className='mb-3 flex w-full items-center gap-2 rounded-xl border border-[var(--brand-orange)] bg-[var(--surface-orange-pale)] px-3 py-2.5 text-left text-[var(--brand-orange-vivid)]'
         >
-          <AlertTriangle size={14} style={{ color: ACCENT_ORANGE, flexShrink: 0 }} />
+          <AlertTriangle size={14} className='shrink-0 text-[var(--brand-orange)]' />
           <span className='text-xs font-semibold flex-1'>
             มี {orderTagCounts.pendingPayment} คำสั่งซื้อรอชำระมัดจำ
           </span>
@@ -425,10 +381,7 @@ export function OrderPanel({
         </Button>
       )}
 
-      <div
-        className='grid grid-cols-5 rounded-xl px-1 py-[5px] border gap-0.5 w-full mb-3'
-        style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
-      >
+      <div className='mb-3 grid w-full grid-cols-5 gap-0.5 rounded-xl border border-[rgba(196,164,132,0.4)] bg-[linear-gradient(135deg,var(--brand-lavender)_0%,var(--surface-cream-warm)_48%,var(--surface-cream-orange)_100%)] px-1 py-[5px]'>
         {ORDER_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = orderFilter === tab.id;
@@ -441,11 +394,9 @@ export function OrderPanel({
               variant='unstyled'
               key={tab.id}
               onClick={() => setOrderFilter(tab.id)}
-              className='relative flex flex-col items-center gap-0.5 py-0.5 rounded-lg transition-all'
-              style={{
-                background: isActive ? 'rgba(255,255,255,0.9)' : 'transparent',
-                boxShadow: isActive ? '0 1px 6px rgba(0,0,0,0.08)' : 'none',
-              }}
+              className={`relative flex flex-col items-center gap-0.5 rounded-lg py-0.5 transition-all ${
+                isActive ? 'bg-white/90 shadow-[0_1px_6px_rgba(0,0,0,0.08)]' : ''
+              }`}
             >
               <div
                 className='w-7 h-7 rounded-full flex items-center justify-center'
@@ -485,15 +436,9 @@ export function OrderPanel({
       </div>
 
       {filteredOrders.length === 0 ? (
-        <div
-          className='flex flex-col items-center justify-center py-12 text-center rounded-2xl border min-h-[258px]'
-          style={{ borderColor: BORDER_WARM, background: 'var(--surface-orange-wash)' }}
-        >
-          <div
-            className='w-14 h-14 rounded-2xl flex items-center justify-center mb-3'
-            style={{ background: ACCENT_ORANGE_BG }}
-          >
-            <Package size={24} style={{ color: ACCENT_ORANGE_DEEP }} />
+        <div className='flex min-h-[258px] flex-col items-center justify-center rounded-2xl border border-[rgba(196,164,132,0.4)] bg-[var(--surface-orange-wash)] py-12 text-center'>
+          <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-peach)]'>
+            <Package size={24} className='text-[var(--brand-orange-vivid)]' />
           </div>
           <p className='text-gray-700 font-semibold text-sm mb-1'>ยังไม่มีคำสั่งซื้อ</p>
           <p className='text-xs text-gray-400 max-w-[200px]'>
@@ -573,10 +518,7 @@ export function OrderPanel({
                     </span>
                   </div>
                   {isPendingPayment ? (
-                    <span
-                      className='flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-bold text-white'
-                      style={{ background: ACCENT_ORANGE_DEEP }}
-                    >
+                    <span className='flex items-center gap-1 rounded-lg bg-[var(--brand-orange-vivid)] px-3 py-1 text-[11px] font-bold text-white'>
                       <Banknote size={12} />
                       ชำระเงิน
                     </span>

@@ -72,10 +72,7 @@ export function ProductDetailDesktop() {
 
   if (loading) {
     return (
-      <div
-        className='hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex'
-        style={{ background: BRAND.purpleSoft }}
-      >
+      <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-[#F5F3FF] lg:flex'>
         <span
           className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
           aria-hidden
@@ -86,16 +83,12 @@ export function ProductDetailDesktop() {
 
   if (!item || !resolvedId) {
     return (
-      <div
-        className='hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]'
-        style={{ background: BRAND.purpleSoft }}
-      >
+      <div className='hidden min-h-[calc(100vh-4rem)] bg-[#F5F3FF] px-8 pb-20 pt-8 lg:block'>
         <Button
           variant='unstyled'
           type='button'
           onClick={handleBack}
-          className='mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium'
-          style={{ color: BRAND.purple }}
+          className='mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--brand-purple)]'
         >
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
@@ -142,18 +135,14 @@ export function ProductDetailDesktop() {
   }
 
   return (
-    <div
-      className='hidden lg:block min-h-[calc(100vh-4rem)]'
-      style={{ background: 'var(--brand-panel)' }}
-    >
+    <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block'>
       <div className='px-8 pt-5 pb-3'>
         <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
           <Button
             variant='unstyled'
             type='button'
             onClick={handleBack}
-            className='inline-flex items-center gap-1 font-medium hover:opacity-80'
-            style={{ color: BRAND.purple }}
+            className='inline-flex items-center gap-1 font-medium text-[var(--brand-purple)] hover:opacity-80'
           >
             <ArrowLeft className='w-3.5 h-3.5' /> กลับ
           </Button>
@@ -166,9 +155,7 @@ export function ProductDetailDesktop() {
             </>
           ) : null}
           <Chevron className='w-3 h-3 text-gray-300' />
-          <span className='truncate max-w-[32rem]' style={{ color: BRAND.ink }}>
-            {item.title}
-          </span>
+          <span className='max-w-[32rem] truncate text-[var(--brand-ink)]'>{item.title}</span>
         </div>
       </div>
 
@@ -224,17 +211,11 @@ export function ProductDetailDesktop() {
             <div className='flex-1 min-w-0'>
               <div className='flex flex-wrap items-center gap-2 mb-2'>
                 {factory?.verified ? (
-                  <span
-                    className='inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-bold text-white'
-                    style={{ background: BRAND.orange }}
-                  >
+                  <span className='inline-flex items-center gap-1 rounded-sm bg-[var(--brand-orange)] px-2 py-0.5 text-[10px] font-bold text-white'>
                     <BadgeCheck className='w-3 h-3' /> Preferred
                   </span>
                 ) : null}
-                <span
-                  className='inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-semibold'
-                  style={{ background: BRAND.purpleSoft, color: BRAND.purple }}
-                >
+                <span className='inline-flex items-center rounded-sm bg-[#F5F3FF] px-2 py-0.5 text-[10px] font-semibold text-[var(--brand-purple)]'>
                   {isIdea ? 'ไอเดีย / บทความ' : isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                 </span>
                 {item.category ? (
@@ -247,19 +228,16 @@ export function ProductDetailDesktop() {
                 ) : null}
               </div>
 
-              <h1 className='text-[20px] leading-snug font-medium' style={{ color: BRAND.ink }}>
+              <h1 className='text-[20px] font-medium leading-snug text-[var(--brand-ink)]'>
                 {item.title}
               </h1>
 
               <div className='flex items-center gap-4 py-3 mt-1 border-b border-gray-100 text-[13px] text-gray-500'>
                 <span className='inline-flex items-center gap-1'>
-                  <span
-                    className='border-b'
-                    style={{ color: BRAND.orange, borderColor: BRAND.orange }}
-                  >
+                  <span className='border-b border-[var(--brand-orange)] text-[var(--brand-orange)]'>
                     {avgRating.toFixed(1)}
                   </span>
-                  <Star className='w-3.5 h-3.5 fill-current' style={{ color: BRAND.orange }} />
+                  <Star className='w-3.5 h-3.5 fill-current text-[var(--brand-orange)]' />
                 </span>
                 <span className='h-3 w-px bg-gray-200' />
                 <span>
@@ -275,16 +253,10 @@ export function ProductDetailDesktop() {
                 <span>เผยแพร่ {formatThaiDate(item.postedAt)}</span>
               </div>
 
-              <div
-                className='mt-4 px-4 py-4 rounded-xl border'
-                style={{ background: 'var(--surface-paper-warm)', borderColor: '#F8DEC1' }}
-              >
+              <div className='mt-4 rounded-xl border border-[#F8DEC1] bg-[var(--surface-paper-warm)] px-4 py-4'>
                 {priceText ? (
                   <div className='flex items-baseline gap-2'>
-                    <p
-                      className='text-[26px] font-bold leading-none'
-                      style={{ color: 'var(--brand-violet)' }}
-                    >
+                    <p className='text-[26px] font-bold leading-none text-[var(--brand-violet)]'>
                       {priceText}
                     </p>
                     {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
@@ -294,10 +266,7 @@ export function ProductDetailDesktop() {
                     ) : null}
                   </div>
                 ) : (
-                  <p
-                    className='text-[20px] font-semibold leading-none'
-                    style={{ color: 'var(--brand-violet)' }}
-                  >
+                  <p className='text-[20px] font-semibold leading-none text-[var(--brand-violet)]'>
                     สอบถามราคากับโรงงาน
                   </p>
                 )}
@@ -308,7 +277,7 @@ export function ProductDetailDesktop() {
 
               <div className='mt-5 grid grid-cols-[120px_1fr] gap-y-3 gap-x-4 text-[13px]'>
                 <span className='text-gray-400'>ขั้นต่ำผลิต</span>
-                <span style={{ color: BRAND.ink }}>
+                <span className='text-[var(--brand-ink)]'>
                   <span className='font-semibold'>{item.minOrder}</span>{' '}
                   <span className='text-gray-500'>ชิ้น (MOQ)</span>
                 </span>
@@ -316,14 +285,14 @@ export function ProductDetailDesktop() {
                 {item.leadTime ? (
                   <>
                     <span className='text-gray-400'>ระยะเวลาผลิต</span>
-                    <span style={{ color: BRAND.ink }}>{item.leadTime}</span>
+                    <span className='text-[var(--brand-ink)]'>{item.leadTime}</span>
                   </>
                 ) : null}
 
                 {factory?.location ? (
                   <>
                     <span className='text-gray-400'>สถานที่ผลิต</span>
-                    <span className='inline-flex items-center gap-1' style={{ color: BRAND.ink }}>
+                    <span className='inline-flex items-center gap-1 text-[var(--brand-ink)]'>
                       <MapPin className='w-3.5 h-3.5 text-gray-400' /> {factory.location}
                     </span>
                   </>
@@ -337,8 +306,7 @@ export function ProductDetailDesktop() {
                     {item.tags.map((tag) => (
                       <span
                         key={tag}
-                        className='inline-flex items-center px-2 py-1 rounded-sm text-[11px] font-medium cursor-pointer transition-colors hover:opacity-80'
-                        style={{ background: BRAND.purpleSoft, color: BRAND.purple }}
+                        className='inline-flex cursor-pointer items-center rounded-sm bg-[#F5F3FF] px-2 py-1 text-[11px] font-medium text-[var(--brand-purple)] transition-colors hover:opacity-80'
                       >
                         {tag}
                       </span>
@@ -354,12 +322,7 @@ export function ProductDetailDesktop() {
                     type='button'
                     onClick={handleStartChat}
                     disabled={starting}
-                    className='flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 rounded-md text-[14px] font-semibold transition-colors disabled:opacity-70'
-                    style={{
-                      background: BRAND.orangeSoft,
-                      color: BRAND.orangeDark,
-                      border: `1px solid ${BRAND.orange}`,
-                    }}
+                    className='inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-5 text-[14px] font-semibold text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
                   >
                     {starting ? (
                       <span
@@ -376,8 +339,7 @@ export function ProductDetailDesktop() {
                   variant='unstyled'
                   type='button'
                   onClick={() => navigate(`/factories/${item.factoryId}`)}
-                  className='flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 rounded-md text-[14px] font-bold text-white transition-opacity hover:opacity-90'
-                  style={{ background: BRAND.orange }}
+                  className='inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md bg-[var(--brand-orange)] px-5 text-[14px] font-bold text-white transition-opacity hover:opacity-90'
                 >
                   <Store className='w-4 h-4' />
                   ดูโปรไฟล์โรงงาน
@@ -414,11 +376,11 @@ export function ProductDetailDesktop() {
               </div>
               <div className='min-w-0'>
                 <div className='flex items-center gap-1.5'>
-                  <p className='text-[15px] font-semibold truncate' style={{ color: BRAND.ink }}>
+                  <p className='truncate text-[15px] font-semibold text-[var(--brand-ink)]'>
                     {item.factoryName}
                   </p>
                   {factory?.verified ? (
-                    <BadgeCheck className='w-4 h-4 shrink-0' style={{ color: BRAND.purple }} />
+                    <BadgeCheck className='w-4 h-4 shrink-0 text-[var(--brand-purple)]' />
                   ) : null}
                 </div>
                 <p className='text-[12px] text-gray-500 truncate mt-0.5'>
@@ -431,12 +393,7 @@ export function ProductDetailDesktop() {
                       type='button'
                       onClick={handleStartChat}
                       disabled={starting}
-                      className='inline-flex items-center gap-1.5 px-3.5 h-9 rounded-sm text-[13px] font-medium transition-colors disabled:opacity-70'
-                      style={{
-                        background: BRAND.orangeSoft,
-                        color: BRAND.orangeDark,
-                        border: `1px solid ${BRAND.orange}`,
-                      }}
+                      className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-3.5 text-[13px] font-medium text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
                     >
                       <MessageCircle className='w-3.5 h-3.5' /> แชท
                     </Button>
@@ -445,8 +402,7 @@ export function ProductDetailDesktop() {
                     variant='unstyled'
                     type='button'
                     onClick={() => navigate(`/factories/${item.factoryId}`)}
-                    className='inline-flex items-center gap-1.5 px-3.5 h-9 rounded-sm text-[13px] font-medium transition-colors hover:opacity-80'
-                    style={{ border: `1px solid ${BRAND.border}`, color: 'var(--neutral-text)' }}
+                    className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#E7E2F0] px-3.5 text-[13px] font-medium text-[var(--neutral-text)] transition-colors hover:opacity-80'
                   >
                     <Store className='w-3.5 h-3.5' /> ดูโรงงาน
                   </Button>
@@ -459,37 +415,33 @@ export function ProductDetailDesktop() {
             <div className='grid grid-cols-3 gap-6 text-[13px] flex-1'>
               <div>
                 <p className='text-gray-400 mb-1'>เรตติ้งเฉลี่ย</p>
-                <p className='font-semibold' style={{ color: BRAND.orange }}>
+                <p className='font-semibold text-[var(--brand-orange)]'>
                   {avgRating.toFixed(1)} <span className='text-[11px] text-gray-400'>/ 5.0</span>
                 </p>
               </div>
               <div>
                 <p className='text-gray-400 mb-1'>รีวิวทั้งหมด</p>
-                <p className='font-semibold' style={{ color: BRAND.orange }}>
-                  {reviewCount}
-                </p>
+                <p className='font-semibold text-[var(--brand-orange)]'>{reviewCount}</p>
               </div>
               <div>
                 <p className='text-gray-400 mb-1'>ออเดอร์ที่เสร็จแล้ว</p>
-                <p className='font-semibold' style={{ color: BRAND.orange }}>
+                <p className='font-semibold text-[var(--brand-orange)]'>
                   {factory?.completedOrders ?? 0}
                 </p>
               </div>
               <div>
                 <p className='text-gray-400 mb-1'>ที่ตั้ง</p>
-                <p className='font-semibold' style={{ color: BRAND.ink }}>
-                  {factory?.location ?? '-'}
-                </p>
+                <p className='font-semibold text-[var(--brand-ink)]'>{factory?.location ?? '-'}</p>
               </div>
               <div>
                 <p className='text-gray-400 mb-1'>MOQ เริ่มต้น</p>
-                <p className='font-semibold' style={{ color: BRAND.ink }}>
+                <p className='font-semibold text-[var(--brand-ink)]'>
                   {factory?.minOrder ?? item.minOrder}
                 </p>
               </div>
               <div>
                 <p className='text-gray-400 mb-1'>Lead time</p>
-                <p className='font-semibold' style={{ color: BRAND.ink }}>
+                <p className='font-semibold text-[var(--brand-ink)]'>
                   {factory?.leadTime || item.leadTime || '-'}
                 </p>
               </div>
@@ -498,13 +450,8 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div
-            className='px-6 py-3 border-b'
-            style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}
-          >
-            <p className='text-[14px] font-bold' style={{ color: BRAND.ink }}>
-              ข้อมูลจำเพาะของสินค้า
-            </p>
+          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
+            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>ข้อมูลจำเพาะของสินค้า</p>
           </div>
           <div className='p-6'>
             <StrictSpecsBlock
@@ -519,15 +466,12 @@ export function ProductDetailDesktop() {
                 {specRows.map((row, idx) => (
                   <TableRow
                     key={`${row.label}-${idx}`}
-                    className='border-b last:border-0'
-                    style={{ borderColor: BRAND.border }}
+                    className='border-b border-[#E7E2F0] last:border-0'
                   >
                     <TableCell className='py-2.5 pr-6 w-48 text-gray-500 align-top'>
                       {row.label}
                     </TableCell>
-                    <TableCell className='py-2.5' style={{ color: BRAND.ink }}>
-                      {row.value}
-                    </TableCell>
+                    <TableCell className='py-2.5 text-[var(--brand-ink)]'>{row.value}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -536,13 +480,8 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div
-            className='px-6 py-3 border-b'
-            style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}
-          >
-            <p className='text-[14px] font-bold' style={{ color: BRAND.ink }}>
-              รายละเอียดสินค้า
-            </p>
+          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
+            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>รายละเอียดสินค้า</p>
           </div>
           <div className='p-6'>
             {markdown ? (
@@ -559,18 +498,13 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div
-            className='px-6 py-3 border-b'
-            style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}
-          >
-            <p className='text-[14px] font-bold' style={{ color: BRAND.ink }}>
-              คะแนนรีวิว
-            </p>
+          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
+            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>คะแนนรีวิว</p>
           </div>
           <div className='p-6'>
             <div className='flex items-center gap-8'>
               <div>
-                <p className='text-[34px] leading-none font-bold' style={{ color: BRAND.orange }}>
+                <p className='text-[34px] font-bold leading-none text-[var(--brand-orange)]'>
                   {avgRating.toFixed(1)}
                 </p>
                 <p className='text-[12px] text-gray-500 mt-1'>จาก {reviewCount} รีวิว</p>
@@ -595,7 +529,7 @@ export function ProductDetailDesktop() {
               </div>
             </div>
             <div className='mt-5 border-t border-gray-100 pt-4 space-y-3'>
-              <p className='text-[13px] font-semibold' style={{ color: BRAND.ink }}>
+              <p className='text-[13px] font-semibold text-[var(--brand-ink)]'>
                 รีวิวล่าสุดจากลูกค้า
               </p>
               {latestReviews.length === 0 ? (
@@ -621,14 +555,9 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        <div
-          className='rounded-2xl p-5 flex items-center justify-between shadow-sm'
-          style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
-        >
+        <div className='flex items-center justify-between rounded-2xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] p-5 shadow-sm'>
           <div className='min-w-0'>
-            <p className='text-[13px]' style={{ color: '#EBD3FF' }}>
-              สนใจผลิตกับโรงงานนี้?
-            </p>
+            <p className='text-[13px] text-[#EBD3FF]'>สนใจผลิตกับโรงงานนี้?</p>
             <p className='text-[16px] font-bold text-white mt-0.5 truncate'>
               แชทสอบถามรายละเอียด พร้อมขอใบเสนอราคาได้ทันที
             </p>
@@ -640,8 +569,7 @@ export function ProductDetailDesktop() {
                 type='button'
                 onClick={handleStartChat}
                 disabled={starting}
-                className='inline-flex items-center gap-2 px-5 h-11 rounded-md text-[13px] font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:opacity-70'
-                style={{ background: BRAND.orange }}
+                className='inline-flex h-11 items-center gap-2 rounded-md bg-[var(--brand-orange)] px-5 text-[13px] font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:opacity-70'
               >
                 {starting ? (
                   <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
@@ -655,8 +583,7 @@ export function ProductDetailDesktop() {
               variant='unstyled'
               type='button'
               onClick={() => navigate(`/factories/${item.factoryId}`)}
-              className='inline-flex items-center gap-2 px-5 h-11 rounded-md text-[13px] font-semibold text-white transition-colors hover:bg-white/10'
-              style={{ border: '1px solid rgba(255,255,255,0.45)' }}
+              className='inline-flex h-11 items-center gap-2 rounded-md border border-white/45 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-white/10'
             >
               <ArrowUpRight className='w-4 h-4' /> ดูโปรไฟล์โรงงาน
             </Button>
@@ -664,13 +591,8 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div
-            className='px-6 py-3 border-b'
-            style={{ background: BRAND.purpleSoft, borderColor: BRAND.border }}
-          >
-            <p className='text-[14px] font-bold' style={{ color: BRAND.ink }}>
-              สินค้าที่ใกล้เคียง
-            </p>
+          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
+            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>สินค้าที่ใกล้เคียง</p>
           </div>
           {relatedProducts.length > 0 ? (
             <div className='p-6 grid grid-cols-4 gap-3'>
@@ -698,8 +620,9 @@ export function ProductDetailDesktop() {
                         className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                       />
                       <span
-                        className='absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                        style={{ backgroundColor: isPromo ? BRAND.orange : '#2563EB' }}
+                        className={`absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold text-white ${
+                          isPromo ? 'bg-[var(--brand-orange)]' : 'bg-[#2563EB]'
+                        }`}
                       >
                         {isPromo ? 'โปรโมชัน' : 'สินค้า'}
                       </span>
