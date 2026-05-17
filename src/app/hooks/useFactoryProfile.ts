@@ -17,6 +17,7 @@ import {
   showcasesApi,
 } from '@/services/api';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
+import { useApiCall } from '@/hooks/data/useApiCall';
 import { normShowcase } from '@/hooks/useShowcases';
 import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
 
@@ -119,29 +120,21 @@ type ApiDetailState =
     }
   | { status: 'error' };
 
+type FactoryProfileDetailOk = Extract<ApiDetailState, { status: 'ok' }>;
+
 export function useFactoryProfile() {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = React.useState<TabId>('products');
   const [startingConversation, setStartingConversation] = React.useState(false);
   const data = useData();
-  const [api, setApi] = React.useState<ApiDetailState>({ status: 'loading' });
 
-  const factoriesRef = React.useRef(data.factories);
-  const profilesRef = React.useRef(data.factoryProfiles);
-  factoriesRef.current = data.factories;
-  profilesRef.current = data.factoryProfiles;
-
-  React.useEffect(() => {
-    if (!id) {
-      setApi({ status: 'error' });
-      return;
-    }
-    setApi({ status: 'loading' });
-    let cancelled = false;
+  const { data: apiDetail, loading: detailLoading } = useApiCall(
+    async (): Promise<FactoryProfileDetailOk> => {
+      if (!id) throw new Error('missing factory id');
 
     const fid = String(id);
-    const fb = factoriesRef.current.find((f) => String(f.id) === fid);
-    const profFallback = profilesRef.current.find((p) => String(p.factoryId) === fid);
+    const fb = data.factories.find((f) => String(f.id) === fid);
+    const profFallback = data.factoryProfiles.find((p) => String(p.factoryId) === fid);
 
     const nameFromCatRow = (row: unknown): string | null => {
       if (!row || typeof row !== 'object') return null;
@@ -160,14 +153,11 @@ export function useFactoryProfile() {
       return [];
     };
 
-    (async () => {
       const [factRes, frontRes, summaryRes] = await Promise.allSettled([
         factoriesApi.get(fid),
         frontendApi.getFactory(id),
         reviewsApi.summaryByFactory(fid),
       ]);
-
-      if (cancelled) return;
 
       let factory: Factory | null = null;
       let factoryCategoryNames: string[] = [];
@@ -303,8 +293,7 @@ export function useFactoryProfile() {
       }
 
       if (!factory) {
-        if (!cancelled) setApi({ status: 'error' });
-        return;
+        throw new Error('factory not found');
       }
 
       if (summaryRes.status === 'fulfilled' && summaryRes.value) {
@@ -315,27 +304,29 @@ export function useFactoryProfile() {
         if (Number.isFinite(count) && count >= 0) factory.reviews = count;
       }
 
-      if (!cancelled) {
-        setApi({
-          status: 'ok',
-          factory,
-          profile,
-          reviews,
-          showcases,
-          factoryCategoryNames,
-          factorySubCategoryNames,
-          factorySubCategoryPairs,
-          apiCertificates,
-        });
-      }
-    })().catch(() => {
-      if (!cancelled) setApi({ status: 'error' });
-    });
+      return {
+        status: 'ok' as const,
+        factory,
+        profile,
+        reviews,
+        showcases,
+        factoryCategoryNames,
+        factorySubCategoryNames,
+        factorySubCategoryPairs,
+        apiCertificates,
+      };
+    },
+    [id, data.factories, data.factoryProfiles],
+    { enabled: Boolean(id) },
+  );
 
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
+  const api: ApiDetailState = !id
+    ? { status: 'error' }
+    : detailLoading
+      ? { status: 'loading' }
+      : apiDetail
+        ? apiDetail
+        : { status: 'error' };
 
   const contextFactory = React.useMemo(
     () => data.factories.find((f) => String(f.id) === String(id)),
@@ -359,7 +350,7 @@ export function useFactoryProfile() {
   const apiCertificates = api.status === 'ok' ? api.apiCertificates : [];
 
   const conversation = data.conversations.find((c) => String(c.factoryId) === String(id));
-  const detailLoading = api.status === 'loading';
+  const pageDetailLoading = api.status === 'loading';
 
   const productItems = React.useMemo(
     () => factoryShowcases.filter((item) => item.contentType === 'product'),
@@ -390,7 +381,7 @@ export function useFactoryProfile() {
     return { showcaseIdeas, ideas };
   }, [factoryShowcases]);
 
-  const showcasesLoading = detailLoading;
+  const showcasesLoading = pageDetailLoading;
 
   const startConversation = React.useCallback(
     async (customerId: number | string): Promise<string | null> => {
@@ -425,7 +416,7 @@ export function useFactoryProfile() {
     articleItems,
     reviews,
     showcasesLoading,
-    detailLoading,
+    detailLoading: pageDetailLoading,
     startConversation,
     startingConversation,
     factoryCategoryNames,

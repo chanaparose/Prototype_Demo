@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { profileApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,11 +54,7 @@ export function ChangePasswordPage() {
         </Button>
         <p className='text-sm font-bold text-slate-900'>เปลี่ยนรหัสผ่าน</p>
       </div>
-      {error ? (
-        <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2'>
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorAlert size='sm'>{error}</ErrorAlert> : null}
 
       <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3'>
         {[

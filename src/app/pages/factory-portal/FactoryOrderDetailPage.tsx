@@ -34,6 +34,7 @@ import { deriveStepStates } from '@/components/features/production/stepDerivedSt
 import { getStepGuide } from '@/components/features/production/stepGuideConfig';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { StatusBadge } from '@/shared/ui';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 
@@ -449,9 +450,7 @@ export function FactoryOrderDetailPage() {
       </div>
 
       <div className='w-full max-w-7xl mx-auto'>
-        {error ? (
-          <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4'>{error}</p>
-        ) : null}
+        {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
 
         {loading && !order.status ? (
           <div className='flex justify-center py-16'>

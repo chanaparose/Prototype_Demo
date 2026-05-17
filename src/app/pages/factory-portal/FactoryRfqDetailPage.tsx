@@ -17,6 +17,7 @@ import { buildSendPayload, chatRoomPath, getCurrentUserId } from '@/utils/chatCo
 import type { ApiConversation } from '@/utils/chatContract';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import {
@@ -491,9 +492,7 @@ export function FactoryRfqDetailPage() {
           </div>
         ) : null}
 
-        {error ? (
-          <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 mb-4'>{error}</p>
-        ) : null}
+        {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
 
         {!loading ? (
           <div className='space-y-4'>

@@ -15,6 +15,7 @@ import { FactoryOrderCard } from '@/pages/factory-portal/factory-orders/componen
 import { FactoryOrdersEmptyState } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersEmptyState';
 import { FactoryOrdersFilterBar } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersFilterBar';
 import { FactoryOrdersKpiStrip } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersKpiStrip';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -115,20 +116,20 @@ export function FactoryOrdersPage() {
 
       <div className='space-y-4'>
         {isError ? (
-          <div
-            role='alert'
-            className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-2xl px-4 py-3 flex items-center justify-between gap-3'
+          <ErrorAlert
+            action={
+              <Button
+                variant='unstyled'
+                type='button'
+                className='px-3 py-1.5 rounded-xl bg-white border border-red-200 text-red-700 text-xs font-semibold'
+                onClick={() => void refetch()}
+              >
+                ลองใหม่
+              </Button>
+            }
           >
-            <span>{error instanceof Error ? error.message : 'โหลดออเดอร์ไม่สำเร็จ'}</span>
-            <Button
-              variant='unstyled'
-              type='button'
-              className='px-3 py-1.5 rounded-xl bg-white border border-red-200 text-red-700 text-xs font-semibold'
-              onClick={() => void refetch()}
-            >
-              ลองใหม่
-            </Button>
-          </div>
+            {error instanceof Error ? error.message : 'โหลดออเดอร์ไม่สำเร็จ'}
+          </ErrorAlert>
         ) : null}
 
         <FactoryOrdersKpiStrip

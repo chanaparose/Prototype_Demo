@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, Download } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useModal } from '@/hooks/ui/useModal';
 import { useFactoryCerts } from '@/hooks/factory/useFactoryCerts';
 import { useMasterCerts, type CertTypeOption } from '@/hooks/master/useMasterCerts';
 import { certificatesApi, mediaApi } from '@/services/api';
@@ -44,15 +45,14 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
   const { data: certs = [] } = useFactoryCerts(factoryId);
   const { data: masterCertTypes = [] } = useMasterCerts();
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const modal = useModal();
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editing, setEditing] = useState<Row | null>(null);
-  const [saving, setSaving] = useState(false);
 
   const openAdd = () => {
     setMode('create');
     setEditing(null);
-    setModalOpen(true);
+    modal.openModal();
   };
 
   // Register the add handler with parent once on mount
@@ -65,8 +65,7 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
     qc.invalidateQueries({ queryKey: ['factory', String(factoryId), 'certs'] });
 
   const submit = async (value: CertFormSubmitValue, keepOpen: boolean) => {
-    setSaving(true);
-    try {
+    const ok = await modal.runAsync(async () => {
       let documentUrl = '';
       if (value.file) {
         const up = await mediaApi.upload(value.file);
@@ -91,12 +90,11 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
         });
       }
       invalidate();
-      if (!keepOpen || mode === 'edit') {
-        setModalOpen(false);
-        setEditing(null);
-      }
-    } finally {
-      setSaving(false);
+    });
+    if (ok === undefined) return;
+    if (!keepOpen || mode === 'edit') {
+      modal.closeModal();
+      setEditing(null);
     }
   };
 
@@ -150,7 +148,7 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
                     onClick={() => {
                       setMode('edit');
                       setEditing(c);
-                      setModalOpen(true);
+                      modal.openModal();
                     }}
                     variant='outline'
                     size='icon-sm'
@@ -176,14 +174,14 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
       )}
 
       <CertUploadModal
-        open={modalOpen}
+        open={modal.isOpen}
         mode={mode}
         certTypes={masterCertTypes}
         initial={editing}
-        submitting={saving}
+        submitting={modal.isLoading}
         onClose={() => {
-          if (saving) return;
-          setModalOpen(false);
+          if (modal.isLoading) return;
+          modal.closeModal();
           setEditing(null);
         }}
         onSubmit={submit}

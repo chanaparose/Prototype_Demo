@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useData } from '@/stores';
 import type { FactoryShowcase } from '@/stores';
+import { useApiCall } from '@/hooks/data/useApiCall';
 import { showcasesApi } from '@/services/api';
 import { normShowcase } from '@/hooks/useShowcases';
 
@@ -21,13 +22,11 @@ const PAGE_CONFIG: Record<
   'product' | 'promotion' | 'idea',
   { acceptTypes: ShowcaseContentType[] }
 > = {
-  // หน้า /product-detail รับทั้ง PD (product) และ MT (material) — UI เหมือนกัน
   product: { acceptTypes: ['product', 'material'] },
   promotion: { acceptTypes: ['promotion'] },
   idea: { acceptTypes: ['idea'] },
 };
 
-/** แปลง payload GET /showcases/:id เป็นแถวเดียวสำหรับ normShowcase */
 function unwrapShowcaseDetailPayload(raw: Record<string, unknown>): Record<string, unknown> {
   const inner = raw.showcase;
   if (inner && typeof inner === 'object') return inner as Record<string, unknown>;
@@ -50,10 +49,6 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const resolvedId = (pathId && pathId.trim() !== '' ? pathId : qId)?.trim() ?? '';
 
   const data = useData();
-  const [apiItem, setApiItem] = useState<FactoryShowcase | null>(null);
-  const [fetchLoading, setFetchLoading] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [relatedApiShowcases, setRelatedApiShowcases] = useState<FactoryShowcase[]>([]);
   const viewedIdRef = useRef<string>('');
 
   const fromContext = useMemo(() => {
@@ -65,141 +60,107 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     );
   }, [data.factoryShowcases, resolvedId, acceptTypes]);
 
+  const shouldFetchDetail = Boolean(resolvedId && !hasRichSections(fromContext));
+
+  const {
+    data: apiItem,
+    loading: fetchLoading,
+    error: fetchError,
+  } = useApiCall(
+    async () => {
+      const raw = await showcasesApi.get(resolvedId);
+      const row = unwrapShowcaseDetailPayload(raw as Record<string, unknown>);
+      const s = normShowcase(row);
+      if (!s.id || !acceptTypes.includes(s.contentType)) {
+        throw new Error('ไม่พบข้อมูลโชว์เคส');
+      }
+      return s;
+    },
+    [resolvedId, acceptTypes.join(',')],
+    { enabled: shouldFetchDetail, initialData: null as FactoryShowcase | null },
+  );
+
   useEffect(() => {
     viewedIdRef.current = '';
   }, [resolvedId]);
 
-  useEffect(() => {
-    if (!resolvedId) {
-      setApiItem(null);
-      setFetchLoading(false);
-      setFetchError(null);
-      return;
-    }
-
-    if (hasRichSections(fromContext)) {
-      setApiItem(null);
-      setFetchLoading(false);
-      setFetchError(null);
-      return;
-    }
-
-    let cancelled = false;
-    setFetchLoading(true);
-    setFetchError(null);
-    setApiItem(null);
-
-    void (async () => {
-      try {
-        const raw = await showcasesApi.get(resolvedId);
-        if (cancelled) return;
-        const row = unwrapShowcaseDetailPayload(raw as Record<string, unknown>);
-        const s = normShowcase(row);
-        if (!s.id || !acceptTypes.includes(s.contentType)) {
-          setFetchError('ไม่พบข้อมูลโชว์เคส');
-          setApiItem(null);
-        } else {
-          setApiItem(s);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setFetchError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
-          setApiItem(null);
-        }
-      } finally {
-        if (!cancelled) setFetchLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [resolvedId, fromContext, acceptTypes]);
-
   const item = apiItem ?? fromContext;
-  useEffect(() => {
-    if (kind === 'idea' || !resolvedId) {
-      setRelatedApiShowcases([]);
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      try {
-        // Guarantee related API requests even when context is sparse.
-        const detailRaw = await showcasesApi.get(resolvedId).catch(() => ({}));
-        const detailRow = unwrapShowcaseDetailPayload((detailRaw as Record<string, unknown>) ?? {});
-        const detail = item ?? normShowcase(detailRow);
-        const apiTypes: Array<'PD' | 'PM' | 'MT'> = ['PD', 'PM', 'MT'];
 
-        const subIdFromDetail = detail.sub_category_id ?? Number(detailRow.sub_category_id ?? NaN);
-        const catIdFromDetail =
-          detail.categoryId != null && String(detail.categoryId).trim() !== ''
-            ? Number(detail.categoryId)
-            : Number(detailRow.category_id ?? NaN);
+  const shouldFetchRelated = kind !== 'idea' && Boolean(resolvedId);
 
-        const buckets: FactoryShowcase[] = [];
+  const { data: relatedApiShowcases = [] } = useApiCall(
+    async () => {
+      const detailRaw = await showcasesApi.get(resolvedId).catch(() => ({}));
+      const detailRow = unwrapShowcaseDetailPayload((detailRaw as Record<string, unknown>) ?? {});
+      const detail = item ?? normShowcase(detailRow);
+      const apiTypes: Array<'PD' | 'PM' | 'MT'> = ['PD', 'PM', 'MT'];
 
-        if (Number.isFinite(Number(subIdFromDetail)) && Number(subIdFromDetail) > 0) {
-          const subLists = await Promise.all(
-            apiTypes.map((type) =>
-              showcasesApi
-                .listFiltered({ type, sub_category_id: Number(subIdFromDetail) })
-                .catch(() => []),
-            ),
-          );
-          for (const rawSub of subLists) {
-            const subRows = (Array.isArray(rawSub) ? rawSub : []) as Record<string, unknown>[];
-            buckets.push(...subRows.map(normShowcase));
-          }
+      const subIdFromDetail = detail.sub_category_id ?? Number(detailRow.sub_category_id ?? NaN);
+      const catIdFromDetail =
+        detail.categoryId != null && String(detail.categoryId).trim() !== ''
+          ? Number(detail.categoryId)
+          : Number(detailRow.category_id ?? NaN);
+
+      const buckets: FactoryShowcase[] = [];
+
+      if (Number.isFinite(Number(subIdFromDetail)) && Number(subIdFromDetail) > 0) {
+        const subLists = await Promise.all(
+          apiTypes.map((type) =>
+            showcasesApi
+              .listFiltered({ type, sub_category_id: Number(subIdFromDetail) })
+              .catch(() => []),
+          ),
+        );
+        for (const rawSub of subLists) {
+          const subRows = (Array.isArray(rawSub) ? rawSub : []) as Record<string, unknown>[];
+          buckets.push(...subRows.map(normShowcase));
         }
-
-        if (Number.isFinite(Number(catIdFromDetail)) && Number(catIdFromDetail) > 0) {
-          const catLists = await Promise.all(
-            apiTypes.map((type) =>
-              showcasesApi
-                .listFiltered({ type, category_id: Number(catIdFromDetail) })
-                .catch(() => []),
-            ),
-          );
-          for (const rawCat of catLists) {
-            const catRows = (Array.isArray(rawCat) ? rawCat : []) as Record<string, unknown>[];
-            buckets.push(...catRows.map(normShowcase));
-          }
-        }
-
-        if (buckets.length === 0) {
-          const allLists = await Promise.all(
-            apiTypes.map((type) => showcasesApi.listFiltered({ type }).catch(() => [])),
-          );
-          for (const rawAll of allLists) {
-            const allRows = (Array.isArray(rawAll) ? rawAll : []) as Record<string, unknown>[];
-            buckets.push(...allRows.map(normShowcase));
-          }
-        }
-
-        const currentId = detail.id || String(resolvedId);
-        const uniq = new Map<string, FactoryShowcase>();
-        for (const row of buckets) {
-          if (!row.id || row.id === currentId) continue;
-          if (
-            !(
-              row.contentType === 'product' ||
-              row.contentType === 'promotion' ||
-              row.contentType === 'material'
-            )
-          )
-            continue;
-          if (!uniq.has(row.id)) uniq.set(row.id, row);
-        }
-        if (!cancelled) setRelatedApiShowcases([...uniq.values()].slice(0, 8));
-      } catch {
-        if (!cancelled) setRelatedApiShowcases([]);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [kind, resolvedId, item]);
+
+      if (Number.isFinite(Number(catIdFromDetail)) && Number(catIdFromDetail) > 0) {
+        const catLists = await Promise.all(
+          apiTypes.map((type) =>
+            showcasesApi
+              .listFiltered({ type, category_id: Number(catIdFromDetail) })
+              .catch(() => []),
+          ),
+        );
+        for (const rawCat of catLists) {
+          const catRows = (Array.isArray(rawCat) ? rawCat : []) as Record<string, unknown>[];
+          buckets.push(...catRows.map(normShowcase));
+        }
+      }
+
+      if (buckets.length === 0) {
+        const allLists = await Promise.all(
+          apiTypes.map((type) => showcasesApi.listFiltered({ type }).catch(() => [])),
+        );
+        for (const rawAll of allLists) {
+          const allRows = (Array.isArray(rawAll) ? rawAll : []) as Record<string, unknown>[];
+          buckets.push(...allRows.map(normShowcase));
+        }
+      }
+
+      const currentId = detail.id || String(resolvedId);
+      const uniq = new Map<string, FactoryShowcase>();
+      for (const row of buckets) {
+        if (!row.id || row.id === currentId) continue;
+        if (
+          !(
+            row.contentType === 'product' ||
+            row.contentType === 'promotion' ||
+            row.contentType === 'material'
+          )
+        ) {
+          continue;
+        }
+        if (!uniq.has(row.id)) uniq.set(row.id, row);
+      }
+      return [...uniq.values()].slice(0, 8);
+    },
+    [kind, resolvedId, item?.id],
+    { enabled: shouldFetchRelated, initialData: [] as FactoryShowcase[] },
+  );
 
   const relatedShowcases = useMemo(() => {
     if (!item || kind === 'idea') return [] as FactoryShowcase[];
@@ -237,7 +198,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   }, [resolvedId, item, apiItem, fromContext]);
 
   const loading = Boolean(resolvedId && !item && fetchLoading);
-  const error = fetchError;
+  const error = fetchError || null;
   const factory = item ? data.factories.find((f) => showcaseIdMatches(f.id, item.factoryId)) : null;
 
   return {

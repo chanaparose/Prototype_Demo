@@ -7,6 +7,7 @@ import { ChevronLeft } from 'lucide-react';
 import { mediaApi, showcasesApi } from '@/services/api';
 import { useEditForm } from '@/hooks/forms/useEditForm';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
@@ -522,11 +523,7 @@ export function FactoryShowcaseEditPage() {
             }
           }}
         />
-        {error ? (
-          <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
-            {error}
-          </p>
-        ) : null}
+        {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
         <div className='space-y-5 min-w-0'>
           <div className='flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5'>

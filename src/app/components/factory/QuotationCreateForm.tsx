@@ -15,6 +15,7 @@ import type { QuotationBreakdown } from '@/services/api';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import { hoursUntilDeadline } from '@/utils/rfqDeadline';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryHighlightField } from '@/components/features/factory-rfq/FactoryHighlightField';
 import { formatCurrencyNoDecimals } from '@/utils/formatting';
 import { FormField } from '@/shared/ui';
@@ -296,9 +297,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       >
         {showHeading ? <h3 className='text-sm font-bold text-gray-900'>ยื่นใบเสนอราคา</h3> : null}
 
-        {error ? (
-          <p className='text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2'>{error}</p>
-        ) : null}
+        {error ? <ErrorAlert size='sm'>{error}</ErrorAlert> : null}
 
         <FormField
           label='ราคาต่อชิ้น (บาท)'

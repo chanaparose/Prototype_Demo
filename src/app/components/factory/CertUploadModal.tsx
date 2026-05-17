@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BaseModal } from '@/shared/ui';
-import { Button } from '@/components/ui/button';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
+import { BaseModal, FormField, ModalFooter } from '@/shared/ui';
 import {
   Select,
   SelectContent,
@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 type CertTypeOption = {
   id: number;
@@ -121,49 +120,38 @@ export function CertUploadModal({
       closeOnBackdropClick={!submitting}
       footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2'
       footer={
-        <>
-          <Button
-            disabled={submitting}
-            onClick={() => void submit(false)}
-            className='py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50'
-            style={{
-              background: 'linear-gradient(135deg, var(--status-success) 0%, #10B981 100%)',
-            }}
-          >
-            {submitting ? 'กำลังบันทึก...' : 'บันทึก'}
-          </Button>
-          {mode === 'create' ? (
-            <Button
-              disabled={submitting}
-              onClick={() => void submit(true)}
-              variant='outline'
-              className='py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50'
-            >
-              บันทึกและเพิ่มใบรับรองถัดไป
-            </Button>
-          ) : (
-            <Button
-              onClick={onClose}
-              disabled={submitting}
-              variant='outline'
-              className='py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50'
-            >
-              ยกเลิก
-            </Button>
-          )}
-        </>
+        <ModalFooter
+          layout='grid'
+          accent='success'
+          primary={{
+            label: 'บันทึก',
+            loadingLabel: 'กำลังบันทึก...',
+            loading: submitting,
+            disabled: submitting,
+            onClick: () => void submit(false),
+          }}
+          alternatePrimary={
+            mode === 'create'
+              ? {
+                  label: 'บันทึกและเพิ่มใบรับรองถัดไป',
+                  disabled: submitting,
+                  onClick: () => void submit(true),
+                }
+              : undefined
+          }
+          secondary={
+            mode === 'edit'
+              ? { label: 'ยกเลิก', onClick: onClose, disabled: submitting }
+              : undefined
+          }
+        />
       }
     >
-      {error ? (
-        <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
-      <Label className='block'>
-        <span className='text-xs text-gray-500'>ประเภทใบรับรอง *</span>
+      <FormField label='ประเภทใบรับรอง' required>
         <Select value={certId} onValueChange={setCertId}>
-          <SelectTrigger className='mt-1 w-full'>
+          <SelectTrigger className='w-full'>
             <SelectValue placeholder='เลือกประเภทใบรับรอง' />
           </SelectTrigger>
           <SelectContent>
@@ -174,39 +162,43 @@ export function CertUploadModal({
             ))}
           </SelectContent>
         </Select>
-      </Label>
+      </FormField>
 
-      <Label className='block'>
-        <span className='text-xs text-gray-500'>เลขที่เอกสาร (ถ้ามี)</span>
+      <FormField label='เลขที่เอกสาร (ถ้ามี)'>
         <Input
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           value={certNumber}
           onChange={(e) => setCertNumber(e.target.value)}
         />
-      </Label>
+      </FormField>
 
-      <Label className='block'>
-        <span className='text-xs text-gray-500'>วันหมดอายุ *</span>
+      <FormField label='วันหมดอายุ' required>
         <Input
           type='date'
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           value={expireDate}
           onChange={(e) => setExpireDate(e.target.value)}
         />
-      </Label>
+      </FormField>
 
-      <Label className='block'>
-        <span className='text-xs text-gray-500'>
-          ไฟล์เอกสาร {mode === 'create' ? '*' : '(อัปโหลดใหม่หากต้องการแทนไฟล์เดิม)'}
-        </span>
+      <FormField
+        label='ไฟล์เอกสาร'
+        required={mode === 'create'}
+        helperText={
+          file
+            ? file.name
+            : mode === 'edit'
+              ? 'อัปโหลดใหม่หากต้องการแทนไฟล์เดิม'
+              : undefined
+        }
+      >
         <Input
           type='file'
           accept='image/*,.pdf'
-          className='mt-1 text-sm block w-full'
+          className='text-sm block w-full'
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
-        {file ? <p className='text-[11px] text-gray-500 mt-1'>{file.name}</p> : null}
-      </Label>
+      </FormField>
     </BaseModal>
   );
 }

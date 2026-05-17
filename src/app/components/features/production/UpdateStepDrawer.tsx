@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { X, Plus, MapPin, Phone, User, ChevronRight } from 'lucide-react';
 import { mediaApi } from '@/services/api';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { InfoBox } from '@/shared/ui';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
@@ -263,11 +264,7 @@ export function UpdateStepDrawer({
         </div>
 
         <div className='flex-1 overflow-y-auto px-4 py-4 space-y-4'>
-          {err ? (
-            <p className='text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2'>
-              {err}
-            </p>
-          ) : null}
+          {err ? <ErrorAlert size='sm'>{err}</ErrorAlert> : null}
 
           {guide ? (
             <div className='rounded-xl bg-indigo-50 border border-indigo-100 px-3.5 py-3'>

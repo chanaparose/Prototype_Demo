@@ -1,4 +1,52 @@
-import type { RfqFilterId } from '@/components/features/rfq-and-orders/constants';
+import type { Rfq } from '@/stores';
+import {
+  ACCENT_ORANGE,
+  ACCENT_ORANGE_DEEP,
+  PROGRESS_COMPLETED,
+  PROGRESS_GRADIENT_ACTIVE,
+  type OrderFilterId,
+  type RfqFilterId,
+} from '@/components/features/rfq-and-orders/constants';
+
+export type OrderTagCounts = {
+  pendingPayment: number;
+  inProduction: number;
+  shipped: number;
+  completed: number;
+  cancelledExpired: number;
+};
+
+export function getRfqActivityCounts(rfq: Rfq) {
+  const offers = rfq.offers ?? [];
+  const totalOffers = offers.length || rfq.offerCount || 0;
+  const accepted = offers.filter((o) => o.quoteStatus === 'AC').length;
+  const pending = offers.filter((o) => o.quoteStatus === 'PD').length;
+  return { totalOffers, accepted, pending };
+}
+
+export function getOrderTabCount(id: OrderFilterId, counts: OrderTagCounts): number {
+  switch (id) {
+    case 'pending_payment':
+      return counts.pendingPayment;
+    case 'in_production':
+      return counts.inProduction;
+    case 'shipped':
+      return counts.shipped;
+    case 'completed':
+      return counts.completed;
+    case 'cancelled_expired':
+      return counts.cancelledExpired;
+    default:
+      return 0;
+  }
+}
+
+export function getOrderProgressBg(status: string): string {
+  if (status === 'completed') return PROGRESS_COMPLETED;
+  if (status === 'shipped') return ACCENT_ORANGE;
+  if (status === 'pending_payment') return ACCENT_ORANGE_DEEP;
+  return PROGRESS_GRADIENT_ACTIVE;
+}
 
 export function formatBudget(n: number): string {
   return '฿' + n.toLocaleString('th-TH');

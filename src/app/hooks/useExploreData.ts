@@ -1,4 +1,5 @@
 import React from 'react';
+import { useApiCall } from '@/hooks/data/useApiCall';
 import { frontendApi, promoSlidesApi, showcasesApi } from '@/services/api';
 import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi';
 
@@ -156,6 +157,24 @@ function normSlide(r: Record<string, unknown>): NormSlide {
   };
 }
 
+type ExploreFetchResult = {
+  pdShowcases: NormalisedShowcase[];
+  pmShowcases: NormalisedShowcase[];
+  idShowcases: NormalisedShowcase[];
+  mtShowcases: NormalisedShowcase[];
+  promoSlides: NormSlide[];
+  promoCodes: NormSlide[];
+};
+
+const EMPTY_EXPLORE_DATA: ExploreFetchResult = {
+  pdShowcases: [],
+  pmShowcases: [],
+  idShowcases: [],
+  mtShowcases: [],
+  promoSlides: [],
+  promoCodes: [],
+};
+
 export function useExploreData(options?: UseExploreDataOptions) {
   const enablePageApis = options?.enablePageApis !== false;
   const {
@@ -168,111 +187,56 @@ export function useExploreData(options?: UseExploreDataOptions) {
   const [searchText, setSearchText] = React.useState('');
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
 
-  /** รวม PD+PM+ID+MT สำหรับ prop factoryShowcases (เผื่อใช้ในอนาคต) */
-  const [pdShowcases, setPdShowcases] = React.useState<NormalisedShowcase[]>([]);
-  const [pmShowcases, setPmShowcases] = React.useState<NormalisedShowcase[]>([]);
-  const [idShowcases, setIdShowcases] = React.useState<NormalisedShowcase[]>([]);
-  const [mtShowcases, setMtShowcases] = React.useState<NormalisedShowcase[]>([]);
-  const [promoSlides, setPromoSlides] = React.useState<NormSlide[]>([]);
-  const [promoCodes, setPromoCodes] = React.useState<NormSlide[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!enablePageApis) {
-      setPdShowcases([]);
-      setPmShowcases([]);
-      setIdShowcases([]);
-      setMtShowcases([]);
-      setPromoSlides([]);
-      setPromoCodes([]);
-      return;
-    }
-
-    let cancelled = false;
-    setIsLoading(true);
-
-    async function fetchAll() {
+  const { data: exploreData = EMPTY_EXPLORE_DATA, loading: isLoading } = useApiCall(
+    async () => {
       const mapRows = (raw: unknown) => {
         const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         return arr.map(normShowcase).filter((s) => s.id && s.title);
       };
 
-      // สินค้าแนะนำ → GET /showcases?type=PD
-      const pPd = showcasesApi
-        .list('PD')
-        .then((raw) => {
-          if (cancelled) return;
-          setPdShowcases(mapRows(raw));
-        })
-        .catch(() => {
-          if (!cancelled) setPdShowcases([]);
-        });
+      const [pdRes, pmRes, idRes, mtRes, exploreRes, slidesRes] = await Promise.allSettled([
+        showcasesApi.list('PD'),
+        showcasesApi.list('PM'),
+        showcasesApi.list('ID'),
+        showcasesApi.list('MT'),
+        frontendApi.getExplore(),
+        promoSlidesApi.list(),
+      ]);
 
-      // โปรโมชันแนะนำ → GET /showcases?type=PM
-      const pPm = showcasesApi
-        .list('PM')
-        .then((raw) => {
-          if (cancelled) return;
-          setPmShowcases(mapRows(raw));
-        })
-        .catch(() => {
-          if (!cancelled) setPmShowcases([]);
-        });
+      const pdShowcases =
+        pdRes.status === 'fulfilled' ? mapRows(pdRes.value) : [];
+      const pmShowcases =
+        pmRes.status === 'fulfilled' ? mapRows(pmRes.value) : [];
+      const idShowcases =
+        idRes.status === 'fulfilled' ? mapRows(idRes.value) : [];
+      const mtShowcases =
+        mtRes.status === 'fulfilled' ? mapRows(mtRes.value) : [];
 
-      // บทความ idea → GET /showcases?type=ID
-      const pId = showcasesApi
-        .list('ID')
-        .then((raw) => {
-          if (cancelled) return;
-          setIdShowcases(mapRows(raw));
-        })
-        .catch(() => {
-          if (!cancelled) setIdShowcases([]);
-        });
+      let promoCodes: NormSlide[] = [];
+      if (exploreRes.status === 'fulfilled') {
+        const c = (
+          Array.isArray(exploreRes.value.promo_codes) ? exploreRes.value.promo_codes : []
+        ) as Record<string, unknown>[];
+        promoCodes = c.map(normSlide).filter((v) => v.id && v.title);
+      }
 
-      // วัตถุดิบ → GET /showcases?type=MT
-      const pMt = showcasesApi
-        .list('MT')
-        .then((raw) => {
-          if (cancelled) return;
-          setMtShowcases(mapRows(raw));
-        })
-        .catch(() => {
-          if (!cancelled) setMtShowcases([]);
-        });
+      let promoSlides: NormSlide[] = [];
+      if (slidesRes.status === 'fulfilled') {
+        const arr = (Array.isArray(slidesRes.value) ? slidesRes.value : []) as Record<
+          string,
+          unknown
+        >[];
+        promoSlides = arr.map(normSlide).filter((s) => s.id && s.title);
+      }
 
-      // 2) Explore aggregate → promo_codes เท่านั้น (การ์ดโรงงานมาจาก GET /frontend/bootstrap ใน DataContext)
-      const p2 = frontendApi
-        .getExplore()
-        .then((data) => {
-          if (cancelled) return;
-          const c = (Array.isArray(data.promo_codes) ? data.promo_codes : []) as Record<
-            string,
-            unknown
-          >[];
-          setPromoCodes(c.map(normSlide).filter((v) => v.id && v.title));
-        })
-        .catch(() => {});
+      return { pdShowcases, pmShowcases, idShowcases, mtShowcases, promoSlides, promoCodes };
+    },
+    [enablePageApis],
+    { enabled: enablePageApis, initialData: EMPTY_EXPLORE_DATA },
+  );
 
-      // 3) Promo slides → /promo-slides
-      const p3 = promoSlidesApi
-        .list()
-        .then((raw) => {
-          if (cancelled) return;
-          const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-          setPromoSlides(arr.map(normSlide).filter((s) => s.id && s.title));
-        })
-        .catch(() => {});
-
-      await Promise.allSettled([pPd, pPm, pId, pMt, p2, p3]);
-      if (!cancelled) setIsLoading(false);
-    }
-
-    fetchAll();
-    return () => {
-      cancelled = true;
-    };
-  }, [enablePageApis]);
+  const { pdShowcases, pmShowcases, idShowcases, mtShowcases, promoSlides, promoCodes } =
+    exploreData;
 
   const productShowcases = React.useMemo(() => pdShowcases, [pdShowcases]);
 

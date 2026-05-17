@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { profileApi } from '@/services/api';
 import { useAuth } from '@/stores';
 import { Button } from '@/components/ui/button';
@@ -112,11 +113,7 @@ export function EditProfilePage() {
         </Button>
       </div>
 
-      {error ? (
-        <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2'>
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorAlert size='sm'>{error}</ErrorAlert> : null}
 
       <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3'>
         <div className='flex items-center gap-3'>

@@ -7,6 +7,7 @@ import { useOrderProductionUpdates } from '@/hooks/production/useOrderProduction
 import { usePostProductionUpdate } from '@/hooks/production/usePostProductionUpdate';
 import { useRejectProductionUpdate } from '@/hooks/production/useRejectProductionUpdate';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { ProductionLockedState } from '@/components/features/order-detail/locked-states/ProductionLockedState';
 import {
   mergeTemplateWithUpdates,
@@ -147,17 +148,13 @@ export function OrderProductionTab({
 
   if (tplQ.isError) {
     return (
-      <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3'>
-        {productionErrorMessage(tplQ.error)}
-      </p>
+      <ErrorAlert>{productionErrorMessage(tplQ.error)}</ErrorAlert>
     );
   }
 
   if (updQ.isError) {
     return (
-      <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3'>
-        {productionErrorMessage(updQ.error)}
-      </p>
+      <ErrorAlert>{productionErrorMessage(updQ.error)}</ErrorAlert>
     );
   }
 

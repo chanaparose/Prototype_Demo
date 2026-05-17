@@ -7,6 +7,7 @@
  * Token ถูกแนบอัตโนมัติผ่าน api.ts (Authorization: Bearer <token>)
  */
 import React from 'react';
+import { useApiCall } from '@/hooks/data/useApiCall';
 import { useData, type Rfq, type RfqOffer, type Order } from '@/stores';
 import { rfqsApi, ordersApi, masterApi, categoriesApi } from '@/services/api';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
@@ -202,9 +203,9 @@ async function resolveSubCategoryNameById(
   if (!Number.isFinite(subId) || subId <= 0 || !catId) return '';
   try {
     const rawSubs = await categoriesApi.subCategories(catId);
-    const rows = (Array.isArray(rawSubs) ? rawSubs : []) as Record<string, unknown>[];
+    const rows = Array.isArray(rawSubs) ? rawSubs : [];
     const row = rows.find((x) => Number(x.sub_category_id ?? x.id) === subId);
-    return String(row?.name ?? '').trim();
+    return String(row?.name ?? row?.sub_category_name ?? '').trim();
   } catch {
     return '';
   }
@@ -228,49 +229,34 @@ type RawQuotation = {
   [key: string]: unknown;
 };
 
-export function useRfqDetail(rfqId: string | undefined) {
-  const dataCtx = useData();
-
-  // Lookup maps from DataContext (loaded via bootstrap)
-  const categoryMap = React.useMemo(() => {
-    const m = new Map<string, string>();
-    for (const c of dataCtx.categories) m.set(String(c.id), c.name);
-    return m;
-  }, [dataCtx.categories]);
-
-  const factoryMap = React.useMemo(() => {
-    const m = new Map<string, string>();
-    for (const f of dataCtx.factories) m.set(String(f.id), f.name);
-    return m;
-  }, [dataCtx.factories]);
-
-  const [rfq, setRfq] = React.useState<Rfq | null>(null);
-  const [relatedOrder, setRelatedOrder] = React.useState<Order | null>(null);
+export type RfqDetailData = {
+  rfq: Rfq | null;
+  relatedOrder: Order | null;
   /** quoteId → orderId สำหรับ multi-factory: แต่ละ AC quote มี order ของตัวเอง */
-  const [quoteOrderMap, setQuoteOrderMap] = React.useState<Record<string, string>>({});
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  /** ข้อมูลเสริมจาก RFQ ดิบ — ใช้ factory detail / spec FACTORY_RFQ_BOARD_UX */
-  const [shippingMethodId, setShippingMethodId] = React.useState<number | null>(null);
-  const [addressSummary, setAddressSummary] = React.useState('');
-  const [targetDays, setTargetDays] = React.useState<number | null>(null);
+  quoteOrderMap: Record<string, string>;
+  shippingMethodId: number | null;
+  addressSummary: string;
+  targetDays: number | null;
+};
 
-  const fetchDetail = React.useCallback(async () => {
-    if (!rfqId) {
-      setLoading(false);
-      setShippingMethodId(null);
-      setAddressSummary('');
-      setTargetDays(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
+const EMPTY_RFQ_DETAIL: RfqDetailData = {
+  rfq: null,
+  relatedOrder: null,
+  quoteOrderMap: {},
+  shippingMethodId: null,
+  addressSummary: '',
+  targetDays: null,
+};
 
-    try {
+async function loadRfqDetailData(
+  rfqId: string,
+  categoryMap: Map<string, string>,
+  factoryMap: Map<string, string>,
+): Promise<RfqDetailData> {
       // Fetch RFQ detail + quotations in parallel
       const [rfqRes, quotesRes] = await Promise.allSettled([
         rfqsApi.get(rfqId),
-        rfqsApi.listQuotations(rfqId),
+        rfqsApi.getQuotations(rfqId),
       ]);
 
       let rawRfq: RawRfqDetail['rfq'] | null = null;
@@ -282,12 +268,7 @@ export function useRfqDetail(rfqId: string | undefined) {
       }
 
       if (!rawRfq || !rawRfq.rfq_id) {
-        setError('ไม่พบข้อมูล RFQ นี้');
-        setShippingMethodId(null);
-        setAddressSummary('');
-        setTargetDays(null);
-        setLoading(false);
-        return;
+        throw new Error('ไม่พบข้อมูล RFQ นี้');
       }
 
       // Parse quotations
@@ -341,12 +322,12 @@ export function useRfqDetail(rfqId: string | undefined) {
       const shipIdRaw = rExtra.shipping_method_id;
       if (!shippingMethodName && shipIdRaw != null && Number(shipIdRaw) > 0) {
         try {
-          const ships = await masterApi.shippingMethods();
-          const arr = (Array.isArray(ships) ? ships : []) as Record<string, unknown>[];
+          const ships = await masterApi.getShippingMethods();
+          const arr = Array.isArray(ships) ? ships : [];
           const sid = Number(shipIdRaw);
           const row = arr.find((x) => Number(x.shipping_method_id ?? x.id) === sid);
           if (row) {
-            shippingMethodName = String(row.method_name ?? row.name ?? '').trim();
+            shippingMethodName = String(row.name ?? '').trim();
           }
         } catch {
           /* ignore */
@@ -548,109 +529,116 @@ export function useRfqDetail(rfqId: string | undefined) {
         inspectionType: inspectionType || undefined,
       };
 
-      const shipIdNum = Number(shipIdRaw ?? 0);
-      setShippingMethodId(Number.isFinite(shipIdNum) && shipIdNum > 0 ? shipIdNum : null);
-      setAddressSummary(deliveryAddress);
-      const td = Number(
-        rExtra.target_days ??
-          rExtra.lead_time_target ??
-          rExtra.customer_lead_days ??
-          rExtra.delivery_days ??
-          0,
-      );
-      setTargetDays(Number.isFinite(td) && td > 0 ? td : null);
-
-      setRfq(mappedRfq);
-
-      // Build quoteId → orderId map จาก AC quotes ทั้งหมด
-      const acceptedQuoteIds = quotes.filter((q) => q.status === 'AC').map((q) => q.quote_id);
-      const newQuoteOrderMap: Record<string, string> = {};
-      if (acceptedQuoteIds.length > 0) {
-        try {
-          const rawOrders = (await ordersApi.list()) as Array<Record<string, unknown>> | null;
-          if (Array.isArray(rawOrders)) {
-            // Build full quoteId → orderId map (รองรับหลายโรงงาน)
-            for (const o of rawOrders) {
-              const oqid = Number(o.quote_id);
-              if (acceptedQuoteIds.includes(oqid)) {
-                const oid = String(o.order_id ?? o.id ?? '');
-                if (oid) newQuoteOrderMap[String(oqid)] = oid;
-              }
-            }
-            // compat: set relatedOrder = first matching order
-            const matchingOrder = rawOrders.find((o) =>
-              acceptedQuoteIds.includes(Number(o.quote_id)),
-            );
-            if (matchingOrder) {
-              const oStatus = mapOrderStatusFromApi(String(matchingOrder.status ?? 'PR'));
-              setRelatedOrder({
-                id: String(matchingOrder.order_id ?? matchingOrder.id ?? ''),
-                rfqId: String(rawRfq.rfq_id),
-                factoryId: String(matchingOrder.factory_id ?? ''),
-                factoryName: factoryMap.get(String(matchingOrder.factory_id)) ?? '',
-                projectName: rawRfq.title,
-                category: catName,
-                status: oStatus,
-                progress: guessOrderProgress(oStatus),
-                totalAmount: Number(matchingOrder.total_amount ?? 0),
-                depositPaid: Number(matchingOrder.deposit_amount ?? 0),
-                quantity: rawRfq.quantity,
-                createdAt: String(matchingOrder.created_at ?? '').split('T')[0],
-                estimatedDelivery: String(matchingOrder.estimated_delivery ?? '').split('T')[0],
-                timeline: [],
-              });
-            }
-          }
-        } catch {
-          /* no orders found */
-        }
-      }
-      setQuoteOrderMap(newQuoteOrderMap);
-
-      for (const offer of offers) {
-        if ((offer.quoteStatus ?? '').toUpperCase() === 'AC') {
-          (offer as RfqOffer & { orderId?: string }).orderId = newQuoteOrderMap[offer.id];
-        }
-      }
-    } catch (err) {
-      console.error('[useRfqDetail] fetchDetail failed:', err);
-      setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดข้อมูล RFQ ได้');
-    } finally {
-      setLoading(false);
-    }
-  }, [rfqId, categoryMap, factoryMap]);
-
-  // Initial fetch
-  React.useEffect(() => {
-    fetchDetail();
-  }, [fetchDetail]);
-
-  const acceptOffer = React.useCallback(
-    async (quoteId: string): Promise<{ orderId?: string }> => {
-      // POST /orders — BE accept quote + create order PP
-      // Multi-factory: ไม่ reject siblings ไม่ปิด RFQ
-      let orderId: string | undefined;
-      const created = (await ordersApi.create(Number(quoteId))) as Record<string, unknown>;
-      const oid = created.order_id ?? created.id;
-      if (oid != null) orderId = String(oid);
-
-      await fetchDetail();
-
-      return { orderId };
-    },
-    [fetchDetail],
+  const shipIdNum = Number(shipIdRaw ?? 0);
+  const shippingMethodId =
+    Number.isFinite(shipIdNum) && shipIdNum > 0 ? shipIdNum : null;
+  const addressSummary = deliveryAddress;
+  const td = Number(
+    rExtra.target_days ??
+      rExtra.lead_time_target ??
+      rExtra.customer_lead_days ??
+      rExtra.delivery_days ??
+      0,
   );
+  const targetDays = Number.isFinite(td) && td > 0 ? td : null;
+
+  // Build quoteId → orderId map จาก AC quotes ทั้งหมด
+  const acceptedQuoteIds = quotes.filter((q) => q.status === 'AC').map((q) => q.quote_id);
+  const quoteOrderMap: Record<string, string> = {};
+  let relatedOrder: Order | null = null;
+  if (acceptedQuoteIds.length > 0) {
+    try {
+      const rawOrders = await ordersApi.list();
+      for (const o of rawOrders) {
+        if (acceptedQuoteIds.includes(o.quote_id)) {
+          quoteOrderMap[String(o.quote_id)] = String(o.order_id);
+        }
+      }
+      const matchingOrder = rawOrders.find((o) => acceptedQuoteIds.includes(o.quote_id));
+      if (matchingOrder) {
+        const oStatus = mapOrderStatusFromApi(String(matchingOrder.status ?? 'PR'));
+        relatedOrder = {
+          id: String(matchingOrder.order_id),
+          rfqId: String(rawRfq.rfq_id),
+          factoryId: String(matchingOrder.factory_id),
+          factoryName: factoryMap.get(String(matchingOrder.factory_id)) ?? '',
+          projectName: rawRfq.title,
+          category: catName,
+          status: oStatus,
+          progress: guessOrderProgress(oStatus),
+          totalAmount: matchingOrder.total_amount,
+          depositPaid: matchingOrder.deposit_amount,
+          quantity: rawRfq.quantity,
+          createdAt: matchingOrder.created_at.split('T')[0],
+          estimatedDelivery: String(matchingOrder.estimated_delivery ?? '').split('T')[0],
+          timeline: [],
+        };
+      }
+    } catch {
+      /* no orders found */
+    }
+  }
+
+  for (const offer of offers) {
+    if ((offer.quoteStatus ?? '').toUpperCase() === 'AC') {
+      (offer as RfqOffer & { orderId?: string }).orderId = quoteOrderMap[offer.id];
+    }
+  }
 
   return {
-    rfq,
+    rfq: mappedRfq,
     relatedOrder,
     quoteOrderMap,
-    loading,
-    error,
-    refetch: fetchDetail,
-    acceptOffer,
     shippingMethodId,
     addressSummary,
     targetDays,
+  };
+}
+
+export function useRfqDetail(rfqId: string | undefined) {
+  const dataCtx = useData();
+
+  const categoryMap = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of dataCtx.categories) m.set(String(c.id), c.name);
+    return m;
+  }, [dataCtx.categories]);
+
+  const factoryMap = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const f of dataCtx.factories) m.set(String(f.id), f.name);
+    return m;
+  }, [dataCtx.factories]);
+
+  const { data, loading, error, refetch } = useApiCall(
+    () => loadRfqDetailData(rfqId!, categoryMap, factoryMap),
+    [rfqId, categoryMap, factoryMap],
+    { enabled: Boolean(rfqId), initialData: EMPTY_RFQ_DETAIL, keepPreviousData: true },
+  );
+
+  const detail = data ?? EMPTY_RFQ_DETAIL;
+
+  const acceptOffer = React.useCallback(
+    async (quoteId: string): Promise<{ orderId?: string }> => {
+      let orderId: string | undefined;
+      const created = await ordersApi.create(Number(quoteId));
+      orderId = String(created.order_id);
+      await refetch();
+      return { orderId };
+    },
+    [refetch],
+  );
+
+  return {
+    rfq: detail.rfq,
+    relatedOrder: detail.relatedOrder,
+    quoteOrderMap: detail.quoteOrderMap,
+    loading,
+    error: error || null,
+    refetch,
+    acceptOffer,
+    shippingMethodId: detail.shippingMethodId,
+    addressSummary: detail.addressSummary,
+    targetDays: detail.targetDays,
   };
 }

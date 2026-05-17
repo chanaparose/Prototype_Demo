@@ -8,6 +8,7 @@ import {
   Search,
   AlertTriangle,
 } from 'lucide-react';
+import { useApiCall } from '@/hooks/data/useApiCall';
 import { adminApi, type AdminRfqRow } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,30 +91,15 @@ function mapRfq(row: AdminRfqRow): AdminRfqView {
 }
 
 function RfqDetailPanel({ rfqId }: { rfqId: string }) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const raw = await adminApi.getRfq(rfqId);
-        if (!cancelled) setDetail(raw);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'โหลดรายละเอียด RFQ ไม่สำเร็จ');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [rfqId]);
+  const {
+    data: detail,
+    loading,
+    error,
+  } = useApiCall(
+    () => adminApi.getRfq(rfqId) as Promise<Record<string, unknown>>,
+    [rfqId],
+    { initialData: null as Record<string, unknown> | null },
+  );
 
   const rfq = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
   const deliveryDate = String(rfq.required_delivery_date ?? rfq.deadline ?? '');

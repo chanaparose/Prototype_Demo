@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 import { showcasesApi, mediaApi } from '@/services/api';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
@@ -238,11 +239,7 @@ export function FactoryShowcaseNewPage() {
           }}
         />
 
-        {error ? (
-          <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
-            {error}
-          </p>
-        ) : null}
+        {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
         <div className='space-y-5 min-w-0'>
           <div className='flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5'>

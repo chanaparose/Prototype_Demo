@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useApiCall } from '@/hooks/data/useApiCall';
 import { Link } from 'react-router';
 import {
   TrendingUp,
@@ -55,6 +56,54 @@ interface ChartRow {
   month: string;
   revenue: number;
   commission: number;
+}
+
+type AdminDashboardData = {
+  summary: Record<string, unknown>;
+  revenueRows: ChartRow[];
+  recentOrders: AdminOrderRow[];
+  recentRfqs: AdminRfqRow[];
+};
+
+const EMPTY_DASHBOARD: AdminDashboardData = {
+  summary: {},
+  revenueRows: [],
+  recentOrders: [],
+  recentRfqs: [],
+};
+
+async function fetchAdminDashboard(): Promise<AdminDashboardData> {
+  const [summaryRaw, revenueRaw, ordersRaw, rfqsRaw] = await Promise.all([
+    adminApi.dashboardSummary(),
+    adminApi.dashboardRevenueChart(),
+    adminApi.listOrders({ page: 1, page_size: 5 }),
+    adminApi.listRfqs({ page: 1, page_size: 5 }),
+  ]);
+
+  const summary = summaryRaw as Record<string, unknown>;
+
+  const revenueObj =
+    revenueRaw && typeof revenueRaw === 'object'
+      ? (revenueRaw as AdminRevenueChartResponse)
+      : null;
+  const sourceRows =
+    revenueObj && Array.isArray(revenueObj.data)
+      ? revenueObj.data
+      : parseRows<Record<string, unknown>>(revenueRaw);
+  const revenueRows = sourceRows.map((r) => ({
+    month: String(
+      r.month ?? r.date ?? r.period ?? r.label ?? '-',
+    ),
+    revenue: Number(r.revenue ?? r.gross_order_value ?? 0),
+    commission: Number(r.commission ?? r.platform_commission ?? 0),
+  }));
+
+  return {
+    summary,
+    revenueRows: revenueRows.slice(-6),
+    recentOrders: parseRows<AdminOrderRow>(ordersRaw).slice(0, 5),
+    recentRfqs: parseRows<AdminRfqRow>(rfqsRaw).slice(0, 5),
+  };
 }
 
 function parseRows<T extends Record<string, unknown>>(raw: unknown): T[] {
@@ -179,72 +228,13 @@ function TopCustomersWidget() {
 }
 
 export function AdminDashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [summary, setSummary] = useState<Record<string, unknown>>({});
-  const [revenueRows, setRevenueRows] = useState<ChartRow[]>([]);
-  const [recentOrders, setRecentOrders] = useState<AdminOrderRow[]>([]);
-  const [recentRfqs, setRecentRfqs] = useState<AdminRfqRow[]>([]);
+  const {
+    data: dashboard = EMPTY_DASHBOARD,
+    loading,
+    error,
+  } = useApiCall(fetchAdminDashboard, [], { initialData: EMPTY_DASHBOARD });
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const [summaryRaw, revenueRaw, ordersRaw, rfqsRaw] = await Promise.all([
-          adminApi.dashboardSummary(),
-          adminApi.dashboardRevenueChart(),
-          adminApi.listOrders({ page: 1, page_size: 5 }),
-          adminApi.listRfqs({ page: 1, page_size: 5 }),
-        ]);
-        if (cancelled) return;
-
-        setSummary(summaryRaw as Record<string, unknown>);
-
-        const revenueObj =
-          revenueRaw && typeof revenueRaw === 'object'
-            ? (revenueRaw as AdminRevenueChartResponse)
-            : null;
-        const sourceRows =
-          revenueObj && Array.isArray(revenueObj.data)
-            ? revenueObj.data
-            : parseRows<Record<string, unknown>>(revenueRaw);
-        const chartRows = sourceRows.map((r) => ({
-          month: String(
-            (r as Record<string, unknown>).month ??
-              (r as Record<string, unknown>).date ??
-              (r as Record<string, unknown>).period ??
-              (r as Record<string, unknown>).label ??
-              '-',
-          ),
-          revenue: Number(
-            (r as Record<string, unknown>).revenue ??
-              (r as Record<string, unknown>).gross_order_value ??
-              0,
-          ),
-          commission: Number(
-            (r as Record<string, unknown>).commission ??
-              (r as Record<string, unknown>).platform_commission ??
-              0,
-          ),
-        }));
-        setRevenueRows(chartRows.slice(-6));
-
-        setRecentOrders(parseRows<AdminOrderRow>(ordersRaw).slice(0, 5));
-        setRecentRfqs(parseRows<AdminRfqRow>(rfqsRaw).slice(0, 5));
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'โหลดข้อมูลแดชบอร์ดไม่สำเร็จ');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { summary, revenueRows, recentOrders, recentRfqs } = dashboard;
 
   const kpiData = useMemo<KpiCard[]>(() => {
     const gross = Number(summary.gross_order_value ?? summary.total_revenue ?? 0);

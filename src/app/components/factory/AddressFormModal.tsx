@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { BaseModal } from '@/shared/ui';
+import { BaseModal, FormField, ModalFooter } from '@/shared/ui';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { LbiAddressPicker, type LbiAddressValue } from '@/components/common/LbiAddressPicker';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -118,44 +118,34 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       title={mode === 'create' ? 'เพิ่มที่อยู่' : 'แก้ไขที่อยู่'}
       placement='bottom'
       footer={
-        <div className='flex gap-2 w-full'>
-          <Button
-            variant='unstyled'
-            type='button'
-            disabled={saving}
-            onClick={() => void submit()}
-            className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50'
-            style={{
-              background: 'linear-gradient(135deg, var(--status-success) 0%, #10B981 100%)',
-            }}
-          >
-            {saving ? 'กำลังบันทึก...' : mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึกการแก้ไข'}
-          </Button>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={onClose}
-            disabled={saving}
-            className='px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700'
-          >
-            ยกเลิก
-          </Button>
-        </div>
+        <ModalFooter
+          layout='flex'
+          accent='success'
+          primary={{
+            label: mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึกการแก้ไข',
+            loadingLabel: 'กำลังบันทึก...',
+            loading: saving,
+            disabled: saving,
+            onClick: () => void submit(),
+            className: 'flex-1',
+          }}
+          secondary={{
+            label: 'ยกเลิก',
+            onClick: onClose,
+            disabled: saving,
+            tone: 'muted',
+          }}
+        />
       }
     >
-      {error ? (
-        <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-4'>
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
 
-      <Label className='block sm:max-w-sm mb-4'>
-        <span className='text-xs text-gray-500'>ประเภทที่อยู่ *</span>
+      <FormField label='ประเภทที่อยู่' required className='sm:max-w-sm mb-4'>
         <Select
           value={addressType}
           onValueChange={(next) => setAddressType(next as 'M' | 'B' | 'S')}
         >
-          <SelectTrigger className='mt-1 w-full'>
+          <SelectTrigger className='w-full'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -164,7 +154,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             <SelectItem value='S'>จัดส่ง</SelectItem>
           </SelectContent>
         </Select>
-      </Label>
+      </FormField>
 
       <div className='mb-4'>
         <LbiAddressPicker
@@ -178,26 +168,24 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       </div>
 
       <div className='grid gap-3 sm:grid-cols-3 mb-4'>
-        <Label className='block sm:col-span-1'>
-          <span className='text-xs text-gray-500'>รหัสไปรษณีย์ *</span>
+        <FormField label='รหัสไปรษณีย์' required className='sm:col-span-1'>
           <Input
-            className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
             value={zipCode}
             inputMode='numeric'
             maxLength={5}
             onChange={(e) => setZipCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
             placeholder='10110'
           />
-        </Label>
-        <Label className='block sm:col-span-2'>
-          <span className='text-xs text-gray-500'>ที่อยู่ *</span>
+        </FormField>
+        <FormField label='ที่อยู่' required className='sm:col-span-2'>
           <Textarea
-            className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
+            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
             placeholder='บ้านเลขที่ หมู่ ซอย ถนน'
           />
-        </Label>
+        </FormField>
       </div>
 
       <Label className='inline-flex items-center gap-2 text-sm text-gray-700'>

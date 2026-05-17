@@ -10,6 +10,7 @@ import {
   Clock,
   AlertCircle,
 } from 'lucide-react';
+import { useModal } from '@/hooks/ui/useModal';
 import { walletApi, transactionsApi } from '@/services/api';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
@@ -161,10 +162,8 @@ export function FactoryWalletPage() {
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'credit' | 'debit'>('all');
 
-  const [withdrawModal, setWithdrawModal] = useState(false);
+  const withdraw = useModal();
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [withdrawBusy, setWithdrawBusy] = useState(false);
-  const [withdrawError, setWithdrawError] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -298,8 +297,7 @@ export function FactoryWalletPage() {
               type='button'
               onClick={() => {
                 setWithdrawAmount('');
-                setWithdrawError('');
-                setWithdrawModal(true);
+                withdraw.openModal();
               }}
               className='flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors'
             >
@@ -450,13 +448,13 @@ export function FactoryWalletPage() {
       </div>
       {/* end px-4 wrapper */}
 
-      {withdrawModal ? (
+      {withdraw.isOpen ? (
         <div className='fixed inset-0 z-[70]'>
           <Button
             variant='unstyled'
             type='button'
             className='absolute inset-0 bg-black/50'
-            onClick={() => setWithdrawModal(false)}
+            onClick={() => withdraw.closeModal()}
           />
           <div className='absolute inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[420px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden'>
             <div className='flex justify-center pt-3 pb-1'>
@@ -470,7 +468,7 @@ export function FactoryWalletPage() {
                 <Button
                   variant='unstyled'
                   type='button'
-                  onClick={() => setWithdrawModal(false)}
+                  onClick={() => withdraw.closeModal()}
                   className='p-1.5 rounded-xl hover:bg-gray-100 transition-colors'
                 >
                   <X size={18} className='text-gray-500' />
@@ -504,7 +502,7 @@ export function FactoryWalletPage() {
                     value={withdrawAmount}
                     onChange={(e) => {
                       setWithdrawAmount(e.target.value);
-                      setWithdrawError('');
+                      withdraw.clearError();
                     }}
                     placeholder='500'
                     className='w-full pl-7 pr-3 py-3 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-brand-teal'
@@ -522,10 +520,10 @@ export function FactoryWalletPage() {
                 <p className='text-xs text-gray-400'>(ข้อมูลบัญชีโหลดจาก profile API อัตโนมัติ)</p>
               </div>
 
-              {withdrawError ? (
+              {withdraw.error ? (
                 <p className='text-xs text-red-600 flex items-center gap-1'>
                   <AlertCircle size={12} />
-                  {withdrawError}
+                  {withdraw.error}
                 </p>
               ) : null}
 
@@ -533,7 +531,7 @@ export function FactoryWalletPage() {
                 <Button
                   variant='unstyled'
                   type='button'
-                  onClick={() => setWithdrawModal(false)}
+                  onClick={() => withdraw.closeModal()}
                   className='flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors'
                 >
                   ยกเลิก
@@ -541,28 +539,23 @@ export function FactoryWalletPage() {
                 <Button
                   variant='unstyled'
                   type='button'
-                  disabled={withdrawBusy}
+                  disabled={withdraw.isLoading}
                   onClick={async () => {
                     const amt = Number(withdrawAmount);
                     if (!amt || amt < 500) {
-                      setWithdrawError('จำนวนขั้นต่ำคือ ฿500');
+                      withdraw.setError('จำนวนขั้นต่ำคือ ฿500');
                       return;
                     }
                     if (amt > (good ?? 0)) {
-                      setWithdrawError('จำนวนเกินยอดคงเหลือ');
+                      withdraw.setError('จำนวนเกินยอดคงเหลือ');
                       return;
                     }
-                    setWithdrawBusy(true);
-                    try {
+                    const ok = await withdraw.runAsync(async () => {
                       // Existing withdrawal handler — wire to actual API when ready
                       await new Promise((r) => setTimeout(r, 800));
-                      setWithdrawModal(false);
                       await load();
-                    } catch (e) {
-                      setWithdrawError(e instanceof Error ? e.message : 'เกิดข้อผิดพลาด');
-                    } finally {
-                      setWithdrawBusy(false);
-                    }
+                    });
+                    if (ok !== undefined) withdraw.closeModal();
                   }}
                   className='flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90'
                   style={{
@@ -571,7 +564,7 @@ export function FactoryWalletPage() {
                     boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                   }}
                 >
-                  {withdrawBusy ? 'กำลังดำเนินการ...' : 'ยืนยันถอนเงิน'}
+                  {withdraw.isLoading ? 'กำลังดำเนินการ...' : 'ยืนยันถอนเงิน'}
                 </Button>
               </div>
             </div>

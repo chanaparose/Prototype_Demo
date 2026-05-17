@@ -3,7 +3,7 @@ import { Wallet, QrCode, Landmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi, walletApi } from '@/services/api';
-import { BaseModal } from '@/shared/ui';
+import { BaseModal, ModalFooter } from '@/shared/ui';
 import {
   ACCENT_ORANGE_DEEP,
   BORDER_WARM,
@@ -124,37 +124,37 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       title='ชำระเงินเต็มจำนวน'
       placement='bottom'
       footer={
-        <div className='w-full space-y-2'>
-          {method === 'WALLET' && insufficient && !wallet.isPending ? (
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => {
-                onClose();
-                window.location.href = '/wallet/topup';
-              }}
-              className='w-full rounded-xl py-3 text-sm font-semibold text-white'
-              style={{ background: PLUM }}
-            >
-              เติมเงินเข้า Wallet
-            </Button>
-          ) : null}
-
-          <Button
-            variant='unstyled'
-            type='button'
-            disabled={!canSubmit || submitting}
-            onClick={handleSubmit}
-            className='w-full rounded-xl py-3 text-sm font-semibold text-white disabled:opacity-60'
-            style={{ background: CTA_GRADIENT }}
-          >
-            {submitting
-              ? 'กำลังดำเนินการ…'
-              : method === 'WALLET'
+        <ModalFooter
+          layout='stack'
+          leading={
+            method === 'WALLET' && insufficient && !wallet.isPending ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => {
+                  onClose();
+                  window.location.href = '/wallet/topup';
+                }}
+                className='w-full rounded-xl py-3 text-sm font-semibold text-white'
+                style={{ background: PLUM }}
+              >
+                เติมเงินเข้า Wallet
+              </Button>
+            ) : null
+          }
+          primary={{
+            label:
+              method === 'WALLET'
                 ? `ยืนยันชำระด้วย Wallet · ฿${amount.toLocaleString('th-TH')}`
-                : 'ดำเนินการต่อ'}
-          </Button>
-        </div>
+                : 'ดำเนินการต่อ',
+            loadingLabel: 'กำลังดำเนินการ…',
+            loading: submitting,
+            disabled: !canSubmit || submitting,
+            onClick: handleSubmit,
+            style: { background: CTA_GRADIENT },
+            fullWidth: true,
+          }}
+        />
       }
     >
       <div

@@ -30,52 +30,21 @@ import {
   RFQ_STATUS_DISPLAY,
   ORDER_STATUS_CONFIG,
   ORDER_MOBILE_TAB_THEME,
-  PROGRESS_GRADIENT_ACTIVE,
-  PROGRESS_COMPLETED,
   type OrderFilterId,
 } from '@/components/features/rfq-and-orders/constants';
-import { formatBudget, formatDate } from '@/components/features/rfq-and-orders/utils';
+import {
+  formatBudget,
+  formatDate,
+  getOrderProgressBg,
+  getOrderTabCount,
+  getRfqActivityCounts,
+} from '@/components/features/rfq-and-orders/utils';
 import { useRfqAndOrdersState } from '@/hooks/useRfqAndOrdersState';
 import type { Rfq, Order } from '@/stores';
 import { Button } from '@/components/ui/button';
 
-function getActivityCounts(rfq: Rfq) {
-  const offers = rfq.offers ?? [];
-  const totalOffers = offers.length || rfq.offerCount || 0;
-  const accepted = offers.filter((o) => o.quoteStatus === 'AC').length;
-  const pending = offers.filter((o) => o.quoteStatus === 'PD').length;
-  return { totalOffers, accepted, pending };
-}
-
-function getProgressBg(status: string): string {
-  if (status === 'completed') return PROGRESS_COMPLETED;
-  if (status === 'shipped') return ACCENT_ORANGE;
-  if (status === 'pending_payment') return ACCENT_ORANGE_DEEP;
-  return PROGRESS_GRADIENT_ACTIVE;
-}
-
-function getTabCount(
-  id: OrderFilterId,
-  c: ReturnType<typeof useRfqAndOrdersState>['orderTagCounts'],
-): number {
-  switch (id) {
-    case 'pending_payment':
-      return c.pendingPayment;
-    case 'in_production':
-      return c.inProduction;
-    case 'shipped':
-      return c.shipped;
-    case 'completed':
-      return c.completed;
-    case 'cancelled_expired':
-      return c.cancelledExpired;
-    default:
-      return 0;
-  }
-}
-
 function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
-  const { totalOffers, accepted, pending } = getActivityCounts(rfq);
+  const { totalOffers, accepted, pending } = getRfqActivityCounts(rfq);
   const remaining = Math.max(totalOffers - accepted, 0);
   const iconBgs = [PRIMARY_BG, PEACH_MIST, PLUM_SOFT_BG] as const;
   const iconColors = [PRIMARY_COLOR, ACCENT_ORANGE_DEEP, PLUM] as const;
@@ -386,7 +355,7 @@ export function OrderPanel({
           const Icon = tab.icon;
           const isActive = orderFilter === tab.id;
           const th = ORDER_MOBILE_TAB_THEME[tab.id];
-          const count = getTabCount(tab.id, orderTagCounts);
+          const count = getOrderTabCount(tab.id, orderTagCounts);
           const isPendingTab = tab.id === 'pending_payment';
 
           return (
@@ -499,7 +468,7 @@ export function OrderPanel({
                       className='h-full rounded-full transition-all duration-700'
                       style={{
                         width: `${order.progress}%`,
-                        background: getProgressBg(order.status),
+                        background: getOrderProgressBg(order.status),
                       }}
                     />
                   </div>

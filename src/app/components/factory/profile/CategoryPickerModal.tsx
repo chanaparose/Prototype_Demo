@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { categoriesApi } from '@/services/api';
-import { BaseModal } from '@/shared/ui';
-import { Button } from '@/components/ui/button';
+import { BaseModal, FormField, ModalFooter } from '@/shared/ui';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
@@ -102,48 +101,46 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
       closeOnBackdropClick={!confirming}
       footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-[1fr_auto] gap-2'
       footer={
-        <>
-          <Button
-            onClick={handleConfirm}
-            disabled={confirming}
-            className='py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60'
-            style={{
-              background:
-                'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
-            }}
-          >
-            {confirming ? 'กำลังโหลด…' : `ยืนยัน (${selected.length})`}
-          </Button>
-          <Button
-            onClick={onClose}
-            disabled={confirming}
-            variant='outline'
-            className='px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-60'
-          >
-            ยกเลิก
-          </Button>
-        </>
+        <ModalFooter
+          layout='grid-compact'
+          accent='purple'
+          primary={{
+            label: `ยืนยัน (${selected.length})`,
+            loadingLabel: 'กำลังโหลด…',
+            loading: confirming,
+            disabled: confirming,
+            onClick: handleConfirm,
+          }}
+          secondary={{
+            label: 'ยกเลิก',
+            onClick: onClose,
+            disabled: confirming,
+            tone: 'muted',
+          }}
+        />
       }
     >
-      {isLoading ? (
-        <p className='text-sm text-gray-400'>กำลังโหลด…</p>
-      ) : isError ? (
-        <p className='text-sm text-red-600'>โหลดไม่สำเร็จ</p>
-      ) : categories.length === 0 ? (
-        <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
-      ) : (
-        <ul className='space-y-1 max-h-[50vh] overflow-y-auto'>
-          {categories.map((c) => (
-            <li key={c.id}>
-              <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
-                <Checkbox checked={selected.includes(c.id)} onCheckedChange={() => toggle(c.id)} />
-                {c.name}
-              </Label>
-            </li>
-          ))}
-        </ul>
-      )}
-      {confirmError && <p className='text-xs text-red-600'>{confirmError}</p>}
+      <FormField error={confirmError || (isError ? 'โหลดไม่สำเร็จ' : undefined)}>
+        {isLoading ? (
+          <p className='text-sm text-gray-400'>กำลังโหลด…</p>
+        ) : categories.length === 0 && !isError ? (
+          <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
+        ) : !isError ? (
+          <ul className='space-y-1 max-h-[50vh] overflow-y-auto'>
+            {categories.map((c) => (
+              <li key={c.id}>
+                <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
+                  <Checkbox
+                    checked={selected.includes(c.id)}
+                    onCheckedChange={() => toggle(c.id)}
+                  />
+                  {c.name}
+                </Label>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </FormField>
     </BaseModal>
   );
 }

@@ -11,6 +11,7 @@ import { quotationsApi } from '@/services/api';
 import { useEditForm } from '@/hooks/forms/useEditForm';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import { Button } from '@/components/ui/button';
@@ -197,11 +198,7 @@ export function FactoryEditQuotationPage() {
       </div>
 
       <div className='max-w-3xl mx-auto px-4 pt-4 space-y-4 w-full min-w-0'>
-        {error && (
-          <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
-            {error}
-          </p>
-        )}
+        {error ? <ErrorAlert>{error}</ErrorAlert> : null}
         {info && (
           <p className='text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3'>
             {info}

@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles, MapPin, Star } from '
 import { useAuth } from '@/stores';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { showcasesApi } from '@/services/api';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
@@ -125,7 +126,7 @@ export function FactoryShowcasesPage() {
 
   if (fid == null) {
     return (
-      <p className='text-sm text-red-600 px-4 py-3 bg-red-50 rounded-xl'>บัญชีนี้ไม่ใช่โรงงาน</p>
+      <ErrorAlert>บัญชีนี้ไม่ใช่โรงงาน</ErrorAlert>
     );
   }
 
@@ -166,11 +167,7 @@ export function FactoryShowcasesPage() {
         })}
       </div>
 
-      {error ? (
-        <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
-          {error}
-        </p>
-      ) : null}
+      {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
       {loading ? (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>

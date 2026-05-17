@@ -14,6 +14,7 @@ import {
 import { RfqCard, type RfqCardModel } from '@/components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '@/hooks/useFactoryRfqBoard';
 import { useDisclosure, useToggle } from '@/hooks/ui';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -376,7 +377,7 @@ export function FactoryRfqBoardPage() {
 
       {error ? (
         <div className='flex flex-col sm:flex-row gap-2 sm:items-center'>
-          <p className='text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 flex-1'>{error}</p>
+          <ErrorAlert className='flex-1'>{error}</ErrorAlert>
           <Button
             variant='unstyled'
             type='button'

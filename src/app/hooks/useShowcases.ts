@@ -3,7 +3,8 @@
  *
  * Optional `type` uses server filter: PD | PM | ID | MT. Omit for full list (ทั้งหมด).
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useApiCall } from '@/hooks/data/useApiCall';
 import { showcasesApi } from '@/services/api';
 import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '@/stores';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
@@ -200,49 +201,27 @@ function readCache(key: string): FactoryShowcase[] | null {
 export function useShowcases(options?: { type?: ShowcaseApiType }) {
   const type = options?.type;
   const key = cacheKey(type);
+  const cached = readCache(key);
 
-  const [showcases, setShowcases] = useState<FactoryShowcase[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: showcases = [],
+    loading,
+    error,
+  } = useApiCall(
+    async () => {
+      const hit = readCache(key);
+      if (hit) return hit;
+      const raw = await showcasesApi.list(type);
+      const arr = extractShowcaseRows(raw);
+      const result = arr.map(normShowcase).filter((s) => s.id && s.title);
+      cacheByKey.set(key, { data: result, ts: Date.now() });
+      return result;
+    },
+    [key, type],
+    { initialData: cached ?? [] },
+  );
 
-  useEffect(() => {
-    const cached = readCache(key);
-    if (cached) {
-      setShowcases(cached);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
-    let cancelled = false;
-    setLoading(true);
-    setShowcases([]);
-
-    showcasesApi
-      .list(type)
-      .then((raw) => {
-        if (cancelled) return;
-        const arr = extractShowcaseRows(raw);
-        const result = arr.map(normShowcase).filter((s) => s.id && s.title);
-        cacheByKey.set(key, { data: result, ts: Date.now() });
-        setShowcases(result);
-        setError(null);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setShowcases([]);
-        setError(err instanceof Error ? err.message : String(err));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [key, type]);
-
-  return { showcases, loading, error };
+  return { showcases, loading, error: error || null };
 }
 
 export function useShowcaseById(id: string | undefined, contentType?: string) {

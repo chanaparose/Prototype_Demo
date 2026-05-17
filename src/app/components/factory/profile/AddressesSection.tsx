@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMyAddresses } from '@/hooks/factory/useMyAddresses';
+import { useModal } from '@/hooks/ui/useModal';
 import { addressesApi } from '@/services/api';
 import { AddressList } from '@/components/factory/AddressList';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
@@ -10,28 +11,25 @@ type Row = Record<string, unknown>;
 export function AddressesSection() {
   const qc = useQueryClient();
   const { data: addresses = [] } = useMyAddresses();
+  const modal = useModal();
 
-  const [modalOpen, setModalOpen] = useState(false);
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editing, setEditing] = useState<Row | null>(null);
-  const [saving, setSaving] = useState(false);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['addresses', 'me'] });
 
   const submit = async (payload: AddressFormPayload, editingId?: string | number) => {
-    setSaving(true);
-    try {
+    const ok = await modal.runAsync(async () => {
       if (mode === 'create') {
         await addressesApi.create(payload);
       } else if (editingId != null) {
         await addressesApi.update(editingId, payload);
       }
-      setModalOpen(false);
-      setEditing(null);
       invalidate();
-    } finally {
-      setSaving(false);
-    }
+    });
+    if (ok === undefined) return;
+    modal.closeModal();
+    setEditing(null);
   };
 
   const remove = async (row: Row) => {
@@ -56,25 +54,25 @@ export function AddressesSection() {
         onCreate={() => {
           setMode('create');
           setEditing(null);
-          setModalOpen(true);
+          modal.openModal();
         }}
         onEdit={(row) => {
           setMode('edit');
           setEditing(row);
-          setModalOpen(true);
+          modal.openModal();
         }}
         onDelete={(row) => void remove(row)}
         onSetDefault={(row) => void setDefault(row)}
       />
 
       <AddressFormModal
-        open={modalOpen}
+        open={modal.isOpen}
         mode={mode}
         initial={editing}
-        saving={saving}
+        saving={modal.isLoading}
         onClose={() => {
-          if (saving) return;
-          setModalOpen(false);
+          if (modal.isLoading) return;
+          modal.closeModal();
           setEditing(null);
         }}
         onSubmit={submit}
