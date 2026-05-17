@@ -5,7 +5,7 @@
 
 import { httpClient } from '@/services/api/httpClient';
 import { QueryTableRequest } from '@/types/api/request/query';
-import { IRFQ, IQuotation, IPaginatedList } from '@/types/model';
+import { IRFQ, IQuotation, IPaginatedList } from '@/types/model/models';
 
 export const fetchRFQs = async ({
   query,

@@ -1,12 +1,9 @@
 import { create } from 'zustand';
 import { useAuth } from '@/stores/useAuthStore';
-import {
-  frontendApi,
-  notificationsApi,
-  conversationsApi,
-  rfqsApi,
-  walletApi,
-} from '@/services/api';
+import { frontendApi } from '@/services/api/exploreApi';
+import { notificationsApi, conversationsApi } from '@/services/api/chatApi';
+import { rfqsApi } from '@/services/api/rfqApi';
+import { walletApi } from '@/services/api/userApi';
 import {
   normalizeFactoryRow,
   mapOrderStatusFromApi,
@@ -439,3 +436,5 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     },
   };
 });
+
+export const useData = useDataStore;

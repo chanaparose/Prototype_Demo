@@ -1,4 +1,4 @@
-import { categoriesApi, masterApi } from '@/services/api';
+import { categoriesApi, masterApi } from '@/services/api/masterApi';
 
 export type ExploreCategoryItem = {
   id: string;

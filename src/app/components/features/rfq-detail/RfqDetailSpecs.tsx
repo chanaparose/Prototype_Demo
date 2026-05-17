@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 
 export type RfqForSpecs = {
@@ -55,7 +56,7 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
     ...(hasSubFromApi ? [{ label: 'ประเภทย่อย', value: subLabel || '—' }] : []),
     ...(rfq.shippingMethodName ? [{ label: 'วิธีส่งของ', value: rfq.shippingMethodName }] : []),
     ...(rfq.deliveryAddress ? [{ label: 'ที่อยู่จัดส่ง', value: rfq.deliveryAddress }] : []),
-    { label: 'จำนวน', value: `${rfq.quantity.toLocaleString()} ชิ้น` },
+    { label: 'จำนวน', value: `${formatCompactNumber(rfq.quantity)} ชิ้น` },
     ...(rfq.materialGrade || rfq.material
       ? [{ label: 'Material grade', value: rfq.materialGrade || rfq.material }]
       : []),
@@ -63,15 +64,15 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
     ...(rfq.colorFinish ? [{ label: 'Color / Finish', value: rfq.colorFinish }] : []),
     ...(rfq.dimensionSpec ? [{ label: 'Dimension', value: rfq.dimensionSpec }] : []),
     ...(rfq.weightTargetG != null
-      ? [{ label: 'Weight target', value: `${rfq.weightTargetG.toLocaleString()} g` }]
+      ? [{ label: 'Weight target', value: `${formatCompactNumber(rfq.weightTargetG)} g` }]
       : []),
     ...(rfq.packagingSpec ? [{ label: 'Packaging spec', value: rfq.packagingSpec }] : []),
-    { label: 'งบประมาณรวม', value: `฿${rfq.budget.toLocaleString()}` },
+    { label: 'งบประมาณรวม', value: formatCurrency(rfq.budget) },
     ...(rfq.targetLeadTimeDays != null
       ? [
           {
             label: 'ระยะเวลาผลิตที่ต้องการ',
-            value: `${rfq.targetLeadTimeDays.toLocaleString()} วัน`,
+            value: `${formatCompactNumber(rfq.targetLeadTimeDays)} วัน`,
           },
         ]
       : []),

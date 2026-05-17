@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowRight, Check, CreditCard, FileText, X } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { ChatReference, ChatReferenceType } from '@/utils/chatContract';
 import { ReferenceChip } from '@/components/chat/ReferenceChip';
 import { normalizeIso } from '@/pages/messages/selectors';
 import { formatChatTime } from '@/utils/chatTime';
-import { formatCurrency } from '@/utils/formatting';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 
 /** Tiny inline spinner for the "sending" status on optimistic bubbles. */

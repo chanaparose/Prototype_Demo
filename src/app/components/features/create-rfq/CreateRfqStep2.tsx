@@ -13,8 +13,8 @@ import {
 } from 'lucide-react';
 import type { CreateRfqForm } from '@/components/features/create-rfq/types';
 import type { Unit } from '@/components/features/create-rfq/types';
-import { mediaApi } from '@/services/api';
-import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
+import { mediaApi } from '@/services/api/factoryApi';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import {

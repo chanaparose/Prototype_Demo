@@ -1,6 +1,7 @@
 import React from 'react';
 import { MoneyText } from '@/shared/ui/MoneyText';
-import type { PlatformConfig, QuotationBreakdown } from '@/services/api';
+import type { PlatformConfig } from '@/services/api/adminApi';
+import type { QuotationBreakdown } from '@/services/api/types/rfq.types';
 
 type Props = {
   loading: boolean;

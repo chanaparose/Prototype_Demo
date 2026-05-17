@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
 import { ChevronLeft } from 'lucide-react';
 
-import { mediaApi, showcasesApi } from '@/services/api';
+import { mediaApi, showcasesApi } from '@/services/api/factoryApi';
 import { useEditForm } from '@/hooks/forms/useEditForm';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -12,7 +12,7 @@ import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
 import { mapLinkedShowcasesErrorToThai, partitionLinkedShowcases } from '@/utils/linkedShowcases';

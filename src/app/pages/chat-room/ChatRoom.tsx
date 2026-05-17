@@ -9,11 +9,13 @@ import {
   ChevronUp,
   FileText,
 } from 'lucide-react';
-import { useData } from '@/stores';
-import { useAuth } from '@/stores';
-import type { Conversation } from '@/stores';
-import { messagesApi, ordersApi, quotationsApi } from '@/services/api';
-import { ImageWithFallback } from '@/components/shared';
+import { useData } from '@/stores/useDataStore';
+import { useAuth } from '@/stores/useAuthStore';
+import { type Conversation } from '@/stores/types';
+import { messagesApi } from '@/services/api/chatApi';
+import { ordersApi } from '@/services/api/ordersApi';
+import { quotationsApi } from '@/services/api/rfqApi';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { ChatReference } from '@/utils/chatContract';
 import {
   buildSendPayload,

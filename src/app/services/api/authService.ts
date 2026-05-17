@@ -11,7 +11,7 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from '@/types/api/request/auth';
-import { IAuthResponse } from '@/types/model';
+import { IAuthResponse } from '@/types/model/models';
 
 /**
  * Login user with email and password

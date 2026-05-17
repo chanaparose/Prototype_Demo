@@ -1,18 +1,13 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
-import { useAuth } from '@/stores';
-import { useData } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
 import type { QuotationRow } from '@/types/rfq';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import {
-  rfqsApi,
-  quotationsApi,
-  conversationsApi,
-  messagesApi,
-  categoriesApi,
-  factoryRfqsApi,
-} from '@/services/api';
+import { rfqsApi, quotationsApi, factoryRfqsApi } from '@/services/api/rfqApi';
+import { conversationsApi, messagesApi } from '@/services/api/chatApi';
+import { categoriesApi } from '@/services/api/masterApi';
 import { buildSendPayload, chatRoomPath, getCurrentUserId } from '@/utils/chatContract';
 import type { ApiConversation } from '@/utils/chatContract';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
@@ -24,12 +19,12 @@ import {
   QuotationCreateForm,
   type QuotationCreateFormHandle,
 } from '@/components/factory/QuotationCreateForm';
-import { QuotationHistoryPanel } from '@/components/features/rfq-detail';
+import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { DismissRfqButton } from '@/components/features/factory-rfq/DismissRfqButton';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
-import { StatusBadge } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
 type QuoteRow = QuotationRow & {
   factoryId?: number | string;

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
-import { adminApi } from '@/services/api';
+import { adminApi } from '@/services/api/adminApi';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';

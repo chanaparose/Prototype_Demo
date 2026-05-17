@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
-import { showcasesApi, mediaApi } from '@/services/api';
+import { showcasesApi, mediaApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
 import { mapLinkedShowcasesErrorToThai } from '@/utils/linkedShowcases';

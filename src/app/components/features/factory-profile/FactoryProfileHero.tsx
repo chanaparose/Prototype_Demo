@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ImageIcon, MapPin, MessageCircle, ShieldCheck, Star } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
-import { StatusBadge } from '@/shared/ui';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Button } from '@/components/ui/button';
 
 const NAVY = 'var(--brand-navy)';

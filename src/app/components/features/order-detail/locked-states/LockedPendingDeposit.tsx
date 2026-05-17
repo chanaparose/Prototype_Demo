@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import {
   ACCENT_ORANGE_DEEP,
   BORDER_WARM,
@@ -57,7 +58,7 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
           💰 ยอดที่ต้องชำระ
         </p>
         <p className='mt-1 text-xl font-semibold tabular-nums' style={{ color: DEEP_PURPLE }}>
-          ฿{amount.toLocaleString('th-TH')}
+          {formatCurrency(amount)}
         </p>
         {due ? (
           <p

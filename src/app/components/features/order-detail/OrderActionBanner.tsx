@@ -7,7 +7,7 @@ import {
 } from '@/components/features/rfq-and-orders/constants';
 import { diffDaysFromNow, formatDateTh } from '@/components/features/order-detail/utils';
 import type { NextAction, PaymentScheduleItem } from '@/pages/order-detail/orderDetailFromApi';
-import { formatCurrency } from '@/utils/formatting';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 
 type Props = {

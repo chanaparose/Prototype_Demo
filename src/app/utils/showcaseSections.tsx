@@ -17,7 +17,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from 'lucide-react';
-import type { ShowcaseSection, FactoryShowcase } from '@/stores';
+import { type ShowcaseSection, type FactoryShowcase } from '@/stores/types';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   CheckCircle2,

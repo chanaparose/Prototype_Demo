@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router';
 import { ChevronRight, Leaf, MapPin, ShoppingBag, Star } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import {
   Carousel,
   CarouselContent,

@@ -1,4 +1,4 @@
-import type { User } from '@/stores';
+import { type User } from '@/stores/types';
 
 export type ChatReferenceType = 'RQ' | 'OD' | 'PD' | 'PM' | 'ID';
 

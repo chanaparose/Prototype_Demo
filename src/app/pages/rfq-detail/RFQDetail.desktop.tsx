@@ -2,20 +2,18 @@ import React, { useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { useRfqDetail } from '@/hooks/useRfqDetail';
-import { rfqsApi } from '@/services/api';
+import { rfqsApi } from '@/services/api/rfqApi';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
-import {
-  HISTORY_STATUSES,
-  QuotationHistoryPanel,
-  RfqDetailOffersSection,
-  RfqDetailSpecs,
-  RfqDetailStatusCard,
-  STATUS_LABEL,
-} from '@/components/features/rfq-detail';
+import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/components/features/rfq-detail/constants';
+import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
+import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
+import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
+import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 
@@ -28,9 +26,6 @@ const COLORS = {
   gray: appColors.neutral.warmSurface,
   lightPurpleBg: appColors.brand.page,
 };
-// สถานะที่ลูกค้าสามารถ "ปิดรับคำขอ" ด้วยตนเองได้ (ยังเปิดอยู่ มีหรือไม่มีข้อเสนอก็ได้)
-const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
-
 export function RFQDetailDesktop() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -197,7 +192,7 @@ export function RFQDetailDesktop() {
               <span className='text-gray-300'>•</span>
               <span>หมวด: {rfq.category}</span>
               <span className='text-gray-300'>•</span>
-              <span>งบ: ฿{rfq.budget.toLocaleString()}</span>
+              <span>งบ: {formatCurrency(rfq.budget)}</span>
             </div>
           </div>
           <div className='flex items-center gap-2 shrink-0'>

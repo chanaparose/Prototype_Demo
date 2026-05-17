@@ -24,15 +24,8 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import {
-  adminApi,
-  adminCustomerApi,
-  type AdminOrderRow,
-  type AdminRfqRow,
-  type AdminRevenueChartResponse,
-  type AdminTopCustomer,
-} from '@/services/api';
-import { StatusBadge as SharedStatusBadge } from '@/shared/ui';
+import { adminApi, adminCustomerApi, type AdminOrderRow, type AdminRfqRow, type AdminRevenueChartResponse, type AdminTopCustomer } from '@/services/api/adminApi';
+import { StatusBadge as SharedStatusBadge } from '@/shared/ui/badges/StatusBadge';
 import {
   Table,
   TableBody,

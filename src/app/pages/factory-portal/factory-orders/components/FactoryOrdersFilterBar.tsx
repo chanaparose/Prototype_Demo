@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 import type { SortKey, TabId } from '@/pages/factory-portal/factory-orders/types';
-import { TabNavigation } from '@/shared/ui';
+import { TabNavigation } from '@/shared/ui/sections/TabNavigation';
 import {
   Select,
   SelectContent,

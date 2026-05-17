@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { reviewsApi } from '@/services/api';
+import { reviewsApi } from '@/services/api/userApi';
 
 export type FactoryReviewItem = {
   id: string;

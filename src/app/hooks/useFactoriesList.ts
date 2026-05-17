@@ -1,7 +1,7 @@
 import React from 'react';
-import { useData } from '@/stores';
-import type { Factory } from '@/stores';
-import { factoriesApi } from '@/services/api';
+import { useData } from '@/stores/useDataStore';
+import { type Factory } from '@/stores/types';
+import { factoriesApi } from '@/services/api/factoryApi';
 import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';
 
 export type FactoryFilterState = {

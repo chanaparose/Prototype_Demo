@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { notificationsApi } from '@/services/api';
+import { notificationsApi } from '@/services/api/chatApi';
 
 export const NOTIFICATIONS_CHANGED_EVENT = 'notifications:changed';
 

@@ -8,12 +8,16 @@
  * ข้อมูล category name / factory name ดึงจาก DataContext (bootstrap) สำหรับ enrich
  */
 import React from 'react';
-import { useAuth } from '@/stores';
-import { useData, type Rfq, type Order } from '@/stores';
-import { rfqsApi, ordersApi } from '@/services/api';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
-import { getRfqFilterId } from '@/components/features/rfq-and-orders';
-import type { RfqFilterId, OrderFilterId } from '@/components/features/rfq-and-orders';
+import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
+import { type Rfq, type Order } from '@/stores/types';
+import { rfqsApi } from '@/services/api/rfqApi';
+import { ordersApi } from '@/services/api/ordersApi';
+import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
+import { mapRfqStatusFromApi } from '@/domain/rfq/status';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import { getRfqFilterId } from '@/components/features/rfq-and-orders/utils';
+import { type RfqFilterId, type OrderFilterId } from '@/components/features/rfq-and-orders/constants';
 
 type PrimaryTab = 'rfq' | 'orders';
 
@@ -21,47 +25,6 @@ type InitialState = {
   primaryTab?: PrimaryTab;
   rfqFilter?: RfqFilterId;
   orderFilter?: OrderFilterId;
-};
-
-// RFQ: OP=Open, CL=Closed (order placed OR quotations expired), CC=Cancelled
-// hasAccepted = มี quotation AC อย่างน้อย 1 ใบ → แสดงว่า order ถูกสร้างแล้ว
-const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): string => {
-  switch (code.toUpperCase()) {
-    case 'OP':
-      return hasQuotes ? 'offers_received' : 'pending';
-    case 'CL':
-      return hasAccepted ? 'completed' : 'expired';
-    case 'CC':
-      return 'cancelled';
-    default:
-      return code.toLowerCase();
-  }
-};
-
-// Order: PP=รอชำระ, PR/QC=ผลิต, SH=ส่ง, CP=เสร็จ — ดู orderCustomerStatus.ts
-
-const CATEGORY_ICON_MAP: Record<string, string> = {
-  อาหารสัตว์: '🐾',
-  อาหารเม็ดสัตว์: '🐾',
-  อาหารเสริม: '💊',
-  ของเล่นสัตว์เลี้ยง: '🎾',
-  เสื้อผ้าสัตว์เลี้ยง: '👕',
-  อุปกรณ์สัตว์เลี้ยง: '🦮',
-  บรรจุภัณฑ์: '📦',
-  ผลิตภัณฑ์บำรุง: '✨',
-  ขนมสัตว์เลี้ยง: '🍖',
-  ที่นอนและบ้าน: '🏠',
-  ตู้ปลาและกรง: '🐟',
-  กระเป๋าและรถเข็น: '🧳',
-  ห้องน้ำและทราย: '🚿',
-  อุปกรณ์อาบน้ำ: '🧴',
-};
-const guessCategoryIcon = (name: string) => {
-  if (CATEGORY_ICON_MAP[name]) return CATEGORY_ICON_MAP[name];
-  for (const [k, v] of Object.entries(CATEGORY_ICON_MAP)) {
-    if (name.includes(k) || k.includes(name)) return v;
-  }
-  return '📋';
 };
 
 type RawRfq = {
@@ -175,7 +138,10 @@ export function useRfqAndOrdersState(initial?: InitialState) {
               : 0),
         );
         const hasAccepted = quotes.some((q) => String(q.status ?? '').toUpperCase() === 'AC');
-        const status = mapRfqStatus(raw.status, quotes.length > 0, hasAccepted);
+        const status = mapRfqStatusFromApi(raw.status, {
+          quoteCount: quotes.length,
+          hasAcceptedQuote: hasAccepted,
+        });
         const createdDate = raw.created_at ? raw.created_at.split('T')[0] : '';
 
         return {

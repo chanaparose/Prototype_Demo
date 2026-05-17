@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { BaseModal, FormField, ModalFooter } from '@/shared/ui';
+import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { FormField } from '@/shared/ui/forms/FormField';
+import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { LbiAddressPicker, type LbiAddressValue } from '@/components/common/LbiAddressPicker';
 import { Checkbox } from '@/components/ui/checkbox';

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { useDisclosure, useToggle } from '@/hooks/ui';
+import { useDisclosure } from '@/hooks/ui/useDisclosure';
+import { useToggle } from '@/hooks/ui/useToggle';
 import {
   Quote,
   Minus,
@@ -16,9 +17,9 @@ import {
   LayoutTemplate,
   CheckCircle2,
 } from 'lucide-react';
-import { mediaApi } from '@/services/api';
+import { mediaApi } from '@/services/api/factoryApi';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { BaseModal } from '@/shared/ui';
+import { BaseModal } from '@/shared/ui/modals/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';

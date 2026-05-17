@@ -2,8 +2,8 @@
  * Auth Response Mappers — Transform auth API responses to models
  */
 
-import { IUser, IAuthResponse } from '@/types/model';
-import { createMapper } from '@/services/mapper/response/index';
+import { IUser, IAuthResponse } from '@/types/model/models';
+import { createMapper } from '@/services/mapper/response/mapperUtils';
 
 /**
  * Raw user data from API

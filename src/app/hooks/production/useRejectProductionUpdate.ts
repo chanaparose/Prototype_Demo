@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { productionUpdatesApi } from '@/services/api';
+import { productionUpdatesApi } from '@/services/api/ordersApi';
 
 export function useRejectProductionUpdate(orderId: string | undefined) {
   const qc = useQueryClient();

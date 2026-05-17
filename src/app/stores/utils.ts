@@ -1,39 +1,10 @@
 import type { Factory, RfqOffer, Rfq, Conversation } from '@/stores/types';
+import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
+import { mapRfqStatusFromApi } from '@/domain/rfq/status';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
 import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
 
-export { normalizeFactoryRow, mapOrderStatusFromApi, guessOrderProgress };
-
-const CATEGORY_ICON_MAP: Record<string, string> = {
-  อาหารสัตว์: '🐾',
-  อาหารเม็ดสัตว์: '🐾',
-  อาหารเสริม: '💊',
-  ของเล่นสัตว์เลี้ยง: '🎾',
-  เสื้อผ้าสัตว์เลี้ยง: '👕',
-  'เสื้อผ้า/สิ่งทอ': '👕',
-  อุปกรณ์สัตว์เลี้ยง: '🦮',
-  'สายจูง อุปกรณ์': '🦮',
-  บรรจุภัณฑ์: '📦',
-  แพ็กเกจจิ้ง: '📦',
-  เครื่องสำอาง: '✨',
-  อุปกรณ์อาบน้ำ: '🧴',
-  เฟอร์นิเจอร์: '🏠',
-  ที่นอนและบ้าน: '🏠',
-  พลาสติก: '🔩',
-  ขนมสัตว์เลี้ยง: '🍖',
-  ตู้ปลาและกรง: '🐟',
-  กระเป๋าและรถเข็น: '🧳',
-  ห้องน้ำและทราย: '🚿',
-};
-
-export function guessCategoryIcon(catName: string): string {
-  if (!catName) return '📋';
-  if (CATEGORY_ICON_MAP[catName]) return CATEGORY_ICON_MAP[catName];
-  for (const [key, icon] of Object.entries(CATEGORY_ICON_MAP)) {
-    if (catName.includes(key) || key.includes(catName)) return icon;
-  }
-  return '📋';
-}
+export { normalizeFactoryRow, mapOrderStatusFromApi, guessOrderProgress, guessCategoryIcon };
 
 export function mapConversationRowsFromApi(rawConvs: Record<string, unknown>[]): Conversation[] {
   return rawConvs
@@ -65,20 +36,6 @@ function mergeFrontendRfqPayload(api: Record<string, unknown>): Record<string, u
     (Array.isArray(rfqPart.offers) && rfqPart.offers) ||
     [];
   return { ...rfqPart, offers: rawList };
-}
-
-function mapApiRfqStatus(rawStatus: string, offerCount: number): string {
-  const u = String(rawStatus || '').toUpperCase();
-  if (u === 'CL') return 'completed';
-  if (u === 'CC') return 'cancelled';
-  if (u === 'EX' || u === 'EXPIRED') return 'expired';
-  if (u === 'OP' || u === 'OPEN' || u === '') {
-    return offerCount > 0 ? 'offers_received' : 'pending';
-  }
-  const lower = String(rawStatus).toLowerCase();
-  const known = ['pending', 'offers_received', 'reviewing', 'completed', 'cancelled', 'expired'];
-  if (known.includes(lower)) return lower;
-  return lower || 'pending';
 }
 
 function mapRowToRfqOffer(
@@ -185,7 +142,11 @@ export function normalizeRfqRecord(
   offers = applyRecommendedFlags(offers);
   const offerCount = Number(row.offer_count ?? row.offerCount ?? offers.length);
   const effCount = Math.max(offerCount, offers.length);
-  const status = mapApiRfqStatus(String(row.status ?? ''), effCount);
+  const hasAcceptedQuote = offers.some((o) => String(o.quoteStatus ?? '').toUpperCase() === 'AC');
+  const status = mapRfqStatusFromApi(String(row.status ?? ''), {
+    quoteCount: effCount,
+    hasAcceptedQuote,
+  });
   const totalBudget = Number(
     row.target_price ?? row.budget_total ?? row.total_budget ?? row.budget ?? 0,
   );

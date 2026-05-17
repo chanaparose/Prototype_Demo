@@ -10,8 +10,8 @@ import {
   Wallet,
   Lock,
 } from 'lucide-react';
-import { useData } from '@/stores';
-import { useAuth } from '@/stores';
+import { useData } from '@/stores/useDataStore';
+import { useAuth } from '@/stores/useAuthStore';
 import { isFactoryRole } from '@/utils/factoryUser';
 import {
   FACTORY_SIDEBAR_NAV,
@@ -20,7 +20,7 @@ import {
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
-import { useLocalStorage } from '@/hooks';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';

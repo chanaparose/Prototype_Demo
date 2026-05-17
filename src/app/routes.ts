@@ -1,5 +1,5 @@
 import { createBrowserRouter, redirect } from 'react-router';
-import { Layout } from '@/components/layout';
+import { Layout } from '@/components/layout/Layout';
 import { Explore } from '@/pages/explore';
 import { FactoryIdeas } from '@/pages/factory-ideas';
 import { FactoryDetail } from '@/pages/factories/FactoryDetail';
@@ -21,7 +21,7 @@ import { ChatRoom } from '@/pages/chat-room';
 import { Notifications } from '@/pages/notifications';
 import { FactoriesList } from '@/pages/factories/FactoriesList';
 import { Login } from '@/pages/login';
-import { RegisterFactoryPage } from '@/pages/auth';
+import { RegisterFactoryPage } from '@/pages/auth/RegisterFactoryPage';
 import { QuoteBuilder, QuoteDetailCustomer } from '@/pages/quote';
 import {
   CommissionConfig,
@@ -39,21 +39,19 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { PublicDataOutlet } from '@/components/PublicDataOutlet';
 import { FactoryRoleGuard } from '@/components/factory/FactoryRoleGuard';
 import { FactoryVerifiedGuard } from '@/components/factory/FactoryVerifiedGuard';
-import {
-  FactoryPortalLayout,
-  FactoryDashboardPage,
-  FactoryProfilePage,
-  FactoryShowcasesPage,
-  FactoryShowcaseNewPage,
-  FactoryRfqBoardPage,
-  FactoryRfqDetailPage,
-  FactoryOrdersPage,
-  FactoryOrderDetailPage,
-  FactoryWalletPage,
-  FactoryEditQuotationPage,
-  FactoryQuotationsPage,
-  FactoryShowcaseEditPage,
-} from '@/pages/factory-portal';
+import { FactoryPortalLayout } from '@/pages/factory-portal/FactoryPortalLayout';
+import { FactoryDashboardPage } from '@/pages/factory-portal/FactoryDashboardPage';
+import { FactoryProfilePage } from '@/pages/factory-portal/FactoryProfilePage';
+import { FactoryShowcasesPage } from '@/pages/factory-portal/FactoryShowcasesPage';
+import { FactoryShowcaseNewPage } from '@/pages/factory-portal/FactoryShowcaseNewPage';
+import { FactoryRfqBoardPage } from '@/pages/factory-portal/FactoryRfqBoardPage';
+import { FactoryRfqDetailPage } from '@/pages/factory-portal/FactoryRfqDetailPage';
+import { FactoryOrdersPage } from '@/pages/factory-portal/FactoryOrdersPage';
+import { FactoryOrderDetailPage } from '@/pages/factory-portal/FactoryOrderDetailPage';
+import { FactoryWalletPage } from '@/pages/factory-portal/FactoryWalletPage';
+import { FactoryEditQuotationPage } from '@/pages/factory-portal/FactoryEditQuotationPage';
+import { FactoryQuotationsPage } from '@/pages/factory-portal/FactoryQuotationsPage';
+import { FactoryShowcaseEditPage } from '@/pages/factory-portal/FactoryShowcaseEditPage';
 
 export const router = createBrowserRouter([
   {

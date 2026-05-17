@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId, type ChatReference } from '@/utils/chatContract';
 

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, MapPin, Star } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
-import { formatCompactNumber } from '@/utils/formatting';
+import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 
 type Props = {

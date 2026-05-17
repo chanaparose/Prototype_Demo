@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { Image } from '@/components/ui/image';
 
@@ -57,7 +58,7 @@ export function OrderSummaryCard({
       : null;
   const qty = rfqSummary?.quantity ?? legacyQty;
   const unit = rfqSummary?.unit_name ?? 'ชิ้น';
-  const qtyText = qty != null ? `${qty.toLocaleString('th-TH')} ${unit}` : '—';
+  const qtyText = qty != null ? `${formatCompactNumber(qty)} ${unit}` : '—';
 
   return (
     <div
@@ -110,7 +111,7 @@ export function OrderSummaryCard({
         <div className='flex gap-4'>
           <div>
             <p className='text-white text-sm' style={{ fontWeight: 700 }}>
-              ฿{order.totalAmount.toLocaleString('th-TH')}
+              {formatCurrency(order.totalAmount)}
             </p>
             <p className='text-white/70 text-[10px]'>มูลค่ารวม</p>
           </div>

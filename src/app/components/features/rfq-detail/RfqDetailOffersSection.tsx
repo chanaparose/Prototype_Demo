@@ -14,7 +14,7 @@ import {
   GitCompare,
   ExternalLink,
 } from 'lucide-react';
-import { ordersApi } from '@/services/api';
+import { ordersApi } from '@/services/api/ordersApi';
 import type { Quotation } from '@/components/features/rfq-detail/QuotationBOQCard';
 import {
   QuotationBOQDetailsPanel,
@@ -22,6 +22,7 @@ import {
 } from '@/components/features/rfq-detail/QuotationBOQCard';
 import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import { Button } from '@/components/ui/button';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 
 export type OfferItem = {
   id: string;
@@ -67,10 +68,7 @@ type RfqDetailOffersSectionProps = {
 };
 
 function formatTHB(n: number): string {
-  return `฿${n.toLocaleString('th-TH', {
-    minimumFractionDigits: n % 1 !== 0 ? 2 : 0,
-    maximumFractionDigits: 2,
-  })}`;
+  return formatCurrency(n);
 }
 
 function asNumber(v: unknown): number {
@@ -219,8 +217,8 @@ export function RfqDetailOffersSection({
               <div className='flex-1 min-w-0'>
                 <p className='text-sm font-bold text-brand-navy'>{orderForRfq.factoryName}</p>
                 <p className='text-xs text-gray-500'>
-                  ฿{orderForRfq.totalAmount.toLocaleString('th-TH')} •{' '}
-                  {orderForRfq.quantity.toLocaleString('th-TH')} ชิ้น
+                  {formatCurrency(orderForRfq.totalAmount)} •{' '}
+                  {formatCompactNumber(orderForRfq.quantity)} ชิ้น
                 </p>
               </div>
               <Link
@@ -320,7 +318,7 @@ export function RfqDetailOffersSection({
                 <div className='flex gap-3 mt-3'>
                   <div className='text-center'>
                     <p className='text-white text-sm' style={{ fontWeight: 700 }}>
-                      ฿{offer.price.toLocaleString()}
+                      {formatCurrency(offer.price)}
                     </p>
                     <p className='text-white/70 text-[10px]'>ราคา</p>
                   </div>

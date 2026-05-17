@@ -3,15 +3,7 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import type {
-  CategoryDTO,
-  SubCategoryDTO,
-  UnitDTO,
-  CertificationDTO,
-  ShippingMethodDTO,
-  FactoryTypeDTO,
-  MaterialDTO,
-} from '@/services/api/types';
+import { type CategoryDTO, type SubCategoryDTO, type UnitDTO, type CertificationDTO, type ShippingMethodDTO, type FactoryTypeDTO, type MaterialDTO } from '@/services/api/types/master.types';
 
 export const categoriesApi = {
   list: () => httpClient.get<CategoryDTO[]>('/categories'),

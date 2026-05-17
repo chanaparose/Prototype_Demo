@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { X, Plus, MapPin, Phone, User, ChevronRight } from 'lucide-react';
-import { mediaApi } from '@/services/api';
+import { mediaApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { InfoBox } from '@/shared/ui';
+import { InfoBox } from '@/shared/ui/cards/InfoBox';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
 import { getStepGuide } from '@/components/features/production/stepGuideConfig';

@@ -1,21 +1,12 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import { useData } from '@/stores';
-import type {
-  Factory,
-  FactoryProfile,
-  FactoryReview,
-  FactoryShowcase,
-  IdeaArticle,
-} from '@/stores';
-import type { TabId } from '@/components/features/factory-profile';
-import {
-  conversationsApi,
-  factoriesApi,
-  frontendApi,
-  reviewsApi,
-  showcasesApi,
-} from '@/services/api';
+import { useData } from '@/stores/useDataStore';
+import { type Factory, type FactoryProfile, type FactoryReview, type FactoryShowcase, type IdeaArticle } from '@/stores/types';
+import { type TabId } from '@/components/features/factory-profile/FactoryProfileTabContent';
+import { conversationsApi } from '@/services/api/chatApi';
+import { factoriesApi, showcasesApi } from '@/services/api/factoryApi';
+import { frontendApi } from '@/services/api/exploreApi';
+import { reviewsApi } from '@/services/api/userApi';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { useApiCall } from '@/hooks/data/useApiCall';
 import { normShowcase } from '@/hooks/useShowcases';

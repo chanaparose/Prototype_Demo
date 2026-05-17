@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { profileApi } from '@/services/api';
+import { profileApi } from '@/services/api/userApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

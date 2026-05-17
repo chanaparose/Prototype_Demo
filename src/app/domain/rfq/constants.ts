@@ -1,0 +1,47 @@
+/** สถานะ RFQ ที่แสดงแผงประวัติ (ปิดแล้ว / ยกเลิก / หมดอายุ) */
+export const HISTORY_STATUSES = ['completed', 'cancelled', 'expired'] as const;
+
+/** สถานะที่ลูกค้าปิดคำขอ RFQ ได้เอง */
+export const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
+
+/** ป้ายสถานะ RFQ ฝั่งลูกค้า (ค่า UI หลัง mapRfqStatusFromApi) */
+export const RFQ_UI_STATUS_LABEL: Record<string, string> = {
+  completed: 'ปิดคำขอแล้ว',
+  cancelled: 'ยกเลิก',
+  expired: 'หมดอายุ',
+};
+
+/** @deprecated ใช้ RFQ_UI_STATUS_LABEL — คงชื่อเดิมให้ import เก่า */
+export const STATUS_LABEL = RFQ_UI_STATUS_LABEL;
+
+/** รหัสสถานะใบเสนอราคา (API) — มุมมองลูกค้า / ประวัติ */
+export const QUOTATION_STATUS_LABEL: Record<string, string> = {
+  PD: 'รอการตอบรับ',
+  AC: 'ยืนยันแล้ว',
+  RJ: 'ปฏิเสธ',
+  EX: 'หมดอายุ',
+};
+
+/** รหัสสถานะใบเสนอราคา — มุมมองโรงงาน (รายการใบเสนอราคา) */
+export const QUOTATION_STATUS_LABEL_FACTORY: Record<string, string> = {
+  PD: 'รอลูกค้าตัดสินใจ',
+  AC: 'ลูกค้ารับแล้ว',
+  RJ: 'ปิด / ถูกปฏิเสธ',
+  EX: 'หมดอายุ',
+};
+
+export const QUOTATION_STATUS_BADGE_FACTORY: Record<string, { bg: string; color: string }> = {
+  PD: { bg: 'rgba(162,56,255,0.12)', color: 'var(--brand-indigo)' },
+  AC: { bg: 'rgba(16,185,129,0.12)', color: 'var(--status-success)' },
+  RJ: { bg: 'rgba(239,68,68,0.10)', color: 'var(--status-danger-deep)' },
+  EX: { bg: 'rgba(107,114,128,0.12)', color: 'var(--text-muted)' },
+};
+
+export function quotationStatusLabel(
+  code: string,
+  view: 'customer' | 'factory' = 'customer',
+): string {
+  const key = String(code ?? '').toUpperCase();
+  const map = view === 'factory' ? QUOTATION_STATUS_LABEL_FACTORY : QUOTATION_STATUS_LABEL;
+  return map[key] ?? code;
+}

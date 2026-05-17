@@ -1,4 +1,4 @@
-import type { Factory } from '@/stores';
+import { type Factory } from '@/stores/types';
 
 export const factoryIdeasTheme = {
   purple: 'var(--brand-mauve)',

@@ -1,4 +1,5 @@
-import type { Rfq } from '@/stores';
+import { type Rfq } from '@/stores/types';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import {
   ACCENT_ORANGE,
   ACCENT_ORANGE_DEEP,
@@ -49,7 +50,7 @@ export function getOrderProgressBg(status: string): string {
 }
 
 export function formatBudget(n: number): string {
-  return '฿' + n.toLocaleString('th-TH');
+  return formatCurrency(n);
 }
 
 export function formatDate(dateStr: string): string {

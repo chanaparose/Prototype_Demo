@@ -1,5 +1,5 @@
 import React from 'react';
-import { platformConfigApi, type PlatformConfig } from '@/services/api';
+import { platformConfigApi, type PlatformConfig } from '@/services/api/adminApi';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';

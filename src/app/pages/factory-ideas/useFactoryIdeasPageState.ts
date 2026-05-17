@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
-import { useData } from '@/stores';
-import type { Factory } from '@/stores';
+import { useData } from '@/stores/useDataStore';
+import { type Factory } from '@/stores/types';
 import { useApiCall } from '@/hooks/data/useApiCall';
-import { factoriesApi, masterApi } from '@/services/api';
+import { factoriesApi } from '@/services/api/factoryApi';
+import { masterApi } from '@/services/api/masterApi';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useFactoryIdeasCategorySelection } from '@/hooks/useFactoryIdeasCategoryFromUrl';
 import { showcaseQueryTypeFromTab, useShowcases } from '@/hooks/useShowcases';

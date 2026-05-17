@@ -1,30 +1,44 @@
 /**
- * @deprecated Use the new modular API structure instead
- *
- * MIGRATION GUIDE:
- * Old:  import { authApi, ordersApi } from '@/services/api';
- * New:  import { authApi, ordersApi } from '@/services/api';
- *
- * The old api.ts has been refactored into separate modules:
- * - api/authApi.ts          (authentication)
- * - api/rfqApi.ts           (RFQ management)
- * - api/ordersApi.ts        (Orders)
- * - api/factoryApi.ts       (Factory & Showcases)
- * - api/exploreApi.ts       (Explore & Frontend)
- * - api/chatApi.ts          (Chat & Messaging)
- * - api/masterApi.ts        (Master data)
- * - api/userApi.ts          (User profile, wallet, etc)
- * - api/httpClient.ts       (HTTP client)
- * - api/tokenManager.ts     (Token management)
- * - api/apiErrorHandler.ts  (Error handling)
- * - api/types/              (Type definitions)
- *
- * All exports are re-exported from api/index.ts for backward compatibility.
- * You can import from either location, but please use the new modular imports.
+ * Legacy compatibility entry — prefer direct imports from `@/services/api/*` modules.
  */
 
-// Re-export everything from the new api modules
-export * from '@/services/api/index';
-
-// Backward compatibility: also export as `api` object
+export { httpClient, ApiHttpError } from '@/services/api/httpClient';
 export { httpClient as api } from '@/services/api/httpClient';
+export { getToken, setToken, removeToken } from '@/services/api/tokenManager';
+export {
+  ApiError,
+  extractErrorMessage,
+  formatApiError,
+  getApiErrorStatus,
+} from '@/services/api/apiErrorHandler';
+export { authApi } from '@/services/api/authApi';
+export { rfqsApi, factoryRfqsApi, quotationsApi, quotationApi } from '@/services/api/rfqApi';
+export { ordersApi, productionUpdatesApi, productionApi } from '@/services/api/ordersApi';
+export { factoriesApi, showcasesApi, mediaApi } from '@/services/api/factoryApi';
+export { frontendApi, promoSlidesApi } from '@/services/api/exploreApi';
+export { conversationsApi, messagesApi, notificationsApi } from '@/services/api/chatApi';
+export { categoriesApi, masterApi, addressesApi } from '@/services/api/masterApi';
+export {
+  profileApi,
+  walletApi,
+  favoritesApi,
+  reviewsApi,
+  certificatesApi,
+  transactionsApi,
+} from '@/services/api/userApi';
+export {
+  platformConfigApi,
+  adminConfigApi,
+  adminFactoryConfigApi,
+  adminApi,
+  adminCustomerApi,
+  adminSettlementApi,
+} from '@/services/api/adminApi';
+export type { FrontendBootstrapResponse } from '@/services/api/exploreApi';
+export type {
+  PlatformConfig,
+  AdminDashboardSummary,
+  AdminFactoryRow,
+  AdminRfqRow,
+  AdminOrderRow,
+} from '@/services/api/adminApi';

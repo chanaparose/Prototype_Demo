@@ -4,9 +4,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, History, Lock, Save } from 'lucide-react';
 
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { quotationsApi } from '@/services/api';
+import { quotationsApi } from '@/services/api/rfqApi';
 
 import { useEditForm } from '@/hooks/forms/useEditForm';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';

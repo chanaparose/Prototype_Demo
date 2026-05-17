@@ -101,3 +101,56 @@ export type QuotationHistoryEntry = {
   edited_by: number | null;
   created_at: string;
 };
+
+/** Line item for quotation create / preview */
+export interface QuotationLineItem {
+  item_no?: number;
+  description: string;
+  qty: number;
+  unit?: string;
+  unit_price: number;
+  discount_pct?: number;
+}
+
+export interface QuotationCreateInput {
+  rfq_id: number;
+  items: QuotationLineItem[];
+  discount_amount?: number;
+  shipping_cost?: number;
+  packaging_cost?: number;
+  tooling_mold_cost?: number;
+  validity_days?: number;
+}
+
+export interface QuotationBreakdown {
+  subtotal: number;
+  shipping_cost: number;
+  packaging_cost: number;
+  tooling_mold_cost: number;
+  vat_rate: number;
+  vat_amount: number;
+  grand_total: number;
+  factory_net_receivable: number;
+  platform_commission_rate: number;
+}
+
+/** RFQ wizard create payload (superset of API body) */
+export interface RFQCreateInput {
+  title: string;
+  description?: string;
+  category_id: number | string;
+  sub_category_id?: number | string;
+  qty: number;
+  unit?: string;
+  target_price?: number;
+  target_lead_time_days?: number;
+  material_grade?: string;
+  reference_images?: string[];
+  address_id?: number;
+  delivery_address_id?: number;
+  shipping_method_id?: number;
+  certifications_required?: string[];
+  inspection_type?: string;
+  request_kind?: string;
+  source_showcase_id?: number;
+}

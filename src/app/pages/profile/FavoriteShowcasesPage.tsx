@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router';
 import { ChevronLeft, Heart, Package, Lightbulb, Tag } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useShowcases } from '@/hooks/useShowcases';
-import { ImageWithFallback } from '@/components/shared';
-import type { FactoryShowcase } from '@/stores';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { type FactoryShowcase } from '@/stores/types';
 import { Button } from '@/components/ui/button';
 
 type FavoritesTab = 'all' | 'product' | 'promotion' | 'idea';

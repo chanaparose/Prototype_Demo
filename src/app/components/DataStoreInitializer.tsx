@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useAuth } from '@/stores';
-import { useDataStore } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
+import { useDataStore } from '@/stores/useDataStore';
 
 export function DataStoreInitializer() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();

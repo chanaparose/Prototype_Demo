@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Send } from 'lucide-react';
-import { rfqsApi } from '@/services/api';
+import { rfqsApi } from '@/services/api/rfqApi';
 import type { QuotationRow } from '@/types/rfq';
-import { formatCurrency } from '@/utils/formatting';
-import { CollapsibleCard, StatusBadge } from '@/shared/ui';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { CollapsibleCard } from '@/shared/ui/cards/CollapsibleCard';
+import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Image } from '@/components/ui/image';
 
 interface Props {

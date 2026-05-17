@@ -3,12 +3,7 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import type {
-  MessageDTO,
-  MessageSendPayload,
-  ThreadResponse,
-  ConversationDTO,
-} from '@/services/api/types';
+import { type MessageDTO, type MessageSendPayload, type ThreadResponse, type ConversationDTO } from '@/services/api/types/chat.types';
 
 export const conversationsApi = {
   list: () => httpClient.get<ConversationDTO[]>('/conversations'),

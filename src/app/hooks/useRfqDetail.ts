@@ -8,47 +8,15 @@
  */
 import React from 'react';
 import { useApiCall } from '@/hooks/data/useApiCall';
-import { useData, type Rfq, type RfqOffer, type Order } from '@/stores';
-import { rfqsApi, ordersApi, masterApi, categoriesApi } from '@/services/api';
+import { useData } from '@/stores/useDataStore';
+import { type Rfq, type RfqOffer, type Order } from '@/stores/types';
+import { rfqsApi } from '@/services/api/rfqApi';
+import { ordersApi } from '@/services/api/ordersApi';
+import { masterApi, categoriesApi } from '@/services/api/masterApi';
+import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
+import { mapRfqStatusFromApi } from '@/domain/rfq/status';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
-
-// hasAccepted = มี quotation status AC อย่างน้อย 1 ใบ (แสดงว่า order ถูกสร้างแล้ว)
-const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): string => {
-  switch (code.toUpperCase()) {
-    case 'OP':
-      return hasQuotes ? 'offers_received' : 'pending';
-    case 'CL':
-      return hasAccepted ? 'completed' : 'expired';
-    case 'CC':
-      return 'cancelled';
-    default:
-      return code.toLowerCase();
-  }
-};
-
-const CATEGORY_ICON_MAP: Record<string, string> = {
-  อาหารสัตว์: '🐾',
-  อาหารเม็ดสัตว์: '🐾',
-  อาหารเสริม: '💊',
-  ของเล่นสัตว์เลี้ยง: '🎾',
-  เสื้อผ้าสัตว์เลี้ยง: '👕',
-  อุปกรณ์สัตว์เลี้ยง: '🦮',
-  บรรจุภัณฑ์: '📦',
-  ขนมสัตว์เลี้ยง: '🍖',
-  ที่นอนและบ้าน: '🏠',
-  ตู้ปลาและกรง: '🐟',
-  กระเป๋าและรถเข็น: '🧳',
-  ห้องน้ำและทราย: '🚿',
-  อุปกรณ์อาบน้ำ: '🧴',
-};
-const guessCategoryIcon = (name: string) => {
-  if (CATEGORY_ICON_MAP[name]) return CATEGORY_ICON_MAP[name];
-  for (const [k, v] of Object.entries(CATEGORY_ICON_MAP)) {
-    if (name.includes(k) || k.includes(name)) return v;
-  }
-  return '📋';
-};
 
 function collectUrlsFromUnknown(input: unknown): string[] {
   if (input == null) return [];
@@ -300,7 +268,10 @@ async function loadRfqDetailData(
       const budget = Math.max(0, Math.round(budgetTotalExplicit ?? budgetFallback ?? 0));
       const catName = categoryMap.get(String(rawRfq.category_id)) ?? '';
       const hasAcceptedQuote = quotes.some((q) => String(q.status ?? '').toUpperCase() === 'AC');
-      const status = mapRfqStatus(rawRfq.status, quotes.length > 0, hasAcceptedQuote);
+      const status = mapRfqStatusFromApi(rawRfq.status, {
+        quoteCount: quotes.length,
+        hasAcceptedQuote,
+      });
       const createdDate = rawRfq.created_at ? rawRfq.created_at.split('T')[0] : '';
 
       const deadlineRaw = String(

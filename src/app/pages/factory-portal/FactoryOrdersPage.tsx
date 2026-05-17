@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { X, ChevronRight, Clock } from 'lucide-react';
-import { ordersApi } from '@/services/api';
+import { ordersApi } from '@/services/api/ordersApi';
 import { useFactoryOrdersData } from '@/pages/factory-portal/factory-orders/useFactoryOrdersData';
 import { deriveOrderCardState } from '@/pages/factory-portal/factory-orders/deriveOrderCardState';
 import { computeKpi, countByTab } from '@/pages/factory-portal/factory-orders/factoryOrderKpi';

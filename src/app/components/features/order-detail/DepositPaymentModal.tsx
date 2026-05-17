@@ -2,8 +2,10 @@ import React from 'react';
 import { Wallet, QrCode, Landmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
-import { ordersApi, walletApi } from '@/services/api';
-import { BaseModal, ModalFooter } from '@/shared/ui';
+import { ordersApi } from '@/services/api/ordersApi';
+import { walletApi } from '@/services/api/userApi';
+import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import {
   ACCENT_ORANGE_DEEP,
   BORDER_WARM,
@@ -13,6 +15,7 @@ import {
   PLUM,
 } from '@/components/features/rfq-and-orders/constants';
 import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 export type DepositPaymentMethod = 'WALLET' | 'PROMPTPAY' | 'BANK';
 
@@ -96,7 +99,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       const code = e?.body?.error_code;
       if (code === 'INSUFFICIENT_WALLET_BALANCE') {
         toast.error(
-          `ยอด Wallet ไม่พอ ขาดอีก ฿${Number(e.body?.shortfall ?? 0).toLocaleString('th-TH')}`,
+          `ยอด Wallet ไม่พอ ขาดอีก ${formatCurrency(Number(e.body?.shortfall ?? 0))}`,
         );
       } else if (code === 'DEPOSIT_EXPIRED') {
         toast.error('หมดกำหนดชำระเงินแล้ว');
@@ -145,7 +148,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
           primary={{
             label:
               method === 'WALLET'
-                ? `ยืนยันชำระด้วย Wallet · ฿${amount.toLocaleString('th-TH')}`
+                ? `ยืนยันชำระด้วย Wallet · ${formatCurrency(amount)}`
                 : 'ดำเนินการต่อ',
             loadingLabel: 'กำลังดำเนินการ…',
             loading: submitting,
@@ -165,7 +168,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
           ยอดที่ต้องชำระ
         </p>
         <p className='mt-0.5 text-2xl font-semibold tabular-nums' style={{ color: DEEP_PURPLE }}>
-          ฿{amount.toLocaleString('th-TH')}
+          {formatCurrency(amount)}
         </p>
       </div>
 
@@ -178,11 +181,11 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
           icon={<Wallet size={18} style={{ color: PLUM }} />}
           title='Wallet ของฉัน'
           subtitle={
-            wallet.isPending ? 'กำลังโหลดยอดคงเหลือ…' : `คงเหลือ ฿${good.toLocaleString('th-TH')}`
+            wallet.isPending ? 'กำลังโหลดยอดคงเหลือ…' : `คงเหลือ ${formatCurrency(good)}`
           }
           warning={
             method === 'WALLET' && !wallet.isPending && insufficient
-              ? `ยอดไม่พอ ขาดอีก ฿${shortfall.toLocaleString('th-TH')}`
+              ? `ยอดไม่พอ ขาดอีก ${formatCurrency(shortfall)}`
               : null
           }
         />

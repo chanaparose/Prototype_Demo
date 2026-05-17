@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 
 import React from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
-import { addressesApi, masterApi } from '@/services/api';
+import { addressesApi, masterApi } from '@/services/api/masterApi';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';

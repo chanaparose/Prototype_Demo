@@ -1,5 +1,5 @@
 import React from 'react';
-import type { QuotationCreateInput } from '@/services/api';
+import type { QuotationCreateInput } from '@/services/api/types/rfq.types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 

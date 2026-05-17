@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send } from 'lucide-react';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
-import { formatCurrency, formatCompactNumber } from '@/utils/formatting';
+import { formatCurrency, formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
 
 export type RfqCardModel = {

@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { rfqsApi, ordersApi, quotationsApi, walletApi, factoriesApi } from '@/services/api';
+import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
+import { ordersApi } from '@/services/api/ordersApi';
+import { walletApi } from '@/services/api/userApi';
+import { factoriesApi } from '@/services/api/factoryApi';
 
 export type AnalyticsTimeframe = 'daily' | 'weekly' | 'monthly';
 

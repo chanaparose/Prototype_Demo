@@ -3,13 +3,7 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import type {
-  LoginPayload,
-  RegisterCustomerPayload,
-  RegisterFactoryPayload,
-  AuthResponse,
-  ForgotPasswordResponse,
-} from '@/services/api/types';
+import { type LoginPayload, type RegisterCustomerPayload, type RegisterFactoryPayload, type AuthResponse, type ForgotPasswordResponse } from '@/services/api/types/auth.types';
 
 export const authApi = {
   login: (payload: LoginPayload) => httpClient.post<AuthResponse>('/auth/login', payload),

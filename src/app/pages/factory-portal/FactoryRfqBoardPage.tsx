@@ -13,7 +13,8 @@ import {
 } from 'lucide-react';
 import { RfqCard, type RfqCardModel } from '@/components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '@/hooks/useFactoryRfqBoard';
-import { useDisclosure, useToggle } from '@/hooks/ui';
+import { useDisclosure } from '@/hooks/ui/useDisclosure';
+import { useToggle } from '@/hooks/ui/useToggle';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';

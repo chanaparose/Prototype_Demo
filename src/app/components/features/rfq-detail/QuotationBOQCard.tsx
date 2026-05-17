@@ -9,8 +9,8 @@ import {
   Timer,
   Truck,
 } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
-import { StatusBadge } from '@/shared/ui';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Button } from '@/components/ui/button';
 
 export interface Quotation {

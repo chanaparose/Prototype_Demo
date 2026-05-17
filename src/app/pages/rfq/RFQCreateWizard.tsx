@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
-import { addressesApi, categoriesApi, masterApi, rfqsApi } from '@/services/api';
+import { addressesApi, categoriesApi, masterApi } from '@/services/api/masterApi';
+import { rfqsApi } from '@/services/api/rfqApi';
 import { useCreateRFQ } from '@/pages/rfq/useCreateRFQ';
 import { useRFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Step1Basic } from '@/pages/rfq/steps/Step1Basic';

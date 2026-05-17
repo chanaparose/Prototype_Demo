@@ -29,7 +29,7 @@ import {
   Clock,
   ShieldAlert,
 } from 'lucide-react';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import {
   useFactoryDashboard,

@@ -13,15 +13,13 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  ExplorePromoCarousel,
-  ExploreCategories,
-  ExploreFactoryShowcase,
-  ExploreIdeaArticles,
-  ExploreFooter,
-  HowToOrderSection,
-} from '@/components/features/explore';
-import { ImageWithFallback } from '@/components/shared';
+import { ExplorePromoCarousel } from '@/components/features/explore/ExplorePromoCarousel';
+import { ExploreCategories } from '@/components/features/explore/ExploreCategories';
+import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
+import { ExploreIdeaArticles } from '@/components/features/explore/ExploreIdeaArticles';
+import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
+import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';

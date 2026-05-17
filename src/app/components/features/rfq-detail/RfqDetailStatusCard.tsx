@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 
 export type RfqForStatusCard = {
   category: string;
@@ -49,9 +50,9 @@ export function RfqDetailStatusCard({
         </span>
       </div>
       <div className='flex gap-3 text-xs text-gray-500'>
-        <span>฿{rfq.budget.toLocaleString()}</span>
+        <span>{formatCurrency(rfq.budget)}</span>
         <span>•</span>
-        <span>{rfq.quantity.toLocaleString()} ชิ้น</span>
+        <span>{formatCompactNumber(rfq.quantity)} ชิ้น</span>
       </div>
     </div>
   );

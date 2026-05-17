@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router';
 import { ArrowLeft, User, AlertTriangle } from 'lucide-react';
-import {
-  adminCustomerApi,
-  type AdminCustomerDetail,
-  type AdminCustomerWallet,
-  type AdminWalletTxItem,
-  type AdminCustomerOrderItem,
-} from '@/services/api';
+import { adminCustomerApi, type AdminCustomerDetail, type AdminCustomerWallet, type AdminWalletTxItem, type AdminCustomerOrderItem } from '@/services/api/adminApi';
 import { Button } from '@/components/ui/button';
 import {
   Table,

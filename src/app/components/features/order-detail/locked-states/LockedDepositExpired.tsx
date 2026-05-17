@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { DEEP_PURPLE, PLUM } from '@/components/features/rfq-and-orders/constants';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import type { ProductionLockContext } from '@/components/features/production/types';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,7 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
       >
         <p className='text-xs font-semibold text-red-700'>💰 ยอดที่ต้องชำระ</p>
         <p className='mt-1 text-xl font-semibold tabular-nums' style={{ color: DEEP_PURPLE }}>
-          ฿{amount.toLocaleString('th-TH')}
+          {formatCurrency(amount)}
         </p>
         {expired ? (
           <p className='mt-2 text-xs text-red-700'>ครบกำหนดชำระ {formatDateTh(expired)}</p>

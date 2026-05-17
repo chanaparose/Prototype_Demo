@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { addressesApi } from '@/services/api';
+import { addressesApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
 

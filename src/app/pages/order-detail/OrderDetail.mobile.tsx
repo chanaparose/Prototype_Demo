@@ -2,27 +2,26 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, MessageCircle, Star, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { useData } from '@/stores';
-import { useAuth } from '@/stores';
+import { useData } from '@/stores/useDataStore';
+import { useAuth } from '@/stores/useAuthStore';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
-import { ApiHttpError, ordersApi } from '@/services/api';
+import { ApiHttpError } from '@/services/api/httpClient';
+import { ordersApi } from '@/services/api/ordersApi';
 import { Button } from '@/components/ui/button';
-import {
-  OrderSummaryCard,
-  OrderOverviewSection,
-  OrderPhotoGallery,
-  OrderActionBanner,
-  DepositPaymentModal,
-  RfqReferenceCard,
-  OrderBOQCard,
-  formatDateTh,
-} from '@/components/features/order-detail';
+import { OrderSummaryCard } from '@/components/features/order-detail/OrderSummaryCard';
+import { OrderOverviewSection } from '@/components/features/order-detail/OrderOverviewSection';
+import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
+import { OrderActionBanner } from '@/components/features/order-detail/OrderActionBanner';
+import { DepositPaymentModal } from '@/components/features/order-detail/DepositPaymentModal';
+import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
+import { OrderBOQCard } from '@/components/features/order-detail/OrderBOQCard';
+import { formatDateTh } from '@/components/features/order-detail/utils';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { OrderProductionTab } from '@/components/features/production/OrderProductionTab';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
-import { BaseModal } from '@/shared/ui';
+import { BaseModal } from '@/shared/ui/modals/BaseModal';
 import { Textarea } from '@/components/ui/textarea';
 
 type OrderReviewState = {

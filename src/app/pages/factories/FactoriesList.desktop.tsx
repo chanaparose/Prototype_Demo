@@ -11,7 +11,7 @@ import {
   X,
   SlidersHorizontal,
 } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { useFactoriesList } from '@/hooks/useFactoriesList';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

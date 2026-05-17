@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '@/stores';
-import { ApiHttpError, masterApi, factoriesApi } from '@/services/api';
+import { useAuth } from '@/stores/useAuthStore';
+import { ApiHttpError } from '@/services/api/httpClient';
+import { masterApi } from '@/services/api/masterApi';
+import { factoriesApi } from '@/services/api/factoryApi';
 
 export interface FormState {
   factory_name: string;

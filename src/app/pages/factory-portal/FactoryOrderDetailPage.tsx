@@ -14,10 +14,10 @@ import {
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { QuoteNestedDTO, RfqNestedDTO } from '@/types/api';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { ordersApi } from '@/services/api';
-import { RfqReferenceCard } from '@/components/features/order-detail';
+import { ordersApi } from '@/services/api/ordersApi';
+import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
 import { useProductionTemplate } from '@/hooks/production/useProductionTemplate';
 import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';
 import { ProductionHeader } from '@/components/features/production/ProductionHeader';
@@ -33,7 +33,7 @@ import {
 import { deriveStepStates } from '@/components/features/production/stepDerivedState';
 import { getStepGuide } from '@/components/features/production/stepGuideConfig';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
-import { StatusBadge } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';

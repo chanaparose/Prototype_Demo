@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
-import { profileApi } from '@/services/api';
-import { useAuth } from '@/stores';
+import { profileApi } from '@/services/api/userApi';
+import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 
 type TxItem = {

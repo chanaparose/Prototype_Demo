@@ -13,16 +13,8 @@ import {
   FileText,
   AlertTriangle,
 } from 'lucide-react';
-import { useAuth } from '@/stores';
-import {
-  adminApi,
-  adminConfigApi,
-  adminFactoryConfigApi,
-  adminSettlementApi,
-  type AdminSettlementListItem,
-  type FactoryConfigResponse,
-  type PlatformConfigItem,
-} from '@/services/api';
+import { useAuth } from '@/stores/useAuthStore';
+import { adminApi, adminConfigApi, adminFactoryConfigApi, adminSettlementApi, type AdminSettlementListItem, type FactoryConfigResponse, type PlatformConfigItem } from '@/services/api/adminApi';
 import type { FactoryApprovalStatus } from '@/pages/admin/AdminFactoriesPage';
 import { Button } from '@/components/ui/button';
 import {

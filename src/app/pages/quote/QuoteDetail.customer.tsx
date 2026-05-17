@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { quotationApi } from '@/services/api';
+import { quotationApi } from '@/services/api/rfqApi';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import { DiffRow } from '@/shared/ui/DiffRow';
 import { Button } from '@/components/ui/button';

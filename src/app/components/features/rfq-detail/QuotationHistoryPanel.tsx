@@ -1,7 +1,10 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
-import { quotationsApi } from '@/services/api';
+import { quotationsApi } from '@/services/api/rfqApi';
 import type { QuotationHistoryEntry } from '@/types/rfq';
+import { QUOTATION_STATUS_LABEL } from '@/domain/rfq/constants';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { formatDateTime } from '@/utils/formatting/formatDate';
 import { Button } from '@/components/ui/button';
 
 type QuotationHistoryPanelProps = {
@@ -18,12 +21,6 @@ const EVENT_COLOR: Record<string, string> = {
   CR: '#16A34A',
   UP: '#2563EB',
   ST: '#9333EA',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  PD: 'รอการตอบรับ',
-  AC: 'ยืนยันแล้ว',
-  RJ: 'ปฏิเสธ',
 };
 
 function toNum(v: unknown): number | null {
@@ -118,15 +115,7 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
 function HistoryItem({ entry }: { entry: QuotationHistoryEntry }) {
   const label = EVENT_LABEL[entry.event_type] ?? entry.event_type;
   const color = EVENT_COLOR[entry.event_type] ?? 'var(--neutral-subtle)';
-  const date = entry.created_at
-    ? new Date(entry.created_at).toLocaleString('th-TH', {
-        day: '2-digit',
-        month: 'short',
-        year: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : '-';
+  const date = entry.created_at ? formatDateTime(entry.created_at) : '-';
 
   return (
     <div className='px-4 py-3'>
@@ -145,13 +134,13 @@ function HistoryItem({ entry }: { entry: QuotationHistoryEntry }) {
         {entry.price_per_piece != null ? (
           <div>
             <span className='text-gray-400'>ราคา/ชิ้น </span>
-            <span className='font-medium'>฿{entry.price_per_piece.toLocaleString()}</span>
+            <span className='font-medium'>{formatCurrency(entry.price_per_piece)}</span>
           </div>
         ) : null}
         {entry.mold_cost != null ? (
           <div>
             <span className='text-gray-400'>แม่พิมพ์ </span>
-            <span className='font-medium'>฿{entry.mold_cost.toLocaleString()}</span>
+            <span className='font-medium'>{formatCurrency(entry.mold_cost)}</span>
           </div>
         ) : null}
         {entry.lead_time_days != null ? (
@@ -164,7 +153,10 @@ function HistoryItem({ entry }: { entry: QuotationHistoryEntry }) {
 
       {entry.status ? (
         <div className='text-xs text-gray-500 mb-0.5'>
-          สถานะ: <span className='font-medium'>{STATUS_LABEL[entry.status] ?? entry.status}</span>
+          สถานะ:{' '}
+          <span className='font-medium'>
+            {QUOTATION_STATUS_LABEL[entry.status] ?? entry.status}
+          </span>
         </div>
       ) : null}
 

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { useData } from '@/stores';
-import type { FactoryShowcase } from '@/stores';
+import { useData } from '@/stores/useDataStore';
+import { type FactoryShowcase } from '@/stores/types';
 import { useApiCall } from '@/hooks/data/useApiCall';
-import { showcasesApi } from '@/services/api';
+import { showcasesApi } from '@/services/api/factoryApi';
 import { normShowcase } from '@/hooks/useShowcases';
 
 export function showcaseIdMatches(a: string, b: string): boolean {

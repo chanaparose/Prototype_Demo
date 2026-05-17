@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { daysUntilDeadline } from '@/utils/rfqDeadline';
-import { rfqsApi, factoriesApi, masterApi, categoriesApi, addressesApi } from '@/services/api';
+import { rfqsApi } from '@/services/api/rfqApi';
+import { factoriesApi } from '@/services/api/factoryApi';
+import { masterApi, categoriesApi, addressesApi } from '@/services/api/masterApi';
 import type { RfqCardModel } from '@/components/factory/RfqCard';
 
 function innerRfq(row: Record<string, unknown>): Record<string, unknown> {

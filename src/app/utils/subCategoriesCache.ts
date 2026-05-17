@@ -1,4 +1,4 @@
-import { categoriesApi } from '@/services/api';
+import { categoriesApi } from '@/services/api/masterApi';
 
 export type SubCategoryRow = { id: string; name: string; sortOrder: number };
 

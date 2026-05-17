@@ -1,8 +1,12 @@
 import { Link } from 'react-router';
 import { ChevronRight, FileCheck } from 'lucide-react';
-import { quotationsApi } from '@/services/api';
+import { quotationsApi } from '@/services/api/rfqApi';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { useApiCall } from '@/hooks/data/useApiCall';
+import {
+  QUOTATION_STATUS_BADGE_FACTORY,
+  QUOTATION_STATUS_LABEL_FACTORY,
+} from '@/domain/rfq/constants';
 
 type Row = Record<string, unknown>;
 
@@ -13,18 +17,6 @@ function quoteId(r: Row): string {
 function rfqId(r: Row): string {
   return String(r.rfq_id ?? r.rfqId ?? '');
 }
-
-const STATUS_LABEL: Record<string, string> = {
-  PD: 'รอลูกค้าตัดสินใจ',
-  AC: 'ลูกค้ารับแล้ว',
-  RJ: 'ปิด / ถูกปฏิเสธ',
-};
-
-const STATUS_BADGE: Record<string, { bg: string; color: string }> = {
-  PD: { bg: 'rgba(162,56,255,0.12)', color: 'var(--brand-indigo)' },
-  AC: { bg: 'rgba(16,185,129,0.12)', color: 'var(--status-success)' },
-  RJ: { bg: 'rgba(239,68,68,0.10)', color: 'var(--status-danger-deep)' },
-};
 
 export function FactoryQuotationsPage() {
   const {
@@ -97,7 +89,7 @@ export function FactoryQuotationsPage() {
             const id = quoteId(r);
             const st = String(r.status ?? 'PD').toUpperCase();
             const canEdit = st === 'PD';
-            const badge = STATUS_BADGE[st] ?? STATUS_BADGE.PD;
+            const badge = QUOTATION_STATUS_BADGE_FACTORY[st] ?? QUOTATION_STATUS_BADGE_FACTORY.PD;
             return (
               <li key={id || JSON.stringify(r)}>
                 <div className='flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 sm:p-4 min-w-0 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'>
@@ -119,7 +111,7 @@ export function FactoryQuotationsPage() {
                       className='inline-block rounded-full text-[11px] font-semibold px-2.5 py-0.5'
                       style={{ backgroundColor: badge.bg, color: badge.color }}
                     >
-                      {STATUS_LABEL[st] ?? st}
+                      {QUOTATION_STATUS_LABEL_FACTORY[st] ?? st}
                     </span>
                   </div>
                   {canEdit && id ? (

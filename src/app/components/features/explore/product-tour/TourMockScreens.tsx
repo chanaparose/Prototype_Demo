@@ -1,4 +1,4 @@
-import { formatCurrency } from '@/utils/formatting';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';

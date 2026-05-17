@@ -1,15 +1,12 @@
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Package, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
-import {
-  FactoryProfileHero,
-  FactoryProfileTabContent,
-  type TabId,
-} from '@/components/features/factory-profile';
-import { ImageWithFallback } from '@/components/shared';
+import { FactoryProfileHero } from '@/components/features/factory-profile/FactoryProfileHero';
+import { FactoryProfileTabContent, type TabId } from '@/components/features/factory-profile/FactoryProfileTabContent';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { useFactoryProfile } from '@/hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;

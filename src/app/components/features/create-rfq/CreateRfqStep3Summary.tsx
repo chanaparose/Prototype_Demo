@@ -18,7 +18,7 @@ import type {
   ShippingMethod,
 } from '@/components/features/create-rfq/types';
 import { CATEGORY_ICONS, SHIPPING_ICONS } from '@/components/features/create-rfq/types';
-import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { isFactoryRole } from '@/utils/factoryUser';
 
 /** อนุญาตเฉพาะผู้ใช้โรงงาน (role FT) */

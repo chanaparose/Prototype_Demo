@@ -19,7 +19,7 @@ import { HowToOrderSection } from '@/components/features/explore/HowToOrderSecti
 import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFactoryShowcase';
 import { ExploreDesktopCategories } from '@/components/features/explore/ExploreDesktopCategories';
 import { ExploreProductCarouselSection } from '@/components/features/explore/ExploreProductCarouselSection';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';

@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { RfqNestedDTO, QuoteNestedDTO } from '@/types/api';
-import { rfqsApi, quotationsApi } from '@/services/api';
+import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
-import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 

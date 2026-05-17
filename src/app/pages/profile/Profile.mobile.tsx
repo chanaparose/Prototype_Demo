@@ -20,9 +20,10 @@ import {
   Plus,
   Home,
 } from 'lucide-react';
-import { useData } from '@/stores';
-import { useAuth } from '@/stores';
-import { profileApi, addressesApi } from '@/services/api';
+import { useData } from '@/stores/useDataStore';
+import { useAuth } from '@/stores/useAuthStore';
+import { profileApi } from '@/services/api/userApi';
+import { addressesApi } from '@/services/api/masterApi';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

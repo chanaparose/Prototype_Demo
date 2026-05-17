@@ -16,6 +16,22 @@ export function formatDate(
   return formatter.format(date);
 }
 
+export function formatDateTime(dateInput: string | Date | null | undefined): string {
+  if (!dateInput) return '-';
+
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (!(date instanceof Date) || isNaN(date.getTime())) return '-';
+
+  return new Intl.DateTimeFormat('th-TH', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+}
+
 export function formatChatTime(isoString: string): string {
   if (!isoString) return '';
 

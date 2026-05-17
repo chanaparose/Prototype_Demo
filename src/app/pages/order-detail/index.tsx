@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router';
-import { useData } from '@/stores';
+import { useData } from '@/stores/useDataStore';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { OrderDetailMobile } from '@/pages/order-detail/OrderDetail.mobile';
 import { OrderDetailDesktop } from '@/pages/order-detail/OrderDetail.desktop';

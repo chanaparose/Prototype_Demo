@@ -14,8 +14,8 @@ import {
 } from 'lucide-react';
 import { DesktopSidebar } from '@/components/layout/DesktopSidebar';
 import { ProductTour } from '@/components/features/explore/ProductTour';
-import { useAuth } from '@/stores';
-import { useData } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
 import { isFactoryRole } from '@/utils/factoryUser';
 import {
   FACTORY_SIDEBAR_NAV,

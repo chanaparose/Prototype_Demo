@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { FileText } from 'lucide-react';
-import { SectionCard } from '@/shared/ui';
+import { SectionCard } from '@/shared/ui/cards/SectionCard';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { OrderPaymentScheduleCard } from '@/components/features/order-detail/OrderPaymentScheduleCard';
 import { OrderPendingPaymentSection } from '@/components/features/order-detail/OrderPendingPaymentSection';
@@ -103,13 +104,13 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
               <div className='rounded-lg bg-white border border-gray-100 px-2.5 py-2'>
                 <p className='text-[10px] text-gray-500'>งบประมาณ RFQ</p>
                 <p className='text-xs text-gray-900' style={{ fontWeight: 600 }}>
-                  ฿{relatedRfq.budget.toLocaleString('th-TH')}
+                  {formatCurrency(relatedRfq.budget)}
                 </p>
               </div>
               <div className='rounded-lg bg-white border border-gray-100 px-2.5 py-2'>
                 <p className='text-[10px] text-gray-500'>จำนวน</p>
                 <p className='text-xs text-gray-900' style={{ fontWeight: 600 }}>
-                  {relatedRfq.quantity.toLocaleString('th-TH')} ชิ้น
+                  {formatCompactNumber(relatedRfq.quantity)} ชิ้น
                 </p>
               </div>
               <div className='rounded-lg bg-white border border-gray-100 px-2.5 py-2'>
@@ -156,7 +157,7 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
                   </div>
                   <div className='text-right shrink-0'>
                     <p className='text-sm text-gray-900' style={{ fontWeight: 700 }}>
-                      ฿{offer.price.toLocaleString('th-TH')}
+                      {formatCurrency(offer.price)}
                     </p>
                     <p className='text-[11px] text-gray-500'>Lead time {offer.leadTime} วัน</p>
                   </div>

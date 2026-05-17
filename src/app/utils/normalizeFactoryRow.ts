@@ -1,4 +1,4 @@
-import type { Factory } from '@/stores';
+import { type Factory } from '@/stores/types';
 
 export function pickFactoryCoverUrl(row: Record<string, unknown>): string {
   return String(

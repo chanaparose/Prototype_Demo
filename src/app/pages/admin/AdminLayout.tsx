@@ -12,7 +12,7 @@ import {
   LogOut,
   Bell,
 } from 'lucide-react';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';

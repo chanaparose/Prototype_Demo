@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { rfqsApi, type RFQCreateInput } from '@/services/api';
+import { rfqsApi } from '@/services/api/rfqApi';
+import { type RFQCreateInput } from '@/services/api/types/rfq.types';
 
 export function useCreateRFQ() {
   return useMutation({

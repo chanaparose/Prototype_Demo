@@ -3,7 +3,7 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import type { ExploreResponse, PromoSlidesResponse } from '@/services/api/types';
+import { type ExploreResponse, type PromoSlidesResponse } from '@/services/api/types/explore.types';
 
 export interface FrontendBootstrapResponse {
   currentUser: Record<string, unknown>;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMyAddresses } from '@/hooks/factory/useMyAddresses';
 import { useModal } from '@/hooks/ui/useModal';
-import { addressesApi } from '@/services/api';
+import { addressesApi } from '@/services/api/masterApi';
 import { AddressList } from '@/components/factory/AddressList';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 

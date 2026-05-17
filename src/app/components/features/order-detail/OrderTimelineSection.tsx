@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, Clock, Circle, Camera, Pencil, X, Check, Package, Truck } from 'lucide-react';
 import { formatDateTh } from '@/components/features/order-detail/utils';
-import { productionUpdatesApi } from '@/services/api';
+import { productionUpdatesApi } from '@/services/api/ordersApi';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Image } from '@/components/ui/image';

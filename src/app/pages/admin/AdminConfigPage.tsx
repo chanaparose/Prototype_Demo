@@ -1,11 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckSquare, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
-import { useAuth } from '@/stores';
-import {
-  adminConfigApi,
-  type PlatformConfigItem,
-  type UpdatePlatformConfigRequest,
-} from '@/services/api';
+import { useAuth } from '@/stores/useAuthStore';
+import { adminConfigApi, type PlatformConfigItem, type UpdatePlatformConfigRequest } from '@/services/api/adminApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

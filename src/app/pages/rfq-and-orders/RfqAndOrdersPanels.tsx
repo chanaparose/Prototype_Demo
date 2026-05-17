@@ -40,7 +40,7 @@ import {
   getRfqActivityCounts,
 } from '@/components/features/rfq-and-orders/utils';
 import { useRfqAndOrdersState } from '@/hooks/useRfqAndOrdersState';
-import type { Rfq, Order } from '@/stores';
+import { type Rfq, type Order } from '@/stores/types';
 import { Button } from '@/components/ui/button';
 
 function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
@@ -483,7 +483,7 @@ export function OrderPanel({
                       </span>
                     )}
                     <span className='font-semibold text-gray-700'>
-                      ฿{order.totalAmount.toLocaleString()}
+                      {formatBudget(order.totalAmount)}
                     </span>
                   </div>
                   {isPendingPayment ? (

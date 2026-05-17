@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ImagePlus, X } from 'lucide-react';
-import { mediaApi } from '@/services/api';
+import { mediaApi } from '@/services/api/factoryApi';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

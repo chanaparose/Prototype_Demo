@@ -3,13 +3,7 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import type {
-  RfqListItem,
-  RfqDetailResponse,
-  RfqCreatePayload,
-  QuotationRow,
-  QuotationHistoryEntry,
-} from '@/services/api/types';
+import { type RfqListItem, type RfqDetailResponse, type RfqCreatePayload, type QuotationRow, type QuotationHistoryEntry, type QuotationCreateInput, type QuotationBreakdown } from '@/services/api/types/rfq.types';
 
 export const rfqsApi = {
   list: () => httpClient.get<RfqListItem[]>('/rfqs'),
@@ -65,6 +59,9 @@ export const quotationsApi = {
 };
 
 export const quotationApi = {
+  preview: (data: Partial<QuotationCreateInput>) =>
+    httpClient.post<QuotationBreakdown>('/quotations/preview', data),
+
   getDetail: (quoteId: string | number) =>
     httpClient.get<QuotationRow & { details?: unknown }>(`/quotations/${quoteId}/detail`),
 

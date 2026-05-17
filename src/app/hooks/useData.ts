@@ -1,4 +1,4 @@
-import { useDataStore } from '@/stores';
+import { useDataStore } from '@/stores/useDataStore';
 
 export function useData() {
   return useDataStore();

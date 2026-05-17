@@ -1,4 +1,4 @@
-import { ApiHttpError } from '@/services/api';
+import { ApiHttpError } from '@/services/api/httpClient';
 
 export function productionErrorToThai(code: string, details?: Record<string, unknown>): string {
   switch (code) {

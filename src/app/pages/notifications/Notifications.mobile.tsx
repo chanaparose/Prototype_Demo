@@ -15,7 +15,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { notificationsApi } from '@/services/api';
+import { notificationsApi } from '@/services/api/chatApi';
 import { NOTIFICATIONS_CHANGED_EVENT } from '@/hooks/useNotificationUnreadCount';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProductCategories } from '@/hooks/master/useProductCategories';
-import { categoriesApi } from '@/services/api';
-import { BaseModal, FormField, ModalFooter } from '@/shared/ui';
+import { categoriesApi } from '@/services/api/masterApi';
+import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { FormField } from '@/shared/ui/forms/FormField';
+import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 

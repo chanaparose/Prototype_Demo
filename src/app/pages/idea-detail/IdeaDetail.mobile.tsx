@@ -1,8 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  SHOWCASE_DETAIL_BRAND as BRAND,
-  formatShowcaseThaiDate as formatThaiDate,
-} from '@/components/features/showcase-detail';
+import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -14,13 +11,14 @@ import {
   MapPin,
   MessageCircle,
 } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores';
-import { useData, type FactoryShowcase } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
+import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { showcasesApi } from '@/services/api';
+import { showcasesApi } from '@/services/api/factoryApi';
 import { normShowcase } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';

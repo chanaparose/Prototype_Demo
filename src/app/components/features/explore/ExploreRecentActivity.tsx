@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronRight, TrendingUp, Clock } from 'lucide-react';
 import { EXPLORE_STATUS_CONFIG } from '@/components/features/explore/constants';
-import { formatCurrency } from '@/utils/formatting';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 
 export type RfqActivityItem = {

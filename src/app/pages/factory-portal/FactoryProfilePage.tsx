@@ -17,9 +17,9 @@ import {
   Loader2,
   Plus,
 } from 'lucide-react';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { factoriesApi, mediaApi } from '@/services/api';
+import { factoriesApi, mediaApi } from '@/services/api/factoryApi';
 
 import { useMyFactory } from '@/hooks/factory/useMyFactory';
 import { useFactoryCategories } from '@/hooks/factory/useFactoryCategories';
@@ -35,7 +35,8 @@ import { AddressesSection } from '@/components/factory/profile/AddressesSection'
 import { CertificatesSection } from '@/components/factory/profile/CertificatesSection';
 import { BankAccountPlaceholder } from '@/components/factory/profile/BankAccountPlaceholder';
 import { ProfileSaveBar } from '@/components/factory/profile/ProfileSaveBar';
-import { SectionCard, StatusBadge } from '@/shared/ui';
+import { SectionCard } from '@/shared/ui/cards/SectionCard';
+import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
 import {
   PROFILE_FORM_DEFAULTS,

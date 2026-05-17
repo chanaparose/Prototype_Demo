@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronRight, Heart } from 'lucide-react';
-import { StatusBadge } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Button } from '@/components/ui/button';
 
 export type IdeaArticleItem = {

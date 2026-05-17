@@ -1,7 +1,7 @@
 import React from 'react';
-import { showcasesApi } from '@/services/api';
+import { showcasesApi } from '@/services/api/factoryApi';
 import { normShowcase } from '@/hooks/useShowcases';
-import type { FactoryShowcase } from '@/stores';
+import { type FactoryShowcase } from '@/stores/types';
 import { Search, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

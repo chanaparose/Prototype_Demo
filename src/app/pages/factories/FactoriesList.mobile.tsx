@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, SlidersHorizontal, MapPin, Star, ShieldCheck, Package, X } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { useFactoriesList } from '@/hooks/useFactoriesList';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

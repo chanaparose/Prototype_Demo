@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
-import { factoriesApi } from '@/services/api';
+import { factoriesApi } from '@/services/api/factoryApi';
 import { Button } from '@/components/ui/button';
 
 interface Props {

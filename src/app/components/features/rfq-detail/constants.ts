@@ -1,7 +1,8 @@
-export const HISTORY_STATUSES = ['completed', 'cancelled', 'expired'] as const;
-export const STATUS_LABEL: Record<string, string> = {
-  /** RFQ ปิดแล้วหลังยอมรับใบเสนอราคา (สถานะ CL) */
-  completed: 'ปิดคำขอแล้ว',
-  cancelled: 'ยกเลิก',
-  expired: 'หมดอายุ',
-};
+/** @deprecated import from `@/domain/rfq` */
+export {
+  HISTORY_STATUSES,
+  CLOSEABLE_STATUSES,
+  RFQ_UI_STATUS_LABEL,
+  STATUS_LABEL,
+  QUOTATION_STATUS_LABEL,
+} from '@/domain/rfq/constants';

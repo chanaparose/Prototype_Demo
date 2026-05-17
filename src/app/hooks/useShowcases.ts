@@ -5,8 +5,8 @@
  */
 import { useMemo } from 'react';
 import { useApiCall } from '@/hooks/data/useApiCall';
-import { showcasesApi } from '@/services/api';
-import type { FactoryShowcase, ShowcaseImageRow, ShowcaseSpecRow } from '@/stores';
+import { showcasesApi } from '@/services/api/factoryApi';
+import { type FactoryShowcase, type ShowcaseImageRow, type ShowcaseSpecRow } from '@/stores/types';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';

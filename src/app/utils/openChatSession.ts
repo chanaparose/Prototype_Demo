@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router';
-import { conversationsApi, messagesApi } from '@/services/api';
+import { conversationsApi, messagesApi } from '@/services/api/chatApi';
 import {
   buildSendPayload,
   chatRoomPath,
@@ -9,7 +9,7 @@ import {
   type ApiConversation,
   type ChatReference,
 } from '@/utils/chatContract';
-import type { User } from '@/stores';
+import { type User } from '@/stores/types';
 
 type Row = Record<string, unknown>;
 

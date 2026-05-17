@@ -2,7 +2,7 @@
  * Auth Request Helper — Get authorization config for API requests
  */
 
-import { getToken } from '@/services/api';
+import { getToken } from '@/services/api/tokenManager';
 
 export interface AuthRequestConfig {
   headers: {

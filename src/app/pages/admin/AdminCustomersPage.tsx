@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Users, Search, AlertTriangle } from 'lucide-react';
-import { adminCustomerApi, type AdminCustomerListItem } from '@/services/api';
+import { adminCustomerApi, type AdminCustomerListItem } from '@/services/api/adminApi';
 import { Button } from '@/components/ui/button';
 import {
   Select,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
-import { quotationApi } from '@/services/api';
+import { quotationApi } from '@/services/api/rfqApi';
 import { useQuoteBuilder } from '@/pages/quote/useQuoteBuilder';
 import { usePreviewBreakdown } from '@/pages/quote/usePreviewBreakdown';
 import { RFQReferencePanel } from '@/pages/quote/components/RFQReferencePanel';

@@ -1,14 +1,8 @@
 import { create } from 'zustand';
-import {
-  authApi,
-  getToken,
-  setToken,
-  removeToken,
-  frontendApi,
-  type LoginPayload,
-  type RegisterCustomerPayload,
-  type RegisterFactoryPayload,
-} from '@/services/api';
+import { authApi } from '@/services/api/authApi';
+import { getToken, setToken, removeToken } from '@/services/api/tokenManager';
+import { frontendApi } from '@/services/api/exploreApi';
+import { type LoginPayload, type RegisterCustomerPayload, type RegisterFactoryPayload } from '@/services/api/types/auth.types';
 import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
 import type { User } from '@/stores/types';
 

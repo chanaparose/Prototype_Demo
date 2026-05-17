@@ -9,7 +9,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useApiCall } from '@/hooks/data/useApiCall';
-import { adminApi, type AdminRfqRow } from '@/services/api';
+import { adminApi, type AdminRfqRow } from '@/services/api/adminApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useAuth, useData } from '@/stores';
-import type { Conversation } from '@/stores';
-import { conversationsApi, messagesApi } from '@/services/api';
+import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
+import { type Conversation } from '@/stores/types';
+import { conversationsApi, messagesApi } from '@/services/api/chatApi';
 import { getCurrentUserId, parseApiConversation, type ApiConversation } from '@/utils/chatContract';
 import { rowToRoomMessage, type RoomMessage } from '@/components/chat/MessageBubble';
 import { dedupeByKey, sortMessagesByCreatedAt } from '@/pages/messages/selectors';

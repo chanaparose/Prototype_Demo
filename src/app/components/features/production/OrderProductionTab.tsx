@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useProductionTemplate } from '@/hooks/production/useProductionTemplate';
 import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';

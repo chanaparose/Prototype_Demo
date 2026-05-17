@@ -11,12 +11,13 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useModal } from '@/hooks/ui/useModal';
-import { walletApi, transactionsApi } from '@/services/api';
+import { walletApi, transactionsApi } from '@/services/api/userApi';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 const NAVY = appColors.brand.navy;
 const ORANGE = appColors.brand.indigo;
@@ -143,7 +144,8 @@ function TxRow({ t }: { t: NormTx }) {
           className='text-sm font-bold'
           style={{ color: credit ? 'var(--status-success)' : 'var(--status-danger-deep)' }}
         >
-          {credit ? '+' : '-'}฿{t.amount.toLocaleString('th-TH')}
+          {credit ? '+' : '-'}
+          {formatCurrency(t.amount)}
         </p>
         <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${sBadgeCls}`}>
           {sLabel}
@@ -244,8 +246,8 @@ export function FactoryWalletPage() {
     );
   }
 
-  const balanceDisplay = (good ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 });
-  const pendingDisplay = (pending ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 });
+  const balanceDisplay = formatCurrency(good ?? 0);
+  const pendingDisplay = formatCurrency(pending ?? 0);
 
   return (
     <div className='space-y-4 pb-8'>
@@ -274,19 +276,19 @@ export function FactoryWalletPage() {
 
         <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
           <p className='text-sm text-slate-500 mb-0.5'>ยอดคงเหลือ</p>
-          <p className='text-4xl font-bold tabular-nums text-slate-900'>฿{balanceDisplay}</p>
+          <p className='text-4xl font-bold tabular-nums text-slate-900'>{balanceDisplay}</p>
 
           <div className='mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3'>
             <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
               <p className='text-xs text-slate-500'>รอดำเนินการ</p>
               <p className='text-base font-semibold tabular-nums text-slate-800'>
-                ฿{pendingDisplay}
+                {pendingDisplay}
               </p>
             </div>
             <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2'>
               <p className='text-xs text-slate-500'>รายได้รวมเดือนนี้</p>
               <p className='text-base font-semibold tabular-nums text-slate-800'>
-                ฿{thisMonthEarned.toLocaleString('th-TH')}
+                {formatCurrency(thisMonthEarned)}
               </p>
             </div>
           </div>
@@ -320,19 +322,19 @@ export function FactoryWalletPage() {
           <StatCard
             icon={TrendingUp}
             label='รายได้รวม'
-            value={`฿${totalEarned.toLocaleString('th-TH')}`}
+            value={formatCurrency(totalEarned)}
             accent='var(--status-success)'
           />
           <StatCard
             icon={BarChart3}
             label='ถอนแล้ว'
-            value={`฿${totalWithdrawn.toLocaleString('th-TH')}`}
+            value={formatCurrency(totalWithdrawn)}
             accent={ORANGE}
           />
           <StatCard
             icon={Clock}
             label='รอรับ'
-            value={`฿${(pending ?? 0).toLocaleString('th-TH')}`}
+            value={formatCurrency(pending ?? 0)}
             accent={TEAL}
           />
         </div>
@@ -378,7 +380,7 @@ export function FactoryWalletPage() {
                   </div>
                   <div className='text-right shrink-0'>
                     <p className='text-sm font-bold text-amber-700'>
-                      -฿{t.amount.toLocaleString('th-TH')}
+                      -{formatCurrency(t.amount)}
                     </p>
                     <span className='text-[11px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full'>
                       รอดำเนินการ
@@ -483,7 +485,7 @@ export function FactoryWalletPage() {
                   ยอดคงเหลือที่ถอนได้
                 </p>
                 <p className='font-bold tabular-nums' style={{ color: TEAL }}>
-                  ฿{(good ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                  {formatCurrency(good ?? 0)}
                 </p>
               </div>
 

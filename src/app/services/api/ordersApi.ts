@@ -3,7 +3,7 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import type { OrderDetailDTO, OrderCreatePayload, OrderUpdatePayload } from '@/services/api/types';
+import { type OrderDetailDTO, type OrderCreatePayload, type OrderUpdatePayload } from '@/services/api/types/order.types';
 
 type ProductionUpdatePayload = Record<string, unknown>;
 

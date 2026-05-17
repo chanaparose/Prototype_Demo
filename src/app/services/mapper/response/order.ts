@@ -2,8 +2,8 @@
  * Order Response Mappers — Transform order API responses to models
  */
 
-import { IOrder } from '@/types/model';
-import { createMapper } from '@/services/mapper/response/index';
+import { IOrder } from '@/types/model/models';
+import { createMapper } from '@/services/mapper/response/mapperUtils';
 
 /**
  * Raw order data from API

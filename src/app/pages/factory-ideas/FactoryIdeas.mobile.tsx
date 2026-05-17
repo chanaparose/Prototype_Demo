@@ -20,7 +20,7 @@ import {
   factoryIdeasContentTypeLabel as contentTypeLabel,
   factoryIdeasContentTypes as CONTENT_TYPES,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Input } from '@/components/ui/input';
 
 export function FactoryIdeasMobile() {

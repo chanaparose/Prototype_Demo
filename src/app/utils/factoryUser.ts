@@ -1,4 +1,4 @@
-import type { User } from '@/stores';
+import { type User } from '@/stores/types';
 
 /** บทบาทโรงงานตาม API (register ใช้ FT) */
 export function isFactoryRole(user: User | null | undefined): boolean {

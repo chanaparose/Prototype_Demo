@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { conversationsApi } from '@/services/api';
+import { conversationsApi } from '@/services/api/chatApi';
 
 export function useMarkAsRead() {
   const calledRef = useRef<Set<string>>(new Set());

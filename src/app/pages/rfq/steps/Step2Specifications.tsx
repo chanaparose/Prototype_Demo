@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { mediaApi } from '@/services/api';
+import { mediaApi } from '@/services/api/factoryApi';
 import { DimensionInput } from '@/shared/ui/DimensionInput';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';

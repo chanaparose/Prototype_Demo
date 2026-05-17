@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { BaseModal, FormField, ModalFooter } from '@/shared/ui';
+import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { FormField } from '@/shared/ui/forms/FormField';
+import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import {
   Select,
   SelectContent,

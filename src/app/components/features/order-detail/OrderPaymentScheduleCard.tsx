@@ -1,5 +1,6 @@
 import React from 'react';
 import type { PaymentScheduleItem } from '@/pages/order-detail/orderDetailFromApi';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 function stageLabelTh(stage: string): string {
   switch (stage) {
@@ -54,7 +55,7 @@ export function OrderPaymentScheduleCard({ schedule }: Props) {
               {stageLabelTh(row.stage)} ({row.percent}%)
             </span>
             <span className='text-gray-900 font-semibold tabular-nums'>
-              ฿{row.amount.toLocaleString('th-TH')}
+              {formatCurrency(row.amount)}
             </span>
             <span className='w-full text-[12px] text-gray-500 sm:w-auto sm:text-right'>
               {statusLabelTh(row.status)}
@@ -64,7 +65,7 @@ export function OrderPaymentScheduleCard({ schedule }: Props) {
       </ul>
       <div className='mt-3 pt-3 border-t border-gray-100 flex justify-between text-[12px] font-bold text-gray-900'>
         <span>รวมทั้งสิ้น</span>
-        <span className='tabular-nums'>฿{total.toLocaleString('th-TH')}</span>
+        <span className='tabular-nums'>{formatCurrency(total)}</span>
       </div>
     </div>
   );

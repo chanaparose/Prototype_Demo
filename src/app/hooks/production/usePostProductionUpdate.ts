@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ordersApi } from '@/services/api';
+import { ordersApi } from '@/services/api/ordersApi';
 import type { ProductionUpdatesBundle } from '@/components/features/production/types';
 
 type PostBody = {

@@ -1,11 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  SHOWCASE_DETAIL_BRAND as BRAND,
-  daysBetween,
-  formatShowcaseTHB as formatTHB,
-  formatShowcaseThaiDate as formatThaiDate,
-  normalizeShowcaseMarkdown as normalizeMarkdownContent,
-} from '@/components/features/showcase-detail';
+import { SHOWCASE_DETAIL_BRAND as BRAND, daysBetween, formatShowcaseTHB as formatTHB, formatShowcaseThaiDate as formatThaiDate, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -22,11 +16,11 @@ import {
   TicketPercent,
 } from 'lucide-react';
 
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { usePromotionDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores';
-import { useData } from '@/stores';
+import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';

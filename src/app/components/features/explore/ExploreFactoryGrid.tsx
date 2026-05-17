@@ -1,6 +1,6 @@
 import React from 'react';
 import { BadgeCheck, ChevronRight, MapPin, Star, Plus } from 'lucide-react';
-import { ImageWithFallback } from '@/components/shared';
+import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
 
 export type FactoryItem = {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApiCall } from '@/hooks/data/useApiCall';
-import { frontendApi, promoSlidesApi, showcasesApi } from '@/services/api';
+import { frontendApi, promoSlidesApi } from '@/services/api/exploreApi';
+import { showcasesApi } from '@/services/api/factoryApi';
 import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi';
 
 type UseExploreDataOptions = { enablePageApis?: boolean };

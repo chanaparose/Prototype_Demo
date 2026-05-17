@@ -1,25 +1,20 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
-import { useAuth } from '@/stores';
-import { rfqsApi } from '@/services/api';
+import { useAuth } from '@/stores/useAuthStore';
+import { rfqsApi } from '@/services/api/rfqApi';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { ChevronLeft } from 'lucide-react';
 import { useRfqDetail } from '@/hooks/useRfqDetail';
-import {
-  RfqDetailStatusCard,
-  RfqDetailSpecs,
-  RfqDetailOffersSection,
-  QuotationHistoryPanel,
-  HISTORY_STATUSES,
-  STATUS_LABEL,
-} from '@/components/features/rfq-detail';
+import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
+import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
+import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
+import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
+import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/components/features/rfq-detail/constants';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
-
-const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 const COLORS = {
   purple: appColors.brand.mauve,
