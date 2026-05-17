@@ -4,8 +4,6 @@ import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi
 
 type UseExploreDataOptions = { enablePageApis?: boolean };
 
-/* ─── normaliser helpers ─── */
-
 type NormalisedShowcase = {
   id: string;
   factoryId: string;
@@ -157,8 +155,6 @@ function normSlide(r: Record<string, unknown>): NormSlide {
     code: String(r.code ?? ''),
   };
 }
-
-/* ─── hook ─── */
 
 export function useExploreData(options?: UseExploreDataOptions) {
   const enablePageApis = options?.enablePageApis !== false;
@@ -332,7 +328,6 @@ export function useExploreData(options?: UseExploreDataOptions) {
     showcases,
     promoSlides: allPromoSlides,
 
-    // Categories
     categories: exploreCategoriesMerged,
     exploreCategoriesMerged,
     exploreCategoriesLoading,

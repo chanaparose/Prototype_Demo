@@ -19,6 +19,7 @@ import {
 } from '@/pages/factory-portal/components/ShowcaseFormShared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type FormValues = {
   title: string;
@@ -54,7 +55,6 @@ export function FactoryShowcaseNewPage() {
   const { user } = useAuth();
   const myFactoryId = getFactoryEntityId(user);
 
-  /* content_type is FIXED from URL — cannot be changed on this page */
   const contentType: ShowcaseType = (() => {
     const t = searchParams.get('type');
     return t === 'PM' || t === 'ID' || t === 'MT' ? t : 'PD';
@@ -97,7 +97,6 @@ export function FactoryShowcaseNewPage() {
   const setField = <K extends keyof FormValues>(key: K, value: FormValues[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  /* ── Image upload ── */
   const onPickImage = async (file: File | null) => {
     if (!file || imageUrls.length >= 5) return;
     setCropFile(file);
@@ -105,7 +104,6 @@ export function FactoryShowcaseNewPage() {
 
   const removeImage = (idx: number) => setImageUrls((prev) => prev.filter((_, i) => i !== idx));
 
-  /* ── Payload builder ── */
   const buildPayload = (status: 'DR' | 'AC'): Record<string, unknown> => {
     const base = {
       content_type: contentType,
@@ -136,7 +134,6 @@ export function FactoryShowcaseNewPage() {
     return withPrice;
   };
 
-  /* ── Submit ── */
   const onSubmit = async (status: 'DR' | 'AC') => {
     if (!form.title.trim()) {
       setError('กรุณากรอกชื่อ');
@@ -175,7 +172,7 @@ export function FactoryShowcaseNewPage() {
     setLinkedShowcaseError('');
     try {
       await showcasesApi.create(buildPayload(status) as Parameters<typeof showcasesApi.create>[0]);
-      /* always navigate back to list after create */
+
       navigate('/factory/showcases', { replace: true });
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'สร้างไม่สำเร็จ';
@@ -191,7 +188,6 @@ export function FactoryShowcaseNewPage() {
 
   return (
     <div className='max-w-6xl mx-auto pb-28'>
-      {/* ── Sticky top bar ── */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3'>
         <Button
           variant='unstyled'
@@ -203,7 +199,6 @@ export function FactoryShowcaseNewPage() {
           กลับ
         </Button>
 
-        {/* Fixed type badge */}
         <ShowcaseTypeBadge type={contentType} />
 
         <Button
@@ -250,7 +245,6 @@ export function FactoryShowcaseNewPage() {
         ) : null}
 
         <div className='space-y-5 min-w-0'>
-          {/* Cover (PD/PM only) sits LEFT; title + main info sit RIGHT on xl. */}
           <div className='flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5'>
             {contentType !== 'ID' ? (
               <ShowcaseImageManager
@@ -261,9 +255,7 @@ export function FactoryShowcaseNewPage() {
               />
             ) : null}
 
-            {/* Right column: title + main info (sits beside cover on xl) */}
             <div className='flex-1 min-w-0 space-y-5'>
-              {/* ── Title & excerpt ── */}
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
                 <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
                 <Input
@@ -300,10 +292,9 @@ export function FactoryShowcaseNewPage() {
               />
 
               <section className='bg-white rounded-2xl border border-gray-100 p-4 space-y-4 shadow-sm'>
-                {/* PD / PM fields */}
                 {contentType !== 'ID' ? (
                   <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                    <label className='block'>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
                       <Input
                         type='number'
@@ -313,8 +304,8 @@ export function FactoryShowcaseNewPage() {
                         value={form.base_price}
                         onChange={(e) => setField('base_price', e.target.value)}
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
                       <Input
                         type='number'
@@ -323,8 +314,8 @@ export function FactoryShowcaseNewPage() {
                         value={form.moq}
                         onChange={(e) => setField('moq', e.target.value)}
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500'>Lead time (วัน)</span>
                       <Input
                         type='number'
@@ -333,14 +324,13 @@ export function FactoryShowcaseNewPage() {
                         value={form.lead_time_days}
                         onChange={(e) => setField('lead_time_days', e.target.value)}
                       />
-                    </label>
+                    </Label>
                   </div>
                 ) : null}
 
-                {/* PM-only fields */}
                 {contentType === 'PM' ? (
                   <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-dashed border-purple-100'>
-                    <label className='block'>
+                    <Label className='block'>
                       <span className='text-xs font-medium text-indigo-600'>
                         ราคาโปรโมชัน (฿) *
                       </span>
@@ -352,8 +342,8 @@ export function FactoryShowcaseNewPage() {
                         value={form.promo_price}
                         onChange={(e) => setField('promo_price', e.target.value)}
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
                       <Input
                         type='date'
@@ -361,8 +351,8 @@ export function FactoryShowcaseNewPage() {
                         value={form.start_date}
                         onChange={(e) => setField('start_date', e.target.value)}
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs font-medium text-indigo-600'>
                         วันที่สิ้นสุดโปร *
                       </span>
@@ -372,14 +362,13 @@ export function FactoryShowcaseNewPage() {
                         value={form.end_date}
                         onChange={(e) => setField('end_date', e.target.value)}
                       />
-                    </label>
+                    </Label>
                   </div>
                 ) : null}
               </section>
             </div>
           </div>
 
-          {/* ── Markdown content (full width below cover/info) ── */}
           <section>
             <MarkdownEditor
               label='รายละเอียด (Markdown)'
@@ -460,9 +449,9 @@ export function FactoryShowcaseNewPage() {
 
           {contentType === 'ID' && myFactoryId != null ? (
             <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
-              <label className='block text-sm font-semibold text-brand-navy'>
+              <Label className='block text-sm font-semibold text-brand-navy'>
                 อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
-              </label>
+              </Label>
               <p className='text-xs text-gray-500'>
                 เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
               </p>
@@ -479,7 +468,6 @@ export function FactoryShowcaseNewPage() {
         </div>
       </div>
 
-      {/* ── Sticky bottom bar ── */}
       <div className='fixed xl:hidden bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3 flex gap-3'>
         <Button
           variant='unstyled'

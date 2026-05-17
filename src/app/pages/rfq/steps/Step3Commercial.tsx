@@ -1,12 +1,5 @@
 import { Input } from '@/components/ui/input';
-/**
- * Step 3 — ที่อยู่จัดส่ง + วิธีจัดส่ง + วันกำหนดส่ง
- *
- * - Payment terms: บังคับจ่าย 100% ล่วงหน้า (ไม่ให้ลูกค้าเลือก)
- * - Incoterms: ค้าในประเทศเท่านั้น ไม่แสดง
- * - Address: GET /addresses → เลือกจากรายการ / auto-select default / เพิ่มใหม่ผ่าน modal
- * - Shipping method: GET /master/shipping-methods → เลือก 1 วิธี (required — factory ต้องเห็น)
- */
+
 import React from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api';
@@ -14,7 +7,6 @@ import { AddressFormModal, type AddressFormPayload } from '@/components/factory/
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';
 
-/* ── Types ── */
 type Address = {
   id: number;
   addressDetail: string;
@@ -42,7 +34,6 @@ type Props = {
   setDraft: (next: Partial<RFQDraft>) => void;
 };
 
-/* ── Helpers ── */
 function mapAddress(r: Record<string, unknown>): Address {
   return {
     id: Number(r.address_id ?? r.id ?? 0),
@@ -62,7 +53,6 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
   { id: 4, name: 'รถบรรทุกโรงงาน' },
 ];
 
-/* ── Component ── */
 export function Step3Commercial({ draft, setDraft }: Props) {
   /* addresses */
   const [addresses, setAddresses] = React.useState<Address[]>([]);
@@ -71,10 +61,8 @@ export function Step3Commercial({ draft, setDraft }: Props) {
   const [saving, setSaving] = React.useState(false);
   const autoSelected = React.useRef(false);
 
-  /* shipping methods */
   const [shippingMethods, setShippingMethods] = React.useState<ShippingMethod[]>(FALLBACK_SHIPPING);
 
-  /* ── โหลดข้อมูล ── */
   const loadAddresses = React.useCallback(async (): Promise<Address[]> => {
     setAddrLoading(true);
     try {
@@ -102,7 +90,6 @@ export function Step3Commercial({ draft, setDraft }: Props) {
       }
     });
 
-    // โหลด shipping methods
     void masterApi
       .shippingMethods()
       .then((raw) => {
@@ -120,7 +107,6 @@ export function Step3Commercial({ draft, setDraft }: Props) {
       });
   }, [loadAddresses]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── เพิ่มที่อยู่ใหม่ ── */
   const handleAddAddress = React.useCallback(
     async (payload: AddressFormPayload) => {
       setSaving(true);
@@ -142,10 +128,8 @@ export function Step3Commercial({ draft, setDraft }: Props) {
     [loadAddresses, setDraft],
   );
 
-  /* ── Render ── */
   return (
     <div className='space-y-5'>
-      {/* ══ 1. ที่อยู่จัดส่ง ══ */}
       <div>
         <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
           <MapPin size={14} className='text-violet-500' />
@@ -232,7 +216,6 @@ export function Step3Commercial({ draft, setDraft }: Props) {
         )}
       </div>
 
-      {/* ══ 2. วิธีจัดส่ง ══ */}
       <div>
         <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
           <Truck size={14} className='text-violet-500' />
@@ -275,7 +258,6 @@ export function Step3Commercial({ draft, setDraft }: Props) {
         </div>
       </div>
 
-      {/* ══ 3. Lead time (optional) ══ */}
       <div>
         <p className='text-[13px] font-bold text-gray-700 mb-2'>ระยะเวลาผลิตที่ต้องการ (วัน)</p>
         <Input
@@ -288,7 +270,6 @@ export function Step3Commercial({ draft, setDraft }: Props) {
         />
       </div>
 
-      {/* ── AddressFormModal ── */}
       <AddressFormModal
         open={modalOpen}
         mode='create'

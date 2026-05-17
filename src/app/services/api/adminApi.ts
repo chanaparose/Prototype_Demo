@@ -4,7 +4,6 @@
 
 import { httpClient } from '@/services/api/httpClient';
 
-// ─── Query String Helper ───────────────────────────────────
 function qs(params: Record<string, string | number | boolean | undefined | null>): string {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
@@ -15,7 +14,6 @@ function qs(params: Record<string, string | number | boolean | undefined | null>
   return s ? `?${s}` : '';
 }
 
-// ─── Types ────────────────────────────────────────────────
 export interface PlatformConfig {
   [key: string]: unknown;
 }
@@ -216,7 +214,6 @@ export interface AdminCustomerOrderItem {
   created_at: string;
 }
 
-// ─── Platform Config API ───────────────────────────────────
 export const platformConfigApi = {
   getActive: () => httpClient.get<PlatformConfig>('/admin/platform-config'),
 
@@ -226,7 +223,6 @@ export const platformConfigApi = {
   history: () => httpClient.get<PlatformConfig[]>('/admin/platform-config/history'),
 };
 
-// ─── Admin Config API ───────────────────────────────────────
 export const adminConfigApi = {
   listConfigs: () =>
     httpClient.get<{
@@ -244,7 +240,6 @@ export const adminConfigApi = {
     httpClient.delete<void>(`/admin/platform-configs/${configId}`),
 };
 
-// ─── Admin Factory Config API ──────────────────────────────
 export const adminFactoryConfigApi = {
   getFactoryConfig: (factoryId: number) =>
     httpClient.get<FactoryConfigResponse>(`/admin/factories/${factoryId}/config`),
@@ -253,7 +248,6 @@ export const adminFactoryConfigApi = {
     httpClient.patch<FactoryConfigResponse>(`/admin/factories/${factoryId}/config`, data),
 };
 
-// ─── Main Admin API ────────────────────────────────────────
 export const adminApi = {
   dashboardSummary: () => httpClient.get<AdminDashboardSummary>('/admin/dashboard/summary'),
 
@@ -415,7 +409,6 @@ export const adminApi = {
     httpClient.delete<void>(`/admin/commission-exemptions/${exemptionId}`),
 };
 
-// ─── Admin Customer API ────────────────────────────────────
 export const adminCustomerApi = {
   list: (params?: { search?: string; is_active?: boolean; limit?: number; offset?: number }) =>
     httpClient.get<{
@@ -456,7 +449,6 @@ export const adminCustomerApi = {
     }>(`/admin/dashboard/top-customers${qs({ limit })}`),
 };
 
-// ─── Admin Settlement API ──────────────────────────────────
 export const adminSettlementApi = {
   listByFactory: (factoryId: number, params?: { limit?: number; offset?: number }) =>
     httpClient.get<{

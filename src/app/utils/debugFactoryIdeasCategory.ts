@@ -1,10 +1,3 @@
-/**
- * เปิดดีบักเมนูหมวด + panel ประเภทย่อย (Factory Ideas):
- *   DevTools Console → localStorage.setItem('debugFactoryIdeasCategory','1')
- *   แล้ว reload หน้า
- * ปิด:
- *   localStorage.removeItem('debugFactoryIdeasCategory')
- */
 export function isDebugFactoryIdeasCategory(): boolean {
   try {
     return (

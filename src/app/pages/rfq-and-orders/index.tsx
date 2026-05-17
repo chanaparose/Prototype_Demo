@@ -1,12 +1,3 @@
-/**
- * RfqAndOrders — redesigned page
- *
- * Desktop: 2-column split (RFQ left ~60%, Orders right ~40%), independently scrollable
- * Mobile:  tab switcher at top → single-column
- *
- * RFQ section uses active/history accordion (no old 3-tab system)
- * Order section has urgency signal on pending-payment tab
- */
 import React from 'react';
 import { Link, useNavigate } from 'react-router';
 import {
@@ -53,11 +44,9 @@ import { useRfqAndOrdersState } from '@/hooks/useRfqAndOrdersState';
 import type { Rfq, Order } from '@/stores';
 import { Button } from '@/components/ui/button';
 
-// ─── Brand constants (from design brief) ──────────────────────────────────
 const GREEN = 'var(--status-success)';
 const GREEN_BG = 'var(--status-success-soft)';
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
 function getActivityCounts(rfq: Rfq) {
   const offers = rfq.offers ?? [];
   const totalOffers = offers.length || rfq.offerCount || 0;
@@ -93,7 +82,6 @@ function getTabCount(
   }
 }
 
-// ─── Active RFQ card ────────────────────────────────────────────────────────
 function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
   const { totalOffers, accepted, pending } = getActivityCounts(rfq);
   const remaining = Math.max(totalOffers - accepted, 0);
@@ -119,7 +107,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           borderLeftColor: hasNewOffers ? ACCENT_ORANGE : BORDER_WARM,
         }}
       >
-        {/* Top row */}
         <div className='flex items-start justify-between gap-2 mb-3'>
           <div className='flex gap-3 min-w-0 flex-1'>
             <div
@@ -145,7 +132,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           </span>
         </div>
 
-        {/* Factory response status — simple & clear */}
         {totalOffers === 0 ? (
           /* ยังไม่มีโรงงานตอบ */
           <div
@@ -159,7 +145,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           /* มีโรงงานตอบแล้ว */
           <div className='mb-3'>
             <div className='flex items-center gap-2 mb-2 flex-wrap'>
-              {/* badge: จำนวนที่ตอบ */}
               <span
                 className='inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold'
                 style={{ background: '#EDE9FB', color: PLUM }}
@@ -181,7 +166,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           </div>
         )}
 
-        {/* Footer */}
         <div
           className='flex items-center justify-between pt-2 border-t text-xs'
           style={{ borderColor: BORDER_WARM }}
@@ -206,7 +190,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
   );
 }
 
-// ─── History row (compact) ──────────────────────────────────────────────────
 function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
     label: rfq.status,
@@ -260,7 +243,6 @@ function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
   );
 }
 
-// ─── RFQ panel (shared between mobile + desktop) ───────────────────────────
 function RfqPanel({
   rfqs,
   isMobile,
@@ -286,7 +268,6 @@ function RfqPanel({
 
   return (
     <div className={isMobile ? '' : 'px-4 pb-4 pt-2'}>
-      {/* FAB (mobile only) */}
       {isMobile && (
         <Button
           variant='unstyled'
@@ -298,7 +279,6 @@ function RfqPanel({
         </Button>
       )}
 
-      {/* Section A header */}
       <div
         className={`flex items-center justify-between mb-3 ${isDesktop ? 'min-h-[56px] rounded-xl border px-3 py-2' : ''}`}
         style={isDesktop ? { borderColor: BORDER_WARM, background: '#F9F8FC' } : undefined}
@@ -325,7 +305,6 @@ function RfqPanel({
         </div>
       </div>
 
-      {/* Active cards */}
       {activeRfqs.length === 0 ? (
         <div
           className='flex flex-col items-center justify-center py-12 text-center rounded-2xl border mb-4'
@@ -357,7 +336,6 @@ function RfqPanel({
         </div>
       )}
 
-      {/* Section B: History accordion */}
       {historyRfqs.length > 0 && (
         <div>
           <Button
@@ -400,7 +378,6 @@ function RfqPanel({
   );
 }
 
-// ─── Order panel (shared between mobile + desktop) ─────────────────────────
 const ORDER_TABS: {
   id: OrderFilterId;
   shortLabel: string;
@@ -434,7 +411,6 @@ function OrderPanel({
 
   return (
     <div className={isDesktop ? 'px-4 pb-4 pt-2' : ''}>
-      {/* Urgency banner */}
       {hasPendingPayment && orderFilter !== 'pending_payment' && (
         <Button
           variant='unstyled'
@@ -454,7 +430,6 @@ function OrderPanel({
         </Button>
       )}
 
-      {/* Tab bar */}
       <div
         className='grid grid-cols-5 rounded-xl px-1 py-[5px] border gap-0.5 w-full mb-3'
         style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
@@ -514,7 +489,6 @@ function OrderPanel({
         })}
       </div>
 
-      {/* Order cards */}
       {filteredOrders.length === 0 ? (
         <div
           className='flex flex-col items-center justify-center py-12 text-center rounded-2xl border min-h-[258px]'
@@ -548,7 +522,6 @@ function OrderPanel({
                   borderLeftColor: isPendingPayment ? ACCENT_ORANGE : BORDER_WARM,
                 }}
               >
-                {/* Header */}
                 <div className='flex items-start justify-between mb-3'>
                   <div className='flex items-center gap-2.5 min-w-0 flex-1'>
                     <div
@@ -574,7 +547,6 @@ function OrderPanel({
                   </span>
                 </div>
 
-                {/* Progress */}
                 <div className='mb-3'>
                   <div className='flex justify-between text-[10px] text-gray-400 mb-1'>
                     <span>ความคืบหน้า</span>
@@ -593,7 +565,6 @@ function OrderPanel({
                   </div>
                 </div>
 
-                {/* Footer */}
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-3 text-xs text-gray-500'>
                     {order.estimatedDelivery && (
@@ -633,7 +604,6 @@ function OrderPanel({
   );
 }
 
-// ─── Page root ──────────────────────────────────────────────────────────────
 export function RfqAndOrders() {
   const {
     primaryTab,
@@ -665,7 +635,6 @@ export function RfqAndOrders() {
     );
   }
 
-  // Error
   if (error) {
     return (
       <div className='flex items-center justify-center min-h-[60vh] px-4'>
@@ -685,14 +654,9 @@ export function RfqAndOrders() {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* ═══════════════════════════════════════════════════════════
-          MOBILE LAYOUT (< lg)
-      ═══════════════════════════════════════════════════════════ */}
       <div className='lg:hidden flex flex-col min-h-full pb-20'>
-        {/* Page header */}
         <div className='px-4 pt-5 pb-3'>
           <p
             className='text-[10px] uppercase tracking-wider font-semibold mb-0.5'
@@ -705,7 +669,6 @@ export function RfqAndOrders() {
           </h1>
         </div>
 
-        {/* Primary tab switcher */}
         <div className='px-4 mb-4'>
           <div
             className='flex p-1 rounded-2xl border'
@@ -758,11 +721,7 @@ export function RfqAndOrders() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════
-          DESKTOP LAYOUT (lg+)
-      ═══════════════════════════════════════════════════════════ */}
       <div className='hidden lg:flex flex-col px-8 py-7 h-full'>
-        {/* Page header */}
         <div className='flex items-center justify-between mb-6 shrink-0'>
           <div>
             <p
@@ -785,14 +744,11 @@ export function RfqAndOrders() {
           </Link>
         </div>
 
-        {/* 2-column grid — equal width */}
         <div className='grid gap-6 flex-1 min-h-0' style={{ gridTemplateColumns: '1fr 1fr' }}>
-          {/* ── Left: RFQ panel ── */}
           <div
             className='bg-white rounded-2xl border overflow-hidden flex flex-col'
             style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${PRIMARY_COLOR}` }}
           >
-            {/* Sticky panel header */}
             <div
               className='flex items-center justify-between px-5 py-4 border-b shrink-0'
               style={{ borderColor: BORDER_WARM, background: PRIMARY_BG_LIGHT }}
@@ -823,18 +779,15 @@ export function RfqAndOrders() {
               </div>
             </div>
 
-            {/* Scrollable RFQ content */}
             <div className='overflow-y-auto flex-1 p-4'>
               <RfqPanel rfqs={rfqs} isDesktop />
             </div>
           </div>
 
-          {/* ── Right: Orders panel ── */}
           <div
             className='bg-white rounded-2xl border overflow-hidden flex flex-col'
             style={{ borderColor: BORDER_WARM, borderTop: `3px solid ${ACCENT_ORANGE}` }}
           >
-            {/* Sticky panel header */}
             <div
               className='flex items-center justify-between px-5 py-4 border-b shrink-0'
               style={{ borderColor: BORDER_WARM, background: ACCENT_ORANGE_BG }}
@@ -867,7 +820,6 @@ export function RfqAndOrders() {
               )}
             </div>
 
-            {/* Scrollable Orders content */}
             <div className='overflow-y-auto flex-1 p-4'>
               <OrderPanel
                 orderFilter={orderFilter}

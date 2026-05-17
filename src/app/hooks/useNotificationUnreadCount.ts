@@ -14,9 +14,7 @@ export function useNotificationUnreadCount(enabled: boolean) {
     try {
       const res = await notificationsApi.unreadCount();
       setCount(Number((res as { count?: number })?.count ?? 0));
-    } catch {
-      // keep previous count on transient errors
-    }
+    } catch {}
   }, [enabled]);
 
   useEffect(() => {

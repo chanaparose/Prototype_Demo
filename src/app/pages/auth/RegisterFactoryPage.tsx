@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const inputBase =
   'w-full px-4 py-2.5 md:py-3 rounded-xl border text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-shadow bg-gray-50/50 focus:bg-white';
@@ -37,7 +38,7 @@ function FieldBlock({
 }) {
   return (
     <div ref={setFieldRef(fieldKey)} className={`space-y-1.5 ${className}`}>
-      <label className='block text-sm font-medium text-brand-navy-deep'>{label}</label>
+      <Label className='block text-sm font-medium text-brand-navy-deep'>{label}</Label>
       {children}
       {error ? <p className='text-xs md:text-sm text-red-600 mt-1'>{error}</p> : null}
     </div>
@@ -69,9 +70,7 @@ export function RegisterFactoryPage() {
 
   return (
     <div className='min-h-screen bg-gradient-to-b from-brand-panel-hover to-white py-6 md:py-12 px-4 flex items-center justify-center'>
-      {/* ปรับ Max Width ให้กว้างขึ้นเล็กน้อยเพื่อรองรับ Grid 2 คอลัมน์ */}
       <div className='w-full max-w-[1024px] bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden md:flex border border-brand-purple/10'>
-        {/* Left Side: Hero / Promo Banner (Desktop Only) */}
         <div className='hidden md:flex md:w-[45%] flex-col justify-between bg-brand-navy-deep text-white p-12 relative overflow-hidden'>
           <div
             className='absolute inset-0 opacity-40 mix-blend-overlay'
@@ -100,7 +99,6 @@ export function RegisterFactoryPage() {
           </div>
         </div>
 
-        {/* Right Side: Registration Form */}
         <form
           className='flex-1 p-6 sm:p-8 md:p-12'
           onSubmit={(e) => {
@@ -237,7 +235,6 @@ export function RegisterFactoryPage() {
               <>
                 <div className='h-px bg-gray-100' />
 
-                {/* Section 2: Account Info — shown only for guests */}
                 <div>
                   <h3 className='text-base font-semibold text-brand-purple mb-4 flex items-center gap-2'>
                     <span className='w-6 h-6 rounded-full bg-brand-purple/10 flex items-center justify-center text-xs'>
@@ -340,7 +337,6 @@ export function RegisterFactoryPage() {
               </>
             )}
 
-            {/* Info banner for logged-in users */}
             {!authLoading && isAuthenticated && (
               <div className='flex items-start gap-3 bg-brand-lavender border border-brand-purple/20 rounded-xl px-4 py-3'>
                 <svg
@@ -367,7 +363,7 @@ export function RegisterFactoryPage() {
               ref={setFieldRef('acceptTerms')}
               className='bg-gray-50/50 p-4 rounded-xl border border-gray-100'
             >
-              <label className='flex items-start gap-3 cursor-pointer text-sm text-gray-600'>
+              <Label className='flex items-start gap-3 cursor-pointer text-sm text-gray-600'>
                 <Checkbox
                   checked={form.acceptTerms}
                   onCheckedChange={(checked) => setField('acceptTerms', checked === true)}
@@ -381,7 +377,7 @@ export function RegisterFactoryPage() {
                   </a>{' '}
                   และนโยบายความเป็นส่วนตัวของแพลตฟอร์ม
                 </span>
-              </label>
+              </Label>
               {errors.acceptTerms && (
                 <p className='text-sm text-red-600 pl-7 mt-1.5'>{errors.acceptTerms}</p>
               )}

@@ -6,6 +6,7 @@ import { Search, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface RelatedShowcasePickerProps {
   factoryId: number;
@@ -226,7 +227,7 @@ export function RelatedShowcasePicker({
                     const checked = draftSet.has(Number(item.id));
                     const disableThis = !checked && draftAtLimit;
                     return (
-                      <label
+                      <Label
                         key={item.id}
                         className={`flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors ${
                           checked ? 'border-violet-300 bg-violet-50' : 'border-gray-200 bg-white'
@@ -250,7 +251,7 @@ export function RelatedShowcasePicker({
                             {item.category || '-'}
                           </p>
                         </div>
-                      </label>
+                      </Label>
                     );
                   })}
                 </div>

@@ -1,8 +1,3 @@
-/**
- * Per-step guidance config สำหรับ factory order update flow
- * แต่ละขั้นตอนมีคำอธิบาย, รายการย่อยแบบ bullet, placeholder, และ label ที่เหมาะสม
- */
-
 export interface StepGuide {
   /** emoji หรือ icon สั้น ๆ แสดงข้างชื่อขั้นตอน */
   emoji: string;
@@ -10,7 +5,7 @@ export interface StepGuide {
   whatToDo: string;
   /** อธิบายรายละเอียดการดำเนินการ */
   guidance: string;
-  /** รายการย่อยแสดงเป็น dot list (ไม่ใช่ checkbox) */
+
   bulletPoints: string[];
   /** placeholder ของ textarea หมายเหตุ */
   notesPlaceholder: string;

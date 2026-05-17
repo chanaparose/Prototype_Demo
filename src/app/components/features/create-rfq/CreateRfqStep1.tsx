@@ -1,12 +1,6 @@
 import { Input } from '@/components/ui/input';
-/**
- * Step 1: สินค้าของคุณ
- *
- * 1) เลือกหมวดหมู่ (Visual Cards)
- * 2) เลือกประเภทย่อย (Radio buttons — จาก lbi_sub_categories)
- * 3) ชื่อสินค้า
- * 4) รายละเอียด (free text + smart placeholder ตาม sub-category)
- */
+import { Label } from '@/components/ui/label';
+
 import React from 'react';
 import { FileText, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
 import type { CreateRfqForm, SubCategory } from '@/components/features/create-rfq/types';
@@ -47,11 +41,10 @@ export function CreateRfqStep1({
 
   return (
     <div className='flex flex-col gap-5'>
-      {/* ── 1. หมวดหมู่สินค้า (Visual Cards) ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-3 block'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-3 block'>
           หมวดหมู่สินค้าที่ต้องการผลิต <span className='text-red-400'>*</span>
-        </label>
+        </Label>
         <div className='grid grid-cols-3 gap-2'>
           {categories.map((cat) => {
             const active = form.categoryId === cat.id;
@@ -87,13 +80,12 @@ export function CreateRfqStep1({
         </div>
       </div>
 
-      {/* ── 2. ประเภทย่อย (Radio buttons — จาก lbi_sub_categories) ── */}
       {form.categoryId && (
         <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-          <label className='text-[13px] font-bold text-gray-700 mb-1 flex items-center gap-1.5'>
+          <Label className='text-[13px] font-bold text-gray-700 mb-1 flex items-center gap-1.5'>
             <ChevronRight size={14} className='text-violet-500' />
             ประเภทย่อย <span className='text-red-400'>*</span>
-          </label>
+          </Label>
           <p className='text-[10px] text-gray-400 mb-3'>
             เลือกให้ตรงเพื่อส่ง RFQ ไปถึงโรงงานที่เชี่ยวชาญ
           </p>
@@ -135,7 +127,6 @@ export function CreateRfqStep1({
                         : 'border-gray-100 bg-gray-50/50 active:scale-[0.98]'
                     }`}
                   >
-                    {/* Radio dot */}
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                         active ? 'border-violet-500' : 'border-gray-300'
@@ -158,12 +149,11 @@ export function CreateRfqStep1({
         </div>
       )}
 
-      {/* ── 3. ชื่อสินค้า / โปรเจกต์ ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
           <FileText size={14} className='text-violet-500' />
           ชื่อสินค้าที่ต้องการผลิต <span className='text-red-400'>*</span>
-        </label>
+        </Label>
         <Input
           type='text'
           maxLength={100}
@@ -175,12 +165,11 @@ export function CreateRfqStep1({
         <p className='text-[10px] text-gray-400 mt-1.5 text-right'>{form.title.length}/100</p>
       </div>
 
-      {/* ── 4. รายละเอียดเพิ่มเติม (free text + smart placeholder) ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
           <Sparkles size={14} className='text-amber-500' />
           รายละเอียดเพิ่มเติม
-        </label>
+        </Label>
         <Textarea
           value={form.details}
           onChange={(e) => onUpdate('details', e.target.value)}

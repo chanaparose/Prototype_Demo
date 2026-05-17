@@ -23,7 +23,7 @@ type OrderForTimeline = {
 
 type OrderTimelineSectionProps = {
   order: OrderForTimeline;
-  /** lead_time_days from quotation — used to show production vs shipping breakdown */
+
   leadTimeDays?: number | null;
   /** shipping_days returned by the API (platform constant); falls back to 7 until BE ships the field */
   shippingDays?: number | null;
@@ -51,14 +51,13 @@ export function OrderTimelineSection({
   const hasTimeline = timeline.length > 0;
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // estimated_delivery from BE = order_date + lead_time_days + shippingDays (new orders)
   // For old orders (pre-fix) estimated_delivery = order_date + lead_time_days only,
   // so we derive receipt_date = estimated_delivery + SHIPPING_DAYS as a fallback display.
   const hasLeadTime = leadTimeDays != null && leadTimeDays > 0;
-  // If the BE already encodes shipping in estimated_delivery (new formula), use it directly.
+
   // We detect "old" orders by checking if lead_time_days is available and the gap looks wrong,
   // but to keep it simple we always show estimated_delivery as the production ETA
-  // and estimated_delivery (which BE now = production+shipping) as the receipt date.
+
   const receiptDateStr = order.estimatedDelivery; // BE stores production + shipping now
   const productionEtaStr = hasLeadTime
     ? addDays(order.estimatedDelivery, -shippingDays) // strip shipping to show production ETA
@@ -259,7 +258,6 @@ export function OrderTimelineSection({
       </div>
 
       <div className='bg-gradient-to-br from-brand-page to-brand-panel-soft border border-[rgba(162,56,255,0.20)] rounded-2xl p-4 space-y-3'>
-        {/* Progress bar */}
         <div>
           <div className='flex items-center justify-between mb-2'>
             <span className='text-gray-700 text-sm'>ความคืบหน้าโดยรวม</span>
@@ -278,9 +276,7 @@ export function OrderTimelineSection({
           </div>
         </div>
 
-        {/* Delivery ETA */}
         <div className='border-t border-[rgba(162,56,255,0.12)] pt-3 space-y-2'>
-          {/* Breakdown pills */}
           {hasLeadTime && (
             <div className='flex items-center gap-2 flex-wrap'>
               <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-white border border-[rgba(162,56,255,0.20)] text-gray-600'>
@@ -303,7 +299,6 @@ export function OrderTimelineSection({
             </div>
           )}
 
-          {/* Receipt date highlight */}
           <div className='flex items-center justify-between'>
             <span className='text-sm text-gray-600'>คาดว่าจะได้รับสินค้า</span>
             <span className='text-sm font-bold' style={{ color: 'var(--brand-purple)' }}>

@@ -11,12 +11,6 @@ interface UseAsyncReturn<T> extends UseAsyncState<T> {
   reset: () => void;
 }
 
-/**
- * Execute async operations and track loading/error state
- * @param asyncFunction - Async function to execute
- * @param immediate - Execute immediately on mount (default: true)
- * @param deps - Dependency array for when to re-execute
- */
 export function useAsync<T>(
   asyncFunction: () => Promise<T>,
   immediate = true,

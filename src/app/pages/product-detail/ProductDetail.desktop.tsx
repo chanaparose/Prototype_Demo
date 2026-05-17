@@ -32,6 +32,14 @@ import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
 import { useFavorites } from '@/hooks/useFavorites';
 import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
@@ -119,7 +127,6 @@ export function ProductDetailDesktop() {
   const breakdown = summary?.rating_breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
   const latestReviews = reviewListQ.data ?? [];
 
-  // ── Spec rows for the specifications table ──
   const specRows: { label: string; value: React.ReactNode }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
   if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
@@ -139,7 +146,6 @@ export function ProductDetailDesktop() {
       className='hidden lg:block min-h-[calc(100vh-4rem)]'
       style={{ background: 'var(--brand-panel)' }}
     >
-      {/* ── Breadcrumb / back row ── */}
       <div className='px-8 pt-5 pb-3'>
         <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
           <Button
@@ -166,12 +172,9 @@ export function ProductDetailDesktop() {
         </div>
       </div>
 
-      {/* ── Body ── */}
       <div className='px-8 pb-10 space-y-4'>
-        {/* ── Main product card (gallery + info) ── */}
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6'>
           <div className='flex gap-8'>
-            {/* ── Left: Gallery ── */}
             <div className='w-[450px] shrink-0'>
               <ShowcaseHeroGallery
                 gallery={gallery}
@@ -184,7 +187,6 @@ export function ProductDetailDesktop() {
                 className=''
               />
 
-              {/* share / favorites row */}
               <div className='mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-[12px] text-gray-500'>
                 <Button
                   variant='unstyled'
@@ -219,9 +221,7 @@ export function ProductDetailDesktop() {
               </div>
             </div>
 
-            {/* ── Right: Info ── */}
             <div className='flex-1 min-w-0'>
-              {/* Badges */}
               <div className='flex flex-wrap items-center gap-2 mb-2'>
                 {factory?.verified ? (
                   <span
@@ -247,12 +247,10 @@ export function ProductDetailDesktop() {
                 ) : null}
               </div>
 
-              {/* Title */}
               <h1 className='text-[20px] leading-snug font-medium' style={{ color: BRAND.ink }}>
                 {item.title}
               </h1>
 
-              {/* Sub info row (rating / sold / posted) */}
               <div className='flex items-center gap-4 py-3 mt-1 border-b border-gray-100 text-[13px] text-gray-500'>
                 <span className='inline-flex items-center gap-1'>
                   <span
@@ -277,7 +275,6 @@ export function ProductDetailDesktop() {
                 <span>เผยแพร่ {formatThaiDate(item.postedAt)}</span>
               </div>
 
-              {/* Price block */}
               <div
                 className='mt-4 px-4 py-4 rounded-xl border'
                 style={{ background: 'var(--surface-paper-warm)', borderColor: '#F8DEC1' }}
@@ -309,7 +306,6 @@ export function ProductDetailDesktop() {
                 </p>
               </div>
 
-              {/* Info grid rows (MOQ / Lead time / location) */}
               <div className='mt-5 grid grid-cols-[120px_1fr] gap-y-3 gap-x-4 text-[13px]'>
                 <span className='text-gray-400'>ขั้นต่ำผลิต</span>
                 <span style={{ color: BRAND.ink }}>
@@ -334,7 +330,6 @@ export function ProductDetailDesktop() {
                 ) : null}
               </div>
 
-              {/* Tag chips */}
               {item.tags.length > 0 ? (
                 <div className='mt-5 grid grid-cols-[120px_1fr] gap-x-4 items-start text-[13px]'>
                   <span className='text-gray-400 pt-1'>แท็ก</span>
@@ -352,7 +347,6 @@ export function ProductDetailDesktop() {
                 </div>
               ) : null}
 
-              {/* CTA row */}
               <div className='mt-6 flex items-center gap-3'>
                 {canChat ? (
                   <Button
@@ -393,7 +387,6 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        {/* ── Shop card (horizontal) ── */}
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-5'>
           <div className='flex items-center gap-5'>
             <div className='flex items-center gap-4 min-w-0'>
@@ -504,7 +497,6 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        {/* ── Specifications ── */}
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div
             className='px-6 py-3 border-b'
@@ -522,26 +514,27 @@ export function ProductDetailDesktop() {
                   Number.isFinite(leadTimeDays) && leadTimeDays > 0 ? leadTimeDays : null,
               }}
             />
-            <table className='w-full text-[13px]'>
-              <tbody>
+            <Table className='w-full text-[13px]'>
+              <TableBody>
                 {specRows.map((row, idx) => (
-                  <tr
+                  <TableRow
                     key={`${row.label}-${idx}`}
                     className='border-b last:border-0'
                     style={{ borderColor: BRAND.border }}
                   >
-                    <td className='py-2.5 pr-6 w-48 text-gray-500 align-top'>{row.label}</td>
-                    <td className='py-2.5' style={{ color: BRAND.ink }}>
+                    <TableCell className='py-2.5 pr-6 w-48 text-gray-500 align-top'>
+                      {row.label}
+                    </TableCell>
+                    <TableCell className='py-2.5' style={{ color: BRAND.ink }}>
                       {row.value}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
 
-        {/* ── Description ── */}
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div
             className='px-6 py-3 border-b'
@@ -565,7 +558,6 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        {/* ── Review score ── */}
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div
             className='px-6 py-3 border-b'
@@ -629,7 +621,6 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        {/* ── CTA banner (bottom) ── */}
         <div
           className='rounded-2xl p-5 flex items-center justify-between shadow-sm'
           style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
@@ -672,7 +663,6 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        {/* ── Related products ── */}
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div
             className='px-6 py-3 border-b'

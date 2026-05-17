@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 export type LbiAddressValue = {
   provinceId: string;
@@ -88,7 +89,7 @@ interface CellProps {
 
 function Cell({ label, value, loading, disabled, options, placeholder, onChange }: CellProps) {
   return (
-    <label className='block'>
+    <Label className='block'>
       <span className='text-xs text-gray-500'>{label}</span>
       <Select
         value={value}
@@ -107,6 +108,6 @@ function Cell({ label, value, loading, disabled, options, placeholder, onChange 
           ))}
         </SelectContent>
       </Select>
-    </label>
+    </Label>
   );
 }

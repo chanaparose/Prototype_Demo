@@ -1,10 +1,5 @@
-/**
- * Step 3: ที่อยู่จัดส่ง + วิธีจัดส่ง + สรุปยืนยัน
- *
- * 1) เลือกที่อยู่จัดส่ง (addresses)
- * 2) เลือกวิธีจัดส่ง (lbi_shipping_methods)
- * 3) สรุปคำขอทั้งหมด
- */
+import { Label } from '@/components/ui/label';
+
 import React from 'react';
 import {
   CheckCircle2,
@@ -54,12 +49,11 @@ export function CreateRfqStep3Summary({
 
   return (
     <div className='flex flex-col gap-4'>
-      {/* ── 1. ที่อยู่จัดส่ง ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
           <MapPin size={14} className='text-violet-500' />
           ที่อยู่จัดส่งสินค้า <span className='text-red-400'>*</span>
-        </label>
+        </Label>
 
         {addresses.length === 0 ? (
           <Button
@@ -138,12 +132,11 @@ export function CreateRfqStep3Summary({
         )}
       </div>
 
-      {/* ── 2. วิธีจัดส่ง (lbi_shipping_methods) ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
           <Truck size={14} className='text-violet-500' />
           วิธีจัดส่งที่ต้องการ <span className='text-red-400'>*</span>
-        </label>
+        </Label>
         <div className='flex flex-col gap-1.5'>
           {shippingMethods.map((method) => {
             const active = form.shippingMethodId === method.id;
@@ -168,7 +161,7 @@ export function CreateRfqStep3Summary({
                 >
                   {method.name}
                 </span>
-                {/* Radio dot */}
+
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                     active ? 'border-violet-500' : 'border-gray-300'
@@ -182,7 +175,6 @@ export function CreateRfqStep3Summary({
         </div>
       </div>
 
-      {/* ── 3. สรุปคำขอ ── */}
       <div className='bg-white rounded-2xl p-5 shadow-sm border border-gray-100'>
         <h3 className='text-[13px] font-bold text-gray-700 mb-4 pb-3 border-b border-gray-100 flex items-center gap-1.5'>
           <FileText size={14} className='text-violet-500' />
@@ -190,7 +182,6 @@ export function CreateRfqStep3Summary({
         </h3>
 
         <div className='flex flex-col gap-3'>
-          {/* Product info */}
           <div className='flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100'>
             <span className='text-2xl leading-none shrink-0'>{icon}</span>
             <div className='flex-1 min-w-0'>
@@ -206,7 +197,6 @@ export function CreateRfqStep3Summary({
             </div>
           </div>
 
-          {/* Quantity + Budget */}
           <div className='grid grid-cols-2 gap-2'>
             <div className='p-3 rounded-xl bg-gray-50 border border-gray-100'>
               <div className='flex items-center gap-1.5 mb-1'>
@@ -229,7 +219,6 @@ export function CreateRfqStep3Summary({
             </div>
           </div>
 
-          {/* Details */}
           {form.details && (
             <div className='p-3 rounded-xl bg-gray-50 border border-gray-100'>
               <span className='text-[10px] font-bold text-gray-400 uppercase'>รายละเอียด</span>
@@ -239,7 +228,6 @@ export function CreateRfqStep3Summary({
             </div>
           )}
 
-          {/* Images */}
           {form.imageUrls.length > 0 && (
             <div className='p-3 rounded-xl bg-gray-50 border border-gray-100'>
               <div className='flex items-center gap-1.5 mb-2'>
@@ -261,7 +249,6 @@ export function CreateRfqStep3Summary({
             </div>
           )}
 
-          {/* Shipping method */}
           {form.shippingMethodId && (
             <div className='p-3 rounded-xl bg-gray-50 border border-gray-100'>
               <div className='flex items-center gap-1.5 mb-1'>
@@ -277,7 +264,6 @@ export function CreateRfqStep3Summary({
         </div>
       </div>
 
-      {/* ── 4. Info banner ── */}
       <div className='bg-violet-50 border border-violet-100 p-4 rounded-2xl flex items-start gap-3'>
         <CheckCircle2 className='text-violet-500 shrink-0 mt-0.5' size={18} />
         <div>

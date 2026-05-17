@@ -44,8 +44,8 @@ import {
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-// ── Design tokens ─────────────────────────────────────────────────────────
 const COLORS = {
   purple: 'var(--brand-indigo)',
   orange: 'var(--brand-indigo)',
@@ -80,7 +80,6 @@ function sectionBadge(complete: boolean) {
   );
 }
 
-// ── Verification Stepper ──────────────────────────────────────────────────
 interface StepDef {
   label: string;
   sublabel: string;
@@ -145,7 +144,6 @@ function pickCoverFromFactoryRaw(raw: Record<string, unknown>): string {
   ).trim();
 }
 
-// ── Hero card ─────────────────────────────────────────────────────────────
 function FactoryHeroCard({
   factoryName,
   verifyStatus,
@@ -190,7 +188,6 @@ function FactoryHeroCard({
 
   return (
     <div className='rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden'>
-      {/* Cover image zone */}
       <div
         className={`relative h-28 sm:h-36 transition-[box-shadow] ${
           coverDragOver ? 'ring-2 ring-inset ring-indigo-400' : ''
@@ -237,7 +234,7 @@ function FactoryHeroCard({
           </div>
         ) : null}
 
-        <label className='absolute inset-0 z-[1] cursor-pointer group flex flex-col items-center justify-center text-center px-4'>
+        <Label className='absolute inset-0 z-[1] cursor-pointer group flex flex-col items-center justify-center text-center px-4'>
           <Input
             ref={coverInputRef}
             type='file'
@@ -263,7 +260,7 @@ function FactoryHeroCard({
               <Upload size={26} className='text-white drop-shadow-md' />
             </div>
           ) : null}
-        </label>
+        </Label>
 
         {coverImageUrl ? (
           <Button
@@ -285,7 +282,6 @@ function FactoryHeroCard({
 
       <div className='relative z-[2] px-5 pb-5 pt-4'>
         <div className='flex flex-col gap-4 sm:flex-row sm:items-end'>
-          {/* Profile image zone */}
           <div
             className={`w-fit shrink-0 rounded-2xl transition-[box-shadow] ${
               profileDragOver ? 'ring-2 ring-indigo-400 ring-offset-2 ring-offset-white' : ''
@@ -301,7 +297,7 @@ function FactoryHeroCard({
               acceptProfile(e.dataTransfer.files?.[0]);
             }}
           >
-            <label
+            <Label
               className={`relative block w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-md cursor-pointer bg-violet-50 text-indigo-700 ring-4 ring-white group border-2 ${
                 imageUrl ? 'border-white' : 'border-dashed border-indigo-200'
               } ${uploadingImage ? 'pointer-events-none opacity-90' : 'hover:ring-indigo-100'}`}
@@ -340,7 +336,7 @@ function FactoryHeroCard({
                   e.currentTarget.value = '';
                 }}
               />
-            </label>
+            </Label>
           </div>
 
           <div className='min-w-0 flex-1 pt-1 sm:pb-0.5'>
@@ -380,7 +376,6 @@ function FactoryHeroCard({
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────
 export function FactoryProfilePage() {
   const { user, refreshUser } = useAuth();
   const fid = getFactoryEntityId(user);
@@ -444,7 +439,6 @@ export function FactoryProfilePage() {
   const [error, setError] = useState('');
   const [okMsg, setOkMsg] = useState('');
 
-  // Refs to hold add-modal openers registered by child sections
   const openCategoryPickerRef = useRef<(() => void) | null>(null);
   const openCertAddRef = useRef<(() => void) | null>(null);
 
@@ -696,7 +690,6 @@ export function FactoryProfilePage() {
     );
   }
 
-  // Stepper steps
   const steps: StepDef[] = [
     {
       label: 'ข้อมูลพื้นฐาน',
@@ -765,11 +758,9 @@ export function FactoryProfilePage() {
         }}
       />
 
-      {/* Verification stepper + status banner — inside content flow */}
       {!isVerified && <VerificationStepper steps={steps} />}
       <VerifyStatusBanner status={verifyStatus} />
 
-      {/* Error / Success alerts */}
       {error ? (
         <div className='flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'>
           <AlertTriangle size={16} className='text-red-500 shrink-0 mt-0.5' />
@@ -790,7 +781,6 @@ export function FactoryProfilePage() {
         }}
         className='space-y-5 w-full min-w-0'
       >
-        {/* ── ข้อมูลพื้นฐาน ── */}
         <SectionCard
           icon={<Building2 size={14} style={{ color: COLORS.purple }} strokeWidth={2} />}
           title='ข้อมูลพื้นฐาน'
@@ -804,7 +794,6 @@ export function FactoryProfilePage() {
           <BusinessInfoSection form={form} />
         </SectionCard>
 
-        {/* ── หมวดหมู่การผลิต ── */}
         <SectionCard
           icon={<Award size={14} style={{ color: '#0EA5E9' }} strokeWidth={2} />}
           title='ข้อมูลการผลิตและหมวดหมู่'
@@ -835,7 +824,6 @@ export function FactoryProfilePage() {
           />
         </SectionCard>
 
-        {/* ── ที่อยู่และการติดต่อ ── */}
         <SectionCard
           icon={<MapPin size={14} style={{ color: '#F97316' }} strokeWidth={2} />}
           title='ที่อยู่และการติดต่อ'
@@ -849,7 +837,6 @@ export function FactoryProfilePage() {
           <AddressesSection />
         </SectionCard>
 
-        {/* ── เอกสารและใบรับรอง ── */}
         <SectionCard
           icon={<Award size={14} style={{ color: '#10B981' }} strokeWidth={2} />}
           title='เอกสารและใบรับรอง'
@@ -880,7 +867,6 @@ export function FactoryProfilePage() {
           />
         </SectionCard>
 
-        {/* ── บัญชีธนาคาร ── */}
         <SectionCard
           icon={<Landmark size={14} style={{ color: '#6366F1' }} strokeWidth={2} />}
           title='บัญชีธนาคาร'
@@ -899,7 +885,6 @@ export function FactoryProfilePage() {
           <BankAccountPlaceholder />
         </SectionCard>
 
-        {/* Dirty indicator */}
         {isDirty && changeCount > 0 && (
           <p className='text-xs text-gray-400 text-center'>
             มี {changeCount} ฟิลด์ที่เปลี่ยนแปลง — กดบันทึกเพื่อยืนยัน

@@ -22,9 +22,6 @@ export function createMapper<TResponse, TModel>(
   };
 }
 
-/**
- * List mapper — maps array of items
- */
 export function createListMapper<TResponse, TModel>(
   itemMapper: Mapper<TResponse, TModel>,
 ): Mapper<TResponse[], TModel[]> {

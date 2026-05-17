@@ -71,7 +71,6 @@ export function BaseModal({
           className={`bg-white ${contentClasses[placement]} ${sizeStyles[size]} ${className}`}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           {(title || showCloseButton) && (
             <div
               className={`flex items-center justify-between px-4 py-3 border-b border-gray-100 ${headerClassName}`}
@@ -91,10 +90,8 @@ export function BaseModal({
             </div>
           )}
 
-          {/* Content */}
           <div className={bodyClassName}>{children}</div>
 
-          {/* Footer */}
           {footer && (
             <div className={`px-4 py-3 border-t border-gray-100 flex gap-2 ${footerClassName}`}>
               {footer}

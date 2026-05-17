@@ -5,6 +5,7 @@ import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 
 type MessagesMobileProps = {
@@ -50,7 +51,6 @@ export function MessagesMobile({
 
   return (
     <div className='px-4 pt-5 pb-4'>
-      {/* Header */}
       <div className='flex items-center justify-between mb-5'>
         <div>
           <p
@@ -73,7 +73,6 @@ export function MessagesMobile({
         </div>
       </div>
 
-      {/* Search */}
       <div className='flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 mb-5'>
         <Search size={18} className='text-gray-400 shrink-0' />
         <Input
@@ -180,21 +179,15 @@ function ConversationCard({ conv, onClick }: { conv: UiConversation; onClick: ()
 
 function MobileEmptyState() {
   return (
-    <div className='flex flex-col items-center justify-center py-16 text-center'>
-      <div
-        className='w-20 h-20 rounded-3xl flex items-center justify-center mb-4'
-        style={{ background: 'linear-gradient(135deg, var(--brand-page), rgba(122,75,148,0.12))' }}
-      >
+    <EmptyState
+      title='ยังไม่มีข้อความ'
+      description='ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ'
+      className='py-16'
+      icon={
         <span className='text-3xl' style={{ color: 'var(--brand-mauve)' }}>
           💬
         </span>
-      </div>
-      <p className='mb-1' style={{ fontWeight: 600, color: 'var(--brand-navy)' }}>
-        ยังไม่มีข้อความ
-      </p>
-      <p className='text-sm text-gray-500 max-w-[200px]'>
-        ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ
-      </p>
-    </div>
+      }
+    />
   );
 }

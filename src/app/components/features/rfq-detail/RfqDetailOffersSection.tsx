@@ -373,7 +373,7 @@ export function RfqDetailOffersSection({
               </p>
             </div>
           </div>
-          {/* Success toast — ยอมรับสำเร็จ ยังอยู่หน้าเดิม */}
+
           {successOrderId && (
             <div className='flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 mb-3'>
               <div className='flex items-center gap-2'>

@@ -172,7 +172,6 @@ export function PromotionDetailMobile() {
 
   return (
     <div className='min-h-screen bg-brand-panel pb-[72px]'>
-      {/* ── Image carousel (เดียวกับหน้าสินค้ามือถือ) ── */}
       <div className='relative w-full aspect-[4/3] bg-white overflow-hidden'>
         <div className='absolute inset-0 flex items-center justify-center'>
           <div className='relative h-full max-h-full max-w-full aspect-square'>
@@ -241,7 +240,6 @@ export function PromotionDetailMobile() {
         </div>
       ) : null}
 
-      {/* ── Label → ชื่อสินค้า → ราคา (เดียวกับ ProductDetail mobile) ── */}
       <div className='bg-white px-4 pt-4 pb-3'>
         <div className='flex flex-wrap items-center gap-1.5'>
           {factory?.verified ? (
@@ -351,7 +349,6 @@ export function PromotionDetailMobile() {
 
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
-      {/* ── Specifications (รวมช่วงเวลาโปรเป็นแถว — แทนการ์ดสีชมพูแยก) ── */}
       <div className='bg-white px-4 py-3'>
         <div className='flex items-center justify-between mb-2'>
           <p className='text-[13px] font-bold' style={{ color: BRAND.ink }}>
@@ -374,7 +371,6 @@ export function PromotionDetailMobile() {
         </div>
       </div>
 
-      {/* ── Description ── */}
       <div className='bg-white px-4 py-3'>
         <p className='text-[13px] font-bold mb-2' style={{ color: BRAND.ink }}>
           รายละเอียดสินค้า
@@ -391,7 +387,6 @@ export function PromotionDetailMobile() {
 
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
-      {/* ── Shop card ── */}
       <Button
         variant='unstyled'
         type='button'
@@ -451,7 +446,6 @@ export function PromotionDetailMobile() {
         </div>
       </Button>
 
-      {/* ── Review score ── */}
       <div className='bg-white px-4 py-3'>
         <p className='text-[13px] font-bold mb-2' style={{ color: BRAND.ink }}>
           คะแนนรีวิว
@@ -586,7 +580,6 @@ export function PromotionDetailMobile() {
         </div>
       </>
 
-      {/* ── Sticky bottom CTA bar (โปรไฟล์ + ถูกใจ + แชท — เหมือนหน้าสินค้า) ── */}
       <div
         className='fixed inset-x-2 bottom-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-2xl shadow-[0_12px_30px_rgba(46,34,82,0.16)] overflow-hidden supports-[padding:max(0px)]:pb-[env(safe-area-inset-bottom)]'
         style={{ borderColor: BRAND.divider }}

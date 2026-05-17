@@ -7,9 +7,6 @@ import { httpClient } from '@/services/api/httpClient';
 import { QueryTableRequest } from '@/types/api/request/query';
 import { IRFQ, IQuotation, IPaginatedList } from '@/types/model';
 
-/**
- * Fetch RFQs with pagination and filtering
- */
 export const fetchRFQs = async ({
   query,
 }: {

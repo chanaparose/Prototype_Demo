@@ -26,6 +26,7 @@ import {
 } from '@/pages/factory-portal/components/ShowcaseFormShared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -444,7 +445,6 @@ export function FactoryShowcaseEditPage() {
     setCropFile(file);
   };
 
-  /* content_type is read-only on edit — derived from loaded data */
   const titleValue = form.watch('title');
   const canPublish =
     (titleValue ?? '').trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
@@ -472,7 +472,6 @@ export function FactoryShowcaseEditPage() {
       className='max-w-6xl mx-auto w-full min-w-0 pb-28'
       style={{ backgroundColor: 'var(--brand-page)' }}
     >
-      {/* ── Sticky top bar ── */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3'>
         <Button
           variant='unstyled'
@@ -484,7 +483,6 @@ export function FactoryShowcaseEditPage() {
           <ChevronLeft size={18} /> กลับ
         </Button>
 
-        {/* Fixed type badge — not editable */}
         <ShowcaseTypeBadge type={contentType} />
 
         <Button
@@ -531,7 +529,6 @@ export function FactoryShowcaseEditPage() {
         ) : null}
 
         <div className='space-y-5 min-w-0'>
-          {/* Cover (PD/PM only) sits LEFT; title + main info sit RIGHT on xl. */}
           <div className='flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5'>
             {contentType !== 'ID' ? (
               <ShowcaseImageManager
@@ -542,9 +539,7 @@ export function FactoryShowcaseEditPage() {
               />
             ) : null}
 
-            {/* Right column: title + main info (sits beside cover on xl) */}
             <div className='flex-1 min-w-0 space-y-5'>
-              {/* ── Title & excerpt (card) ── */}
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
                 <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
                 <Input
@@ -594,10 +589,9 @@ export function FactoryShowcaseEditPage() {
               />
 
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
-                {/* Row 2: MOQ | Lead time | Price (PD/PM only) */}
                 {contentType !== 'ID' && (
                   <div className='grid gap-3 sm:grid-cols-3'>
-                    <label className='block'>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>MOQ</span>
                       <Input
                         type='number'
@@ -606,8 +600,8 @@ export function FactoryShowcaseEditPage() {
                           setValueAs: (v) => (v === '' ? null : Number(v)),
                         })}
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>Lead time (วัน)</span>
                       <Input
                         type='number'
@@ -616,8 +610,8 @@ export function FactoryShowcaseEditPage() {
                           setValueAs: (v) => (v === '' ? null : Number(v)),
                         })}
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>ราคา (฿)</span>
                       <Input
                         type='number'
@@ -627,14 +621,13 @@ export function FactoryShowcaseEditPage() {
                           setValueAs: (v) => (v === '' ? null : Number(v)),
                         })}
                       />
-                    </label>
+                    </Label>
                   </div>
                 )}
 
-                {/* Row 3: Promo price | Start date | End date (PM only) */}
                 {contentType === 'PM' && (
                   <div className='grid gap-3 sm:grid-cols-3'>
-                    <label className='block'>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>ราคาโปรโมชัน (฿)</span>
                       <Input
                         type='number'
@@ -644,30 +637,29 @@ export function FactoryShowcaseEditPage() {
                         })}
                         placeholder='0.00'
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>วันที่เริ่มโปร</span>
                       <Input
                         type='date'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('start_date')}
                       />
-                    </label>
-                    <label className='block'>
+                    </Label>
+                    <Label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>วันที่สิ้นสุดโปร</span>
                       <Input
                         type='date'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('end_date')}
                       />
-                    </label>
+                    </Label>
                   </div>
                 )}
               </section>
             </div>
           </div>
 
-          {/* ── Section card: รายละเอียด (full width below cover/info) ── */}
           <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
             <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
               รายละเอียด
@@ -757,9 +749,9 @@ export function FactoryShowcaseEditPage() {
 
           {contentType === 'ID' ? (
             <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
-              <label className='block text-sm font-semibold text-brand-navy'>
+              <Label className='block text-sm font-semibold text-brand-navy'>
                 อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
-              </label>
+              </Label>
               <p className='text-xs text-gray-500'>
                 เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
               </p>
@@ -776,7 +768,6 @@ export function FactoryShowcaseEditPage() {
         </div>
       </div>
 
-      {/* ── Sticky bottom bar ── */}
       <div className='sticky xl:hidden bottom-0 z-10 bg-white border-t border-gray-100 px-4 py-3 flex gap-3'>
         <Button
           variant='unstyled'

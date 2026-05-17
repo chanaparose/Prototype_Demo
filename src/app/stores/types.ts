@@ -1,4 +1,3 @@
-// ─── Auth Types ─────────────────────────────────────────────────
 export type User = {
   id: number | string;
   role: string;
@@ -16,7 +15,6 @@ export type User = {
   [key: string]: unknown;
 };
 
-// ─── Data Types ─────────────────────────────────────────────────
 export type Category = {
   id: string;
   name: string;

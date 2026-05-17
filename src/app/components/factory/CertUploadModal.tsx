@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type CertTypeOption = {
   id: number;
@@ -159,7 +160,7 @@ export function CertUploadModal({
         </p>
       ) : null}
 
-      <label className='block'>
+      <Label className='block'>
         <span className='text-xs text-gray-500'>ประเภทใบรับรอง *</span>
         <Select value={certId} onValueChange={setCertId}>
           <SelectTrigger className='mt-1 w-full'>
@@ -173,18 +174,18 @@ export function CertUploadModal({
             ))}
           </SelectContent>
         </Select>
-      </label>
+      </Label>
 
-      <label className='block'>
+      <Label className='block'>
         <span className='text-xs text-gray-500'>เลขที่เอกสาร (ถ้ามี)</span>
         <Input
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           value={certNumber}
           onChange={(e) => setCertNumber(e.target.value)}
         />
-      </label>
+      </Label>
 
-      <label className='block'>
+      <Label className='block'>
         <span className='text-xs text-gray-500'>วันหมดอายุ *</span>
         <Input
           type='date'
@@ -192,9 +193,9 @@ export function CertUploadModal({
           value={expireDate}
           onChange={(e) => setExpireDate(e.target.value)}
         />
-      </label>
+      </Label>
 
-      <label className='block'>
+      <Label className='block'>
         <span className='text-xs text-gray-500'>
           ไฟล์เอกสาร {mode === 'create' ? '*' : '(อัปโหลดใหม่หากต้องการแทนไฟล์เดิม)'}
         </span>
@@ -205,7 +206,7 @@ export function CertUploadModal({
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
         {file ? <p className='text-[11px] text-gray-500 mt-1'>{file.name}</p> : null}
-      </label>
+      </Label>
     </BaseModal>
   );
 }

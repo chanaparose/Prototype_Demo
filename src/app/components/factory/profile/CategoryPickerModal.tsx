@@ -5,6 +5,7 @@ import { categoriesApi } from '@/services/api';
 import { BaseModal } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   open: boolean;
@@ -61,8 +62,6 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
     setConfirming(true);
     setConfirmError('');
     try {
-      // เรียก GET /categories/:id/sub-categories ตาม spec — warm cache ของ
-      // useSubCategoriesByCategories(['master','sub-categories',cid]) ให้ผู้เรียก
       await Promise.all(
         selected.map((cid) =>
           qc.fetchQuery({
@@ -136,10 +135,10 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
         <ul className='space-y-1 max-h-[50vh] overflow-y-auto'>
           {categories.map((c) => (
             <li key={c.id}>
-              <label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
+              <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
                 <Checkbox checked={selected.includes(c.id)} onCheckedChange={() => toggle(c.id)} />
                 {c.name}
-              </label>
+              </Label>
             </li>
           ))}
         </ul>

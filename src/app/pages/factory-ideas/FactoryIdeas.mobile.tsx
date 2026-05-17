@@ -68,7 +68,6 @@ export function FactoryIdeasMobile() {
 
   return (
     <div className='pb-24 min-h-screen' style={{ backgroundColor: COLORS.lightPurpleBg }}>
-      {/* ── Header ── */}
       <div className='bg-white px-4 pt-4 pb-3 border-b border-gray-100'>
         <div className='mb-2.5'>
           <p
@@ -82,7 +81,6 @@ export function FactoryIdeasMobile() {
           </h1>
         </div>
 
-        {/* Hero banner — กระชับขึ้น ~ครึ่งหนึ่ง */}
         <div
           className='rounded-xl px-3 py-2.5 relative overflow-hidden text-white shadow-md mb-2.5'
           style={{
@@ -131,7 +129,6 @@ export function FactoryIdeasMobile() {
           </div>
         </div>
 
-        {/* Search */}
         <div
           className='flex items-center gap-2 rounded-xl px-3 py-2 border transition-all'
           style={{ backgroundColor: COLORS.gray, borderColor: 'var(--neutral-border)' }}
@@ -159,9 +156,7 @@ export function FactoryIdeasMobile() {
         </div>
       </div>
 
-      {/* ── Sticky filter bar ── */}
       <div className='bg-white border-b border-gray-100 sticky top-0 z-20'>
-        {/* Row 1: Content type pills — scroll แนวนอน แถวเดียว */}
         <div
           className='flex items-center gap-1.5 px-4 pt-3 pb-2 overflow-x-auto scrollbar-hide'
           style={{ WebkitOverflowScrolling: 'touch' }}
@@ -191,7 +186,6 @@ export function FactoryIdeasMobile() {
           })}
         </div>
 
-        {/* Row 2: Category (multi-level) + จำนวน + view toggle */}
         <div className='flex flex-wrap items-center gap-2 px-4 pb-3'>
           <FactoryIdeasCategoryDropdown
             variant='mobile'
@@ -216,7 +210,6 @@ export function FactoryIdeasMobile() {
             categoryOptionSelected={categoryOptionSelected}
           />
 
-          {/* Count badge */}
           <span
             className='shrink-0 text-[11px] font-semibold tabular-nums px-2 py-1 rounded-md'
             style={{
@@ -227,7 +220,6 @@ export function FactoryIdeasMobile() {
             {totalCount} รายการ
           </span>
 
-          {/* View toggle */}
           <div
             className='shrink-0 flex items-center gap-0.5 p-0.5 rounded-lg border border-gray-200'
             style={{ backgroundColor: COLORS.gray }}
@@ -264,7 +256,6 @@ export function FactoryIdeasMobile() {
         </div>
       </div>
 
-      {/* ── Content ── */}
       <div className='px-4 pt-4'>
         {showcasesLoading || factoriesLoading ? (
           <div className='flex items-center justify-center py-12'>
@@ -280,7 +271,6 @@ export function FactoryIdeasMobile() {
             <p className='text-xs text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
           </div>
         ) : isFactoryTab ? (
-          /* ━━━ Factory-only Grid ━━━ */
           <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
             {visibleFactories.map((factory) => (
               <article
@@ -288,7 +278,6 @@ export function FactoryIdeasMobile() {
                 className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]'
                 onClick={() => navigate(`/factories/${factory.id}`)}
               >
-                {/* Image */}
                 <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
                   <ImageWithFallback
                     src={factory.image}
@@ -310,7 +299,7 @@ export function FactoryIdeasMobile() {
                     </div>
                   )}
                 </div>
-                {/* Body */}
+
                 <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                   <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                     {factory.name}
@@ -321,7 +310,7 @@ export function FactoryIdeasMobile() {
                       {(factory.provinceName ?? factory.location).trim() || '—'}
                     </span>
                   </div>
-                  {/* Footer */}
+
                   <div className='mt-auto pt-1 border-t border-gray-50'>
                     <div className='flex items-center justify-between min-w-0'>
                       <div className='flex items-center gap-0.5 shrink-0'>
@@ -390,9 +379,6 @@ export function FactoryIdeasMobile() {
             })}
           </div>
         ) : viewMode === 'grid' ? (
-          /* ━━━ Grid View ━━━
-             Rule: grid + items-stretch → ทุกการ์ดในแถวเดียวกันสูงเท่ากัน
-             Rule: h-full + flex flex-col → การ์ดยืดเต็ม Grid Track */
           <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
@@ -403,7 +389,6 @@ export function FactoryIdeasMobile() {
                   className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]'
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
-                  {/* ── Image: h-[150px] ตายตัว + shrink-0 ป้องกัน flex บีบ ── */}
                   <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
                     <ImageWithFallback
                       src={item.image}
@@ -418,9 +403,7 @@ export function FactoryIdeasMobile() {
                     </span>
                   </div>
 
-                  {/* ── Body: flex-1 ยืดเต็มที่เหลือ + min-w-0 ให้ truncate ทำงาน ── */}
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                    {/* Title — min-h-[36px] จอง 2 บรรทัดเสมอ */}
                     <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                       {item.title}
                     </h3>
@@ -432,9 +415,7 @@ export function FactoryIdeasMobile() {
                       </span>
                     </div>
 
-                    {/* ── Footer: mt-auto ดันลงล่างเสมอ ── */}
                     <div className='mt-auto pt-1 border-t border-gray-50'>
-                      {/* Factory name — h-[18px] ตายตัว ไม่ว่ามีหรือไม่มีชื่อ */}
                       <div className='flex items-center justify-between min-w-0'>
                         <div className='flex items-center gap-0.5 min-w-0'>
                           <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
@@ -456,8 +437,6 @@ export function FactoryIdeasMobile() {
             })}
           </div>
         ) : (
-          /* ━━━ List View ━━━
-             Rule: h-[130px] ตายตัว + overflow-hidden ซ่อนส่วนที่ล้น */
           <div className='space-y-3'>
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
@@ -469,7 +448,6 @@ export function FactoryIdeasMobile() {
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   <div className='flex h-full p-3 gap-3'>
-                    {/* ── Image: w-[100px] + shrink-0 ล็อคขนาด ── */}
                     <div className='w-[100px] shrink-0 rounded-xl overflow-hidden bg-gray-100 relative'>
                       <ImageWithFallback
                         src={item.image}
@@ -484,7 +462,6 @@ export function FactoryIdeasMobile() {
                       </span>
                     </div>
 
-                    {/* ── Content: flex-1 + min-w-0 ป้องกันทะลักกรอบ ── */}
                     <div className='flex flex-col flex-1 min-w-0 justify-between'>
                       <div className='min-w-0'>
                         {item.category && (
@@ -503,7 +480,6 @@ export function FactoryIdeasMobile() {
                         </p>
                       </div>
 
-                      {/* Footer — mt-auto ติดขอบล่าง */}
                       <div className='flex items-center justify-between gap-2 mt-auto pt-1.5 border-t border-gray-50 min-w-0'>
                         <Button
                           variant='unstyled'
@@ -535,7 +511,6 @@ export function FactoryIdeasMobile() {
                       </div>
                     </div>
 
-                    {/* ── Right column: w-[40px] + shrink-0 ล็อคขนาด ── */}
                     <div className='w-[40px] shrink-0 flex flex-col items-center justify-center border-l border-gray-100 pl-2'>
                       <Button
                         variant='unstyled'
@@ -643,7 +618,6 @@ export function FactoryIdeasMobile() {
           </div>
         )}
 
-        {/* ━━━ Factory section ใน tab "ทั้งหมด" ━━━ */}
         {selectedType === 'all' && visibleFactories.length > 0 && (
           <div className='mt-6'>
             <div className='flex items-center justify-between mb-3'>

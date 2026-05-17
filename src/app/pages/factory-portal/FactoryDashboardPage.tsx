@@ -41,8 +41,15 @@ import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
-// ── Design tokens ──────────────────────────────────────────────────────────
 const COLORS = {
   purple: appColors.brand.indigo,
   purpleLight: appColors.brand.mauveLight,
@@ -64,7 +71,6 @@ const ORANGE = appColors.brand.indigo;
 const GREEN = appColors.status.success;
 const SLATE = appColors.neutral.slate;
 
-// ── Formatters ─────────────────────────────────────────────────────────────
 function formatBaht(n: number): string {
   return `฿${n.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
 }
@@ -80,7 +86,6 @@ function rfqReplyRatePct(summary: AnalyticsSummary): number {
   return Math.round((summary.rfq_replies_total / summary.rfq_received_total) * 100);
 }
 
-// ── Tooltip components ─────────────────────────────────────────────────────
 type ChartTooltipProps = {
   active?: boolean;
   payload?: Array<{ name?: string; value?: number; color?: string; dataKey?: string }>;
@@ -135,7 +140,6 @@ function CountTooltip({ active, payload, label }: ChartTooltipProps) {
   );
 }
 
-// ── KPI rows builder ───────────────────────────────────────────────────────
 function kpiRows(summary: AnalyticsSummary) {
   const replyRate = rfqReplyRatePct(summary);
   return [
@@ -192,7 +196,6 @@ function kpiRows(summary: AnalyticsSummary) {
   ] as const;
 }
 
-// ── Verification Stepper ───────────────────────────────────────────────────
 const VERIFY_STEPS = [
   { id: 1, label: 'ข้อมูลพื้นฐาน', icon: ClipboardList },
   { id: 2, label: 'ที่อยู่', icon: ShoppingBag },
@@ -219,7 +222,6 @@ function VerificationStepper({
           : 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)',
       }}
     >
-      {/* Decorative blur */}
       <div
         className='absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-20 blur-3xl'
         style={{ backgroundColor: isRejected ? '#FF5555' : ORANGE }}
@@ -230,7 +232,6 @@ function VerificationStepper({
       />
 
       <div className='relative z-10'>
-        {/* Header */}
         <div className='flex items-start gap-3 mb-5'>
           <div
             className='p-2.5 rounded-xl shrink-0'
@@ -253,7 +254,6 @@ function VerificationStepper({
           </div>
         </div>
 
-        {/* Step indicators */}
         <div className='flex items-center mb-5'>
           {VERIFY_STEPS.map((step, i) => {
             const done = i < currentStep;
@@ -291,7 +291,6 @@ function VerificationStepper({
           })}
         </div>
 
-        {/* CTA */}
         <Link
           to='/factory/profile'
           className='inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-5 py-2.5 transition-all hover:opacity-90 active:scale-95'
@@ -308,7 +307,6 @@ function VerificationStepper({
   );
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
 export function FactoryDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -380,10 +378,8 @@ export function FactoryDashboardPage() {
         icon={TrendingUp}
       />
 
-      {/* ── Verification alert (when not approved) ── */}
       {verifySt !== 'AP' && <VerificationStepper verifySt={verifySt} verifyReason={verifyReason} />}
 
-      {/* ── Error banner ── */}
       {error ? (
         <div className='flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900'>
           <AlertTriangle size={16} className='shrink-0 text-amber-600' />
@@ -401,7 +397,6 @@ export function FactoryDashboardPage() {
         </div>
       ) : null}
 
-      {/* ── KPI Grid ── */}
       <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3'>
         {kpis.map((k) => {
           const Icon = k.icon;
@@ -440,7 +435,6 @@ export function FactoryDashboardPage() {
         })}
       </div>
 
-      {/* ── Timeframe Tabs ── */}
       <div className='flex items-center justify-between gap-4 flex-wrap'>
         <div>
           <p className='text-xs font-semibold text-gray-400 uppercase tracking-wide'>
@@ -454,6 +448,7 @@ export function FactoryDashboardPage() {
           className='flex p-1 rounded-xl shrink-0'
           style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
           role='tablist'
+          aria
           aria-label='ช่วงเวลา'
         >
           {TIMEFRAMES.map(({ id, label }) => {
@@ -489,9 +484,7 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
-      {/* ── Charts: 2-column layout ── */}
       <div className='grid gap-5 lg:grid-cols-5'>
-        {/* Revenue line chart (60%) */}
         <div className='lg:col-span-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
           <div className='flex items-center justify-between mb-1'>
             <div>
@@ -551,7 +544,6 @@ export function FactoryDashboardPage() {
           </div>
         </div>
 
-        {/* Orders bar chart (40%) */}
         <div className='lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
           <div className='flex items-center justify-between mb-1'>
             <div>
@@ -614,9 +606,7 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
-      {/* ── Recent Activity ── */}
       <div className='grid gap-5 lg:grid-cols-2'>
-        {/* Recent RFQs */}
         <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'>
           <div className='px-5 py-4 border-b border-gray-50 flex items-center justify-between'>
             <div>
@@ -636,38 +626,38 @@ export function FactoryDashboardPage() {
             </Button>
           </div>
           <div className='overflow-x-auto'>
-            <table className='w-full text-sm min-w-[400px]'>
-              <thead>
-                <tr className='bg-gray-50/70 border-b border-gray-100'>
-                  <th className='text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
+            <Table className='w-full text-sm min-w-[400px]'>
+              <TableHeader>
+                <TableRow className='bg-gray-50/70 border-b border-gray-100'>
+                  <TableHead className='text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
                     RFQ ID
-                  </th>
-                  <th className='text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
+                  </TableHead>
+                  <TableHead className='text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
                     สถานะ
-                  </th>
-                  <th className='text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
+                  </TableHead>
+                  <TableHead className='text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
                     Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-gray-50'>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className='divide-y divide-gray-50'>
                 {summary.rfq_received_total === 0 ? (
-                  <tr>
-                    <td colSpan={3} className='px-4 py-10 text-center text-sm text-gray-400'>
+                  <TableRow>
+                    <TableCell colSpan={3} className='px-4 py-10 text-center text-sm text-gray-400'>
                       ยังไม่มี RFQ ที่ได้รับ
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  <tr>
-                    <td colSpan={3} className='px-4 py-3 text-center text-xs text-gray-400'>
+                  <TableRow>
+                    <TableCell colSpan={3} className='px-4 py-3 text-center text-xs text-gray-400'>
                       ดู RFQ ทั้งหมดในหน้า RFQ
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
-          {/* RFQ summary pills */}
+
           <div className='px-5 py-3 border-t border-gray-50 flex gap-3 flex-wrap'>
             <div className='flex items-center gap-1.5'>
               <span className='w-2 h-2 rounded-full bg-amber-400' />
@@ -695,7 +685,6 @@ export function FactoryDashboardPage() {
           </div>
         </div>
 
-        {/* Recent Orders */}
         <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'>
           <div className='px-5 py-4 border-b border-gray-50 flex items-center justify-between'>
             <div>
@@ -715,7 +704,6 @@ export function FactoryDashboardPage() {
             </Button>
           </div>
 
-          {/* Order summary cards */}
           <div className='p-4 grid grid-cols-3 gap-3'>
             <div className='rounded-xl border border-gray-100 bg-gray-50 p-3 text-center'>
               <p className='text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1'>
@@ -749,7 +737,6 @@ export function FactoryDashboardPage() {
             </div>
           </div>
 
-          {/* CTA */}
           <div className='px-4 pb-4'>
             <Button
               variant='unstyled'
@@ -768,7 +755,6 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
-      {/* ── RFQ vs Replies Chart ── */}
       <div className='rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
         <div className='flex items-center justify-between mb-1'>
           <div>
@@ -779,7 +765,7 @@ export function FactoryDashboardPage() {
               เปรียบเทียบจำนวน RFQ ที่ได้รับและที่ตอบกลับ
             </p>
           </div>
-          {/* Reply rate badge */}
+
           <div
             className='flex items-center gap-2 rounded-xl px-3 py-2'
             style={{
@@ -838,7 +824,6 @@ export function FactoryDashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Low reply rate warning */}
         {rfqReplyRatePct(summary) < 50 && summary.rfq_received_total > 0 && (
           <div className='mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3'>
             <AlertTriangle size={16} className='text-amber-500 shrink-0 mt-0.5' />

@@ -6,10 +6,6 @@ interface UseTabsReturn {
   goToTab: (tab: string) => void;
 }
 
-/**
- * Manage tab navigation state
- * @param defaultTab - Initial active tab ID
- */
 export function useTabs(defaultTab: string): UseTabsReturn {
   const [activeTab, setActiveTab] = useState(defaultTab);
 

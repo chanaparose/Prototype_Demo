@@ -5,7 +5,6 @@ const ERROR_IMG_SRC =
 const DEFAULT_IMG_SRC = 'assets/tryly_vertical_banner_v3_new_concept_0.png';
 
 export type ImageWithFallbackProps = React.ImgHTMLAttributes<HTMLImageElement> & {
-  /** รูปสำรอง (เช่น factory_image_url จาก GET /showcases/:id) เมื่อ src หลักว่างหรือโหลดไม่สำเร็จ */
   fallbackSrc?: string;
 };
 

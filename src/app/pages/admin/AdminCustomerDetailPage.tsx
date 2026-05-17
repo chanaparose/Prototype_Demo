@@ -9,8 +9,14 @@ import {
   type AdminCustomerOrderItem,
 } from '@/services/api';
 import { Button } from '@/components/ui/button';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 function toCurrency(n: number) {
   return `฿${Number(n || 0).toLocaleString('th-TH')}`;
@@ -35,8 +41,6 @@ function formatDateTime(s: string) {
     minute: '2-digit',
   });
 }
-
-// ─── Tx type / status helpers ────────────────────────────────────────────────
 
 const TX_TYPE: Record<string, { label: string; color: string; sign: '+' | '-' }> = {
   DP: { label: 'เติมเงิน', color: 'emerald', sign: '+' },
@@ -75,8 +79,6 @@ function Badge({ label, color }: { label: string; color: string }) {
   return <span className={`${base} ${cls[color] ?? cls.slate}`}>{label}</span>;
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-
 function StatCard({
   label,
   value,
@@ -105,8 +107,6 @@ function StatCard({
     </div>
   );
 }
-
-// ─── Tab: ข้อมูลทั่วไป ────────────────────────────────────────────────────────
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -146,8 +146,6 @@ function CustomerInfoTab({ detail }: { detail: AdminCustomerDetail }) {
   );
 }
 
-// ─── Tab: Wallet & ธุรกรรม ────────────────────────────────────────────────────
-
 function CustomerWalletTab({ userId }: { userId: number }) {
   const [wallet, setWallet] = useState<AdminCustomerWallet | null>(null);
   const [loading, setLoading] = useState(true);
@@ -181,38 +179,42 @@ function CustomerWalletTab({ userId }: { userId: number }) {
 
   return (
     <div className='space-y-5'>
-      {/* Balance cards */}
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
         <StatCard label='กองทุนพร้อมใช้' value={toCurrency(wallet.good_fund)} color='emerald' />
         <StatCard label='รอยืนยัน' value={toCurrency(wallet.pending_fund)} color='amber' />
         <StatCard label='รวมทั้งหมด' value={toCurrency(wallet.total)} color='indigo' />
       </div>
 
-      {/* Transaction table */}
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
         <div className='px-5 py-4 border-b border-slate-100'>
           <h3 className='text-sm font-semibold text-slate-900'>ประวัติธุรกรรม</h3>
           <p className='text-xs text-slate-400 mt-0.5'>200 รายการล่าสุด</p>
         </div>
         <div className='overflow-x-auto'>
-          <table className='w-full text-sm'>
-            <thead>
-              <tr className='bg-slate-50 border-b border-slate-200'>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>วันที่</th>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>ประเภท</th>
-                <th className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>จำนวน</th>
-                <th className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
+          <Table className='w-full text-sm'>
+            <TableHeader>
+              <TableRow className='bg-slate-50 border-b border-slate-200'>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                  วันที่
+                </TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                  ประเภท
+                </TableHead>
+                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
+                  จำนวน
+                </TableHead>
+                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
                   สถานะ
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-slate-50'>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className='divide-y divide-slate-50'>
               {wallet.transactions.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className='px-4 py-10 text-center text-sm text-slate-400'>
+                <TableRow>
+                  <TableCell colSpan={4} className='px-4 py-10 text-center text-sm text-slate-400'>
                     ยังไม่มีธุรกรรม
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 wallet.transactions.map((tx: AdminWalletTxItem) => {
                   const ttype = TX_TYPE[tx.type] ?? {
@@ -226,33 +228,31 @@ function CustomerWalletTab({ userId }: { userId: number }) {
                       ? 'text-emerald-600 font-semibold'
                       : 'text-red-600 font-semibold';
                   return (
-                    <tr key={tx.tx_id}>
-                      <td className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                    <TableRow key={tx.tx_id}>
+                      <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                         {formatDateTime(tx.created_at)}
-                      </td>
-                      <td className='px-4 py-3'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3'>
                         <Badge label={ttype.label} color={ttype.color} />
-                      </td>
-                      <td className={`px-4 py-3 text-right tabular-nums ${amountCls}`}>
+                      </TableCell>
+                      <TableCell className={`px-4 py-3 text-right tabular-nums ${amountCls}`}>
                         {ttype.sign}
                         {toCurrency(tx.amount)}
-                      </td>
-                      <td className='px-4 py-3 text-center'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-center'>
                         <Badge label={tstatus.label} color={tstatus.color} />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
   );
 }
-
-// ─── Tab: ประวัติออเดอร์ ──────────────────────────────────────────────────────
 
 const ORDER_LIMIT = 10;
 
@@ -291,47 +291,49 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
     <div className='space-y-4'>
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
         <div className='overflow-x-auto'>
-          <table className='w-full text-sm'>
-            <thead>
-              <tr className='bg-slate-50 border-b border-slate-200'>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+          <Table className='w-full text-sm'>
+            <TableHeader>
+              <TableRow className='bg-slate-50 border-b border-slate-200'>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   Order ID
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>โรงงาน</th>
-                <th className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
+                </TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                  โรงงาน
+                </TableHead>
+                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
                   ยอดรวม
-                </th>
-                <th className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
+                </TableHead>
+                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
                   สถานะ
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                </TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   วันที่สั่ง
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-slate-50'>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className='divide-y divide-slate-50'>
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <tr key={i}>
+                  <TableRow key={i}>
                     {Array.from({ length: 5 }).map((__, j) => (
-                      <td key={j} className='px-4 py-3'>
+                      <TableCell key={j} className='px-4 py-3'>
                         <div className='h-4 bg-slate-100 rounded animate-pulse' />
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))
               ) : orders.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
+                <TableRow>
+                  <TableCell colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
                     ยังไม่มีออเดอร์
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 orders.map((o) => {
                   const st = ORDER_STATUS[o.status] ?? { label: o.status, color: 'slate' };
                   return (
-                    <tr key={o.order_id} className='hover:bg-slate-50 transition-colors'>
-                      <td className='px-4 py-3'>
+                    <TableRow key={o.order_id} className='hover:bg-slate-50 transition-colors'>
+                      <TableCell className='px-4 py-3'>
                         <Link
                           to={`/admin/orders/${o.order_id}`}
                           className='text-indigo-600 font-semibold font-mono text-xs hover:underline'
@@ -339,25 +341,25 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
                         >
                           #{o.order_id}
                         </Link>
-                      </td>
-                      <td className='px-4 py-3 text-slate-700 truncate max-w-[160px]'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-slate-700 truncate max-w-[160px]'>
                         {o.factory_name}
-                      </td>
-                      <td className='px-4 py-3 text-right font-semibold tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
                         {toCurrency(o.grand_total)}
-                      </td>
-                      <td className='px-4 py-3 text-center'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-center'>
                         <Badge label={st.label} color={st.color} />
-                      </td>
-                      <td className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                         {formatDate(o.created_at)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -387,8 +389,6 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
     </div>
   );
 }
-
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 type TabKey = 'info' | 'wallet' | 'orders';
 
@@ -450,7 +450,6 @@ export function AdminCustomerDetailPage() {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
       <div>
         <Button
           variant='unstyled'
@@ -488,7 +487,6 @@ export function AdminCustomerDetailPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className='flex gap-0 border-b border-slate-200'>
         {TABS.map((t) => (
           <Button
@@ -507,7 +505,6 @@ export function AdminCustomerDetailPage() {
         ))}
       </div>
 
-      {/* Tab content */}
       {tab === 'info' && <CustomerInfoTab detail={detail} />}
       {tab === 'wallet' && <CustomerWalletTab userId={userId} />}
       {tab === 'orders' && <CustomerOrdersTab userId={userId} />}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Props = {
   discount_amount: number;
@@ -22,7 +23,7 @@ export function ExtraChargesForm(props: Props) {
     tooling_mold_cost: props.tooling_mold_cost,
   };
   const row = (key: keyof Omit<Props, 'onChange'>, label: string) => (
-    <label className='block'>
+    <Label className='block'>
       <span className='text-xs text-gray-500'>{label}</span>
       <Input
         type='number'
@@ -30,7 +31,7 @@ export function ExtraChargesForm(props: Props) {
         onChange={(e) => props.onChange({ ...charges, [key]: Number(e.target.value) || 0 })}
         className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
-    </label>
+    </Label>
   );
   return (
     <div className='rounded-2xl border border-gray-100 bg-white p-4 space-y-3'>

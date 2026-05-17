@@ -105,14 +105,10 @@ export const getCurrentUser = async (): Promise<IAuthResponse> => {
   }
 };
 
-/**
- * Logout user
- */
 export const logoutUser = async (): Promise<void> => {
   try {
     await httpClient.post<void>('/auth/logout', {});
   } catch (error) {
     console.error('Logout error:', error);
-    // Don't throw on logout error, just remove token locally
   }
 };

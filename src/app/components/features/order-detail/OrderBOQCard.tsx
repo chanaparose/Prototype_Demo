@@ -107,7 +107,6 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
       className='rounded-2xl border border-gray-100 bg-white overflow-hidden'
     >
       <div className='space-y-4'>
-        {/* Factory header row */}
         <div className='flex items-center gap-2.5 -mt-1'>
           <div className='w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-base shrink-0'>
             🏭
@@ -120,7 +119,6 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
           </div>
         </div>
 
-        {/* KPI tiles */}
         <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
           {[
             {
@@ -148,7 +146,6 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
           ))}
         </div>
 
-        {/* Cost breakdown */}
         <div className='rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-3 space-y-1.5'>
           <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2'>
             รายละเอียดค่าใช้จ่าย
@@ -178,7 +175,6 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
           </div>
         </div>
 
-        {/* Meta info */}
         <div className='grid grid-cols-2 gap-2 text-xs'>
           {paymentLabel && (
             <div className='rounded-xl bg-violet-50 px-3 py-2'>
@@ -194,7 +190,6 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
           )}
         </div>
 
-        {/* Images */}
         {imageUrls.length > 0 && (
           <div>
             <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2'>

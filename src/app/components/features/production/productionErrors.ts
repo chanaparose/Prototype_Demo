@@ -1,6 +1,5 @@
 import { ApiHttpError } from '@/services/api';
 
-/** Map BE `error.code` to Thai copy (PRODUCTION_TRACKING_FE §7). */
 export function productionErrorToThai(code: string, details?: Record<string, unknown>): string {
   switch (code) {
     case 'NOT_ORDER_FACTORY':

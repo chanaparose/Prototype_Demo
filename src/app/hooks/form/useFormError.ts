@@ -13,9 +13,6 @@ interface UseFormErrorReturn {
   getError: (field: string) => string | undefined;
 }
 
-/**
- * Manage form field validation errors
- */
 export function useFormError(initialErrors: FieldErrors = {}): UseFormErrorReturn {
   const [errors, setErrors] = useState<FieldErrors>(initialErrors);
 

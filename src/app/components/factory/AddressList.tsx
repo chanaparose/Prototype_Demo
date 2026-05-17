@@ -24,13 +24,6 @@ function rowType(row: Row): 'M' | 'B' | 'S' {
   return 'M';
 }
 
-/**
- * Renders the secondary address line: ตำบล/แขวง · อำเภอ/เขต · จังหวัด · zip
- *
- * Thai postal addresses prefix the locality with ตำบล/แขวง / อำเภอ/เขต tokens
- * — adding them makes the displayed string read naturally even when stitched
- * from raw `name_th` columns.
- */
 function displayLocation(row: Row): string {
   const province = String(row.province_name ?? '').trim();
   const district = String(row.district_name ?? '').trim();

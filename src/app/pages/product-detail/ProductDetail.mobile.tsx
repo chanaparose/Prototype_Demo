@@ -110,7 +110,6 @@ export function ProductDetailMobile() {
   const breakdown = summary?.rating_breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
   const latestReviews = reviewListQ.data ?? [];
 
-  // ── Spec rows ──
   const specRows: { label: string; value: string }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
   if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
@@ -127,9 +126,7 @@ export function ProductDetailMobile() {
 
   return (
     <div className='min-h-screen bg-brand-panel pb-[72px]'>
-      {/* ── Image carousel — เฟรม 4:3 มือถือ + iPad (เลย์เอาต์มือถือ) พื้นขาว (รูปจัตุรัสยังอยู่กลางเฟรม) ── */}
       <div className='relative w-full aspect-[4/3] bg-white overflow-hidden'>
-        {/* รูปแสดงเป็นสี่เหลี่ยมจัตุรัส (ครอป) กลางเฟรม — ขอบเฟรมคงสัดส่วนเดิม */}
         <div className='absolute inset-0 flex items-center justify-center'>
           <div className='relative h-full max-h-full max-w-full aspect-square'>
             <ImageWithFallback
@@ -140,7 +137,6 @@ export function ProductDetailMobile() {
           </div>
         </div>
 
-        {/* back + share buttons */}
         <Button
           variant='unstyled'
           type='button'
@@ -166,7 +162,6 @@ export function ProductDetailMobile() {
           <Share2 className='w-5 h-5 text-white' />
         </Button>
 
-        {/* page indicator */}
         {gallery.length > 1 ? (
           <span className='absolute bottom-3 right-3 text-[11px] font-semibold text-white bg-black/45 px-2 py-0.5 rounded-full tabular-nums'>
             {activeImage + 1} / {gallery.length}
@@ -174,7 +169,6 @@ export function ProductDetailMobile() {
         ) : null}
       </div>
 
-      {/* thumbnails strip */}
       {gallery.length > 1 ? (
         <div className='bg-white px-3 py-2 border-b' style={{ borderColor: BRAND.divider }}>
           <div className='flex gap-2 overflow-x-auto'>
@@ -197,7 +191,6 @@ export function ProductDetailMobile() {
         </div>
       ) : null}
 
-      {/* ── Label → ชื่อสินค้า → ราคา ── */}
       <div className='bg-white px-4 pt-4 pb-3'>
         <div className='flex flex-wrap items-center gap-1.5'>
           {factory?.verified ? (
@@ -276,12 +269,8 @@ export function ProductDetailMobile() {
         </div>
       </div>
 
-      {/* divider strip */}
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
-      {/* ── Info rows ── */}
-
-      {/* tags */}
       {item.tags.length > 0 ? (
         <>
           <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
@@ -304,10 +293,8 @@ export function ProductDetailMobile() {
         </>
       ) : null}
 
-      {/* divider */}
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
-      {/* ── Specifications ── */}
       <div className='bg-white px-4 py-3'>
         <div className='flex items-center justify-between mb-2'>
           <p className='text-[13px] font-bold' style={{ color: BRAND.ink }}>
@@ -337,7 +324,6 @@ export function ProductDetailMobile() {
         </div>
       </div>
 
-      {/* ── Description ── */}
       <div className='bg-white px-4 py-3'>
         <p className='text-[13px] font-bold mb-2' style={{ color: BRAND.ink }}>
           รายละเอียดสินค้า
@@ -354,10 +340,8 @@ export function ProductDetailMobile() {
         )}
       </div>
 
-      {/* divider */}
       <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
-      {/* ── Shop card ── */}
       <Button
         variant='unstyled'
         type='button'
@@ -417,7 +401,6 @@ export function ProductDetailMobile() {
         </div>
       </Button>
 
-      {/* ── Review score ── */}
       <div className='bg-white px-4 py-3'>
         <p className='text-[13px] font-bold mb-2' style={{ color: BRAND.ink }}>
           คะแนนรีวิว
@@ -547,7 +530,6 @@ export function ProductDetailMobile() {
         </div>
       </>
 
-      {/* ── Sticky bottom CTA bar ── */}
       <div
         className='fixed inset-x-2 bottom-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-2xl shadow-[0_12px_30px_rgba(46,34,82,0.16)] overflow-hidden supports-[padding:max(0px)]:pb-[env(safe-area-inset-bottom)]'
         style={{ borderColor: BRAND.divider }}

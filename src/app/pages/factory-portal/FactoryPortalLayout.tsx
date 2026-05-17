@@ -1,10 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router';
 
-/**
- * โครงห่อพอร์ทัลโรงงาน — padding / safe-area แบบเดียวกับหน้าลูกค้าบนมือถือ
- * นำทางหลักอยู่ที่ sidebar (FACTORY_SIDEBAR_NAV) บน lg+
- */
 export function FactoryPortalLayout() {
   return (
     <div className='min-h-[calc(100vh-4rem)] bg-slate-50 w-full min-w-0'>

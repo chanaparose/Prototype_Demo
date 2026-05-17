@@ -114,7 +114,6 @@ export function RfqCard({
         state={{ from: `${location.pathname}${location.search}` }}
         className='flex flex-col bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow min-w-0 text-left'
       >
-        {/* BOQ status banner */}
         <div
           className='flex items-center gap-2 px-4 py-2.5 text-[12px] font-semibold border-b'
           style={{ background: boqInfo.bg, color: boqInfo.text, borderColor: boqInfo.border }}
@@ -132,7 +131,6 @@ export function RfqCard({
           ) : null}
         </div>
 
-        {/* Card body */}
         <div className='flex gap-3 sm:gap-4 p-3 sm:p-4'>
           <div className='w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'>
             {row.thumbUrl ? (

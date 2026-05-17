@@ -33,6 +33,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
 
@@ -411,7 +420,6 @@ export function AdminFactoryDetailPage() {
         </div>
       )}
 
-      {/* Tabs */}
       <div className='flex gap-0 border-b border-slate-200'>
         {(
           [
@@ -460,9 +468,9 @@ export function AdminFactoryDetailPage() {
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             <div>
-              <label className='block text-xs font-semibold text-slate-700 mb-1.5'>
+              <Label className='block text-xs font-semibold text-slate-700 mb-1.5'>
                 เปลี่ยน Config
-              </label>
+              </Label>
               <Select
                 value={selectedConfigId === '' ? '' : String(selectedConfigId)}
                 onValueChange={(next) => {
@@ -489,7 +497,7 @@ export function AdminFactoryDetailPage() {
               </Select>
             </div>
             <div>
-              <label className='block text-xs font-semibold text-slate-700 mb-1.5'>หมายเหตุ</label>
+              <Label className='block text-xs font-semibold text-slate-700 mb-1.5'>หมายเหตุ</Label>
               <Input
                 value={configNote}
                 onChange={(e) => setConfigNote(e.target.value)}
@@ -722,8 +730,6 @@ function InfoRow({
   );
 }
 
-// ─── Settlements Tab ──────────────────────────────────────────────────────────
-
 const SETTLEMENT_STATUS: Record<string, { label: string; cls: string }> = {
   PE: { label: 'รอโอน', cls: 'bg-amber-50 text-amber-700' },
   PR: { label: 'กำลังประมวลผล', cls: 'bg-blue-50 text-blue-700' },
@@ -769,37 +775,43 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
     <div className='space-y-4'>
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
         <div className='overflow-x-auto'>
-          <table className='w-full text-sm'>
-            <thead>
-              <tr className='bg-slate-50 border-b border-slate-200'>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+          <Table className='w-full text-sm'>
+            <TableHeader>
+              <TableRow className='bg-slate-50 border-b border-slate-200'>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
                   Settlement ID
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>Order</th>
-                <th className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>จำนวน</th>
-                <th className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
+                </TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                  Order
+                </TableHead>
+                <TableHead className='px-4 py-3 text-right text-xs font-semibold text-slate-500'>
+                  จำนวน
+                </TableHead>
+                <TableHead className='px-4 py-3 text-center text-xs font-semibold text-slate-500'>
                   สถานะ
-                </th>
-                <th className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>วันที่</th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-slate-50'>
+                </TableHead>
+                <TableHead className='px-4 py-3 text-left text-xs font-semibold text-slate-500'>
+                  วันที่
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className='divide-y divide-slate-50'>
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <tr key={i}>
+                  <TableRow key={i}>
                     {Array.from({ length: 5 }).map((__, j) => (
-                      <td key={j} className='px-4 py-3'>
+                      <TableCell key={j} className='px-4 py-3'>
                         <div className='h-4 bg-slate-100 rounded animate-pulse' />
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))
               ) : settlements.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
+                <TableRow>
+                  <TableCell colSpan={5} className='px-4 py-10 text-center text-sm text-slate-400'>
                     ยังไม่มี Settlement
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 settlements.map((s) => {
                   const st = SETTLEMENT_STATUS[s.status] ?? {
@@ -807,37 +819,37 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
                     cls: 'bg-slate-100 text-slate-500',
                   };
                   return (
-                    <tr key={s.settlement_id}>
-                      <td className='px-4 py-3 text-xs text-slate-400 font-mono'>
+                    <TableRow key={s.settlement_id}>
+                      <TableCell className='px-4 py-3 text-xs text-slate-400 font-mono'>
                         #{s.settlement_id}
-                      </td>
-                      <td className='px-4 py-3'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3'>
                         <Link
                           to={`/admin/orders/${s.order_id}`}
                           className='text-indigo-600 font-semibold text-xs hover:underline'
                         >
                           #{s.order_id}
                         </Link>
-                      </td>
-                      <td className='px-4 py-3 text-right font-semibold tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
                         ฿{Number(s.amount || 0).toLocaleString('th-TH')}
-                      </td>
-                      <td className='px-4 py-3 text-center'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-center'>
                         <span
                           className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${st.cls}`}
                         >
                           {st.label}
                         </span>
-                      </td>
-                      <td className='px-4 py-3 text-xs text-slate-400'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-xs text-slate-400'>
                         {s.created_at ? new Date(s.created_at).toLocaleDateString('th-TH') : '—'}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 

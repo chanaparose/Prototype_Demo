@@ -82,8 +82,6 @@ export function getTourMockResponse(endpoint: string, method: string = 'GET'): u
   return undefined;
 }
 
-/* ─── Canned datasets ──────────────────────────────────────────────────── */
-
 const TOUR_FACTORY = {
   factory_id: 9999,
   user_id: 9999,
@@ -103,9 +101,6 @@ const TOUR_CUSTOMER = {
   last_name: 'สาธิต',
 };
 
-/** User ID injected into AuthContext while tour is running so downstream
- *  hooks (useConversations, ChatRoom, getCurrentUserId, ...) treat the
- *  guest as the demo customer and can load mocked data correctly. */
 export const TOUR_GUEST_USER_ID = TOUR_CUSTOMER.user_id;
 export const TOUR_GUEST_USER = {
   id: TOUR_CUSTOMER.user_id,
@@ -124,7 +119,6 @@ export const TOUR_GUEST_USER = {
   display_name: TOUR_CUSTOMER.display_name,
 } as const;
 
-/* ─── Product detail (showcase_id=14) ──────────────────────────────────── */
 const SHOWCASE_14 = {
   showcase_id: 14,
   factory_id: TOUR_FACTORY.factory_id,
@@ -171,12 +165,11 @@ const PRODUCT_MOCKS: MockEntry[] = [
     body: { ...TOUR_FACTORY, profile: TOUR_FACTORY },
   },
   { match: new RegExp(`^/factories/${TOUR_FACTORY.factory_id}/showcases`), body: [SHOWCASE_14] },
-  // Reviews + view-count update — quietly succeed
+
   { match: '/showcases/14/view', method: 'POST', body: { ok: true } },
   { match: '/showcases/14/analytics', body: { views: 245, likes: 18 } },
 ];
 
-/* ─── Messages (conv 9001 with one factory + RFQ chip) ────────────────── */
 const TOUR_CONV_ID = 9001;
 
 const TOUR_CONVERSATION = {
@@ -241,7 +234,6 @@ const MESSAGES_MOCKS: MockEntry[] = [
 
 export const TOUR_MESSAGES_CONV_ID = TOUR_CONV_ID;
 
-/* ─── RFQ detail (rfq_id=28) ───────────────────────────────────────────── */
 const RFQ_28 = {
   rfq: {
     rfq_id: 28,
@@ -316,7 +308,6 @@ const RFQ_MOCKS: MockEntry[] = [
   { match: '/frontend/rfqs/28', body: RFQ_28 },
 ];
 
-/* ─── Order detail (order_id=17) ───────────────────────────────────────── */
 const ORDER_17 = {
   order_id: 17,
   customer_id: TOUR_CUSTOMER.user_id,

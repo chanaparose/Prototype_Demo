@@ -6,7 +6,7 @@ import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 export function AuthGuard() {
   const { isAuthenticated, isLoading } = useAuth();
   // While the ProductTour is walking the user through protected routes
-  // (create-rfq, messages, rfqs, orders, ...), bypass auth so guests can
+
   // see the demo. Mocks installed by the tour provide canned data.
   const [tourOn, setTourOn] = useState<boolean>(isTourActive());
   useEffect(() => subscribeTourActive(setTourOn), []);

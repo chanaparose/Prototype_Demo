@@ -22,10 +22,10 @@ import { BaseModal } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-// ---------------------------------------------------------------------------
 // ข้อมูลเทมเพลต (สามารถเพิ่ม/ลด ได้ตามต้องการ)
-// ---------------------------------------------------------------------------
+
 const TEMPLATES = [
   {
     id: 'factory_products',
@@ -125,14 +125,12 @@ export function MarkdownEditor({
   label,
   disabled,
 }: MarkdownEditorProps) {
-  // Tab state: write or preview mode
   const [tab, setTab] = useState<'write' | 'preview'>('write');
 
   // Upload and focus states
   const { state: uploading, toggle: toggleUploading, close: closeUploading } = useToggle(false);
   const { state: focused, open: focusOn, close: focusOff } = useToggle(false);
 
-  // Template modal state
   const {
     isOpen: isTemplateModalOpen,
     onOpen: openTemplate,
@@ -249,7 +247,6 @@ export function MarkdownEditor({
 
         {tab === 'write' ? (
           <>
-            {/* Toolbar */}
             <div className='px-2 py-1.5 border-b border-gray-100 flex items-center flex-wrap gap-2 bg-white'>
               <div className='flex items-center gap-0.5 pr-2 border-r border-gray-200'>
                 <Button
@@ -376,9 +373,9 @@ export function MarkdownEditor({
                     <span className='text-xs font-medium text-orange-600'>กำลังอัปโหลด...</span>
                   )}
                 </Button>
-                <label htmlFor='file-input' className='hidden'>
+                <Label htmlFor='file-input' className='hidden'>
                   อัปโหลดรูปภาพ
-                </label>
+                </Label>
                 <Input
                   id='file-input'
                   ref={fileRef}
@@ -394,7 +391,6 @@ export function MarkdownEditor({
                 />
               </div>
 
-              {/* ปุ่มเปิด Modal เลือกเทมเพลต */}
               <div className='ml-auto flex items-center'>
                 <Button
                   onClick={() => openTemplate()}
@@ -409,7 +405,6 @@ export function MarkdownEditor({
               </div>
             </div>
 
-            {/* Guideline */}
             <div className='px-3 py-2 border-b border-gray-100 bg-gray-50/60 flex flex-col gap-1 text-[11px] text-gray-500'>
               <div className='flex items-center justify-between'>
                 <p>
@@ -454,9 +449,6 @@ export function MarkdownEditor({
         )}
       </div>
 
-      {/* --------------------------------------------------------------------------- */}
-      {/* TEMPLATE SELECTION MODAL */}
-      {/* --------------------------------------------------------------------------- */}
       <BaseModal
         isOpen={isTemplateModalOpen}
         onClose={closeTemplate}
@@ -490,9 +482,7 @@ export function MarkdownEditor({
           <LayoutTemplate size={20} className='text-orange-500' />
         </div>
 
-        {/* Modal Body: Split Screen */}
         <>
-          {/* Left Side: Template List */}
           <div className='w-full md:w-1/3 border-r border-gray-100 bg-gray-50/30 overflow-y-auto p-4 flex flex-col gap-3'>
             <p className='text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 px-1'>
               รูปแบบที่มีให้เลือก
@@ -527,7 +517,6 @@ export function MarkdownEditor({
             ))}
           </div>
 
-          {/* Right Side: Live Preview */}
           <div className='w-full md:w-2/3 bg-white flex flex-col overflow-hidden'>
             <div className='px-6 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between shadow-sm z-10'>
               <span className='text-xs font-medium text-gray-500 uppercase tracking-wider'>

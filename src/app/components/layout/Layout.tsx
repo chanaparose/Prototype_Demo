@@ -57,16 +57,12 @@ export function Layout() {
 
   return (
     <div className='min-h-screen flex bg-white w-full max-w-full overflow-x-hidden'>
-      {/* Desktop Sidebar */}
       <DesktopSidebar />
 
-      {/* Main Content */}
       <div className='flex-1 flex flex-col lg:pl-64 min-w-0'>
-        {/* Mobile/Tablet Header — hidden on desktop (lg+) */}
         <header className='lg:hidden sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6'>
             <div className='flex items-center justify-between h-16'>
-              {/* Logo */}
               <Link to='/' className='flex items-center gap-2 shrink-0'>
                 <img
                   src='/assets/tryly-logo.png'
@@ -75,7 +71,6 @@ export function Layout() {
                 />
               </Link>
 
-              {/* Desktop Nav (md only, before lg sidebar kicks in) */}
               <nav className='hidden md:flex lg:hidden items-center gap-1'>
                 {navLinks.map((item) => {
                   if (isFactory && 'href' in item) {
@@ -131,7 +126,6 @@ export function Layout() {
                 })}
               </nav>
 
-              {/* Right Actions */}
               <div className='flex items-center gap-2'>
                 {isFactory ? (
                   <Link
@@ -180,7 +174,6 @@ export function Layout() {
                   </span>
                 </Button>
 
-                {/* Mobile menu toggle */}
                 <Button
                   variant='unstyled'
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -197,7 +190,6 @@ export function Layout() {
             </div>
           </div>
 
-          {/* Mobile Nav Dropdown */}
           {mobileMenuOpen && (
             <div className='md:hidden border-t border-gray-100 bg-white shadow-lg'>
               <div className='px-4 py-3 space-y-1'>
@@ -288,7 +280,6 @@ export function Layout() {
           )}
         </header>
 
-        {/* Page Content */}
         <main className='flex-1 min-w-0 overflow-x-hidden'>
           <div className='max-w-7xl mx-auto'>
             <Outlet />

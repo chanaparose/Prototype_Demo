@@ -245,11 +245,6 @@ export function FactoryRfqDetailPage() {
     [rfqBody],
   );
 
-  /**
-   * Find an existing conversation between this factory and the customer.
-   * Factory role cannot POST /conversations (buyer-only), so we list only.
-   * Returns the conv_id, or null if none exists yet.
-   */
   const findExistingConvId = async (): Promise<number | null> => {
     const convsRaw = await conversationsApi.list();
     const convs = (() => {
@@ -510,7 +505,6 @@ export function FactoryRfqDetailPage() {
 
   return (
     <div style={{ backgroundColor: 'var(--brand-page)' }} className='min-h-screen pb-24'>
-      {/* Sticky top bar */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
         <Button
           variant='unstyled'
@@ -546,7 +540,6 @@ export function FactoryRfqDetailPage() {
 
         {!loading ? (
           <div className='space-y-4'>
-            {/* Summary card */}
             <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
               <div className='flex items-center justify-between mb-2'>
                 <span className='text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200'>
@@ -586,7 +579,6 @@ export function FactoryRfqDetailPage() {
               </div>
             </div>
 
-            {/* My quote status banner */}
             {myQuote ? (
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
                 <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
@@ -628,7 +620,6 @@ export function FactoryRfqDetailPage() {
 
             <div className={twoCol}>
               <div className='space-y-4 mb-4 lg:mb-0 min-w-0'>
-                {/* Reference images */}
                 {imageUrls.length > 0 ? (
                   <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
                     <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
@@ -656,7 +647,6 @@ export function FactoryRfqDetailPage() {
                   </section>
                 ) : null}
 
-                {/* Product / requirements info */}
                 <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
                   <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
                     รายละเอียดสินค้า
@@ -728,7 +718,6 @@ export function FactoryRfqDetailPage() {
                   ) : null}
                 </section>
 
-                {/* Buyer requirements */}
                 <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
                   <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
                     เงื่อนไขลูกค้า
@@ -798,7 +787,6 @@ export function FactoryRfqDetailPage() {
                 </div>
               </div>
 
-              {/* Quote form section */}
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3 min-w-0 lg:sticky lg:top-20'>
                 <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1'>
                   {myQuote && canEdit
@@ -895,7 +883,6 @@ export function FactoryRfqDetailPage() {
               </section>
             </div>
 
-            {/* Contact customer */}
             {customerId > 0 && fid != null ? (
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
                 <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1'>
@@ -941,7 +928,6 @@ export function FactoryRfqDetailPage() {
         ) : null}
       </div>
 
-      {/* Lightbox */}
       {lightbox != null && imageUrls[lightbox] ? (
         <div
           role='presentation'

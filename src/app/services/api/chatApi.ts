@@ -18,7 +18,6 @@ export const conversationsApi = {
   create: (data: { customer_id?: number; factory_id?: number; rfq_id?: number }) =>
     httpClient.post<ConversationDTO>('/conversations', data),
 
-  /** Mark all messages as read for a conversation */
   markAsRead: (convId: string | number) =>
     httpClient.post<void>(`/conversations/${convId}/mark-read`, {}),
 };
@@ -41,7 +40,6 @@ export const messagesApi = {
   delete: (convId: string | number, msgId: string | number) =>
     httpClient.delete<void>(`/conversations/${convId}/messages/${msgId}`),
 
-  /** Get messages as a thread */
   getThread: (convId: string | number) =>
     httpClient.get<ThreadResponse>(`/conversations/${convId}/thread`),
 };

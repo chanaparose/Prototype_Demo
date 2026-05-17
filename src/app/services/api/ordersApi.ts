@@ -5,6 +5,18 @@
 import { httpClient } from '@/services/api/httpClient';
 import type { OrderDetailDTO, OrderCreatePayload, OrderUpdatePayload } from '@/services/api/types';
 
+type ProductionUpdatePayload = Record<string, unknown>;
+
+type ProductionUpdatesBundleDTO = {
+  order_id: number;
+  order_status: string;
+  updates: unknown[];
+  production_locked?: boolean;
+  lock_reason?: string;
+  lock_context?: unknown;
+  template_preview?: unknown[];
+};
+
 export const ordersApi = {
   list: () => httpClient.get<OrderDetailDTO[]>('/orders'),
 
@@ -32,6 +44,15 @@ export const ordersApi = {
   /** Accept a quote and create order (shorthand) */
   acceptQuote: (quoteId: string | number) =>
     httpClient.post<OrderDetailDTO>(`/orders/accept-quote/${quoteId}`, {}),
+
+  getProductionUpdatesBundle: (orderId: string | number) =>
+    httpClient.get<ProductionUpdatesBundleDTO>(`/orders/${orderId}/production-updates`),
+
+  postProductionUpdate: (
+    orderId: string | number,
+    data: ProductionUpdatePayload,
+    headers?: Record<string, string>,
+  ) => httpClient.post<unknown>(`/orders/${orderId}/production-updates`, data, headers),
 };
 
 export const productionUpdatesApi = {
@@ -40,6 +61,12 @@ export const productionUpdatesApi = {
 
   create: (orderId: string | number, data: Record<string, unknown>) =>
     httpClient.post(`/orders/${orderId}/production-updates`, data),
+
+  patch: (updateId: string | number, data: Record<string, unknown>) =>
+    httpClient.patch(`/production-updates/${updateId}`, data),
+
+  reject: (updateId: string | number, data: Record<string, unknown>) =>
+    httpClient.post(`/production-updates/${updateId}/reject`, data),
 };
 
 export const productionApi = {

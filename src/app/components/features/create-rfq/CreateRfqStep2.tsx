@@ -1,10 +1,6 @@
 import { Input } from '@/components/ui/input';
-/**
- * Step 2: จำนวนและงบประมาณ
- *
- * Factory Manager ต้องการ: จำนวน + หน่วย + งบต่อชิ้น + รูปอ้างอิง
- * UX: Quantity+Unit side-by-side → Budget per piece → Image upload (multi)
- */
+import { Label } from '@/components/ui/label';
+
 import React, { useRef, useState } from 'react';
 import {
   Package,
@@ -64,14 +60,12 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
 
   return (
     <div className='flex flex-col gap-5'>
-      {/* ── 1. จำนวน + หน่วย (side-by-side) ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
           <Package size={14} className='text-violet-500' />
           จำนวนที่ต้องการผลิต <span className='text-red-400'>*</span>
-        </label>
+        </Label>
         <div className='flex gap-2'>
-          {/* Quantity input */}
           <Input
             type='number'
             min={1}
@@ -81,7 +75,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
             placeholder='จำนวน'
             className='flex-1 min-w-0 bg-gray-50 border border-gray-200 text-gray-800 text-[14px] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 placeholder:text-gray-400 tabular-nums'
           />
-          {/* Unit selector — dropdown */}
+
           <div className='relative shrink-0 w-[min(11rem,40vw)] min-w-[7.5rem]'>
             <Select
               value={form.unitId}
@@ -114,12 +108,11 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
         )}
       </div>
 
-      {/* ── 2. งบประมาณต่อชิ้น ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
           <DollarSign size={14} className='text-emerald-500' />
           งบประมาณต่อชิ้น (บาท) <span className='text-red-400'>*</span>
-        </label>
+        </Label>
         <div className='relative'>
           <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[14px] font-medium'>
             ฿
@@ -148,12 +141,11 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
         </p>
       </div>
 
-      {/* ── 3. รูปอ้างอิง (multi-upload) ── */}
       <div className='bg-white p-5 rounded-2xl shadow-sm border border-gray-100'>
-        <label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
+        <Label className='text-[13px] font-bold text-gray-700 mb-3 flex items-center gap-1.5'>
           <ImageIcon size={14} className='text-amber-500' />
           รูปอ้างอิง / ไฟล์แนบ
-        </label>
+        </Label>
         <Input
           ref={fileInputRef}
           type='file'
@@ -162,9 +154,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
           onChange={handleFileChange}
         />
 
-        {/* Image grid */}
         <div className='grid grid-cols-3 gap-2'>
-          {/* Uploaded images */}
           {form.imageUrls.map((url, idx) => (
             <div
               key={idx}
@@ -185,7 +175,6 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
             </div>
           ))}
 
-          {/* Upload button */}
           {form.imageUrls.length < 5 && (
             <Button
               variant='unstyled'

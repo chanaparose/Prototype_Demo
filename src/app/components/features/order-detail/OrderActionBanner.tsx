@@ -15,9 +15,9 @@ type Props = {
   paymentSchedule: PaymentScheduleItem[];
   /** PP-style copy vs PE urgency */
   variant: 'pending_deposit' | 'deposit_expired';
-  /** When BE omits next_action.cta_url (lock_context.payment_url) */
+
   fallbackCtaUrl?: string;
-  /** When supplied, CTA opens in-page payment modal instead of navigating */
+
   onPayDeposit?: () => void;
 };
 

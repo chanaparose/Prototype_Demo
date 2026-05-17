@@ -16,7 +16,6 @@ import { useAuth } from '@/stores';
 import { Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 
-// ─── Types ───────────────────────────────────────────────────────
 const ADMIN_ROLES = ['AM', 'AD', 'SA'] as const;
 type AdminRole = (typeof ADMIN_ROLES)[number];
 
@@ -34,7 +33,6 @@ const ROLE_COLORS: Record<string, string> = {
 
 const ROLE_RANK: Record<string, number> = { AM: 1, AD: 2, SA: 3 };
 
-// ─── Nav config ─────────────────────────────────────────────────
 const NAV_ITEMS = [
   { path: '/admin/dashboard', icon: LayoutDashboard, label: 'แดชบอร์ด', minRank: 1 },
   { path: '/admin/factories', icon: Factory, label: 'โรงงาน', minRank: 1 },
@@ -44,7 +42,6 @@ const NAV_ITEMS = [
   { path: '/admin/config', icon: Settings, label: 'ตั้งค่า', minRank: 2 },
 ];
 
-// ─── Page title map ──────────────────────────────────────────────
 const PAGE_TITLES: Record<string, string> = {
   '/admin/dashboard': 'แดชบอร์ด',
   '/admin/factories': 'จัดการโรงงาน',
@@ -76,7 +73,6 @@ function getBreadcrumb(pathname: string): string {
   return ['Admin', ...labels].join(' / ');
 }
 
-// ─── Sidebar content ────────────────────────────────────────────
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -92,7 +88,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className='flex flex-col h-full'>
-      {/* Logo */}
       <div className='flex items-center justify-between px-5 h-16 border-b border-slate-200 shrink-0'>
         <div className='flex items-center gap-2'>
           <img src='/assets/tryly-logo.png' alt='Tryly' className='h-8 w-auto object-contain' />
@@ -113,7 +108,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         )}
       </div>
 
-      {/* Nav */}
       <nav className='flex-1 overflow-y-auto py-4 px-3 space-y-0.5'>
         {NAV_ITEMS.filter((item) => (ROLE_RANK[role] ?? 0) >= item.minRank).map(
           ({ path, icon: Icon, label }) => (
@@ -140,7 +134,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         )}
       </nav>
 
-      {/* User section */}
       <div className='px-3 pb-4 shrink-0 border-t border-slate-200 pt-3'>
         <div className='flex items-center gap-3 px-2 py-2 rounded-lg bg-slate-50 mb-2'>
           <div className='w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0'>
@@ -171,7 +164,6 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   );
 }
 
-// ─── Main Layout ─────────────────────────────────────────────────
 export function AdminLayout() {
   const { user, isLoading } = useAuth();
   const location = useLocation();
@@ -198,12 +190,10 @@ export function AdminLayout() {
 
   return (
     <div className='min-h-screen flex bg-slate-50'>
-      {/* Desktop Sidebar */}
       <aside className='hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:w-64 bg-white border-r border-slate-200 z-30'>
         <SidebarContent />
       </aside>
 
-      {/* Mobile Drawer Overlay */}
       {drawerOpen && (
         <div
           className='lg:hidden fixed inset-0 bg-black/40 z-40'
@@ -211,7 +201,6 @@ export function AdminLayout() {
         />
       )}
 
-      {/* Mobile Drawer */}
       <aside
         className={`lg:hidden fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-50 transform transition-transform duration-300 ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
@@ -220,11 +209,8 @@ export function AdminLayout() {
         <SidebarContent onClose={() => setDrawerOpen(false)} />
       </aside>
 
-      {/* Main */}
       <div className='flex-1 flex flex-col lg:pl-64 min-w-0'>
-        {/* Top bar */}
         <header className='sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm h-16 flex items-center px-4 sm:px-6 gap-4'>
-          {/* Hamburger */}
           <Button
             variant='unstyled'
             type='button'
@@ -235,13 +221,11 @@ export function AdminLayout() {
             <Menu size={20} />
           </Button>
 
-          {/* Page title */}
           <div className='flex-1 min-w-0'>
             <h1 className='text-lg font-bold text-slate-900 truncate'>{pageTitle}</h1>
             <p className='text-[11px] text-slate-400 truncate'>{breadcrumb}</p>
           </div>
 
-          {/* Right: bell + user */}
           <div className='flex items-center gap-2'>
             <Button
               variant='unstyled'
@@ -273,7 +257,6 @@ export function AdminLayout() {
           </div>
         </header>
 
-        {/* Content */}
         <main className='flex-1 min-w-0 overflow-x-hidden'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 py-8'>
             <Outlet />

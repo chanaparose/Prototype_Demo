@@ -21,11 +21,8 @@ import { FormField } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-/* ── Constants ──────────────────────────────────────────────────── */
-/** ค่า payment_terms ที่ล็อคไว้ตามข้อกำหนดล่าสุด */
 const LOCKED_PAYMENT_TERMS = 'lc_at_sight';
 
-/* ── Types ─────────────────────────────────────────────────────── */
 export interface QuotationCreateFormValues {
   price_per_piece: string;
   tooling_mold_cost: string; // แม่พิมพ์ / Tooling
@@ -66,12 +63,10 @@ interface Props {
   deadlineIso?: string | null;
 }
 
-/* ── helpers ────────────────────────────────────────────────────── */
 function fmt(n: number): string {
   return formatCurrencyNoDecimals(n);
 }
 
-/* ── Component ──────────────────────────────────────────────────── */
 export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
   function QuotationCreateForm(
     {
@@ -115,7 +110,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
     useImperativeHandle(ref, () => ({ getValues: () => form.getValues() }), [form]);
 
-    /* ── Watch for warnings ── */
     const priceWatch = form.watch('price_per_piece');
     const leadWatch = form.watch('lead_time_days');
     const shippingWatch = form.watch('shipping_cost');
@@ -139,7 +133,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       return w;
     }, [priceWatch, leadWatch, budgetPerPiece, targetDaysCustomer, deadlineIso]);
 
-    /* ── Live preview (debounced 400ms) ── */
     const [preview, setPreview] = useState<QuotationBreakdown | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
     const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -175,7 +168,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       };
     }, [priceWatch, shippingWatch, packagingWatch, moldWatch, rfqId, rfqQuantity]);
 
-    /* ── Image upload ── */
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
     const [factoryHighlight, setFactoryHighlight] = useState<string>(initialFactoryHighlight ?? '');
     const [uploadingImage, setUploadingImage] = useState(false);
@@ -202,12 +194,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             Array.from(files).map((f) => mediaApi.upload(f).then((r) => r.url as string)),
           );
           setImageUrls((prev) => [...prev, ...uploaded]);
-          // mark form dirty so submit button enables
+
           form.setValue('price_per_piece', form.getValues('price_per_piece'), {
             shouldDirty: true,
           });
         } catch {
-          // ignore upload errors silently — user sees nothing uploaded
         } finally {
           setUploadingImage(false);
           if (imageInputRef.current) imageInputRef.current.value = '';
@@ -224,7 +215,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       [form],
     );
 
-    /* ── Submit ── */
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
@@ -263,9 +253,9 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           factory_highlight: factoryHighlight.trim() || undefined,
           reason: 'อัปเดตใบเสนอราคา',
         };
-        // ส่ง shipping_method_id เฉพาะเมื่อมีค่า (BE ต้องรับ optional)
+
         if (shipId > 0) body.shipping_method_id = shipId;
-        // payment_terms ล็อคที่ "lc_at_sight" เสมอ
+
         body.payment_terms = LOCKED_PAYMENT_TERMS;
         if (patchQuotationId) {
           await quotationsApi.patch(patchQuotationId, body);
@@ -295,7 +285,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       highlightError,
     ]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    /* ── Render ── */
     return (
       <form
         onSubmit={(e) => {
@@ -310,7 +299,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           <p className='text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2'>{error}</p>
         ) : null}
 
-        {/* ── 1. ราคาต่อชิ้น ── */}
         <FormField
           label='ราคาต่อชิ้น (บาท)'
           required
@@ -331,7 +319,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           />
         </FormField>
 
-        {/* ── 2. ค่าใช้จ่ายเพิ่มเติม ── */}
         <div>
           <p className='text-xs font-semibold text-gray-600 mb-2'>ค่าใช้จ่ายเพิ่มเติม</p>
           <div className='grid grid-cols-3 gap-2'>
@@ -371,7 +358,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         </div>
 
-        {/* ── 3. Lead time + Validity ── */}
         <div className='grid grid-cols-2 gap-2'>
           <FormField
             label='Lead time (วัน)'
@@ -401,7 +387,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </FormField>
         </div>
 
-        {/* ── 4. เงื่อนไขการชำระเงิน (ล็อค) ── */}
         <div className='rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5'>
           <div className='flex items-center justify-between gap-2 mb-1'>
             <span className='text-xs font-medium text-gray-500'>เงื่อนไขการชำระเงิน</span>
@@ -413,7 +398,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </p>
         </div>
 
-        {/* ── 5. วิธีจัดส่ง (ล็อก) ── */}
         {shipId > 0 ? (
           <ShippingMethodLockedField
             methodName={shipLabel}
@@ -421,7 +405,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           />
         ) : null}
 
-        {/* ── 6.1 รายละเอียดสินค้าและ BOQ ── */}
         <FactoryHighlightField
           value={factoryHighlight}
           onChange={setFactoryHighlight}
@@ -430,11 +413,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           error={highlightError}
         />
 
-        {/* ── 7. รูปภาพประกอบใบเสนอราคา ── */}
         {!readOnly ? (
           <div>
             <p className='text-xs font-semibold text-gray-600 mb-2'>รูปภาพประกอบ (ถ้ามี)</p>
-            {/* Preview grid */}
+
             {imageUrls.length > 0 ? (
               <div className='grid grid-cols-3 gap-2 mb-2'>
                 {imageUrls.map((url) => (
@@ -502,7 +484,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         ) : null}
 
-        {/* ── 8. Live Breakdown ── */}
         {(preview || previewLoading) && rfqQuantity && rfqQuantity > 0 ? (
           <div className='rounded-xl border border-violet-100 bg-violet-50/60 p-3 space-y-1.5'>
             <div className='flex items-center justify-between mb-1'>
@@ -549,7 +530,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </div>
         ) : null}
 
-        {/* ── 9. Warnings ── */}
         {formWarnings.length > 0 ? (
           <ul className='text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 space-y-1'>
             {formWarnings.map((w) => (
@@ -558,7 +538,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           </ul>
         ) : null}
 
-        {/* ── 10. Submit ── */}
         {!readOnly ? (
           <Button
             variant='unstyled'
@@ -589,7 +568,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
   },
 );
 
-/* ── Sub-component ── */
 function Row({
   label,
   value,

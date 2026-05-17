@@ -1,6 +1,5 @@
 import type { Factory } from '@/stores';
 
-/** พื้นหลังแถบบน (แยกจากรูปโปรไฟล์) — ใช้ background_image_url เป็นหลัก */
 export function pickFactoryCoverUrl(row: Record<string, unknown>): string {
   return String(
     row.background_image_url ??

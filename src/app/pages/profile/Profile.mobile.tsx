@@ -510,7 +510,6 @@ export function ProfileMobile() {
           </div>
         ))}
 
-        {/* ── Addresses ── */}
         <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>
           <div className='flex items-center justify-between px-4 pt-3 pb-2'>
             <div className='flex items-center gap-2'>

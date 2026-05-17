@@ -69,10 +69,8 @@ export function FactoryIdeasDesktop() {
       className='hidden lg:block min-h-[calc(100vh-4rem)]'
       style={{ backgroundColor: COLORS.lightPurpleBg }}
     >
-      {/* ── Sticky top bar ── */}
       <div className='bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10'>
         <div className='px-8 py-4 space-y-4'>
-          {/* Hero banner */}
           <div
             className='rounded-2xl p-5 relative overflow-hidden text-white shadow-md'
             style={{
@@ -115,9 +113,7 @@ export function FactoryIdeasDesktop() {
             </div>
           </div>
 
-          {/* Controls row */}
           <div className='flex items-center gap-3 flex-wrap'>
-            {/* Content type tabs */}
             <div
               className='flex items-center gap-1 p-1 rounded-xl'
               style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
@@ -168,7 +164,6 @@ export function FactoryIdeasDesktop() {
               categoryOptionSelected={categoryOptionSelected}
             />
 
-            {/* Search */}
             <div
               className='flex items-center gap-2 rounded-xl px-3.5 py-2.5 border transition-all w-64'
               style={{ backgroundColor: COLORS.gray, borderColor: 'var(--neutral-border)' }}
@@ -195,10 +190,8 @@ export function FactoryIdeasDesktop() {
               )}
             </div>
 
-            {/* Spacer */}
             <div className='flex-1' />
 
-            {/* View toggle */}
             <div
               className='flex items-center gap-1 p-1 rounded-xl border border-gray-200'
               style={{ backgroundColor: COLORS.gray }}
@@ -234,7 +227,6 @@ export function FactoryIdeasDesktop() {
         </div>
       </div>
 
-      {/* ── Content ── */}
       <div className='px-8 py-6'>
         {showcasesLoading || factoriesLoading ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2'>
@@ -250,7 +242,6 @@ export function FactoryIdeasDesktop() {
             <p className='text-[12px] text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
           </div>
         ) : isFactoryTab ? (
-          /* ━━━ Factory-only Grid ━━━ */
           <div className='grid grid-cols-4 gap-3'>
             {visibleFactories.map((factory) => (
               <article
@@ -602,7 +593,6 @@ export function FactoryIdeasDesktop() {
           </div>
         )}
 
-        {/* ━━━ Factory section ใน tab "ทั้งหมด" ━━━ */}
         {selectedType === 'all' && visibleFactories.length > 0 && (
           <div className='mt-8'>
             <div className='flex items-center justify-between mb-4'>

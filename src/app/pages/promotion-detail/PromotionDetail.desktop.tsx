@@ -152,7 +152,6 @@ export function PromotionDetailDesktop() {
       className='hidden lg:block min-h-[calc(100vh-4rem)]'
       style={{ background: 'var(--brand-panel)' }}
     >
-      {/* ── Breadcrumb / back row ── */}
       <div className='px-8 pt-5 pb-3'>
         <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
           <Button

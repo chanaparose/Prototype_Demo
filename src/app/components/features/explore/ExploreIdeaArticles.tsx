@@ -15,7 +15,7 @@ export type IdeaArticleItem = {
 
 type ExploreIdeaArticlesProps = {
   articles: IdeaArticleItem[];
-  /** e.g. navigate to factory-ideas with content-type filter */
+
   onSeeAll?: () => void;
   onArticleClick?: (id: string) => void;
 };

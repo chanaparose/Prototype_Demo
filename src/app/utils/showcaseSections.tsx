@@ -1,7 +1,3 @@
-/**
- * Shared utilities for rendering showcase sections from DB data.
- * Used by all detail pages (product, promotion, idea) to replace hardcoded content.
- */
 import React from 'react';
 import {
   CheckCircle2,
@@ -23,7 +19,6 @@ import {
 } from 'lucide-react';
 import type { ShowcaseSection, FactoryShowcase } from '@/stores';
 
-/** Map icon_name strings stored in DB → Lucide icon components */
 const ICON_MAP: Record<string, LucideIcon> = {
   CheckCircle2,
   CirclePercent,
@@ -47,9 +42,6 @@ export function getIcon(iconName: string | null | undefined): LucideIcon | null 
   return ICON_MAP[iconName] ?? null;
 }
 
-/**
- * Interpolate template placeholders like {lead_time}, {min_order} with actual item values.
- */
 export function interpolate(template: string, item: FactoryShowcase): string {
   return template
     .replace(/\{lead_time\}/g, item.leadTime || '-')
@@ -58,7 +50,6 @@ export function interpolate(template: string, item: FactoryShowcase): string {
     .replace(/\{likes\}/g, String(item.likes || 0));
 }
 
-/** Get sections by type, sorted by sort_order */
 export function getSectionsByType(
   sections: ShowcaseSection[] | undefined,
   type: 'highlight' | 'checklist',

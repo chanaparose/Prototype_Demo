@@ -38,10 +38,6 @@ function Row({
   );
 }
 
-/**
- * Strict specs block — shows only MOQ + lead time.
- * production_capacity / sample_available ถูกลบออกจาก DB schema แล้ว
- */
 export function StrictSpecsBlock({ showcase }: Props) {
   const moq =
     showcase.moq != null && showcase.moq > 0 ? `${showcase.moq.toLocaleString('th-TH')} ชิ้น` : '—';

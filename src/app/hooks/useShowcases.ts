@@ -181,7 +181,6 @@ function cacheKey(type: ShowcaseApiType | undefined) {
   return type ?? 'ALL';
 }
 
-/** Map Factory Ideas UI tab → `GET /showcases` query `type` (PD / PM / ID) */
 export function showcaseQueryTypeFromTab(
   tab: 'all' | 'product' | 'promotion' | 'idea' | 'material' | 'factory',
 ): ShowcaseApiType | undefined {
@@ -246,9 +245,6 @@ export function useShowcases(options?: { type?: ShowcaseApiType }) {
   return { showcases, loading, error };
 }
 
-/**
- * useShowcaseById — Find one showcase (loads full list via GET /showcases, no type filter)
- */
 export function useShowcaseById(id: string | undefined, contentType?: string) {
   const { showcases, loading, error } = useShowcases();
 

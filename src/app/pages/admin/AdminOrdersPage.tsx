@@ -3,6 +3,16 @@ import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
 import { adminApi, type AdminOrderRow } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableSkeletonRows,
+} from '@/components/ui/table';
 
 type OrderStatusTab = 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
 
@@ -63,22 +73,6 @@ function mapOrder(row: AdminOrderRow): AdminOrderView {
     status: String(row.status ?? 'OP'),
     created_at: String(row.created_at ?? ''),
   };
-}
-
-function TableSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <tr key={i}>
-          {Array.from({ length: 8 }).map((__, j) => (
-            <td key={j} className='px-4 py-3'>
-              <div className='h-4 bg-slate-100 rounded animate-pulse' />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
 }
 
 export function AdminOrdersPage() {
@@ -189,9 +183,9 @@ export function AdminOrdersPage() {
             />
           </div>
           <div className='flex items-center gap-2'>
-            <label className='text-xs font-semibold text-slate-600 whitespace-nowrap'>
+            <Label className='text-xs font-semibold text-slate-600 whitespace-nowrap'>
               ตั้งแต่
-            </label>
+            </Label>
             <div className='relative'>
               <Calendar
                 size={13}
@@ -206,7 +200,7 @@ export function AdminOrdersPage() {
             </div>
           </div>
           <div className='flex items-center gap-2'>
-            <label className='text-xs font-semibold text-slate-600 whitespace-nowrap'>ถึง</label>
+            <Label className='text-xs font-semibold text-slate-600 whitespace-nowrap'>ถึง</Label>
             <div className='relative'>
               <Calendar
                 size={13}
@@ -259,107 +253,107 @@ export function AdminOrdersPage() {
 
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
         <div className='overflow-x-auto'>
-          <table className='w-full text-sm min-w-[900px]'>
-            <thead>
-              <tr className='bg-slate-50 border-b border-slate-200'>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+          <Table className='w-full text-sm min-w-[900px]'>
+            <TableHeader>
+              <TableRow className='bg-slate-50 border-b border-slate-200'>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   Order ID
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   ผู้ซื้อ
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   โรงงาน
-                </th>
-                <th className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   ยอดรวม
-                </th>
-                <th className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   ค่าคอม
-                </th>
-                <th className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   VAT
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   สถานะ
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   วันที่
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-slate-100'>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className='divide-y divide-slate-100'>
               {loading ? (
-                <TableSkeleton />
+                <TableSkeletonRows columns={8} rows={3} />
               ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className='py-12 text-center text-sm text-slate-400'>
+                <TableRow>
+                  <TableCell colSpan={8} className='py-12 text-center text-sm text-slate-400'>
                     ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 rows.map((order) => {
                   const tab = inferTab(order.status);
                   const meta = STATUS_META[tab];
                   return (
-                    <tr key={order.order_id} className='hover:bg-slate-50 transition-colors'>
-                      <td className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
+                    <TableRow key={order.order_id} className='hover:bg-slate-50 transition-colors'>
+                      <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
                         #{order.order_id}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-slate-700 max-w-[140px] truncate'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-slate-700 max-w-[140px] truncate'>
                         {order.buyer}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-slate-500 max-w-[140px] truncate'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-slate-500 max-w-[140px] truncate'>
                         {order.factory}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
                         ฿{order.total_amount.toLocaleString('th-TH')}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-indigo-700 font-semibold text-right tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-indigo-700 font-semibold text-right tabular-nums'>
                         {order.commission_amount > 0 ? (
                           `฿${order.commission_amount.toLocaleString('th-TH')}`
                         ) : (
                           <span className='text-slate-300 font-normal text-xs'>ยกเว้น</span>
                         )}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-violet-700 font-semibold text-right tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-violet-700 font-semibold text-right tabular-nums'>
                         ฿{order.vat_amount.toLocaleString('th-TH')}
-                      </td>
-                      <td className='px-4 py-3'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3'>
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${meta.cls}`}
                         >
                           {meta.label}
                         </span>
-                      </td>
-                      <td className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                         {order.created_at.slice(0, 10)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
+            </TableBody>
             {!loading && rows.length > 0 ? (
               <tfoot>
-                <tr className='bg-indigo-50 border-t-2 border-indigo-200'>
-                  <td className='px-4 py-3 text-xs font-bold text-indigo-700' colSpan={3}>
+                <TableRow className='bg-indigo-50 border-t-2 border-indigo-200'>
+                  <TableCell className='px-4 py-3 text-xs font-bold text-indigo-700' colSpan={3}>
                     รวม {rows.length} รายการ
-                  </td>
-                  <td className='px-4 py-3 text-sm font-bold text-indigo-900 text-right tabular-nums'>
+                  </TableCell>
+                  <TableCell className='px-4 py-3 text-sm font-bold text-indigo-900 text-right tabular-nums'>
                     ฿{summary.total.toLocaleString('th-TH')}
-                  </td>
-                  <td className='px-4 py-3 text-sm font-bold text-indigo-700 text-right tabular-nums'>
+                  </TableCell>
+                  <TableCell className='px-4 py-3 text-sm font-bold text-indigo-700 text-right tabular-nums'>
                     ฿{summary.commission.toLocaleString('th-TH')}
-                  </td>
-                  <td className='px-4 py-3 text-sm font-bold text-violet-700 text-right tabular-nums'>
+                  </TableCell>
+                  <TableCell className='px-4 py-3 text-sm font-bold text-violet-700 text-right tabular-nums'>
                     ฿{summary.vat.toLocaleString('th-TH')}
-                  </td>
-                  <td colSpan={2} />
-                </tr>
+                  </TableCell>
+                  <TableCell colSpan={2} />
+                </TableRow>
               </tfoot>
             ) : null}
-          </table>
+          </Table>
         </div>
       </div>
     </div>

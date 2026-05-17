@@ -1,12 +1,3 @@
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- *  RFQ Form Types — ออกแบบตาม DB schema (rfqs table)
- *  Phase 1: ใช้เฉพาะข้อมูลที่ master table รองรับ
- *           + sub-category สำหรับ routing ที่แม่นยำ
- *           + shipping method preference
- *           + details = free text (ไม่ยัด JSON blob)
- * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-/* ─── Form data structure (maps 1:1 to DB fields) ─── */
 export type CreateRfqForm = {
   /* Step 1: สินค้าของคุณ */
   categoryId: string; // → rfqs.category_id (FK → categories)
@@ -38,14 +29,12 @@ export const INITIAL_FORM: CreateRfqForm = {
   shippingMethodId: '',
 };
 
-/* ─── Sub-category from DB (lbi_sub_categories) ─── */
 export type SubCategory = {
   id: string;
   name: string;
   sortOrder: number;
 };
 
-/* ─── Units from DB (lbi_units) ─── */
 export type Unit = {
   id: string;
   name: string;
@@ -61,7 +50,6 @@ export const FALLBACK_UNITS: Unit[] = [
   { id: '7', name: 'แผ่น' },
 ];
 
-/* ─── Shipping methods from DB (lbi_shipping_methods) ─── */
 export type ShippingMethod = {
   id: string;
   name: string;
@@ -74,7 +62,6 @@ export const FALLBACK_SHIPPING_METHODS: ShippingMethod[] = [
   { id: '4', name: 'รถบรรทุกโรงงาน' },
 ];
 
-/* ─── Address from DB ─── */
 export type Address = {
   id: string;
   addressDetail: string;
@@ -85,10 +72,8 @@ export type Address = {
   isDefault: boolean;
 };
 
-/* ─── Steps ─── */
 export const STEPS = ['สินค้าของคุณ', 'จำนวนและงบประมาณ', 'ที่อยู่และยืนยัน'] as const;
 
-/* ─── Category icons (for visual cards) ─── */
 export const CATEGORY_ICONS: Record<string, string> = {
   '1': '🐾', // อาหารสัตว์
   '2': '💊', // อาหารเสริม
@@ -103,7 +88,6 @@ export const CATEGORY_ICONS: Record<string, string> = {
   '11': '🦴', // ขนมสัตว์เลี้ยง
 };
 
-/* ─── Shipping method icons ─── */
 export const SHIPPING_ICONS: Record<string, string> = {
   '1': '🏭', // รับเองที่โรงงาน
   '2': '🚚', // ขนส่งเอกชน
@@ -111,7 +95,6 @@ export const SHIPPING_ICONS: Record<string, string> = {
   '4': '🚛', // รถบรรทุกโรงงาน
 };
 
-/* ─── Smart placeholder ตาม sub-category ─── */
 export const SUB_CATEGORY_PLACEHOLDERS: Record<string, string> = {
   // อาหารสุนัข / แมว / สัตว์เล็ก
   อาหารสุนัข:

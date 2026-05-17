@@ -13,7 +13,6 @@ import type { User } from '@/stores';
 
 type Row = Record<string, unknown>;
 
-/** List + create; returns parsed conversation row (no navigation). */
 export async function findOrCreateConversation(
   customerUserId: number,
   factoryEntityId: number,
@@ -52,19 +51,12 @@ export async function findOrCreateConversation(
 export type OpenChatSessionOptions = {
   customerUserId: number;
   factoryEntityId: number;
-  /**
-   * When set, POST this text as the first TX before navigating.
-   * `reference` is attached to that POST only when provided here.
-   */
+
   firstMessage?: { content: string; reference?: ChatReference | null };
-  /** If no firstMessage, navigate with this reference in location.state for the room to attach on first send. */
+
   pendingReference?: ChatReference | null;
 };
 
-/**
- * Ensure a conversation exists between customer and factory, optionally send the first TX,
- * then navigate to the chat room.
- */
 export async function openChatSession(
   navigate: NavigateFunction,
   user: User | null,

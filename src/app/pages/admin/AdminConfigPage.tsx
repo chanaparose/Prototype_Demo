@@ -8,6 +8,15 @@ import {
 } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const RANK: Record<string, number> = { AM: 1, AD: 2, SA: 3 };
 function canEdit(role: string, minRole: 'AM' | 'AD' | 'SA'): boolean {
@@ -355,49 +364,51 @@ export function AdminConfigPage() {
               </div>
 
               <div className='bg-white rounded-xl border border-slate-200 overflow-hidden'>
-                <table className='w-full text-sm min-w-[680px]'>
-                  <thead>
-                    <tr className='bg-slate-50 border-b border-slate-200'>
-                      <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                <Table className='w-full text-sm min-w-[680px]'>
+                  <TableHeader>
+                    <TableRow className='bg-slate-50 border-b border-slate-200'>
+                      <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         ID
-                      </th>
-                      <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </TableHead>
+                      <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         ชื่อ Config
-                      </th>
-                      <th className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </TableHead>
+                      <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         คอม
-                      </th>
-                      <th className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </TableHead>
+                      <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         VAT
-                      </th>
-                      <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </TableHead>
+                      <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         หมดอายุ
-                      </th>
-                      <th className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                      </TableHead>
+                      <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                         Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className='divide-y divide-slate-100'>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody className='divide-y divide-slate-100'>
                     {sortedConfigs.map((cfg, idx) => {
                       const isDefault = idx === 0;
                       return (
-                        <tr key={cfg.config_id} className='hover:bg-slate-50'>
-                          <td className='px-4 py-3 text-xs text-slate-500'>#{cfg.config_id}</td>
-                          <td className='px-4 py-3 text-sm font-medium text-slate-900'>
+                        <TableRow key={cfg.config_id} className='hover:bg-slate-50'>
+                          <TableCell className='px-4 py-3 text-xs text-slate-500'>
+                            #{cfg.config_id}
+                          </TableCell>
+                          <TableCell className='px-4 py-3 text-sm font-medium text-slate-900'>
                             {configLabel(cfg)}{' '}
                             {isDefault ? <span className='text-xs text-slate-400'>🔒</span> : null}
-                          </td>
-                          <td className='px-4 py-3 text-sm text-right tabular-nums text-indigo-700 font-bold'>
+                          </TableCell>
+                          <TableCell className='px-4 py-3 text-sm text-right tabular-nums text-indigo-700 font-bold'>
                             {Number(cfg.default_commission_rate).toLocaleString('th-TH')}%
-                          </td>
-                          <td className='px-4 py-3 text-sm text-right tabular-nums'>
+                          </TableCell>
+                          <TableCell className='px-4 py-3 text-sm text-right tabular-nums'>
                             {Number(cfg.vat_rate).toLocaleString('th-TH')}%
-                          </td>
-                          <td className='px-4 py-3 text-xs text-slate-500'>
+                          </TableCell>
+                          <TableCell className='px-4 py-3 text-xs text-slate-500'>
                             {fmtDate(cfg.effective_to)}
-                          </td>
-                          <td className='px-4 py-3 text-right'>
+                          </TableCell>
+                          <TableCell className='px-4 py-3 text-right'>
                             {!isDefault && isSA ? (
                               <Button
                                 variant='unstyled'
@@ -410,12 +421,12 @@ export function AdminConfigPage() {
                             ) : (
                               <span className='text-xs text-slate-400'>—</span>
                             )}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
 
               {isSA ? (
@@ -535,7 +546,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className='block text-xs font-semibold text-slate-700 mb-1.5'>{label}</label>
+      <Label className='block text-xs font-semibold text-slate-700 mb-1.5'>{label}</Label>
       <Input
         type={type}
         value={value}
@@ -560,7 +571,7 @@ function RateField({
 }) {
   return (
     <div>
-      <label className='block text-xs font-semibold text-slate-700 mb-1.5'>{label}</label>
+      <Label className='block text-xs font-semibold text-slate-700 mb-1.5'>{label}</Label>
       <div className='relative'>
         <Input
           type='number'

@@ -5,13 +5,6 @@ export type StepDerivedState = 'completed' | 'active' | 'upcoming' | 'blocked' |
 const ACTIVE_ORDER_STATUSES = new Set(['PR', 'QC', 'SH']);
 const BLOCKING_ORDER_STATUSES = new Set(['PP', 'PE', 'WF']);
 
-/**
- * Derive per-row UI state from the (status, order_status, position) triple.
- *
- * Invariant: while the order is in an active production status, exactly one row
- * is 'active' (or 'blocked') — never zero. This guarantees the customer always
- * sees where they are, even when BE has not yet written an IP row for step 1.
- */
 export function deriveStepStates(
   merged: MergedProductionStep[],
   orderStatus: string | undefined,
@@ -44,7 +37,6 @@ export interface StepVisualConfig {
   chipClass: string;
 }
 
-/** Labels + chip colors for each derived state (pure presentational). */
 export const STEP_VISUAL: Record<StepDerivedState, StepVisualConfig> = {
   completed: {
     ariaLabel: 'สถานะ: เสร็จแล้ว',

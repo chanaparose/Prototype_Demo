@@ -12,7 +12,6 @@ import { rfqsApi, ordersApi, masterApi, categoriesApi } from '@/services/api';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
 
-// ─── Status Code Mapping ───────────────────────────────────────
 // hasAccepted = มี quotation status AC อย่างน้อย 1 ใบ (แสดงว่า order ถูกสร้างแล้ว)
 const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): string => {
   switch (code.toUpperCase()) {
@@ -27,7 +26,6 @@ const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): s
   }
 };
 
-// ─── Category Icon Mapping ─────────────────────────────────────
 const CATEGORY_ICON_MAP: Record<string, string> = {
   อาหารสัตว์: '🐾',
   อาหารเม็ดสัตว์: '🐾',
@@ -83,7 +81,6 @@ function collectUrlsFromUnknown(input: unknown): string[] {
     return out;
   }
   if (typeof input === 'object') {
-    // sometimes BE may wrap as { images: [...] } or { reference_images: [...] }
     const o = input as Record<string, unknown>;
     return [
       ...collectUrlsFromUnknown(o.images),
@@ -258,7 +255,6 @@ export function useRfqDetail(rfqId: string | undefined) {
   const [addressSummary, setAddressSummary] = React.useState('');
   const [targetDays, setTargetDays] = React.useState<number | null>(null);
 
-  // ─── Fetch RFQ detail + quotations ───────────────────────────
   const fetchDetail = React.useCallback(async () => {
     if (!rfqId) {
       setLoading(false);
@@ -277,7 +273,6 @@ export function useRfqDetail(rfqId: string | undefined) {
         rfqsApi.listQuotations(rfqId),
       ]);
 
-      // Parse RFQ (+ images จาก payload เดียวกัน)
       let rawRfq: RawRfqDetail['rfq'] | null = null;
       let detailPayload: RawRfqDetail | null = null;
       if (rfqRes.status === 'fulfilled' && rfqRes.value) {
@@ -465,7 +460,7 @@ export function useRfqDetail(rfqId: string | undefined) {
             factoryHighlight: String(q.factory_highlight ?? '').trim(),
             completedOrders: 0,
             responseTime: '',
-            // Extra fields for BOQ
+
             quoteStatus: q.status,
             quotationDetail: {
               quote_id: q.quote_id,
@@ -508,7 +503,6 @@ export function useRfqDetail(rfqId: string | undefined) {
 
       // Mark the best value as recommended
       if (offers.length > 0) {
-        // Simple heuristic: lowest total price
         const sorted = [...offers].sort((a, b) => a.price - b.price);
         const bestId = sorted[0].id;
         for (const o of offers) {
@@ -568,7 +562,6 @@ export function useRfqDetail(rfqId: string | undefined) {
 
       setRfq(mappedRfq);
 
-      // ── Find related orders (multi-factory) ──────────────────
       // Build quoteId → orderId map จาก AC quotes ทั้งหมด
       const acceptedQuoteIds = quotes.filter((q) => q.status === 'AC').map((q) => q.quote_id);
       const newQuoteOrderMap: Record<string, string> = {};
@@ -614,7 +607,6 @@ export function useRfqDetail(rfqId: string | undefined) {
       }
       setQuoteOrderMap(newQuoteOrderMap);
 
-      // Inject orderId ลง offers เพื่อให้ card แสดง "ดูคำสั่งซื้อ" ได้
       for (const offer of offers) {
         if ((offer.quoteStatus ?? '').toUpperCase() === 'AC') {
           (offer as RfqOffer & { orderId?: string }).orderId = newQuoteOrderMap[offer.id];
@@ -633,7 +625,6 @@ export function useRfqDetail(rfqId: string | undefined) {
     fetchDetail();
   }, [fetchDetail]);
 
-  // ─── Accept offer flow ───────────────────────────────────────
   const acceptOffer = React.useCallback(
     async (quoteId: string): Promise<{ orderId?: string }> => {
       // POST /orders — BE accept quote + create order PP

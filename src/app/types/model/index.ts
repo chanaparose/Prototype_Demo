@@ -3,7 +3,6 @@
  * These are transformed from API response types by mappers
  */
 
-// ─── Auth Models ────────────────────────────────────────
 export interface IUser {
   id: string | number;
   email: string;
@@ -27,7 +26,6 @@ export interface IAuthResponse {
   token: IAuthToken;
 }
 
-// ─── Pagination Models ──────────────────────────────────
 export interface IPaginatedList<TItem> {
   items: TItem[];
   total: number;
@@ -36,7 +34,6 @@ export interface IPaginatedList<TItem> {
   hasMore: boolean;
 }
 
-// ─── Factory Models ─────────────────────────────────────
 export interface IFactory {
   id: string | number;
   name: string;
@@ -50,7 +47,6 @@ export interface IFactory {
   tags?: string[];
 }
 
-// ─── RFQ Models ─────────────────────────────────────────
 export interface IRFQ {
   id: string | number;
   title: string;
@@ -70,7 +66,6 @@ export interface IQuotation {
   status: 'pending' | 'accepted' | 'rejected';
 }
 
-// ─── Order Models ───────────────────────────────────────
 export interface IOrder {
   id: string | number;
   rfq?: IRFQ;
@@ -80,7 +75,6 @@ export interface IOrder {
   createdAt: string;
 }
 
-// ─── Generic ────────────────────────────────────────────
 export interface ILoadingState {
   isLoading: boolean;
   error?: string;

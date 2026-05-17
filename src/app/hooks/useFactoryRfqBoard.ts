@@ -176,7 +176,6 @@ export function useFactoryRfqBoard() {
           String(inner.address_summary ?? '').trim() ||
           (Number.isFinite(addressId) && addressId > 0 ? (addrById.get(addressId) ?? '') : '');
 
-        // ── Quotation overlay — ส่งมาจาก API โดยตรง ไม่ต้อง N+1 ──
         // Backend guarantees: AC rows are excluded, so my_quote_status is null / PD / RJ only
         const myQuoteStatusRaw = inner.my_quote_status ?? row.my_quote_status;
         const hasMyQuote = myQuoteStatusRaw != null && String(myQuoteStatusRaw).trim() !== '';

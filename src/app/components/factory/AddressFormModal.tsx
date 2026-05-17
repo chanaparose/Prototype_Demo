@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Row = Record<string, unknown>;
 
@@ -148,7 +149,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
         </p>
       ) : null}
 
-      <label className='block sm:max-w-sm mb-4'>
+      <Label className='block sm:max-w-sm mb-4'>
         <span className='text-xs text-gray-500'>ประเภทที่อยู่ *</span>
         <Select
           value={addressType}
@@ -163,7 +164,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             <SelectItem value='S'>จัดส่ง</SelectItem>
           </SelectContent>
         </Select>
-      </label>
+      </Label>
 
       <div className='mb-4'>
         <LbiAddressPicker
@@ -177,7 +178,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       </div>
 
       <div className='grid gap-3 sm:grid-cols-3 mb-4'>
-        <label className='block sm:col-span-1'>
+        <Label className='block sm:col-span-1'>
           <span className='text-xs text-gray-500'>รหัสไปรษณีย์ *</span>
           <Input
             className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
@@ -187,8 +188,8 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             onChange={(e) => setZipCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
             placeholder='10110'
           />
-        </label>
-        <label className='block sm:col-span-2'>
+        </Label>
+        <Label className='block sm:col-span-2'>
           <span className='text-xs text-gray-500'>ที่อยู่ *</span>
           <Textarea
             className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
@@ -196,16 +197,16 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             onChange={(e) => setDetail(e.target.value)}
             placeholder='บ้านเลขที่ หมู่ ซอย ถนน'
           />
-        </label>
+        </Label>
       </div>
 
-      <label className='inline-flex items-center gap-2 text-sm text-gray-700'>
+      <Label className='inline-flex items-center gap-2 text-sm text-gray-700'>
         <Checkbox
           checked={isDefault}
           onCheckedChange={(checked) => setIsDefault(checked === true)}
         />
         ตั้งเป็นค่าเริ่มต้น
-      </label>
+      </Label>
     </BaseModal>
   );
 }

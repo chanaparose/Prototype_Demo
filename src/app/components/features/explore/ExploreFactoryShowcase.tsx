@@ -9,15 +9,10 @@ type Props = {
   factories: FactoryItem[];
   onFactoryClick: (id: string) => void;
   onSeeAll?: () => void;
-  /** Layout density. `'mobile'` shows ~1.1 cards, `'desktop'` ~1.5–2 cards. */
+
   variant?: 'mobile' | 'desktop';
 };
 
-/**
- * Horizontal scrolling factory cards inspired by hospital marketing layout —
- * text content on the LEFT, hero image clipped on the RIGHT, on a soft
- * pastel background. Replaces the previous dark gradient banner section.
- */
 export function ExploreFactoryShowcase({
   factories,
   onFactoryClick,
@@ -69,7 +64,6 @@ export function ExploreFactoryShowcase({
 
   if (items.length === 0) return null;
 
-  // Card pastel palettes — rotate per card for visual variety (Tryly brand colors)
   const palettes = [
     {
       bg: '#F5F3FF',
@@ -102,7 +96,6 @@ export function ExploreFactoryShowcase({
         hoveredRef.current = false;
       }}
     >
-      {/* Section title — light, no gradient banner */}
       <div className='flex items-end justify-between mb-3 px-1'>
         <div>
           <h2 className='text-base lg:text-xl font-bold text-brand-ink'>โรงงานแนะนำ</h2>
@@ -122,7 +115,6 @@ export function ExploreFactoryShowcase({
         ) : null}
       </div>
 
-      {/* Horizontal scroller */}
       <div className='relative'>
         {variant === 'desktop' && items.length > 1 ? (
           <>
@@ -170,7 +162,6 @@ export function ExploreFactoryShowcase({
                   background: palette.bg,
                 }}
               >
-                {/* Image — right side, takes ~45-50% width with rounded clip */}
                 <div
                   className='absolute top-0 right-0 bottom-0 overflow-hidden'
                   style={{
@@ -185,7 +176,6 @@ export function ExploreFactoryShowcase({
                   />
                 </div>
 
-                {/* Verified badge floating on image */}
                 {factory.verified ? (
                   <div className='absolute top-3 right-3 z-10 flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-full px-2 py-0.5 shadow-sm'>
                     <BadgeCheck size={12} style={{ color: palette.accent }} />
@@ -195,7 +185,6 @@ export function ExploreFactoryShowcase({
                   </div>
                 ) : null}
 
-                {/* Text content — left side */}
                 <div
                   className='relative z-[1] flex flex-col justify-between h-full p-4'
                   style={{ width: variant === 'desktop' ? '55%' : '58%' }}
@@ -241,7 +230,6 @@ export function ExploreFactoryShowcase({
         </div>
       </div>
 
-      {/* Dots indicator */}
       {items.length > 1 ? (
         <div className='mt-2 flex items-center justify-center gap-1.5'>
           {items.map((_, i) => (

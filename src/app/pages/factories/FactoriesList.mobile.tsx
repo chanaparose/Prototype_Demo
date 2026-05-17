@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type FactoriesListState = ReturnType<typeof useFactoriesList>;
 type FactoriesListMobileProps = { state: FactoriesListState };
@@ -33,7 +34,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
           {loadError} — แสดงข้อมูลจากแคชในแอป
         </div>
       ) : null}
-      {/* ── Header ── */}
+
       <div className='bg-white px-4 pt-5 pb-4 border-b border-gray-100'>
         <div className='flex items-center justify-between mb-4'>
           <div>
@@ -47,7 +48,6 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
           </div>
         </div>
 
-        {/* Search + filter button */}
         <div className='flex gap-2'>
           <div className='flex-1 flex items-center gap-2.5 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-200 focus-within:border-violet-400 focus-within:bg-white transition-all'>
             <Search size={16} className='text-gray-400 shrink-0' />
@@ -87,10 +87,8 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
           </Button>
         </div>
 
-        {/* Expandable filter panel */}
         {filterOpen && (
           <div className='mt-3 p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-3'>
-            {/* Location */}
             <div>
               <p className='text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5'>
                 พื้นที่ผลิต
@@ -115,8 +113,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
               </div>
             </div>
 
-            {/* Verified */}
-            <label
+            <Label
               className='flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all'
               style={{
                 borderColor: filters.verifiedOnly ? 'var(--brand-violet)' : 'var(--neutral-border)',
@@ -165,9 +162,8 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                   เฉพาะโรงงานยืนยันแล้ว
                 </span>
               </div>
-            </label>
+            </Label>
 
-            {/* Actions */}
             <div className='flex gap-2 pt-1'>
               {hasActiveFilters && (
                 <Button
@@ -196,7 +192,6 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
         )}
       </div>
 
-      {/* ── List ── */}
       <div className='px-4 pt-4 space-y-3'>
         {factories.length === 0 ? (
           <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
@@ -214,7 +209,6 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
               className='w-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden text-left active:scale-[0.98] transition-transform'
             >
               <div className='flex gap-0'>
-                {/* Image */}
                 <div className='relative w-28 shrink-0'>
                   <ImageWithFallback
                     src={factory.image}
@@ -231,7 +225,6 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                   )}
                 </div>
 
-                {/* Info */}
                 <div className='flex-1 px-3 py-3 min-w-0 flex flex-col justify-between'>
                   <div>
                     <p className='text-[13px] font-bold text-gray-900 truncate'>{factory.name}</p>

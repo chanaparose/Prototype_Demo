@@ -37,29 +37,23 @@ export const factoriesApi = {
   /** GET /factories/me/analytics */
   getAnalytics: () => httpClient.get<FactoryAnalyticsResponse>('/factories/me/analytics'),
 
-  /** PUT /factories/:id/categories */
   setCategories: (factoryId: string | number, categoryIds: number[]) =>
     httpClient.put<void>(`/factories/${factoryId}/categories`, { category_ids: categoryIds }),
 
-  /** PUT /factories/:id/sub-categories */
   setSubCategories: (factoryId: string | number, subCategoryIds: number[]) =>
     httpClient.put<void>(`/factories/${factoryId}/sub-categories`, {
       sub_category_ids: subCategoryIds,
     }),
 
-  /** GET /factories/:id/categories */
   getCategories: (factoryId: string | number) =>
     httpClient.get<{ category_ids: number[] }>(`/factories/${factoryId}/categories`),
 
-  /** GET /factories/:id/sub-categories */
   getSubCategories: (factoryId: string | number) =>
     httpClient.get<{ sub_category_ids: number[] }>(`/factories/${factoryId}/sub-categories`),
 
-  /** DELETE /factories/:id/categories/:cid */
   removeCategory: (factoryId: string | number, categoryId: string | number) =>
     httpClient.delete<void>(`/factories/${factoryId}/categories/${categoryId}`),
 
-  /** DELETE /factories/:id/sub-categories/:sid */
   removeSubCategory: (factoryId: string | number, subCategoryId: string | number) =>
     httpClient.delete<void>(`/factories/${factoryId}/sub-categories/${subCategoryId}`),
 };
@@ -87,7 +81,6 @@ export const showcasesApi = {
   getWithDetails: (id: string | number) =>
     httpClient.get<Record<string, unknown>>(`/showcases/${id}/with-details`),
 
-  /** POST /showcases/:id/upload-images */
   uploadImages: (id: string | number, formData: FormData) =>
     httpClient.postForm<Record<string, unknown>>(`/showcases/${id}/upload-images`, formData),
 };

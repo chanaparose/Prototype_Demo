@@ -91,7 +91,6 @@ export const walletApi = {
       bank_account_id,
     }),
 
-  /** Get available balance for withdrawal */
   getWithdrawableBalance: () =>
     httpClient.get<{
       withdrawable_balance: number;

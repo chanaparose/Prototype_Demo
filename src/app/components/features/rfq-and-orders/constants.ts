@@ -35,7 +35,6 @@ export const BORDER_WARM = 'rgba(196, 164, 132, 0.4)';
 export const MOBILE_PRIMARY_TAB_BAR =
   'linear-gradient(135deg, var(--brand-lavender) 0%, var(--surface-cream-warm) 48%, var(--surface-cream-orange) 100%)';
 
-/** ปุ่ม CTA — ไล่มิดไนท์ → พลัม → แม็กนีตา */
 export const CTA_GRADIENT =
   'linear-gradient(135deg, #1A0F2E 0%, #4A267D 45%, var(--brand-purple) 100%)';
 

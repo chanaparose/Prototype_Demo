@@ -51,11 +51,11 @@ export interface ProductionUpdatesBundle {
   order_id: number;
   order_status: string;
   updates: ProductionUpdateRow[];
-  /** ORDER_DETAIL_PP_STATE_BE — when true, use lock_context + template_preview; no interactive timeline. */
+
   production_locked?: boolean;
   lock_reason?: string;
   lock_context?: ProductionLockContext;
-  /** Embedded 6-step preview when locked (no extra GET /production/steps). */
+
   template_preview?: ProductionStepTemplate[];
 }
 

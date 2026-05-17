@@ -1,8 +1,3 @@
-/**
- * HTTP Client — Generic fetch wrapper with token management
- * Handles requests, responses, errors, and timeout
- */
-
 import { getTourMockResponse } from '@/utils/tourMocks';
 import { getToken, removeToken } from '@/services/api/tokenManager';
 

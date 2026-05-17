@@ -11,10 +11,10 @@ import {
 import { formatCurrency } from '@/utils/formatting';
 import { useAuth } from '@/stores';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 
 export const TOUR_KEY = 'tryly_tour_seen_v1';
 
-/* ─── CSS ──────────────────────────────────────────────────────────────────── */
 const TOUR_CSS = `
 @keyframes tour-card-in {
   from { opacity:0; transform:translateY(14px); }
@@ -45,23 +45,17 @@ function injectCSS() {
   cssInjected = true;
 }
 
-/* ─── Types ────────────────────────────────────────────────────────────────── */
 type StepDef = {
   /** Full path including optional `?query` (e.g. `/product-detail?showcase_id=14`) */
   route: string | null;
   /** When set, install canned API mocks for this scenario before navigating */
   mockScenario?: TourScenario;
-  /** Texts to search for in the rendered page to spotlight (button labels, etc.) */
+
   targetTexts?: string[];
   targetSelector?: string;
   spotlightRadius?: number;
   spotlightPad?: number;
-  /**
-   * Where to render the tour card. `'auto'` (default) computes from the
-   * spotlight rect AFTER it lands, which causes a brief flash. Use `'top'`
-   * or `'bottom'` to lock placement upfront for steps where we know the
-   * spotlight target sits in the lower / upper half of the viewport.
-   */
+
   cardPlacement?: 'top' | 'bottom' | 'auto';
   badgeColor: string;
   icon: string;
@@ -70,8 +64,6 @@ type StepDef = {
   desc: string;
   tip: string;
 };
-
-/* ─── Mock screen helpers ───────────────────────────────────────────────────  */
 
 function MockStatusBar() {
   return (
@@ -149,7 +141,6 @@ function MockNav({ title, showBack = true }: { title?: string; showBack?: boolea
   );
 }
 
-/* ─── Step 2: CreateRFQ mock (/create-rfq) ─────────────────────────────────── */
 function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -163,7 +154,6 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
           background: 'var(--neutral-surface)',
         }}
       >
-        {/* Category pill */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
           {['ของเล่นสัตว์เลี้ยง', 'อาหารสัตว์', 'เสื้อผ้าสัตว์เลี้ยง'].map((c, i) => (
             <span
@@ -182,7 +172,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
             </span>
           ))}
         </div>
-        {/* Form fields */}
+
         {[
           {
             label: 'ชื่อโปรเจกต์',
@@ -207,7 +197,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
           },
         ].map((f) => (
           <div key={f.label} style={{ marginBottom: 12 }}>
-            <label
+            <Label
               style={{
                 fontSize: 12,
                 fontWeight: 700,
@@ -217,7 +207,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
               }}
             >
               {f.label}
-            </label>
+            </Label>
             <div
               style={{
                 background: f.filled ? 'var(--neutral-white)' : 'var(--neutral-surface)',
@@ -234,9 +224,9 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
             </div>
           </div>
         ))}
-        {/* Deadline */}
+
         <div style={{ marginBottom: 12 }}>
-          <label
+          <Label
             style={{
               fontSize: 12,
               fontWeight: 700,
@@ -246,7 +236,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
             }}
           >
             กำหนดส่ง
-          </label>
+          </Label>
           <div
             style={{
               background: 'var(--neutral-white)',
@@ -263,7 +253,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
             <span style={{ color: 'var(--neutral-placeholder)' }}>📅</span>
           </div>
         </div>
-        {/* CTA */}
+
         <Button
           variant='unstyled'
           type='button'
@@ -292,13 +282,12 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
   );
 }
 
-/* ─── Step 3: ProductDetail mock (/product-detail?showcase_id=14) ─────────── */
 function MockProductDetail({ badgeColor }: { badgeColor: string }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <MockStatusBar />
       <MockNav />
-      {/* Hero image */}
+
       <div
         style={{
           flexShrink: 0,
@@ -344,7 +333,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           1 / 2
         </div>
       </div>
-      {/* Thumbnail strip */}
+
       <div
         style={{
           flexShrink: 0,
@@ -387,7 +376,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           />
         </div>
       </div>
-      {/* Content */}
+
       <div
         style={{
           flex: 1,
@@ -477,7 +466,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           </div>
         ))}
       </div>
-      {/* Bottom action bar */}
+
       <div
         style={{
           flexShrink: 0,
@@ -548,13 +537,12 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
   );
 }
 
-/* ─── Step 4: Messages mock (with แนบ RFQ button) ──────────────────────────── */
 function MockMessages({ badgeColor }: { badgeColor: string }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <MockStatusBar />
       <MockNav title='ของเล่นสัตว์เลี้ยง แฮปปี้' />
-      {/* RFQ chip */}
+
       <div
         style={{
           flexShrink: 0,
@@ -583,7 +571,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
           รอข้อเสนอ
         </span>
       </div>
-      {/* Messages */}
+
       <div
         style={{
           flex: 1,
@@ -595,7 +583,6 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
           background: '#FAFAFA',
         }}
       >
-        {/* Factory */}
         <div style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
           <div
             style={{
@@ -638,7 +625,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
             </div>
           </div>
         </div>
-        {/* User */}
+
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <div style={{ maxWidth: '78%' }}>
             <div
@@ -666,7 +653,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
             </div>
           </div>
         </div>
-        {/* Factory 2 */}
+
         <div style={{ display: 'flex', gap: 7, alignItems: 'flex-end' }}>
           <div
             style={{
@@ -711,7 +698,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
           </div>
         </div>
       </div>
-      {/* Input bar */}
+
       <div
         style={{
           flexShrink: 0,
@@ -782,7 +769,6 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
   );
 }
 
-/* ─── Step 5: RFQ detail mock (/rfqs/28 → rfq1 data) ───────────────────────── */
 function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
   const offers = [
     {
@@ -817,7 +803,7 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <MockStatusBar />
       <MockNav title='คำขอผลิต: อาหารสัตว์แห้ง' />
-      {/* Status strip */}
+
       <div
         style={{
           flexShrink: 0,
@@ -841,7 +827,7 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
           </div>
         </div>
       </div>
-      {/* Offers list */}
+
       <div
         style={{
           flex: 1,
@@ -966,7 +952,6 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
   );
 }
 
-/* ─── Step 6: Order detail mock (/orders/17 → ord1 data) ────────────────────── */
 function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
   const timeline = [
     {
@@ -1001,7 +986,6 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
       <MockStatusBar />
       <MockNav title='คำสั่งซื้อ: สายจูงสัตว์เลี้ยง' />
       <div style={{ flex: 1, overflowY: 'auto', background: 'var(--neutral-surface)' }}>
-        {/* Summary */}
         <div style={{ padding: '10px 12px 0' }}>
           <div
             style={{
@@ -1080,7 +1064,7 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
             </div>
           </div>
         </div>
-        {/* Payment */}
+
         <div style={{ padding: '0 12px 10px' }}>
           <div
             style={{
@@ -1150,7 +1134,7 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
             </Button>
           </div>
         </div>
-        {/* Timeline */}
+
         <div style={{ padding: '0 12px 14px' }}>
           <div
             style={{
@@ -1244,7 +1228,6 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
   );
 }
 
-/* ─── Mock screen frame wrapper ─────────────────────────────────────────────── */
 function MockScreenOverlay({ stepIdx, def }: { stepIdx: number; def: StepDef }) {
   return (
     <>
@@ -1279,12 +1262,10 @@ function MockScreenOverlay({ stepIdx, def }: { stepIdx: number; def: StepDef }) 
   );
 }
 
-/* ─── Step definitions ──────────────────────────────────────────────────────── */
 const STEPS: StepDef[] = [
   {
     route: '/factory-ideas',
-    // Anchor to the actual "สินค้า" tab pill — text-search alone matched the
-    // hero banner ("ค้นหาไอเดียสินค้าใหม่...") which contains the same word.
+
     targetSelector: '[data-tour="tab-product"]',
     targetTexts: ['สินค้า', 'ทั้งหมด'],
     spotlightRadius: 24,
@@ -1297,9 +1278,6 @@ const STEPS: StepDef[] = [
     tip: '💡 กด tab "สินค้า" เพื่อดูตัวอย่างที่โรงงานเคยผลิต',
   },
   {
-    // Navigate to home where both targets exist:
-    //   - Desktop: sidebar "สร้างคำขอราคา" button
-    //   - Mobile : floating "+" FAB at bottom-right
     // findTarget picks the first visible match → adapts to viewport.
     route: '/',
     targetSelector: '[data-tour="create-rfq-cta"], [data-tour="fab"]',
@@ -1379,17 +1357,15 @@ const STEPS: StepDef[] = [
   },
 ];
 
-/** True if element has a non-zero bounding box (i.e. actually rendered + visible). */
 function isVisible(el: Element): boolean {
   const r = el.getBoundingClientRect();
   return r.width > 1 && r.height > 1;
 }
 
-/* ─── Find target element (for real-page steps) ─────────────────────────────── */
 function findTarget(def: StepDef): Element | null {
   if (def.targetSelector) {
     // querySelectorAll allows comma-separated fallback selectors — pick the
-    // first one that is actually rendered + visible (hidden via CSS gives 0×0).
+
     const candidates = Array.from(document.querySelectorAll(def.targetSelector));
     const visible = candidates.find(isVisible);
     if (visible) return visible;
@@ -1400,7 +1376,6 @@ function findTarget(def: StepDef): Element | null {
     for (const text of def.targetTexts) {
       const matches = Array.from(document.querySelectorAll(interactiveSel));
       const found = matches.find((el) => {
-        // Skip elements inside the tour card itself (z-index 9999)
         const card = el.closest('[style*="z-index: 9999"]');
         if (card) return false;
         if (!isVisible(el)) return false;
@@ -1429,7 +1404,6 @@ function findTarget(def: StepDef): Element | null {
   return null;
 }
 
-/* ─── SVG Spotlight overlay (for real-page steps) ──────────────────────────── */
 function SpotlightOverlay({
   rect,
   color,
@@ -1489,7 +1463,6 @@ function SpotlightOverlay({
   );
 }
 
-/* ─── Tour card (bottom tooltip) ────────────────────────────────────────────── */
 function TourCard({
   stepIdx,
   def,
@@ -1514,8 +1487,6 @@ function TourCard({
   const wh = typeof window !== 'undefined' ? window.innerHeight : 800;
   const ww = typeof window !== 'undefined' ? window.innerWidth : 400;
 
-  // Decide card placement:
-  //  - explicit `def.cardPlacement` ('top' | 'bottom') wins immediately,
   //    avoiding the bottom→top flash that 'auto' produces while waiting
   //    for `rect` to compute on slower mobile devices.
   //  - 'auto' falls back to rect-based heuristic.
@@ -1524,9 +1495,7 @@ function TourCard({
     if (def.cardPlacement === 'bottom') return false;
     return !isMock && rect ? rect.top > wh * 0.5 : false;
   })();
-  // Arrow direction: when card is at TOP, arrow points DOWN to target below.
-  // When card is at BOTTOM, arrow points UP to target above (only when target
-  // sits in upper half so the arrow actually meets the spotlight).
+
   const arrowDown = placeAtTop && rect != null;
   const arrowUp = !placeAtTop && !isMock && rect ? rect.bottom < wh * 0.55 : false;
 
@@ -1742,7 +1711,6 @@ function TourCard({
   );
 }
 
-/* ─── Main export ───────────────────────────────────────────────────────────── */
 export function ProductTour() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -1757,7 +1725,7 @@ export function ProductTour() {
 
   // Auto-open on first visit to explore home — guest only.
   // Once a user logs in, no longer auto-shows (they can still trigger via
-  // the tryly-open-tour event from a help button).
+
   useEffect(() => {
     if (autoShown || open) return;
     if (location.pathname !== '/') return;
@@ -1777,7 +1745,6 @@ export function ProductTour() {
     setAutoShown(true);
   }, [autoShown, open, location.pathname, isAuthenticated]);
 
-  // Listen for manual trigger
   useEffect(() => {
     const handler = () => {
       originPath.current = location.pathname;
@@ -1802,8 +1769,6 @@ export function ProductTour() {
     }
   }, [open, step]);
 
-  // Navigate to step's route. Routes may include `?query` so we compare against
-  // pathname+search (not pathname alone).
   useEffect(() => {
     if (!open) return;
     const def = STEPS[step];
@@ -1815,7 +1780,6 @@ export function ProductTour() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, step]);
 
-  // After navigation lands, find + highlight target element.
   useEffect(() => {
     if (!open) return;
     const def = STEPS[step];
@@ -1863,13 +1827,6 @@ export function ProductTour() {
     return false;
   }, []);
 
-  /**
-   * Common close-flow: navigate to a safe public route FIRST, then defer
-   * `setTourActive(false)` to the next tick so React Router has time to
-   * unmount the protected-route AuthGuard before the auth bluff goes away.
-   * Without the defer, AuthGuard re-renders in the same batch with
-   * isAuth=false and bounces the guest to /login.
-   */
   const closeTo = useCallback(
     (target: string) => {
       localStorage.setItem(TOUR_KEY, '1');
@@ -1877,7 +1834,7 @@ export function ProductTour() {
       // Hide the tour UI immediately for snappy feel.
       setOpen(false);
       setTargetRect(null);
-      // Navigate to target if not already there.
+
       if (location.pathname !== target) {
         navigate(target, { replace: true });
       }
@@ -1893,12 +1850,11 @@ export function ProductTour() {
   }, [closeTo, isPublicRoute]);
 
   const handleFinish = useCallback(() => {
-    // Always send guest to home so they can keep browsing — no forced login.
     closeTo('/');
   }, [closeTo]);
 
   // NOTE: tour-active flag is managed *explicitly* by handlers (handler
-  // sets it true on open; closeTo defers it to false 50ms after navigate).
+
   // Don't sync it from `open` via useEffect — that fires synchronously on
   // setOpen(false) and yanks AuthContext.isAuthenticated to false BEFORE
   // the route transition completes, which kicks the guest to /login.

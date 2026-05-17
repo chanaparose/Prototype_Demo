@@ -8,6 +8,7 @@ import { getStepGuide } from '@/components/features/production/stepGuideConfig';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 /** ข้อมูลที่อยู่จัดส่งลูกค้า — ส่งมาจาก order API */
 export interface CustomerShippingInfo {
@@ -231,14 +232,12 @@ export function UpdateStepDrawer({
         aria-modal
         aria-labelledby='drawer-title'
       >
-        {/* Handle bar (bottom sheet) */}
         {placement === 'bottom' ? (
           <div className='flex justify-center pt-2 pb-1'>
             <div className='w-10 h-1 rounded-full bg-gray-300' />
           </div>
         ) : null}
 
-        {/* Header */}
         <div className='flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0'>
           <div className='flex items-center gap-2 min-w-0'>
             {guide ? <span className='text-lg leading-none'>{guide.emoji}</span> : null}
@@ -262,7 +261,6 @@ export function UpdateStepDrawer({
           </Button>
         </div>
 
-        {/* Scrollable body */}
         <div className='flex-1 overflow-y-auto px-4 py-4 space-y-4'>
           {err ? (
             <p className='text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2'>
@@ -270,17 +268,14 @@ export function UpdateStepDrawer({
             </p>
           ) : null}
 
-          {/* Guidance card */}
           {guide ? (
             <div className='rounded-xl bg-indigo-50 border border-indigo-100 px-3.5 py-3'>
               <p className='text-xs text-indigo-800 leading-relaxed'>{guide.guidance}</p>
             </div>
           ) : null}
 
-          {/* Customer shipping address — step 5 only */}
           {showShipping ? <ShippingAddressBox info={customerShipping!} /> : null}
 
-          {/* Bullet points — FYI only */}
           {guide && guide.bulletPoints.length > 0 ? (
             <div className='rounded-xl border border-gray-100 bg-gray-50 px-3.5 py-3'>
               <p className='text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2'>
@@ -300,8 +295,7 @@ export function UpdateStepDrawer({
             </div>
           ) : null}
 
-          {/* Notes */}
-          <label className='block'>
+          <Label className='block'>
             <span className='text-xs font-medium text-gray-600'>
               หมายเหตุ / รายละเอียดเพิ่มเติม
             </span>
@@ -313,9 +307,8 @@ export function UpdateStepDrawer({
               placeholder={guide?.notesPlaceholder ?? 'ระบุรายละเอียดความคืบหน้า...'}
             />
             <div className='text-xs text-gray-400 mt-0.5 text-right'>{notes.length}/500</div>
-          </label>
+          </Label>
 
-          {/* Photo upload */}
           <div>
             <div className='flex items-center justify-between mb-2'>
               <span className='text-xs font-medium text-gray-600'>ภาพหลักฐาน</span>
@@ -366,7 +359,7 @@ export function UpdateStepDrawer({
                 </div>
               ))}
               {urls.length < 5 ? (
-                <label className='aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-indigo-300 transition-colors'>
+                <Label className='aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-indigo-300 transition-colors'>
                   <Plus size={22} className='text-gray-400' />
                   <span className='text-[10px] text-gray-500 mt-1'>เพิ่มภาพ</span>
                   <Input
@@ -378,7 +371,7 @@ export function UpdateStepDrawer({
                     onChange={(e) => void addFiles(e.target.files)}
                     disabled={uploading}
                   />
-                </label>
+                </Label>
               ) : null}
             </div>
             {uploading ? <p className='text-xs text-indigo-500 mt-1.5'>กำลังอัปโหลด…</p> : null}
@@ -396,7 +389,6 @@ export function UpdateStepDrawer({
           ) : null}
         </div>
 
-        {/* Footer buttons */}
         <div className='shrink-0 border-t border-gray-100 p-4 space-y-2 bg-white'>
           {isPayment ? (
             <div className='rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 text-center mb-1'>

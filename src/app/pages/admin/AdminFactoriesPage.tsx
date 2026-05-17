@@ -5,6 +5,16 @@ import { adminApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableSkeletonRows,
+} from '@/components/ui/table';
 
 export type FactoryApprovalStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
@@ -112,9 +122,9 @@ function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: Confi
 
         {type === 'reject' && (
           <div className='mb-4'>
-            <label className='block text-xs font-semibold text-slate-700 mb-1.5'>
+            <Label className='block text-xs font-semibold text-slate-700 mb-1.5'>
               เหตุผล <span className='text-red-500'>*</span>
-            </label>
+            </Label>
             <Textarea
               rows={3}
               value={reason}
@@ -151,22 +161,6 @@ function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: Confi
         </div>
       </div>
     </div>
-  );
-}
-
-function TableSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <tr key={i}>
-          {Array.from({ length: 7 }).map((__, j) => (
-            <td key={j} className='px-4 py-3'>
-              <div className='h-4 bg-slate-100 rounded animate-pulse' />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
   );
 }
 
@@ -299,47 +293,47 @@ export function AdminFactoriesPage() {
 
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
         <div className='overflow-x-auto'>
-          <table className='w-full text-sm min-w-[860px]'>
-            <thead>
-              <tr className='bg-slate-50 border-b border-slate-200'>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+          <Table className='w-full text-sm min-w-[860px]'>
+            <TableHeader>
+              <TableRow className='bg-slate-50 border-b border-slate-200'>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   โรงงาน
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   เจ้าของ
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   อีเมล
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   โทรศัพท์
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   วันที่สมัคร
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   สถานะ
-                </th>
-                <th className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-slate-100'>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className='divide-y divide-slate-100'>
               {loading ? (
-                <TableSkeleton />
+                <TableSkeletonRows columns={7} rows={3} />
               ) : factories.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className='py-12 text-center text-sm text-slate-400'>
+                <TableRow>
+                  <TableCell colSpan={7} className='py-12 text-center text-sm text-slate-400'>
                     ไม่พบโรงงานที่ตรงกับเงื่อนไข
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 factories.map((factory) => {
                   const { label, cls } = STATUS_META[factory.approval_status];
                   return (
-                    <tr key={factory.id} className='hover:bg-slate-50 transition-colors'>
-                      <td className='px-4 py-3'>
+                    <TableRow key={factory.id} className='hover:bg-slate-50 transition-colors'>
+                      <TableCell className='px-4 py-3'>
                         <div className='flex items-center gap-3'>
                           <div className='w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0'>
                             {factory.factory_name.charAt(0)}
@@ -358,23 +352,27 @@ export function AdminFactoriesPage() {
                             </p>
                           </div>
                         </div>
-                      </td>
-                      <td className='px-4 py-3 text-sm text-slate-700'>{factory.owner_name}</td>
-                      <td className='px-4 py-3 text-sm text-slate-500'>{factory.email}</td>
-                      <td className='px-4 py-3 text-sm text-slate-500 tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-slate-700'>
+                        {factory.owner_name}
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-slate-500'>
+                        {factory.email}
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-slate-500 tabular-nums'>
                         {factory.phone}
-                      </td>
-                      <td className='px-4 py-3 text-sm text-slate-400 tabular-nums'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3 text-sm text-slate-400 tabular-nums'>
                         {formatThaiDate(factory.registered_at)}
-                      </td>
-                      <td className='px-4 py-3'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3'>
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}
                         >
                           {label}
                         </span>
-                      </td>
-                      <td className='px-4 py-3'>
+                      </TableCell>
+                      <TableCell className='px-4 py-3'>
                         <div className='flex items-center justify-end gap-1.5'>
                           {factory.approval_status === 'pending' && (
                             <>
@@ -408,13 +406,13 @@ export function AdminFactoriesPage() {
                             ดู
                           </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 

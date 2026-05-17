@@ -1,6 +1,7 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface FactoryHighlightFieldProps {
   value: string;
@@ -22,9 +23,9 @@ export function FactoryHighlightField({
 
   return (
     <div>
-      <label className='block text-xs font-semibold text-gray-600 mb-1.5'>
+      <Label className='block text-xs font-semibold text-gray-600 mb-1.5'>
         รายละเอียดสินค้าและ BOQ
-      </label>
+      </Label>
       <div
         className={`rounded-xl border ${error ? 'border-red-300' : 'border-gray-200'} p-2.5 bg-white`}
       >

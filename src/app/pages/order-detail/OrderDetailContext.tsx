@@ -83,7 +83,7 @@ export type OrderDetailContextValue = {
   effectiveProductionLocked: boolean;
   effectiveLockReason: LockReason;
   lockContextMerged: ProductionLockContext;
-  /** RFQ-derived quantity + unit for OrderSummaryCard. Null when order has no linked RFQ. */
+
   rfqSummary: RfqSummaryInfo | null;
   rfq: RfqNestedDTO | null;
   quotation: QuoteNestedDTO | null;

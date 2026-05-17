@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 export type ShowcaseScope = 'PD' | 'MT';
@@ -97,7 +98,7 @@ export function ShowcaseImageManager({
             </Button>
           </>
         ) : (
-          <label className='w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors'>
+          <Label className='w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors'>
             <Camera size={36} strokeWidth={1.5} />
             <span className='text-sm font-medium'>
               {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
@@ -110,7 +111,7 @@ export function ShowcaseImageManager({
               disabled={uploading}
               onChange={pick}
             />
-          </label>
+          </Label>
         )}
       </div>
 
@@ -134,7 +135,7 @@ export function ShowcaseImageManager({
             </div>
           ))}
           {imageUrls.length < 5 ? (
-            <label className='w-14 h-14 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors'>
+            <Label className='w-14 h-14 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors'>
               <Plus size={16} />
               <span className='text-[9px] mt-0.5'>เพิ่ม</span>
               <Input
@@ -144,7 +145,7 @@ export function ShowcaseImageManager({
                 disabled={uploading}
                 onChange={pick}
               />
-            </label>
+            </Label>
           ) : null}
         </div>
       ) : null}
@@ -194,7 +195,7 @@ export function ShowcaseCategoryFields({
     onChange: (scope: ShowcaseScope) => void,
   ) => (
     <div>
-      <label className='block text-sm font-medium text-gray-700 mb-1.5'>{label}</label>
+      <Label className='block text-sm font-medium text-gray-700 mb-1.5'>{label}</Label>
       <div className='flex gap-2'>
         {(['PD', 'MT'] as const).map((scope) => (
           <Button
@@ -241,7 +242,7 @@ export function ShowcaseCategoryFields({
         />
 
         {!hideSubCat ? (
-          <label className='block'>
+          <Label className='block'>
             <span className='text-xs text-gray-500 mb-1.5 block'>หมวดหมู่ย่อย</span>
             <Select
               disabled={categoryValue == null || subCategoriesLoading}
@@ -276,11 +277,11 @@ export function ShowcaseCategoryFields({
                 ))}
               </SelectContent>
             </Select>
-          </label>
+          </Label>
         ) : null}
 
         {onStatusChange ? (
-          <label className='block'>
+          <Label className='block'>
             <span className='text-xs text-gray-500 mb-1.5 block'>สถานะ</span>
             <Select
               value={statusValue ?? 'DR'}
@@ -296,7 +297,7 @@ export function ShowcaseCategoryFields({
                 <SelectItem value='AR'>เก็บเข้าคลัง</SelectItem>
               </SelectContent>
             </Select>
-          </label>
+          </Label>
         ) : null}
       </div>
     </section>

@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
@@ -44,7 +45,7 @@ export function FactoryOrdersFilterBar(props: {
         />
       </div>
       <div className='flex flex-col sm:flex-row gap-2'>
-        <label className='flex-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2'>
+        <Label className='flex-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2'>
           <Search size={16} className='text-slate-400' />
           <Input
             value={searchQuery}
@@ -52,7 +53,7 @@ export function FactoryOrdersFilterBar(props: {
             placeholder='ค้นหา #ออเดอร์ / ชื่อสินค้า / ชื่อลูกค้า'
             className='w-full bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-400'
           />
-        </label>
+        </Label>
         <Select value={sortKey} onValueChange={(next) => onSortChange(next as SortKey)}>
           <SelectTrigger className='w-full sm:w-44 text-slate-700'>
             <SelectValue />

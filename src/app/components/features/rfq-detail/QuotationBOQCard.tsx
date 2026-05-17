@@ -13,7 +13,6 @@ import { ImageWithFallback } from '@/components/shared';
 import { StatusBadge } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 
-/** ใบเสนอราคา (BOQ) จากโรงงาน — ใช้กับ BOQ Explorer / เปรียบเทียบข้อเสนอ */
 export interface Quotation {
   quote_id: number;
   factory_name: string;
@@ -270,7 +269,6 @@ export type QuotationBOQDetailsPanelProps = {
   className?: string;
 };
 
-/** เนื้อหา BOQ แบบขยาย — ใช้ภายในการ์ดเปรียบเทียบใบเสนอราคาได้ */
 export function QuotationBOQDetailsPanel({
   quotation: q,
   className = '',

@@ -106,7 +106,6 @@ function pickImageUrl(
   return u || undefined;
 }
 
-/** Format a chat timestamp as `HH:mm` in Bangkok time. */
 export function formatDisplayTimeFromIso(isoRaw: string): string {
   return formatChatTime(isoRaw);
 }
@@ -128,7 +127,7 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
   ).trim();
 
   const createdAtRaw = String(r.created_at ?? r.sent_at ?? '');
-  // normalizeIso strips Go nanoseconds (>3 fractional digits) and guards
+
   // against Go zero time "0001-01-01…" — both cause NaN in Safari.
   const createdAtNorm = normalizeIso(createdAtRaw);
   const display_time = formatDisplayTimeFromIso(createdAtNorm || createdAtRaw);
@@ -174,7 +173,7 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
       content ||
       (mt === 'QT' || mt === 'quotation_card' ? 'ใบเสนอราคา' : mt === 'rfq_card' ? 'คำขอ RFQ' : ''),
     // Store the normalized ISO (ms-precision) so date comparisons and sorting
-    // work correctly in all browsers (Safari rejects >3 fractional digits).
+
     created_at: createdAtNorm || createdAtRaw,
     display_time,
     message_type: mt,

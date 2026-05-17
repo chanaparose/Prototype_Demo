@@ -23,7 +23,6 @@ type InitialState = {
   orderFilter?: OrderFilterId;
 };
 
-// ─── Status Code Mapping ───────────────────────────────────────
 // RFQ: OP=Open, CL=Closed (order placed OR quotations expired), CC=Cancelled
 // hasAccepted = มี quotation AC อย่างน้อย 1 ใบ → แสดงว่า order ถูกสร้างแล้ว
 const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): string => {
@@ -41,7 +40,6 @@ const mapRfqStatus = (code: string, hasQuotes: boolean, hasAccepted: boolean): s
 
 // Order: PP=รอชำระ, PR/QC=ผลิต, SH=ส่ง, CP=เสร็จ — ดู orderCustomerStatus.ts
 
-// ─── Category Icon Mapping ─────────────────────────────────────
 const CATEGORY_ICON_MAP: Record<string, string> = {
   อาหารสัตว์: '🐾',
   อาหารเม็ดสัตว์: '🐾',
@@ -66,7 +64,6 @@ const guessCategoryIcon = (name: string) => {
   return '📋';
 };
 
-// ─── Raw API types ─────────────────────────────────────────────
 type RawRfq = {
   rfq_id: number;
   user_id: number;
@@ -123,20 +120,17 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     return m;
   }, [dataCtx.factories]);
 
-  // ─── Local state ─────────────────────────────────────────────
   const [primaryTab, setPrimaryTab] = React.useState<PrimaryTab>(initial?.primaryTab ?? 'rfq');
   const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
   const [orderFilter, setOrderFilter] = React.useState<OrderFilterId>(
     initial?.orderFilter ?? 'pending_payment',
   );
 
-  // ─── CRUD data ───────────────────────────────────────────────
   const [rfqs, setRfqs] = React.useState<Rfq[]>([]);
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // ─── Fetch RFQs from GET /rfqs/ + quotations per RFQ ────────
   const fetchRfqs = React.useCallback(async () => {
     try {
       const rawList = (await rfqsApi.list()) as RawRfq[] | null;
@@ -221,7 +215,6 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     }
   }, [categoryMap, factoryMap]);
 
-  // ─── Fetch Orders from GET /orders ───────────────────────────
   const fetchOrders = React.useCallback(async () => {
     try {
       const rawList = (await ordersApi.list()) as RawOrder[] | null;
@@ -240,7 +233,6 @@ export function useRfqAndOrdersState(initial?: InitialState) {
           : '';
         const createdDate = raw.created_at ? raw.created_at.split('T')[0] : '';
 
-        // Try to find related RFQ for project name
         // Orders store quote_id, not rfq_id directly — we look for matching rfq via offers
         let projectName = '';
         let category = '';
@@ -282,7 +274,6 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     }
   }, [factoryMap, rfqs]);
 
-  // ─── Initial fetch ───────────────────────────────────────────
   const isMounted = React.useRef(false);
 
   React.useEffect(() => {
@@ -307,7 +298,6 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     }
   }, [rfqs, loading, fetchOrders, isAuthenticated]);
 
-  // ─── Derived data ────────────────────────────────────────────
   const filteredRfqs = React.useMemo(() => {
     return rfqs.filter((r) => {
       if (r.status === 'completed') return false;

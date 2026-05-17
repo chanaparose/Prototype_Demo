@@ -11,10 +11,6 @@ interface UseFieldArrayReturn<T> {
   reset: (items: T[]) => void;
 }
 
-/**
- * Manage dynamic form field arrays (e.g., repeated form sections)
- * @param initialFields - Starting array of fields
- */
 export function useFieldArray<T = any>(initialFields: T[] = []): UseFieldArrayReturn<T> {
   const [fields, setFields] = useState<T[]>(initialFields);
 

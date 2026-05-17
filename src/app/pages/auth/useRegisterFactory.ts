@@ -121,7 +121,6 @@ export function useRegisterFactory() {
 
   const validateField = useCallback(
     (k: keyof FormState, values: FormState = form): string | undefined => {
-      // Skip account-related fields when user is already logged in
       if (
         isAuthenticated &&
         (k === 'email' || k === 'phone' || k === 'password' || k === 'confirmPassword')

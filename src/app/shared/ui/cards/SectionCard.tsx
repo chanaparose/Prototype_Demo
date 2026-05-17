@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type SectionCardProps = {
   icon?: React.ReactNode;
@@ -30,11 +31,8 @@ export function SectionCard({
   titleClassName = 'text-sm font-semibold text-gray-900',
 }: SectionCardProps) {
   return (
-    <div
-      className={`bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm ${className}`}
-    >
-      {/* Header */}
-      <div className={`px-4 py-3 border-b border-gray-100 ${headerClassName}`}>
+    <Card className={`overflow-hidden ${className}`}>
+      <CardHeader className={headerClassName}>
         <div className='flex items-start justify-between gap-3'>
           <div className='flex items-start gap-3 flex-1'>
             {icon && (
@@ -46,7 +44,7 @@ export function SectionCard({
               </div>
             )}
             <div className='flex-1 min-w-0'>
-              <h3 className={titleClassName}>{title}</h3>
+              <CardTitle className={titleClassName}>{title}</CardTitle>
               {subtitle && <p className='text-xs text-gray-500 mt-0.5'>{subtitle}</p>}
             </div>
           </div>
@@ -55,10 +53,9 @@ export function SectionCard({
             {actionButton}
           </div>
         </div>
-      </div>
+      </CardHeader>
 
-      {/* Content */}
-      <div className={`px-4 py-4 ${contentClassName}`}>{children}</div>
-    </div>
+      <CardContent className={contentClassName}>{children}</CardContent>
+    </Card>
   );
 }

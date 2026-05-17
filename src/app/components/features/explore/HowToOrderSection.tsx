@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router';
 import { Search, FileText, MessageCircle, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-/* ─── CSS animations ─────────────────────────────────────────────────────── */
 const ANIMATION_CSS = `
 @keyframes hiw-float-a {
   0%,100% { transform: translate(0,0) scale(1); }
@@ -134,7 +133,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         boxShadow: '0 4px 32px rgba(124,58,237,0.08)',
       }}
     >
-      {/* ── Animated orbs (soft pastel) ── */}
       <div
         className='absolute -top-16 -right-16 w-72 h-72 rounded-full pointer-events-none'
         style={{
@@ -160,7 +158,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         }}
       />
 
-      {/* ── Animated dot grid ── */}
       <div
         className='absolute inset-0 pointer-events-none'
         style={{
@@ -170,7 +167,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         }}
       />
 
-      {/* ── Top shimmer accent bar ── */}
       <div
         className='absolute top-0 left-0 right-0 h-[3px] pointer-events-none rounded-t-2xl'
         style={{
@@ -181,7 +177,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
       />
 
       <div className='relative z-10 p-3.5 sm:p-5 lg:p-7'>
-        {/* ── Header ── */}
         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 mb-4 sm:mb-6 lg:mb-8'>
           <div>
             <div className='flex items-center gap-2 mb-1.5'>
@@ -230,14 +225,12 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
           </Button>
         </div>
 
-        {/* ── Steps grid ── */}
         <div className='grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4'>
           {STEPS.map((step, idx) => {
             const Icon = step.icon;
             const isLast = idx === STEPS.length - 1;
             return (
               <div key={step.num} className='relative'>
-                {/* Connector arrow — desktop only */}
                 {!isLast && (
                   <div
                     className='hidden lg:flex absolute top-7 -right-2.5 z-10 items-center justify-center w-5 h-5 rounded-full'
@@ -252,7 +245,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                   </div>
                 )}
 
-                {/* Card */}
                 <Button
                   variant='unstyled'
                   type='button'
@@ -278,7 +270,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                     el.style.background = 'var(--neutral-white)';
                   }}
                 >
-                  {/* Colored top micro-bar */}
                   <div
                     className='absolute top-0 left-4 right-4 h-[2px] rounded-full pointer-events-none'
                     style={{
@@ -286,7 +277,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                     }}
                   />
 
-                  {/* Icon + Badge row */}
                   <div className='relative z-10 flex items-center gap-2 sm:gap-2.5 mb-2 sm:mb-3'>
                     <div
                       className='w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6'
@@ -312,7 +302,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                     </span>
                   </div>
 
-                  {/* Title */}
                   <div className='relative z-10 mb-1 sm:mb-2'>
                     <p className='text-brand-ink-deep font-bold text-[12px] sm:text-[14px] lg:text-[15px] leading-snug'>
                       {step.title}
@@ -325,12 +314,10 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                     </p>
                   </div>
 
-                  {/* Description — hidden on mobile */}
                   <p className='relative z-10 hidden sm:block text-[11px] sm:text-[12px] leading-relaxed mb-2 sm:mb-3 text-gray-500'>
                     {step.desc}
                   </p>
 
-                  {/* CTA */}
                   <span
                     className='relative z-10 text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 group-hover:gap-1.5 transition-all'
                     style={{ color: step.accentColor }}
@@ -344,7 +331,6 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
           })}
         </div>
 
-        {/* ── Bottom CTA — mobile full-width ── */}
         <Button
           variant='unstyled'
           type='button'

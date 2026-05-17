@@ -11,7 +11,6 @@ export type ExploreCategoriesApiState = {
 
 type Options = { enabled?: boolean };
 
-/** โหลดหมวดหน้า Explore — เฉพาะ GET /categories (ไม่ใช้ product-categories) */
 export function useExploreCategoriesFromApi(options?: Options): ExploreCategoriesApiState {
   const enabled = options?.enabled !== false;
   const [merged, setMerged] = useState<ExploreCategoryItem[]>([]);

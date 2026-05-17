@@ -18,7 +18,6 @@ export const categoriesApi = {
 
   get: (id: string | number) => httpClient.get<CategoryDTO>(`/categories/${id}`),
 
-  /** GET /categories/:id/sub-categories */
   subCategories: (categoryId: string | number) =>
     httpClient.get<SubCategoryDTO[]>(`/categories/${categoryId}/sub-categories`),
 };
@@ -34,7 +33,6 @@ export const masterApi = {
       factory_types?: FactoryTypeDTO[];
     }>('/master'),
 
-  /** GET /master/categories */
   getCategories: () => httpClient.get<CategoryDTO[]>('/master/categories'),
 
   /** GET /master/units */
@@ -43,7 +41,6 @@ export const masterApi = {
   /** GET /master/certifications */
   getCertifications: () => httpClient.get<CertificationDTO[]>('/master/certifications'),
 
-  /** GET /master/shipping-methods */
   getShippingMethods: () => httpClient.get<ShippingMethodDTO[]>('/master/shipping-methods'),
 
   /** GET /master/factory-types */

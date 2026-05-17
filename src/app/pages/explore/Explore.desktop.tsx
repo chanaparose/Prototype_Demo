@@ -136,7 +136,6 @@ export function ExploreDesktop({
   return (
     <div className='hidden md:block min-h-screen'>
       <div className='px-4 md:px-6 lg:px-8 py-3 lg:py-4 space-y-6 pb-0 w-full mx-auto'>
-        {/* ═══ 1. Hero Banner ═══ */}
         <section className='relative rounded-2xl overflow-hidden h-[180px] shadow-lg'>
           <ImageWithFallback
             src='assets/tryly_banner_slim.png'
@@ -150,7 +149,6 @@ export function ExploreDesktop({
           />
         </section>
 
-        {/* ═══ Search Bar ═══ */}
         <div data-tour='search' className='flex gap-2.5'>
           <div className='flex-1 flex items-center gap-2.5 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100'>
             <Search size={16} className='text-gray-400 shrink-0' />
@@ -195,7 +193,6 @@ export function ExploreDesktop({
                         'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
                     }}
                   >
-                    {/* Purple ribbon circle top-right */}
                     <div
                       className='absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30'
                       style={{ background: 'var(--brand-purple)' }}
@@ -204,13 +201,12 @@ export function ExploreDesktop({
                       className='absolute top-0 right-0 w-14 h-14 rounded-full opacity-20 blur-xl'
                       style={{ background: 'var(--brand-purple)' }}
                     />
-                    {/* Cream circle bottom-left */}
+
                     <div
                       className='absolute -bottom-3 -left-3 w-12 h-12 rounded-full opacity-20'
                       style={{ background: '#FAEBD7' }}
                     />
                     <div className='relative z-10'>
-                      {/* Purple ribbon badge */}
                       <div
                         className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-1.5'
                         style={{ background: 'var(--brand-purple)' }}
@@ -260,7 +256,6 @@ export function ExploreDesktop({
           </section>
         )}
 
-        {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
         <div data-tour='categories'>
           <ExploreDesktopCategories
             categories={categories}
@@ -271,7 +266,6 @@ export function ExploreDesktop({
           />
         </div>
 
-        {/* ═══ 5. สินค้าแนะนำ — from factoryShowcases (แบนเนอร์ซ้ายแสดงเสมอ) ═══ */}
         <div data-tour='products'>
           <ExploreProductCarouselSection
             title='สินค้าแนะนำ'
@@ -290,7 +284,6 @@ export function ExploreDesktop({
           />
         </div>
 
-        {/* ═══ 5b. วัตถุดิบแนะนำ ═══ */}
         <ExploreProductCarouselSection
           title='วัตถุดิบแนะนำ'
           theme='material'
@@ -309,10 +302,8 @@ export function ExploreDesktop({
           }}
         />
 
-        {/* ═══ How to Order ═══ */}
         <HowToOrderSection className='mx-0' />
 
-        {/* ═══ 6. โรงงานแนะนำ — light pastel cards (text-left + image-right) ═══ */}
         <div className='mt-[40px]'>
           <ExploreFactoryShowcase
             factories={recommendedFactories}
@@ -321,7 +312,7 @@ export function ExploreDesktop({
             variant='desktop'
           />
         </div>
-        {/* ═══ 2. โปรโมชันแนะนำ — ORANGE THEME ═══ */}
+
         <section>
           <div className='mt-[30px] flex items-center justify-between mb-3'>
             <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
@@ -339,7 +330,6 @@ export function ExploreDesktop({
           </div>
 
           <div className='flex flex-col lg:flex-row gap-3'>
-            {/* Left Banner */}
             <div className='hidden lg:block lg:w-[40%] rounded-xl overflow-hidden relative min-h-[180px] flex-shrink-0 group cursor-pointer shadow-md'>
               <ImageWithFallback
                 src='assets/tryly_service_banner_375x215.png'
@@ -355,7 +345,6 @@ export function ExploreDesktop({
               ></div>
             </div>
 
-            {/* Right Scrollable Cards */}
             <div className='w-full lg:w-[60%] flex gap-3 overflow-x-auto snap-x hide-scrollbar pb-2'>
               {promoShowcases.map((item) => (
                 <div
@@ -420,9 +409,7 @@ export function ExploreDesktop({
           </div>
         </section>
 
-        {/* ═══ 7. บทความ Idea — พื้นหลัง gradient โทนเดียวกับ HowToOrderSection (shimmer bar) ═══ */}
         <section className='relative -mx-8 px-8 py-5 rounded-xl overflow-hidden bg-neutral-cool-surface'>
-          {/* เลเยอร์นอกลดความเข้ม — ข้างในใช้ gradient + hiw-shimmer-bar เหมือน HowToOrderSection */}
           <div
             aria-hidden
             className='absolute inset-0 rounded-xl pointer-events-none'
@@ -497,9 +484,7 @@ export function ExploreDesktop({
         </section>
       </div>
 
-      {/* ═══ 8. Registration CTA — mt-6 เท่ากับ space-y-6 ในคอลัมน์หลัก (รวม iPad กับ desktop) ═══ */}
       <section className='mt-6 rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>
-        {/* Desktop (xl+): full-bleed hero inside section */}
         <img
           src='assets/tryly_banner_v9.png'
           alt=''
@@ -507,7 +492,6 @@ export function ExploreDesktop({
         />
         <div className='hidden xl:block absolute inset-0 bg-gradient-to-l from-white/55 via-white/10 to-transparent pointer-events-none' />
 
-        {/* iPad / tablet (below xl): banner in-flow; button overlays bottom-right (same horizontal rhythm as section padding) */}
         <img
           src='assets/tryly_tablet_banner.png'
           alt=''
@@ -549,12 +533,10 @@ export function ExploreDesktop({
         </div>
       </section>
 
-      {/* ═══ Footer ═══ */}
       <div className='lg:px-8'>
         <ExploreFooter />
       </div>
 
-      {/* iPad FAB: create RFQ (same behavior as mobile) */}
       <Button
         variant='unstyled'
         data-tour='fab'

@@ -19,9 +19,6 @@ function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
   return { id, name, categoryId };
 }
 
-/**
- * Fetch sub-categories for multiple categories in parallel.
- */
 export function useSubCategoriesByCategories(categoryIds: number[]) {
   const queries = useQueries({
     queries: categoryIds.map((cid) => ({

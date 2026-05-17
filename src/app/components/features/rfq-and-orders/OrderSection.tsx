@@ -98,7 +98,6 @@ export function OrderSection({
 
   return (
     <>
-      {/* Urgency banner — only shows when there are pending payments */}
       {hasPendingPayment && orderFilter !== 'pending_payment' && (
         <Button
           variant='unstyled'
@@ -118,7 +117,6 @@ export function OrderSection({
         </Button>
       )}
 
-      {/* Tab bar */}
       <div
         className='grid grid-cols-5 rounded-xl px-1 py-[8px] border gap-0.5 w-full mb-3'
         style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
@@ -152,7 +150,7 @@ export function OrderSection({
                   style={{ color: isActive ? th.activeColor : 'var(--neutral-subtle)' }}
                 />
               </div>
-              {/* Badge — bold/pulsing for pending_payment */}
+
               {count > 0 && (
                 <span
                   className={`absolute top-0.5 right-[10%] min-w-[14px] h-3.5 px-1 rounded-full text-white text-[8px] flex items-center justify-center font-bold ${isPendingPaymentTab && !isActive ? 'animate-pulse' : ''}`}
@@ -181,7 +179,6 @@ export function OrderSection({
         })}
       </div>
 
-      {/* Order cards */}
       {filteredOrders.length === 0 ? (
         <div
           className='flex flex-col items-center justify-center py-14 text-center rounded-2xl border'
@@ -215,7 +212,6 @@ export function OrderSection({
                   borderLeftColor: isPendingPayment ? ACCENT_ORANGE : BORDER_WARM,
                 }}
               >
-                {/* Header row */}
                 <div className='flex items-start justify-between mb-3'>
                   <div className='flex items-center gap-2.5 min-w-0 flex-1'>
                     <div
@@ -244,7 +240,6 @@ export function OrderSection({
                   </span>
                 </div>
 
-                {/* Progress bar */}
                 <div className='mb-3'>
                   <div className='flex justify-between text-[10px] text-gray-400 mb-1'>
                     <span>ความคืบหน้า</span>
@@ -263,7 +258,6 @@ export function OrderSection({
                   </div>
                 </div>
 
-                {/* Bottom row */}
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-3 text-xs text-gray-500'>
                     {order.estimatedDelivery && (
@@ -277,7 +271,6 @@ export function OrderSection({
                     </span>
                   </div>
 
-                  {/* CTA: payment or details */}
                   {isPendingPayment ? (
                     <span
                       className='flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-bold text-white'

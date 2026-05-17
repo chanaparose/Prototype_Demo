@@ -141,7 +141,6 @@ export function FactoryShowcasesPage() {
         action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
       />
 
-      {/* Tab bar */}
       <div className='flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200'>
         {(['PD', 'PM', 'ID', 'MT'] as ShowcaseType[]).map((type) => {
           const meta = TAB_META[type];
@@ -167,14 +166,12 @@ export function FactoryShowcasesPage() {
         })}
       </div>
 
-      {/* Error */}
       {error ? (
         <p className='text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3'>
           {error}
         </p>
       ) : null}
 
-      {/* Skeleton */}
       {loading ? (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {[1, 2, 3, 4, 5].map((i) => (
@@ -189,7 +186,6 @@ export function FactoryShowcasesPage() {
           ))}
         </div>
       ) : rows.length === 0 ? (
-        /* Empty state */
         <div className='rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4'>
           <div className='text-5xl'>{icon}</div>
           <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
@@ -207,7 +203,6 @@ export function FactoryShowcasesPage() {
           </Button>
         </div>
       ) : (
-        /* Card grid */
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {rows.map((r) => {
             const id = rowId(r);
@@ -321,7 +316,6 @@ export function FactoryShowcasesPage() {
                   </div>
                 )}
 
-                {/* Actions */}
                 <div className='flex gap-2 px-3 pb-3'>
                   <Button
                     variant='unstyled'

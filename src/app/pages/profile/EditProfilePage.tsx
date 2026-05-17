@@ -6,6 +6,7 @@ import { useAuth } from '@/stores';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function EditProfilePage() {
   const navigate = useNavigate();
@@ -123,7 +124,7 @@ export function EditProfilePage() {
             alt='avatar'
             className='w-14 h-14 rounded-2xl object-cover bg-slate-100'
           />
-          <label className='text-xs font-semibold text-indigo-600 cursor-pointer'>
+          <Label className='text-xs font-semibold text-indigo-600 cursor-pointer'>
             เปลี่ยนรูปโปรไฟล์
             <Input
               type='file'
@@ -135,7 +136,7 @@ export function EditProfilePage() {
                 if (f) setAvatarPreview(URL.createObjectURL(f));
               }}
             />
-          </label>
+          </Label>
         </div>
 
         {[
@@ -158,17 +159,17 @@ export function EditProfilePage() {
                 ['รหัสไปรษณีย์', 'postal_code'],
               ]),
         ].map(([label, key]) => (
-          <label key={key} className='block'>
+          <Label key={key} className='block'>
             <span className='text-xs text-slate-500'>{label}</span>
             <Input
               value={(form as Record<string, string>)[key]}
               onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
               className='mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm'
             />
-          </label>
+          </Label>
         ))}
 
-        <label className='block'>
+        <Label className='block'>
           <span className='text-xs text-slate-500'>บันทึกย่อ</span>
           <Textarea
             value={form.bio}
@@ -177,7 +178,7 @@ export function EditProfilePage() {
             className='mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm'
           />
           <p className='text-[11px] text-slate-400 text-right'>{form.bio.length}/300</p>
-        </label>
+        </Label>
       </div>
     </div>
   );

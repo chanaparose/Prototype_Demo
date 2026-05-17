@@ -32,6 +32,15 @@ import {
   type AdminTopCustomer,
 } from '@/services/api';
 import { StatusBadge as SharedStatusBadge } from '@/shared/ui';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableSkeletonRows,
+} from '@/components/ui/table';
 
 interface KpiCard {
   label: string;
@@ -79,22 +88,6 @@ function rfqStatusMeta(status: string): { label: string; cls: string } {
   if (s === 'MT' || s === 'MATCHED')
     return { label: 'จับคู่แล้ว', cls: 'bg-blue-100 text-blue-700' };
   return { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' };
-}
-
-function TableSkeleton({ cols }: { cols: number }) {
-  return (
-    <>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <tr key={i}>
-          {Array.from({ length: cols }).map((__, j) => (
-            <td key={j} className='px-4 py-3'>
-              <div className='h-4 bg-slate-100 rounded animate-pulse w-full' />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
 }
 
 function AdminStatusBadge({ label, cls }: { label: string; cls: string }) {
@@ -436,7 +429,6 @@ export function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Top factories + top customers */}
       <div className='grid grid-cols-1 xl:grid-cols-2 gap-6'>
         <TopCustomersWidget />
       </div>
@@ -448,58 +440,61 @@ export function AdminDashboardPage() {
             <p className='text-xs text-slate-400 mt-0.5'>5 รายการล่าสุด</p>
           </div>
           <div className='overflow-x-auto'>
-            <table className='w-full text-sm'>
-              <thead>
-                <tr className='bg-slate-50 border-b border-slate-100'>
-                  <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+            <Table className='w-full text-sm'>
+              <TableHeader>
+                <TableRow className='bg-slate-50 border-b border-slate-100'>
+                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     Order ID
-                  </th>
-                  <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </TableHead>
+                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     ผู้ซื้อ
-                  </th>
-                  <th className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </TableHead>
+                  <TableHead className='text-right px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     ยอดรวม
-                  </th>
-                  <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </TableHead>
+                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     สถานะ
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-slate-50'>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className='divide-y divide-slate-50'>
                 {loading ? (
-                  <TableSkeleton cols={4} />
+                  <TableSkeletonRows columns={4} rows={3} />
                 ) : recentOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className='px-4 py-10 text-center text-sm text-slate-400'>
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className='px-4 py-10 text-center text-sm text-slate-400'
+                    >
                       ไม่มีข้อมูลคำสั่งซื้อ
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   recentOrders.map((order) => {
                     const status = orderStatusMeta(String(order.status ?? ''));
                     return (
-                      <tr
+                      <TableRow
                         key={String(order.order_id)}
                         className='hover:bg-slate-50 transition-colors'
                       >
-                        <td className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
+                        <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
                           #{order.order_id}
-                        </td>
-                        <td className='px-4 py-3 text-xs text-slate-700 max-w-[120px] truncate'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-700 max-w-[120px] truncate'>
                           {order.customer_name ?? '-'}
-                        </td>
-                        <td className='px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums'>
                           {toCurrency(Number(order.total_amount ?? 0))}
-                        </td>
-                        <td className='px-4 py-3'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3'>
                           <AdminStatusBadge label={status.label} cls={status.cls} />
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
 
@@ -509,55 +504,61 @@ export function AdminDashboardPage() {
             <p className='text-xs text-slate-400 mt-0.5'>5 รายการล่าสุด</p>
           </div>
           <div className='overflow-x-auto'>
-            <table className='w-full text-sm'>
-              <thead>
-                <tr className='bg-slate-50 border-b border-slate-100'>
-                  <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+            <Table className='w-full text-sm'>
+              <TableHeader>
+                <TableRow className='bg-slate-50 border-b border-slate-100'>
+                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     RFQ ID
-                  </th>
-                  <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </TableHead>
+                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     ผู้ซื้อ
-                  </th>
-                  <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </TableHead>
+                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     สถานะ
-                  </th>
-                  <th className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
+                  </TableHead>
+                  <TableHead className='text-left px-4 py-2.5 text-xs font-semibold text-slate-500'>
                     วันที่
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-slate-50'>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className='divide-y divide-slate-50'>
                 {loading ? (
-                  <TableSkeleton cols={4} />
+                  <TableSkeletonRows columns={4} rows={3} />
                 ) : recentRfqs.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className='px-4 py-10 text-center text-sm text-slate-400'>
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className='px-4 py-10 text-center text-sm text-slate-400'
+                    >
                       ไม่มีข้อมูล RFQ
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   recentRfqs.map((rfq) => {
                     const status = rfqStatusMeta(String(rfq.status ?? ''));
                     return (
-                      <tr key={String(rfq.rfq_id)} className='hover:bg-slate-50 transition-colors'>
-                        <td className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
+                      <TableRow
+                        key={String(rfq.rfq_id)}
+                        className='hover:bg-slate-50 transition-colors'
+                      >
+                        <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
                           #{rfq.rfq_id}
-                        </td>
-                        <td className='px-4 py-3 text-xs text-slate-700 max-w-[140px] truncate'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-700 max-w-[140px] truncate'>
                           {rfq.customer_name ?? '-'}
-                        </td>
-                        <td className='px-4 py-3'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3'>
                           <AdminStatusBadge label={status.label} cls={status.cls} />
-                        </td>
-                        <td className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                           {String(rfq.created_at ?? '-').slice(0, 10)}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       </div>

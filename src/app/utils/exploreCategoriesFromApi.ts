@@ -101,7 +101,6 @@ export type FetchExploreCategoriesResult = {
   firstError: Error | null;
 };
 
-/** หน้า Explore — เฉพาะ GET /categories (ไม่เรียก /master/product-categories) */
 export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCategoriesResult> {
   let res: PromiseSettledResult<unknown>;
   try {
@@ -146,7 +145,6 @@ export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCate
   };
 }
 
-/** GET /categories + GET /master/product-categories — ใช้ที่ factory-ideas ฯลฯ */
 export async function fetchExploreCategoriesMerged(): Promise<FetchExploreCategoriesResult> {
   const [catRes, masterRes] = await Promise.allSettled([
     categoriesApi.list(),

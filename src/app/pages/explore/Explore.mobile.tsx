@@ -86,7 +86,6 @@ export function ExploreMobile({
 
   return (
     <div className='md:hidden pt-3 pb-2 space-y-3'>
-      {/* Hero Banner — matches desktop purple gradient */}
       <div className='mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md'>
         <ImageWithFallback
           src='/assets/tryly-banner-final.png'
@@ -95,7 +94,6 @@ export function ExploreMobile({
         />
       </div>
 
-      {/* Search Bar */}
       <div data-tour='search' className='px-4 flex gap-2'>
         <div className='flex-1 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100'>
           <Search size={16} className='text-gray-400 shrink-0' />
@@ -128,7 +126,6 @@ export function ExploreMobile({
         />
       </div>
 
-      {/* สินค้าแนะนำ (Mobile) — แบนเนอร์ PET SHOP แสดงเสมอ; grid เมื่อมีข้อมูล */}
       <div data-tour='products' className='mb-3'>
         <div className='mt-[25px] flex items-center justify-between px-4 mb-2'>
           <h3 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
@@ -144,7 +141,6 @@ export function ExploreMobile({
           </Button>
         </div>
 
-        {/* Cards — full-width horizontal scroll (เริ่มที่ pl-4 ซ้าย, spacer ขวา) */}
         {hasProductShowcases ? (
           <div
             className='flex gap-2 overflow-x-auto pb-2 pl-3'
@@ -218,7 +214,7 @@ export function ExploreMobile({
                 </div>
               </div>
             ))}
-            {/* trailing spacer — การ์ดสุดท้ายไม่โดนตัด */}
+
             <div className='flex-shrink-0 w-3' aria-hidden />
           </div>
         ) : (
@@ -241,7 +237,6 @@ export function ExploreMobile({
         )}
       </div>
 
-      {/* วัตถุดิบแนะนำ (Mobile) */}
       <div className='mb-3'>
         <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
           <h3 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
@@ -257,7 +252,6 @@ export function ExploreMobile({
           </Button>
         </div>
 
-        {/* Cards — horizontal scroll */}
         {hasMaterialShowcases ? (
           <div
             className='flex gap-2 overflow-x-auto pb-2 pl-3'
@@ -351,7 +345,6 @@ export function ExploreMobile({
         )}
       </div>
 
-      {/* How to Order */}
       <HowToOrderSection className='mx-4' />
 
       <div className='mt-[20px]'>
@@ -371,7 +364,6 @@ export function ExploreMobile({
         />
       </div>
 
-      {/* โปรโมชันแนะนำ — แบนเนอร์ส้ม (เดียวกับ desktop) แสดงเสมอ; การ์ดเมื่อมีข้อมูล */}
       <div className='mb-3'>
         <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
           <h3 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
@@ -477,14 +469,13 @@ export function ExploreMobile({
         </div>
       </div>
 
-      {/* Registration CTA (Mobile) — 4:3 cover image with overlaid button */}
       <div className='mx-auto w-[78%] max-w-xs relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30 mt-8'>
         <img
           src='assets/IMG_7664.jpg'
           alt=''
           className='absolute inset-0 w-full h-full object-cover'
         />
-        {/* Bottom soft pastel blue-grey wash for button readability */}
+
         <div className='absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-300/80 via-slate-200/30 to-transparent pointer-events-none' />
 
         <div className='absolute inset-x-0 bottom-0 z-10 p-3.5'>
@@ -513,10 +504,8 @@ export function ExploreMobile({
         </div>
       </div>
 
-      {/* Footer (Mobile) */}
       <ExploreFooter />
 
-      {/* FAB — matches desktop purple accent */}
       <Button
         variant='unstyled'
         data-tour='fab'

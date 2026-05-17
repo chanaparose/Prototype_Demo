@@ -1,14 +1,3 @@
-/**
- * Mock data - ความสัมพันธ์ระหว่าง entities
- *
- * categories     → ใช้ใน rfqs (rfq.category = categories[].name)
- * factories      → ถูกอ้างใน rfqs.offers[].factoryId, orders.factoryId, conversations.factoryId
- * rfqs           → orders.rfqId (เฉพาะ rfq ที่มี order จะมีคำสั่งซื้อ), offers[].factoryId ∈ factories
- * orders         → order.rfqId ∈ rfqs, order.factoryId ∈ rfqs[rfq].offers[].factoryId
- * conversations  → factoryId ∈ factories, rfqId อ้างถึง rfq ที่คุยกัน (หรือ order)
- * notifications  → linkTo อ้างถึง /rfqs/:id, /orders/:id, /chat-room/:id ที่มีอยู่จริง
- */
-
 export const currentUser = {
   id: 'u1',
   name: 'สมชาย วงศ์ใหญ่',
@@ -22,7 +11,6 @@ export const currentUser = {
   memberSince: '2023',
 };
 
-// ─── Master: หมวดหมู่ (ตรงกับ lbi_product_categories ใน DB) ───
 // parentId: null = หมวดหมู่หลัก, มีค่า = หมวดย่อย (ไม่แสดงใน Explore)
 export const categories = [
   { id: '1', name: 'ของเล่น', parentId: null },
@@ -36,7 +24,6 @@ export const categories = [
   { id: '9', name: 'ของเล่นแมว', parentId: '1' },
 ];
 
-// ─── โรงงาน (ถูกอ้างใน rfqs.offers, orders, conversations) ───
 export const factories = [
   {
     id: 'f1',
@@ -228,7 +215,6 @@ export const factoryReviews = [
   },
 ];
 
-// ─── บทความ Idea: โรงงานโพสโปรโมท + แนวคิดให้ลูกค้า ───
 export const ideaArticles = [
   {
     id: 'idea1',
@@ -495,7 +481,6 @@ export const factoryShowcases = [
   },
 ];
 
-// ─── RFQs (category ตรงกับ categories[].name; offers[].factoryId ตรงกับ factories) ───
 // มี order เมื่อ status = completed และมีคำสั่งซื้อใน orders (rfq1, rfq2, rfq4)
 export const rfqs = [
   {
@@ -856,7 +841,6 @@ export const rfqs = [
   },
 ];
 
-// ─── คำสั่งซื้อ (rfqId ตรงกับ rfqs; factoryId ต้องเป็นหนึ่งใน rfqs[rfqId].offers[].factoryId) ───
 // ord1 ← rfq4 + f3, ord2 ← rfq2 + f2, ord3 ← rfq1 + f1, ord4 ← rfq7 + f5
 export const orders = [
   {
@@ -1033,7 +1017,6 @@ export const orders = [
   },
 ];
 
-// ─── แชท (factoryId ตรงกับ factories; rfqId อ้างถึง rfq ที่คุยกัน; rfqName = rfqs[rfqId].projectName) ───
 // conv1: f1 + rfq1, conv2: f2 + rfq2 (order ord2), conv3: f3 + rfq4 (order ord1), conv4: f5 + rfq7 (order ord4), conv5: f6 + rfq8
 export const conversations = [
   {
@@ -1248,7 +1231,6 @@ export const conversations = [
   },
 ];
 
-// ─── การแจ้งเตือน (linkTo อ้างถึง rfq/order/conversation ที่มีอยู่จริง; ข้อความสอดคล้อง) ───
 export const notifications = [
   {
     id: 'n1',

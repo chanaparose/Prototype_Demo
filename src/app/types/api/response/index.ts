@@ -30,9 +30,6 @@ export interface PaginatedApiResponse<TItem> {
   errors?: Record<string, unknown>;
 }
 
-/**
- * Standard error response
- */
 export interface ErrorResponse {
   message: string;
   detail?: string;

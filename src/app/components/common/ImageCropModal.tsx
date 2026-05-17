@@ -26,9 +26,6 @@ function fileExtFromType(type: string): string {
 }
 
 async function loadImageFromUrl(url: string): Promise<HTMLImageElement> {
-  // Use onload/onerror instead of img.decode() — Safari and some browsers
-  // throw `EncodingError` from decode() for valid images (notably HEIC from
-  // iOS Photos), which previously left `natural` at {0, 0} and rendered the
   // <img> at 0×0 size (i.e. invisible).
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -175,8 +172,7 @@ export function ImageCropModal({
   useEffect(() => {
     if (!natural.width || !natural.height || !viewport.width || !viewport.height) return;
     if (didInitForSourceRef.current) return;
-    // Scale image to FIT inside the crop viewport (object-fit: contain behaviour).
-    // Never scale above 1.0 — if the image is smaller than the frame, keep it
+
     // at its original size and let white padding fill the rest.
     // The user can then zoom in freely to fill the frame as desired.
     const scaleToFit = Math.min(viewport.width / natural.width, viewport.height / natural.height);
@@ -249,8 +245,6 @@ export function ImageCropModal({
                 : 'rounded-xl border border-slate-200 bg-white'
             }`}
             style={{
-              // Keep crop stage stable and never exceed viewport.
-              // For showcase uploader, we align the frame with the on-page 4:3 cover box.
               aspectRatio: `${aspect}`,
               width: 'min(100%, calc((92vh - 220px) * var(--crop-aspect)))',
               maxWidth: '100%',

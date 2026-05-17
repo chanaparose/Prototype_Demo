@@ -3,6 +3,7 @@ import { platformConfigApi, type PlatformConfig } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type FormState = {
   default_commission_rate: number;
@@ -50,7 +51,7 @@ export function CommissionConfig() {
     <div className='max-w-3xl mx-auto px-4 py-6 space-y-4'>
       <div className='bg-white rounded-2xl border border-gray-100 p-4 space-y-3'>
         <p className='text-base font-bold text-gray-900'>Commission Config</p>
-        <label className='block text-sm'>
+        <Label className='block text-sm'>
           <span className='text-gray-500'>Default Rate (%)</span>
           <Input
             type='number'
@@ -65,15 +66,15 @@ export function CommissionConfig() {
             }
             className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2'
           />
-        </label>
+        </Label>
         <div className='border-t border-gray-100 pt-3 space-y-3'>
-          <label className='inline-flex items-center gap-2 text-sm'>
+          <Label className='inline-flex items-center gap-2 text-sm'>
             <Checkbox
               checked={form.promo_enabled}
               onCheckedChange={(checked) => setForm({ ...form, promo_enabled: checked === true })}
             />
             Enable Promo
-          </label>
+          </Label>
           {form.promo_enabled ? (
             <>
               <Input
@@ -114,7 +115,7 @@ export function CommissionConfig() {
             </>
           ) : null}
         </div>
-        <label className='block text-sm'>
+        <Label className='block text-sm'>
           <span className='text-gray-500'>VAT (%)</span>
           <Input
             type='number'
@@ -124,7 +125,7 @@ export function CommissionConfig() {
             onChange={(e) => setForm({ ...form, vat_rate: Number(e.target.value) || 0 })}
             className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2'
           />
-        </label>
+        </Label>
         <div className='rounded-xl bg-gray-50 border border-gray-100 p-3 text-xs text-gray-600'>
           <p>Preview Impact</p>
           <p>- Draft quotes affected: 47</p>

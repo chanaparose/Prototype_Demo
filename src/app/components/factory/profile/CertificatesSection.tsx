@@ -12,7 +12,7 @@ type Row = Record<string, unknown>;
 
 interface Props {
   factoryId: number | string;
-  /** Called by parent to register the "open add modal" handler */
+
   onRegisterAdd?: (handler: () => void) => void;
 }
 

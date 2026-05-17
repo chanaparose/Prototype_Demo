@@ -73,7 +73,6 @@ export function DesktopSidebar() {
 
   return (
     <aside className='hidden lg:flex flex-col fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40'>
-      {/* Logo */}
       <div className='flex items-center h-16 px-5 border-b border-gray-100 shrink-0'>
         <Link to='/' className='flex items-center w-full'>
           <img
@@ -84,7 +83,6 @@ export function DesktopSidebar() {
         </Link>
       </div>
 
-      {/* Navigation */}
       <nav className='flex-1 px-3 pt-4 space-y-0.5 overflow-y-auto' aria-label='เมนูหลัก'>
         {isFactory
           ? FACTORY_SIDEBAR_NAV.map((item) => {
@@ -173,7 +171,6 @@ export function DesktopSidebar() {
             })}
       </nav>
 
-      {/* สรุปยอดกระเป๋า — โรงงาน: ทางลัด (มีเมนูกระเป๋าเงินใน nav แล้ว) */}
       {isFactory ? (
         <Link
           to='/factory/wallet'
@@ -264,7 +261,6 @@ export function DesktopSidebar() {
         </div>
       )}
 
-      {/* Create RFQ — เฉพาะลูกค้า (หรือระหว่าง ProductTour) */}
       {!isFactory && (isAuthenticated || tourOn === true) ? (
         <div className='px-3 pb-3'>
           <Button
@@ -285,7 +281,6 @@ export function DesktopSidebar() {
         </div>
       ) : null}
 
-      {/* Profile + การแจ้งเตือน — รูปแบบเดียวกับลูกค้า (ไม่อยู่ในรายการเมนูหลัก) */}
       <div className='border-t border-gray-100 px-3 py-3 shrink-0'>
         {isAuthenticated ? (
           <div className='flex items-center gap-2'>

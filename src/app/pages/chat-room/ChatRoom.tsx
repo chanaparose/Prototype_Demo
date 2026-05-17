@@ -212,7 +212,6 @@ function ChatRoomBody({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conv.id]);
 
-  // On every messages change, decide whether to auto-scroll.
   useEffect(() => {
     const prevCount = prevMessagesCountRef.current;
     const curCount = messages.length;

@@ -9,10 +9,6 @@ import {
   Wallet,
 } from 'lucide-react';
 
-/**
- * เมนู sidebar สำหรับบัญชีโรงงาน (FT) — ลำดับตาม FACTORY_UI_SPEC.md §3
- * requiresApproval: เมื่อ verify_status !== 'AP' ให้ lock ที่ sidebar + หน้าใช้ FactoryVerifiedGuard
- */
 export type FactorySidebarNavItem = {
   key: string;
   label: string;

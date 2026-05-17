@@ -4,7 +4,7 @@ import type { ChatReference } from '@/utils/chatContract';
 
 type Props = {
   reference: ChatReference;
-  /** When missing, chip shows generic label (never show raw id) */
+
   titleFallback?: string;
 };
 

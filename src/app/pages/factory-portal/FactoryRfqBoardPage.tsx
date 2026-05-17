@@ -112,12 +112,6 @@ function useNarrowTabs(breakpoint = 400) {
   return narrow;
 }
 
-/**
- * Flow rules (ตรงกับ useFactoryRfqBoard):
- * - open  : ยังไม่เสนอ + RFQ status OP เท่านั้น
- * - quoted: เสนอแล้ว + quotation ยังไม่ AC (AC ถูก hook กรองออกแล้ว)
- * - all   : union ของทั้งสอง (ทุก row ที่เหลือหลัง hook filter)
- */
 function tabCounts(rows: FactoryBoardRow[]) {
   const open = rows.filter((r) => !r.hasMyQuote && r.status === 'OP').length;
   const quoted = rows.filter((r) => r.hasMyQuote).length;
@@ -138,9 +132,9 @@ function applyTab(rows: FactoryBoardRow[], tab: TabKey): FactoryBoardRow[] {
   if (tab === 'all') return rows;
   // ยังไม่เสนอ: เฉพาะ OP ที่ไม่มีการส่ง quotation
   if (tab === 'open') return rows.filter((r) => !r.hasMyQuote && r.status === 'OP');
-  // ติดตาม BOQ: ส่ง quotation แล้ว (ทุก rfq status เพราะ rfq อาจปิดหลังจากเสนอ)
+
   if (tab === 'quoted') return rows.filter((r) => r.hasMyQuote);
-  // kind tabs กรองเฉพาะ OP ที่ยังไม่เสนอ
+
   if (tab === 'pr')
     return rows.filter(
       (r) =>
@@ -312,7 +306,6 @@ export function FactoryRfqBoardPage() {
     setFilterShip('');
   };
 
-  // BOQ status breakdown for the quoted tab summary
   const boqCounts = useMemo(
     () => ({
       pd: rows.filter((r) => r.hasMyQuote && r.myQuoteStatus === 'PD').length,
@@ -417,7 +410,6 @@ export function FactoryRfqBoardPage() {
 
       {!noFactoryCategories ? (
         <>
-          {/* ── Kind cards ── */}
           <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
             {kindTabs.map((k) => {
               const active = tab === k.key;
@@ -513,7 +505,6 @@ export function FactoryRfqBoardPage() {
             </div>
           )}
 
-          {/* ── Search + Sort controls ── */}
           <div className='sticky top-14 z-[5] bg-brand-page py-2 -my-1'>
             <div className='flex flex-col sm:flex-row gap-2'>
               <div className='relative flex-1'>
@@ -543,7 +534,6 @@ export function FactoryRfqBoardPage() {
               />
             </div>
 
-            {/* Additional filters */}
             <div className='mt-2 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible'>
               <span className='inline-flex items-center gap-1 text-xs text-gray-500 shrink-0 sm:hidden'>
                 <SlidersHorizontal size={14} /> กรอง

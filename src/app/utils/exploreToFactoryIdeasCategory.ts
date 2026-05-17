@@ -100,7 +100,6 @@ export function buildFactoryIdeasCategoryHref(
   return `/factory-ideas?category=${encodeURIComponent(showcaseName)}`;
 }
 
-/** แปลงผล GET /master/product-categories → { id, name }[] */
 export function parseMasterProductCategories(raw: unknown): { id: string; name: string }[] {
   if (!Array.isArray(raw)) return [];
   const seen = new Set<string>();

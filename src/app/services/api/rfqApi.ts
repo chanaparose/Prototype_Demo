@@ -31,7 +31,6 @@ export const rfqsApi = {
   getQuotationHistory: (rfqId: string | number) =>
     httpClient.get<QuotationHistoryEntry[]>(`/rfqs/${rfqId}/quotation-history`),
 
-  /** Get with images */
   getWithImages: (id: string | number) =>
     httpClient.get<RfqDetailResponse & { images: Array<{ image_id: string; url: string }> }>(
       `/rfqs/${id}/with-images`,

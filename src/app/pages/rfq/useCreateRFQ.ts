@@ -50,7 +50,7 @@ export function useCreateRFQ() {
           : Array.isArray(payload.certifications_required)
             ? payload.certifications_required.map(String).filter(Boolean)
             : [],
-        // ตัด UI "ต้องการตัวอย่างสินค้า" ออกจาก section เงื่อนไขคุณภาพแล้ว
+
         // → ใช้ tab "ขอซื้อตัวอย่าง" (request_kind=PS/MS) แทน
         // ส่ง sample_required: false เสมอ และไม่ส่ง sample_qty
         sample_required: false,

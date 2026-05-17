@@ -12,7 +12,6 @@ export function ExploreFooter() {
   return (
     <footer className='w-full bg-neutral-footer border-t border-gray-200 pt-6 md:pt-10 mt-8 md:mt-12 flex-shrink-0'>
       <div className='max-w-7xl mx-auto px-4 md:px-6'>
-        {/* Mobile accordion */}
         <div className='md:hidden mb-6 space-y-2'>
           <AccordionItem
             title='ศูนย์ดูแลลูกค้า'
@@ -180,9 +179,7 @@ export function ExploreFooter() {
           </AccordionItem>
         </div>
 
-        {/* Top 4 Columns */}
         <div className='hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-7 md:mb-10'>
-          {/* Col 1 */}
           <div>
             <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base border-b-2 border-brand-magenta pb-1 inline-block'>
               ศูนย์ดูแลลูกค้า
@@ -215,7 +212,7 @@ export function ExploreFooter() {
               </li>
             </ul>
           </div>
-          {/* Col 2 */}
+
           <div>
             <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
               หมวดหมู่บริการและสินค้า
@@ -287,7 +284,7 @@ export function ExploreFooter() {
               </ul>
             </div>
           </div>
-          {/* Col 3 */}
+
           <div>
             <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
               แหล่งความรู้และคูปอง
@@ -320,7 +317,7 @@ export function ExploreFooter() {
               </li>
             </ul>
           </div>
-          {/* Col 4 */}
+
           <div>
             <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
               ดาวน์โหลดแอปพลิเคชัน
@@ -352,9 +349,7 @@ export function ExploreFooter() {
           </div>
         </div>
 
-        {/* Middle 3 Columns (Logos & Socials) */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 py-4 md:py-6 border-t border-gray-300'>
-          {/* Socials */}
           <div>
             <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>ติดตามเรา</h4>
             <div className='flex items-center gap-2'>
@@ -384,7 +379,7 @@ export function ExploreFooter() {
               </a>
             </div>
           </div>
-          {/* Shipping */}
+
           <div>
             <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>การจัดส่ง</h4>
             <div className='flex flex-wrap items-center gap-2.5 opacity-70 grayscale'>
@@ -393,7 +388,7 @@ export function ExploreFooter() {
               <span className='font-bold text-base md:text-lg text-blue-800'>EMS</span>
             </div>
           </div>
-          {/* Payments */}
+
           <div>
             <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>
               ช่องทางการชำระเงิน
@@ -407,7 +402,6 @@ export function ExploreFooter() {
         </div>
       </div>
 
-      {/* Bottom Purple Bar */}
       <div className='bg-brand-navy-ink text-white py-2.5 md:py-3 text-[11px] md:text-xs mt-2 md:mt-3'>
         <div className='max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3'>
           <div>&copy; 2026 Tryly Shopping. By Digital Media Advertising Co., Ltd.</div>

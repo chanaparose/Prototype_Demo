@@ -42,9 +42,8 @@ export function CategoryCard({
     setDeleting(true);
     setDeleteError('');
     try {
-      // 1) DELETE /factories/:id/sub-categories/:sid สำหรับหมวดย่อยที่เลือกไว้ใต้หมวดนี้
       await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
-      // 2) DELETE /factories/:id/categories/:cid (unlink หมวดหลัก)
+
       await factoriesApi.removeCategory(factoryId, categoryId);
       // 3) Invalidate caches ที่เกี่ยวข้อง
       qc.invalidateQueries({ queryKey: ['factory', String(factoryId), 'categories'] });

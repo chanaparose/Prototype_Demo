@@ -3,6 +3,7 @@ import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByC
 import { BaseModal } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface Props {
   open: boolean;
@@ -86,10 +87,10 @@ export function SubCategoryPickerModal({
         <ul className='space-y-1 max-h-[50vh] overflow-y-auto'>
           {subs.map((s) => (
             <li key={s.id}>
-              <label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
+              <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
                 <Checkbox checked={working.includes(s.id)} onCheckedChange={() => toggle(s.id)} />
                 {s.name}
-              </label>
+              </Label>
             </li>
           ))}
         </ul>

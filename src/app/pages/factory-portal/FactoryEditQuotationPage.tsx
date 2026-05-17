@@ -16,6 +16,7 @@ import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLo
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Raw = Record<string, unknown>;
 
@@ -173,7 +174,6 @@ export function FactoryEditQuotationPage() {
 
   return (
     <div style={{ backgroundColor: 'var(--brand-page)' }} className='min-h-screen pb-28'>
-      {/* Sticky top bar */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
         <Button
           variant='unstyled'
@@ -208,7 +208,6 @@ export function FactoryEditQuotationPage() {
           </p>
         )}
 
-        {/* Status/version badge */}
         <div className='flex items-center gap-2 text-xs text-gray-500'>
           <span className='bg-white border border-gray-100 rounded-lg px-2.5 py-1 font-medium'>
             สถานะ: <strong className='text-gray-900'>{status}</strong>
@@ -218,7 +217,6 @@ export function FactoryEditQuotationPage() {
           </span>
         </div>
 
-        {/* Line items form card */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -226,17 +224,14 @@ export function FactoryEditQuotationPage() {
           }}
           className='space-y-4'
         >
-          {/* Quotation fields table */}
           <div className='rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden'>
-            {/* Table header */}
             <div className='bg-brand-page px-4 py-2.5 flex gap-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
               <span className='flex-1'>รายการ</span>
               <span className='w-28 text-right'>ค่า</span>
             </div>
 
-            {/* ราคาต่อชิ้น */}
             <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
-              <label className='flex-1 min-w-0'>
+              <Label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>ราคาต่อชิ้น *</span>
                 <Input
                   type='number'
@@ -245,12 +240,11 @@ export function FactoryEditQuotationPage() {
                   className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('price_per_piece')}
                 />
-              </label>
+              </Label>
             </div>
 
-            {/* ค่าแม่พิมพ์ */}
             <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
-              <label className='flex-1 min-w-0'>
+              <Label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>ค่าแม่พิมพ์</span>
                 <Input
                   type='number'
@@ -258,12 +252,11 @@ export function FactoryEditQuotationPage() {
                   className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('mold_cost')}
                 />
-              </label>
+              </Label>
             </div>
 
-            {/* Lead time */}
             <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
-              <label className='flex-1 min-w-0'>
+              <Label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>Lead time (วัน) *</span>
                 <Input
                   type='number'
@@ -271,10 +264,9 @@ export function FactoryEditQuotationPage() {
                   className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('lead_time_days')}
                 />
-              </label>
+              </Label>
             </div>
 
-            {/* Shipping method */}
             <div
               className={`px-4 py-3 border-t border-gray-50 hover:bg-brand-page ${isLocked ? 'opacity-70' : ''}`}
             >
@@ -286,7 +278,6 @@ export function FactoryEditQuotationPage() {
             </div>
           </div>
 
-          {/* Summary card — navy gradient */}
           <div
             className='rounded-2xl p-4 space-y-2 text-white shadow-md'
             style={{ background: 'linear-gradient(135deg, var(--brand-navy) 0%, #4A267D 100%)' }}
@@ -318,12 +309,11 @@ export function FactoryEditQuotationPage() {
             </div>
           </div>
 
-          {/* เหตุผลการแก้ไข */}
           <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
             <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
               เหตุผลการแก้ไข
             </p>
-            <label className='block'>
+            <Label className='block'>
               <span className='text-xs text-gray-500 mb-1.5 block'>
                 เหตุผล * (บันทึกลง audit log)
               </span>
@@ -334,11 +324,10 @@ export function FactoryEditQuotationPage() {
                 placeholder='เช่น ปรับลดราคาตามเจรจาลูกค้า'
                 {...form.register('reason')}
               />
-            </label>
+            </Label>
           </section>
         </form>
 
-        {/* History section */}
         <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
           <h2
             className='font-bold flex items-center gap-2 mb-3 text-sm'
@@ -374,7 +363,6 @@ export function FactoryEditQuotationPage() {
         </section>
       </div>
 
-      {/* Sticky bottom bar */}
       <div className='fixed bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 p-4'>
         <div className='max-w-3xl mx-auto flex gap-3'>
           <Button

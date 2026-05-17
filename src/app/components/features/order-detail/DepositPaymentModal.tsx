@@ -21,7 +21,7 @@ type Props = {
   onClose: () => void;
   orderId: string;
   amount: number;
-  /** Called after a successful wallet payment so the page can refetch order/production. */
+
   onSuccess?: () => void | Promise<void>;
 };
 
@@ -84,7 +84,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
         onClose();
       } else {
         // Legacy off-ledger flow: BE returns intent (PromptPay QR / bank instructions).
-        // Without a dedicated payment page, we just inform user and close.
+
         toast.success('สร้างรายการชำระแล้ว กรุณาทำตามขั้นตอนการชำระเงิน');
         onClose();
       }

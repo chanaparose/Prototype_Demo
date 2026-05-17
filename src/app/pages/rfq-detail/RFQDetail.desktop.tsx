@@ -163,7 +163,6 @@ export function RFQDetailDesktop() {
   return (
     <div className='hidden lg:block' style={{ backgroundColor: COLORS.lightPurpleBg }}>
       <div className='max-w-6xl mx-auto px-8 py-7'>
-        {/* Header */}
         <div className='flex items-start justify-between gap-6 mb-6'>
           <div className='min-w-0'>
             <div className='flex items-center gap-3 mb-2'>
@@ -236,9 +235,7 @@ export function RFQDetailDesktop() {
           </div>
         </div>
 
-        {/* Content */}
         <div className='grid grid-cols-[1fr_360px] gap-6 items-start'>
-          {/* Main */}
           <div className='space-y-4'>
             <div className='bg-white rounded-2xl border border-gray-100 shadow-sm'>
               <div className='px-5 py-4 border-b border-gray-100'>
@@ -289,7 +286,6 @@ export function RFQDetailDesktop() {
             </div>
           </div>
 
-          {/* Sidebar */}
           <div className='space-y-4 sticky top-6'>
             <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
               <div className='px-5 py-4 border-b border-gray-100 flex items-center justify-between'>

@@ -4,6 +4,7 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { profileApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ export function ChangePasswordPage() {
           ['รหัสผ่านใหม่', 'new_password', 'n'],
           ['ยืนยันรหัสผ่านใหม่', 'confirm_password', 'cf'],
         ].map(([label, key, vis]) => (
-          <label key={key} className='block'>
+          <Label key={key} className='block'>
             <span className='text-xs text-slate-500'>{label}</span>
             <div className='mt-1 relative'>
               <Input
@@ -83,7 +84,7 @@ export function ChangePasswordPage() {
                 {show[vis as 'c' | 'n' | 'cf'] ? <EyeOff size={16} /> : <Eye size={16} />}
               </Button>
             </div>
-          </label>
+          </Label>
         ))}
 
         <div>

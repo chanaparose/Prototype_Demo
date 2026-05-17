@@ -12,14 +12,10 @@ export function normalizeIso(iso: string): string {
   if (!iso) return '';
   // Guard: Go zero time "0001-01-01T..." is meaningless on the frontend.
   if (iso.startsWith('0001-01-01')) return '';
-  // Truncate fractional seconds to at most 3 digits (milliseconds).
+
   return iso.replace(/(\.\d{1,3})\d+/, '$1');
 }
 
-/**
- * Sort key for chat messages. Uses the shared parser so date sorting,
- * date-group separators, and `HH:mm` rendering all interpret the same instant.
- */
 function messageTimeMs(iso: string): number {
   const d = parseChatInstant(iso);
   if (!d) return 0;

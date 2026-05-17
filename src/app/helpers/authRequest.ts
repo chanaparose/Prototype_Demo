@@ -12,10 +12,6 @@ export interface AuthRequestConfig {
   };
 }
 
-/**
- * Get authorization header for authenticated requests
- * Automatically includes JWT token if available
- */
 export function getAuthHeader(): AuthRequestConfig['headers'] {
   const token = getToken();
   const headers: AuthRequestConfig['headers'] = {

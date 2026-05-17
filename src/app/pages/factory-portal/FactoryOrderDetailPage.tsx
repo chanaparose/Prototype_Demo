@@ -37,8 +37,13 @@ import { StatusBadge } from '@/shared/ui';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 
-function unwrapOrder(raw: Record<string, unknown>): Record<string, unknown> {
-  return (raw.order as Record<string, unknown>) ?? raw;
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+}
+
+function unwrapOrder(raw: unknown): Record<string, unknown> {
+  const root = asRecord(raw);
+  return asRecord(root.order ?? root);
 }
 
 function statusLabel(code: string): string {
@@ -54,15 +59,13 @@ function statusLabel(code: string): string {
   return s || '-';
 }
 
-function statusColor(code: string): { bg: string; text: string; border: string } {
+function statusVariant(code: string): React.ComponentProps<typeof StatusBadge>['variant'] {
   const s = code.toUpperCase();
-  if (s === 'CP') return { bg: 'var(--status-success-soft)', text: '#065F46', border: '#A7F3D0' };
-  if (s === 'CN' || s === 'PE')
-    return { bg: 'var(--status-danger-soft)', text: '#991B1B', border: '#FECACA' };
-  if (s === 'SH') return { bg: 'var(--status-info-soft)', text: '#1E40AF', border: '#BFDBFE' };
-  if (s === 'QC' || s === 'PR')
-    return { bg: 'var(--brand-violet-soft)', text: '#5B21B6', border: '#DDD6FE' };
-  return { bg: 'var(--status-warning-soft)', text: '#92400E', border: '#FDE68A' };
+  if (s === 'CP') return 'success';
+  if (s === 'CN' || s === 'PE') return 'error';
+  if (s === 'SH') return 'info';
+  if (s === 'QC' || s === 'PR') return 'active';
+  return 'pending';
 }
 
 function getStepId(step: MergedProductionStep | null): number {
@@ -97,9 +100,7 @@ function fmtDate(input: unknown): string {
   return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: '2-digit' });
 }
 
-/** ดึงข้อมูลที่อยู่จัดส่งจาก order/rfq object */
 function extractShippingInfo(order: Record<string, unknown>): CustomerShippingInfo {
-  // ลอง path หลาย ๆ แบบที่ API อาจส่งมา
   const addr =
     (order.delivery_address as Record<string, unknown>) ??
     (order.shipping_address as Record<string, unknown>) ??
@@ -124,9 +125,6 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
   };
 }
 
-/* ─────────────────────────────────────────── */
-/*  Next Action Card (Shopee-seller style)     */
-/* ─────────────────────────────────────────── */
 type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
 function StepStatusBadge({ state }: { state: StepState }) {
@@ -180,14 +178,7 @@ function NextActionCard({
 
   return (
     <section className='rounded-2xl overflow-hidden border border-indigo-200 shadow-md'>
-      {/* Header bar */}
-      <div
-        className='px-4 py-3 flex items-center justify-between'
-        style={{
-          background:
-            'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-violet-deep) 100%)',
-        }}
-      >
+      <div className='px-4 py-3 flex items-center justify-between bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet-deep)_100%)]'>
         <div className='flex items-center gap-2'>
           <span className='text-xl leading-none'>{guide.emoji}</span>
           <div>
@@ -203,13 +194,11 @@ function NextActionCard({
       </div>
 
       <div className='bg-white p-4 space-y-3'>
-        {/* What to do */}
         <div>
           <p className='text-xs font-bold text-slate-800'>{guide.whatToDo}</p>
           <p className='text-xs text-slate-500 mt-1 leading-relaxed'>{guide.guidance}</p>
         </div>
 
-        {/* Payment trigger warning */}
         {isQC ? (
           <div className='rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 flex items-start gap-2'>
             <span className='text-base leading-none shrink-0 mt-0.5'>💳</span>
@@ -219,7 +208,6 @@ function NextActionCard({
           </div>
         ) : null}
 
-        {/* Shipping address preview — step 5 */}
         {isShipping && hasAddr ? (
           <div className='rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5'>
             <p className='text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-2 flex items-center gap-1'>
@@ -260,17 +248,15 @@ function NextActionCard({
           </div>
         ) : null}
 
-        {/* Bullet preview (first 3 items) — dot list เหมือน UpdateStepDrawer */}
         <ul className='space-y-1.5'>
           {guide.bulletPoints.slice(0, 3).map((item, i) => (
             <li key={i} className='flex items-start gap-2 text-xs text-gray-700 leading-relaxed'>
-              <span className='mt-0.5 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5' />
+              <span className='mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400' />
               {item}
             </li>
           ))}
         </ul>
 
-        {/* What happens after */}
         <div className='rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 flex items-center gap-2'>
           <span className='text-sm'>➡️</span>
           <p className='text-[11px] text-slate-500 leading-relaxed'>
@@ -278,17 +264,12 @@ function NextActionCard({
           </p>
         </div>
 
-        {/* CTA Button */}
         {canUpdate ? (
           <Button
             variant='unstyled'
             type='button'
             onClick={onUpdate}
-            className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm'
-            style={{
-              background:
-                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-violet) 100%)',
-            }}
+            className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)]'
           >
             <Package size={16} />
             {step.update.status === 'IP'
@@ -309,9 +290,6 @@ function NextActionCard({
   );
 }
 
-/* ─────────────────────────────────────────── */
-/*  Main Page                                  */
-/* ─────────────────────────────────────────── */
 export function FactoryOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -331,7 +309,7 @@ export function FactoryOrderDetailPage() {
     setError('');
     try {
       const detail = await ordersApi.get(id);
-      setOrder(unwrapOrder(detail as Record<string, unknown>));
+      setOrder(unwrapOrder(detail));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดออเดอร์ไม่สำเร็จ');
     } finally {
@@ -436,7 +414,7 @@ export function FactoryOrderDetailPage() {
   const status = String(order.status ?? '').toUpperCase();
   const isCompleted = status === 'CP' || status === 'CN';
   const totalSteps = displayMerged.length;
-  const sc = statusColor(status);
+  const badgeVariant = statusVariant(status);
 
   const customerShipping = useMemo(() => extractShippingInfo(order), [order]);
   const completedCount = derivedStates.filter((s) => s === 'completed').length;
@@ -453,7 +431,6 @@ export function FactoryOrderDetailPage() {
         count={statusLabel(status)}
       />
 
-      {/* Sticky top bar */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-y border-slate-200 px-4 h-14 flex items-center gap-3 rounded-xl'>
         <Button
           variant='unstyled'
@@ -466,12 +443,9 @@ export function FactoryOrderDetailPage() {
         <span className='flex-1 text-center text-sm font-bold text-slate-900 truncate'>
           รายละเอียดคำสั่งซื้อ
         </span>
-        <span
-          className='text-[11px] font-bold px-2.5 py-1 rounded-full border'
-          style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}
-        >
+        <StatusBadge variant={badgeVariant} size='md'>
           {statusLabel(status)}
-        </span>
+        </StatusBadge>
       </div>
 
       <div className='w-full max-w-7xl mx-auto'>
@@ -481,31 +455,22 @@ export function FactoryOrderDetailPage() {
 
         {loading && !order.status ? (
           <div className='flex justify-center py-16'>
-            <div
-              className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-              style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
-            />
+            <div className='w-10 h-10 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin' />
           </div>
         ) : (
           <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] gap-4 lg:gap-5 items-start'>
-            {/* ════════ LEFT ════════ */}
             <div className='space-y-4 min-w-0'>
-              {/* Order Summary Card */}
               <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
                 <div className='flex items-start justify-between gap-2 mb-3'>
                   <div className='min-w-0'>
                     <h2 className='text-base font-bold text-slate-900 truncate'>{title}</h2>
                     <p className='text-xs text-slate-400 mt-0.5'>#{orderCode}</p>
                   </div>
-                  <span
-                    className='shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border'
-                    style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}
-                  >
+                  <StatusBadge variant={badgeVariant} size='md' className='shrink-0'>
                     {statusLabel(status)}
-                  </span>
+                  </StatusBadge>
                 </div>
 
-                {/* Progress bar */}
                 {totalSteps > 0 ? (
                   <div className='mb-4'>
                     <div className='flex items-center justify-between text-xs text-slate-500 mb-1.5'>
@@ -515,13 +480,11 @@ export function FactoryOrderDetailPage() {
                       </span>
                     </div>
                     <div className='h-2 rounded-full bg-slate-100 overflow-hidden'>
-                      <div
-                        className='h-full rounded-full transition-all duration-700'
-                        style={{
-                          width: `${progressPct}%`,
-                          background:
-                            'linear-gradient(90deg, var(--brand-indigo), var(--brand-violet))',
-                        }}
+                      <progress
+                        className='block h-full w-full appearance-none rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-slate-100 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-brand-indigo [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-brand-indigo'
+                        value={progressPct}
+                        max={100}
+                        aria-label='ความคืบหน้าการผลิต'
                       />
                     </div>
                   </div>
@@ -552,7 +515,6 @@ export function FactoryOrderDetailPage() {
                 </div>
               </div>
 
-              {/* Order detail rows */}
               <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-2.5'>
                 <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-3'>
                   ข้อมูลคำสั่งซื้อ
@@ -571,25 +533,17 @@ export function FactoryOrderDetailPage() {
                 ].map(({ label, value }) => (
                   <div key={label} className='flex items-center justify-between gap-2'>
                     <span className='text-xs text-gray-500'>{label}</span>
-                    <span
-                      className='text-sm font-medium text-right'
-                      style={{ color: 'var(--brand-navy)' }}
-                    >
-                      {value}
-                    </span>
+                    <span className='text-sm font-medium text-right text-brand-navy'>{value}</span>
                   </div>
                 ))}
               </section>
 
-              {/* RFQ + Quotation spec */}
               {rfq ? (
                 <RfqReferenceCard rfq={rfq} quotation={quotation} variant='accordion' />
               ) : null}
             </div>
 
-            {/* ════════ RIGHT ════════ */}
             <aside className='space-y-4 xl:sticky xl:top-20'>
-              {/* Next Action Card */}
               {isCompleted ? (
                 <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
                   <p className='text-2xl'>🎉</p>
@@ -617,7 +571,6 @@ export function FactoryOrderDetailPage() {
                 </section>
               )}
 
-              {/* Production Timeline */}
               <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
                 <div className='flex items-center gap-2'>
                   <Flag size={14} className='text-indigo-600' />
@@ -626,10 +579,7 @@ export function FactoryOrderDetailPage() {
 
                 {tplQ.isLoading || updQ.isLoading ? (
                   <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
-                    <div
-                      className='w-5 h-5 border-2 border-t-transparent rounded-full animate-spin'
-                      style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
-                    />
+                    <div className='w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin' />
                     กำลังโหลด…
                   </div>
                 ) : merged.length === 0 ? (
@@ -645,12 +595,8 @@ export function FactoryOrderDetailPage() {
                       onOpenDrawer={(m) => {
                         if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
                       }}
-                      onOpenReject={() => {
-                        /* factory ไม่ reject ตัวเอง */
-                      }}
-                      onPhotoClick={() => {
-                        /* TODO: lightbox */
-                      }}
+                      onOpenReject={() => undefined}
+                      onPhotoClick={() => undefined}
                     />
                   </>
                 )}
@@ -660,7 +606,6 @@ export function FactoryOrderDetailPage() {
         )}
       </div>
 
-      {/* Step Update Drawer */}
       <UpdateStepDrawer
         open={drawerStep != null}
         placement={drawerWide ? 'right' : 'bottom'}

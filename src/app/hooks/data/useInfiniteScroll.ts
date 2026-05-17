@@ -9,11 +9,6 @@ interface UseInfiniteScrollReturn<T> {
   refetch: () => Promise<void>;
 }
 
-/**
- * Infinite scroll hook with intersection observer
- * @param fetcher - Function that takes page number and returns { items, hasMore }
- * @param pageSize - Items per page (default: 20)
- */
 export function useInfiniteScroll<T>(
   fetcher: (page: number) => Promise<{ items: T[]; hasMore: boolean }>,
   pageSize = 20,

@@ -10,6 +10,7 @@ import { Step3Commercial } from '@/pages/rfq/steps/Step3Commercial';
 import { Step4QualityReview } from '@/pages/rfq/steps/Step4QualityReview';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 const step1Schema = z.object({
   title: z.string().min(1),
@@ -346,7 +347,7 @@ export function RFQCreateWizard() {
       sub_category_id: draft.sub_category_id,
       // Domestic only — not shown to customer
       incoterms: undefined,
-      // Payment: 100% upfront enforced by platform — not shown to customer
+
       payment_terms: undefined,
     });
     reset();
@@ -567,7 +568,7 @@ export function RFQCreateWizard() {
             ) : (
               <section className='rounded-xl border border-gray-100 p-4'>
                 <p className='font-semibold text-brand-navy mb-2'>ยืนยันการขอตัวอย่าง</p>
-                <label className='flex items-start gap-2 text-sm text-gray-700'>
+                <Label className='flex items-start gap-2 text-sm text-gray-700'>
                   <Checkbox
                     checked={acceptSampleTerms}
                     onCheckedChange={(checked) => setAcceptSampleTerms(checked === true)}
@@ -576,7 +577,7 @@ export function RFQCreateWizard() {
                   <span>
                     ยอมรับเงื่อนไขการสั่งตัวอย่าง และยืนยันว่ารายละเอียดเพียงพอให้โรงงานประเมินได้
                   </span>
-                </label>
+                </Label>
                 <p className='mt-2 text-gray-500'>
                   รูปอ้างอิง: {draft.reference_images.length} รูป
                 </p>

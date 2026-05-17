@@ -35,7 +35,6 @@ export function getOrderUiMode(status: string): OrderUiMode {
     case 'CN':
     case 'CC':
     case 'CL':
-      // CN = ยกเลิกโดย admin, CC = ยกเลิกโดยลูกค้า, CL = ปิดโดยระบบ (expired payment)
       return {
         productionLocked: true,
         lockReason: 'ORDER_CANCELLED',

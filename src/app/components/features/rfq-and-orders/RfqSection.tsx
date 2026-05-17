@@ -62,11 +62,10 @@ type RfqSectionProps = {
   setRfqFilter: (id: string) => void;
   filteredRfqs: RfqItem[];
   rfqTagCounts: RfqTagCounts;
-  /** Full list of all RFQs (for computing active vs history split) */
+
   allRfqs?: RfqItem[];
 };
 
-// ─── Activity counts computed from offers ─────────────────────────────────
 function getActivityCounts(rfq: RfqItem) {
   const offers = rfq.offers ?? [];
   const totalOffers = offers.length || rfq.offerCount || 0;
@@ -75,7 +74,6 @@ function getActivityCounts(rfq: RfqItem) {
   return { totalOffers, accepted, pending };
 }
 
-// ─── Single RFQ card (active section) ─────────────────────────────────────
 function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
   const { totalOffers, accepted, pending } = getActivityCounts(rfq);
   const remaining = Math.max(totalOffers - accepted, 0);
@@ -103,7 +101,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
           borderLeftColor: hasNewOffers ? ACCENT_ORANGE : BORDER_WARM,
         }}
       >
-        {/* Top row: icon + name + status badge */}
         <div className='flex items-start justify-between gap-2 mb-3'>
           <div className='flex gap-3 min-w-0 flex-1'>
             <div
@@ -129,10 +126,8 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
           </span>
         </div>
 
-        {/* Activity indicator row */}
         <div className='py-2 px-3 rounded-xl mb-3' style={{ background: '#F9F7FD' }}>
           <div className='flex items-center gap-3 flex-wrap'>
-            {/* Total offers */}
             <span
               className='flex items-center gap-1.5 text-xs'
               style={{ color: totalOffers > 0 ? PLUM : 'var(--neutral-placeholder)' }}
@@ -153,7 +148,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
           </div>
         </div>
 
-        {/* Link to orders if any accepted */}
         {hasAccepted && (
           <div className='mb-2'>
             <span
@@ -167,7 +161,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
           </div>
         )}
 
-        {/* Bottom row: budget + date + cta */}
         <div
           className='flex items-center justify-between pt-2 border-t text-xs'
           style={{ borderColor: BORDER_WARM }}
@@ -192,7 +185,6 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
   );
 }
 
-// ─── History (compact) row ──────────────────────────────────────────────────
 function HistoryRfqRow({ rfq }: { rfq: RfqItem }) {
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
     label: rfq.status,
@@ -246,12 +238,10 @@ function HistoryRfqRow({ rfq }: { rfq: RfqItem }) {
   );
 }
 
-// ─── Main RfqSection component ─────────────────────────────────────────────
 export function RfqSection({ filteredRfqs, rfqTagCounts, allRfqs }: RfqSectionProps) {
   const navigate = useNavigate();
   const [historyOpen, setHistoryOpen] = React.useState(false);
 
-  // Split from allRfqs if available, otherwise from filteredRfqs
   const source = allRfqs ?? filteredRfqs;
 
   const activeRfqs = source.filter(
@@ -261,7 +251,6 @@ export function RfqSection({ filteredRfqs, rfqTagCounts, allRfqs }: RfqSectionPr
     (r) => r.status === 'cancelled' || r.status === 'expired' || r.status === 'completed',
   );
 
-  // Count new offers (pending review)
   const totalPendingReview = activeRfqs.reduce((sum, rfq) => {
     const pend = (rfq.offers ?? []).filter((o) => o.quoteStatus === 'PD').length;
     return sum + pend;
@@ -269,7 +258,6 @@ export function RfqSection({ filteredRfqs, rfqTagCounts, allRfqs }: RfqSectionPr
 
   return (
     <>
-      {/* FAB */}
       <Button
         variant='unstyled'
         onClick={() => navigate('/create-rfq')}
@@ -282,7 +270,6 @@ export function RfqSection({ filteredRfqs, rfqTagCounts, allRfqs }: RfqSectionPr
         <Plus size={24} className='text-white' />
       </Button>
 
-      {/* ─── Section A: Active ─────────────────────────────────── */}
       <div className='mb-4'>
         <div
           className='flex items-center justify-between mb-3 min-h-[56px] rounded-xl border px-3 py-2'
@@ -342,7 +329,6 @@ export function RfqSection({ filteredRfqs, rfqTagCounts, allRfqs }: RfqSectionPr
         )}
       </div>
 
-      {/* ─── Section B: History accordion ──────────────────────── */}
       {historyRfqs.length > 0 && (
         <CollapsibleCard
           defaultOpen={historyOpen}

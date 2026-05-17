@@ -170,7 +170,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
             const pending = prev.filter((m) => m.status === 'sending' || m.status === 'error');
             const next = sortMessagesByCreatedAt(dedupeByKey([...serverRows, ...pending]));
             // Bail out if nothing actually changed — prevents the visible
-            // flicker / re-render every 4 s when poll returns the same set.
+
             if (next.length === prev.length) {
               let same = true;
               for (let i = 0; i < next.length; i++) {
@@ -197,9 +197,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
             })();
           }
         })
-        .catch(() => {
-          /* ignore polling errors */
-        });
+        .catch(() => {});
     }, 4000);
     return () => {
       stop = true;

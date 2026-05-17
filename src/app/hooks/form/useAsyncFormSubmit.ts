@@ -9,10 +9,6 @@ interface UseAsyncFormSubmitReturn {
   clearError: () => void;
 }
 
-/**
- * Manage async form submission with loading and error states
- * @param onSubmit - Async function to handle form submission
- */
 export function useAsyncFormSubmit<T = any>(
   onSubmit: (data: T) => Promise<void>,
 ): UseAsyncFormSubmitReturn {

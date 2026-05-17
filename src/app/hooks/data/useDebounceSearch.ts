@@ -9,11 +9,6 @@ interface UseDebounceSearchReturn<T> {
   setSearchQuery: (query: string) => void;
 }
 
-/**
- * Search hook with debouncing
- * @param searcher - Function that takes search query and returns results
- * @param debounceDelay - Delay in ms (default: 300)
- */
 export function useDebounceSearch<T>(
   searcher: (query: string) => Promise<T[]>,
   debounceDelay = 300,

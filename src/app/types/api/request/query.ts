@@ -1,7 +1,3 @@
-/**
- * Query Request Types — Pagination, filtering, sorting
- */
-
 export interface PaginationRequest {
   page?: number;
   limit?: number;

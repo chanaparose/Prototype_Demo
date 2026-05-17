@@ -19,12 +19,19 @@ import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPage
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableSkeletonRows,
+} from '@/components/ui/table';
 
-/* ─── Design tokens ──────────────────────────────────────────────── */
 const INDIGO = 'var(--brand-indigo)';
 const SLATE_DARK = '#0F172A';
 
-/* ─── Status meta (for table badges) ─────────────────────────────── */
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   PP: { label: 'รอยืนยัน', cls: 'bg-amber-100 text-amber-700' },
   PE: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
@@ -42,26 +49,7 @@ function statusMeta(code: string) {
   return STATUS_LABEL[code] ?? { label: code, cls: 'bg-gray-100 text-gray-600' };
 }
 
-/* ─── Skeleton ────────────────────────────────────────────────────── */
-function TableSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 4 }).map((_, i) => (
-        <tr key={i}>
-          {Array.from({ length: 7 }).map((__, j) => (
-            <td key={j} className='px-4 py-3'>
-              <div className='h-4 bg-gray-100 rounded-lg animate-pulse' />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════ */
 export function FactoryOrdersPage() {
-  /* ── All existing hooks & state — unchanged ── */
   const { data: rows = [], isLoading, isError, refetch, error } = useFactoryOrdersData();
   const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<TabId>('needs_action');
@@ -94,7 +82,6 @@ export function FactoryOrdersPage() {
       .sort((a, b) => sortCompare(a.row, b.row, sortMode));
   }, [rows, derived, search, sortMode, statusTab]);
 
-  /* ─── Loading state ─────────────────────────────────────────────── */
   if (isLoading) {
     return (
       <div className='space-y-4'>
@@ -118,7 +105,6 @@ export function FactoryOrdersPage() {
     );
   }
 
-  /* ─── Main render ───────────────────────────────────────────────── */
   return (
     <div className='space-y-4 pb-8'>
       <FactoryPageHeader
@@ -128,7 +114,6 @@ export function FactoryOrdersPage() {
       />
 
       <div className='space-y-4'>
-        {/* ── Error ───────────────────────────────────────────────── */}
         {isError ? (
           <div
             role='alert'
@@ -168,12 +153,11 @@ export function FactoryOrdersPage() {
           onSearchChange={setSearch}
         />
 
-        {/* ── Desktop table ────────────────────────────────────────── */}
         <div className='hidden md:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
           <div className='overflow-x-auto'>
-            <table className='w-full text-sm min-w-[760px]'>
-              <thead>
-                <tr className='bg-slate-50'>
+            <Table className='w-full text-sm min-w-[760px]'>
+              <TableHeader>
+                <TableRow className='bg-slate-50'>
                   {[
                     'Order ID',
                     'ชื่อสินค้า',
@@ -183,25 +167,25 @@ export function FactoryOrdersPage() {
                     'กำหนดส่ง',
                     'Actions',
                   ].map((h) => (
-                    <th
+                    <TableHead
                       key={h}
                       className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider'
                       style={{ color: 'var(--neutral-subtle)' }}
                     >
                       {h}
-                    </th>
+                    </TableHead>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {isLoading ? (
-                  <TableSkeleton />
+                  <TableSkeletonRows columns={7} rows={4} />
                 ) : filteredRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className='py-14 text-center text-sm text-gray-400'>
+                  <TableRow>
+                    <TableCell colSpan={7} className='py-14 text-center text-sm text-gray-400'>
                       ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   filteredRows.map(({ row }) => {
                     const meta = statusMeta(row.status);
@@ -212,7 +196,7 @@ export function FactoryOrdersPage() {
                         })
                       : '-';
                     return (
-                      <tr
+                      <TableRow
                         key={row.order_id}
                         className='border-t border-gray-50 transition-colors'
                         style={{ cursor: 'default' }}
@@ -224,39 +208,39 @@ export function FactoryOrdersPage() {
                           ((e.currentTarget as HTMLTableRowElement).style.backgroundColor = '')
                         }
                       >
-                        <td
+                        <TableCell
                           className='px-4 py-3 font-mono text-xs font-semibold'
                           style={{ color: INDIGO }}
                         >
                           #{row.order_id}
-                        </td>
-                        <td
+                        </TableCell>
+                        <TableCell
                           className='px-4 py-3 text-sm font-medium max-w-[180px] truncate'
                           style={{ color: SLATE_DARK }}
                         >
                           {row.rfq?.title ?? `สินค้า #${row.order_id}`}
-                        </td>
-                        <td className='px-4 py-3 text-sm text-gray-500 max-w-[140px] truncate'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-sm text-gray-500 max-w-[140px] truncate'>
                           {row.customer?.display_name ?? '-'}
-                        </td>
-                        <td
+                        </TableCell>
+                        <TableCell
                           className='px-4 py-3 text-sm font-semibold tabular-nums'
                           style={{ color: SLATE_DARK }}
                         >
                           ฿{row.total_amount.toLocaleString('th-TH')}
-                        </td>
-                        <td className='px-4 py-3'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3'>
                           <span
                             className={`rounded-full text-[11px] font-semibold px-2.5 py-1 ${meta.cls}`}
                           >
                             {meta.label}
                           </span>
-                        </td>
-                        <td className='px-4 py-3 text-xs text-gray-500 flex items-center gap-1'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-gray-500 flex items-center gap-1'>
                           <Clock size={12} className='shrink-0' />
                           {deadline}
-                        </td>
-                        <td className='px-4 py-3'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3'>
                           <Button
                             variant='unstyled'
                             type='button'
@@ -268,17 +252,16 @@ export function FactoryOrdersPage() {
                           >
                             ดู <ChevronRight size={12} />
                           </Button>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
 
-        {/* ── Mobile card list ─────────────────────────────────────── */}
         <ul className='md:hidden grid grid-cols-1 gap-3'>
           {filteredRows.length === 0 ? (
             <FactoryOrdersEmptyState
@@ -308,7 +291,6 @@ export function FactoryOrdersPage() {
         </ul>
       </div>
 
-      {/* ══ Update-step modal (unchanged logic) ═══════════════════════ */}
       {updateModal ? (
         <div className='fixed inset-0 z-[70]'>
           <Button
@@ -370,7 +352,6 @@ export function FactoryOrdersPage() {
         </div>
       ) : null}
 
-      {/* ══ Ship modal (unchanged logic) ══════════════════════════════ */}
       {shipModal ? (
         <div className='fixed inset-0 z-[70]'>
           <Button

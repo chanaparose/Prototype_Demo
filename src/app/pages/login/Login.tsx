@@ -5,6 +5,7 @@ import { useAuth } from '@/stores';
 import { frontendApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Mode = 'login' | 'register';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
@@ -28,7 +29,6 @@ export function Login() {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Server status check ─────────────────────────────────────
   const [serverStatus, setServerStatus] = useState<ServerStatus>('unknown');
 
   const checkServer = async () => {
@@ -127,7 +127,6 @@ export function Login() {
         ย้อนกลับ
       </Link>
       <div className='w-full max-w-sm'>
-        {/* Logo */}
         <div className='flex flex-col items-center mb-8'>
           <img
             src='/assets/tryly-logo.png'
@@ -137,7 +136,6 @@ export function Login() {
           <p className='text-gray-500 text-sm'>Manufacturing Platform</p>
         </div>
 
-        {/* Server Status Badge */}
         <div className='flex justify-center mb-4'>
           <Button
             variant='unstyled'
@@ -189,9 +187,7 @@ export function Login() {
           </Button>
         </div>
 
-        {/* Card */}
         <div className='bg-white rounded-3xl shadow-sm p-6 space-y-5'>
-          {/* Tabs */}
           <div className='flex bg-gray-100 rounded-xl p-1'>
             <Button
               variant='unstyled'
@@ -235,16 +231,14 @@ export function Login() {
             </Button>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className='bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl'>{error}</div>
           )}
 
-          {/* Login Form */}
           {mode === 'login' && (
             <form onSubmit={handleLogin} className='space-y-4'>
               <div>
-                <label className='text-xs text-gray-500 mb-1 block'>อีเมล</label>
+                <Label className='text-xs text-gray-500 mb-1 block'>อีเมล</Label>
                 <Input
                   type='email'
                   value={email}
@@ -255,7 +249,7 @@ export function Login() {
                 />
               </div>
               <div>
-                <label className='text-xs text-gray-500 mb-1 block'>รหัสผ่าน</label>
+                <Label className='text-xs text-gray-500 mb-1 block'>รหัสผ่าน</Label>
                 <div className='relative'>
                   <Input
                     type={showPassword ? 'text' : 'password'}
@@ -302,12 +296,11 @@ export function Login() {
             </form>
           )}
 
-          {/* Register Form */}
           {mode === 'register' && (
             <form onSubmit={handleRegister} className='space-y-4'>
               <div className='grid grid-cols-2 gap-3'>
                 <div>
-                  <label className='text-xs text-gray-500 mb-1 block'>ชื่อ</label>
+                  <Label className='text-xs text-gray-500 mb-1 block'>ชื่อ</Label>
                   <Input
                     type='text'
                     value={firstName}
@@ -318,7 +311,7 @@ export function Login() {
                   />
                 </div>
                 <div>
-                  <label className='text-xs text-gray-500 mb-1 block'>นามสกุล</label>
+                  <Label className='text-xs text-gray-500 mb-1 block'>นามสกุล</Label>
                   <Input
                     type='text'
                     value={lastName}
@@ -330,7 +323,7 @@ export function Login() {
                 </div>
               </div>
               <div>
-                <label className='text-xs text-gray-500 mb-1 block'>อีเมล</label>
+                <Label className='text-xs text-gray-500 mb-1 block'>อีเมล</Label>
                 <Input
                   type='email'
                   value={email}
@@ -341,7 +334,7 @@ export function Login() {
                 />
               </div>
               <div>
-                <label className='text-xs text-gray-500 mb-1 block'>เบอร์โทรศัพท์</label>
+                <Label className='text-xs text-gray-500 mb-1 block'>เบอร์โทรศัพท์</Label>
                 <Input
                   type='tel'
                   value={phone}
@@ -352,7 +345,7 @@ export function Login() {
                 />
               </div>
               <div>
-                <label className='text-xs text-gray-500 mb-1 block'>รหัสผ่าน</label>
+                <Label className='text-xs text-gray-500 mb-1 block'>รหัสผ่าน</Label>
                 <div className='relative'>
                   <Input
                     type={showPassword ? 'text' : 'password'}
@@ -401,7 +394,6 @@ export function Login() {
           )}
         </div>
 
-        {/* Factory Registration CTA */}
         <div className='mt-5 bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3 border border-purple-100'>
           <div className='flex items-center gap-3'>
             <div className='w-9 h-9 rounded-xl bg-brand-lavender flex items-center justify-center shrink-0'>

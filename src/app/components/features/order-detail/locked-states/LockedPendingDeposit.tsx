@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 type Props = {
   ctx: ProductionLockContext;
   onBackToOverview?: () => void;
-  /** When supplied, CTA opens in-page payment modal instead of navigating */
+
   onPayDeposit?: () => void;
 };
 

@@ -15,13 +15,12 @@ import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPage
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-/* ─── Design tokens ──────────────────────────────────────────────── */
 const NAVY = appColors.brand.navy;
 const ORANGE = appColors.brand.indigo;
 const TEAL = appColors.brand.teal;
 
-/* ─── Types ──────────────────────────────────────────────────────── */
 type TxRow = Record<string, unknown>;
 
 function normTx(r: TxRow) {
@@ -81,7 +80,6 @@ function statusLabel(status: string) {
   return status || '-';
 }
 
-/* ─── Sub-components ─────────────────────────────────────────────── */
 function StatCard({
   icon: Icon,
   label,
@@ -154,9 +152,7 @@ function TxRow({ t }: { t: NormTx }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════ */
 export function FactoryWalletPage() {
-  /* ── All existing hooks & state — unchanged ── */
   const [good, setGood] = useState<number | null>(null);
   const [pending, setPending] = useState<number | null>(null);
   const [tx, setTx] = useState<NormTx[]>([]);
@@ -165,13 +161,11 @@ export function FactoryWalletPage() {
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'credit' | 'debit'>('all');
 
-  /* ── New UI state ── */
   const [withdrawModal, setWithdrawModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawBusy, setWithdrawBusy] = useState(false);
   const [withdrawError, setWithdrawError] = useState('');
 
-  /* ── Existing load function — unchanged ── */
   const load = async () => {
     setLoading(true);
     setError('');
@@ -205,7 +199,6 @@ export function FactoryWalletPage() {
     void load();
   }, []);
 
-  /* ── Filtered transactions ── */
   const filteredTx = useMemo(
     () =>
       tx.filter((t) => {
@@ -216,7 +209,6 @@ export function FactoryWalletPage() {
     [tx, filterType],
   );
 
-  /* ── Stats ── */
   const totalEarned = useMemo(
     () => tx.filter((t) => isCredit(t.type)).reduce((s, t) => s + t.amount, 0),
     [tx],
@@ -235,10 +227,8 @@ export function FactoryWalletPage() {
     [tx],
   );
 
-  /* ── Month earnings (UI rule): balance + pending ── */
   const thisMonthEarned = useMemo(() => (good ?? 0) + (pending ?? 0), [good, pending]);
 
-  /* ─── Loading state ─────────────────────────────────────────────── */
   if (loading) {
     return (
       <div className='space-y-4'>
@@ -255,7 +245,6 @@ export function FactoryWalletPage() {
     );
   }
 
-  /* ─── Main render ───────────────────────────────────────────────── */
   const balanceDisplay = (good ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 });
   const pendingDisplay = (pending ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2 });
 
@@ -264,7 +253,6 @@ export function FactoryWalletPage() {
       <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
 
       <div className='space-y-5'>
-        {/* ── Refresh row ──────────────────────────────────────────── */}
         <div className='flex items-center justify-between text-xs text-gray-500'>
           <span>อัปเดต: {lastRefreshedAt ? lastRefreshedAt.toLocaleTimeString('th-TH') : '-'}</span>
           <Button
@@ -278,7 +266,6 @@ export function FactoryWalletPage() {
           </Button>
         </div>
 
-        {/* ── Error ───────────────────────────────────────────────── */}
         {error ? (
           <div className='flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3'>
             <AlertCircle size={16} className='shrink-0' />
@@ -286,7 +273,6 @@ export function FactoryWalletPage() {
           </div>
         ) : null}
 
-        {/* ── Balance card (flat style) ────────────────────────────── */}
         <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
           <p className='text-sm text-slate-500 mb-0.5'>ยอดคงเหลือ</p>
           <p className='text-4xl font-bold tabular-nums text-slate-900'>฿{balanceDisplay}</p>
@@ -332,7 +318,6 @@ export function FactoryWalletPage() {
           </div>
         </div>
 
-        {/* ── Stats row ────────────────────────────────────────────── */}
         <div className='grid grid-cols-3 gap-3'>
           <StatCard
             icon={TrendingUp}
@@ -354,7 +339,6 @@ export function FactoryWalletPage() {
           />
         </div>
 
-        {/* ── PromptPay notice ──────────────────────────────────────── */}
         <div
           className='rounded-2xl border px-4 py-3 text-sm'
           style={{ borderColor: '#C4B5D4', backgroundColor: '#F3EEF8', color: '#4A267D' }}
@@ -365,7 +349,6 @@ export function FactoryWalletPage() {
           </p>
         </div>
 
-        {/* ── Pending withdrawals section ───────────────────────────── */}
         {pendingWithdrawals.length > 0 && (
           <section className='rounded-2xl border border-amber-100 bg-amber-50 overflow-hidden'>
             <div className='px-4 py-3 border-b border-amber-100 flex items-center gap-2'>
@@ -409,12 +392,10 @@ export function FactoryWalletPage() {
           </section>
         )}
 
-        {/* ── Transaction history section ───────────────────────────── */}
         <section
           id='tx-section'
           className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'
         >
-          {/* Header + filter tabs */}
           <div className='px-4 pt-4 pb-3 border-b border-gray-50'>
             <div className='flex items-center justify-between mb-3'>
               <h2 className='text-sm font-bold' style={{ color: NAVY }}>
@@ -422,7 +403,7 @@ export function FactoryWalletPage() {
               </h2>
               <span className='text-xs text-gray-400'>{filteredTx.length} รายการ</span>
             </div>
-            {/* Filter tabs */}
+
             <div className='flex gap-1.5'>
               {(
                 [
@@ -456,7 +437,6 @@ export function FactoryWalletPage() {
             </div>
           </div>
 
-          {/* Transaction rows */}
           {filteredTx.length === 0 ? (
             <p className='text-sm text-gray-400 text-center py-10'>ไม่มีรายการ</p>
           ) : (
@@ -470,7 +450,6 @@ export function FactoryWalletPage() {
       </div>
       {/* end px-4 wrapper */}
 
-      {/* ══ Withdrawal modal (bottom sheet) ══════════════════════════ */}
       {withdrawModal ? (
         <div className='fixed inset-0 z-[70]'>
           <Button
@@ -480,7 +459,6 @@ export function FactoryWalletPage() {
             onClick={() => setWithdrawModal(false)}
           />
           <div className='absolute inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[420px] bottom-4 rounded-2xl bg-white border border-gray-100 shadow-xl overflow-hidden'>
-            {/* Handle bar */}
             <div className='flex justify-center pt-3 pb-1'>
               <div className='w-10 h-1 rounded-full bg-gray-200' />
             </div>
@@ -499,7 +477,6 @@ export function FactoryWalletPage() {
                 </Button>
               </div>
 
-              {/* Balance info */}
               <div
                 className='rounded-xl p-3 flex items-center justify-between'
                 style={{ backgroundColor: `${TEAL}15` }}
@@ -512,11 +489,10 @@ export function FactoryWalletPage() {
                 </p>
               </div>
 
-              {/* Amount input */}
               <div>
-                <label className='block text-xs font-semibold text-gray-600 mb-1.5'>
+                <Label className='block text-xs font-semibold text-gray-600 mb-1.5'>
                   จำนวนที่ต้องการถอน
-                </label>
+                </Label>
                 <div className='relative'>
                   <span className='absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500'>
                     ฿
@@ -538,7 +514,6 @@ export function FactoryWalletPage() {
                 <p className='text-xs text-gray-400 mt-1'>ขั้นต่ำ ฿500</p>
               </div>
 
-              {/* Destination account */}
               <div className='rounded-xl border border-gray-100 bg-gray-50 px-3 py-3'>
                 <p className='text-xs font-semibold text-gray-500 mb-0.5'>บัญชีปลายทาง</p>
                 <p className='text-sm font-medium' style={{ color: NAVY }}>
@@ -547,7 +522,6 @@ export function FactoryWalletPage() {
                 <p className='text-xs text-gray-400'>(ข้อมูลบัญชีโหลดจาก profile API อัตโนมัติ)</p>
               </div>
 
-              {/* Error */}
               {withdrawError ? (
                 <p className='text-xs text-red-600 flex items-center gap-1'>
                   <AlertCircle size={12} />
@@ -555,7 +529,6 @@ export function FactoryWalletPage() {
                 </p>
               ) : null}
 
-              {/* Action buttons */}
               <div className='flex gap-3 pt-1'>
                 <Button
                   variant='unstyled'

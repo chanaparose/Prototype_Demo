@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface LookupSelectProps<Option> {
   label: string;
@@ -39,7 +40,7 @@ export function LookupSelect<Option>({
   const selected = value != null && String(value).trim() !== '' ? String(value) : '';
 
   return (
-    <label className={`block ${className}`}>
+    <Label className={`block ${className}`}>
       <span className='text-xs text-gray-500'>
         {label}
         {required ? ' *' : ''}
@@ -77,6 +78,6 @@ export function LookupSelect<Option>({
           </Button>
         ) : null}
       </div>
-    </label>
+    </Label>
   );
 }

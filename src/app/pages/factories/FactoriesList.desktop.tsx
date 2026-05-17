@@ -42,10 +42,8 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
         </div>
       ) : null}
 
-      {/* ── Sticky top filter bar ── */}
       <div className='bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10'>
         <div className='px-8 py-4'>
-          {/* Title + count */}
           <div className='flex items-center justify-between mb-4'>
             <div>
               <p className='text-[10px] font-semibold tracking-[0.14em] text-purple-400 uppercase mb-0.5'>
@@ -63,9 +61,7 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
             </div>
           </div>
 
-          {/* Filter pills row */}
           <div className='flex items-center gap-2.5 flex-wrap'>
-            {/* Search */}
             <div className='flex items-center gap-2 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-200 focus-within:border-purple-400 focus-within:bg-white transition-all w-72'>
               <Search size={14} className='text-gray-400 shrink-0' />
               <Input
@@ -88,7 +84,6 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
               )}
             </div>
 
-            {/* Location dropdown */}
             <div className='relative'>
               <Button
                 variant='unstyled'
@@ -142,7 +137,6 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
               )}
             </div>
 
-            {/* Verified toggle pill */}
             <Button
               variant='unstyled'
               type='button'
@@ -160,7 +154,6 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
               ยืนยันแล้วเท่านั้น
             </Button>
 
-            {/* Clear all */}
             {hasActiveFilters && (
               <Button
                 variant='unstyled'
@@ -176,7 +169,6 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
         </div>
       </div>
 
-      {/* ── Factory grid ── */}
       <div className='px-8 py-6'>
         {factories.length === 0 ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
@@ -194,7 +186,6 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                 onClick={() => navigate(`/factories/${factory.id}`)}
                 className='group bg-white rounded-2xl border border-gray-100 overflow-hidden text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-400/30'
               >
-                {/* Image */}
                 <div className='relative h-44 overflow-hidden bg-gray-100'>
                   <ImageWithFallback
                     src={factory.image}
@@ -223,7 +214,6 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className='p-4 space-y-2.5'>
                   <div>
                     <p className='text-[13px] font-bold text-gray-900 truncate'>{factory.name}</p>

@@ -11,6 +11,15 @@ import {
 import { adminApi, type AdminRfqRow } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableSkeletonRows,
+} from '@/components/ui/table';
 
 type RfqStatusTab = 'all' | 'open' | 'matched' | 'closed';
 
@@ -80,22 +89,6 @@ function mapRfq(row: AdminRfqRow): AdminRfqView {
   };
 }
 
-function TableSkeleton() {
-  return (
-    <>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <tr key={i}>
-          {Array.from({ length: 6 }).map((__, j) => (
-            <td key={j} className='px-4 py-3'>
-              <div className='h-4 bg-slate-100 rounded animate-pulse' />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
-
 function RfqDetailPanel({ rfqId }: { rfqId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -126,8 +119,8 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
   const deliveryDate = String(rfq.required_delivery_date ?? rfq.deadline ?? '');
 
   return (
-    <tr>
-      <td colSpan={6} className='bg-indigo-50/50 px-6 py-4 border-b border-indigo-100'>
+    <TableRow>
+      <TableCell colSpan={6} className='bg-indigo-50/50 px-6 py-4 border-b border-indigo-100'>
         {loading ? (
           <div className='text-sm text-slate-500'>กำลังโหลดรายละเอียด...</div>
         ) : error ? (
@@ -179,8 +172,8 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
             </div>
           </>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -287,38 +280,38 @@ export function AdminRFQsPage() {
 
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
         <div className='overflow-x-auto'>
-          <table className='w-full text-sm min-w-[700px]'>
-            <thead>
-              <tr className='bg-slate-50 border-b border-slate-200'>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+          <Table className='w-full text-sm min-w-[700px]'>
+            <TableHeader>
+              <TableRow className='bg-slate-50 border-b border-slate-200'>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   RFQ ID
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   ผู้ซื้อ
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   โรงงาน
-                </th>
-                <th className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   งบประมาณ
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   สถานะ
-                </th>
-                <th className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+                </TableHead>
+                <TableHead className='text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider'>
                   วันที่สร้าง
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {loading ? (
-                <TableSkeleton />
+                <TableSkeletonRows columns={6} rows={3} />
               ) : rows.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className='py-12 text-center text-sm text-slate-400'>
+                <TableRow>
+                  <TableCell colSpan={6} className='py-12 text-center text-sm text-slate-400'>
                     ไม่พบ RFQ ที่ตรงกับเงื่อนไข
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 rows.map((rfq) => {
                   const status = toUiStatus(rfq.status);
@@ -327,11 +320,11 @@ export function AdminRFQsPage() {
 
                   return (
                     <React.Fragment key={rfq.rfq_id}>
-                      <tr
+                      <TableRow
                         className={`hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-100 ${isExpanded ? 'bg-indigo-50/30' : ''}`}
                         onClick={() => toggleExpand(rfq.rfq_id)}
                       >
-                        <td className='px-4 py-3'>
+                        <TableCell className='px-4 py-3'>
                           <div className='flex items-center gap-2'>
                             {isExpanded ? (
                               <ChevronUp size={13} className='text-indigo-500 shrink-0' />
@@ -342,36 +335,36 @@ export function AdminRFQsPage() {
                               #{rfq.rfq_id}
                             </span>
                           </div>
-                        </td>
-                        <td className='px-4 py-3 text-sm text-slate-700 max-w-[180px] truncate'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-sm text-slate-700 max-w-[180px] truncate'>
                           {rfq.buyer_name}
-                        </td>
-                        <td className='px-4 py-3 text-sm text-slate-500'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-sm text-slate-500'>
                           {rfq.factory_name ?? (
                             <span className='text-slate-300 italic text-xs'>ยังไม่จับคู่</span>
                           )}
-                        </td>
-                        <td className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-sm text-slate-900 font-semibold text-right tabular-nums'>
                           ฿{rfq.budget.toLocaleString('th-TH')}
-                        </td>
-                        <td className='px-4 py-3'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3'>
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${meta.cls}`}
                           >
                             {meta.label}
                           </span>
-                        </td>
-                        <td className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
+                        </TableCell>
+                        <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
                           {rfq.created_at.slice(0, 10)}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                       {isExpanded ? <RfqDetailPanel rfqId={rfq.rfq_id} /> : null}
                     </React.Fragment>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>

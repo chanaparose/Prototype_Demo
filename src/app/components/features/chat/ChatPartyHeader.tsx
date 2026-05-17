@@ -3,6 +3,7 @@ import { BadgeCheck } from 'lucide-react';
 import type { CounterpartyView } from '@/utils/counterparty';
 import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 
 interface Props {
   view: CounterpartyView;
@@ -22,15 +23,14 @@ export function ChatPartyHeader({ view, density = 'row', trailing, onClick }: Pr
       className='w-full flex items-center gap-3 text-left'
       aria-label='ดูข้อมูลการสนทนา'
     >
-      <img
+      <Avatar
         src={view.avatarUrl}
         alt={view.title}
-        width={size}
-        height={size}
-        className={`${frameClass} shrink-0 overflow-hidden rounded-full bg-gray-100 object-cover`}
-        onError={(e) => {
-          e.currentTarget.src = FACTORY_FALLBACK_AVATAR;
-        }}
+        fallbackSrc={FACTORY_FALLBACK_AVATAR}
+        fallback={view.title.slice(0, 1)}
+        className={`${frameClass} shrink-0`}
+        imageClassName='object-cover'
+        style={{ width: size, height: size }}
       />
       <div className='flex-1 min-w-0'>
         <div className='flex items-center gap-1'>
