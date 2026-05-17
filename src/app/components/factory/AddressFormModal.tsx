@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppDialog } from '@/components/ui/app-dialog';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -62,8 +62,6 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
     reset(initial ? addressFormValuesFromRow(initial) : defaultAddressFormValues);
   }, [open, initial, reset]);
 
-  if (!open) return null;
-
   const rootError = errors.root?.message;
   const fieldError =
     errors.province_id?.message ||
@@ -91,11 +89,13 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
   };
 
   return (
-    <BaseModal
-      isOpen={open}
-      onClose={onClose}
+    <AppDialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
       title={mode === 'create' ? 'เพิ่มที่อยู่' : 'แก้ไขที่อยู่'}
-      placement='bottom'
+      variant='sheet'
       footer={
         <ModalFooter
           layout='flex'
@@ -210,6 +210,6 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
         />
         ตั้งเป็นค่าเริ่มต้น
       </Label>
-    </BaseModal>
+    </AppDialog>
   );
 }

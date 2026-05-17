@@ -3,7 +3,13 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import { type FactoryBase, type FactoryProfile, type FactoryWithDetails, type FactoryCategoriesPayload, type FactorySubCategoriesPayload, type FactoryDashboardResponse, type FactoryAnalyticsResponse } from '@/services/api/types/factory.types';
+import {
+  type FactoryAnalyticsResponse,
+  type FactoryBase,
+  type FactoryDashboardResponse,
+  type FactoryProfile,
+  type FactoryWithDetails,
+} from '@/services/api/types/factory.types';
 
 export const factoriesApi = {
   list: () => httpClient.get<FactoryBase[]>('/factories'),

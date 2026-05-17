@@ -11,30 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-function toCurrency(n: number) {
-  return `฿${Number(n || 0).toLocaleString('th-TH')}`;
-}
-
-function formatDate(s: string) {
-  if (!s) return '—';
-  const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return s;
-  return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: '2-digit' });
-}
-
-function formatDateTime(s: string) {
-  if (!s) return '—';
-  const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return s;
-  return d.toLocaleString('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
 
 const TX_TYPE: Record<string, { label: string; color: string; sign: '+' | '-' }> = {
   DP: { label: 'เติมเงิน', color: 'emerald', sign: '+' },
@@ -118,10 +96,10 @@ function CustomerInfoTab({ detail }: { detail: AdminCustomerDetail }) {
     <div className='space-y-5'>
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
         <StatCard label='ออเดอร์ทั้งหมด' value={`${detail.total_orders} รายการ`} color='slate' />
-        <StatCard label='ยอดซื้อรวม' value={toCurrency(detail.total_spend)} color='indigo' />
+        <StatCard label='ยอดซื้อรวม' value={formatCurrency(detail.total_spend)} color='indigo' />
         <StatCard
           label='Wallet คงเหลือ'
-          value={toCurrency(detail.good_fund + detail.pending_fund)}
+          value={formatCurrency(detail.good_fund + detail.pending_fund)}
           color='emerald'
         />
       </div>
@@ -174,9 +152,9 @@ function CustomerWalletTab({ userId }: { userId: number }) {
   return (
     <div className='space-y-5'>
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-        <StatCard label='กองทุนพร้อมใช้' value={toCurrency(wallet.good_fund)} color='emerald' />
-        <StatCard label='รอยืนยัน' value={toCurrency(wallet.pending_fund)} color='amber' />
-        <StatCard label='รวมทั้งหมด' value={toCurrency(wallet.total)} color='indigo' />
+        <StatCard label='กองทุนพร้อมใช้' value={formatCurrency(wallet.good_fund)} color='emerald' />
+        <StatCard label='รอยืนยัน' value={formatCurrency(wallet.pending_fund)} color='amber' />
+        <StatCard label='รวมทั้งหมด' value={formatCurrency(wallet.total)} color='indigo' />
       </div>
 
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
@@ -231,7 +209,7 @@ function CustomerWalletTab({ userId }: { userId: number }) {
                       </TableCell>
                       <TableCell className={`px-4 py-3 text-right tabular-nums ${amountCls}`}>
                         {ttype.sign}
-                        {toCurrency(tx.amount)}
+                        {formatCurrency(tx.amount)}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-center'>
                         <Badge label={tstatus.label} color={tstatus.color} />
@@ -340,7 +318,7 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
                         {o.factory_name}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
-                        {toCurrency(o.grand_total)}
+                        {formatCurrency(o.grand_total)}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-center'>
                         <Badge label={st.label} color={st.color} />

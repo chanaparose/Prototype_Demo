@@ -7,6 +7,7 @@ import {
 } from '@/components/features/production/stepDerivedState';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { formatDateTime } from '@/utils/formatting/formatDate';
 
 type Props = {
   merged: MergedProductionStep;
@@ -251,11 +252,7 @@ export function StepRow({
           ) : null}
           {update.last_updated_at ? (
             <p className='text-[11px] text-gray-400'>
-              อัปเดตล่าสุด{' '}
-              {new Date(update.last_updated_at).toLocaleString('th-TH', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-              })}
+              อัปเดตล่าสุด {formatDateTime(update.last_updated_at)}
             </p>
           ) : null}
         </div>

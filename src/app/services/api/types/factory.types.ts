@@ -52,11 +52,11 @@ export interface FactoryWithDetails {
   ideas: unknown[];
 }
 
-export interface FactoryCategoriesPayload {
+export interface IFactoryCategoriesRequest {
   category_ids: number[];
 }
 
-export interface FactorySubCategoriesPayload {
+export interface IFactorySubCategoriesRequest {
   sub_category_ids: number[];
 }
 

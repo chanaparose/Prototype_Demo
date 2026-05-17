@@ -1,6 +1,7 @@
 import React from 'react';
 import { Boxes, Clock3 } from 'lucide-react';
 import { appColors } from '@/styles/colors';
+import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 
 type Spec = {
   moq: number | null;
@@ -40,7 +41,7 @@ function Row({
 
 export function StrictSpecsBlock({ showcase }: Props) {
   const moq =
-    showcase.moq != null && showcase.moq > 0 ? `${showcase.moq.toLocaleString('th-TH')} ชิ้น` : '—';
+    showcase.moq != null && showcase.moq > 0 ? `${formatCompactNumber(showcase.moq)} ชิ้น` : '—';
   const lead =
     showcase.lead_time_days != null && showcase.lead_time_days > 0
       ? `${showcase.lead_time_days} วัน`

@@ -28,7 +28,7 @@ export interface ShowcaseItem {
   tags?: string[];
 }
 
-export interface ExploreCategoryDTO {
+export interface IExploreCategoryResponse {
   category_id: number;
   id?: number;
   name: string;
@@ -37,7 +37,7 @@ export interface ExploreCategoryDTO {
   sort_order?: number;
 }
 
-export interface ExploreSubCategoryDTO {
+export interface IExploreSubCategoryResponse {
   sub_category_id: number;
   id?: number;
   category_id: number;
@@ -53,7 +53,7 @@ export interface ExploreResponse {
   promo_codes: unknown[];
   factories: unknown[];
   idea_articles: ShowcaseItem[];
-  categories: ExploreCategoryDTO[];
+  categories: IExploreCategoryResponse[];
 }
 
 export interface PromoSlide {

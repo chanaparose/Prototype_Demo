@@ -6,6 +6,7 @@ import { useShowcases } from '@/hooks/useShowcases';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { type FactoryShowcase } from '@/stores/types';
 import { Button } from '@/components/ui/button';
+import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 
 type FavoritesTab = 'all' | 'product' | 'promotion' | 'idea';
 
@@ -135,7 +136,7 @@ export function FavoriteShowcasesPage() {
                       </p>
                       <div className='mt-2 inline-flex items-center gap-1 text-[11px] text-rose-500'>
                         <Heart size={12} className='fill-current' />
-                        <span>{Number(item.likes || 0).toLocaleString()} คนถูกใจ</span>
+                        <span>{formatCompactNumber(Number(item.likes || 0))} คนถูกใจ</span>
                       </div>
                     </div>
                   </div>

@@ -34,6 +34,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatDateTime } from '@/utils/formatting/formatDate';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
 
@@ -108,26 +110,14 @@ function getArray(raw: unknown, key: string): Record<string, unknown>[] {
   return Array.isArray(v) ? (v as Record<string, unknown>[]) : [];
 }
 
-function formatDateTime(input: string): string {
-  if (!input) return '-';
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return input;
-  return d.toLocaleString('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+function mapDetail(raw: unknown): AdminFactoryDetailState {
+  const root = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const factory = (root.factory ?? root.profile ?? root) as Record<string, unknown>;
+  const stats = (root.stats ?? {}) as Record<string, unknown>;
+  const docs = getArray(root, 'certificates');
+  const categories = getArray(root, 'categories');
 
-function mapDetail(raw: Record<string, unknown>): AdminFactoryDetailState {
-  const factory = (raw.factory ?? raw.profile ?? raw) as Record<string, unknown>;
-  const stats = (raw.stats ?? {}) as Record<string, unknown>;
-  const docs = getArray(raw, 'certificates');
-  const categories = getArray(raw, 'categories');
-
-  const factoryId = Number(factory.factory_id ?? factory.id ?? raw.factory_id ?? 0);
+  const factoryId = Number(factory.factory_id ?? factory.id ?? root.factory_id ?? 0);
   const approvalStatus = toLocalStatus(factory.approval_status);
   const registeredAt = String(
     factory.submitted_at ?? factory.created_at ?? factory.registered_at ?? '',
@@ -824,7 +814,7 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
                         </Link>
                       </TableCell>
                       <TableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
-                        ฿{Number(s.amount || 0).toLocaleString('th-TH')}
+                        {formatCurrencyNoDecimals(Number(s.amount || 0))}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-center'>
                         <span

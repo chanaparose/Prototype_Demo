@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { ChevronRight, FileCheck } from 'lucide-react';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { useFactoryQuotationsListQuery } from '@/domain/factory/queries/useFactoryQuotationsListQuery';
 import {
@@ -87,7 +88,7 @@ export function FactoryQuotationsPage() {
                       {rfqId(r) ? ` · RFQ ${rfqId(r)}` : ''}
                     </p>
                     <p className='font-bold text-sm' style={{ color: 'var(--brand-navy)' }}>
-                      ฿{Number(r.price_per_piece ?? 0).toLocaleString('th-TH')}
+                      {formatCurrencyNoDecimals(Number(r.price_per_piece ?? 0))}
                       {r.lead_time_days != null ? (
                         <span className='font-normal text-gray-500'>
                           {' '}

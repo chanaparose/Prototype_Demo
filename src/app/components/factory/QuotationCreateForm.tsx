@@ -24,7 +24,7 @@ import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLo
 import { hoursUntilDeadline } from '@/utils/rfqDeadline';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryHighlightField } from '@/components/features/factory-rfq/FactoryHighlightField';
-import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -309,7 +309,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           error={form.formState.errors.price_per_piece?.message}
           helperText={
             budgetPerPiece != null
-              ? `งบลูกค้า ${budgetPerPiece.toLocaleString('th-TH')} บ./ชิ้น`
+              ? `งบลูกค้า ${formatCurrency(budgetPerPiece)} ต่อชิ้น`
               : undefined
           }
         >

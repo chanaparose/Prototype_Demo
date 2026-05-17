@@ -25,6 +25,7 @@ import { DismissRfqButton } from '@/components/features/factory-rfq/DismissRfqBu
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
+import { formatCompactNumber, formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 type QuoteRow = IQuotationResponse & {
   factoryId?: number | string;
@@ -507,7 +508,7 @@ export function FactoryRfqDetailPage() {
                   <div>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>งบ/ชิ้น</p>
                     <p className='font-semibold text-slate-900'>
-                      ฿{budgetPerPiece.toLocaleString('th-TH')}
+                      {formatCurrency(budgetPerPiece)}
                     </p>
                   </div>
                 ) : null}
@@ -515,7 +516,7 @@ export function FactoryRfqDetailPage() {
                   <div>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>จำนวน</p>
                     <p className='font-semibold text-slate-900'>
-                      {quantity.toLocaleString('th-TH')} ชิ้น
+                      {formatCompactNumber(quantity)} ชิ้น
                     </p>
                   </div>
                 ) : null}
@@ -523,7 +524,7 @@ export function FactoryRfqDetailPage() {
                   <div>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>รวมประเมิน</p>
                     <p className='font-semibold text-slate-900'>
-                      ≈ ฿{Math.round(revenueApprox).toLocaleString('th-TH')}
+                      ≈ {formatCurrencyNoDecimals(Math.round(revenueApprox))}
                     </p>
                   </div>
                 ) : null}
@@ -588,7 +589,7 @@ export function FactoryRfqDetailPage() {
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>จำนวน</span>
                     <span className='text-sm font-medium text-right text-brand-navy'>
-                      {quantity != null ? `${quantity.toLocaleString('th-TH')} ชิ้น` : '—'}
+                      {quantity != null ? `${formatCompactNumber(quantity)} ชิ้น` : '—'}
                     </span>
                   </div>
                   <div className='flex items-start justify-between gap-2'>
@@ -634,7 +635,7 @@ export function FactoryRfqDetailPage() {
                     <span className='text-xs text-gray-500'>งบประมาณรวม</span>
                     <span className='text-sm font-medium text-right text-brand-navy'>
                       {rfqBody.target_price != null
-                        ? `${Number(rfqBody.target_price).toLocaleString('th-TH')} บาท`
+                        ? `${formatCompactNumber(Number(rfqBody.target_price))} บาท`
                         : '-'}
                     </span>
                   </div>

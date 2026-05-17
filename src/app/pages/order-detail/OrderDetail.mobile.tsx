@@ -22,7 +22,7 @@ import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { OrderProductionTab } from '@/components/features/production/OrderProductionTab';
 import { useRfqDetailQuery } from '@/domain/rfq/queries/useRfqDetailQuery';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppDialog } from '@/components/ui/app-dialog';
 import { Textarea } from '@/components/ui/textarea';
 
 type OrderReviewState = {
@@ -508,16 +508,19 @@ function OrderDetailMobileBody() {
         onSuccess={refetchAll}
       />
 
-      <BaseModal
-        isOpen={cancelModalOpen}
-        onClose={() => setCancelModalOpen(false)}
+      <AppDialog
+        open={cancelModalOpen}
+        onOpenChange={(v) => {
+          if (v) return;
+          if (!cancellingOrder) setCancelModalOpen(false);
+        }}
         showCloseButton={false}
-        placement='bottom'
+        variant='sheet'
         size='sm'
+        dismissible={!cancellingOrder}
         className='max-w-sm overflow-hidden'
         bodyClassName='p-0'
         overlayClassName='bg-black/50'
-        closeOnBackdropClick={!cancellingOrder}
       >
         <div className='px-5 pt-6 pb-2 text-center space-y-3'>
           <div className='w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto'>
@@ -558,13 +561,15 @@ function OrderDetailMobileBody() {
             )}
           </Button>
         </div>
-      </BaseModal>
+      </AppDialog>
 
-      <BaseModal
-        isOpen={reviewModalOpen}
-        onClose={() => setReviewModalOpen(false)}
+      <AppDialog
+        open={reviewModalOpen}
+        onOpenChange={(v) => {
+          if (!v) setReviewModalOpen(false);
+        }}
         title={reviewState?.already_reviewed ? 'รีวิวของคุณ' : 'ให้คะแนนและรีวิว'}
-        placement='bottom'
+        variant='sheet'
         size='md'
         className='max-w-md border border-gray-100'
         bodyClassName='p-4'
@@ -654,7 +659,7 @@ function OrderDetailMobileBody() {
             </Button>
           </div>
         )}
-      </BaseModal>
+      </AppDialog>
     </div>
   );
 }

@@ -29,6 +29,7 @@ import {
   TableRow,
   TableSkeletonRows,
 } from '@/components/ui/table';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 const INDIGO = 'var(--brand-indigo)';
 const SLATE_DARK = '#0F172A';
@@ -228,7 +229,7 @@ export function FactoryOrdersPage() {
                           className='px-4 py-3 text-sm font-semibold tabular-nums'
                           style={{ color: SLATE_DARK }}
                         >
-                          ฿{row.total_amount.toLocaleString('th-TH')}
+                          {formatCurrency(row.total_amount)}
                         </TableCell>
                         <TableCell className='px-4 py-3'>
                           <span

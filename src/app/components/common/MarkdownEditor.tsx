@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { mediaApi } from '@/services/api/factoryApi';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppDialog } from '@/components/ui/app-dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -450,13 +450,16 @@ export function MarkdownEditor({
         )}
       </div>
 
-      <BaseModal
-        isOpen={isTemplateModalOpen}
-        onClose={closeTemplate}
+      <AppDialog
+        open={isTemplateModalOpen}
+        onOpenChange={(v) => {
+          if (!v) closeTemplate();
+        }}
         title='เลือกเทมเพลตเริ่มต้น'
+        variant='center'
         size='xl'
-        className='max-w-5xl flex flex-col overflow-hidden'
-        bodyClassName='p-0 flex flex-1 overflow-hidden flex-col md:flex-row'
+        className='flex flex-col overflow-hidden'
+        bodyClassName='p-0 flex flex-1 overflow-hidden flex-col md:flex-row min-h-[min(70vh,640px)]'
         headerClassName='bg-gray-50/50'
         overlayClassName='bg-black/60 backdrop-blur-sm'
         footerClassName='px-5 py-4 bg-gray-50/50 justify-end gap-3'
@@ -535,7 +538,7 @@ export function MarkdownEditor({
             </div>
           </div>
         </>
-      </BaseModal>
+      </AppDialog>
     </div>
   );
 }

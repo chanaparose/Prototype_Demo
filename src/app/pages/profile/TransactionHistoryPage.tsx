@@ -4,6 +4,8 @@ import { ChevronLeft, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { profileApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
+import { formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { formatDateTime } from '@/utils/formatting/formatDate';
 
 type TxItem = {
   id: string;
@@ -106,19 +108,19 @@ export function TransactionHistoryPage() {
         <div className='rounded-xl border border-slate-200 bg-white p-3'>
           <p className='text-[11px] text-slate-500'>เงินเข้า</p>
           <p className='text-sm font-bold text-emerald-700'>
-            ฿{Number(summary.total_in ?? 0).toLocaleString('th-TH')}
+            {formatCurrencyNoDecimals(Number(summary.total_in ?? 0))}
           </p>
         </div>
         <div className='rounded-xl border border-slate-200 bg-white p-3'>
           <p className='text-[11px] text-slate-500'>เงินออก</p>
           <p className='text-sm font-bold text-red-600'>
-            ฿{Number(summary.total_out ?? 0).toLocaleString('th-TH')}
+            {formatCurrencyNoDecimals(Number(summary.total_out ?? 0))}
           </p>
         </div>
         <div className='rounded-xl border border-slate-200 bg-white p-3'>
           <p className='text-[11px] text-slate-500'>สุทธิ</p>
           <p className='text-sm font-bold text-slate-900'>
-            ฿{Number(summary.net ?? 0).toLocaleString('th-TH')}
+            {formatCurrencyNoDecimals(Number(summary.net ?? 0))}
           </p>
         </div>
       </div>
@@ -142,13 +144,14 @@ export function TransactionHistoryPage() {
                   <p className='text-sm text-slate-800 truncate'>{t.description}</p>
                   <p className='text-[11px] text-slate-500'>
                     {t.status_label} ·{' '}
-                    {t.created_at ? new Date(t.created_at).toLocaleString('th-TH') : '-'}
+                    {t.created_at ? formatDateTime(t.created_at) : '-'}
                   </p>
                 </div>
                 <p
                   className={`text-sm font-semibold ${t.direction === 'in' ? 'text-emerald-700' : 'text-red-600'}`}
                 >
-                  {t.direction === 'in' ? '+' : '-'}฿{Math.abs(t.amount).toLocaleString('th-TH')}
+                  {t.direction === 'in' ? '+' : '-'}
+                  {formatCurrency(Math.abs(t.amount))}
                 </p>
               </li>
             ))}

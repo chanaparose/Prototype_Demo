@@ -26,6 +26,7 @@ import { profileApi } from '@/services/api/userApi';
 import { addressesApi } from '@/services/api/masterApi';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
 import { Button } from '@/components/ui/button';
+import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 
@@ -378,11 +379,11 @@ export function ProfileMobile() {
           <div className='mb-4'>
             <p className='text-[10px] text-gray-400 mb-1'>ยอดคงเหลือ</p>
             <p className='text-2xl text-gray-900' style={{ fontWeight: 700 }}>
-              ฿{currentUser.walletBalance.toLocaleString()}
+              {formatCurrencyNoDecimals(currentUser.walletBalance)}
             </p>
             <div className='flex items-center gap-1 mt-1'>
               <span className='text-[10px]' style={{ color: 'var(--status-warning)' }}>
-                รอดำเนินการ: ฿{currentUser.pendingBalance.toLocaleString()}
+                รอดำเนินการ: {formatCurrencyNoDecimals(currentUser.pendingBalance)}
               </span>
             </div>
           </div>
@@ -463,7 +464,8 @@ export function ProfileMobile() {
                           : 'var(--status-danger)',
                     }}
                   >
-                    {tx.type === 'credit' ? '+' : '-'}฿{tx.amount.toLocaleString()}
+                    {tx.type === 'credit' ? '+' : '-'}
+                    {formatCurrencyNoDecimals(tx.amount)}
                   </p>
                 </div>
               ))

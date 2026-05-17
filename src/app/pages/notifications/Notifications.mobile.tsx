@@ -19,6 +19,7 @@ import { notificationsApi } from '@/services/api/chatApi';
 import { NOTIFICATIONS_CHANGED_EVENT } from '@/hooks/useNotificationUnreadCount';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { formatDateTime } from '@/utils/formatting/formatDate';
 
 type NotificationItem = {
   noti_id: number;
@@ -47,18 +48,6 @@ function mapNotification(row: Record<string, unknown>): NotificationItem | null 
     is_read: Boolean(row.is_read ?? false),
     created_at: String(row.created_at ?? ''),
   };
-}
-
-function formatTimeLabel(value: string): string {
-  if (!value) return '-';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
-  return date.toLocaleString('th-TH', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 export function NotificationsMobile() {
@@ -387,7 +376,7 @@ function NotificationCard({
           <span
             className={`text-[11px] font-semibold shrink-0 ${!read ? 'text-brand-purple' : 'text-slate-400'}`}
           >
-            {formatTimeLabel(notif.created_at)}
+            {formatDateTime(notif.created_at)}
           </span>
         </div>
         <p

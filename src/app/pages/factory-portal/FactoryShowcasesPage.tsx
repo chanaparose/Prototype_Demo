@@ -8,6 +8,7 @@ import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
+import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -53,9 +54,9 @@ function contextLine(r: Row, type: ShowcaseType): string {
   const price = Number(r.base_price ?? 0);
   const promo = Number(r.promo_price ?? 0);
   const lead = Number(r.lead_time_days ?? 0);
-  if (moq > 0) parts.push(`MOQ ${moq.toLocaleString()}`);
-  if (type === 'PM' && promo > 0) parts.push(`฿${promo.toLocaleString('th-TH')} (โปร)`);
-  else if (price > 0) parts.push(`฿${price.toLocaleString('th-TH')}`);
+  if (moq > 0) parts.push(`MOQ ${formatCompactNumber(moq)}`);
+  if (type === 'PM' && promo > 0) parts.push(`${formatCurrencyNoDecimals(promo)} (โปร)`);
+  else if (price > 0) parts.push(formatCurrencyNoDecimals(price));
   if (lead > 0 && type !== 'ID') parts.push(`${lead} วัน`);
   return parts.join(' · ');
 }

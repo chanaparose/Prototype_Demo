@@ -17,6 +17,7 @@ import { ordersApi } from '@/services/api/ordersApi';
 import { quotationsApi } from '@/services/api/rfqApi';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { ChatReference } from '@/utils/chatContract';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import {
   buildSendPayload,
   getCurrentUserId,
@@ -514,7 +515,7 @@ function ChatRoomBody({
                 <div className='flex gap-3 mt-2.5'>
                   <div className='flex-1 bg-white rounded-xl p-2.5 text-center'>
                     <p className='text-sm font-bold text-brand-orange-deep'>
-                      ฿{latestQuote.quoteData.price.toLocaleString()}
+                      {formatCurrency(latestQuote.quoteData.price)}
                     </p>
                     <p className='text-[9px] text-gray-500'>ราคา</p>
                   </div>

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate } from '@/utils/formatting/formatDate';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppDialog } from '@/components/ui/app-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -99,15 +99,16 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
   };
 
   return (
-    <BaseModal
-      isOpen
-      onClose={onCancel}
+    <AppDialog
+      open
+      onOpenChange={(v) => {
+        if (!v) onCancel();
+      }}
       title='แนบ RFQ'
-      placement='bottom'
+      variant='sheet'
       size='md'
-      overlayClassName='bg-black/40'
-      bodyClassName='px-0 py-0'
-      className='max-h-[80vh] overflow-hidden flex flex-col'
+      bodyClassName='px-0 py-0 flex flex-col max-h-[min(80vh,100dvh)]'
+      className='overflow-hidden flex flex-col'
     >
       <div className='w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-4 lg:hidden' />
 
@@ -174,6 +175,6 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
           <Plus size={14} /> สร้างคำขอราคา
         </Button>
       </div>
-    </BaseModal>
+    </AppDialog>
   );
 }

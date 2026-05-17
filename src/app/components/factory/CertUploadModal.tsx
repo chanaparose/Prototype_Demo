@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppDialog } from '@/components/ui/app-dialog';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import {
@@ -73,8 +73,6 @@ export function CertUploadModal({
     reset(certFormValuesFromRow(initial, fallbackCertId));
   }, [open, initial, fallbackCertId, reset]);
 
-  if (!open) return null;
-
   const rootError = errors.root?.message;
   const fieldError =
     errors.cert_id?.message ||
@@ -116,15 +114,17 @@ export function CertUploadModal({
   };
 
   return (
-    <BaseModal
-      isOpen={open}
-      onClose={onClose}
+    <AppDialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
       title={mode === 'create' ? 'เพิ่มใบรับรอง' : 'แก้ไขใบรับรอง'}
-      placement='bottom'
+      variant='sheet'
       size='lg'
-      className='sm:rounded-2xl max-w-lg max-h-[min(90vh,100dvh)]'
+      dismissible={!submitting}
+      className='max-h-[min(90vh,100dvh)]'
       bodyClassName='p-4 sm:p-5 pb-6 space-y-4'
-      closeOnBackdropClick={!submitting}
       footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2'
       footer={
         <ModalFooter
@@ -213,6 +213,6 @@ export function CertUploadModal({
           }}
         />
       </FormField>
-    </BaseModal>
+    </AppDialog>
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { BadgeCheck, Calendar, Factory, Package, Shield, Truck } from 'lucide-react';
+import { BadgeCheck, Calendar, Package, Shield, Truck } from 'lucide-react';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
@@ -35,16 +36,6 @@ export interface Quotation {
 const MIDNIGHT = 'var(--brand-navy)';
 const PLUM = 'var(--brand-mauve)';
 const PLUM_SOFT = 'var(--brand-page)';
-
-function formatTHB(n: number): string {
-  return (
-    '฿' +
-    n.toLocaleString('th-TH', {
-      minimumFractionDigits: n % 1 !== 0 ? 2 : 0,
-      maximumFractionDigits: 2,
-    })
-  );
-}
 
 /** ข้อมูลจาก OfferItem / API สำหรับสร้าง Quotation แบบเต็ม (เติมค่า default ถ้าขาด) */
 export type QuotationOfferSource = {
@@ -139,8 +130,8 @@ export function QuotationBOQDetailsPanel({
       </div>
 
       <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
-        <MetricTile label='ค่าแม่พิมพ์' value={formatTHB(q.mold_cost)} />
-        <MetricTile label='MOQ' value={`${q.moq.toLocaleString('th-TH')} ชิ้น`} />
+        <MetricTile label='ค่าแม่พิมพ์' value={formatCurrency(q.mold_cost)} />
+        <MetricTile label='MOQ' value={`${formatCompactNumber(q.moq)} ชิ้น`} />
         <MetricTile label='Lead time' value={`${q.lead_time_days} วัน`} />
       </div>
 

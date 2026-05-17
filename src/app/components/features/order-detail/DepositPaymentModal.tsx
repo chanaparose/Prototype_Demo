@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi } from '@/services/api/ordersApi';
 import { walletApi } from '@/services/api/userApi';
-import { BaseModal } from '@/shared/ui/modals/BaseModal';
+import { AppDialog } from '@/components/ui/app-dialog';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import {
   ACCENT_ORANGE_DEEP,
@@ -66,8 +66,6 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
     }
   }, [open, orderId]);
 
-  if (!open) return null;
-
   const canSubmitWallet = method === 'WALLET' && !insufficient && !wallet.isPending;
   const canSubmit = method === 'WALLET' ? canSubmitWallet : true;
 
@@ -121,11 +119,13 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
   const shortfall = Math.max(0, amount - good);
 
   return (
-    <BaseModal
-      isOpen={open}
-      onClose={onClose}
+    <AppDialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
       title='ชำระเงินเต็มจำนวน'
-      placement='bottom'
+      variant='sheet'
       footer={
         <ModalFooter
           layout='stack'
@@ -206,7 +206,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
           subtitle='แนบสลิปหลังชำระเงิน'
         />
       </div>
-    </BaseModal>
+    </AppDialog>
   );
 }
 

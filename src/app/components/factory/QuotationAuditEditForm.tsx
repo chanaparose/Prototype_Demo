@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 export type QuotationAuditEditFormHandle = {
   submit: () => Promise<boolean>;
@@ -233,19 +234,13 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
           <div className='flex justify-between text-sm'>
             <span className='opacity-80'>ราคาต่อชิ้น</span>
             <span className='font-semibold'>
-              ฿
-              {Number(form.watch('price_per_piece') || 0).toLocaleString('th-TH', {
-                minimumFractionDigits: 2,
-              })}
+              {formatCurrency(Number(form.watch('price_per_piece') || 0))}
             </span>
           </div>
           <div className='flex justify-between text-sm'>
             <span className='opacity-80'>ค่าแม่พิมพ์</span>
             <span className='font-semibold'>
-              ฿
-              {Number(form.watch('mold_cost') || 0).toLocaleString('th-TH', {
-                minimumFractionDigits: 2,
-              })}
+              {formatCurrency(Number(form.watch('mold_cost') || 0))}
             </span>
           </div>
           <div className='flex justify-between text-sm'>

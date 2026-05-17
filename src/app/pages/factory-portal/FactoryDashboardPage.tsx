@@ -49,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 const COLORS = {
   purple: appColors.brand.indigo,
@@ -70,10 +71,6 @@ const PURPLE = appColors.brand.indigo;
 const ORANGE = appColors.brand.indigo;
 const GREEN = appColors.status.success;
 const SLATE = appColors.neutral.slate;
-
-function formatBaht(n: number): string {
-  return `฿${n.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
-}
 
 function compactAxis(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -107,8 +104,8 @@ function MoneyTooltip({ active, payload, label }: ChartTooltipProps) {
             <span className='text-gray-500'>{p.name}:</span>
             <span className='font-medium text-gray-900'>
               {p.dataKey === 'revenue' || p.dataKey === 'deposits'
-                ? formatBaht(Number(p.value))
-                : Number(p.value).toLocaleString('th-TH')}
+                ? formatCurrencyNoDecimals(Number(p.value))
+                : formatCompactNumber(Number(p.value))}
             </span>
           </li>
         ))}
@@ -131,7 +128,7 @@ function CountTooltip({ active, payload, label }: ChartTooltipProps) {
             />
             <span className='text-gray-500'>{p.name}:</span>
             <span className='font-medium text-gray-900'>
-              {Number(p.value).toLocaleString('th-TH')}
+              {formatCompactNumber(Number(p.value))}
             </span>
           </li>
         ))}
@@ -146,7 +143,7 @@ function kpiRows(summary: AnalyticsSummary) {
     {
       key: 'revenue',
       title: 'รายได้รวม',
-      value: formatBaht(summary.revenue_total),
+      value: formatCurrencyNoDecimals(summary.revenue_total),
       sub: 'ในช่วงที่เลือก',
       icon: TrendingUp,
       accent: PURPLE,
@@ -156,7 +153,7 @@ function kpiRows(summary: AnalyticsSummary) {
     {
       key: 'deposits',
       title: 'เงินรอรับ',
-      value: formatBaht(summary.deposits_total),
+      value: formatCurrencyNoDecimals(summary.deposits_total),
       sub: 'กระเป๋าเงิน',
       icon: Wallet,
       accent: ORANGE,
@@ -166,8 +163,8 @@ function kpiRows(summary: AnalyticsSummary) {
     {
       key: 'orders',
       title: 'ออเดอร์ทั้งหมด',
-      value: summary.total_orders_total.toLocaleString('th-TH'),
-      sub: `ปิดสำเร็จ ${summary.closed_orders_total.toLocaleString('th-TH')}`,
+      value: formatCompactNumber(summary.total_orders_total),
+      sub: `ปิดสำเร็จ ${formatCompactNumber(summary.closed_orders_total)}`,
       icon: Package,
       accent: GREEN,
       iconBg: 'rgba(5,150,105,0.12)',
@@ -176,8 +173,8 @@ function kpiRows(summary: AnalyticsSummary) {
     {
       key: 'rfq',
       title: 'RFQ ที่ได้รับ',
-      value: summary.rfq_received_total.toLocaleString('th-TH'),
-      sub: `ส่งตอบแล้ว ${summary.rfq_replies_total.toLocaleString('th-TH')}`,
+      value: formatCompactNumber(summary.rfq_received_total),
+      sub: `ส่งตอบแล้ว ${formatCompactNumber(summary.rfq_replies_total)}`,
       icon: ClipboardList,
       accent: '#0EA5E9',
       iconBg: 'rgba(14,165,233,0.12)',
@@ -714,7 +711,7 @@ export function FactoryDashboardPage() {
                 ทั้งหมด
               </p>
               <p className='text-xl font-bold' style={{ color: COLORS.navy }}>
-                {summary.total_orders_total.toLocaleString('th-TH')}
+                {formatCompactNumber(summary.total_orders_total)}
               </p>
               <p className='text-[10px] text-gray-400 mt-0.5'>ออเดอร์</p>
             </div>
@@ -723,7 +720,7 @@ export function FactoryDashboardPage() {
                 ปิดสำเร็จ
               </p>
               <p className='text-xl font-bold text-emerald-600'>
-                {summary.closed_orders_total.toLocaleString('th-TH')}
+                {formatCompactNumber(summary.closed_orders_total)}
               </p>
               <p className='text-[10px] text-emerald-400 mt-0.5'>ออเดอร์</p>
             </div>
@@ -732,10 +729,12 @@ export function FactoryDashboardPage() {
                 กำลังดำเนินการ
               </p>
               <p className='text-xl font-bold text-amber-600'>
-                {Math.max(
-                  summary.total_orders_total - summary.closed_orders_total,
-                  0,
-                ).toLocaleString('th-TH')}
+                {formatCompactNumber(
+                  Math.max(
+                    summary.total_orders_total - summary.closed_orders_total,
+                    0,
+                  ),
+                )}
               </p>
               <p className='text-[10px] text-amber-400 mt-0.5'>ออเดอร์</p>
             </div>

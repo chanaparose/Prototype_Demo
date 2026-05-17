@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { Button } from '@/components/ui/button';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import type {
   DerivedCardState,
   FactoryOrderRow,
@@ -71,9 +72,9 @@ export function FactoryOrderCard({
         <p className='text-xs text-gray-500 mt-2'>ลูกค้า: {row.customer.display_name}</p>
       ) : null}
       <p className='text-xs text-gray-600 mt-1'>
-        ฿{row.total_amount.toLocaleString('th-TH')}
+        {formatCurrency(row.total_amount)}
         {row.rfq?.quantity
-          ? ` · ${row.rfq.quantity.toLocaleString('th-TH')} ${row.rfq.unit_name}`
+          ? ` · ${formatCompactNumber(row.rfq.quantity)} ${row.rfq.unit_name}`
           : ''}
         {row.estimated_delivery ? ` · กำหนดส่ง ${formatDateTh(row.estimated_delivery)}` : ''}
       </p>

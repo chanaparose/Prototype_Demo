@@ -16,6 +16,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
+import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
 import { ordersApi } from '@/services/api/ordersApi';
 import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
 import { useProductionTemplate } from '@/hooks/production/useProductionTemplate';
@@ -77,28 +79,6 @@ function getStepId(step: MergedProductionStep | null): number {
 function factoryCanUpdateStep(step: MergedProductionStep | null): boolean {
   const n = getStepId(step);
   return n > 0 && n <= 5;
-}
-
-function fmtDateTime(input: unknown): string {
-  const raw = String(input ?? '');
-  if (!raw) return '-';
-  const d = new Date(raw);
-  if (Number.isNaN(d.getTime())) return raw;
-  return d.toLocaleString('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function fmtDate(input: unknown): string {
-  const raw = String(input ?? '');
-  if (!raw) return '-';
-  const d = new Date(raw);
-  if (Number.isNaN(d.getTime())) return raw;
-  return d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: '2-digit' });
 }
 
 function extractShippingInfo(order: Record<string, unknown>): CustomerShippingInfo {
@@ -493,22 +473,19 @@ export function FactoryOrderDetailPage() {
                   <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>มูลค่ารวม</p>
                     <p className='font-bold text-slate-900 text-sm mt-0.5'>
-                      ฿{Number(order.total_amount ?? 0).toLocaleString('th-TH')}
+                      {formatCurrency(Number(order.total_amount ?? 0))}
                     </p>
                   </div>
                   <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>ชำระแล้ว</p>
                     <p className='font-bold text-emerald-700 text-sm mt-0.5'>
-                      ฿
-                      {Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString(
-                        'th-TH',
-                      )}
+                      {formatCurrency(Number(order.total_amount ?? order.deposit_amount ?? 0))}
                     </p>
                   </div>
                   <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>กำหนดส่ง</p>
                     <p className='font-bold text-slate-900 text-sm mt-0.5'>
-                      {fmtDate(order.estimated_delivery)}
+                      {formatDate(order.estimated_delivery)}
                     </p>
                   </div>
                 </div>
@@ -519,15 +496,15 @@ export function FactoryOrderDetailPage() {
                   ข้อมูลคำสั่งซื้อ
                 </p>
                 {[
-                  { label: 'สร้างเมื่อ', value: fmtDateTime(order.created_at) },
-                  { label: 'กำหนดส่ง', value: fmtDateTime(order.estimated_delivery) },
+                  { label: 'สร้างเมื่อ', value: formatDateTime(order.created_at) },
+                  { label: 'กำหนดส่ง', value: formatDateTime(order.estimated_delivery) },
                   {
                     label: 'มูลค่ารวม',
-                    value: `฿${Number(order.total_amount ?? 0).toLocaleString('th-TH')}`,
+                    value: formatCurrency(Number(order.total_amount ?? 0)),
                   },
                   {
                     label: 'ชำระแล้ว',
-                    value: `฿${Number(order.total_amount ?? order.deposit_amount ?? 0).toLocaleString('th-TH')}`,
+                    value: formatCurrency(Number(order.total_amount ?? order.deposit_amount ?? 0)),
                   },
                 ].map(({ label, value }) => (
                   <div key={label} className='flex items-center justify-between gap-2'>
