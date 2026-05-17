@@ -5,6 +5,7 @@ import { InfoBox } from "../../../shared/ui";
 import type { MergedProductionStep } from "./types";
 import { productionErrorMessage } from "./productionErrors";
 import { getStepGuide } from "./stepGuideConfig";
+import { Button } from '../../ui/button';
 
 /** ข้อมูลที่อยู่จัดส่งลูกค้า — ส่งมาจาก order API */
 export interface CustomerShippingInfo {
@@ -220,7 +221,7 @@ export function UpdateStepDrawer({
 
   return (
     <div className="fixed inset-0 z-[70]">
-      <button
+      <Button variant="unstyled"
         type="button"
         className="absolute inset-0 bg-black/40"
         aria-label="ปิดแผง"
@@ -259,14 +260,14 @@ export function UpdateStepDrawer({
               ) : null}
             </div>
           </div>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={onClose}
             className="p-2 rounded-xl hover:bg-gray-100 shrink-0 ml-2"
             aria-label="ปิด"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Scrollable body */}
@@ -354,16 +355,16 @@ export function UpdateStepDrawer({
                     alt=""
                     className="w-full h-full object-cover"
                   />
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-xs flex items-center justify-center"
                     aria-label="ลบภาพ"
                     onClick={() => removeAt(idx)}
                   >
                     ×
-                  </button>
+                  </Button>
                   <div className="absolute bottom-1 left-1 flex gap-0.5">
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       aria-label="ขยับขึ้น"
                       className="px-1 text-[10px] bg-white/90 rounded"
@@ -371,8 +372,8 @@ export function UpdateStepDrawer({
                       disabled={idx === 0}
                     >
                       ↑
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="unstyled"
                       type="button"
                       aria-label="ขยับลง"
                       className="px-1 text-[10px] bg-white/90 rounded"
@@ -380,7 +381,7 @@ export function UpdateStepDrawer({
                       disabled={idx === urls.length - 1}
                     >
                       ↓
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -433,16 +434,16 @@ export function UpdateStepDrawer({
             </div>
           ) : null}
 
-          <button
+          <Button variant="unstyled"
             type="button"
             disabled={busy}
             onClick={() => void saveDraft()}
             className="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors"
           >
             {guide?.draftLabel ?? "บันทึกร่าง"}
-          </button>
+          </Button>
 
-          <button
+          <Button variant="unstyled"
             type="button"
             disabled={busy || urls.length < minPhotos}
             onClick={() => void confirmDone()}
@@ -452,7 +453,7 @@ export function UpdateStepDrawer({
             }}
           >
             {guide?.confirmLabel ?? "ยืนยันว่าเสร็จสิ้น"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

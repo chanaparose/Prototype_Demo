@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { ImagePlus, X } from 'lucide-react';
 import { mediaApi } from '../../../services/api';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '../../../utils/reviewImageUrls';
+import { Button } from '../../ui/button';
 
 type Props = {
   urls: string[];
@@ -60,18 +61,18 @@ export function ReviewImageAttachments({
             className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0"
           >
             {onPreviewUrl ? (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="w-full h-full block"
                 onClick={() => onPreviewUrl(url)}
               >
                 <img src={url} alt="" className="w-full h-full object-cover" />
-              </button>
+              </Button>
             ) : (
               <img src={url} alt="" className="w-full h-full object-cover" />
             )}
             {editable ? (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
                 aria-label="ลบรูป"
@@ -82,7 +83,7 @@ export function ReviewImageAttachments({
                 }}
               >
                 <X size={12} strokeWidth={2.5} />
-              </button>
+              </Button>
             ) : null}
           </div>
         ))}
@@ -99,7 +100,7 @@ export function ReviewImageAttachments({
                 e.target.value = '';
               }}
             />
-            <button
+            <Button variant="unstyled"
               type="button"
               disabled={uploading}
               onClick={() => inputRef.current?.click()}
@@ -107,7 +108,7 @@ export function ReviewImageAttachments({
             >
               <ImagePlus size={18} />
               {uploading ? '…' : 'เพิ่ม'}
-            </button>
+            </Button>
           </>
         ) : null}
       </div>

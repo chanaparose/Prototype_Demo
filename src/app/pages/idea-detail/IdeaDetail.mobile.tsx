@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '../../components/features/showcase-detail';
 import { useNavigate } from "react-router";
 import {
   ArrowLeft,
@@ -19,29 +20,13 @@ import { MarkdownBody } from "../../shared/markdown/MarkdownBody";
 import { showcasesApi } from "../../services/api";
 import { normShowcase } from "../../hooks/useShowcases";
 import { RelatedShowcasesSection } from "../../components/features/idea-detail/RelatedShowcasesSection";
+import { Button } from '../../components/ui/button';
 
 const CARD = {
   purple: "#7A4B94",
   blue: "#2E2252",
 } as const;
-const BRAND = {
-  orange: "#E38844",
-  purple: "#7A4B94",
-  purpleSoft: "#F8F6FA",
-  ink: "#2E2252",
-  border: "#EDE7F1",
-  divider: "#F2F2F2",
-} as const;
 
-function formatThaiDate(date: string): string {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return "-";
-  return new Intl.DateTimeFormat("th-TH", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(d);
-}
 
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
@@ -105,7 +90,7 @@ export function IdeaDetailMobile() {
   if (!item || !resolvedId) {
     return (
       <div className="px-4 pt-5 pb-20">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={handleBack}
           aria-label="กลับไป"
@@ -113,7 +98,7 @@ export function IdeaDetailMobile() {
           style={{ color: "#7A4B94" }}
         >
           <ArrowLeft className="w-4 h-4" /> กลับ
-        </button>
+        </Button>
         <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center text-sm text-gray-500 shadow-sm">
           {error || "ไม่พบบทความไอเดีย"}
         </div>
@@ -132,14 +117,14 @@ export function IdeaDetailMobile() {
         style={{ borderColor: BRAND.divider }}
       >
         <div className="flex items-start">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={handleBack}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shrink-0"
             aria-label="กลับ"
           >
             <ArrowLeft className="w-4 h-4 text-gray-700" />
-          </button>
+          </Button>
 
           <div className="ml-[15px] min-w-0 flex-1">
             <h1
@@ -167,7 +152,7 @@ export function IdeaDetailMobile() {
             </div>
           </div>
 
-          <button
+          <Button variant="unstyled"
             type="button"
             className="ml-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shrink-0"
             aria-label="แชร์"
@@ -186,7 +171,7 @@ export function IdeaDetailMobile() {
             }}
           >
             <Share2 className="w-4 h-4 text-gray-700" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -237,7 +222,7 @@ export function IdeaDetailMobile() {
           </div>
           <div className="mt-3 flex gap-2">
             {canChat ? (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() =>
                   void startChat(item.factoryId, {
@@ -256,9 +241,9 @@ export function IdeaDetailMobile() {
                   <MessageCircle className="w-4 h-4" />
                 )}
                 แชทกับโรงงาน
-              </button>
+              </Button>
             ) : null}
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate(`/factories/${item.factoryId}`)}
               className={`inline-flex items-center justify-center gap-1 rounded-lg px-2.5 py-2.5 text-[11px] font-semibold border ${canChat ? "" : "flex-1"}`}
@@ -268,7 +253,7 @@ export function IdeaDetailMobile() {
               }}
             >
               โปรไฟล์ <ArrowUpRight className="w-3 h-3" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -329,7 +314,7 @@ export function IdeaDetailMobile() {
                   <div className="pt-2 mt-2 border-t border-gray-100">
                     <div className="h-[18px] mb-1 min-w-0">
                       {next.factoryName ? (
-                        <button
+                        <Button variant="unstyled"
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -345,7 +330,7 @@ export function IdeaDetailMobile() {
                               style={{ color: CARD.purple }}
                             />
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                     </div>
                     <div className="flex items-center justify-between min-w-0">

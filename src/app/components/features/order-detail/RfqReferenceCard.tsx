@@ -5,6 +5,7 @@ import { rfqsApi, quotationsApi } from '../../../services/api';
 import { summarizeRfqAddress } from '../../../utils/rfqAddressSummary';
 import { OrderPhotoGallery } from './OrderPhotoGallery';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
+import { Button } from '../../ui/button';
 
 interface Props {
   rfq: RfqNestedDTO;
@@ -222,14 +223,14 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
           <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2">รูปอ้างอิง / แนบมากับ RFQ</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {imageUrls.map((url) => (
-              <button
+              <Button variant="unstyled"
                 key={url}
                 type="button"
                 onClick={() => setLightbox(url)}
                 className="aspect-square rounded-lg overflow-hidden bg-gray-100"
               >
                 <img src={url} alt="" className="w-full h-full object-cover" />
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -379,7 +380,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
 
   return (
     <section className="rounded-2xl border border-gray-100 bg-white">
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-3"
@@ -388,7 +389,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
           รายละเอียดใบขอราคา
         </span>
         <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
+      </Button>
       {open ? <div className="px-4 pb-4">{body}</div> : null}
     </section>
   );

@@ -8,6 +8,7 @@ import { Step1Basic } from './steps/Step1Basic';
 import { Step2Specifications } from './steps/Step2Specifications';
 import { Step3Commercial } from './steps/Step3Commercial';
 import { Step4QualityReview } from './steps/Step4QualityReview';
+import { Button } from '../../components/ui/button';
 
 const step1Schema = z.object({
   title: z.string().min(1),
@@ -363,7 +364,7 @@ export function RFQCreateWizard() {
         <div className="mb-4">
           <div className="flex items-center gap-2">
             {STEPS.map((s, i) => (
-              <button
+              <Button variant="unstyled"
                 key={s}
                 type="button"
                 onClick={() => {
@@ -375,7 +376,7 @@ export function RFQCreateWizard() {
                 }`}
               >
                 {i + 1}. {s}
-              </button>
+              </Button>
             ))}
           </div>
           <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
@@ -398,7 +399,7 @@ export function RFQCreateWizard() {
                 ] as const).map((opt) => {
                   const active = kind === opt.id;
                   return (
-                    <button
+                    <Button variant="unstyled"
                       key={opt.id}
                       type="button"
                       onClick={() =>
@@ -414,7 +415,7 @@ export function RFQCreateWizard() {
                       }`}
                     >
                       {opt.label}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -530,31 +531,31 @@ export function RFQCreateWizard() {
 
       <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white/95 backdrop-blur px-4 py-3 z-30">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
             className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium"
           >
             {step === 0 ? 'ย้อนกลับ' : 'ย้อนกลับแก้ไข'}
-          </button>
+          </Button>
           {step === 0 ? (
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setStep(1)}
               disabled={!isFormValid}
               className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50"
             >
               ถัดไป: ตรวจสอบข้อมูล
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => void submit()}
               disabled={!isFormValid || create.isPending || (isSampleMode && !acceptSampleTerms)}
               className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50"
             >
               {create.isPending ? 'กำลังส่ง...' : 'ส่งคำขอราคา'}
-            </button>
+            </Button>
           )}
         </div>
       </div>

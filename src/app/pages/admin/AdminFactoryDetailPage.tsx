@@ -24,6 +24,7 @@ import {
   type PlatformConfigItem,
 } from '../../services/api';
 import type { FactoryApprovalStatus } from './AdminFactoriesPage';
+import { Button } from '../../components/ui/button';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
 
@@ -362,14 +363,14 @@ export function AdminFactoryDetailPage() {
   return (
     <div className="space-y-6">
       <div>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/admin/factories')}
           className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors mb-2"
         >
           <ChevronLeft size={14} />
           กลับไปรายการโรงงาน
-        </button>
+        </Button>
         <p className="text-xs text-slate-400 font-medium">Admin / โรงงาน / รายละเอียด</p>
         <h2 className="text-2xl font-bold text-slate-900 mt-1">{factory.factory_name}</h2>
       </div>
@@ -388,7 +389,7 @@ export function AdminFactoryDetailPage() {
           { key: 'config',      label: 'Config' },
           { key: 'settlements', label: 'Settlement' },
         ] as const).map((t) => (
-          <button
+          <Button variant="unstyled"
             key={t.key}
             type="button"
             onClick={() => setActiveTab(t.key)}
@@ -399,7 +400,7 @@ export function AdminFactoryDetailPage() {
             }`}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -459,7 +460,7 @@ export function AdminFactoryDetailPage() {
             </div>
           </div>
 
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={handleSaveFactoryConfig}
             disabled={!canAssignConfig || savingConfig || isFactoryConfigSelectionUnchanged}
@@ -467,7 +468,7 @@ export function AdminFactoryDetailPage() {
           >
             <Save size={14} />
             {savingConfig ? 'กำลังบันทึก...' : savedConfig ? 'บันทึกแล้ว ✓' : 'บันทึก'}
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -534,7 +535,7 @@ export function AdminFactoryDetailPage() {
             <div className="space-y-2">
               {factory.approval_status === 'pending' && canApprove ? (
                 <>
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={handleApprove}
                     disabled={saving}
@@ -542,8 +543,8 @@ export function AdminFactoryDetailPage() {
                   >
                     <CheckCircle size={15} />
                     อนุมัติโรงงาน
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="unstyled"
                     type="button"
                     onClick={handleReject}
                     disabled={saving}
@@ -551,30 +552,30 @@ export function AdminFactoryDetailPage() {
                   >
                     <XCircle size={15} />
                     ปฏิเสธ
-                  </button>
+                  </Button>
                 </>
               ) : null}
 
               {canSuspend ? (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={handleSuspendToggle}
                   disabled={saving}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-60"
                 >
                   {factory.approval_status === 'suspended' ? 'ยกเลิกระงับโรงงาน' : 'ระงับโรงงาน'}
-                </button>
+                </Button>
               ) : null}
 
               {canSuspend ? (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={handleToggleVerification}
                   disabled={saving}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-60"
                 >
                   {factory.is_verified ? 'ยกเลิกยืนยันตัวตน' : 'ยืนยันตัวตนโรงงาน'}
-                </button>
+                </Button>
               ) : null}
             </div>
           </div>
@@ -739,21 +740,21 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <button
+          <Button variant="unstyled"
             disabled={page === 0 || loading}
             onClick={() => setPage((p) => p - 1)}
             className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50"
           >
             ← ก่อนหน้า
-          </button>
+          </Button>
           <span className="text-sm text-slate-500">หน้า {page + 1} / {totalPages}</span>
-          <button
+          <Button variant="unstyled"
             disabled={page + 1 >= totalPages || loading}
             onClick={() => setPage((p) => p + 1)}
             className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50"
           >
             ถัดไป →
-          </button>
+          </Button>
         </div>
       )}
     </div>

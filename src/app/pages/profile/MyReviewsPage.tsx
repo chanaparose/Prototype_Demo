@@ -6,6 +6,7 @@ import { profileApi, reviewsApi } from '../../services/api';
 import { useAuth } from '../../stores';
 import { ReviewImageAttachments } from '../../components/features/reviews/ReviewImageAttachments';
 import { normalizeReviewImageUrls } from '../../utils/reviewImageUrls';
+import { Button } from '../../components/ui/button';
 
 type ReviewItem = {
   review_id: number;
@@ -100,7 +101,7 @@ export function MyReviewsPage() {
   return (
     <div className="space-y-4 pb-24">
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2">
-        <button type="button" onClick={() => navigate(-1)} className="text-slate-600"><ChevronLeft size={18} /></button>
+        <Button variant="unstyled" type="button" onClick={() => navigate(-1)} className="text-slate-600"><ChevronLeft size={18} /></Button>
         <p className="text-sm font-bold text-slate-900">รีวิวของฉัน</p>
       </div>
 
@@ -123,14 +124,14 @@ export function MyReviewsPage() {
                 />
                 {r.is_editable ? (
                   <div className="mt-2 flex gap-2">
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={() => openEdit(r)}
                       className="px-2.5 py-1 rounded-lg border border-slate-200 text-xs text-slate-700"
                     >
                       แก้ไข
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="unstyled"
                       type="button"
                       onClick={async () => {
                         if (!window.confirm('ลบรีวิวนี้?')) return;
@@ -140,7 +141,7 @@ export function MyReviewsPage() {
                       className="px-2.5 py-1 rounded-lg border border-red-200 text-xs text-red-600"
                     >
                       ลบ
-                    </button>
+                    </Button>
                   </div>
                 ) : null}
               </li>
@@ -154,18 +155,18 @@ export function MyReviewsPage() {
           <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-slate-900">แก้ไขรีวิว</p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setEditOpen(false)}
                 className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500"
                 aria-label="ปิด"
               >
                 <X size={16} />
-              </button>
+              </Button>
             </div>
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((s) => (
-                <button
+                <Button variant="unstyled"
                   key={s}
                   type="button"
                   onClick={() => setEditRating(s)}
@@ -176,7 +177,7 @@ export function MyReviewsPage() {
                     size={20}
                     className={s <= editRating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}
                   />
-                </button>
+                </Button>
               ))}
             </div>
             <textarea
@@ -191,7 +192,7 @@ export function MyReviewsPage() {
               onChange={setEditImages}
               onUploadError={(msg) => toast.error(msg)}
             />
-            <button
+            <Button variant="unstyled"
               type="button"
               disabled={editSaving}
               onClick={() => void saveEdit()}
@@ -199,7 +200,7 @@ export function MyReviewsPage() {
               style={{ background: '#6C47FF' }}
             >
               {editSaving ? 'กำลังบันทึก…' : 'บันทึก'}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

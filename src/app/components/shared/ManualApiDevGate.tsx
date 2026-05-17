@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../ui/button';
 
 type Props = {
   pageLabel: string;
@@ -18,13 +19,13 @@ export function ManualApiDevGate({ pageLabel, onLoad }: Props) {
         <p className="text-[10px] text-gray-400">
           console แบบเต็ม: <span className="font-mono">localStorage.setItem(&apos;VERBOSE_API_LOG&apos;,&apos;1&apos;)</span>
         </p>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={onLoad}
           className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-[#A238FF] hover:bg-[#8B2BE2] transition-colors"
         >
           โหลดข้อมูลจาก API
-        </button>
+        </Button>
       </div>
     </div>
   );

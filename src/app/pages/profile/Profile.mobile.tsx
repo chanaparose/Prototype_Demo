@@ -24,6 +24,7 @@ import { useData } from '../../stores';
 import { useAuth } from '../../stores';
 import { profileApi, addressesApi } from '../../services/api';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile';
+import { Button } from '../../components/ui/button';
 
 type ProfileMenuItem = {
   icon: typeof User;
@@ -359,30 +360,30 @@ export function ProfileMobile() {
           </div>
 
           <div className="flex gap-2 mb-4">
-            <button
+            <Button variant="unstyled"
               className="flex-1 py-2.5 rounded-xl text-xs text-white"
               style={{ background: '#6C47FF', fontWeight: 600 }}
             >
               + เติมเงิน
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               className="flex-1 py-2.5 rounded-xl text-xs border"
               style={{ borderColor: '#6C47FF', color: '#6C47FF', fontWeight: 600 }}
             >
               ถอนเงิน
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-2.5">
             <div className="flex justify-between items-end mb-4">
               <h3 className="text-base font-bold text-slate-800">รายการล่าสุด</h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]"
                 onClick={() => navigate('/profile/transactions')}
               >
                 ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
-              </button>
+              </Button>
             </div>
             {txLoading ? (
               <p className="text-xs text-gray-400 text-center py-3">กำลังโหลด...</p>
@@ -440,7 +441,7 @@ export function ProfileMobile() {
               </p>
             ) : null}
             {section.items.map((item, idx) => (
-              <button
+              <Button variant="unstyled"
                 key={item.label}
                 type="button"
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
@@ -464,7 +465,7 @@ export function ProfileMobile() {
                   </div>
                 </div>
                 <ChevronRight size={16} className="text-gray-300" />
-              </button>
+              </Button>
             ))}
           </div>
         ))}
@@ -476,13 +477,13 @@ export function ProfileMobile() {
               <Home size={15} style={{ color: '#6C47FF' }} />
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">ที่อยู่จัดส่ง</p>
             </div>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setShowAddressForm((v) => !v)}
               className="flex items-center gap-0.5 text-[10px] font-semibold text-[#6C47FF]"
             >
               <Plus size={12} /> เพิ่ม
-            </button>
+            </Button>
           </div>
           {showAddressForm && (
             <div className="px-4 pb-3 flex gap-2">
@@ -493,7 +494,7 @@ export function ProfileMobile() {
                 placeholder="กรอกที่อยู่จัดส่ง..."
                 className="flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30"
               />
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={addAddress}
                 disabled={addingAddress || !newAddress.trim()}
@@ -501,7 +502,7 @@ export function ProfileMobile() {
                 style={{ background: '#6C47FF' }}
               >
                 {addingAddress ? '...' : 'บันทึก'}
-              </button>
+              </Button>
             </div>
           )}
           {addressesLoading ? (
@@ -528,14 +529,14 @@ export function ProfileMobile() {
           )}
         </div>
 
-        <button
+        <Button variant="unstyled"
           onClick={() => { logout(); navigate('/login', { replace: true }); }}
           className="w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]"
           style={{ color: '#EF4444', fontWeight: 600 }}
         >
           <LogOut size={18} />
           ออกจากระบบ
-        </button>
+        </Button>
 
         <p className="text-center text-[10px] text-gray-400 pb-2">
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}

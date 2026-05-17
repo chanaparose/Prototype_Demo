@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRight, Heart } from 'lucide-react';
 import { StatusBadge } from '../../../shared/ui';
+import { Button } from '../../ui/button';
 
 export type IdeaArticleItem = {
   id: string;
@@ -26,7 +27,7 @@ export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: Expl
         <h3 className="text-[#292259]" style={{ fontWeight: 700 }}>
           บทความ Idea
         </h3>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={onSeeAll}
           className="flex items-center gap-0.5 text-[#A656A0] hover:text-[#A656A0] transition-colors"
@@ -34,7 +35,7 @@ export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: Expl
         >
           ดูทั้งหมด
           <ChevronRight className="w-3.5 h-3.5" />
-        </button>
+        </Button>
       </div>
       <div className="px-3 grid grid-cols-1 gap-2">
         {articles.map((article) => (
@@ -55,7 +56,7 @@ export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: Expl
             </p>
             <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
               <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
@@ -63,7 +64,7 @@ export function ExploreIdeaArticles({ articles, onSeeAll, onArticleClick }: Expl
               >
                 <Heart className="w-2.5 h-2.5 shrink-0" />
                 <span className="text-[10px] leading-none">{Number(article.likes ?? 0)}</span>
-              </button>
+              </Button>
             </div>
           </article>
         ))}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
+import { Button } from '../../ui/button';
 
 export type RfqForSpecs = {
   category: string;
@@ -81,7 +82,7 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4"
@@ -94,7 +95,7 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
         ) : (
           <ChevronDown size={18} className="text-gray-400" />
         )}
-      </button>
+      </Button>
       {open && (
         <div className="px-4 pb-4 border-t border-gray-50">
           <div className="space-y-2.5 mt-3">

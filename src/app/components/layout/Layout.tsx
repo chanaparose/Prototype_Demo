@@ -22,6 +22,7 @@ import {
   isFactorySidebarNavActive,
 } from './factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '../factory/FactoryVerifiedGuard';
+import { Button } from '../ui/button';
 
 const customerNavLinks = [
   { path: '/', icon: Home, label: 'หน้าแรก' },
@@ -84,7 +85,7 @@ export function Layout() {
                     const Icon = item.icon;
                     const locked = Boolean(item.requiresApproval && !factoryApproved);
                     return (
-                      <button
+                      <Button variant="unstyled"
                         key={item.key}
                         type="button"
                         title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
@@ -104,13 +105,13 @@ export function Layout() {
                         <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
                         {item.label}
                         {locked ? <Lock size={14} className="shrink-0 text-slate-500" aria-hidden /> : null}
-                      </button>
+                      </Button>
                     );
                   }
                   const { path, icon: Icon, label } = item as (typeof customerNavLinks)[number];
                   const active = isActive(path);
                   return (
-                    <button
+                    <Button variant="unstyled"
                       key={path}
                       type="button"
                       onClick={() => navigate(path)}
@@ -123,7 +124,7 @@ export function Layout() {
                     >
                       <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
                       {label}
-                    </button>
+                    </Button>
                   );
                 })}
               </nav>
@@ -157,7 +158,7 @@ export function Layout() {
                   ) : null}
                 </Link>
 
-                <button
+                <Button variant="unstyled"
                   onClick={() => navigate(isAuthenticated ? '/profile' : '/login')}
                   className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
@@ -165,10 +166,10 @@ export function Layout() {
                   <span className="text-sm" style={{ color: '#374151', fontWeight: 500 }}>
                     {isAuthenticated ? 'โปรไฟล์' : 'Guest View'}
                   </span>
-                </button>
+                </Button>
 
                 {/* Mobile menu toggle */}
-                <button
+                <Button variant="unstyled"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   className="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
                   aria-label="Toggle menu"
@@ -178,7 +179,7 @@ export function Layout() {
                   ) : (
                     <Menu size={22} style={{ color: '#374151' }} />
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -193,7 +194,7 @@ export function Layout() {
                     const Icon = item.icon;
                     const locked = Boolean(item.requiresApproval && !factoryApproved);
                     return (
-                      <button
+                      <Button variant="unstyled"
                         key={item.key}
                         type="button"
                         title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
@@ -214,13 +215,13 @@ export function Layout() {
                         <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                         {item.label}
                         {locked ? <Lock size={16} className="shrink-0 text-slate-500 ml-auto" aria-hidden /> : null}
-                      </button>
+                      </Button>
                     );
                   }
                   const { path, icon: Icon, label } = item as (typeof customerNavLinks)[number];
                   const active = isActive(path);
                   return (
-                    <button
+                    <Button variant="unstyled"
                       key={path}
                       type="button"
                       onClick={() => {
@@ -236,10 +237,10 @@ export function Layout() {
                     >
                       <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
                       {label}
-                    </button>
+                    </Button>
                     );
                   })}
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => {
                     navigate(isAuthenticated ? '/profile' : '/login');
@@ -254,7 +255,7 @@ export function Layout() {
                 >
                   <User size={20} strokeWidth={isAuthenticated && isActive('/profile') ? 2.2 : 1.8} />
                   {isAuthenticated ? 'โปรไฟล์' : 'Guest View'}
-                </button>
+                </Button>
               </div>
             </div>
           )}

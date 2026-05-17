@@ -6,6 +6,7 @@ import { getFactoryEntityId } from '../../utils/factoryUser';
 import { showcasesApi } from '../../services/api';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
 import { ImageWithFallback } from '../../components/shared/ImageWithFallback';
+import { Button } from '../../components/ui/button';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -137,7 +138,7 @@ export function FactoryShowcasesPage() {
           const meta = TAB_META[type];
           const active = activeType === type;
           return (
-            <button
+            <Button variant="unstyled"
               key={type}
               type="button"
               onClick={() => changeType(type)}
@@ -151,7 +152,7 @@ export function FactoryShowcasesPage() {
             >
               <span>{meta.icon}</span>
               <span>{meta.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -181,14 +182,14 @@ export function FactoryShowcasesPage() {
           <div className="text-5xl">{icon}</div>
           <p className="text-base font-bold" style={{ color: '#2E2252' }}>{empty}</p>
           <p className="text-sm text-gray-400">กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors"
           >
             <Plus size={15} />
             {btnLabel}
-          </button>
+          </Button>
         </div>
       ) : (
         /* Card grid */
@@ -286,7 +287,7 @@ export function FactoryShowcasesPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2 px-3 pb-3">
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() =>
                       navigate(`/factory/showcases/${id}/edit`, {
@@ -298,8 +299,8 @@ export function FactoryShowcasesPage() {
                   >
                     <Pencil size={13} />
                     แก้ไข
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => void remove(r)}
                     disabled={isDeleting}
@@ -308,7 +309,7 @@ export function FactoryShowcasesPage() {
                     title="ลบ"
                   >
                     <Trash2 size={15} />
-                  </button>
+                  </Button>
                 </div>
               </article>
             );

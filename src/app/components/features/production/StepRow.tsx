@@ -2,6 +2,7 @@ import React from 'react';
 import { Lock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import type { MergedProductionStep } from './types';
 import { STEP_VISUAL, type StepDerivedState } from './stepDerivedState';
+import { Button } from '../../ui/button';
 
 type Props = {
   merged: MergedProductionStep;
@@ -93,7 +94,7 @@ export function StepRow({
 
   const ctaFactory =
     !factoryCanUpdateThisStep ? null : st === 'IP' ? (
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={(e) => {
           e.stopPropagation();
@@ -103,9 +104,9 @@ export function StepRow({
         style={{ background: '#7C3AED' }}
       >
         อัปเดตขั้นนี้
-      </button>
+      </Button>
     ) : st === 'CD' ? (
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={(e) => {
           e.stopPropagation();
@@ -114,9 +115,9 @@ export function StepRow({
         className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border border-violet-200 text-violet-800"
       >
         แก้ไข
-      </button>
+      </Button>
     ) : st === 'RJ' ? (
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={(e) => {
           e.stopPropagation();
@@ -126,9 +127,9 @@ export function StepRow({
         style={{ background: '#A238FF' }}
       >
         ส่งใหม่
-      </button>
+      </Button>
     ) : isFactory && isActive ? (
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={(e) => {
           e.stopPropagation();
@@ -138,12 +139,12 @@ export function StepRow({
         style={{ background: '#A238FF' }}
       >
         เริ่มขั้นต่อไป
-      </button>
+      </Button>
     ) : null;
 
   const ctaCustomer =
     st === 'CD' && canReject ? (
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={(e) => {
           e.stopPropagation();
@@ -152,7 +153,7 @@ export function StepRow({
         className="shrink-0 text-xs font-semibold text-violet-700 underline"
       >
         ติดต่อโรงงาน
-      </button>
+      </Button>
     ) : null;
 
   const showPayChip =
@@ -226,14 +227,14 @@ export function StepRow({
               <p className="text-[10px] text-gray-500 uppercase mb-1">รูปภาพ</p>
               <div className="flex flex-wrap gap-2">
                 {update.image_urls.map((u) => (
-                  <button
+                  <Button variant="unstyled"
                     key={u}
                     type="button"
                     className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200"
                     onClick={() => onPhotoClick(u)}
                   >
                     <img src={u} alt="" className="w-full h-full object-cover" />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

@@ -4,6 +4,7 @@ import { Search, Bell, ChevronLeft, Trash2, ShoppingBag, Truck, CheckCircle, XCi
 import { motion } from 'motion/react';
 import { notificationsApi } from '../../services/api';
 import { NOTIFICATIONS_CHANGED_EVENT } from '../../hooks/useNotificationUnreadCount';
+import { Button } from '../../components/ui/button';
 
 type NotificationItem = {
   noti_id: number;
@@ -159,13 +160,13 @@ export function NotificationsMobile() {
   return (
     <div className="min-h-screen flex flex-col pb-20 bg-white">
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate(-1)}
           className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
         >
           <ChevronLeft size={22} className="text-gray-700" />
-        </button>
+        </Button>
         <div className="flex flex-col items-center">
           <p className="text-[10px] text-gray-400">แจ้งเตือน</p>
           <div className="flex items-center gap-2">
@@ -180,14 +181,14 @@ export function NotificationsMobile() {
           </div>
         </div>
         {unreadCount > 0 ? (
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => void markAllRead()}
             disabled={markingAll}
             className="text-[11px] font-semibold text-[#A238FF] disabled:opacity-50 px-2 py-1 rounded-lg hover:bg-violet-50"
           >
             {markingAll ? '…' : 'อ่านทั้งหมด'}
-          </button>
+          </Button>
         ) : (
           <div className="w-10 h-10" aria-hidden />
         )}
@@ -215,7 +216,7 @@ export function NotificationsMobile() {
           ].map((t) => {
             const active = tab === t.key;
             return (
-              <button
+              <Button variant="unstyled"
                 key={t.key}
                 type="button"
                 onClick={() => setTab(t.key as 'all' | 'rfq' | 'order')}
@@ -227,12 +228,12 @@ export function NotificationsMobile() {
                 }}
               >
                 {t.label}
-              </button>
+              </Button>
             );
           })}
         </div>
         <div className="mb-4 flex items-center justify-between">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => setOnlyUnread((v) => !v)}
             className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors"
@@ -244,7 +245,7 @@ export function NotificationsMobile() {
           >
             ยังไม่อ่าน
             {unreadCount > 0 ? <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px]">{unreadCount}</span> : null}
-          </button>
+          </Button>
           <span className="text-[11px] text-slate-400">{filtered.length} รายการ</span>
         </div>
 
@@ -283,7 +284,7 @@ export function NotificationsMobile() {
                     />
                   </Link>
                 ) : (
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     className="block w-full text-left"
                     onClick={() => {
@@ -298,7 +299,7 @@ export function NotificationsMobile() {
                         void removeNotification(notif.noti_id);
                       }}
                     />
-                  </button>
+                  </Button>
                 )}
               </motion.div>
             ))
@@ -307,14 +308,14 @@ export function NotificationsMobile() {
 
         {canLoadMore ? (
           <div className="mt-4 flex justify-center">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => void load(page + 1, true)}
               disabled={loadingMore}
               className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 disabled:opacity-50"
             >
               {loadingMore ? 'กำลังโหลด...' : 'โหลดเพิ่ม'}
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
@@ -358,14 +359,14 @@ function NotificationCard({
         </p>
       </div>
 
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={onDelete}
         className="shrink-0 w-8 h-8 rounded-lg border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 flex items-center justify-center"
         aria-label="ลบการแจ้งเตือน"
       >
         <Trash2 size={14} />
-      </button>
+      </Button>
     </div>
   );
 }

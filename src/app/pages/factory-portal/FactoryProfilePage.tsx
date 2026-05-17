@@ -42,6 +42,7 @@ import {
   type ProfileFormValues,
 } from '../../components/factory/profile/ProfileFormTypes';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
+import { Button } from '../../components/ui/button';
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const COLORS = {
@@ -253,7 +254,7 @@ function FactoryHeroCard({
         </label>
 
         {coverImageUrl ? (
-          <button
+          <Button variant="unstyled"
             type="button"
             disabled={busy}
             className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-white/95 text-red-600 border border-red-100 shadow-sm hover:bg-red-50 disabled:opacity-50"
@@ -265,7 +266,7 @@ function FactoryHeroCard({
           >
             <Trash2 size={11} />
             ลบพื้นหลัง
-          </button>
+          </Button>
         ) : null}
       </div>
 
@@ -649,13 +650,13 @@ export function FactoryProfilePage() {
     return (
       <div className="py-12 text-center">
         <p className="text-sm text-red-600 mb-3">โหลดข้อมูลไม่สำเร็จ</p>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void factoryQ.refetch()}
           className="px-4 py-2 rounded-xl border border-gray-200 text-sm"
         >
           ลองใหม่
-        </button>
+        </Button>
       </div>
     );
   }
@@ -787,14 +788,14 @@ export function FactoryProfilePage() {
           contentClassName="px-6 py-5"
           badge={sectionBadge(requiredStatus.hasCategories)}
           actionButton={
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => openCategoryPickerRef.current?.()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
             >
               <Plus size={12} />
               เพิ่มหมวดหมู่
-            </button>
+            </Button>
           }
         >
           <CategoriesSection
@@ -831,14 +832,14 @@ export function FactoryProfilePage() {
           contentClassName="px-6 py-5"
           badge={sectionBadge(requiredStatus.hasCertificates)}
           actionButton={
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => openCertAddRef.current?.()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
             >
               <Plus size={12} />
               เพิ่มใบรับรอง
-            </button>
+            </Button>
           }
         >
           <p className="text-xs text-gray-400 mb-3">เช่น GMP, Halal, ISO, มาตรฐานอาหาร</p>

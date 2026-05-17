@@ -24,6 +24,7 @@ import { getStepGuide } from '../../components/features/production/stepGuideConf
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { StatusBadge } from '../../shared/ui';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
+import { Button } from '../../components/ui/button';
 
 function unwrapOrder(raw: Record<string, unknown>): Record<string, unknown> {
   return (raw.order as Record<string, unknown>) ?? raw;
@@ -237,7 +238,7 @@ function NextActionCard({ step, stepIndex, totalSteps, state, customerShipping, 
 
         {/* CTA Button */}
         {canUpdate ? (
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={onUpdate}
             className="w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm"
@@ -249,7 +250,7 @@ function NextActionCard({ step, stepIndex, totalSteps, state, customerShipping, 
               : step.update.status === 'RJ'
                 ? 'ส่งหลักฐานใหม่'
                 : guide.confirmLabel}
-          </button>
+          </Button>
         ) : (
           <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-center">
             <p className="text-xs text-emerald-700 font-medium">
@@ -375,13 +376,13 @@ export function FactoryOrderDetailPage() {
 
       {/* Sticky top bar */}
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-y border-slate-200 px-4 h-14 flex items-center gap-3 rounded-xl">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/factory/orders')}
           className="flex items-center gap-1 text-sm font-medium text-indigo-700"
         >
           <ChevronLeft size={18} /> กลับ
-        </button>
+        </Button>
         <span className="flex-1 text-center text-sm font-bold text-slate-900 truncate">รายละเอียดคำสั่งซื้อ</span>
         <span
           className="text-[11px] font-bold px-2.5 py-1 rounded-full border"

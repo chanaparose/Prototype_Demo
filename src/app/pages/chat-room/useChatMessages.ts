@@ -5,7 +5,7 @@ import { messagesApi } from '../../services/api';
 export function useChatMessages(conversationId: string | undefined) {
   return useQuery({
     queryKey: ['chat-messages', conversationId],
-    queryFn: () => messagesApi.listByConversation(conversationId!),
+    queryFn: () => messagesApi.list(conversationId!),
     enabled: Boolean(conversationId),
   });
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { ChevronLeft, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { profileApi } from '../../services/api';
 import { useAuth } from '../../stores';
+import { Button } from '../../components/ui/button';
 
 type TxItem = {
   id: string;
@@ -78,7 +79,7 @@ export function TransactionHistoryPage() {
   return (
     <div className="space-y-4 pb-24">
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2">
-        <button type="button" onClick={() => navigate(-1)} className="text-slate-600"><ChevronLeft size={18} /></button>
+        <Button variant="unstyled" type="button" onClick={() => navigate(-1)} className="text-slate-600"><ChevronLeft size={18} /></Button>
         <p className="text-sm font-bold text-slate-900">ประวัติธุรกรรม</p>
       </div>
 
@@ -108,7 +109,7 @@ export function TransactionHistoryPage() {
       </div>
 
       <div className="flex justify-center">
-        <button type="button" onClick={() => setPage((p) => p + 1)} className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-700">โหลดเพิ่ม</button>
+        <Button variant="unstyled" type="button" onClick={() => setPage((p) => p + 1)} className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-700">โหลดเพิ่ม</Button>
       </div>
     </div>
   );

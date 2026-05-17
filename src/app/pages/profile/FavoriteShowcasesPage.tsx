@@ -5,6 +5,7 @@ import { useFavorites } from '../../hooks/useFavorites';
 import { useShowcases } from '../../hooks/useShowcases';
 import { ImageWithFallback } from '../../components/shared';
 import type { FactoryShowcase } from '../../stores';
+import { Button } from '../../components/ui/button';
 
 type FavoritesTab = 'all' | 'product' | 'promotion' | 'idea';
 
@@ -54,21 +55,21 @@ export function FavoriteShowcasesPage() {
   return (
     <div className="space-y-4 pb-24">
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate(-1)}
           className="text-slate-600"
           aria-label="ย้อนกลับ"
         >
           <ChevronLeft size={18} />
-        </button>
+        </Button>
         <p className="text-sm font-bold text-slate-900">รายการโปรด</p>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="flex gap-2 overflow-x-auto scrollbar-none">
           {TABS.map((t) => (
-            <button
+            <Button variant="unstyled"
               key={t.id}
               type="button"
               onClick={() => setTab(t.id)}
@@ -80,7 +81,7 @@ export function FavoriteShowcasesPage() {
               }
             >
               {t.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

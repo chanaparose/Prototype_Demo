@@ -16,6 +16,7 @@ import { QuotationCreateForm, type QuotationCreateFormHandle } from '../../compo
 import { QuotationHistoryPanel } from '../../components/features/rfq-detail';
 import { summarizeRfqAddress } from '../../utils/rfqAddressSummary';
 import { DismissRfqButton } from '../../components/features/factory-rfq/DismissRfqButton';
+import { Button } from '../../components/ui/button';
 
 type QuoteRow = QuotationRow & {
   factoryId?: number | string;
@@ -401,14 +402,18 @@ export function FactoryRfqDetailPage() {
         updated_at: new Date().toISOString(),
       };
       await messagesApi.send(
-        buildSendPayload({
-          conv: apiConv,
-          currentUserId: uid,
-          content: 'ใบเสนอราคา',
-          messageType: 'QT',
-          reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
-          quoteData,
-        }),
+        convId,
+        {
+          body: 'ใบเสนอราคา',
+          ...buildSendPayload({
+            conv: apiConv,
+            currentUserId: uid,
+            content: 'ใบเสนอราคา',
+            messageType: 'QT',
+            reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
+            quoteData,
+          }),
+        },
       );
       navigate(chatRoomPath(convId));
     } catch (e) {
@@ -487,14 +492,14 @@ export function FactoryRfqDetailPage() {
     <div style={{ backgroundColor: '#F8F6FA' }} className="min-h-screen pb-24">
       {/* Sticky top bar */}
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate(backPath)}
           className="flex items-center gap-1 text-sm font-medium"
           style={{ color: '#4338CA' }}
         >
           <ChevronLeft size={18} /> กลับ
-        </button>
+        </Button>
         <span className="flex-1 text-center text-sm font-bold" style={{ color: '#2E2252' }}>
           รายละเอียด RFQ
         </span>
@@ -593,7 +598,7 @@ export function FactoryRfqDetailPage() {
                     <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3">รูปอ้างอิง</p>
                     <div className="flex flex-wrap gap-2">
                       {imageUrls.slice(0, 5).map((url, i) => (
-                        <button
+                        <Button variant="unstyled"
                           key={url}
                           type="button"
                           onClick={() => setLightbox(i)}
@@ -601,7 +606,7 @@ export function FactoryRfqDetailPage() {
                           style={{ outlineColor: '#4F46E5' }}
                         >
                           <img src={url} alt="" className="w-full h-full object-cover" />
-                        </button>
+                        </Button>
                       ))}
                       {imageUrls.length > 5 ? (
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500">
@@ -778,14 +783,14 @@ export function FactoryRfqDetailPage() {
                 ) : null}
 
                 {canEdit ? (
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     disabled={cancelBusy}
                     onClick={() => void cancelQuote()}
                     className="w-full py-3 rounded-xl border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50"
                   >
                     ถอนใบเสนอราคา
-                  </button>
+                  </Button>
                 ) : null}
                 {!dismissBusy && !myQuote ? (
                   <DismissRfqButton
@@ -809,15 +814,15 @@ export function FactoryRfqDetailPage() {
                   เปิดห้องแชทเดิมพร้อม prefill ข้อความ (ยังไม่ส่งทันที) และแนบบริบท RFQ
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     disabled={chatBusy}
                     onClick={() => void openChatToCustomer()}
                     className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm disabled:opacity-50"
                   >
                     ส่งข้อความหาลูกค้า
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="unstyled"
                     type="button"
                     disabled={chatBusy}
                     onClick={() => void sendQuoteMessageToCustomer()}
@@ -825,7 +830,7 @@ export function FactoryRfqDetailPage() {
                     style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
                   >
                     ส่งใบเสนอราคาในแชท (QT)
-                  </button>
+                  </Button>
                 </div>
               </section>
             ) : null}
@@ -844,14 +849,14 @@ export function FactoryRfqDetailPage() {
           className="fixed inset-0 z-[60] bg-black/75 flex items-center justify-center p-4"
           onClick={() => setLightbox(null)}
         >
-          <button
+          <Button variant="unstyled"
             type="button"
             className="absolute top-4 right-4 rounded-full bg-white/15 p-2 text-white hover:bg-white/25"
             onClick={() => setLightbox(null)}
             aria-label="ปิด"
           >
             <X size={22} />
-          </button>
+          </Button>
           <img
             src={imageUrls[lightbox]}
             alt=""

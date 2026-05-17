@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { profileApi } from "../../services/api";
+import { Button } from '../../components/ui/button';
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -40,13 +41,13 @@ export function ChangePasswordPage() {
   return (
     <div className="space-y-4 pb-24">
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate(-1)}
           className="text-slate-600"
         >
           <ChevronLeft size={18} />
-        </button>
+        </Button>
         <p className="text-sm font-bold text-slate-900">เปลี่ยนรหัสผ่าน</p>
       </div>
       {error ? (
@@ -72,7 +73,7 @@ export function ChangePasswordPage() {
                 }
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 pr-9 text-sm"
               />
-              <button
+              <Button variant="unstyled"
                 type="button"
                 title="แสดง/ซ่อนรหัสผ่าน"
                 onClick={() =>
@@ -85,7 +86,7 @@ export function ChangePasswordPage() {
                 ) : (
                   <Eye size={16} />
                 )}
-              </button>
+              </Button>
             </div>
           </label>
         ))}
@@ -102,14 +103,14 @@ export function ChangePasswordPage() {
           </div>
         </div>
 
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void submit()}
           disabled={saving}
           className="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold disabled:opacity-50"
         >
           {saving ? "กำลังบันทึก..." : "เปลี่ยนรหัสผ่าน"}
-        </button>
+        </Button>
       </div>
     </div>
   );

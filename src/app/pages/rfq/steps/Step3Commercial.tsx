@@ -14,6 +14,7 @@ import {
   type AddressFormPayload,
 } from '../../../components/factory/AddressFormModal';
 import type { RFQDraft } from '../useRFQDraft';
+import { Button } from '../../../components/ui/button';
 
 /* ── Types ── */
 type Address = {
@@ -157,7 +158,7 @@ export function Step3Commercial({ draft, setDraft }: Props) {
             <div className="h-14 rounded-xl bg-gray-100 animate-pulse opacity-50" />
           </div>
         ) : addresses.length === 0 ? (
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => setModalOpen(true)}
             className="w-full border-2 border-dashed border-gray-200 rounded-xl p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all"
@@ -167,7 +168,7 @@ export function Step3Commercial({ draft, setDraft }: Props) {
             </div>
             <span className="text-[13px] font-semibold text-gray-600">เพิ่มที่อยู่จัดส่ง</span>
             <span className="text-[10px] text-gray-400">จำเป็นต้องมีที่อยู่สำหรับจัดส่งสินค้า</span>
-          </button>
+          </Button>
         ) : (
           <div className="flex flex-col gap-2">
             {addresses.map((addr) => {
@@ -182,7 +183,7 @@ export function Step3Commercial({ draft, setDraft }: Props) {
                 .filter(Boolean)
                 .join(', ');
               return (
-                <button
+                <Button variant="unstyled"
                   key={addr.id}
                   type="button"
                   onClick={() => setDraft({ delivery_address_id: addr.id })}
@@ -209,17 +210,17 @@ export function Step3Commercial({ draft, setDraft }: Props) {
                     </div>
                     {active && <CheckCircle2 size={17} className="text-violet-500 shrink-0 mt-0.5" />}
                   </div>
-                </button>
+                </Button>
               );
             })}
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setModalOpen(true)}
               className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all"
             >
               <Plus size={14} />
               เพิ่มที่อยู่ใหม่
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -237,7 +238,7 @@ export function Step3Commercial({ draft, setDraft }: Props) {
           {shippingMethods.map((method) => {
             const active = draft.shipping_method_id === method.id;
             return (
-              <button
+              <Button variant="unstyled"
                 key={method.id}
                 type="button"
                 onClick={() => setDraft({ shipping_method_id: method.id })}
@@ -256,7 +257,7 @@ export function Step3Commercial({ draft, setDraft }: Props) {
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${active ? 'border-violet-500' : 'border-gray-300'}`}>
                   {active && <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />}
                 </div>
-              </button>
+              </Button>
             );
           })}
         </div>

@@ -3,6 +3,7 @@ import { showcasesApi } from "../../../services/api";
 import { normShowcase } from "../../../hooks/useShowcases";
 import type { FactoryShowcase } from "../../../stores";
 import { Search, Plus, X } from "lucide-react";
+import { Button } from '../../ui/button';
 
 interface RelatedShowcasePickerProps {
   factoryId: number;
@@ -107,7 +108,7 @@ export function RelatedShowcasePicker({
         <p className="text-xs text-gray-500">
           เลือกแล้ว {selected.size}/{max}
         </p>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => setOpen(true)}
           disabled={disabled}
@@ -115,7 +116,7 @@ export function RelatedShowcasePicker({
         >
           <Plus size={14} />
           เพิ่มสินค้าอ้างอิง
-        </button>
+        </Button>
       </div>
 
       {selected.size > 0 ? (
@@ -144,7 +145,7 @@ export function RelatedShowcasePicker({
                     {item.category || "-"}
                   </p>
                 </div>
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => {
                     const n = Number(item.id);
@@ -155,7 +156,7 @@ export function RelatedShowcasePicker({
                   aria-label="ลบรายการอ้างอิง"
                 >
                   <X size={14} />
-                </button>
+                </Button>
               </div>
             ))}
         </div>
@@ -175,14 +176,14 @@ export function RelatedShowcasePicker({
                   เลือกได้สูงสุด {max} รายการ
                 </p>
               </div>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="ปิด"
                 className="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center"
               >
                 <X size={16} />
-              </button>
+              </Button>
             </div>
 
             <div className="p-4 border-b border-gray-100 space-y-2">
@@ -206,7 +207,7 @@ export function RelatedShowcasePicker({
                 ].map((t) => {
                   const active = typeFilter === t.id;
                   return (
-                    <button
+                    <Button variant="unstyled"
                       key={t.id}
                       type="button"
                       onClick={() =>
@@ -222,7 +223,7 @@ export function RelatedShowcasePicker({
                       }}
                     >
                       {t.label}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -283,14 +284,14 @@ export function RelatedShowcasePicker({
                 เลือกแล้ว {draftSet.size}/{max}
               </p>
               <div className="flex items-center gap-2">
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => setOpen(false)}
                   className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600"
                 >
                   ยกเลิก
-                </button>
-                <button
+                </Button>
+                <Button variant="unstyled"
                   type="button"
                   onClick={apply}
                   disabled={disabled}
@@ -301,7 +302,7 @@ export function RelatedShowcasePicker({
                   }}
                 >
                   ยืนยันรายการอ้างอิง
-                </button>
+                </Button>
               </div>
             </div>
           </div>

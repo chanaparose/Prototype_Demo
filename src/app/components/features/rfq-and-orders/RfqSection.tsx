@@ -26,6 +26,7 @@ import {
 } from './constants';
 import { formatBudget, formatDate } from './utils';
 import { CollapsibleCard } from '../../../shared/ui';
+import { Button } from '../../ui/button';
 
 // Brand colors per brief
 const GREEN = '#059669';
@@ -267,7 +268,7 @@ export function RfqSection({
   return (
     <>
       {/* FAB */}
-      <button
+      <Button variant="unstyled"
         onClick={() => navigate('/create-rfq')}
         className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
         style={{
@@ -276,7 +277,7 @@ export function RfqSection({
         }}
       >
         <Plus size={24} className="text-white" />
-      </button>
+      </Button>
 
       {/* ─── Section A: Active ─────────────────────────────────── */}
       <div className="mb-4">

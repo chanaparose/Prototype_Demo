@@ -1,0 +1,74 @@
+import type { Factory } from '../../../stores';
+
+export const factoryIdeasTheme = {
+  purple: '#7A4B94',
+  purpleLight: '#9D77B2',
+  orange: '#E38844',
+  blue: '#2E2252',
+  productBadgeBlue: '#2563EB',
+  white: '#FFFFFF',
+  gray: '#F5F5F5',
+  lightPurpleBg: '#F8F6FA',
+  teal: '#0D9488',
+} as const;
+
+export type FactoryIdeasContentType =
+  | 'all'
+  | 'product'
+  | 'promotion'
+  | 'idea'
+  | 'material'
+  | 'factory';
+
+export const factoryIdeasContentTypes: { id: FactoryIdeasContentType; label: string }[] = [
+  { id: 'all', label: 'ทั้งหมด' },
+  { id: 'product', label: 'สินค้า' },
+  { id: 'promotion', label: 'โปรโมชัน' },
+  { id: 'material', label: 'วัตถุดิบ' },
+  { id: 'idea', label: 'ไอเดีย' },
+  { id: 'factory', label: 'โรงงาน' },
+];
+
+export const factoryIdeasContentTypeLabel: Record<Exclude<FactoryIdeasContentType, 'all'>, string> = {
+  product: 'สินค้า',
+  promotion: 'โปรโมชัน',
+  material: 'วัตถุดิบ',
+  idea: 'ไอเดีย',
+  factory: 'โรงงาน',
+};
+
+export const factoryIdeasContentTypeBadge: Record<Exclude<FactoryIdeasContentType, 'all'>, string> = {
+  product: factoryIdeasTheme.productBadgeBlue,
+  promotion: factoryIdeasTheme.orange,
+  material: '#0EA5A4',
+  idea: factoryIdeasTheme.purple,
+  factory: factoryIdeasTheme.teal,
+};
+
+export function normalizeFactoryIdeaFactory(r: Record<string, unknown>): Factory {
+  const provinceName = String(r.province_name ?? r.provinceName ?? '').trim();
+  return {
+    id: String(r.factory_id ?? r.id ?? ''),
+    name: String(r.factory_name ?? r.name ?? ''),
+    image: String(r.image_url ?? r.image ?? r.logo_url ?? ''),
+    location: provinceName || String(r.location ?? r.city ?? ''),
+    ...(provinceName ? { provinceName } : {}),
+    rating: Number(r.avg_rating ?? r.rating ?? 0),
+    reviews: Number(r.review_count ?? r.reviews ?? 0),
+    specialization: String(r.specialization ?? ''),
+    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
+    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
+    verified: Boolean(r.is_verified ?? r.verified ?? false),
+    completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
+    priceRange: String(r.price_range ?? r.priceRange ?? ''),
+  };
+}
+
+export function getFactoryIdeaDetailPath(type: string, id: string) {
+  const q = encodeURIComponent(id);
+  if (type === 'product') return `/product-detail?showcase_id=${q}`;
+  if (type === 'material') return `/product-detail?showcase_id=${q}`;
+  if (type === 'promotion') return `/promotion-detail?showcase_id=${q}`;
+  return `/idea-detail?showcase_id=${q}`;
+}

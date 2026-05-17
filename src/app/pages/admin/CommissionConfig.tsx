@@ -1,5 +1,6 @@
 import React from "react";
 import { platformConfigApi, type PlatformConfig } from "../../services/api";
+import { Button } from '../../components/ui/button';
 
 type FormState = {
   default_commission_rate: number;
@@ -140,7 +141,7 @@ export function CommissionConfig() {
           <p>- Accepted quotes (locked): 103</p>
           <p>- Est monthly commission: ฿245k → ฿0</p>
         </div>
-        <button
+        <Button variant="unstyled"
           type="button"
           disabled={saving}
           onClick={async () => {
@@ -172,7 +173,7 @@ export function CommissionConfig() {
           className="w-full py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50"
         >
           {saving ? "Saving..." : "Save -> New Ver"}
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-4">

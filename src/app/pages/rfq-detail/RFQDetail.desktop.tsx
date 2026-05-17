@@ -16,6 +16,7 @@ import {
   RfqDetailStatusCard,
   STATUS_LABEL,
 } from '../../components/features/rfq-detail';
+import { Button } from '../../components/ui/button';
 
 const COLORS = {
   purple: '#7A4B94',
@@ -76,13 +77,13 @@ export function RFQDetailDesktop() {
     return (
       <div className="hidden lg:block min-h-[60vh]" style={{ backgroundColor: COLORS.lightPurpleBg }}>
         <div className="max-w-6xl mx-auto px-8 py-14 flex flex-col items-center gap-4 text-center">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => navigate('/orders')}
             className="w-10 h-10 rounded-xl flex items-center justify-center border border-gray-200 bg-white self-start"
           >
             <ArrowLeft size={18} style={{ color: COLORS.blue }} />
-          </button>
+          </Button>
           {loading ? (
             <>
               <div
@@ -96,28 +97,28 @@ export function RFQDetailDesktop() {
           ) : error ? (
             <>
               <p className="text-sm font-semibold text-red-600 mb-2">{error}</p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="text-sm font-semibold underline"
                 style={{ color: COLORS.purple }}
                 onClick={() => refetch()}
               >
                 ลองใหม่
-              </button>
+              </Button>
             </>
           ) : (
             <>
               <p className="text-sm font-semibold" style={{ color: COLORS.blue }}>
                 ไม่พบคำขอนี้ หรือคุณไม่มีสิทธิ์ดู
               </p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="text-sm font-semibold underline"
                 style={{ color: COLORS.purple }}
                 onClick={() => navigate('/orders')}
               >
                 กลับไป คำขอราคา & คำสั่งซื้อ
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -158,14 +159,14 @@ export function RFQDetailDesktop() {
         <div className="flex items-start justify-between gap-6 mb-6">
           <div className="min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => navigate('/orders')}
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-gray-200 hover:border-gray-300 transition-colors"
                 style={{ backgroundColor: COLORS.white }}
               >
                 <ArrowLeft size={18} style={{ color: COLORS.blue }} />
-              </button>
+              </Button>
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: COLORS.orange }}>
                   RFQ Detail
@@ -187,7 +188,7 @@ export function RFQDetailDesktop() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {canClose ? (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 disabled={closing}
                 onClick={async () => {
@@ -208,7 +209,7 @@ export function RFQDetailDesktop() {
                 style={{ borderColor: COLORS.purple, color: COLORS.purple, backgroundColor: '#F8F6FA' }}
               >
                 {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
-              </button>
+              </Button>
             ) : null}
           </div>
         </div>
@@ -274,14 +275,14 @@ export function RFQDetailDesktop() {
                     เปิด/ปิดเพื่อดูรายละเอียดสเปก
                   </p>
                 </div>
-                <button
+                <Button variant="unstyled"
                   type="button"
                   className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-100 hover:bg-gray-100"
                   style={{ backgroundColor: COLORS.lightPurpleBg, color: COLORS.blue }}
                   onClick={() => setSpecsOpen((v) => !v)}
                 >
                   {specsOpen ? 'ซ่อน' : 'แสดง'}
-                </button>
+                </Button>
               </div>
               <div className="p-4">
                 <RfqDetailSpecs
@@ -303,14 +304,14 @@ export function RFQDetailDesktop() {
                 <p className="text-xs mt-1" style={{ color: '#EBD3FF' }}>
                   สร้างคำขอใหม่เพื่อรับใบเสนอราคาจากโรงงานได้ทันที
                 </p>
-                <button
+                <Button variant="unstyled"
                   type="button"
                   className="mt-4 w-full py-3 rounded-xl bg-white/95 text-sm font-bold"
                   style={{ color: COLORS.purple }}
                   onClick={() => navigate('/create-rfq')}
                 >
                   + สร้างคำขอราคา
-                </button>
+                </Button>
               </div>
             </div>
           </div>

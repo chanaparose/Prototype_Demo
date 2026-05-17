@@ -4,6 +4,7 @@ import { Search, RefreshCw } from 'lucide-react';
 import { ChatPartyHeader } from '../../components/features/chat/ChatPartyHeader';
 import type { UiConversation } from './types';
 import { formatConversationTime } from './types';
+import { Button } from '../../components/ui/button';
 
 type MessagesMobileProps = {
   searchText: string;
@@ -85,7 +86,7 @@ export function MessagesMobile({
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
           <p className="text-sm text-gray-600 px-4">{error}</p>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => void onReload()}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
@@ -93,7 +94,7 @@ export function MessagesMobile({
           >
             <RefreshCw size={16} />
             ลองอีกครั้ง
-          </button>
+          </Button>
         </div>
       ) : filtered.length === 0 ? (
         <MobileEmptyState />

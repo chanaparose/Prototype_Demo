@@ -1,6 +1,7 @@
 import React from 'react';
 import { BadgeCheck, ChevronRight, MapPin, Star, Plus } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
+import { Button } from '../../ui/button';
 
 export type FactoryItem = {
   id: string;
@@ -90,13 +91,13 @@ export function ExploreFactoryGrid({ factories, onFactoryClick, onSeeAll }: Expl
           ))}
         </div>
         <div className="mt-3 flex justify-center">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={onSeeAll}
             className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-1.5 rounded-md text-[11px] font-medium transition-colors"
           >
             ดูเพิ่มเติม
-          </button>
+          </Button>
         </div>
       </div>
     </div>

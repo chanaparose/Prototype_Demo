@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Copy, Gift } from 'lucide-react';
+import { Button } from '../../ui/button';
 
 type Slide = { id: string; title: string; subtitle: string; code: string };
 
@@ -164,7 +165,7 @@ export function ExplorePromoCarousel({
                     <div className="flex items-center gap-2 backdrop-blur-sm rounded-lg px-3 py-1.5 border" style={{ background: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.40)' }}>
                       <span style={{ fontSize: 15, letterSpacing: 2 }} className="font-mono font-bold text-white">{promo.code}</span>
                     </div>
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={() => handleCopy(promo.code, promo.id)}
                       className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors font-semibold"
@@ -172,7 +173,7 @@ export function ExplorePromoCarousel({
                     >
                       <Copy className="w-3.5 h-3.5" />
                       {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -183,7 +184,7 @@ export function ExplorePromoCarousel({
 
       <div className="flex justify-center gap-1.5 mt-4">
         {slides.map((_, i) => (
-          <button
+          <Button variant="unstyled"
             key={i}
             type="button"
             aria-label={`สไลด์ ${i + 1}`}

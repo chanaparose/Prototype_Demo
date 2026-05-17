@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { mediaApi } from '../../../services/api';
 import { DimensionInput } from '../../../shared/ui/DimensionInput';
 import type { RFQDraft } from '../useRFQDraft';
+import { Button } from '../../../components/ui/button';
 
 type Props = {
   draft: RFQDraft;
@@ -31,13 +32,13 @@ export function Step2Specifications({ draft, setDraft }: Props) {
 
   return (
     <div className="space-y-3">
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={() => setAdvanced((v) => !v)}
         className="text-xs font-semibold text-violet-600"
       >
         {advanced ? 'Basic' : 'Advanced'}
-      </button>
+      </Button>
       <input
         value={draft.material_grade}
         onChange={(e) => setDraft({ material_grade: e.target.value })}
@@ -80,7 +81,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
             if (ref.current) ref.current.value = '';
           }}
         />
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => ref.current?.click()}
           disabled={uploading || draft.reference_images.length >= 5}
@@ -91,7 +92,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
             : draft.reference_images.length >= 5
               ? 'อัปโหลดครบ 5 ไฟล์แล้ว'
               : 'อัปโหลดไฟล์อ้างอิง (สูงสุด 5 ไฟล์)'}
-        </button>
+        </Button>
         {draft.reference_images.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {draft.reference_images.map((u, idx) => (
@@ -111,14 +112,14 @@ export function Step2Specifications({ draft, setDraft }: Props) {
                     เอกสารอ้างอิง #{idx + 1}
                   </div>
                 )}
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => removeReference(idx)}
                   className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white text-xs leading-none"
                   aria-label={`ลบไฟล์อ้างอิง ${idx + 1}`}
                 >
                   ×
-                </button>
+                </Button>
               </div>
             ))}
           </div>

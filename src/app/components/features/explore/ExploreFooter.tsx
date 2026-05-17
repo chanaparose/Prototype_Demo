@@ -1,5 +1,6 @@
 import React from 'react';
 import { Facebook, Instagram, Youtube, ChevronDown } from 'lucide-react';
+import { Button } from '../../ui/button';
 
 export function ExploreFooter() {
   const [open, setOpen] = React.useState<null | 'support' | 'categories' | 'knowledge' | 'apps'>(null);
@@ -210,7 +211,7 @@ function AccordionItem({
 }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={onToggle}
         className="w-full px-3 py-2.5 text-left text-sm font-semibold text-[#292259] flex items-center justify-between"
@@ -221,7 +222,7 @@ function AccordionItem({
           className={`text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
           aria-hidden
         />
-      </button>
+      </Button>
       {open ? <div className="px-3 pb-3">{children}</div> : null}
     </div>
   );

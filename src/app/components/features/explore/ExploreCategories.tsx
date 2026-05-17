@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import type { ExploreCategoryItem } from '../../../utils/exploreCategoriesFromApi';
 import { exploreDisplayNameForTile } from '../../../utils/exploreCategoriesFromApi';
 import { EXPLORE_CATEGORY_TILES } from './exploreCategoryTilesConfig';
+import { Button } from '../../ui/button';
 
 export type CategoryItem = ExploreCategoryItem;
 
@@ -59,13 +60,13 @@ export function ExploreCategories({
       {apiError && !apiLoading && (
         <div className="mx-4 mb-2 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-[13px] text-amber-900" role="alert">
           <span>{apiError}</span>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => void onRetryCategoriesApi()}
             className="ml-2 font-semibold text-[#A238FF] underline hover:no-underline"
           >
             ลองอีกครั้ง
-          </button>
+          </Button>
           <p className="mt-1 text-[11px] text-amber-800/90">ใช้ชื่อเริ่มต้นในโค้ดจนกว่าจะโหลดสำเร็จ</p>
         </div>
       )}

@@ -3,6 +3,7 @@ import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, MapPin, Star } from 
 import { ImageWithFallback } from '../../shared';
 import type { FactoryItem } from './ExploreFactoryGrid';
 import { formatCompactNumber } from '@/utils/formatting';
+import { Button } from '../../ui/button';
 
 type Props = {
   factories: FactoryItem[];
@@ -91,13 +92,13 @@ export function ExploreFactoryShowcase({
           </p>
         </div>
         {onSeeAll ? (
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={onSeeAll}
             className="shrink-0 inline-flex items-center gap-0.5 text-[11px] lg:text-xs font-medium text-[#A238FF] hover:underline"
           >
             ดูทั้งหมด <ArrowRight size={12} />
-          </button>
+          </Button>
         ) : null}
       </div>
 
@@ -105,7 +106,7 @@ export function ExploreFactoryShowcase({
       <div className="relative">
         {variant === 'desktop' && items.length > 1 ? (
           <>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => scrollTo(activeIdx - 1)}
               disabled={activeIdx === 0}
@@ -113,8 +114,8 @@ export function ExploreFactoryShowcase({
               aria-label="ก่อนหน้า"
             >
               <ChevronLeft size={18} className="text-gray-600" />
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               type="button"
               onClick={() => scrollTo(activeIdx + 1)}
               disabled={activeIdx >= items.length - 1}
@@ -122,7 +123,7 @@ export function ExploreFactoryShowcase({
               aria-label="ถัดไป"
             >
               <ChevronRight size={18} className="text-gray-600" />
-            </button>
+            </Button>
           </>
         ) : null}
 
@@ -135,7 +136,7 @@ export function ExploreFactoryShowcase({
           {items.map((factory, i) => {
             const palette = palettes[i % palettes.length];
             return (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 key={factory.id}
                 onClick={() => onFactoryClick(factory.id)}
@@ -209,7 +210,7 @@ export function ExploreFactoryShowcase({
                     ดูรายละเอียด <ArrowRight size={10} />
                   </div>
                 </div>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -219,7 +220,7 @@ export function ExploreFactoryShowcase({
       {items.length > 1 ? (
         <div className="mt-2 flex items-center justify-center gap-1.5">
           {items.map((_, i) => (
-            <button
+            <Button variant="unstyled"
               key={`fac-dot-${i}`}
               type="button"
               onClick={() => scrollTo(i)}

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
 import { adminApi } from '../../services/api';
+import { Button } from '../../components/ui/button';
 
 export type FactoryApprovalStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
@@ -123,15 +124,15 @@ function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: Confi
         )}
 
         <div className="flex gap-3 justify-end">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={onCancel}
             disabled={submitting}
             className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
           >
             ยกเลิก
-          </button>
-          <button
+          </Button>
+          <Button variant="unstyled"
             type="button"
             onClick={() => onConfirm(reason)}
             disabled={submitting || (type === 'reject' && reason.trim().length < 10)}
@@ -140,7 +141,7 @@ function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: Confi
             }`}
           >
             {submitting ? 'กำลังบันทึก...' : type === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -258,7 +259,7 @@ export function AdminFactoriesPage() {
             const active = statusTab === tab.key;
             const count = counts[tab.key] ?? 0;
             return (
-              <button
+              <Button variant="unstyled"
                 key={tab.key}
                 type="button"
                 onClick={() => setStatusTab(tab.key)}
@@ -270,7 +271,7 @@ export function AdminFactoriesPage() {
                 <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
                   {count}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -317,13 +318,13 @@ export function AdminFactoriesPage() {
                             {factory.factory_name.charAt(0)}
                           </div>
                           <div>
-                            <button
+                            <Button variant="unstyled"
                               type="button"
                               onClick={() => navigate(`/admin/factories/${factory.factory_id}`)}
                               className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline text-sm text-left"
                             >
                               {factory.factory_name}
-                            </button>
+                            </Button>
                             <p className="text-[11px] text-slate-400 mt-0.5">{factory.province} · {factory.business_type}</p>
                           </div>
                         </div>
@@ -339,32 +340,32 @@ export function AdminFactoriesPage() {
                         <div className="flex items-center justify-end gap-1.5">
                           {factory.approval_status === 'pending' && (
                             <>
-                              <button
+                              <Button variant="unstyled"
                                 type="button"
                                 onClick={() => setDialog({ type: 'approve', factory })}
                                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition-colors"
                               >
                                 <CheckCircle size={13} />
                                 อนุมัติ
-                              </button>
-                              <button
+                              </Button>
+                              <Button variant="unstyled"
                                 type="button"
                                 onClick={() => setDialog({ type: 'reject', factory })}
                                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors"
                               >
                                 <XCircle size={13} />
                                 ปฏิเสธ
-                              </button>
+                              </Button>
                             </>
                           )}
-                          <button
+                          <Button variant="unstyled"
                             type="button"
                             onClick={() => navigate(`/admin/factories/${factory.factory_id}`)}
                             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200 transition-colors"
                           >
                             <Eye size={13} />
                             ดู
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BaseModal } from '../../shared/ui';
 import { LbiAddressPicker, type LbiAddressValue } from '../common/LbiAddressPicker';
+import { Button } from '../ui/button';
 
 type Row = Record<string, unknown>;
 
@@ -97,7 +98,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       placement="bottom"
       footer={
         <div className="flex gap-2 w-full">
-          <button
+          <Button variant="unstyled"
             type="button"
             disabled={saving}
             onClick={() => void submit()}
@@ -105,15 +106,15 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
           >
             {saving ? 'กำลังบันทึก...' : mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึกการแก้ไข'}
-          </button>
-          <button
+          </Button>
+          <Button variant="unstyled"
             type="button"
             onClick={onClose}
             disabled={saving}
             className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700"
           >
             ยกเลิก
-          </button>
+          </Button>
         </div>
       }
     >

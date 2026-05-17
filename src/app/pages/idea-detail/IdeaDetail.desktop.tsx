@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '../../components/features/showcase-detail';
 import { useNavigate } from "react-router";
 import {
   ArrowLeft,
@@ -19,28 +20,14 @@ import { MarkdownBody } from "../../shared/markdown/MarkdownBody";
 import { showcasesApi } from "../../services/api";
 import { normShowcase } from "../../hooks/useShowcases";
 import { RelatedShowcasesSection } from "../../components/features/idea-detail/RelatedShowcasesSection";
+import { Button } from '../../components/ui/button';
 
 const CARD = {
   purple: "#7A4B94",
   blue: "#2E2252",
 } as const;
 
-const BRAND = {
-  orange: "#E38844",
-  purple: "#7A4B94",
-  purpleSoft: "#F8F6FA",
-  ink: "#2E2252",
-} as const;
 
-function formatThaiDate(date: string): string {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return "-";
-  return new Intl.DateTimeFormat("th-TH", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(d);
-}
 
 export function IdeaDetailDesktop() {
   const navigate = useNavigate();
@@ -98,7 +85,7 @@ export function IdeaDetailDesktop() {
         className="hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]"
         style={{ background: BRAND.purpleSoft }}
       >
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={handleBack}
           aria-label="กลับไป"
@@ -106,7 +93,7 @@ export function IdeaDetailDesktop() {
           style={{ color: BRAND.purple }}
         >
           <ArrowLeft className="w-4 h-4" /> กลับ
-        </button>
+        </Button>
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
           <p className="text-4xl mb-3">💡</p>
           <p className="text-[14px] text-gray-500 font-medium">
@@ -129,14 +116,14 @@ export function IdeaDetailDesktop() {
     >
       <div className="px-8 pt-5 pb-3">
         <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={handleBack}
             className="inline-flex items-center gap-1 font-medium hover:opacity-80"
             style={{ color: BRAND.purple }}
           >
             <ArrowLeft className="w-3.5 h-3.5" /> กลับ
-          </button>
+          </Button>
           <Chevron className="w-3 h-3 text-gray-300" />
           <span>{item.category || "บทความไอเดีย"}</span>
           {subName ? (
@@ -226,7 +213,7 @@ export function IdeaDetailDesktop() {
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             {canChat ? (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() =>
                   void startChat(item.factoryId, {
@@ -245,9 +232,9 @@ export function IdeaDetailDesktop() {
                   <MessageCircle className="w-4 h-4" />
                 )}
                 แชทกับโรงงาน
-              </button>
+              </Button>
             ) : null}
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate(`/factories/${item.factoryId}`)}
               className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-semibold border ${canChat ? "" : "col-span-2"}`}
@@ -257,7 +244,7 @@ export function IdeaDetailDesktop() {
               }}
             >
               ดูโปรไฟล์โรงงาน <ArrowUpRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -316,7 +303,7 @@ export function IdeaDetailDesktop() {
                     {excerpt || " "}
                   </p>
                   <div className="pt-2 mt-3 border-t border-gray-100 space-y-1.5">
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -332,7 +319,7 @@ export function IdeaDetailDesktop() {
                           style={{ color: CARD.purple }}
                         />
                       ) : null}
-                    </button>
+                    </Button>
                     <div className="flex items-center justify-between gap-2 text-[10px] text-gray-400">
                       <span className="min-w-0 truncate">
                         MOQ{" "}

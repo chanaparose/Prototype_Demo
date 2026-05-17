@@ -18,6 +18,7 @@ import { ordersApi } from '../../../services/api';
 import type { Quotation } from './QuotationBOQCard';
 import { QuotationBOQDetailsPanel, quotationFromOfferSource } from './QuotationBOQCard';
 import { QuotationHistoryPanel } from './QuotationHistoryPanel';
+import { Button } from '../../ui/button';
 
 export type OfferItem = {
   id: string;
@@ -621,7 +622,7 @@ export function RfqDetailOffersSection({
                 </div>
                 <div className="flex gap-2">
                   {onChatWithOffer ? (
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -635,7 +636,7 @@ export function RfqDetailOffersSection({
                       }}
                     >
                       <MessageCircle size={14} /> แชท
-                    </button>
+                    </Button>
                   ) : null}
                   {isAccepted ? (
                     /* AC: แสดง link ไป order แทนปุ่ม */
@@ -649,26 +650,26 @@ export function RfqDetailOffersSection({
                         ดูคำสั่งซื้อ
                       </Link>
                     ) : (
-                      <button
+                      <Button variant="unstyled"
                         type="button"
                         disabled
                         className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60"
                         style={{ background: '#059669', fontWeight: 600 }}
                       >
                         ยอมรับแล้ว ✓
-                      </button>
+                      </Button>
                     )
                   ) : isExpired ? (
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       disabled
                       className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-70"
                       style={{ background: '#EA580C', fontWeight: 600 }}
                     >
                       ใบเสนอราคาหมดอายุ
-                    </button>
+                    </Button>
                   ) : isRequestClosed ? (
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       disabled
                       className="flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-70"
@@ -679,9 +680,9 @@ export function RfqDetailOffersSection({
                         : rfqStatus === 'expired'
                           ? 'หมดระยะเวลารับใบเสนอราคา'
                           : 'ปิดคำขอแล้ว'}
-                    </button>
+                    </Button>
                   ) : (
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={(e) => handleAcceptOffer(offer.id, e)}
                       disabled={!!acceptingId || isRejected}
@@ -693,7 +694,7 @@ export function RfqDetailOffersSection({
                         : isRejected
                           ? 'ไม่ได้รับการเลือก'
                           : 'ยอมรับข้อเสนอ'}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

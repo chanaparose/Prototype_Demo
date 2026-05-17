@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Search, SlidersHorizontal, Plus, ShoppingBag, ChevronRight, Tag, Leaf, MapPin, Star, Sparkles } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 import {
   ExplorePromoCarousel,
   ExploreCategories,
@@ -89,12 +90,12 @@ export function ExploreMobile({
             className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400"
           />
         </div>
-        <button
+        <Button variant="unstyled"
           type="button"
           className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center shrink-0 hover:border-[#A656A0]/30 transition-colors"
         >
           <SlidersHorizontal size={16} className="text-[#A656A0]" />
-        </button>
+        </Button>
       </div>
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
@@ -115,13 +116,13 @@ export function ExploreMobile({
           <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
             <ShoppingBag size={15} className="text-[#F28A2E]" /> สินค้าแนะนำ
           </h3>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => navigate('/factory-ideas?type=product')}
             className="text-[#A656A0] text-xs font-medium flex items-center gap-0.5"
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
-          </button>
+          </Button>
         </div>
 
         {/* Cards — full-width horizontal scroll (เริ่มที่ pl-4 ซ้าย, spacer ขวา) */}
@@ -189,13 +190,13 @@ export function ExploreMobile({
             <div className="rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-4 py-5 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
               <p className="mt-1 text-xs text-gray-400">ดูไอเดียสินค้าและโรงงานได้จากปุ่มด้านล่าง</p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=product')}
                 className="mt-3 w-full rounded-full border border-[#A656A0]/40 bg-white py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
               >
                 ดูสินค้าแนะนำ
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -207,13 +208,13 @@ export function ExploreMobile({
           <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
             <Leaf size={15} className="text-[#059669]" /> วัตถุดิบแนะนำ
           </h3>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => navigate('/factory-ideas?type=material')}
             className="text-[#059669] text-xs font-medium flex items-center gap-0.5"
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
-          </button>
+          </Button>
         </div>
 
         {/* Cards — horizontal scroll */}
@@ -278,13 +279,13 @@ export function ExploreMobile({
             <div className="rounded-xl border border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50/50 to-white px-4 py-5 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีวัตถุดิบแนะนำในขณะนี้</p>
               <p className="mt-1 text-xs text-gray-400">ดูข้อมูลวัตถุดิบได้จากปุ่มด้านล่าง</p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=material')}
                 className="mt-3 w-full rounded-full border border-[#059669]/40 bg-white py-2 text-sm font-medium text-[#059669] hover:bg-emerald-50 transition-colors"
               >
                 ดูวัตถุดิบแนะนำ
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -318,13 +319,13 @@ export function ExploreMobile({
           <h3 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
             <Tag size={15} className="text-[#F27830]" /> โปรโมชันแนะนำ
           </h3>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => navigate('/factory-ideas?type=promotion')}
             className="text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center gap-0.5 transition-colors"
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
-          </button>
+          </Button>
         </div>
         <div className="px-3 space-y-2">
           {hasPromoShowcases ? (
@@ -386,13 +387,13 @@ export function ExploreMobile({
             <div className="rounded-xl border border-dashed border-[#F28A2E]/25 bg-gradient-to-br from-orange-50/50 to-white px-4 py-5 text-center">
               <p className="text-sm font-medium text-gray-600">ยังไม่มีโปรโมชันแนะนำในขณะนี้</p>
               <p className="mt-1 text-xs text-gray-400">ดูไอเดียโปรโมชันได้จากปุ่มด้านล่าง</p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => navigate('/factory-ideas?type=promotion')}
                 className="mt-3 w-full rounded-full border border-[#F28A2E]/40 bg-white py-2 text-sm font-medium text-[#F27830] hover:bg-orange-50/80 transition-colors"
               >
                 ดูไอเดียโปรโมชัน
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -409,7 +410,7 @@ export function ExploreMobile({
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-slate-300/80 via-slate-200/30 to-transparent pointer-events-none" />
 
         <div className="absolute inset-x-0 bottom-0 z-10 p-3.5">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => navigate('/register/factory')}
             className="group relative w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm text-white whitespace-nowrap
@@ -423,7 +424,7 @@ export function ExploreMobile({
             <Sparkles size={14} className="text-white/90 group-hover:rotate-12 transition-transform duration-200" />
             <span>สมัครเลย</span>
             <ChevronRight size={14} className="text-white/90 group-hover:translate-x-1 transition-transform duration-200" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -431,7 +432,7 @@ export function ExploreMobile({
       <ExploreFooter />
 
       {/* FAB — matches desktop purple accent */}
-      <button
+      <Button variant="unstyled"
         data-tour="fab"
         type="button"
         onClick={() => navigate('/create-rfq')}
@@ -439,7 +440,7 @@ export function ExploreMobile({
         style={{ background: '#A238FF', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
       >
         <Plus size={20} className="text-white" />
-      </button>
+      </Button>
 
     </div>
   );

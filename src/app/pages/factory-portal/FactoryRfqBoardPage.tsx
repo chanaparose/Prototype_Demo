@@ -5,6 +5,7 @@ import { RfqCard, type RfqCardModel } from '../../components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '../../hooks/useFactoryRfqBoard';
 import { useDisclosure, useToggle } from '../../hooks/ui';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
+import { Button } from '../../components/ui/button';
 
 type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
@@ -38,7 +39,7 @@ function FilterDropdown({
 
   return (
     <div ref={boxRef} className={`relative ${className}`}>
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={onToggle}
         className="w-full h-[42px] rounded-xl border border-slate-200 bg-white px-3.5 text-left shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
@@ -50,13 +51,13 @@ function FilterDropdown({
             <ChevronDown size={10} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </span>
         </div>
-      </button>
+      </Button>
       {isOpen ? (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 rounded-xl border border-slate-200 bg-white shadow-lg p-1 max-h-64 overflow-auto">
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
-              <button
+              <Button variant="unstyled"
                 key={opt.value || '__empty'}
                 type="button"
                 onClick={() => {
@@ -68,7 +69,7 @@ function FilterDropdown({
               >
                 <span className={`text-[12px] ${isSelected ? 'font-semibold text-indigo-700' : 'text-slate-700'}`}>{opt.label}</span>
                 {isSelected ? <Check size={13} className="text-indigo-600" /> : null}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -294,13 +295,13 @@ export function FactoryRfqBoardPage() {
       {error ? (
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 flex-1">{error}</p>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => void reload()}
             className="text-sm font-semibold px-4 py-2 rounded-xl border border-red-200 text-red-700 shrink-0"
           >
             ลองอีกครั้ง
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -329,7 +330,7 @@ export function FactoryRfqBoardPage() {
               const active = tab === k.key;
               const pending = unansweredByKind[k.key];
               return (
-                <button
+                <Button variant="unstyled"
                   key={k.key}
                   type="button"
                   onClick={() => setTab(k.key)}
@@ -363,7 +364,7 @@ export function FactoryRfqBoardPage() {
                       {k.count}
                     </span>
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -387,7 +388,7 @@ export function FactoryRfqBoardPage() {
               {tabDefs.map((t) => {
                 const on = tab === t.key;
                 return (
-                  <button
+                  <Button variant="unstyled"
                     key={t.key}
                     type="button"
                     role="tab"
@@ -404,7 +405,7 @@ export function FactoryRfqBoardPage() {
                     {t.label}
                     <span className="text-[11px] opacity-80">({t.count})</span>
                     {t.warn && t.key === 'closing' ? ' ⚠' : ''}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -478,53 +479,53 @@ export function FactoryRfqBoardPage() {
                 className="shrink-0 min-w-[11rem]"
               />
               {hasFilters ? (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={clearFilters}
                   className="shrink-0 px-3 py-2 rounded-full text-xs font-semibold border"
                   style={{ borderColor: '#4F46E5', color: '#4F46E5', backgroundColor: '#F3E8FF' }}
                 >
                   ล้างตัวกรอง ✕
-                </button>
+                </Button>
               ) : null}
             </div>
             {hasFilters ? (
               <div className="mt-2 flex flex-wrap gap-2">
                 {search.trim() ? (
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setSearch('')}
                     className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600"
                   >
                     คำค้น: {search.trim()} ✕
-                  </button>
+                  </Button>
                 ) : null}
                 {filterCat ? (
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setFilterCat('')}
                     className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600"
                   >
                     หมวดหมู่ ✕
-                  </button>
+                  </Button>
                 ) : null}
                 {filterRfqStatus ? (
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setFilterRfqStatus('')}
                     className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600"
                   >
                     สถานะ RFQ ✕
-                  </button>
+                  </Button>
                 ) : null}
                 {filterShip ? (
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setFilterShip('')}
                     className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600"
                   >
                     วิธีจัดส่ง ✕
-                  </button>
+                  </Button>
                 ) : null}
               </div>
             ) : null}
@@ -540,7 +541,7 @@ export function FactoryRfqBoardPage() {
                 {rows.length === 0 ? 'ระบบจะแสดงรายการใหม่ที่ตรงกับหมวดหมู่ทันทีเมื่อมี RFQ เข้า' : 'ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง'}
               </p>
               {hasFilters ? (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={clearFilters}
                   className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
@@ -550,7 +551,7 @@ export function FactoryRfqBoardPage() {
                   }}
                 >
                   ล้างตัวกรอง
-                </button>
+                </Button>
               ) : rows.length === 0 ? (
                 <Link
                   to="/factory/profile"

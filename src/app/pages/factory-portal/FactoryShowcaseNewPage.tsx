@@ -17,6 +17,7 @@ import {
   ShowcaseTypeBadge,
   type ShowcaseType,
 } from './components/ShowcaseFormShared';
+import { Button } from '../../components/ui/button';
 
 type FormValues = {
   title: string;
@@ -166,26 +167,26 @@ export function FactoryShowcaseNewPage() {
 
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/factory/showcases')}
           className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ChevronLeft size={18} />
           กลับ
-        </button>
+        </Button>
 
         {/* Fixed type badge */}
         <ShowcaseTypeBadge type={contentType} />
 
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void onSubmit('DR')}
           disabled={saving}
           className="text-sm text-gray-600 font-medium hover:text-gray-900 disabled:opacity-40 transition-colors whitespace-nowrap"
         >
           บันทึกร่าง
-        </button>
+        </Button>
       </div>
 
       <div className="px-4 py-5">
@@ -333,15 +334,15 @@ export function FactoryShowcaseNewPage() {
                   {contentType === 'ID' ? 'กรอกชื่อและเนื้อหาให้ครบก่อนเผยแพร่' : 'กรอกชื่อและอัปโหลดภาพปกก่อนเผยแพร่'}
                 </p>
                 <div className="mt-4 space-y-2">
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => void onSubmit('DR')}
                     disabled={saving}
                     className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50 hover:bg-gray-50 transition-colors"
                   >
                     {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => void onSubmit('AC')}
                     disabled={saving || !canPublish}
@@ -349,7 +350,7 @@ export function FactoryShowcaseNewPage() {
                     style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
                   >
                     {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -397,15 +398,15 @@ export function FactoryShowcaseNewPage() {
 
       {/* ── Sticky bottom bar ── */}
       <div className="fixed xl:hidden bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3 flex gap-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void onSubmit('DR')}
           disabled={saving}
           className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50 hover:bg-gray-50 transition-colors"
         >
           {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
-        </button>
-        <button
+        </Button>
+        <Button variant="unstyled"
           type="button"
           onClick={() => void onSubmit('AC')}
           disabled={saving || !canPublish}
@@ -413,7 +414,7 @@ export function FactoryShowcaseNewPage() {
           style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
         >
           {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
-        </button>
+        </Button>
       </div>
     </div>
   );

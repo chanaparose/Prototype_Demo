@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Users, Search, AlertTriangle } from 'lucide-react';
 import { adminCustomerApi, type AdminCustomerListItem } from '../../services/api';
+import { Button } from '../../components/ui/button';
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -199,23 +200,23 @@ export function AdminCustomersPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <button
+          <Button variant="unstyled"
             disabled={page === 0}
             onClick={() => setPage((p) => p - 1)}
             className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 disabled:opacity-40 hover:bg-slate-50 transition-colors"
           >
             ← ก่อนหน้า
-          </button>
+          </Button>
           <span className="text-sm text-slate-500 px-2">
             หน้า {page + 1} / {totalPages}
           </span>
-          <button
+          <Button variant="unstyled"
             disabled={page + 1 >= totalPages}
             onClick={() => setPage((p) => p + 1)}
             className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 disabled:opacity-40 hover:bg-slate-50 transition-colors"
           >
             ถัดไป →
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp, Package, Calendar, DollarSign, Search, AlertTriangle } from 'lucide-react';
 import { adminApi, type AdminRfqRow } from '../../services/api';
+import { Button } from '../../components/ui/button';
 
 type RfqStatusTab = 'all' | 'open' | 'matched' | 'closed';
 
@@ -232,7 +233,7 @@ export function AdminRFQsPage() {
             const active = statusTab === tab.key;
             const count = counts[tab.key] ?? 0;
             return (
-              <button
+              <Button variant="unstyled"
                 key={tab.key}
                 type="button"
                 onClick={() => setStatusTab(tab.key)}
@@ -244,7 +245,7 @@ export function AdminRFQsPage() {
                 <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
                   {count}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>

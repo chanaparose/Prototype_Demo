@@ -58,11 +58,6 @@ export function formatThaiDate(
   }).format(date);
 }
 
-export function parseDate(dateString: string): Date | null {
-  const date = new Date(dateString);
-  return date instanceof Date && !isNaN(date.getTime()) ? date : null;
-}
-
 export function isOverdue(dateInput: string | Date | null | undefined): boolean {
   if (!dateInput) return false;
 
@@ -70,17 +65,4 @@ export function isOverdue(dateInput: string | Date | null | undefined): boolean 
   if (!(date instanceof Date) || isNaN(date.getTime())) return false;
 
   return date < new Date();
-}
-
-export function getDaysUntilDeadline(
-  dateInput: string | Date | null | undefined
-): number | null {
-  if (!dateInput) return null;
-
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (!(date instanceof Date) || isNaN(date.getTime())) return null;
-
-  const now = new Date();
-  const diffTime = date.getTime() - now.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }

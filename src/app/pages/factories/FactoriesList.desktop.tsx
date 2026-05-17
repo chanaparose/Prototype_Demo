@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "../../components/shared";
 import type { useFactoriesList } from "../../hooks/useFactoriesList";
+import { Button } from '../../components/ui/button';
 
 type FactoriesListState = ReturnType<typeof useFactoriesList>;
 type FactoriesListDesktopProps = { state: FactoriesListState };
@@ -85,20 +86,20 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                 className="flex-1 bg-transparent text-[13px] outline-none text-gray-800 placeholder-gray-400"
               />
               {filters.searchText && (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => setSearchText("")}
                   aria-label="ล้างข้อความค้นหา"
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <X size={12} />
-                </button>
+                </Button>
               )}
             </div>
 
             {/* Location dropdown */}
             <div className="relative">
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setLocationOpen(!locationOpen)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all ${
@@ -118,10 +119,10 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                   size={12}
                   className={`transition-transform duration-200 ${locationOpen ? "rotate-180" : ""} ${filters.location ? "text-purple-400" : "text-gray-400"}`}
                 />
-              </button>
+              </Button>
               {locationOpen && (
                 <div className="absolute top-full mt-1.5 left-0 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-20 min-w-[180px]">
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => {
                       setLocation("");
@@ -130,10 +131,10 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                     className={`w-full px-4 py-2 text-left text-[13px] hover:bg-purple-50 transition-colors ${!filters.location ? "text-purple-600 font-semibold bg-purple-50/50" : "text-gray-700"}`}
                   >
                     ทุกพื้นที่
-                  </button>
+                  </Button>
                   <div className="mx-3 my-1 border-t border-gray-100" />
                   {locations.map((loc) => (
-                    <button
+                    <Button variant="unstyled"
                       key={loc}
                       type="button"
                       onClick={() => {
@@ -143,14 +144,14 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                       className={`w-full px-4 py-2 text-left text-[13px] hover:bg-purple-50 transition-colors ${filters.location === loc ? "text-purple-600 font-semibold" : "text-gray-700"}`}
                     >
                       {loc}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
             </div>
 
             {/* Verified toggle pill */}
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setVerifiedOnly(!filters.verifiedOnly)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] transition-all ${
@@ -166,18 +167,18 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                 }
               />
               ยืนยันแล้วเท่านั้น
-            </button>
+            </Button>
 
             {/* Clear all */}
             {hasActiveFilters && (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={clearAll}
                 className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[12px] text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all"
               >
                 <X size={12} />
                 ล้างทั้งหมด
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -198,7 +199,7 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
         ) : (
           <div className="grid grid-cols-3 xl:grid-cols-4 gap-4">
             {factories.map((factory) => (
-              <button
+              <Button variant="unstyled"
                 key={factory.id}
                 type="button"
                 onClick={() => navigate(`/factories/${factory.id}`)}
@@ -278,7 +279,7 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                     </span>
                   </div>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         )}

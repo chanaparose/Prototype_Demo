@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { DEEP_PURPLE, PLUM } from '../../rfq-and-orders/constants';
 import type { ProductionLockContext } from '../../production/types';
 import { formatDateTh } from '../utils';
+import { Button } from '../../../ui/button';
 
 type Props = {
   ctx: ProductionLockContext;
@@ -37,14 +38,14 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
         ) : null}
       </div>
 
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={() => (onBackToOverview ? onBackToOverview() : navigate('/orders'))}
         className="mt-6 w-full rounded-xl py-3 text-sm font-medium"
         style={{ color: PLUM }}
       >
         กลับไปหน้าภาพรวม
-      </button>
+      </Button>
     </div>
   );
 }

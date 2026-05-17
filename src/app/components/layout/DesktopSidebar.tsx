@@ -22,6 +22,7 @@ import { HARDCODED_CUSTOMER_PROFILE_SRC } from '../../constants/customerProfile'
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { useLocalStorage } from '../../hooks';
 import { isTourActive, subscribeTourActive } from '../../utils/tourMocks';
+import { Button } from '../ui/button';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -92,7 +93,7 @@ export function DesktopSidebar() {
               const Icon = item.icon;
               const locked = Boolean(item.requiresApproval && !factoryApproved);
               return (
-                <button
+                <Button variant="unstyled"
                   key={item.key}
                   type="button"
                   title={locked ? 'โรงงานอยู่ระหว่างตรวจสอบ' : undefined}
@@ -122,13 +123,13 @@ export function DesktopSidebar() {
                       {unreadMessages}
                     </span>
                   ) : null}
-                </button>
+                </Button>
               );
             })
           : customerNavLinks.map(({ path, icon: Icon, label }) => {
               const active = isActivePath(path);
               return (
-                <button
+                <Button variant="unstyled"
                   key={path}
                   type="button"
                   onClick={() => navigate(path)}
@@ -161,7 +162,7 @@ export function DesktopSidebar() {
                       {activeRfqCount}
                     </span>
                   ) : null}
-                </button>
+                </Button>
               );
             })}
       </nav>
@@ -212,22 +213,22 @@ export function DesktopSidebar() {
           </div>
           <p className="text-xs text-gray-500 mb-2">Guest View: เข้าสู่ระบบเพื่อใช้งานกระเป๋าเงิน</p>
           <div className="flex gap-2">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/login')}
               className="flex-1 rounded-lg bg-white border border-[#A238FF]/25 px-2 py-1.5 text-[11px] font-semibold"
               style={{ color: '#A238FF' }}
             >
               Login
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/login')}
               className="flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white"
               style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)' }}
             >
               Register
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -235,7 +236,7 @@ export function DesktopSidebar() {
       {/* Create RFQ — เฉพาะลูกค้า (หรือระหว่าง ProductTour) */}
       {!isFactory && (isAuthenticated || tourOn === true) ? (
         <div className="px-3 pb-3">
-          <button
+          <Button variant="unstyled"
             type="button"
             data-tour="create-rfq-cta"
             onClick={() => navigate('/create-rfq')}
@@ -244,7 +245,7 @@ export function DesktopSidebar() {
           >
             <Plus size={18} />
             สร้างคำขอราคา
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -252,7 +253,7 @@ export function DesktopSidebar() {
       <div className="border-t border-gray-100 px-3 py-3 shrink-0">
         {isAuthenticated ? (
           <div className="flex items-center gap-2">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/profile')}
               className="flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors"
@@ -268,7 +269,7 @@ export function DesktopSidebar() {
                 <p className="text-xs font-semibold truncate" style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}>{currentUser?.name}</p>
                 <p className="text-[10px] text-gray-400 truncate">{currentUser?.company}</p>
               </div>
-            </button>
+            </Button>
             <Link
               to="/notifications"
               className="relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0"
@@ -293,14 +294,14 @@ export function DesktopSidebar() {
               <p className="text-xs font-semibold truncate" style={{ color: '#2D1B4E' }}>Guest View</p>
               <p className="text-[10px] text-gray-400 truncate">ดูข้อมูลได้โดยยังไม่ต้องเข้าสู่ระบบ</p>
             </div>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/login')}
               className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-[#A238FF]/25 bg-white"
               style={{ color: '#A238FF' }}
             >
               Login
-            </button>
+            </Button>
           </div>
         )}
       </div>

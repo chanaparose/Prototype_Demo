@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronRight, TrendingUp, Clock } from 'lucide-react';
 import { EXPLORE_STATUS_CONFIG } from './constants';
 import { formatCurrency } from '@/utils/formatting';
+import { Button } from '../../ui/button';
 
 export type RfqActivityItem = {
   id: string;
@@ -43,13 +44,13 @@ export function ExploreRecentActivity({
         <p className="text-sm text-[#292259]" style={{ fontWeight: 700 }}>
           กิจกรรมล่าสุด
         </p>
-        <button
+        <Button variant="unstyled"
           onClick={onViewAllClick}
           className="flex items-center gap-0.5 text-xs"
           style={{ color: '#A656A0', fontWeight: 600 }}
         >
           ดูทั้งหมด <ChevronRight size={14} />
-        </button>
+        </Button>
       </div>
 
       <div className="space-y-3">

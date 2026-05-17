@@ -10,6 +10,7 @@ import {
 } from '../../rfq-and-orders/constants';
 import type { ProductionLockContext } from '../../production/types';
 import { diffDaysFromNow, formatDateTh } from '../utils';
+import { Button } from '../../../ui/button';
 
 type Props = {
   ctx: ProductionLockContext;
@@ -63,23 +64,23 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
         ) : null}
       </div>
 
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={pay}
         className="mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white"
         style={{ background: CTA_GRADIENT }}
       >
         ชำระเงิน →
-      </button>
+      </Button>
 
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={() => (onBackToOverview ? onBackToOverview() : navigate('/orders'))}
         className="mt-3 w-full rounded-xl py-3 text-sm font-medium"
         style={{ color: PLUM }}
       >
         กลับไปหน้าภาพรวม
-      </button>
+      </Button>
     </div>
   );
 }

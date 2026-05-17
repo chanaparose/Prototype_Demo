@@ -8,6 +8,7 @@ import {
 import { diffDaysFromNow, formatDateTh } from './utils';
 import type { NextAction, PaymentScheduleItem } from '../../../pages/order-detail/orderDetailFromApi';
 import { formatCurrency } from '@/utils/formatting';
+import { Button } from '../../ui/button';
 
 type Props = {
   nextAction: NextAction | null;
@@ -83,14 +84,14 @@ export function OrderActionBanner({
           </p>
         </div>
       </div>
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={onCta}
         className="w-full sm:w-auto shrink-0 rounded-lg px-4 py-2.5 sm:py-1.5 text-xs font-semibold text-white"
         style={{ background: CTA_GRADIENT }}
       >
         {ctaLabel} →
-      </button>
+      </Button>
     </div>
   );
 }

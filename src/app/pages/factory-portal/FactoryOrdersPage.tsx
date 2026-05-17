@@ -16,6 +16,7 @@ import { FactoryOrdersEmptyState } from './factory-orders/components/FactoryOrde
 import { FactoryOrdersFilterBar } from './factory-orders/components/FactoryOrdersFilterBar';
 import { FactoryOrdersKpiStrip } from './factory-orders/components/FactoryOrdersKpiStrip';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
+import { Button } from '../../components/ui/button';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
 const INDIGO = '#4F46E5';
@@ -122,13 +123,13 @@ export function FactoryOrdersPage() {
             className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-2xl px-4 py-3 flex items-center justify-between gap-3"
           >
             <span>{error instanceof Error ? error.message : 'โหลดออเดอร์ไม่สำเร็จ'}</span>
-            <button
+            <Button variant="unstyled"
               type="button"
               className="px-3 py-1.5 rounded-xl bg-white border border-red-200 text-red-700 text-xs font-semibold"
               onClick={() => void refetch()}
             >
               ลองใหม่
-            </button>
+            </Button>
           </div>
         ) : null}
 
@@ -230,7 +231,7 @@ export function FactoryOrdersPage() {
                           {deadline}
                         </td>
                         <td className="px-4 py-3">
-                          <button
+                          <Button variant="unstyled"
                             type="button"
                             className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
                             style={{ color: INDIGO, backgroundColor: `${INDIGO}15` }}
@@ -239,7 +240,7 @@ export function FactoryOrdersPage() {
                             }}
                           >
                             ดู <ChevronRight size={12} />
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -284,7 +285,7 @@ export function FactoryOrdersPage() {
       {/* ══ Update-step modal (unchanged logic) ═══════════════════════ */}
       {updateModal ? (
         <div className="fixed inset-0 z-[70]">
-          <button
+          <Button variant="unstyled"
             type="button"
             className="absolute inset-0 bg-black/40"
             onClick={() => setUpdateModal(null)}
@@ -294,13 +295,13 @@ export function FactoryOrdersPage() {
               <h2 className="font-bold" style={{ color: SLATE_DARK }}>
                 อัปเดตขั้น {updateModal.row.production_summary?.current_step_name_th}
               </h2>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setUpdateModal(null)}
                 className="p-1 rounded-lg hover:bg-gray-100"
               >
                 <X size={18} />
-              </button>
+              </Button>
             </div>
             <textarea
               className="w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]"
@@ -310,7 +311,7 @@ export function FactoryOrdersPage() {
                 setUpdateModal((prev) => (prev ? { ...prev, notes: e.target.value } : prev))
               }
             />
-            <button
+            <Button variant="unstyled"
               type="button"
               disabled={updateModal.busy || !updateModal.notes.trim()}
               className="w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50"
@@ -333,7 +334,7 @@ export function FactoryOrdersPage() {
               }}
             >
               {updateModal.busy ? 'กำลังบันทึก...' : 'บันทึกอัปเดต'}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
@@ -341,7 +342,7 @@ export function FactoryOrdersPage() {
       {/* ══ Ship modal (unchanged logic) ══════════════════════════════ */}
       {shipModal ? (
         <div className="fixed inset-0 z-[70]">
-          <button
+          <Button variant="unstyled"
             type="button"
             className="absolute inset-0 bg-black/40"
             onClick={() => setShipModal(null)}
@@ -351,13 +352,13 @@ export function FactoryOrdersPage() {
               <h2 className="font-bold" style={{ color: SLATE_DARK }}>
                 บันทึกจัดส่ง #{shipModal.row.order_id}
               </h2>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setShipModal(null)}
                 className="p-1 rounded-lg hover:bg-gray-100"
               >
                 <X size={18} />
-              </button>
+              </Button>
             </div>
             <input
               className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]"
@@ -375,7 +376,7 @@ export function FactoryOrdersPage() {
                 setShipModal((prev) => (prev ? { ...prev, note: e.target.value } : prev))
               }
             />
-            <button
+            <Button variant="unstyled"
               type="button"
               disabled={shipModal.busy || !shipModal.tracking.trim()}
               className="w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50"
@@ -399,7 +400,7 @@ export function FactoryOrdersPage() {
               }}
             >
               {shipModal.busy ? 'กำลังบันทึก...' : 'ยืนยันบันทึกจัดส่ง'}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

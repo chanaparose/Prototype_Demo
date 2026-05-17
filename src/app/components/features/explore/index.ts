@@ -1,8 +1,10 @@
 export { ExplorePromoCarousel } from './ExplorePromoCarousel';
 export { ExploreCategories } from './ExploreCategories';
+export { ExploreDesktopCategories } from './ExploreDesktopCategories';
 export { ExploreFactoryGrid } from './ExploreFactoryGrid';
 export { ExploreFactoryShowcase } from './ExploreFactoryShowcase';
 export { ExploreIdeaArticles } from './ExploreIdeaArticles';
+export { ExploreProductCarouselSection } from './ExploreProductCarouselSection';
 export { ExploreRecentActivity } from './ExploreRecentActivity';
 export { ExploreFooter } from './ExploreFooter';
 export { HowToOrderSection } from './HowToOrderSection';
@@ -11,4 +13,5 @@ export { EXPLORE_STATUS_CONFIG } from './constants';
 export type { CategoryItem } from './ExploreCategories';
 export type { FactoryItem } from './ExploreFactoryGrid';
 export type { IdeaArticleItem } from './ExploreIdeaArticles';
+export type { ExploreProductCarouselItem } from './ExploreProductCarouselSection';
 export type { RfqActivityItem, OrderActivityItem } from './ExploreRecentActivity';

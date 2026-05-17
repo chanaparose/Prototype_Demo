@@ -9,6 +9,7 @@ import { LineItemTable } from './components/LineItemTable';
 import { ExtraChargesForm } from './components/ExtraChargesForm';
 import { CommercialTermsForm } from './components/CommercialTermsForm';
 import { BreakdownCard } from './components/BreakdownCard';
+import { Button } from '../../components/ui/button';
 
 export function QuoteBuilder() {
   const { rfqId } = useParams<{ rfqId: string }>();
@@ -45,7 +46,7 @@ export function QuoteBuilder() {
             onChange={(next) => setPartial(next)}
           />
           <BreakdownCard loading={loading} breakdown={breakdown} />
-          <button
+          <Button variant="unstyled"
             type="button"
             disabled={submitting}
             onClick={async () => {
@@ -61,7 +62,7 @@ export function QuoteBuilder() {
             className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-violet-600 disabled:opacity-50"
           >
             {submitting ? 'กำลังบันทึก...' : 'Create quotation'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

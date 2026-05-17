@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { walletApi, transactionsApi } from '../../services/api';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
+import { Button } from '../../components/ui/button';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
 const NAVY = '#2E2252';
@@ -265,14 +266,14 @@ export function FactoryWalletPage() {
           <span>
             อัปเดต: {lastRefreshedAt ? lastRefreshedAt.toLocaleTimeString('th-TH') : '-'}
           </span>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => void load()}
             className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium"
           >
             <RefreshCw size={12} />
             รีเฟรช
-          </button>
+          </Button>
         </div>
 
         {/* ── Error ───────────────────────────────────────────────── */}
@@ -302,20 +303,20 @@ export function FactoryWalletPage() {
           </div>
 
           <div className="mt-5 flex gap-3">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => { setWithdrawAmount(''); setWithdrawError(''); setWithdrawModal(true); }}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
             >
               ถอนเงิน
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               type="button"
               onClick={() => document.getElementById('tx-section')?.scrollIntoView({ behavior: 'smooth' })}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
             >
               ประวัติการถอน
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -417,7 +418,7 @@ export function FactoryWalletPage() {
               ).map(({ key, label }) => {
                 const active = filterType === key;
                 return (
-                  <button
+                  <Button variant="unstyled"
                     key={key}
                     type="button"
                     onClick={() => setFilterType(key)}
@@ -433,7 +434,7 @@ export function FactoryWalletPage() {
                     }
                   >
                     {label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -456,7 +457,7 @@ export function FactoryWalletPage() {
       {/* ══ Withdrawal modal (bottom sheet) ══════════════════════════ */}
       {withdrawModal ? (
         <div className="fixed inset-0 z-[70]">
-          <button
+          <Button variant="unstyled"
             type="button"
             className="absolute inset-0 bg-black/50"
             onClick={() => setWithdrawModal(false)}
@@ -471,13 +472,13 @@ export function FactoryWalletPage() {
                 <h2 className="text-base font-bold" style={{ color: NAVY }}>
                   ถอนเงิน
                 </h2>
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => setWithdrawModal(false)}
                   className="p-1.5 rounded-xl hover:bg-gray-100 transition-colors"
                 >
                   <X size={18} className="text-gray-500" />
-                </button>
+                </Button>
               </div>
 
               {/* Balance info */}
@@ -540,14 +541,14 @@ export function FactoryWalletPage() {
 
               {/* Action buttons */}
               <div className="flex gap-3 pt-1">
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => setWithdrawModal(false)}
                   className="flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   ยกเลิก
-                </button>
-                <button
+                </Button>
+                <Button variant="unstyled"
                   type="button"
                   disabled={withdrawBusy}
                   onClick={async () => {
@@ -579,7 +580,7 @@ export function FactoryWalletPage() {
                   }}
                 >
                   {withdrawBusy ? 'กำลังดำเนินการ...' : 'ยืนยันถอนเงิน'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

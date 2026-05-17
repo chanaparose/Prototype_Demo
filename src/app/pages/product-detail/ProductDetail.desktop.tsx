@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseTHB as formatTHB, formatShowcaseThaiDate as formatThaiDate, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '../../components/features/showcase-detail';
+import { ShowcaseHeroGallery } from '../../components/features/showcase-detail';
 import { useNavigate } from 'react-router';
+import { Button } from '../../components/ui/button';
 import {
   ArrowLeft,
   ArrowUpRight,
   BadgeCheck,
-  ChevronLeft,
-  ChevronRight,
   ChevronRight as Chevron,
   Heart,
   ImageIcon,
@@ -27,47 +28,9 @@ import { useFavorites } from '../../hooks/useFavorites';
 import { SubCategoryTag } from '../../components/SubCategoryTag';
 import { StrictSpecsBlock } from '../../shared/ui/StrictSpecsBlock/StrictSpecsBlock';
 
-// Aligned with Explore page palette — vibrant brand purple + bright accent orange
-const BRAND = {
-  orange: '#F28A2E',      // Explore primary orange
-  orangeDark: '#F27830',  // Explore hover orange
-  orangeSoft: '#FFF4E8',
-  purple: '#A238FF',      // Explore vibrant brand purple
-  purpleSoft: '#F5F3FF',  // softer page background for readability
-  ink: '#1A0A2E',         // Explore deepest text
-  border: '#E7E2F0',
-} as const;
 
-function formatThaiDate(date: string): string {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return '-';
-  return new Intl.DateTimeFormat('th-TH', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(d);
-}
 
-function normalizeMarkdownContent(raw: unknown): string {
-  const s = String(raw ?? '');
-  if (!s) return '';
-  return s
-    .replace(/\\r\\n/g, '\n')
-    .replace(/\\n/g, '\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<p[^>]*>/gi, '')
-    .trim();
-}
 
-function formatTHB(value: number | undefined): string | null {
-  if (value == null || !Number.isFinite(value) || value <= 0) return null;
-  return new Intl.NumberFormat('th-TH', {
-    style: 'currency',
-    currency: 'THB',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
@@ -114,14 +77,14 @@ export function ProductDetailDesktop() {
         className="hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]"
         style={{ background: BRAND.purpleSoft }}
       >
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={handleBack}
           className="mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium"
           style={{ color: BRAND.purple }}
         >
           <ArrowLeft className="w-4 h-4" /> กลับ
-        </button>
+        </Button>
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
           <p className="text-4xl mb-3">📦</p>
           <p className="text-[14px] text-gray-500 font-medium">{error || 'ไม่พบข้อมูลสินค้า'}</p>
@@ -170,14 +133,14 @@ export function ProductDetailDesktop() {
       {/* ── Breadcrumb / back row ── */}
       <div className="px-8 pt-5 pb-3">
         <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={handleBack}
             className="inline-flex items-center gap-1 font-medium hover:opacity-80"
             style={{ color: BRAND.purple }}
           >
             <ArrowLeft className="w-3.5 h-3.5" /> กลับ
-          </button>
+          </Button>
           <Chevron className="w-3 h-3 text-gray-300" />
           <span>{item.category || 'ทั้งหมด'}</span>
           {subName && !isMaterial ? (
@@ -199,63 +162,20 @@ export function ProductDetailDesktop() {
           <div className="flex gap-8">
             {/* ── Left: Gallery ── */}
             <div className="w-[450px] shrink-0">
-              <div
-                className="relative aspect-[4/3] rounded-xl overflow-hidden border"
-                style={{ borderColor: BRAND.border, background: '#F5F5F5' }}
-              >
-                <ImageWithFallback
-                  src={gallery[activeImage] ?? item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-                {gallery.length > 1 ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setActiveImage((p) => (p - 1 + gallery.length) % gallery.length)}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/35 hover:bg-black/55 text-white flex items-center justify-center transition-colors"
-                      aria-label="รูปก่อนหน้า"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveImage((p) => (p + 1) % gallery.length)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/35 hover:bg-black/55 text-white flex items-center justify-center transition-colors"
-                      aria-label="รูปถัดไป"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                    <span className="absolute bottom-3 right-3 text-[11px] font-semibold text-white bg-black/45 px-2 py-0.5 rounded-full tabular-nums">
-                      {activeImage + 1} / {gallery.length}
-                    </span>
-                  </>
-                ) : null}
-              </div>
-
-              {gallery.length > 1 ? (
-                <div className="grid grid-cols-5 gap-2 mt-3">
-                  {gallery.slice(0, 5).map((url, idx) => {
-                    const active = idx === activeImage;
-                    return (
-                      <button
-                        key={`${url}-${idx}`}
-                        type="button"
-                        onMouseEnter={() => setActiveImage(idx)}
-                        onClick={() => setActiveImage(idx)}
-                        className="aspect-square rounded-lg overflow-hidden border-2 transition-colors"
-                        style={{ borderColor: active ? BRAND.orange : BRAND.border }}
-                      >
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : null}
+              <ShowcaseHeroGallery
+                gallery={gallery}
+                fallbackImage={item.image}
+                title={item.title}
+                activeImage={activeImage}
+                onActiveImageChange={setActiveImage}
+                accentColor={BRAND.orange}
+                borderColor={BRAND.border}
+                className=""
+              />
 
               {/* share / favorites row */}
               <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-[12px] text-gray-500">
-                <button
+                <Button variant="unstyled"
                   type="button"
                   className="inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors"
                   onClick={() => {
@@ -267,15 +187,15 @@ export function ProductDetailDesktop() {
                   }}
                 >
                   <Share2 className="w-4 h-4" /> แชร์สินค้านี้
-                </button>
-                <button
+                </Button>
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => void toggleFavorite(item.id)}
                   className="inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors"
                 >
                   <Heart className="w-4 h-4" style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }} />
                   {likeCount} สนใจ
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -411,7 +331,7 @@ export function ProductDetailDesktop() {
               {/* CTA row */}
               <div className="mt-6 flex items-center gap-3">
                 {canChat ? (
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={handleStartChat}
                     disabled={starting}
@@ -431,9 +351,9 @@ export function ProductDetailDesktop() {
                       <MessageCircle className="w-4 h-4" />
                     )}
                     แชทกับโรงงาน
-                  </button>
+                  </Button>
                 ) : null}
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => navigate(`/factories/${item.factoryId}`)}
                   className="flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 rounded-md text-[14px] font-bold text-white transition-opacity hover:opacity-90"
@@ -441,7 +361,7 @@ export function ProductDetailDesktop() {
                 >
                   <Store className="w-4 h-4" />
                   ดูโปรไฟล์โรงงาน
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -485,7 +405,7 @@ export function ProductDetailDesktop() {
                 </p>
                 <div className="flex items-center gap-2 mt-3">
                   {canChat ? (
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={handleStartChat}
                       disabled={starting}
@@ -497,16 +417,16 @@ export function ProductDetailDesktop() {
                       }}
                     >
                       <MessageCircle className="w-3.5 h-3.5" /> แชท
-                    </button>
+                    </Button>
                   ) : null}
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => navigate(`/factories/${item.factoryId}`)}
                     className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-sm text-[13px] font-medium transition-colors hover:opacity-80"
                     style={{ border: `1px solid ${BRAND.border}`, color: '#374151' }}
                   >
                     <Store className="w-3.5 h-3.5" /> ดูโรงงาน
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -676,7 +596,7 @@ export function ProductDetailDesktop() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {canChat ? (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={handleStartChat}
                 disabled={starting}
@@ -689,16 +609,16 @@ export function ProductDetailDesktop() {
                   <MessageCircle className="w-4 h-4" />
                 )}
                 แชทกับโรงงาน
-              </button>
+              </Button>
             ) : null}
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate(`/factories/${item.factoryId}`)}
               className="inline-flex items-center gap-2 px-5 h-11 rounded-md text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
               style={{ border: '1px solid rgba(255,255,255,0.45)' }}
             >
               <ArrowUpRight className="w-4 h-4" /> ดูโปรไฟล์โรงงาน
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -717,7 +637,7 @@ export function ProductDetailDesktop() {
                 const reviews = Number(rf?.reviews ?? 0);
                 const isPromo = rp.contentType === 'promotion';
                 return (
-                  <button
+                  <Button variant="unstyled"
                     key={rp.id}
                     type="button"
                     onClick={() => navigate(`/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`)}
@@ -759,7 +679,7 @@ export function ProductDetailDesktop() {
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </Button>
                 );
               })}
             </div>

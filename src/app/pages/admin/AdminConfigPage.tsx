@@ -6,6 +6,7 @@ import {
   type PlatformConfigItem,
   type UpdatePlatformConfigRequest,
 } from '../../services/api';
+import { Button } from '../../components/ui/button';
 
 const RANK: Record<string, number> = { AM: 1, AD: 2, SA: 3 };
 function canEdit(role: string, minRole: 'AM' | 'AD' | 'SA'): boolean {
@@ -67,7 +68,7 @@ function SaveButton({
   text?: string;
 }) {
   return (
-    <button
+    <Button variant="unstyled"
       type="button"
       onClick={onClick}
       disabled={saving || disabled}
@@ -75,7 +76,7 @@ function SaveButton({
     >
       <Save size={14} />
       {saving ? 'กำลังบันทึก...' : saved ? 'บันทึกแล้ว ✓' : text ?? 'บันทึก'}
-    </button>
+    </Button>
   );
 }
 
@@ -240,7 +241,7 @@ export function AdminConfigPage() {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="flex border-b border-slate-200 overflow-x-auto">
           {TABS.map((tab) => (
-            <button
+            <Button variant="unstyled"
               key={tab.key}
               type="button"
               onClick={() => setActiveTab(tab.key)}
@@ -251,7 +252,7 @@ export function AdminConfigPage() {
               }`}
             >
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -380,13 +381,13 @@ export function AdminConfigPage() {
                           <td className="px-4 py-3 text-xs text-slate-500">{fmtDate(cfg.effective_to)}</td>
                           <td className="px-4 py-3 text-right">
                             {!isDefault && isSA ? (
-                              <button
+                              <Button variant="unstyled"
                                 type="button"
                                 onClick={() => void handleDeleteConfig(cfg.config_id)}
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                               >
                                 <Trash2 size={14} />
-                              </button>
+                              </Button>
                             ) : (
                               <span className="text-xs text-slate-400">—</span>
                             )}
@@ -424,7 +425,7 @@ export function AdminConfigPage() {
                       onChange={(v) => setNewConfig((p) => ({ ...p, vat_rate: v }))}
                     />
                   </div>
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => void handleCreateConfig()}
                     disabled={savingConfig || !newConfig.label.trim() || !newConfig.default_commission_rate}
@@ -432,7 +433,7 @@ export function AdminConfigPage() {
                   >
                     <Plus size={14} />
                     {savingConfig ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
-                  </button>
+                  </Button>
                 </div>
               ) : null}
             </div>

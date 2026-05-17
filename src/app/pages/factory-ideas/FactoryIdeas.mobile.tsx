@@ -1,11 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import React from "react";
+import { useNavigate } from "react-router";
+import { Button } from '../../components/ui/button';
 import {
   Search,
   BadgeCheck,
@@ -13,625 +8,62 @@ import {
   Sparkles,
   X,
   Loader2,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   LayoutGrid,
   List,
+  MapPin,
+  Star,
 } from "lucide-react";
-import { useData } from "../../stores";
-import type { Factory } from "../../stores";
+import { FactoryIdeasCategoryDropdown } from '../../components/features/factory-ideas/FactoryIdeasCategoryDropdown';
+import { useFactoryIdeasPageState } from './useFactoryIdeasPageState';
+import {
+  factoryIdeasContentTypeBadge as contentTypeBadge,
+  factoryIdeasContentTypeLabel as contentTypeLabel,
+  factoryIdeasContentTypes as CONTENT_TYPES,
+  factoryIdeasTheme as COLORS,
+} from '../../components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from "../../components/shared";
-import { masterApi, factoriesApi } from "../../services/api";
-import { fetchExploreCategoriesMerged } from "../../utils/exploreCategoriesFromApi";
-import {
-  loadSubCategories,
-  prefetchSubCategoriesFor,
-  getCachedSubCategoriesSync,
-} from "../../utils/subCategoriesCache";
-import {
-  factoryIdeasCategoryOptionSelected,
-  parseMasterProductCategories,
-  showcaseMatchesSelectedCategoryId,
-} from "../../utils/exploreToFactoryIdeasCategory";
-import { logFactoryIdeasCategory } from "../../utils/debugFactoryIdeasCategory";
-import { useFactoryIdeasCategorySelection } from "../../hooks/useFactoryIdeasCategoryFromUrl";
-import {
-  useShowcases,
-  showcaseQueryTypeFromTab,
-} from "../../hooks/useShowcases";
-import { useFavorites } from "../../hooks/useFavorites";
-import { MapPin, Star } from "lucide-react";
-
-const COLORS = {
-  purple: "#7A4B94",
-  purpleLight: "#9D77B2",
-  orange: "#E38844",
-  blue: "#2E2252",
-  /** ป้าย “สินค้า” ให้โทนฟ้า แยกจากสีหัวข้อ */
-  productBadgeBlue: "#2563EB",
-  white: "#FFFFFF",
-  gray: "#F5F5F5",
-  lightPurpleBg: "#F8F6FA",
-  teal: "#0D9488",
-};
-
-type ContentType =
-  | "all"
-  | "product"
-  | "promotion"
-  | "idea"
-  | "material"
-  | "factory";
-
-const CONTENT_TYPES: { id: ContentType; label: string }[] = [
-  { id: "all", label: "ทั้งหมด" },
-  { id: "product", label: "สินค้า" },
-  { id: "promotion", label: "โปรโมชัน" },
-  { id: "material", label: "วัตถุดิบ" },
-  { id: "idea", label: "ไอเดีย" },
-  { id: "factory", label: "โรงงาน" },
-];
-
-const contentTypeLabel: Record<Exclude<ContentType, "all">, string> = {
-  product: "สินค้า",
-  promotion: "โปรโมชัน",
-  material: "วัตถุดิบ",
-  idea: "ไอเดีย",
-  factory: "โรงงาน",
-};
-
-/** สีป้ายให้สอดคล้องหน้า detail: สินค้า=ฟ้า, โปรโมชัน=ส้ม, ไอเดีย=ม่วง */
-const contentTypeBadge: Record<Exclude<ContentType, "all">, string> = {
-  product: COLORS.productBadgeBlue,
-  promotion: COLORS.orange,
-  material: "#0EA5A4",
-  idea: COLORS.purple,
-  factory: COLORS.teal,
-};
-
-/* ─── Factory normaliser (snake_case API → camelCase) ─── */
-function normFactory(r: Record<string, unknown>): Factory {
-  const provinceName = String(r.province_name ?? r.provinceName ?? "").trim();
-  return {
-    id: String(r.factory_id ?? r.id ?? ""),
-    name: String(r.factory_name ?? r.name ?? ""),
-    image: String(r.image_url ?? r.image ?? r.logo_url ?? ""),
-    location: provinceName || String(r.location ?? r.city ?? ""),
-    ...(provinceName ? { provinceName } : {}),
-    rating: Number(r.avg_rating ?? r.rating ?? 0),
-    reviews: Number(r.review_count ?? r.reviews ?? 0),
-    specialization: String(r.specialization ?? ""),
-    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
-    leadTime: String(r.lead_time ?? r.leadTime ?? ""),
-    verified: Boolean(r.is_verified ?? r.verified ?? false),
-    completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
-    priceRange: String(r.price_range ?? r.priceRange ?? ""),
-  };
-}
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [searchText, setSearchText] = useState("");
-  const [selectedType, setSelectedType] = useState<ContentType>("all");
-  const [apiCategoriesAll, setApiCategoriesAll] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
-  const [categoryMenuStep, setCategoryMenuStep] = useState<
-    "categories" | "subs"
-  >("categories");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const categoryMenuRef = useRef<HTMLDivElement>(null);
-  const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<
-    string | null
-  >(null);
-  const [panelSubs, setPanelSubs] = useState<
-    { id: string; name: string; sortOrder: number }[]
-  >([]);
-  const [panelSubsLoading, setPanelSubsLoading] = useState(false);
-  const [subCategories, setSubCategories] = useState<
-    { id: string; name: string; sortOrder: number }[]
-  >([]);
-  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<
-    string | null
-  >(null);
-  const { isLiked, toggleFavorite } = useFavorites();
-  const data = useData();
-
-  useEffect(() => {
-    const t = searchParams.get("type");
-    if (
-      t === "product" ||
-      t === "promotion" ||
-      t === "idea" ||
-      t === "material" ||
-      t === "factory"
-    ) {
-      setSelectedType(t);
-    }
-  }, [searchParams]);
-
-  /* ── Showcase data (product / promotion / idea) ── */
-  const isFactoryTab = selectedType === "factory";
-  const isMaterialTab = selectedType === "material";
-  const showcaseApiType = isFactoryTab
-    ? undefined
-    : showcaseQueryTypeFromTab(selectedType);
-  const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
-    type: showcaseApiType,
-  });
-
-  /* ── Factory data (GET /factories/) ── */
-  const [factoryList, setFactoryList] = useState<Factory[]>([]);
-  const [factoriesLoading, setFactoriesLoading] = useState(false);
-
-  useEffect(() => {
-    // โหลดโรงงานเมื่อ tab = all หรือ factory
-    if (selectedType !== "all" && selectedType !== "factory") return;
-    let cancelled = false;
-    setFactoriesLoading(true);
-    factoriesApi
-      .list()
-      .then((raw) => {
-        if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<
-          string,
-          unknown
-        >[];
-        setFactoryList(arr.map(normFactory).filter((f) => f.id && f.name));
-      })
-      .catch(() => {
-        if (!cancelled) setFactoryList([]);
-      })
-      .finally(() => {
-        if (!cancelled) setFactoriesLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedType]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (isMaterialTab) {
-          // Tab วัตถุดิบ → ดึง MT categories จาก GET /lbi/categories?scope=MT
-          const raw = (await masterApi.lbiCategories(
-            "MT",
-          )) as unknown as Record<string, unknown>;
-          if (cancelled) return;
-          const arr = (
-            Array.isArray(raw.categories) ? raw.categories : []
-          ) as Record<string, unknown>[];
-          const rows = arr
-            .map((c) => ({
-              id: String(c.category_id ?? c.id ?? ""),
-              name: String(c.name ?? ""),
-            }))
-            .filter((r) => r.id && r.name);
-          if (!cancelled) setApiCategoriesAll(rows);
-        } else {
-          // Tab อื่น → ดึง PD categories จาก Explore (merged)
-          const res = await fetchExploreCategoriesMerged();
-          if (cancelled) return;
-          let rows = res.merged.map((c) => ({
-            id: String(c.id),
-            name: c.name,
-          }));
-          let categorySource:
-            | "exploreMerged"
-            | "masterProductCategories"
-            | "empty" = "exploreMerged";
-          if (rows.length === 0) {
-            categorySource = "empty";
-            try {
-              const rawPD = await masterApi.productCategories();
-              if (!cancelled) {
-                rows = parseMasterProductCategories(rawPD);
-                categorySource =
-                  rows.length > 0 ? "masterProductCategories" : "empty";
-              }
-            } catch {
-              /* keep [] */
-            }
-          }
-          if (!cancelled) {
-            setApiCategoriesAll(rows);
-            // Prefetch sub-categories for every category in parallel —
-            // dropdown clicks become instant (module-level cache in subCategoriesCache.ts)
-            prefetchSubCategoriesFor(rows.map((r) => r.id));
-            logFactoryIdeasCategory("categoryMenu.apiCategoriesAll", {
-              source: categorySource,
-              exploreMergedCount: res.merged.length,
-              rowCount: rows.length,
-              rows,
-            });
-          }
-        }
-      } catch {
-        if (!cancelled) setApiCategoriesAll([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isMaterialTab]);
-
-  const categoryFilters = useMemo(() => {
-    if (isMaterialTab) {
-      // MT: ใช้เฉพาะ categories จาก API scope=MT ไม่รวม bundle PD
-      const rest = [...apiCategoriesAll].sort((a, b) =>
-        a.name.localeCompare(b.name, "th"),
-      );
-      return [{ id: "all", name: "ทุกหมวดหมู่" }, ...rest];
-    }
-    const byId = new Map<string, string>();
-    for (const c of apiCategoriesAll) byId.set(String(c.id), c.name);
-    for (const c of data.categories) {
-      const id = String(c.id);
-      if (!byId.has(id)) byId.set(id, c.name);
-    }
-    const rest = [...byId.entries()]
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name, "th"));
-    return [{ id: "all", name: "ทุกหมวดหมู่" }, ...rest];
-  }, [apiCategoriesAll, data.categories, isMaterialTab]);
-
-  useEffect(() => {
-    logFactoryIdeasCategory("categoryMenu.categoryFilters", {
-      count: categoryFilters.length,
-      items: categoryFilters,
-      dataContextCategoriesCount: data.categories.length,
-      apiCategoriesAllCount: apiCategoriesAll.length,
-    });
-  }, [categoryFilters, data.categories.length, apiCategoriesAll.length]);
-
-  const { effectiveCategoryId, applyCategory } =
-    useFactoryIdeasCategorySelection(data.categories, apiCategoriesAll);
-
-  // Reset category / sub เมื่อสลับระหว่าง material tab กับ tab อื่น
-  const prevIsMaterialTabRef = useRef<boolean | null>(null);
-  useEffect(() => {
-    if (prevIsMaterialTabRef.current === null) {
-      prevIsMaterialTabRef.current = isMaterialTab;
-      return;
-    }
-    if (prevIsMaterialTabRef.current === isMaterialTab) return;
-    prevIsMaterialTabRef.current = isMaterialTab;
-    applyCategory("all");
-    setSelectedSubCategoryId(null);
-    setSubCategories([]);
-  }, [isMaterialTab]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const selectedCategoryIdForSubs =
-    effectiveCategoryId !== "all" ? effectiveCategoryId : null;
-
-  useEffect(() => {
-    if (!categoryMenuOpen) return;
-    setMenuHighlightCategoryId(
-      effectiveCategoryId !== "all" ? effectiveCategoryId : null,
-    );
-  }, [categoryMenuOpen, effectiveCategoryId]);
-
-  useEffect(() => {
-    if (categoryMenuOpen) setCategoryMenuStep("categories");
-  }, [categoryMenuOpen]);
-
-  useEffect(() => {
-    if (
-      isMaterialTab ||
-      !categoryMenuOpen ||
-      !menuHighlightCategoryId ||
-      menuHighlightCategoryId === "all"
-    ) {
-      setPanelSubs([]);
-      setPanelSubsLoading(false);
-      return;
-    }
-
-    // Synchronous cache peek — prefetch likely already resolved this
-    const cached = getCachedSubCategoriesSync(menuHighlightCategoryId);
-    if (cached) {
-      logFactoryIdeasCategory("panelSubs.cacheHit", {
-        menuHighlightCategoryId,
-        panelSubs: cached,
-      });
-      setPanelSubs(cached);
-      setPanelSubsLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setPanelSubsLoading(true);
-    logFactoryIdeasCategory("panelSubs.request", {
-      endpoint: `GET sub-categories (category_id=${menuHighlightCategoryId})`,
-      menuHighlightCategoryId,
-    });
-    loadSubCategories(menuHighlightCategoryId)
-      .then((mapped) => {
-        if (cancelled) return;
-        logFactoryIdeasCategory("panelSubs.apiResponse", {
-          menuHighlightCategoryId,
-          mappedLength: mapped.length,
-          mapped,
-        });
-        setPanelSubs(mapped);
-      })
-      .finally(() => {
-        if (!cancelled) setPanelSubsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [categoryMenuOpen, menuHighlightCategoryId, isMaterialTab]);
-
-  useEffect(() => {
-    if (!categoryMenuOpen) return;
-    const close = (e: MouseEvent | TouchEvent) => {
-      const el = categoryMenuRef.current;
-      if (el && !el.contains(e.target as Node)) {
-        setCategoryMenuOpen(false);
-        setCategoryMenuStep("categories");
-      }
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("touchstart", close, { passive: true });
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("touchstart", close);
-    };
-  }, [categoryMenuOpen]);
-
-  useEffect(() => {
-    // MT showcase ไม่มี sub-category
-    if (isMaterialTab) {
-      setSelectedSubCategoryId(null);
-      setSubCategories([]);
-      return;
-    }
-
-    setSelectedSubCategoryId(null);
-    setSubCategories([]);
-
-    if (!selectedCategoryIdForSubs) return;
-
-    // Synchronous cache peek — prefetch likely already resolved this
-    const cached = getCachedSubCategoriesSync(selectedCategoryIdForSubs);
-    if (cached) {
-      setSubCategories(cached);
-      return;
-    }
-
-    let cancelled = false;
-    setSubCategoriesLoading(true);
-
-    loadSubCategories(selectedCategoryIdForSubs)
-      .then((mapped) => {
-        if (cancelled) return;
-        setSubCategories(mapped);
-      })
-      .finally(() => {
-        if (!cancelled) setSubCategoriesLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCategoryIdForSubs, isMaterialTab]);
-
-  const categoryMenuTriggerLabel = useMemo(() => {
-    if (effectiveCategoryId === "all") return "ทุกหมวดหมู่";
-    const catName =
-      categoryFilters.find((c) => c.id === effectiveCategoryId)?.name ?? "หมวด";
-    if (isMaterialTab) return catName; // MT ไม่มีหมวดย่อย
-    if (!selectedSubCategoryId) return `${catName} › ทุกหมวดย่อย`;
-    const subName = subCategories.find(
-      (s) => s.id === selectedSubCategoryId,
-    )?.name;
-    return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
-  }, [
-    effectiveCategoryId,
-    selectedSubCategoryId,
-    categoryFilters,
-    subCategories,
-    isMaterialTab,
-  ]);
-
-  const closeCategoryMenu = () => {
-    setCategoryMenuOpen(false);
-    setCategoryMenuStep("categories");
-  };
-
-  const pickSubCategory = (
-    subId: string | null,
-    categoryIdForApply: string,
-  ) => {
-    if (categoryIdForApply && categoryIdForApply !== "all") {
-      applyCategory(categoryIdForApply);
-    }
-    setSelectedSubCategoryId(subId);
-    closeCategoryMenu();
-  };
-
-  /* ── Showcase filter (product / promotion / idea) ── */
-  const visibleItems = useMemo(() => {
-    if (isFactoryTab) return []; // factory tab ใช้ visibleFactories แทน
-    const q = searchText.trim().toLowerCase();
-    return pageShowcases
-      .filter((item) => {
-        const hideIdeaFromAll =
-          selectedType === "all" && item.contentType === "idea";
-        const byType =
-          selectedType === "all" || item.contentType === selectedType;
-        const byCategory = showcaseMatchesSelectedCategoryId(
-          item.category,
-          effectiveCategoryId,
-          apiCategoriesAll,
-          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
-          item.categoryId,
-        );
-        const bySubCategory = !(
-          selectedSubCategoryId &&
-          item.sub_category_id != null &&
-          String(item.sub_category_id) !== selectedSubCategoryId
-        );
-        if (!q)
-          return !hideIdeaFromAll && byType && byCategory && bySubCategory;
-        const haystack = [
-          item.title,
-          item.excerpt,
-          item.factoryName,
-          item.category,
-          ...(item.tags ?? []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return (
-          !hideIdeaFromAll &&
-          byType &&
-          byCategory &&
-          bySubCategory &&
-          haystack.includes(q)
-        );
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
-      );
-  }, [
+  const {
+    data,
+    isLiked,
+    toggleFavorite,
     searchText,
+    setSearchText,
     selectedType,
-    effectiveCategoryId,
+    setSelectedType,
+    viewMode,
+    setViewMode,
+    categoryMenuOpen,
+    setCategoryMenuOpen,
+    categoryMenuStep,
+    setCategoryMenuStep,
+    categoryMenuRef,
+    menuHighlightCategoryId,
+    setMenuHighlightCategoryId,
+    panelSubs,
+    panelSubsLoading,
     selectedSubCategoryId,
-    pageShowcases,
-    apiCategoriesAll,
-    data.categories,
+    setSelectedSubCategoryId,
+    categoryFilters,
+    effectiveCategoryId,
+    applyCategory,
     isFactoryTab,
-  ]);
-
-  const visibleIdeaItems = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
-    return pageShowcases
-      .filter((item) => {
-        const byType = item.contentType === "idea";
-        const byCategory = showcaseMatchesSelectedCategoryId(
-          item.category,
-          effectiveCategoryId,
-          apiCategoriesAll,
-          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
-          item.categoryId,
-        );
-        const bySubCategory = !(
-          selectedSubCategoryId &&
-          item.sub_category_id != null &&
-          String(item.sub_category_id) !== selectedSubCategoryId
-        );
-        if (!q) return byType && byCategory && bySubCategory;
-        const haystack = [
-          item.title,
-          item.excerpt,
-          item.factoryName,
-          item.category,
-          ...(item.tags ?? []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return byType && byCategory && bySubCategory && haystack.includes(q);
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
-      );
-  }, [
-    searchText,
-    effectiveCategoryId,
-    selectedSubCategoryId,
-    pageShowcases,
-    apiCategoriesAll,
-    data.categories,
-  ]);
-
-  const visibleMaterialItems = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
-    return pageShowcases
-      .filter((item) => {
-        const byType = item.contentType === "material";
-        const byCategory = showcaseMatchesSelectedCategoryId(
-          item.category,
-          effectiveCategoryId,
-          apiCategoriesAll,
-          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
-          item.categoryId,
-        );
-        const bySubCategory = !(
-          selectedSubCategoryId &&
-          item.sub_category_id != null &&
-          String(item.sub_category_id) !== selectedSubCategoryId
-        );
-        if (!q) return byType && byCategory && bySubCategory;
-        const haystack = [
-          item.title,
-          item.excerpt,
-          item.factoryName,
-          item.category,
-          ...(item.tags ?? []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return byType && byCategory && bySubCategory && haystack.includes(q);
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
-      );
-  }, [
-    searchText,
-    effectiveCategoryId,
-    selectedSubCategoryId,
-    pageShowcases,
-    apiCategoriesAll,
-    data.categories,
-  ]);
-
-  /* ── Factory filter ── */
-  const visibleFactories = useMemo(() => {
-    if (selectedType !== "all" && selectedType !== "factory") return [];
-    const q = searchText.trim().toLowerCase();
-    return factoryList.filter((f) => {
-      if (!q) return true;
-      const haystack = [f.name, f.location, f.specialization, ...(f.tags ?? [])]
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [searchText, selectedType, factoryList]);
-
-  /* ── Total count ── */
-  const totalCount = isFactoryTab
-    ? visibleFactories.length
-    : selectedType === "idea"
-      ? visibleIdeaItems.length
-      : selectedType === "material"
-        ? visibleMaterialItems.length
-        : visibleItems.length +
-          (selectedType === "all"
-            ? visibleFactories.length + visibleIdeaItems.length
-            : 0);
-
-  /** Showcase จาก GET /showcases — PD→product-detail, PM→promotion-detail, ID→idea-detail */
-  const getDetailPath = (type: string, id: string) => {
-    const q = encodeURIComponent(id);
-    if (type === "product") return `/product-detail?showcase_id=${q}`;
-    if (type === "material") return `/product-detail?showcase_id=${q}`;
-    if (type === "promotion") return `/promotion-detail?showcase_id=${q}`;
-    return `/idea-detail?showcase_id=${q}`;
-  };
+    isMaterialTab,
+    showcasesLoading,
+    factoriesLoading,
+    visibleItems,
+    visibleIdeaItems,
+    visibleMaterialItems,
+    visibleFactories,
+    totalCount,
+    categoryMenuTriggerLabel,
+    closeCategoryMenu,
+    pickSubCategory,
+    categoryOptionSelected,
+    getDetailPath,
+  } = useFactoryIdeasPageState({ layout: 'mobile' });
 
   return (
     <div
@@ -719,14 +151,14 @@ export function FactoryIdeasMobile() {
             style={{ color: COLORS.blue }}
           />
           {searchText && (
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setSearchText("")}
               aria-label="ล้างข้อความค้นหา"
               className="shrink-0 p-0.5"
             >
               <X size={13} className="text-gray-400" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -741,7 +173,7 @@ export function FactoryIdeasMobile() {
           {CONTENT_TYPES.map((type) => {
             const active = selectedType === type.id;
             return (
-              <button
+              <Button variant="unstyled"
                 key={type.id}
                 type="button"
                 data-tour={`tab-${type.id}`}
@@ -761,160 +193,35 @@ export function FactoryIdeasMobile() {
                 }}
               >
                 {type.label}
-              </button>
+              </Button>
             );
           })}
         </div>
 
         {/* Row 2: Category (multi-level) + จำนวน + view toggle */}
         <div className="flex flex-wrap items-center gap-2 px-4 pb-3">
-          <div
-            ref={categoryMenuRef}
-            className="relative flex-1 min-w-[min(100%,10rem)] z-30"
-          >
-            <button
-              type="button"
-              onClick={() => setCategoryMenuOpen((o) => !o)}
-              className="w-full flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg border text-[12px] transition-all"
-              style={{
-                borderColor:
-                  effectiveCategoryId !== "all" ? COLORS.purple : "#E5E7EB",
-                backgroundColor:
-                  effectiveCategoryId !== "all"
-                    ? COLORS.lightPurpleBg
-                    : COLORS.gray,
-                color:
-                  effectiveCategoryId !== "all" ? COLORS.purple : "#6B7280",
-                fontWeight: effectiveCategoryId !== "all" ? 600 : 400,
-              }}
-            >
-              <span className="truncate">{categoryMenuTriggerLabel}</span>
-              <ChevronDown
-                size={14}
-                className={`shrink-0 transition-transform duration-200 ${categoryMenuOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-            {categoryMenuOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200 shadow-xl py-1 max-h-[50vh] overflow-y-auto z-40">
-                {categoryMenuStep === "categories" ? (
-                  categoryFilters.map((cat) => {
-                    const selected = factoryIdeasCategoryOptionSelected(
-                      effectiveCategoryId,
-                      cat.id,
-                    );
-                    const isAll = cat.id === "all";
-                    return (
-                      <button
-                        key={isAll ? "all" : `cat-${cat.id}`}
-                        type="button"
-                        onClick={() => {
-                          if (isAll) {
-                            applyCategory("all");
-                            setSelectedSubCategoryId(null);
-                            closeCategoryMenu();
-                          } else if (isMaterialTab) {
-                            // MT ไม่มีหมวดย่อย → ปิดเมนูทันที
-                            applyCategory(cat.id);
-                            setSelectedSubCategoryId(null);
-                            closeCategoryMenu();
-                          } else {
-                            applyCategory(cat.id);
-                            setMenuHighlightCategoryId(cat.id);
-                            setCategoryMenuStep("subs");
-                          }
-                        }}
-                        className="w-full px-4 py-2.5 flex items-center justify-between gap-2 text-left text-[12px] transition-colors active:bg-gray-50"
-                        style={{
-                          color: selected ? COLORS.purple : "#374151",
-                          fontWeight: selected ? 600 : 400,
-                          backgroundColor: selected
-                            ? COLORS.lightPurpleBg
-                            : "transparent",
-                        }}
-                      >
-                        <span className="truncate">{cat.name}</span>
-                        {!isAll && (
-                          <ChevronRight
-                            size={16}
-                            className="shrink-0 text-gray-400"
-                            aria-hidden
-                          />
-                        )}
-                      </button>
-                    );
-                  })
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setCategoryMenuStep("categories")}
-                      className="w-full px-4 py-2.5 flex items-center gap-2 text-left text-[12px] font-medium active:bg-gray-50"
-                      style={{ color: COLORS.purple }}
-                    >
-                      <ChevronLeft size={18} className="shrink-0" aria-hidden />
-                      หมวดหมู่
-                    </button>
-                    <div className="mx-3 border-t border-gray-100" />
-                    {panelSubsLoading ? (
-                      <div className="px-4 py-6 flex items-center justify-center gap-2 text-[12px] text-gray-500">
-                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                        กำลังโหลดหมวดย่อย...
-                      </div>
-                    ) : panelSubs.length === 0 ? (
-                      <p className="px-4 py-4 text-center text-[12px] text-gray-500">
-                        ไม่มีหมวดย่อยในหมวดนี้
-                      </p>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const cid = menuHighlightCategoryId;
-                            if (cid) pickSubCategory(null, cid);
-                          }}
-                          className="w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50"
-                          style={{
-                            color: !selectedSubCategoryId
-                              ? COLORS.purple
-                              : "#374151",
-                            fontWeight: !selectedSubCategoryId ? 600 : 400,
-                            backgroundColor: !selectedSubCategoryId
-                              ? COLORS.lightPurpleBg
-                              : "transparent",
-                          }}
-                        >
-                          ทุกหมวดย่อย
-                        </button>
-                        {panelSubs.map((s) => {
-                          const sel = selectedSubCategoryId === s.id;
-                          return (
-                            <button
-                              key={s.id}
-                              type="button"
-                              onClick={() => {
-                                const cid = menuHighlightCategoryId;
-                                if (cid) pickSubCategory(s.id, cid);
-                              }}
-                              className="w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50"
-                              style={{
-                                color: sel ? COLORS.purple : "#374151",
-                                fontWeight: sel ? 600 : 400,
-                                backgroundColor: sel
-                                  ? COLORS.lightPurpleBg
-                                  : "transparent",
-                              }}
-                            >
-                              {s.name}
-                            </button>
-                          );
-                        })}
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+          <FactoryIdeasCategoryDropdown
+            variant="mobile"
+            categoryMenuRef={categoryMenuRef}
+            categoryMenuOpen={categoryMenuOpen}
+            setCategoryMenuOpen={setCategoryMenuOpen}
+            categoryMenuStep={categoryMenuStep}
+            setCategoryMenuStep={setCategoryMenuStep}
+            categoryFilters={categoryFilters}
+            effectiveCategoryId={effectiveCategoryId}
+            selectedSubCategoryId={selectedSubCategoryId}
+            setSelectedSubCategoryId={setSelectedSubCategoryId}
+            isMaterialTab={isMaterialTab}
+            categoryMenuTriggerLabel={categoryMenuTriggerLabel}
+            menuHighlightCategoryId={menuHighlightCategoryId}
+            setMenuHighlightCategoryId={setMenuHighlightCategoryId}
+            panelSubs={panelSubs}
+            panelSubsLoading={panelSubsLoading}
+            applyCategory={applyCategory}
+            closeCategoryMenu={closeCategoryMenu}
+            pickSubCategory={pickSubCategory}
+            categoryOptionSelected={categoryOptionSelected}
+          />
 
           {/* Count badge */}
           <span
@@ -932,7 +239,7 @@ export function FactoryIdeasMobile() {
             className="shrink-0 flex items-center gap-0.5 p-0.5 rounded-lg border border-gray-200"
             style={{ backgroundColor: COLORS.gray }}
           >
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setViewMode("grid")}
               className="p-1.5 rounded-md transition-all"
@@ -946,8 +253,8 @@ export function FactoryIdeasMobile() {
               aria-label="มุมมองตาราง"
             >
               <LayoutGrid size={14} />
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               type="button"
               onClick={() => setViewMode("list")}
               className="p-1.5 rounded-md transition-all"
@@ -961,7 +268,7 @@ export function FactoryIdeasMobile() {
               aria-label="มุมมองรายการ"
             >
               <List size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -1081,7 +388,7 @@ export function FactoryIdeasMobile() {
                     <span className="text-[10px] text-gray-400">
                       แตะเพื่ออ่านต่อ
                     </span>
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1101,7 +408,7 @@ export function FactoryIdeasMobile() {
                       <span className="text-[10px] leading-none">
                         {item.likes + (isLiked(item.id) ? 1 : 0)}
                       </span>
-                    </button>
+                    </Button>
                   </div>
                 </article>
               );
@@ -1235,7 +542,7 @@ export function FactoryIdeasMobile() {
 
                       {/* Footer — mt-auto ติดขอบล่าง */}
                       <div className="flex items-center justify-between gap-2 mt-auto pt-1.5 border-t border-gray-50 min-w-0">
-                        <button
+                        <Button variant="unstyled"
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1251,7 +558,7 @@ export function FactoryIdeasMobile() {
                               style={{ color: COLORS.purple }}
                             />
                           )}
-                        </button>
+                        </Button>
                         <span className="text-[9px] text-gray-400 shrink-0">
                           ขั้นต่ำ{" "}
                           <span
@@ -1266,7 +573,7 @@ export function FactoryIdeasMobile() {
 
                     {/* ── Right column: w-[40px] + shrink-0 ล็อคขนาด ── */}
                     <div className="w-[40px] shrink-0 flex flex-col items-center justify-center border-l border-gray-100 pl-2">
-                      <button
+                      <Button variant="unstyled"
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1286,7 +593,7 @@ export function FactoryIdeasMobile() {
                         <span className="text-[9px] font-medium tabular-nums leading-none">
                           {item.likes + (isLiked(item.id) ? 1 : 0)}
                         </span>
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </article>
@@ -1305,14 +612,14 @@ export function FactoryIdeasMobile() {
                 <Sparkles className="w-4 h-4" style={{ color: "#0EA5A4" }} />
                 วัตถุดิบแนะนำ
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("material")}
                 className="text-[11px] font-medium"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleMaterialItems.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {visibleMaterialItems.slice(0, 4).map((item) => {
@@ -1389,14 +696,14 @@ export function FactoryIdeasMobile() {
                 <MapPin className="w-4 h-4" style={{ color: COLORS.teal }} />
                 โรงงานแนะนำ
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("factory")}
                 className="text-[11px] font-medium"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleFactories.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {visibleFactories.slice(0, 4).map((factory) => (
@@ -1472,14 +779,14 @@ export function FactoryIdeasMobile() {
                 />
                 บทความ Idea
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("idea")}
                 className="text-[11px] font-medium"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleIdeaItems.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-1 gap-2">
               {visibleIdeaItems.slice(0, 4).map((item) => {
@@ -1512,7 +819,7 @@ export function FactoryIdeasMobile() {
                       <span className="text-[10px] text-gray-400">
                         แตะเพื่ออ่านต่อ
                       </span>
-                      <button
+                      <Button variant="unstyled"
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1532,7 +839,7 @@ export function FactoryIdeasMobile() {
                         <span className="text-[10px] leading-none">
                           {item.likes + (isLiked(item.id) ? 1 : 0)}
                         </span>
-                      </button>
+                      </Button>
                     </div>
                   </article>
                 );
@@ -1550,14 +857,14 @@ export function FactoryIdeasMobile() {
                 <Sparkles className="w-4 h-4" style={{ color: "#0EA5A4" }} />
                 วัตถุดิบแนะนำ
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("material")}
                 className="text-[11px] font-medium"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleMaterialItems.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {visibleMaterialItems.slice(0, 4).map((item) => {

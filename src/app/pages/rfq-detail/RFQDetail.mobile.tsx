@@ -16,6 +16,7 @@ import {
   HISTORY_STATUSES,
   STATUS_LABEL,
 } from '../../components/features/rfq-detail';
+import { Button } from '../../components/ui/button';
 
 const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
@@ -72,14 +73,14 @@ export function RFQDetailMobile() {
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.lightPurpleBg }}>
         <div className="flex items-center px-4 pt-5 pb-4 bg-white border-b border-gray-100">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => navigate('/orders')}
             className="w-10 h-10 rounded-xl shadow-sm flex items-center justify-center"
             style={{ backgroundColor: COLORS.lightPurpleBg }}
           >
             <ChevronLeft size={22} style={{ color: COLORS.blue }} />
-          </button>
+          </Button>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 pb-24 text-center">
           {loading ? (
@@ -95,28 +96,28 @@ export function RFQDetailMobile() {
           ) : error ? (
             <>
               <p className="text-sm font-semibold text-red-600 mb-2">{error}</p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="text-sm font-semibold underline"
                 style={{ color: COLORS.purple }}
                 onClick={() => refetch()}
               >
                 ลองใหม่
-              </button>
+              </Button>
             </>
           ) : (
             <>
               <p className="text-sm font-semibold" style={{ color: COLORS.blue }}>
                 ไม่พบคำขอนี้ หรือคุณไม่มีสิทธิ์ดู
               </p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="mt-4 text-sm font-semibold underline"
                 style={{ color: COLORS.purple }}
                 onClick={() => navigate('/orders')}
               >
                 กลับไป คำขอราคา & คำสั่งซื้อ
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -153,13 +154,13 @@ export function RFQDetailMobile() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.lightPurpleBg }}>
       <div className="flex items-center justify-between px-4 pt-5 pb-4 bg-white border-b border-gray-100">
-        <button
+        <Button variant="unstyled"
           onClick={() => navigate('/orders')}
           className="w-10 h-10 rounded-xl shadow-sm flex items-center justify-center"
           style={{ backgroundColor: COLORS.lightPurpleBg }}
         >
           <ChevronLeft size={22} style={{ color: COLORS.blue }} />
-        </button>
+        </Button>
         <div className="text-center">
           <p className="text-[10px]" style={{ color: COLORS.orange }}>RFQ Detail</p>
           <h1
@@ -176,7 +177,7 @@ export function RFQDetailMobile() {
         {canClose ? (
           <div className="flex gap-2">
             {canClose ? (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 disabled={closing}
                 onClick={async () => {
@@ -197,7 +198,7 @@ export function RFQDetailMobile() {
                 style={{ borderColor: COLORS.purple, color: COLORS.purple, backgroundColor: COLORS.lightPurpleBg }}
               >
                 {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
-              </button>
+              </Button>
             ) : null}
           </div>
         ) : null}

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Button } from '../../ui/button';
+import { BaseModal } from '../../../shared/ui/modals/BaseModal';
 import { productionErrorMessage } from './productionErrors';
 
 type Props = {
@@ -12,8 +14,6 @@ export function RejectConfirmModal({ open, stepNameTh, onClose, onConfirm }: Pro
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-
-  if (!open) return null;
 
   const submit = async () => {
     const t = reason.trim();
@@ -35,16 +35,16 @@ export function RejectConfirmModal({ open, stepNameTh, onClose, onConfirm }: Pro
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/50"
-      role="dialog"
-      aria-modal
-      aria-labelledby="reject-title"
+    <BaseModal
+      isOpen={open}
+      onClose={onClose}
+      title={`ขอตรวจสอบใหม่ — ${stepNameTh}`}
+      placement="bottom"
+      size="md"
+      zIndexClassName="z-[80]"
+      overlayClassName="bg-black/50"
+      bodyClassName="p-5 pt-0 space-y-4"
     >
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md p-5 space-y-4">
-        <h2 id="reject-title" className="text-base font-bold text-gray-900">
-          ขอตรวจสอบใหม่ — {stepNameTh}
-        </h2>
         <p className="text-sm text-gray-600">
           คุณต้องการให้โรงงานตรวจสอบขั้นตอนนี้ใหม่ใช่ไหม?
           <br />
@@ -59,25 +59,24 @@ export function RejectConfirmModal({ open, stepNameTh, onClose, onConfirm }: Pro
         />
         {err ? <p className="text-xs text-red-600">{err}</p> : null}
         <div className="flex gap-2 justify-end">
-          <button
+          <Button
+            variant="outline"
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-gray-200 text-sm"
             disabled={busy}
           >
             ยกเลิก
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => void submit()}
             disabled={busy}
-            className="px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+            className="text-white disabled:opacity-50"
             style={{ background: '#A238FF' }}
           >
             {busy ? 'กำลังส่ง…' : 'ยืนยันการขอตรวจสอบ'}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 }

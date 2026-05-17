@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router';
 import { ArrowLeft, Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../stores';
 import { frontendApi } from '../../services/api';
+import { Button } from '../../components/ui/button';
 
 type Mode = 'login' | 'register';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
@@ -135,7 +136,7 @@ export function Login() {
 
         {/* Server Status Badge */}
         <div className="flex justify-center mb-4">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={checkServer}
             disabled={serverStatus === 'checking'}
@@ -163,14 +164,14 @@ export function Login() {
               </>
             )}
             {serverStatus === 'unknown' && <><Wifi size={14} /> ตรวจสอบเซิร์ฟเวอร์...</>}
-          </button>
+          </Button>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-sm p-6 space-y-5">
           {/* Tabs */}
           <div className="flex bg-gray-100 rounded-xl p-1">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => {
                 setMode('login');
@@ -188,8 +189,8 @@ export function Login() {
             >
               <LogIn size={16} />
               เข้าสู่ระบบ
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               type="button"
               onClick={() => {
                 setMode('register');
@@ -207,7 +208,7 @@ export function Login() {
             >
               <UserPlus size={16} />
               สมัครสมาชิก
-            </button>
+            </Button>
           </div>
 
           {/* Error message */}
@@ -242,16 +243,16 @@ export function Login() {
                     required
                     className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-200 transition-all pr-12"
                   />
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                  </Button>
                 </div>
               </div>
-              <button
+              <Button variant="unstyled"
                 type="submit"
                 disabled={loading || serverStatus === 'checking'}
                 className="w-full py-3.5 rounded-xl text-white text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2"
@@ -261,7 +262,7 @@ export function Login() {
                   <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 )}
                 {loading ? `กำลังเข้าสู่ระบบ... (${elapsed}s)` : 'เข้าสู่ระบบ'}
-              </button>
+              </Button>
               {loading && (
                 <p className="text-[11px] text-gray-400 text-center animate-pulse">
                   {elapsed < 10
@@ -335,16 +336,16 @@ export function Login() {
                     minLength={8}
                     className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-200 transition-all pr-12"
                   />
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                  </Button>
                 </div>
               </div>
-              <button
+              <Button variant="unstyled"
                 type="submit"
                 disabled={loading || serverStatus === 'checking'}
                 className="w-full py-3.5 rounded-xl text-white text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2"
@@ -354,7 +355,7 @@ export function Login() {
                   <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 )}
                 {loading ? `กำลังสมัคร... (${elapsed}s)` : 'สมัครสมาชิก'}
-              </button>
+              </Button>
               {loading && (
                 <p className="text-[11px] text-gray-400 text-center animate-pulse">
                   {elapsed < 10

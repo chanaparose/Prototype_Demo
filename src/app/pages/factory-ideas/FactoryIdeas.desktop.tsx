@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import React from "react";
+import { useNavigate } from "react-router";
+import { Button } from '../../components/ui/button';
 import {
   Search,
   BadgeCheck,
@@ -7,630 +8,60 @@ import {
   Sparkles,
   LayoutGrid,
   List,
-  ArrowUpRight,
   X,
-  ChevronDown,
-  ChevronRight,
   Loader2,
+  MapPin,
+  Star,
 } from "lucide-react";
-import { useData } from "../../stores";
-import type { Factory } from "../../stores";
+import { FactoryIdeasCategoryDropdown } from '../../components/features/factory-ideas/FactoryIdeasCategoryDropdown';
+import { useFactoryIdeasPageState } from './useFactoryIdeasPageState';
+import {
+  factoryIdeasContentTypeBadge as contentTypeBadge,
+  factoryIdeasContentTypeLabel as contentTypeLabel,
+  factoryIdeasContentTypes as CONTENT_TYPES,
+  factoryIdeasTheme as COLORS,
+} from '../../components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from "../../components/shared";
-import { masterApi, factoriesApi } from "../../services/api";
-import { fetchExploreCategoriesMerged } from "../../utils/exploreCategoriesFromApi";
-import {
-  loadSubCategories,
-  prefetchSubCategoriesFor,
-  getCachedSubCategoriesSync,
-} from "../../utils/subCategoriesCache";
-import {
-  factoryIdeasCategoryOptionSelected,
-  parseMasterProductCategories,
-  showcaseMatchesSelectedCategoryId,
-} from "../../utils/exploreToFactoryIdeasCategory";
-import { logFactoryIdeasCategory } from "../../utils/debugFactoryIdeasCategory";
-import { useFactoryIdeasCategorySelection } from "../../hooks/useFactoryIdeasCategoryFromUrl";
-import {
-  useShowcases,
-  showcaseQueryTypeFromTab,
-} from "../../hooks/useShowcases";
-import { useFavorites } from "../../hooks/useFavorites";
-import { MapPin, Star } from "lucide-react";
-
-const COLORS = {
-  purple: "#7A4B94",
-  purpleLight: "#9D77B2",
-  orange: "#E38844",
-  blue: "#2E2252",
-  productBadgeBlue: "#2563EB",
-  white: "#FFFFFF",
-  gray: "#F5F5F5",
-  lightPurpleBg: "#F8F6FA",
-  teal: "#0D9488",
-};
-
-type ContentType =
-  | "all"
-  | "product"
-  | "promotion"
-  | "idea"
-  | "material"
-  | "factory";
-
-const CONTENT_TYPES: { id: ContentType; label: string }[] = [
-  { id: "all", label: "ทั้งหมด" },
-  { id: "product", label: "สินค้า" },
-  { id: "promotion", label: "โปรโมชัน" },
-  { id: "material", label: "วัตถุดิบ" },
-  { id: "idea", label: "ไอเดีย" },
-  { id: "factory", label: "โรงงาน" },
-];
-
-const contentTypeLabel: Record<Exclude<ContentType, "all">, string> = {
-  product: "สินค้า",
-  promotion: "โปรโมชัน",
-  material: "วัตถุดิบ",
-  idea: "ไอเดีย",
-  factory: "โรงงาน",
-};
-
-const contentTypeBadge: Record<Exclude<ContentType, "all">, string> = {
-  product: COLORS.productBadgeBlue,
-  promotion: COLORS.orange,
-  material: "#0EA5A4",
-  idea: COLORS.purple,
-  factory: COLORS.teal,
-};
-
-/* ─── Factory normaliser ─── */
-function normFactory(r: Record<string, unknown>): Factory {
-  const provinceName = String(r.province_name ?? r.provinceName ?? "").trim();
-  return {
-    id: String(r.factory_id ?? r.id ?? ""),
-    name: String(r.factory_name ?? r.name ?? ""),
-    image: String(r.image_url ?? r.image ?? r.logo_url ?? ""),
-    location: provinceName || String(r.location ?? r.city ?? ""),
-    ...(provinceName ? { provinceName } : {}),
-    rating: Number(r.avg_rating ?? r.rating ?? 0),
-    reviews: Number(r.review_count ?? r.reviews ?? 0),
-    specialization: String(r.specialization ?? ""),
-    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-    minOrder: Number(r.min_order ?? r.minOrder ?? 0),
-    leadTime: String(r.lead_time ?? r.leadTime ?? ""),
-    verified: Boolean(r.is_verified ?? r.verified ?? false),
-    completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
-    priceRange: String(r.price_range ?? r.priceRange ?? ""),
-  };
-}
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [searchText, setSearchText] = useState("");
-  const [selectedType, setSelectedType] = useState<ContentType>("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
-  const categoryMenuRef = useRef<HTMLDivElement>(null);
-  /**
-   * When `pickSubCategory` triggers a category change (hover-selected category
-   * differs from effective), the resulting `selectedCategoryIdForSubs` effect
-   * would otherwise wipe the sub-id we just set. This ref tells the effect to
-   * skip the reset exactly once. (Mobile doesn't need it because the user must
-   * tap the category row first — `applyCategory` in `pickSubCategory` is a
-   * no-op there, so the effect never re-runs.)
-   */
-  const skipSubResetOnNextCategoryChangeRef = useRef(false);
-  const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<
-    string | null
-  >(null);
-  const [panelSubs, setPanelSubs] = useState<
-    { id: string; name: string; sortOrder: number }[]
-  >([]);
-  const [panelSubsLoading, setPanelSubsLoading] = useState(false);
-  const [subCategories, setSubCategories] = useState<
-    { id: string; name: string; sortOrder: number }[]
-  >([]);
-  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<
-    string | null
-  >(null);
-  /** หมวดทั้งหมดจาก GET /categories + GET /master/product-categories (Explore ยังคงแสดงแค่ 6 การ์ด) */
-  const [apiCategoriesAll, setApiCategoriesAll] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const data = useData();
-  const { isLiked, toggleFavorite } = useFavorites();
-
-  const isFactoryTab = selectedType === "factory";
-  const isMaterialTab = selectedType === "material";
-  const showcaseApiType = isFactoryTab
-    ? undefined
-    : showcaseQueryTypeFromTab(selectedType);
-  const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
-    type: showcaseApiType,
-  });
-
-  /* ── Factory data (GET /factories/) ── */
-  const [factoryList, setFactoryList] = useState<Factory[]>([]);
-  const [factoriesLoading, setFactoriesLoading] = useState(false);
-
-  useEffect(() => {
-    if (selectedType !== "all" && selectedType !== "factory") return;
-    let cancelled = false;
-    setFactoriesLoading(true);
-    factoriesApi
-      .list()
-      .then((raw) => {
-        if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<
-          string,
-          unknown
-        >[];
-        setFactoryList(arr.map(normFactory).filter((f) => f.id && f.name));
-      })
-      .catch(() => {
-        if (!cancelled) setFactoryList([]);
-      })
-      .finally(() => {
-        if (!cancelled) setFactoriesLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedType]);
-
-  useEffect(() => {
-    const t = searchParams.get("type");
-    if (
-      t === "product" ||
-      t === "promotion" ||
-      t === "idea" ||
-      t === "material" ||
-      t === "factory"
-    ) {
-      setSelectedType(t);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (
-      isMaterialTab ||
-      !categoryMenuOpen ||
-      !menuHighlightCategoryId ||
-      menuHighlightCategoryId === "all"
-    ) {
-      setPanelSubs([]);
-      setPanelSubsLoading(false);
-      return;
-    }
-
-    // Synchronous cache peek — prefetch likely already resolved this
-    const cached = getCachedSubCategoriesSync(menuHighlightCategoryId);
-    if (cached) {
-      logFactoryIdeasCategory("panelSubs.cacheHit", {
-        menuHighlightCategoryId,
-        panelSubs: cached,
-      });
-      setPanelSubs(cached);
-      setPanelSubsLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setPanelSubsLoading(true);
-    logFactoryIdeasCategory("panelSubs.request", {
-      endpoint: `GET sub-categories (category_id=${menuHighlightCategoryId})`,
-      menuHighlightCategoryId,
-    });
-    loadSubCategories(menuHighlightCategoryId)
-      .then((mapped) => {
-        if (cancelled) return;
-        logFactoryIdeasCategory("panelSubs.apiResponse", {
-          menuHighlightCategoryId,
-          mappedLength: mapped.length,
-          mapped,
-        });
-        setPanelSubs(mapped);
-      })
-      .finally(() => {
-        if (!cancelled) setPanelSubsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [categoryMenuOpen, menuHighlightCategoryId, isMaterialTab]);
-
-  useEffect(() => {
-    if (!categoryMenuOpen) return;
-    const close = (e: MouseEvent | TouchEvent) => {
-      const el = categoryMenuRef.current;
-      if (el && !el.contains(e.target as Node)) setCategoryMenuOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("touchstart", close, { passive: true });
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("touchstart", close);
-    };
-  }, [categoryMenuOpen]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        if (isMaterialTab) {
-          // Tab วัตถุดิบ → ดึง MT categories จาก GET /lbi/categories?scope=MT
-          const raw = (await masterApi.lbiCategories(
-            "MT",
-          )) as unknown as Record<string, unknown>;
-          if (cancelled) return;
-          const arr = (
-            Array.isArray(raw.categories) ? raw.categories : []
-          ) as Record<string, unknown>[];
-          const rows = arr
-            .map((c) => ({
-              id: String(c.category_id ?? c.id ?? ""),
-              name: String(c.name ?? ""),
-            }))
-            .filter((r) => r.id && r.name);
-          if (!cancelled) setApiCategoriesAll(rows);
-        } else {
-          // Tab อื่น → ดึง PD categories จาก Explore (merged)
-          const res = await fetchExploreCategoriesMerged();
-          if (cancelled) return;
-          let rows = res.merged.map((c) => ({
-            id: String(c.id),
-            name: c.name,
-          }));
-          let categorySource:
-            | "exploreMerged"
-            | "masterProductCategories"
-            | "empty" = "exploreMerged";
-          if (rows.length === 0) {
-            categorySource = "empty";
-            try {
-              const rawPD = await masterApi.productCategories();
-              if (!cancelled) {
-                rows = parseMasterProductCategories(rawPD);
-                categorySource =
-                  rows.length > 0 ? "masterProductCategories" : "empty";
-              }
-            } catch {
-              /* keep [] */
-            }
-          }
-          if (!cancelled) {
-            setApiCategoriesAll(rows);
-            // Prefetch sub-categories for every category in parallel —
-            // dropdown clicks become instant (module-level cache in subCategoriesCache.ts)
-            prefetchSubCategoriesFor(rows.map((r) => r.id));
-            logFactoryIdeasCategory("categoryMenu.apiCategoriesAll", {
-              source: categorySource,
-              exploreMergedCount: res.merged.length,
-              rowCount: rows.length,
-              rows,
-            });
-          }
-        }
-      } catch {
-        if (!cancelled) setApiCategoriesAll([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isMaterialTab]);
-
-  /** dropdown: รายการจาก API ก่อน แล้วต่อด้วยหมวดจาก bundle ที่ยังไม่มี id ซ้ำ */
-  const categoryFilters = useMemo(() => {
-    if (isMaterialTab) {
-      // MT: ใช้เฉพาะ categories จาก API scope=MT ไม่รวม bundle PD
-      const rest = [...apiCategoriesAll].sort((a, b) =>
-        a.name.localeCompare(b.name, "th"),
-      );
-      return [{ id: "all", name: "ทุกหมวดหมู่" }, ...rest];
-    }
-    const byId = new Map<string, string>();
-    for (const c of apiCategoriesAll) byId.set(String(c.id), c.name);
-    for (const c of data.categories) {
-      const id = String(c.id);
-      if (!byId.has(id)) byId.set(id, c.name);
-    }
-    const rest = [...byId.entries()]
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name, "th"));
-    return [{ id: "all", name: "ทุกหมวดหมู่" }, ...rest];
-  }, [apiCategoriesAll, data.categories, isMaterialTab]);
-
-  useEffect(() => {
-    logFactoryIdeasCategory("categoryMenu.categoryFilters", {
-      count: categoryFilters.length,
-      items: categoryFilters,
-      dataContextCategoriesCount: data.categories.length,
-      apiCategoriesAllCount: apiCategoriesAll.length,
-    });
-  }, [categoryFilters, data.categories.length, apiCategoriesAll.length]);
-
-  const { effectiveCategoryId, applyCategory } =
-    useFactoryIdeasCategorySelection(data.categories, apiCategoriesAll);
-
-  // Reset category / sub เมื่อสลับระหว่าง material tab กับ tab อื่น
-  const prevIsMaterialTabRef = useRef<boolean | null>(null);
-  useEffect(() => {
-    if (prevIsMaterialTabRef.current === null) {
-      prevIsMaterialTabRef.current = isMaterialTab;
-      return;
-    }
-    if (prevIsMaterialTabRef.current === isMaterialTab) return;
-    prevIsMaterialTabRef.current = isMaterialTab;
-    applyCategory("all");
-    setSelectedSubCategoryId(null);
-    setSubCategories([]);
-  }, [isMaterialTab]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!categoryMenuOpen) return;
-    setMenuHighlightCategoryId(
-      effectiveCategoryId !== "all" ? effectiveCategoryId : null,
-    );
-  }, [categoryMenuOpen, effectiveCategoryId]);
-
-  const selectedCategoryIdForSubs =
-    effectiveCategoryId !== "all" ? effectiveCategoryId : null;
-
-  useEffect(() => {
-    // MT showcase ไม่มี sub-category
-    if (isMaterialTab) {
-      setSelectedSubCategoryId(null);
-      setSubCategories([]);
-      return;
-    }
-
-    // Skip the reset when the category change was triggered by pickSubCategory
-    // (it already set the new sub id we want to keep).
-    if (skipSubResetOnNextCategoryChangeRef.current) {
-      skipSubResetOnNextCategoryChangeRef.current = false;
-    } else {
-      setSelectedSubCategoryId(null);
-    }
-    setSubCategories([]);
-
-    if (!selectedCategoryIdForSubs) return;
-
-    // Synchronous cache peek — prefetch likely already resolved this
-    const cached = getCachedSubCategoriesSync(selectedCategoryIdForSubs);
-    if (cached) {
-      setSubCategories(cached);
-      return;
-    }
-
-    let cancelled = false;
-    setSubCategoriesLoading(true);
-
-    loadSubCategories(selectedCategoryIdForSubs)
-      .then((mapped) => {
-        if (cancelled) return;
-        setSubCategories(mapped);
-      })
-      .finally(() => {
-        if (!cancelled) setSubCategoriesLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedCategoryIdForSubs, isMaterialTab]);
-
-  const categoryMenuTriggerLabel = useMemo(() => {
-    if (effectiveCategoryId === "all") return "ทุกหมวดหมู่";
-    const catName =
-      categoryFilters.find((c) => c.id === effectiveCategoryId)?.name ?? "หมวด";
-    if (isMaterialTab) return catName; // MT ไม่มีหมวดย่อย
-    if (!selectedSubCategoryId) return `${catName} › ทุกหมวดย่อย`;
-    const subName = subCategories.find(
-      (s) => s.id === selectedSubCategoryId,
-    )?.name;
-    return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
-  }, [
-    effectiveCategoryId,
-    selectedSubCategoryId,
-    categoryFilters,
-    subCategories,
-    isMaterialTab,
-  ]);
-
-  const visibleItems = useMemo(() => {
-    if (isFactoryTab) return [];
-    const q = searchText.trim().toLowerCase();
-    return pageShowcases
-      .filter((item) => {
-        const hideIdeaFromAll =
-          selectedType === "all" && item.contentType === "idea";
-        const byType =
-          selectedType === "all" || item.contentType === selectedType;
-        const byCategory = showcaseMatchesSelectedCategoryId(
-          item.category,
-          effectiveCategoryId,
-          apiCategoriesAll,
-          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
-          item.categoryId,
-        );
-        const bySubCategory = !(
-          selectedSubCategoryId &&
-          item.sub_category_id != null &&
-          String(item.sub_category_id) !== selectedSubCategoryId
-        );
-        if (!q)
-          return !hideIdeaFromAll && byType && byCategory && bySubCategory;
-        const haystack = [
-          item.title,
-          item.excerpt,
-          item.factoryName,
-          item.category,
-          ...(item.tags ?? []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return (
-          !hideIdeaFromAll &&
-          byType &&
-          byCategory &&
-          bySubCategory &&
-          haystack.includes(q)
-        );
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
-      );
-  }, [
+  const {
+    data,
+    isLiked,
+    toggleFavorite,
     searchText,
+    setSearchText,
     selectedType,
-    effectiveCategoryId,
+    setSelectedType,
+    viewMode,
+    setViewMode,
+    categoryMenuOpen,
+    setCategoryMenuOpen,
+    categoryMenuRef,
+    menuHighlightCategoryId,
+    setMenuHighlightCategoryId,
+    panelSubs,
+    panelSubsLoading,
     selectedSubCategoryId,
-    pageShowcases,
-    apiCategoriesAll,
-    data.categories,
+    setSelectedSubCategoryId,
+    categoryFilters,
+    effectiveCategoryId,
+    applyCategory,
     isFactoryTab,
-  ]);
-
-  const visibleIdeaItems = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
-    return pageShowcases
-      .filter((item) => {
-        const byType = item.contentType === "idea";
-        const byCategory = showcaseMatchesSelectedCategoryId(
-          item.category,
-          effectiveCategoryId,
-          apiCategoriesAll,
-          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
-          item.categoryId,
-        );
-        const bySubCategory = !(
-          selectedSubCategoryId &&
-          item.sub_category_id != null &&
-          String(item.sub_category_id) !== selectedSubCategoryId
-        );
-        if (!q) return byType && byCategory && bySubCategory;
-        const haystack = [
-          item.title,
-          item.excerpt,
-          item.factoryName,
-          item.category,
-          ...(item.tags ?? []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return byType && byCategory && bySubCategory && haystack.includes(q);
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
-      );
-  }, [
-    searchText,
-    effectiveCategoryId,
-    selectedSubCategoryId,
-    pageShowcases,
-    apiCategoriesAll,
-    data.categories,
-  ]);
-
-  const visibleMaterialItems = useMemo(() => {
-    const q = searchText.trim().toLowerCase();
-    return pageShowcases
-      .filter((item) => {
-        const byType = item.contentType === "material";
-        const byCategory = showcaseMatchesSelectedCategoryId(
-          item.category,
-          effectiveCategoryId,
-          apiCategoriesAll,
-          data.categories.map((c) => ({ id: String(c.id), name: c.name })),
-          item.categoryId,
-        );
-        const bySubCategory = !(
-          selectedSubCategoryId &&
-          item.sub_category_id != null &&
-          String(item.sub_category_id) !== selectedSubCategoryId
-        );
-        if (!q) return byType && byCategory && bySubCategory;
-        const haystack = [
-          item.title,
-          item.excerpt,
-          item.factoryName,
-          item.category,
-          ...(item.tags ?? []),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return byType && byCategory && bySubCategory && haystack.includes(q);
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime(),
-      );
-  }, [
-    searchText,
-    effectiveCategoryId,
-    selectedSubCategoryId,
-    pageShowcases,
-    apiCategoriesAll,
-    data.categories,
-  ]);
-
-  const visibleFactories = useMemo(() => {
-    if (selectedType !== "all" && selectedType !== "factory") return [];
-    const q = searchText.trim().toLowerCase();
-    return factoryList.filter((f) => {
-      if (!q) return true;
-      const haystack = [f.name, f.location, f.specialization, ...(f.tags ?? [])]
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(q);
-    });
-  }, [searchText, selectedType, factoryList]);
-
-  const totalCount = isFactoryTab
-    ? visibleFactories.length
-    : selectedType === "idea"
-      ? visibleIdeaItems.length
-      : selectedType === "material"
-        ? visibleMaterialItems.length
-        : visibleItems.length +
-          (selectedType === "all"
-            ? visibleFactories.length + visibleIdeaItems.length
-            : 0);
-
-  const getDetailPath = (type: string, id: string) => {
-    const q = encodeURIComponent(id);
-    if (type === "product") return `/product-detail?showcase_id=${q}`;
-    if (type === "material") return `/product-detail?showcase_id=${q}`;
-    if (type === "promotion") return `/promotion-detail?showcase_id=${q}`;
-    return `/idea-detail?showcase_id=${q}`;
-  };
-
-  const closeCategoryMenu = () => setCategoryMenuOpen(false);
-
-  const pickSubCategory = (
-    subId: string | null,
-    categoryIdForApply: string,
-  ) => {
-    // If the category is about to change as a result of this pick, tell the
-    // effect to keep our freshly-chosen sub id instead of clearing it.
-    if (
-      categoryIdForApply &&
-      categoryIdForApply !== "all" &&
-      categoryIdForApply !== effectiveCategoryId
-    ) {
-      skipSubResetOnNextCategoryChangeRef.current = true;
-    }
-    if (categoryIdForApply && categoryIdForApply !== "all") {
-      applyCategory(categoryIdForApply);
-    }
-    setSelectedSubCategoryId(subId);
-    closeCategoryMenu();
-  };
+    isMaterialTab,
+    showcasesLoading,
+    factoriesLoading,
+    visibleItems,
+    visibleIdeaItems,
+    visibleMaterialItems,
+    visibleFactories,
+    totalCount,
+    categoryMenuTriggerLabel,
+    closeCategoryMenu,
+    pickSubCategory,
+    categoryOptionSelected,
+    getDetailPath,
+  } = useFactoryIdeasPageState({ layout: 'desktop' });
 
   return (
     <div
@@ -697,7 +128,7 @@ export function FactoryIdeasDesktop() {
               style={{ backgroundColor: "rgba(46,34,82,0.07)" }}
             >
               {CONTENT_TYPES.map((type) => (
-                <button
+                <Button variant="unstyled"
                   key={type.id}
                   type="button"
                   data-tour={`tab-${type.id}`}
@@ -718,181 +149,32 @@ export function FactoryIdeasDesktop() {
                   }}
                 >
                   {type.label}
-                </button>
+                </Button>
               ))}
             </div>
 
             <div className="w-px h-6 bg-gray-200" />
 
-            {/* Multi-level category + sub-category menu */}
-            <div ref={categoryMenuRef} className="relative shrink-0 z-20">
-              <button
-                type="button"
-                onClick={() => setCategoryMenuOpen((o) => !o)}
-                className="flex items-center gap-2 max-w-[min(100vw-8rem,22rem)] px-4 py-2.5 rounded-xl border text-[13px] transition-all"
-                style={{
-                  borderColor:
-                    effectiveCategoryId !== "all" || selectedSubCategoryId
-                      ? COLORS.purple
-                      : "#E5E7EB",
-                  backgroundColor:
-                    effectiveCategoryId !== "all" || selectedSubCategoryId
-                      ? COLORS.lightPurpleBg
-                      : COLORS.gray,
-                  color:
-                    effectiveCategoryId !== "all" || selectedSubCategoryId
-                      ? COLORS.purple
-                      : "#4B5563",
-                  fontWeight:
-                    effectiveCategoryId !== "all" || selectedSubCategoryId
-                      ? 600
-                      : 400,
-                }}
-              >
-                <span className="truncate min-w-0 text-left">
-                  {categoryMenuTriggerLabel}
-                </span>
-                <ChevronDown
-                  size={12}
-                  className={`shrink-0 transition-transform duration-200 ${categoryMenuOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-              {categoryMenuOpen ? (
-                <div className="absolute top-full mt-1.5 left-0 flex rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden max-w-[calc(100vw-4rem)]">
-                  <div
-                    className={`max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0 ${isMaterialTab ? "w-56 sm:w-64" : "w-44 sm:w-52 border-r border-gray-100"}`}
-                  >
-                    {categoryFilters.map((cat) => {
-                      const selected = factoryIdeasCategoryOptionSelected(
-                        effectiveCategoryId,
-                        cat.id,
-                      );
-                      const rowHi =
-                        cat.id === "all"
-                          ? menuHighlightCategoryId == null
-                          : menuHighlightCategoryId === cat.id;
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onMouseEnter={() =>
-                            setMenuHighlightCategoryId(
-                              cat.id === "all" ? null : cat.id,
-                            )
-                          }
-                          onClick={() => {
-                            if (cat.id === "all") {
-                              applyCategory("all");
-                              setSelectedSubCategoryId(null);
-                              closeCategoryMenu();
-                            } else if (isMaterialTab) {
-                              // MT ไม่มีหมวดย่อย → ปิดเมนูทันที
-                              applyCategory(cat.id);
-                              setSelectedSubCategoryId(null);
-                              closeCategoryMenu();
-                            } else {
-                              applyCategory(cat.id);
-                              setMenuHighlightCategoryId(cat.id);
-                            }
-                          }}
-                          className="w-full flex items-center justify-between gap-1 px-3 py-2.5 text-left text-[13px] transition-colors"
-                          style={{
-                            color: selected ? COLORS.purple : "#374151",
-                            fontWeight: selected ? 600 : 500,
-                            backgroundColor: rowHi
-                              ? COLORS.lightPurpleBg
-                              : "transparent",
-                          }}
-                        >
-                          <span className="truncate">{cat.name}</span>
-                          {cat.id !== "all" ? (
-                            <ChevronRight
-                              size={14}
-                              className="shrink-0 opacity-40"
-                              aria-hidden
-                            />
-                          ) : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {!isMaterialTab && (
-                    <div className="w-44 sm:w-52 max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0">
-                      {!menuHighlightCategoryId ? (
-                        <p className="px-3 py-4 text-[11px] text-gray-400 leading-relaxed">
-                          เลือกหมวดทางซ้ายเพื่อดูหมวดย่อย
-                        </p>
-                      ) : panelSubsLoading ? (
-                        <div className="flex items-center gap-2 px-3 py-4 text-xs text-gray-500">
-                          <Loader2
-                            className="w-4 h-4 animate-spin shrink-0"
-                            style={{ color: COLORS.purple }}
-                          />
-                          กำลังโหลดหมวดย่อย…
-                        </div>
-                      ) : panelSubs.length === 0 ? (
-                        <p className="px-3 py-4 text-[11px] text-gray-400">
-                          ไม่มีหมวดย่อยในหมวดนี้
-                        </p>
-                      ) : (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              pickSubCategory(null, menuHighlightCategoryId)
-                            }
-                            className="w-full px-3 py-2.5 text-left text-[13px]"
-                            style={{
-                              color:
-                                !selectedSubCategoryId &&
-                                effectiveCategoryId === menuHighlightCategoryId
-                                  ? COLORS.purple
-                                  : "#374151",
-                              fontWeight:
-                                !selectedSubCategoryId &&
-                                effectiveCategoryId === menuHighlightCategoryId
-                                  ? 600
-                                  : 400,
-                              backgroundColor:
-                                !selectedSubCategoryId &&
-                                effectiveCategoryId === menuHighlightCategoryId
-                                  ? COLORS.lightPurpleBg
-                                  : "transparent",
-                            }}
-                          >
-                            ทุกหมวดย่อย
-                          </button>
-                          {panelSubs.map((s) => {
-                            const active =
-                              selectedSubCategoryId === s.id &&
-                              effectiveCategoryId === menuHighlightCategoryId;
-                            return (
-                              <button
-                                key={s.id}
-                                type="button"
-                                onClick={() =>
-                                  pickSubCategory(s.id, menuHighlightCategoryId)
-                                }
-                                className="w-full px-3 py-2.5 text-left text-[13px] transition-colors"
-                                style={{
-                                  color: active ? COLORS.purple : "#374151",
-                                  fontWeight: active ? 600 : 400,
-                                  backgroundColor: active
-                                    ? COLORS.lightPurpleBg
-                                    : "transparent",
-                                }}
-                              >
-                                {s.name}
-                              </button>
-                            );
-                          })}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : null}
-            </div>
+            <FactoryIdeasCategoryDropdown
+              variant="desktop"
+              categoryMenuRef={categoryMenuRef}
+              categoryMenuOpen={categoryMenuOpen}
+              setCategoryMenuOpen={setCategoryMenuOpen}
+              categoryFilters={categoryFilters}
+              effectiveCategoryId={effectiveCategoryId}
+              selectedSubCategoryId={selectedSubCategoryId}
+              setSelectedSubCategoryId={setSelectedSubCategoryId}
+              isMaterialTab={isMaterialTab}
+              categoryMenuTriggerLabel={categoryMenuTriggerLabel}
+              menuHighlightCategoryId={menuHighlightCategoryId}
+              setMenuHighlightCategoryId={setMenuHighlightCategoryId}
+              panelSubs={panelSubs}
+              panelSubsLoading={panelSubsLoading}
+              applyCategory={applyCategory}
+              closeCategoryMenu={closeCategoryMenu}
+              pickSubCategory={pickSubCategory}
+              categoryOptionSelected={categoryOptionSelected}
+            />
 
             {/* Search */}
             <div
@@ -909,14 +191,14 @@ export function FactoryIdeasDesktop() {
                 style={{ color: COLORS.blue }}
               />
               {searchText && (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => setSearchText("")}
                   aria-label="ล้างข้อความค้นหา"
                   className="text-gray-400 hover:text-gray-600"
                 >
                   <X size={12} />
-                </button>
+                </Button>
               )}
             </div>
 
@@ -928,7 +210,7 @@ export function FactoryIdeasDesktop() {
               className="flex items-center gap-1 p-1 rounded-xl border border-gray-200"
               style={{ backgroundColor: COLORS.gray }}
             >
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setViewMode("grid")}
                 className="p-2 rounded-lg transition-all"
@@ -941,8 +223,8 @@ export function FactoryIdeasDesktop() {
                 }}
               >
                 <LayoutGrid size={15} />
-              </button>
-              <button
+              </Button>
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setViewMode("list")}
                 className="p-2 rounded-lg transition-all"
@@ -955,7 +237,7 @@ export function FactoryIdeasDesktop() {
                 }}
               >
                 <List size={15} />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1077,7 +359,7 @@ export function FactoryIdeasDesktop() {
                     <span className="text-[10px] text-gray-400">
                       แตะเพื่ออ่านต่อ
                     </span>
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1097,7 +379,7 @@ export function FactoryIdeasDesktop() {
                       <span className="text-[10px] leading-none">
                         {item.likes + (isLiked(item.id) ? 1 : 0)}
                       </span>
-                    </button>
+                    </Button>
                   </div>
                 </article>
               );
@@ -1216,7 +498,7 @@ export function FactoryIdeasDesktop() {
                           </p>
                         </div>
                         <div className="shrink-0 flex items-center gap-4 text-[11px] text-gray-400">
-                          <button
+                          <Button variant="unstyled"
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1234,7 +516,7 @@ export function FactoryIdeasDesktop() {
                               }
                             />
                             {item.likes + (isLiked(item.id) ? 1 : 0)}
-                          </button>
+                          </Button>
                           <span>
                             MOQ{" "}
                             <span
@@ -1247,7 +529,7 @@ export function FactoryIdeasDesktop() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-2">
-                        <button
+                        <Button variant="unstyled"
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1263,7 +545,7 @@ export function FactoryIdeasDesktop() {
                               style={{ color: COLORS.purple }}
                             />
                           )}
-                        </button>
+                        </Button>
                         <span className="text-gray-200">·</span>
                         {item.tags.slice(0, 3).map((tag) => (
                           <span
@@ -1296,14 +578,14 @@ export function FactoryIdeasDesktop() {
                 <Sparkles className="w-5 h-5" style={{ color: "#0EA5A4" }} />
                 วัตถุดิบแนะนำ
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("material")}
                 className="text-[13px] font-medium hover:opacity-80 transition-opacity"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleMaterialItems.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-5 gap-2">
               {visibleMaterialItems.slice(0, 5).map((item) => {
@@ -1382,14 +664,14 @@ export function FactoryIdeasDesktop() {
                 <MapPin className="w-5 h-5" style={{ color: COLORS.teal }} />
                 โรงงานแนะนำ
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("factory")}
                 className="text-[13px] font-medium hover:opacity-80 transition-opacity"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleFactories.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-5 gap-2">
               {visibleFactories.slice(0, 5).map((factory) => (
@@ -1464,14 +746,14 @@ export function FactoryIdeasDesktop() {
                 />
                 บทความ Idea
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("idea")}
                 className="text-[13px] font-medium hover:opacity-80 transition-opacity"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleIdeaItems.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {visibleIdeaItems.slice(0, 6).map((item) => {
@@ -1504,7 +786,7 @@ export function FactoryIdeasDesktop() {
                       <span className="text-[10px] text-gray-400">
                         แตะเพื่ออ่านต่อ
                       </span>
-                      <button
+                      <Button variant="unstyled"
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1524,7 +806,7 @@ export function FactoryIdeasDesktop() {
                         <span className="text-[10px] leading-none">
                           {item.likes + (isLiked(item.id) ? 1 : 0)}
                         </span>
-                      </button>
+                      </Button>
                     </div>
                   </article>
                 );
@@ -1542,14 +824,14 @@ export function FactoryIdeasDesktop() {
                 <Sparkles className="w-5 h-5" style={{ color: "#0EA5A4" }} />
                 วัตถุดิบแนะนำ
               </h3>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setSelectedType("material")}
                 className="text-[13px] font-medium hover:opacity-80 transition-opacity"
                 style={{ color: COLORS.purple }}
               >
                 ดูทั้งหมด ({visibleMaterialItems.length})
-              </button>
+              </Button>
             </div>
             <div className="grid grid-cols-5 gap-2">
               {visibleMaterialItems.slice(0, 5).map((item) => {

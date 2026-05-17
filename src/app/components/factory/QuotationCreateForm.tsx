@@ -10,6 +10,7 @@ import { hoursUntilDeadline } from '../../utils/rfqDeadline';
 import { FactoryHighlightField } from '../features/factory-rfq/FactoryHighlightField';
 import { formatCurrencyNoDecimals } from '../../utils/formatting';
 import { FormField } from '../../shared/ui';
+import { Button } from '../ui/button';
 
 /* ── Constants ──────────────────────────────────────────────────── */
 /** ค่า payment_terms ที่ล็อคไว้ตามข้อกำหนดล่าสุด */
@@ -401,7 +402,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 {imageUrls.map((url) => (
                   <div key={url} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
                     <img src={url} alt="" className="w-full h-full object-cover" />
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={() => removeImage(url)}
                       className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
@@ -409,7 +410,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                       title="ลบรูปภาพ"
                     >
                       <XIcon size={10} className="text-white" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -423,7 +424,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               onChange={(e) => void handleImageFiles(e.target.files)}
               aria-label="เลือกรูปภาพ"
             />
-            <button
+            <Button variant="unstyled"
               type="button"
               disabled={uploadingImage}
               onClick={() => imageInputRef.current?.click()}
@@ -434,7 +435,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               ) : (
                 <><ImagePlus size={13} />เพิ่มรูปภาพ</>
               )}
-            </button>
+            </Button>
           </div>
         ) : imageUrls.length > 0 ? (
           <div>
@@ -504,7 +505,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
         {/* ── 10. Submit ── */}
         {!readOnly ? (
-          <button
+          <Button variant="unstyled"
             type="submit"
             disabled={saving || (!form.formState.isDirty && (factoryHighlight ?? '') === (initialFactoryHighlight ?? '')) || Boolean(highlightError)}
             className="w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#A238FF] to-[#7C3AED]"
@@ -514,7 +515,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             ) : (
               <>{patchQuotationId ? <Save size={14} /> : <Send size={14} />}{submitLabel}</>
             )}
-          </button>
+          </Button>
         ) : null}
       </form>
     );

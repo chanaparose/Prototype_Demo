@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { quotationsApi } from '../../../services/api';
 import type { QuotationHistoryEntry } from '../../../types/rfq';
+import { Button } from '../../ui/button';
 
 type QuotationHistoryPanelProps = {
   quotationId: string | number;
@@ -81,7 +82,7 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
 
   return (
     <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-      <button
+      <Button variant="unstyled"
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
@@ -96,7 +97,7 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
           ) : null}
         </div>
         {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-      </button>
+      </Button>
 
       {open ? (
         <div className="divide-y divide-gray-100">

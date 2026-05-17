@@ -26,6 +26,7 @@ import {
   DEEP_PURPLE,
 } from './constants';
 import type { OrderFilterId } from './constants';
+import { Button } from '../../ui/button';
 
 export type OrderItem = {
   id: string;
@@ -92,7 +93,7 @@ export function OrderSection({
     <>
       {/* Urgency banner — only shows when there are pending payments */}
       {hasPendingPayment && orderFilter !== 'pending_payment' && (
-        <button
+        <Button variant="unstyled"
           onClick={() => setOrderFilter('pending_payment')}
           className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl mb-3 text-left border"
           style={{
@@ -106,7 +107,7 @@ export function OrderSection({
             มี {orderTagCounts.pendingPayment} คำสั่งซื้อรอชำระมัดจำ
           </span>
           <ChevronRight size={13} />
-        </button>
+        </Button>
       )}
 
       {/* Tab bar */}
@@ -122,7 +123,7 @@ export function OrderSection({
           const isPendingPaymentTab = tab.id === 'pending_payment';
 
           return (
-            <button
+            <Button variant="unstyled"
               key={tab.id}
               onClick={() => setOrderFilter(tab.id)}
               className="relative flex flex-col items-center gap-0.5 py-0.5 rounded-lg transition-all"
@@ -166,7 +167,7 @@ export function OrderSection({
               >
                 {tab.shortLabel}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>

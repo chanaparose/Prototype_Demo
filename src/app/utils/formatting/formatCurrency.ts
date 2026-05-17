@@ -19,23 +19,6 @@ export function formatCurrencyNoDecimals(value: number): string {
   }).format(Number.isFinite(value) ? value : 0);
 }
 
-export function parseCurrency(currencyStr: string): number {
-  return Number(currencyStr.replace(/[^0-9.-]/g, '')) || 0;
-}
-
-export function formatPercentage(
-  value: number,
-  decimals: number = 0,
-  scale: boolean = true
-): string {
-  const numValue = scale ? value * 100 : value;
-  return new Intl.NumberFormat('th-TH', {
-    style: 'percent',
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(scale ? value : numValue / 100);
-}
-
 export function formatCompactNumber(value: number): string {
   return new Intl.NumberFormat('th-TH', {
     minimumFractionDigits: 0,

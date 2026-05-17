@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "../../components/shared";
 import type { useFactoriesList } from "../../hooks/useFactoriesList";
+import { Button } from '../../components/ui/button';
 
 type FactoriesListState = ReturnType<typeof useFactoriesList>;
 type FactoriesListMobileProps = { state: FactoriesListState };
@@ -70,12 +71,12 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
               className="flex-1 text-sm bg-transparent outline-none text-gray-800 placeholder-gray-400"
             />
             {filters.searchText && (
-              <button type="button" onClick={() => setSearchText("")}>
+              <Button variant="unstyled" type="button" onClick={() => setSearchText("")}>
                 <X size={14} className="text-gray-400" />
-              </button>
+              </Button>
             )}
           </div>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => setFilterOpen(!filterOpen)}
             className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all"
@@ -95,7 +96,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                 {activeFilterCount}
               </span>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Expandable filter panel */}
@@ -189,7 +190,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
             {/* Actions */}
             <div className="flex gap-2 pt-1">
               {hasActiveFilters && (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => {
                     setLocation("");
@@ -198,16 +199,16 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                   className="flex-1 py-2.5 text-[13px] text-gray-500 rounded-xl border border-dashed border-gray-300"
                 >
                   ล้างตัวกรอง
-                </button>
+                </Button>
               )}
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setFilterOpen(false)}
                 className="flex-1 py-2.5 text-[13px] font-semibold text-white rounded-xl"
                 style={{ background: "#6C47FF" }}
               >
                 ดูผลลัพธ์ ({factories.length})
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -227,7 +228,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
           </div>
         ) : (
           factories.map((factory) => (
-            <button
+            <Button variant="unstyled"
               key={factory.id}
               type="button"
               onClick={() => navigate(`/factories/${factory.id}`)}
@@ -298,7 +299,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                   </div>
                 </div>
               </div>
-            </button>
+            </Button>
           ))
         )}
       </div>

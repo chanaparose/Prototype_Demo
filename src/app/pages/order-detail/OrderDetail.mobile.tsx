@@ -7,6 +7,7 @@ import { useAuth } from '../../stores';
 import { openChatSession } from '../../utils/openChatSession';
 import { getCurrentUserId } from '../../utils/chatContract';
 import { ApiHttpError, ordersApi } from '../../services/api';
+import { Button } from '../../components/ui/button';
 import {
   OrderSummaryCard,
   OrderOverviewSection,
@@ -270,14 +271,14 @@ function OrderDetailMobileBody() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <header className="hidden lg:block px-0 pt-1 pb-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/orders')}
           className="mb-3 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
         >
           <ChevronLeft size={16} />
           กลับไปรายการคำสั่งซื้อ
-        </button>
+        </Button>
         <h1 className="text-xl text-gray-900" style={{ fontWeight: 700 }}>
           {rfq?.title ?? order.projectName}
         </h1>
@@ -287,13 +288,13 @@ function OrderDetailMobileBody() {
       </header>
 
       <div className="flex lg:hidden items-center justify-between px-4 pt-5 pb-4">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate(-1)}
           className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
         >
           <ChevronLeft size={22} className="text-gray-700" />
-        </button>
+        </Button>
         <div className="text-center min-w-0 flex-1 px-2">
           <h1
             className="text-sm text-gray-900 max-w-[240px] truncate mx-auto"
@@ -304,25 +305,25 @@ function OrderDetailMobileBody() {
           </h1>
           <p className="text-[10px] text-gray-400">คำสั่งซื้อ #{order.id}</p>
         </div>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => openOrderChat()}
           className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center"
         >
           <MessageCircle size={20} style={{ color: '#A238FF' }} />
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0">
         {receiveForbidden ? (
           <div className="px-4 pt-2">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate(-1)}
               className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700"
             >
               กลับไปรายการคำสั่งซื้อ
-            </button>
+            </Button>
           </div>
         ) : null}
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
@@ -360,18 +361,18 @@ function OrderDetailMobileBody() {
               <p className="text-xs text-red-600 leading-relaxed">
                 เกินกำหนดชำระเงินแล้ว คำสั่งซื้อนี้ถูกระงับและไม่สามารถดำเนินการต่อได้ 
               </p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => navigate('/orders')}
                 className="w-full mt-1 py-2.5 rounded-xl border border-red-200 text-xs font-semibold text-red-600 bg-white"
               >
                 กลับไปหน้าใบเสนอราคา
-              </button>
+              </Button>
             </div>
           ) : null}
 
           <div className="flex border-b border-gray-100 bg-white -mx-4 px-0">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setActiveSection('overview')}
               className={`flex-1 py-3 border-b-2 transition-colors ${
@@ -382,8 +383,8 @@ function OrderDetailMobileBody() {
               style={{ fontSize: 14 }}
             >
               ภาพรวม
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               type="button"
               onClick={() => setActiveSection('production')}
               className={`flex-1 py-3 border-b-2 transition-colors ${
@@ -394,7 +395,7 @@ function OrderDetailMobileBody() {
               style={{ fontSize: 14 }}
             >
               การผลิต
-            </button>
+            </Button>
           </div>
 
           {activeSection === 'overview' && (
@@ -419,7 +420,7 @@ function OrderDetailMobileBody() {
 
               {canShowCancelButton ? (
                 <div className="pt-2 pb-1">
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setCancelModalOpen(true)}
                     className="w-full py-3 rounded-2xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
@@ -427,7 +428,7 @@ function OrderDetailMobileBody() {
                   >
                     <X size={16} />
                     ยกเลิกคำสั่งซื้อ
-                  </button>
+                  </Button>
                 </div>
               ) : null}
             </>
@@ -446,7 +447,7 @@ function OrderDetailMobileBody() {
 
         {showFloatingAction && (
           <div className="shrink-0 px-4 pt-3 pb-6 bg-gradient-to-t from-white/90 to-transparent">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => {
                 if (order.status === 'shipped') {
@@ -470,7 +471,7 @@ function OrderDetailMobileBody() {
                 : reviewState?.already_reviewed
                   ? '✓ คุณรีวิวรายการนี้แล้ว'
                   : '⭐ ให้คะแนนและรีวิว'}
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -507,15 +508,15 @@ function OrderDetailMobileBody() {
               </p>
             </div>
             <div className="px-5 pt-3 pb-6 grid grid-cols-2 gap-2">
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setCancelModalOpen(false)}
                 disabled={cancellingOrder}
                 className="py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
               >
                 ไม่ยกเลิก
-              </button>
-              <button
+              </Button>
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => void onCancelOrder()}
                 disabled={cancellingOrder}
@@ -530,7 +531,7 @@ function OrderDetailMobileBody() {
                 ) : (
                   'ยืนยันยกเลิก'
                 )}
-              </button>
+              </Button>
             </div>
       </BaseModal>
 
@@ -571,19 +572,19 @@ function OrderDetailMobileBody() {
                   urls={normalizeReviewImageUrls(reviewState.review.image_urls)}
                   onPreviewUrl={(u) => setSelectedPhoto(u)}
                 />
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => setReviewModalOpen(false)}
                   className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700"
                 >
                   ปิด
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <button
+                    <Button variant="unstyled"
                       key={s}
                       type="button"
                       onClick={() => setReviewRating(s)}
@@ -594,7 +595,7 @@ function OrderDetailMobileBody() {
                         size={20}
                         className={s <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}
                       />
-                    </button>
+                    </Button>
                   ))}
                 </div>
                 <textarea
@@ -610,7 +611,7 @@ function OrderDetailMobileBody() {
                   onChange={setReviewImageUrls}
                   onUploadError={(msg) => toast.error(msg)}
                 />
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => void onSubmitReview()}
                   disabled={reviewSubmitting}
@@ -618,7 +619,7 @@ function OrderDetailMobileBody() {
                   style={{ background: '#6C47FF' }}
                 >
                   {reviewSubmitting ? 'กำลังส่งรีวิว...' : 'ส่งรีวิว'}
-                </button>
+                </Button>
               </div>
             )}
       </BaseModal>

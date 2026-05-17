@@ -19,6 +19,7 @@ import {
 import type { CreateRfqForm, Unit, Address, ShippingMethod } from './types';
 import { CATEGORY_ICONS, SHIPPING_ICONS } from './types';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
+import { Button } from '../../ui/button';
 
 type CreateRfqStep3SummaryProps = {
   form: CreateRfqForm;
@@ -57,7 +58,7 @@ export function CreateRfqStep3Summary({
         </label>
 
         {addresses.length === 0 ? (
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={onAddAddress}
             className="w-full border-2 border-dashed border-gray-200 rounded-xl p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all"
@@ -67,7 +68,7 @@ export function CreateRfqStep3Summary({
             </div>
             <span className="text-[13px] font-semibold text-gray-600">เพิ่มที่อยู่จัดส่ง</span>
             <span className="text-[10px] text-gray-400">จำเป็นต้องมีที่อยู่สำหรับจัดส่งสินค้า</span>
-          </button>
+          </Button>
         ) : (
           <div className="flex flex-col gap-2">
             {addresses.map((addr) => {
@@ -80,7 +81,7 @@ export function CreateRfqStep3Summary({
                 addr.zipCode,
               ].filter(Boolean).join(', ');
               return (
-                <button
+                <Button variant="unstyled"
                   key={addr.id}
                   type="button"
                   onClick={() => onUpdate('addressId', addr.id)}
@@ -104,18 +105,18 @@ export function CreateRfqStep3Summary({
                     </div>
                     {active && <CheckCircle2 size={18} className="text-violet-500 shrink-0 mt-0.5" />}
                   </div>
-                </button>
+                </Button>
               );
             })}
             {onAddAddress && (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={onAddAddress}
                 className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all"
               >
                 <Plus size={14} />
                 เพิ่มที่อยู่ใหม่
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -132,7 +133,7 @@ export function CreateRfqStep3Summary({
             const active = form.shippingMethodId === method.id;
             const mIcon = SHIPPING_ICONS[method.id] ?? '📦';
             return (
-              <button
+              <Button variant="unstyled"
                 key={method.id}
                 type="button"
                 onClick={() => onUpdate('shippingMethodId', method.id)}
@@ -156,7 +157,7 @@ export function CreateRfqStep3Summary({
                     <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
                   )}
                 </div>
-              </button>
+              </Button>
             );
           })}
         </div>

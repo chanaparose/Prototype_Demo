@@ -1,5 +1,6 @@
 import React from 'react';
 import type { QuotationCreateInput } from '../../../services/api';
+import { Button } from '../../../components/ui/button';
 
 type Props = {
   items: QuotationCreateInput['items'];
@@ -58,7 +59,7 @@ export function LineItemTable({ items, onChange }: Props) {
           </div>
         ))}
       </div>
-      <button
+      <Button variant="unstyled"
         type="button"
         className="mt-3 text-xs font-semibold text-violet-600"
         onClick={() =>
@@ -76,7 +77,7 @@ export function LineItemTable({ items, onChange }: Props) {
         }
       >
         + Add row
-      </button>
+      </Button>
     </div>
   );
 }

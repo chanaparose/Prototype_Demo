@@ -17,6 +17,7 @@ import { ImageWithFallback } from '../../shared';
 import { StatusBadge } from '../../../shared/ui';
 import { ReviewImageAttachments } from '../reviews/ReviewImageAttachments';
 import { formatThaiDate } from './utils';
+import { Button } from '../../ui/button';
 
 export type TabId = 'products' | 'promotions' | 'materials' | 'articles' | 'about';
 
@@ -190,7 +191,7 @@ export function FactoryProfileTabContent({
           const Icon = tab.icon;
           const active = activeTab === tab.id;
           return (
-            <button
+            <Button variant="unstyled"
               key={tab.id}
               type="button"
               onClick={() => onTabChange(tab.id)}
@@ -204,7 +205,7 @@ export function FactoryProfileTabContent({
             >
               <Icon className="w-3.5 h-3.5" />
               {tab.label}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -326,7 +327,7 @@ export function FactoryProfileTabContent({
               </p>
               {groupedCategorySubs.length > 0 ? (
                 <div className="pt-1">
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => setShowCategorySubs((v) => !v)}
                     className="flex w-full max-w-xl items-center justify-between gap-2 rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2 text-left"
@@ -336,7 +337,7 @@ export function FactoryProfileTabContent({
                       <span>{groupedCategorySubs.length} หมวดหลัก</span>
                       <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showCategorySubs ? 'rotate-180' : ''}`} />
                     </div>
-                  </button>
+                  </Button>
                   {showCategorySubs ? (
                     <div className="mt-2 max-h-80 overflow-auto rounded-xl border border-violet-100 bg-white p-2 shadow-sm space-y-1.5">
                       {groupedCategorySubs.map(([cat, subs]) => (
@@ -378,12 +379,12 @@ export function FactoryProfileTabContent({
                 <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                 คะแนนสินค้า ({reviews.length})
               </p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="text-xs font-medium inline-flex items-center gap-0.5 text-gray-500 hover:text-gray-700"
               >
                 ดูทั้งหมด <ChevronRight className="w-3 h-3" />
-              </button>
+              </Button>
             </div>
 
             <div className="mb-3 relative">

@@ -18,17 +18,12 @@ import {
 import { useData } from "../../stores";
 import { useAuth } from "../../stores";
 import type { Conversation } from "../../stores";
-import {
-  messagesApi,
-  conversationsApi,
-  quotationsApi,
-} from "../../services/api";
+import { messagesApi, ordersApi, quotationsApi } from "../../services/api";
 import { ImageWithFallback } from "../../components/shared";
 import type { ChatReference } from "../../utils/chatContract";
 import {
   buildSendPayload,
   getCurrentUserId,
-  parseApiConversation,
   resolveReceiverId,
   type ApiConversation,
 } from "../../utils/chatContract";
@@ -40,18 +35,13 @@ import {
 } from "../../components/chat/MessageBubble";
 import { RFQPicker } from "../../components/chat/RFQPicker";
 import { ReferenceChip } from "../../components/chat/ReferenceChip";
-import {
-  sortMessagesByCreatedAt,
-  insertMessageSorted,
-  dedupeByKey,
-  normalizeIso,
-} from "../messages/selectors";
+import { dedupeByKey, insertMessageSorted, normalizeIso, sortMessagesByCreatedAt } from "../messages/selectors";
 import {
   chatNowIso,
   bangkokDateKey as bangkokDateKeyUtil,
   formatChatDateLabel,
 } from "../../utils/chatTime";
-import { useMarkAsRead } from "../messages/useMarkAsRead";
+import { messagesFromApi, useChatRoomSession, type ChatRoomPreview } from "./useChatRoomSession";
 import {
   resolveCounterparty,
   FACTORY_FALLBACK_AVATAR,
@@ -59,31 +49,7 @@ import {
 import { ChatPartyHeader } from "../../components/features/chat/ChatPartyHeader";
 import type { ConversationDTO } from "../../types/api";
 import { toast } from "sonner";
-
-export type ChatRoomPreview = {
-  factoryId?: string;
-  factoryName: string;
-  factoryImage: string;
-  rfqName: string;
-  hasQuote?: boolean;
-};
-
-function messagesFromApi(raw: unknown): RoomMessage[] {
-  const arr = Array.isArray(raw) ? raw : [];
-  const msgs = (arr as Record<string, unknown>[])
-    .map(rowToRoomMessage)
-    .filter(
-      (m): m is RoomMessage =>
-        m != null &&
-        (m.content.trim() !== "" ||
-          m.message_type === "QT" ||
-          m.message_type === "quotation_card" ||
-          m.message_type === "rfq_card" ||
-          m.message_type === "system" ||
-          m.message_type === "IM"),
-    );
-  return sortMessagesByCreatedAt(msgs);
-}
+import { Button } from '../../components/ui/button';
 
 function referenceLabel(ref: ChatReference): string {
   const t = ref.title?.trim();
@@ -106,215 +72,6 @@ function referenceLabel(ref: ChatReference): string {
 const bangkokDateKey = bangkokDateKeyUtil;
 const formatBangkokDateLabel = formatChatDateLabel;
 
-function useChatThread(conversationId: string, preview?: ChatRoomPreview) {
-  const { user } = useAuth();
-  const currentUserId = getCurrentUserId(user);
-  const { refetchConversations } = useData();
-  const markAsRead = useMarkAsRead();
-  const [messages, setMessages] = useState<RoomMessage[]>([]);
-  const [msgLoading, setMsgLoading] = useState(true);
-  const [apiConv, setApiConv] = useState<ApiConversation | null>(null);
-  const [header, setHeader] = useState({
-    factoryId: preview?.factoryId ?? "",
-    factoryName: preview?.factoryName ?? "",
-    factoryAvatar: preview?.factoryImage ?? "",
-    rfqName: preview?.rfqName ?? "",
-    hasQuote: Boolean(preview?.hasQuote),
-  });
-
-  useEffect(() => {
-    setHeader({
-      factoryId: preview?.factoryId ?? "",
-      factoryName: preview?.factoryName ?? "",
-      factoryAvatar: preview?.factoryImage ?? "",
-      rfqName: preview?.rfqName ?? "",
-      hasQuote: Boolean(preview?.hasQuote),
-    });
-  }, [
-    preview?.factoryId,
-    preview?.factoryName,
-    preview?.factoryImage,
-    preview?.rfqName,
-    preview?.hasQuote,
-  ]);
-
-  useEffect(() => {
-    if (!conversationId) {
-      setMessages([]);
-      setMsgLoading(false);
-      setApiConv(null);
-      return;
-    }
-    let cancelled = false;
-    setMsgLoading(true);
-    Promise.all([
-      messagesApi
-        .listByConversation(conversationId)
-        .catch(() => [] as unknown[]),
-      conversationsApi
-        .get(conversationId)
-        .catch(() => null as Record<string, unknown> | null),
-    ])
-      .then(([rawMsgs, rawConv]) => {
-        if (cancelled) return;
-        setMessages(messagesFromApi(rawMsgs));
-
-        if (rawConv && typeof rawConv === "object") {
-          const r = rawConv as Record<string, unknown>;
-          const parsed = parseApiConversation(r);
-          if (parsed) setApiConv(parsed);
-          setHeader((h) => ({
-            factoryId:
-              r.factory_id != null && String(r.factory_id).trim()
-                ? String(r.factory_id)
-                : r.factoryId != null && String(r.factoryId).trim()
-                  ? String(r.factoryId)
-                  : h.factoryId,
-            factoryName:
-              r.factory_name != null && String(r.factory_name).trim()
-                ? String(r.factory_name)
-                : h.factoryName,
-            factoryAvatar:
-              r.factory_image != null && String(r.factory_image).trim()
-                ? String(r.factory_image)
-                : r.factory_image_url != null &&
-                    String(r.factory_image_url).trim()
-                  ? String(r.factory_image_url)
-                  : r.factory_avatar != null && String(r.factory_avatar).trim()
-                    ? String(r.factory_avatar)
-                    : h.factoryAvatar,
-            rfqName:
-              r.rfq_title != null && String(r.rfq_title).trim()
-                ? String(r.rfq_title)
-                : r.rfq_name != null && String(r.rfq_name).trim()
-                  ? String(r.rfq_name)
-                  : h.rfqName,
-            hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? h.hasQuote),
-          }));
-        }
-
-        void (async () => {
-          await markAsRead(conversationId);
-          await refetchConversations();
-        })();
-      })
-      .catch(() => {
-        if (!cancelled) setMessages([]);
-      })
-      .finally(() => {
-        if (!cancelled) setMsgLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [conversationId, markAsRead, refetchConversations]);
-
-  useEffect(() => {
-    if (!conversationId) return;
-    const onFocusOrVisible = () => {
-      if (document.hidden) return;
-      void (async () => {
-        await markAsRead(conversationId, { force: true });
-        await refetchConversations();
-      })();
-    };
-    window.addEventListener("focus", onFocusOrVisible);
-    document.addEventListener("visibilitychange", onFocusOrVisible);
-    return () => {
-      window.removeEventListener("focus", onFocusOrVisible);
-      document.removeEventListener("visibilitychange", onFocusOrVisible);
-    };
-  }, [conversationId, markAsRead, refetchConversations]);
-
-  useEffect(() => {
-    if (!conversationId) return;
-    let stop = false;
-    const timer = window.setInterval(() => {
-      if (stop || document.hidden) return;
-      void messagesApi
-        .listByConversation(conversationId)
-        .then((raw) => {
-          if (stop) return;
-          const serverRows = messagesFromApi(raw);
-          const hasUnreadForMe =
-            currentUserId != null &&
-            serverRows.some(
-              (m) =>
-                m.receiver_id === currentUserId &&
-                m.sender_id !== currentUserId &&
-                m.is_read === false,
-            );
-          setMessages((prev) => {
-            const pending = prev.filter(
-              (m) => m.status === "sending" || m.status === "error",
-            );
-            const next = sortMessagesByCreatedAt(
-              dedupeByKey([...serverRows, ...pending]),
-            );
-            // Bail out if nothing actually changed — prevents the visible
-            // flicker / re-render every 4 s when poll returns the same set.
-            if (next.length === prev.length) {
-              let same = true;
-              for (let i = 0; i < next.length; i++) {
-                const a = next[i];
-                const b = prev[i];
-                if (
-                  a.key !== b.key ||
-                  a.created_at !== b.created_at ||
-                  a.status !== b.status ||
-                  a.is_read !== b.is_read
-                ) {
-                  same = false;
-                  break;
-                }
-              }
-              if (same) return prev;
-            }
-            return next;
-          });
-          if (hasUnreadForMe) {
-            void (async () => {
-              await markAsRead(conversationId, { force: true });
-              await refetchConversations();
-            })();
-          }
-        })
-        .catch(() => {
-          /* ignore polling errors */
-        });
-    }, 4000);
-    return () => {
-      stop = true;
-      window.clearInterval(timer);
-    };
-  }, [conversationId, currentUserId, markAsRead, refetchConversations]);
-
-  const conv: Conversation = useMemo(
-    () => ({
-      id: conversationId,
-      factoryId: header.factoryId || "",
-      rfqId: "",
-      factoryName: header.factoryName,
-      factoryAvatar: header.factoryAvatar,
-      rfqName: header.rfqName,
-      lastMessage: "",
-      time: "",
-      unread: 0,
-      hasQuote: header.hasQuote,
-      messages: [],
-    }),
-    [conversationId, header],
-  );
-
-  return {
-    conv,
-    apiConv,
-    messages,
-    setMessages,
-    msgLoading,
-    refetchConversations,
-  };
-}
 
 export function ChatRoom() {
   const { id } = useParams<{ id: string }>();
@@ -341,7 +98,7 @@ export function ChatRoom() {
     setMessages,
     msgLoading,
     refetchConversations,
-  } = useChatThread(id ?? "", preview);
+  } = useChatRoomSession(id ?? "", preview);
 
   if (!id) {
     return (
@@ -394,7 +151,7 @@ export function ChatRoomEmbedded({
     setMessages,
     msgLoading,
     refetchConversations,
-  } = useChatThread(conversationId, preview);
+  } = useChatRoomSession(conversationId, preview);
   return (
     <ChatRoomBody
       conv={conv}
@@ -520,14 +277,18 @@ function ChatRoomBody({
       if (!apiConv || currentUserId == null) return;
       try {
         const res = (await messagesApi.send(
-          buildSendPayload({
-            conv: apiConv,
-            currentUserId,
-            content: text,
-            reference: attachRef ?? undefined,
-            messageType: "TX",
-          }),
-        )) as Record<string, unknown>;
+          apiConv.conv_id,
+          {
+            body: text,
+            ...buildSendPayload({
+              conv: apiConv,
+              currentUserId,
+              content: text,
+              reference: attachRef ?? undefined,
+              messageType: "TX",
+            }),
+          },
+        )) as unknown as Record<string, unknown>;
         const serverRow = rowToRoomMessage(res);
         if (serverRow && serverRow.key) {
           setMessages((prev) =>
@@ -658,7 +419,7 @@ function ChatRoomBody({
 
   const refreshThread = useCallback(async () => {
     if (!apiConv) return;
-    const rawMsgs = await messagesApi.listByConversation(apiConv.conv_id);
+    const rawMsgs = await messagesApi.list(apiConv.conv_id);
     setMessages(messagesFromApi(rawMsgs));
     await refetchConversations?.();
   }, [apiConv, refetchConversations, setMessages]);
@@ -667,14 +428,8 @@ function ChatRoomBody({
     async (quotationId: number) => {
       setQuotationLoadingId(quotationId);
       try {
-        const res = await quotationsApi.accept(quotationId);
-        const orderId = Number(
-          (res.order_id as number | undefined) ??
-            (res.id as number | undefined) ??
-            ((res.order as Record<string, unknown> | undefined)?.order_id as
-              | number
-              | undefined),
-        );
+        const res = await ordersApi.acceptQuote(quotationId);
+        const orderId = Number(res.order_id ?? 0);
         await refreshThread();
         if (Number.isFinite(orderId) && orderId > 0)
           navigate(`/orders/${orderId}`);
@@ -694,7 +449,7 @@ function ChatRoomBody({
     async (quotationId: number) => {
       setQuotationLoadingId(quotationId);
       try {
-        await quotationsApi.reject(quotationId);
+        await quotationsApi.update(quotationId, { status: "RJ" });
         await refreshThread();
         toast.success("ปฏิเสธใบเสนอราคาแล้ว");
       } catch (e) {
@@ -719,14 +474,14 @@ function ChatRoomBody({
       <div className="px-4 pt-5 pb-3 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           {variant === "full" ? (
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={onBack}
               aria-label="กลับไป"
               className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center"
             >
               <ChevronLeft size={22} className="text-gray-700" />
-            </button>
+            </Button>
           ) : (
             <div />
           )}
@@ -747,53 +502,38 @@ function ChatRoomBody({
                   alt={conv.factoryName}
                   className="w-8 h-8 rounded-xl object-cover bg-gray-100"
                 />
-                <p
-                  className="text-sm"
-                  style={{ fontWeight: 700, color: "#2E2252" }}
-                >
+                <p className="text-sm font-bold text-[#2E2252]">
                   {conv.factoryName || "การสนทนา"}
                 </p>
               </div>
             )}
           </div>
           <div className="flex gap-2">
-            <button
+            <Button variant="unstyled"
               type="button"
+              aria-label="เมนูเพิ่มเติม"
               className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center"
             >
               <MoreVertical size={17} className="text-gray-600" />
-            </button>
+            </Button>
           </div>
         </div>
 
         {showMiniDash ? (
-          <div
-            className="rounded-2xl overflow-hidden transition-all duration-300"
-            style={{ background: "#F8F6FA" }}
-          >
-            <button
+          <div className="rounded-2xl overflow-hidden transition-all duration-300 bg-[#F8F6FA]">
+            <Button variant="unstyled"
               type="button"
               onClick={() => setMiniDashOpen(!miniDashOpen)}
               className="w-full flex items-center justify-between px-3 py-2.5"
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm">📋</span>
-                <span
-                  className="text-xs truncate max-w-[200px]"
-                  style={{ fontWeight: 600, color: "#2E2252" }}
-                >
+                <span className="text-xs truncate max-w-[200px] font-semibold text-[#2E2252]">
                   {conv.rfqName || "RFQ / ใบเสนอราคา"}
                 </span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className="px-2 py-0.5 rounded-full text-[9px]"
-                  style={{
-                    background: "rgba(46,34,82,0.08)",
-                    color: "#2E2252",
-                    fontWeight: 600,
-                  }}
-                >
+                <span className="px-2 py-0.5 rounded-full bg-[#2E2252]/[0.08] text-[9px] font-semibold text-[#2E2252]">
                   {apiConv?.has_quote ? "มีใบเสนอราคา" : "สถานะ"}
                 </span>
                 {miniDashOpen ? (
@@ -802,37 +542,25 @@ function ChatRoomBody({
                   <ChevronDown size={14} className="text-gray-400" />
                 )}
               </div>
-            </button>
+            </Button>
 
             {miniDashOpen && latestQuote?.quoteData && (
-              <div
-                className="px-3 pb-3 border-t"
-                style={{ borderColor: "rgba(122,75,148,0.15)" }}
-              >
+              <div className="px-3 pb-3 border-t border-[#7A4B94]/15">
                 <div className="flex gap-3 mt-2.5">
                   <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                    <p
-                      className="text-sm"
-                      style={{ fontWeight: 700, color: "#E38844" }}
-                    >
+                    <p className="text-sm font-bold text-[#E38844]">
                       ฿{latestQuote.quoteData.price.toLocaleString()}
                     </p>
                     <p className="text-[9px] text-gray-500">ราคา</p>
                   </div>
                   <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                    <p
-                      className="text-sm"
-                      style={{ fontWeight: 700, color: "#2E2252" }}
-                    >
+                    <p className="text-sm font-bold text-[#2E2252]">
                       {latestQuote.quoteData.leadTime} วัน
                     </p>
                     <p className="text-[9px] text-gray-500">lead time</p>
                   </div>
                   <div className="flex-1 bg-white rounded-xl p-2.5 text-center">
-                    <p
-                      className="text-sm"
-                      style={{ fontWeight: 700, color: "#2E2252" }}
-                    >
+                    <p className="text-sm font-bold text-[#2E2252]">
                       {latestQuote.quoteData.validUntil}
                     </p>
                     <p className="text-[9px] text-gray-500">ใช้ได้ถึง</p>
@@ -891,13 +619,13 @@ function ChatRoomBody({
                     <div
                       className={`flex ${msg.sender_id === currentUserId ? "justify-end" : "justify-start"} mt-1`}
                     >
-                      <button
+                      <Button variant="unstyled"
                         type="button"
                         onClick={() => retrySend(msg.key)}
                         className="text-[11px] text-red-600 underline"
                       >
                         ส่งใหม่
-                      </button>
+                      </Button>
                     </div>
                   ) : null}
                 </div>
@@ -909,7 +637,7 @@ function ChatRoomBody({
 
       {!isNearBottom && unseenNewCount > 0 ? (
         <div className="relative">
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => {
               scrollToBottom(true);
@@ -918,7 +646,7 @@ function ChatRoomBody({
             className="absolute -top-12 right-4 z-10 flex items-center gap-1.5 rounded-full bg-[#7A4B94] text-white text-xs font-semibold px-3 py-1.5 shadow-lg hover:opacity-90 transition-opacity"
           >
             <ChevronDown size={14} />↓ {unseenNewCount} ข้อความใหม่
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -926,13 +654,13 @@ function ChatRoomBody({
         {pendingRef ? (
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <ReferenceChip reference={pendingRef} />
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setPendingRef(null)}
               className="text-[11px] text-gray-500 hover:text-gray-700"
             >
               ล้างอ้างอิง
-            </button>
+            </Button>
           </div>
         ) : null}
         {pendingRef ? (
@@ -941,12 +669,13 @@ function ChatRoomBody({
           </p>
         ) : null}
         <div className="flex items-end gap-2">
-          <button
+          <Button variant="unstyled"
             type="button"
+            aria-label="แนบไฟล์"
             className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0"
           >
             <Paperclip size={18} className="text-gray-500" />
-          </button>
+          </Button>
           <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 flex items-center gap-2">
             <input
               type="text"
@@ -959,7 +688,7 @@ function ChatRoomBody({
             />
           </div>
           {isBuyer ? (
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => setShowRFQPicker(true)}
               disabled={!apiConv}
@@ -968,26 +697,22 @@ function ChatRoomBody({
               <span className="inline-flex items-center gap-1">
                 <FileText size={14} /> แนบ RFQ
               </span>
-            </button>
+            </Button>
           ) : null}
-          <button
+          <Button variant="unstyled"
             type="button"
+            aria-label="ส่งข้อความ"
             onClick={() => void sendMessage()}
             disabled={!message.trim() || sending || !apiConv}
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all"
-            style={{
-              background:
-                message.trim() && !sending && apiConv ? "#E38844" : "#E5E7EB",
-            }}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${
+              message.trim() && !sending && apiConv ? "bg-[#E38844]" : "bg-[#E5E7EB]"
+            }`}
           >
             <Send
               size={17}
-              style={{
-                color:
-                  message.trim() && !sending && apiConv ? "#fff" : "#9CA3AF",
-              }}
+              className={message.trim() && !sending && apiConv ? "text-white" : "text-gray-400"}
             />
-          </button>
+          </Button>
         </div>
       </div>
 

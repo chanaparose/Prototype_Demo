@@ -10,6 +10,7 @@ import React from 'react';
 import { FileText, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
 import type { CreateRfqForm, SubCategory } from './types';
 import { CATEGORY_ICONS, SUB_CATEGORY_PLACEHOLDERS, DEFAULT_PLACEHOLDER } from './types';
+import { Button } from '../../ui/button';
 
 type Category = { id: string; name: string };
 
@@ -51,7 +52,7 @@ export function CreateRfqStep1({
             const active = form.categoryId === cat.id;
             const icon = CATEGORY_ICONS[cat.id] ?? '📁';
             return (
-              <button
+              <Button variant="unstyled"
                 key={cat.id}
                 type="button"
                 onClick={() => {
@@ -74,7 +75,7 @@ export function CreateRfqStep1({
                 >
                   {cat.name}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -95,13 +96,13 @@ export function CreateRfqStep1({
             <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 space-y-2">
               <p className="text-[12px] text-red-700">{subCategoriesError}</p>
               {onRetrySubCategories ? (
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => onRetrySubCategories()}
                   className="text-[12px] font-semibold text-violet-700 underline"
                 >
                   ลองโหลดอีกครั้ง
-                </button>
+                </Button>
               ) : null}
             </div>
           ) : subCategoriesLoading ? (
@@ -116,7 +117,7 @@ export function CreateRfqStep1({
               {subCategories.map((sub) => {
                 const active = form.subCategoryId === sub.id;
                 return (
-                  <button
+                  <Button variant="unstyled"
                     key={sub.id}
                     type="button"
                     onClick={() => onUpdate('subCategoryId', sub.id)}
@@ -139,7 +140,7 @@ export function CreateRfqStep1({
                     }`}>
                       {sub.name}
                     </span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>

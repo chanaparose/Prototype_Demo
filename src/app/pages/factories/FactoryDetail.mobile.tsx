@@ -9,6 +9,7 @@ import {
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../stores';
+import { Button } from '../../components/ui/button';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailMobileProps = { state: FactoryDetailState };
@@ -77,14 +78,14 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
   if (!factory) {
     return (
       <div className="min-h-screen bg-gray-50 px-4 pb-20 pt-5">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/explore')}
           className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-violet-600"
         >
           <ArrowLeft className="h-4 w-4" />
           กลับหน้าหลัก
-        </button>
+        </Button>
         <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
           <p className="mb-2 text-3xl">🏭</p>
           <p className="text-sm font-medium text-gray-500">ไม่พบข้อมูลโรงงาน</p>

@@ -13,6 +13,7 @@ import { useBeforeUnload } from '../../hooks/forms/useBeforeUnload';
 import { useShippingMethods } from '../../hooks/master/useShippingMethods';
 import { FormSkeleton } from '../../components/common/FormSkeleton';
 import { ShippingMethodLockedField } from '../../components/factory/ShippingMethodLockedField';
+import { Button } from '../../components/ui/button';
 
 type Raw = Record<string, unknown>;
 
@@ -155,13 +156,13 @@ export function FactoryEditQuotationPage() {
     return (
       <div className="py-12 text-center">
         <p className="text-sm text-red-600 mb-3">โหลดใบเสนอราคาไม่สำเร็จ</p>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void refetch()}
           className="px-4 py-2 rounded-xl border text-sm"
         >
           ลองใหม่
-        </button>
+        </Button>
       </div>
     );
   }
@@ -171,14 +172,14 @@ export function FactoryEditQuotationPage() {
     <div style={{ backgroundColor: '#F8F6FA' }} className="min-h-screen pb-28">
       {/* Sticky top bar */}
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
           style={{ color: '#4F46E5' }}
         >
           <ChevronLeft size={22} />
-        </button>
+        </Button>
         <div className="flex-1 min-w-0">
           <h1 className="font-bold text-sm truncate" style={{ color: '#2E2252' }}>
             แก้ไขใบเสนอราคา #{id}
@@ -360,7 +361,7 @@ export function FactoryEditQuotationPage() {
       {/* Sticky bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 p-4">
         <div className="max-w-3xl mx-auto flex gap-3">
-          <button
+          <Button variant="unstyled"
             type="button"
             disabled={isLocked || saving}
             onClick={() => void save()}
@@ -368,8 +369,8 @@ export function FactoryEditQuotationPage() {
             style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
           >
             <Save size={14} /> บันทึกร่าง
-          </button>
-          <button
+          </Button>
+          <Button variant="unstyled"
             type="button"
             disabled={isLocked || saving || !form.formState.isDirty}
             onClick={() => void save()}
@@ -380,7 +381,7 @@ export function FactoryEditQuotationPage() {
             }}
           >
             {saving ? 'กำลังบันทึก…' : 'ส่ง'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { ChatRoomEmbedded } from '../chat-room';
 import { ChatPartyHeader } from '../../components/features/chat/ChatPartyHeader';
 import type { UiConversation } from './types';
 import { formatConversationTime } from './types';
+import { Button } from '../../components/ui/button';
 
 type MessagesDesktopProps = {
   searchText: string;
@@ -84,7 +85,7 @@ export function MessagesDesktop({
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-10 px-5 text-center gap-3">
               <p className="text-sm text-gray-600">{error}</p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => void onReload()}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white"
@@ -92,7 +93,7 @@ export function MessagesDesktop({
               >
                 <RefreshCw size={16} />
                 ลองอีกครั้ง
-              </button>
+              </Button>
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
@@ -110,7 +111,7 @@ export function MessagesDesktop({
               {filtered.map((conv) => {
                 const isActive = conv.id === selectedId;
                 return (
-                  <button
+                  <Button variant="unstyled"
                     key={conv.id}
                     type="button"
                     onClick={() => setSelectedId(conv.id)}
@@ -150,7 +151,7 @@ export function MessagesDesktop({
                         </p>
                       </div>
                     </div>
-                  </button>
+                  </Button>
                 );
               })}
             </div>

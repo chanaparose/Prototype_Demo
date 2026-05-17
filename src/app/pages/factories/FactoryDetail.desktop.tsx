@@ -10,6 +10,7 @@ import { ImageWithFallback } from '../../components/shared';
 import type { useFactoryProfile } from '../../hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '../../hooks/useStartChatWithFactory';
 import { useAuth } from '../../stores';
+import { Button } from '../../components/ui/button';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailDesktopProps = { state: FactoryDetailState };
@@ -77,14 +78,14 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
   if (!factory) {
     return (
       <div className="hidden min-h-[calc(100vh-4rem)] bg-gray-50 px-8 pb-20 pt-8 lg:block">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/explore')}
           className="mb-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-purple-600 transition-colors hover:text-purple-800"
         >
           <ArrowLeft className="h-4 w-4" />
           กลับหน้าหลัก
-        </button>
+        </Button>
         <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
           <p className="mb-3 text-4xl">🏭</p>
           <p className="text-[14px] font-medium text-gray-500">ไม่พบข้อมูลโรงงาน</p>

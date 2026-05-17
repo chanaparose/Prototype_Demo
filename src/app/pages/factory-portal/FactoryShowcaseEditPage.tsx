@@ -24,6 +24,7 @@ import {
   type ShowcaseStatus,
   type ShowcaseType,
 } from './components/ShowcaseFormShared';
+import { Button } from '../../components/ui/button';
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -433,13 +434,13 @@ export function FactoryShowcaseEditPage() {
     return (
       <div className="py-12 text-center">
         <p className="text-sm text-red-600 mb-3">โหลดไม่สำเร็จ</p>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void refetch()}
           className="px-4 py-2 rounded-xl border text-sm"
         >
           ลองใหม่
-        </button>
+        </Button>
       </div>
     );
   }
@@ -450,19 +451,19 @@ export function FactoryShowcaseEditPage() {
 
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={onBack}
           className="flex items-center gap-1.5 text-sm font-medium transition-colors"
           style={{ color: '#4F46E5' }}
         >
           <ChevronLeft size={18} /> กลับ
-        </button>
+        </Button>
 
         {/* Fixed type badge — not editable */}
         <ShowcaseTypeBadge type={contentType} />
 
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void save('DR')}
           disabled={saving}
@@ -470,7 +471,7 @@ export function FactoryShowcaseEditPage() {
           style={{ color: '#4F46E5' }}
         >
           บันทึกร่าง
-        </button>
+        </Button>
       </div>
 
       <div className="px-4 py-5">
@@ -652,7 +653,7 @@ export function FactoryShowcaseEditPage() {
                   อัปเดตข้อมูลแล้วกดเผยแพร่เพื่อให้หน้าลูกค้าเห็นข้อมูลล่าสุด
                 </p>
                 <div className="mt-4 space-y-2">
-                  <button
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => void save('DR')}
                     disabled={saving}
@@ -660,8 +661,8 @@ export function FactoryShowcaseEditPage() {
                     style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
                   >
                     บันทึกร่าง
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="unstyled"
                     type="button"
                     onClick={() => void save('AC')}
                     disabled={saving || !canPublish}
@@ -669,7 +670,7 @@ export function FactoryShowcaseEditPage() {
                     style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
                   >
                     เผยแพร่
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -717,7 +718,7 @@ export function FactoryShowcaseEditPage() {
 
       {/* ── Sticky bottom bar ── */}
       <div className="sticky xl:hidden bottom-0 z-10 bg-white border-t border-gray-100 px-4 py-3 flex gap-3">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => void save('DR')}
           disabled={saving}
@@ -725,8 +726,8 @@ export function FactoryShowcaseEditPage() {
           style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
         >
           บันทึกร่าง
-        </button>
-        <button
+        </Button>
+        <Button variant="unstyled"
           type="button"
           onClick={() => void save('AC')}
           disabled={saving || !canPublish}
@@ -734,7 +735,7 @@ export function FactoryShowcaseEditPage() {
           style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
         >
           เผยแพร่
-        </button>
+        </Button>
       </div>
     </form>
   );

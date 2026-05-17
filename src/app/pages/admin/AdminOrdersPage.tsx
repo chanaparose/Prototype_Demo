@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
 import { adminApi, type AdminOrderRow } from '../../services/api';
+import { Button } from '../../components/ui/button';
 
 type OrderStatusTab = 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
 
@@ -199,7 +200,7 @@ export function AdminOrdersPage() {
             const active = statusTab === tab.key;
             const count = counts[tab.key] ?? 0;
             return (
-              <button
+              <Button variant="unstyled"
                 key={tab.key}
                 type="button"
                 onClick={() => setStatusTab(tab.key)}
@@ -209,7 +210,7 @@ export function AdminOrdersPage() {
               >
                 {tab.label}
                 <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'}`}>{count}</span>
-              </button>
+              </Button>
             );
           })}
         </div>

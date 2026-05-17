@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../ui/button';
 
 export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 
@@ -21,7 +22,7 @@ export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseType
       {OPTIONS.map((opt) => {
         const active = value === opt.type;
         return (
-          <button
+          <Button variant="unstyled"
             key={opt.type}
             type="button"
             onClick={() => onChange(opt.type)}
@@ -37,7 +38,7 @@ export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseType
               <span>{opt.label}</span>
             </div>
             <p className={`text-[10px] ${active ? 'text-orange-100' : 'text-gray-400'}`}>{opt.sublabel}</p>
-          </button>
+          </Button>
         );
       })}
     </div>

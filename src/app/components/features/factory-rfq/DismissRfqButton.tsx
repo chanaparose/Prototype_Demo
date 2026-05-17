@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../ui/button';
 
 interface DismissRfqButtonProps {
   rfqId: number;
@@ -63,7 +64,7 @@ export function DismissRfqButton({
 
   return (
     <>
-      <button
+      <Button variant="unstyled"
         type="button"
         title={!canDismiss ? disabledReason : 'ไม่สนใจ RFQ นี้'}
         disabled={!canDismiss || busy}
@@ -71,7 +72,7 @@ export function DismissRfqButton({
         className="w-full py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50"
       >
         ไม่สนใจ RFQ นี้
-      </button>
+      </Button>
 
       {confirmOpen ? (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4">
@@ -81,21 +82,21 @@ export function DismissRfqButton({
               RFQ {labelCode} จะไม่แสดงในรายการของคุณอีก คุณสามารถยกเลิกได้ภายหลังผ่านเมนู "RFQ ที่ข้ามไปแล้ว"
             </p>
             <div className="mt-4 flex justify-end gap-2">
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => setConfirmOpen(false)}
                 className="px-3 py-2 rounded-xl border border-gray-200 text-sm"
               >
                 ยกเลิก
-              </button>
-              <button
+              </Button>
+              <Button variant="unstyled"
                 type="button"
                 disabled={busy}
                 onClick={() => void doDismiss()}
                 className="px-3 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold disabled:opacity-50"
               >
                 ไม่สนใจ RFQ นี้
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -106,9 +107,9 @@ export function DismissRfqButton({
           <div className="flex items-center gap-2">
             <span>ซ่อน RFQ {labelCode} แล้ว</span>
             {onUndismiss ? (
-              <button type="button" className="underline" onClick={() => void doUndo()}>
+              <Button variant="unstyled" type="button" className="underline" onClick={() => void doUndo()}>
                 ยกเลิก ({toast.sec}s)
-              </button>
+              </Button>
             ) : null}
           </div>
         </div>

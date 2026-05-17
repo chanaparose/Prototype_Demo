@@ -19,6 +19,7 @@ import type { CreateRfqForm } from './types';
 import type { Unit } from './types';
 import { mediaApi } from '../../../services/api';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
+import { Button } from '../../ui/button';
 
 type CreateRfqStep2Props = {
   form: CreateRfqForm;
@@ -154,13 +155,13 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
           {form.imageUrls.map((url, idx) => (
             <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 group">
               <img src={url} alt={`อ้างอิง ${idx + 1}`} className="w-full h-full object-cover" />
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => removeImage(idx)}
                 className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity"
               >
                 <X size={12} className="text-white" />
-              </button>
+              </Button>
               <div className="absolute bottom-1 left-1">
                 <CheckCircle size={14} className="text-green-400 drop-shadow" />
               </div>
@@ -169,7 +170,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
 
           {/* Upload button */}
           {form.imageUrls.length < 5 && (
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
@@ -183,7 +184,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
               <span className="text-[9px] text-gray-400 font-medium">
                 {uploading ? 'อัปโหลด...' : 'เพิ่มรูป'}
               </span>
-            </button>
+            </Button>
           )}
         </div>
         <p className="text-[10px] text-gray-400 mt-2">

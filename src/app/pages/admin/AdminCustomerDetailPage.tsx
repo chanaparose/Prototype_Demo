@@ -8,6 +8,7 @@ import {
   type AdminWalletTxItem,
   type AdminCustomerOrderItem,
 } from '../../services/api';
+import { Button } from '../../components/ui/button';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -343,23 +344,23 @@ function CustomerOrdersTab({ userId }: { userId: number }) {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <button
+          <Button variant="unstyled"
             disabled={page === 0 || loading}
             onClick={() => setPage((p) => p - 1)}
             className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50 transition-colors"
           >
             ← ก่อนหน้า
-          </button>
+          </Button>
           <span className="text-sm text-slate-500">
             หน้า {page + 1} / {totalPages}
           </span>
-          <button
+          <Button variant="unstyled"
             disabled={page + 1 >= totalPages || loading}
             onClick={() => setPage((p) => p + 1)}
             className="px-3 py-1.5 rounded-lg border border-slate-200 text-sm disabled:opacity-40 hover:bg-slate-50 transition-colors"
           >
             ถัดไป →
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -407,14 +408,14 @@ export function AdminCustomerDetailPage() {
   if (error) {
     return (
       <div className="space-y-4">
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/admin/customers')}
           className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors"
         >
           <ArrowLeft size={14} />
           กลับ
-        </button>
+        </Button>
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700 flex items-center gap-2">
           <AlertTriangle size={15} />
           {error}
@@ -429,14 +430,14 @@ export function AdminCustomerDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => navigate('/admin/customers')}
           className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-indigo-600 transition-colors mb-2"
         >
           <ArrowLeft size={14} />
           กลับไปรายการลูกค้า
-        </button>
+        </Button>
         <p className="text-xs text-slate-400 font-medium">Admin / ลูกค้า / รายละเอียด</p>
         <div className="flex items-center gap-3 mt-1">
           <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0">
@@ -465,7 +466,7 @@ export function AdminCustomerDetailPage() {
       {/* Tabs */}
       <div className="flex gap-0 border-b border-slate-200">
         {TABS.map((t) => (
-          <button
+          <Button variant="unstyled"
             key={t.key}
             type="button"
             onClick={() => setTab(t.key)}
@@ -476,7 +477,7 @@ export function AdminCustomerDetailPage() {
             }`}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 

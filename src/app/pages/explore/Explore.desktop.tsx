@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Search,
@@ -6,339 +6,23 @@ import {
   Copy,
   Gift,
   ChevronRight,
-  ChevronLeft,
   MapPin,
   Star,
-  BadgeCheck,
   Plus,
   Sparkles,
-  ShoppingBag,
   Tag,
-  Leaf,
   Heart,
 } from 'lucide-react';
-import { EXPLORE_CATEGORY_TILES } from '../../components/features/explore/exploreCategoryTilesConfig';
-import { exploreDisplayNameForTile } from '../../utils/exploreCategoriesFromApi';
+import { Button } from '../../components/ui/button';
 import { ExploreFooter } from '../../components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '../../components/features/explore/HowToOrderSection';
 import { ExploreFactoryShowcase } from '../../components/features/explore/ExploreFactoryShowcase';
+import { ExploreDesktopCategories } from '../../components/features/explore/ExploreDesktopCategories';
+import { ExploreProductCarouselSection } from '../../components/features/explore/ExploreProductCarouselSection';
 import { ImageWithFallback } from '../../components/shared';
 import type { CategoryItem } from '../../components/features/explore/ExploreCategories';
 import type { FactoryItem } from '../../components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '../../components/features/explore/ExploreIdeaArticles';
-/* ── ProductCarouselSection: maaboom.com-style left banner + auto-scrolling card carousel ── */
-type ProductItem = {
-  id: string;
-  title: string;
-  price: string;
-  img: string;
-  discount?: string;
-  category?: string;
-  subCategoryName?: string;
-  factoryId?: string;
-  factoryName?: string;
-  likes?: number;
-  minOrder?: number;
-};
-
-const CARD_W = 192; // card width (180px) + gap (12px)
-const VISIBLE_CARDS = 4;
-const AUTO_SCROLL_INTERVAL = 3500;
-
-function ProductCarouselSection({
-  title,
-  items,
-  bannerImg,
-  bannerText,
-  onItemClick,
-  seeMoreHref = '/factory-ideas?type=product',
-  theme = 'product',
-  getFactoryMeta,
-}: {
-  title: string;
-  items: ProductItem[];
-  bannerImg: string;
-  bannerText: string;
-  onItemClick?: (id: string) => void;
-  seeMoreHref?: string;
-  theme?: 'product' | 'material';
-  getFactoryMeta?: (factoryId?: string) => { location: string; rating: number; reviews: number };
-}) {
-  const navigate = useNavigate();
-  const isMaterial = theme === 'material';
-  const hasItems = items.length > 0;
-  const [idx, setIdx] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const isHovered = useRef(false);
-  const totalDots = hasItems ? Math.max(1, items.length - VISIBLE_CARDS + 1) : 0;
-
-  const goTo = useCallback((next: number) => {
-    if (!hasItems || totalDots <= 0) return;
-    const clamped = Math.max(0, Math.min(next, totalDots - 1));
-    setIdx(clamped);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ left: clamped * CARD_W, behavior: 'smooth' });
-    }
-  }, [hasItems, totalDots]);
-
-  /* Auto-scroll — เฉพาะเมื่อมีการ์ดให้เลื่อน */
-  useEffect(() => {
-    if (!hasItems || totalDots <= 1) return;
-    const timer = setInterval(() => {
-      if (!isHovered.current) {
-        setIdx((prev) => {
-          const next = prev + 1 >= totalDots ? 0 : prev + 1;
-          if (scrollRef.current) {
-            scrollRef.current.scrollTo({ left: next * CARD_W, behavior: 'smooth' });
-          }
-          return next;
-        });
-      }
-    }, AUTO_SCROLL_INTERVAL);
-    return () => clearInterval(timer);
-  }, [hasItems, totalDots]);
-
-  return (
-    <section
-      onMouseEnter={() => { isHovered.current = true; }}
-      onMouseLeave={() => { isHovered.current = false; }}
-    >
-      {/* Section header */}
-      <div className="mt-[30px] flex items-center justify-between mb-2.5">
-        <h2 className="text-base font-bold text-[#292259] flex items-center gap-1.5">
-          {isMaterial
-            ? <Leaf className="text-[#059669]" size={16} />
-            : <ShoppingBag className="text-[#F28A2E]" size={16} />}
-          {title}
-        </h2>
-        <button
-          type="button"
-          onClick={() => navigate(seeMoreHref)}
-          className="text-xs font-medium hover:underline flex items-center gap-0.5 transition-colors"
-          style={{ color: isMaterial ? '#059669' : '#A656A0' }}
-        >
-          ดูเพิ่มเติม <ChevronRight size={14} />
-        </button>
-      </div>
-
-      <div className="flex gap-3 items-stretch">
-        {/* Left banner — fixed width square matching card height */}
-        <div className="w-[150px] flex-shrink-0 rounded-2xl overflow-hidden relative cursor-pointer shadow-md group"
-             style={{ minHeight: 210 }}>
-          <ImageWithFallback
-            src={bannerImg}
-            alt={title}
-            className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-          <div
-            className="absolute inset-0 flex flex-col justify-end p-5 pointer-events-none"
-             
-            aria-hidden
-          />
-        </div>
-
-        {/* Right: card carousel + arrows + dots — หรือ empty state */}
-        <div className="flex-1 relative min-w-0">
-          {!hasItems ? (
-            <div
-              className="flex min-h-[210px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-6 text-center"
-            >
-              <ShoppingBag className="text-[#F28A2E]/50" size={40} />
-              <p className="text-sm font-medium text-gray-600">ยังไม่มีสินค้าแนะนำในขณะนี้</p>
-              <p className="text-xs text-gray-400 max-w-sm">ลองดูไอเดียสินค้าและโรงงานได้จากลิงก์ด้านล่าง</p>
-              <button
-                type="button"
-                onClick={() => navigate('/factory-ideas?type=product')}
-                className="mt-1 rounded-full border border-[#A656A0]/40 bg-white px-4 py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors"
-              >
-                ดูสินค้าแนะนำ
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Prev arrow — overlaps left edge of card area */}
-              <button
-                type="button"
-                onClick={() => goTo(idx - 1)}
-                disabled={idx === 0}
-                className="absolute left-0 top-[calc(50%-28px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft size={18} className="text-gray-600" />
-              </button>
-
-              {/* Cards scroll area */}
-              <div
-                ref={scrollRef}
-                className="flex gap-3 overflow-x-hidden pb-1"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {items.map((product) => (
-                  (() => {
-                    const meta = getFactoryMeta?.(product.factoryId) ?? { location: '—', rating: 0, reviews: 0 };
-                    return (
-                  <div
-                    key={product.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => onItemClick?.(product.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        onItemClick?.(product.id);
-                      }
-                    }}
-                    className="flex-shrink-0 w-[180px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
-                  >
-                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
-                      <ImageWithFallback
-                        src={product.img}
-                        alt={product.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <span
-                        className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white"
-                        style={{ backgroundColor: isMaterial ? '#0EA5A4' : '#5185D4' }}
-                      >
-                        {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
-                      </span>
-                    </div>
-                    <div className="p-2 flex flex-col flex-1 justify-between gap-0.5">
-                      <p className="text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors">
-                        {product.title}
-                      </p>
-                      <div className="flex items-center gap-0.5 mt-0.5">
-                        <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                        <span className="text-gray-500 text-[10px] truncate">{meta.location || '—'}</span>
-                      </div>
-                      <div className="mt-auto pt-1 border-t border-gray-50">
-                        <div className="flex items-center justify-between min-w-0">
-                          <div className="flex items-center gap-0.5 min-w-0">
-                            <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0" />
-                            <span className="text-gray-700 text-[10px] font-semibold">{meta.rating}</span>
-                            <span className="text-gray-400 text-[9px] truncate">({meta.reviews})</span>
-                          </div>
-                          <span className="text-gray-400 text-[8px] shrink-0">ขั้นต่ำ {product.minOrder ?? 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                    );
-                  })()
-                ))}
-              </div>
-
-              {/* Next arrow — overlaps right edge */}
-              <button
-                type="button"
-                onClick={() => goTo(idx + 1)}
-                disabled={idx >= totalDots - 1}
-                className="absolute right-0 top-[calc(50%-28px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronRight size={18} className="text-gray-600" />
-              </button>
-
-              {/* Dot indicators */}
-              {totalDots > 1 && (
-                <div className="flex justify-center gap-1.5 mt-2.5">
-                  {Array.from({ length: totalDots }).map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => goTo(i)}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === idx ? 'w-6 bg-[#F28A2E]' : 'w-1.5 bg-gray-300 hover:bg-[#F28A2E]/50'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DesktopCategories({
-  categories,
-  mergedFromApi,
-  apiLoading,
-  apiError,
-  onRetryCategoriesApi,
-}: {
-  categories: CategoryItem[];
-  mergedFromApi: CategoryItem[];
-  apiLoading: boolean;
-  apiError: string | null;
-  onRetryCategoriesApi: () => void;
-}) {
-  const navigate = useNavigate();
-
-  return (
-    <section>
-      {apiLoading && (
-        <p className="text-sm text-gray-400 mb-3" aria-live="polite">
-          กำลังโหลดชื่อหมวดจากฐานข้อมูล…
-        </p>
-      )}
-      {apiError && !apiLoading && (
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-sm text-amber-900" role="alert">
-          <span>{apiError}</span>
-          <button
-            type="button"
-            onClick={() => void onRetryCategoriesApi()}
-            className="ml-2 font-semibold text-[#A238FF] underline hover:no-underline"
-          >
-            ลองอีกครั้ง
-          </button>
-        </div>
-      )}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-2.5">
-        {EXPLORE_CATEGORY_TILES.map((cfg) => {
-          const Icon = cfg.icon;
-          const displayName = exploreDisplayNameForTile(
-            cfg.categoryId,
-            cfg.fallbackName,
-            mergedFromApi,
-            categories,
-          );
-          const href = `/factory-ideas?category_id=${encodeURIComponent(cfg.categoryId)}`;
-          return (
-            <div
-              key={cfg.categoryId}
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate(href)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  navigate(href);
-                }
-              }}
-              className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group"
-            >
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center ${cfg.color} group-hover:scale-110 transition-transform`}>
-                <Icon size={20} />
-              </div>
-              <span className="text-xs font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]">{displayName}</span>
-            </div>
-          );
-        })}
-      </div>
-      <div className="flex justify-center mt-4">
-        <button
-          type="button"
-          onClick={() => navigate('/factory-ideas')}
-          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-8 py-2 rounded-lg text-[13px] font-medium transition-colors flex items-center gap-1.5"
-        >
-          ดูเพิ่มเติม <ChevronRight size={13} />
-        </button>
-      </div>
-    </section>
-  );
-}
-
 type ShowcaseItem = {
   id: string; title: string; excerpt: string; image: string;
   factoryName: string; factoryId: string; minOrder: number;
@@ -389,44 +73,6 @@ export function ExploreDesktop({
   const navigate = useNavigate();
   const ideaArticlesList = ideaArticles ?? [];
   const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 10), [factories]);
-  const factoryVisibleCards = 5;
-  const factoryCardW = 196;
-  const factoryHasItems = recommendedFactories.length > 0;
-  const factoryTotalSteps = factoryHasItems
-    ? Math.max(1, recommendedFactories.length - factoryVisibleCards + 1)
-    : 0;
-  const [factoryIdx, setFactoryIdx] = useState(0);
-  const factoryScrollRef = useRef<HTMLDivElement>(null);
-  const factoryHoveredRef = useRef(false);
-
-  const goToFactory = useCallback((next: number) => {
-    if (!factoryHasItems || factoryTotalSteps <= 0) return;
-    const clamped = Math.max(0, Math.min(next, factoryTotalSteps - 1));
-    setFactoryIdx(clamped);
-    if (factoryScrollRef.current) {
-      factoryScrollRef.current.scrollTo({ left: clamped * factoryCardW, behavior: 'smooth' });
-    }
-  }, [factoryHasItems, factoryTotalSteps]);
-
-  useEffect(() => {
-    setFactoryIdx(0);
-    if (factoryScrollRef.current) factoryScrollRef.current.scrollTo({ left: 0 });
-  }, [recommendedFactories.length]);
-
-  useEffect(() => {
-    if (!factoryHasItems || factoryTotalSteps <= 1) return;
-    const timer = window.setInterval(() => {
-      if (factoryHoveredRef.current) return;
-      setFactoryIdx((prev) => {
-        const next = prev + 1 >= factoryTotalSteps ? 0 : prev + 1;
-        if (factoryScrollRef.current) {
-          factoryScrollRef.current.scrollTo({ left: next * factoryCardW, behavior: 'smooth' });
-        }
-        return next;
-      });
-    }, 3000);
-    return () => window.clearInterval(timer);
-  }, [factoryHasItems, factoryTotalSteps]);
 
   const productShowcases = useMemo(
     () => (exploreProducts ?? []).slice(0, 8).map((s) => ({
@@ -512,13 +158,13 @@ export function ExploreDesktop({
               className="flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400"
             />
           </div>
-          <button
+          <Button variant="unstyled"
             type="button"
             className="px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-1.5 text-xs font-medium shrink-0 text-[#A656A0] hover:border-[#A656A0]/30 transition-colors"
           >
             <SlidersHorizontal size={14} />
             ตัวกรอง
-          </button>
+          </Button>
         </div>
 
         {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) — แสดงเฉพาะเมื่อมีจาก API ═══ */}
@@ -558,7 +204,7 @@ export function ExploreDesktop({
                       <div className="flex items-center rounded-lg px-2.5 py-1 border" style={{ background: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.40)' }}>
                         <span className="text-sm font-mono tracking-widest font-bold text-white">{promo.code}</span>
                       </div>
-                      <button
+                      <Button variant="unstyled"
                         type="button"
                         onClick={() => handleCopy(promo.code, promo.id)}
                         className="flex items-center gap-1 rounded-lg px-2.5 py-1 transition-colors text-[12px] font-semibold text-white"
@@ -566,7 +212,7 @@ export function ExploreDesktop({
                       >
                         <Copy className="w-3 h-3" />
                         {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -578,7 +224,7 @@ export function ExploreDesktop({
 
         {/* ═══ 4. หมวดหมู่ (Categories) ═══ */}
         <div data-tour="categories">
-        <DesktopCategories
+        <ExploreDesktopCategories
           categories={categories}
           mergedFromApi={exploreCategoriesMerged}
           apiLoading={exploreCategoriesLoading}
@@ -589,7 +235,7 @@ export function ExploreDesktop({
 
         {/* ═══ 5. สินค้าแนะนำ — from factoryShowcases (แบนเนอร์ซ้ายแสดงเสมอ) ═══ */}
         <div data-tour="products">
-        <ProductCarouselSection
+        <ExploreProductCarouselSection
           title="สินค้าแนะนำ"
           items={productShowcases}
           bannerImg={'assets/tryly_vertical_banner_v5_oval_final.png'}
@@ -610,7 +256,7 @@ export function ExploreDesktop({
         </div>
 
         {/* ═══ 5b. วัตถุดิบแนะนำ ═══ */}
-        <ProductCarouselSection
+        <ExploreProductCarouselSection
           title="วัตถุดิบแนะนำ"
           theme="material"
           seeMoreHref="/factory-ideas?type=material"
@@ -643,147 +289,6 @@ export function ExploreDesktop({
             variant="desktop"
           />
         </div>
-        {/* ── Legacy banner section retained below as hidden until removed ── */}
-        <section className="hidden mt-[40px] rounded-2xl overflow-hidden border border-gray-200 bg-white">
-          <div className="relative px-4 py-4 text-center overflow-hidden" style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}>
-
-            {/* ── Color-block shapes (cat illustration style) ── */}
-            {/* Bright purple diagonal block — right side */}
-            <div className="absolute top-0 right-0 h-full w-[45%] opacity-80 pointer-events-none"
-              style={{ background: 'linear-gradient(135deg, transparent 30%, #A238FF 100%)', clipPath: 'polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)' }} />
-            {/* Orange warm zone — far right */}
-            <div className="absolute top-0 right-0 h-full w-[22%] opacity-60 pointer-events-none"
-              style={{ background: 'linear-gradient(180deg, #F28A2E 0%, #F27830 100%)', clipPath: 'polygon(40% 0%, 100% 0%, 100% 100%, 0% 100%)' }} />
-            {/* Peach soft glow blob — upper right */}
-            <div className="absolute -top-6 right-16 w-28 h-28 rounded-full blur-2xl opacity-30 pointer-events-none"
-              style={{ background: '#F5C8A0' }} />
-            {/* Bright purple glow — left side accent */}
-            <div className="absolute -bottom-8 left-12 w-36 h-36 rounded-full blur-3xl opacity-25 pointer-events-none"
-              style={{ background: '#A238FF' }} />
-            {/* Small orange circle top-left */}
-            <div className="absolute top-3 left-8 w-5 h-5 rounded-full opacity-50 pointer-events-none"
-              style={{ background: '#F28A2E' }} />
-            {/* Small cream dot */}
-            <div className="absolute bottom-4 left-24 w-3 h-3 rounded-full opacity-40 pointer-events-none"
-              style={{ background: '#FAEBD7' }} />
-
-            {/* Content */}
-            <div className="relative z-10">
-              <h2 className="text-xl font-bold text-white drop-shadow-md flex items-center justify-center gap-2">
-                โรงงานแนะนำ
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-white font-bold text-sm" style={{ background: '#F28A2E' }}>
-                  <Plus size={12} />
-                </span>
-              </h2>
-              <p className="text-xs mt-1 font-medium" style={{ color: 'rgba(235,211,255,0.90)' }}>
-                โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าสัตว์เลี้ยงคุณภาพสูง
-              </p>
-            </div>
-          </div>
-
-          {/* --- Body Section --- */}
-          <div
-            className="p-3 bg-gradient-to-b from-purple-50/20 to-white"
-            onMouseEnter={() => { factoryHoveredRef.current = true; }}
-            onMouseLeave={() => { factoryHoveredRef.current = false; }}
-          >
-            <div className="relative">
-              {factoryHasItems && factoryTotalSteps > 1 ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => goToFactory(factoryIdx - 1)}
-                    disabled={factoryIdx === 0}
-                    className="absolute left-0 top-[calc(50%-28px)] -translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    aria-label="ก่อนหน้า"
-                  >
-                    <ChevronLeft size={18} className="text-gray-600" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => goToFactory(factoryIdx + 1)}
-                    disabled={factoryIdx >= factoryTotalSteps - 1}
-                    className="absolute right-0 top-[calc(50%-28px)] translate-x-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    aria-label="ถัดไป"
-                  >
-                    <ChevronRight size={18} className="text-gray-600" />
-                  </button>
-                </>
-              ) : null}
-
-              <div
-                ref={factoryScrollRef}
-                className="flex gap-4 overflow-x-hidden pb-1"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {recommendedFactories.map((factory) => (
-                  <div
-                    key={factory.id}
-                    onClick={() => navigate(`/factories/${factory.id}`)}
-                    className="min-w-[180px] bg-white rounded-lg overflow-hidden border border-gray-100 hover:shadow-md transition-all group cursor-pointer flex flex-col"
-                  >
-                    <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
-                      <ImageWithFallback
-                        src={factory.image}
-                        alt={factory.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      {factory.verified === true && (
-                        <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                          <BadgeCheck className="w-3 h-3 text-[#A238FF]" />
-                          <span className="text-[10px] font-medium" style={{ color: '#A238FF' }}>ยืนยันแล้ว</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-2 flex flex-col flex-1 justify-between">
-                      <div>
-                        <h3 className="font-medium text-[12px] leading-tight text-gray-700 mb-0.5 truncate group-hover:text-[#A238FF] transition-colors">
-                          {factory.name}
-                        </h3>
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <MapPin className="w-2.5 h-2.5 text-gray-400 shrink-0" />
-                          <span className="text-gray-500 text-[10px] truncate">{factory.location}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-0.5">
-                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                          <span className="text-gray-700 text-[10px] font-semibold">{factory.rating}</span>
-                          <span className="text-gray-400 text-[10px]">({factory.reviews})</span>
-                        </div>
-                        <span className="text-gray-400 text-[10px]">ขั้นต่ำ {factory.minOrder}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {factoryHasItems && factoryTotalSteps > 1 ? (
-              <div className="mt-3 flex items-center justify-center gap-1.5">
-                {Array.from({ length: factoryTotalSteps }).map((_, i) => (
-                  <button
-                    key={`fac-dot-${i}`}
-                    type="button"
-                    onClick={() => goToFactory(i)}
-                    className={`h-1.5 rounded-full transition-all ${factoryIdx === i ? 'w-5' : 'w-1.5'}`}
-                    style={{ backgroundColor: factoryIdx === i ? '#A238FF' : '#D6D3E6' }}
-                    aria-label={`ไปที่ลำดับ ${i + 1}`}
-                  />
-                ))}
-              </div>
-            ) : null}
-            <div className="mt-5 flex justify-center">
-              <button
-                type="button"
-                onClick={() => navigate('/factory-ideas?type=factory')}
-                className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-6 py-1 rounded-md text-[13px] font-medium transition-colors shadow-sm"
-              >
-                ดูเพิ่มเติม
-              </button>
-            </div>
-          </div>
-        </section>
-
         {/* ═══ 2. โปรโมชันแนะนำ — ORANGE THEME ═══ */}
         <section>
           <div className="mt-[30px] flex items-center justify-between mb-3">
@@ -791,13 +296,13 @@ export function ExploreDesktop({
               <Tag className="text-[#F27830]" size={16} />
               โปรโมชันแนะนำ
             </h2>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/factory-ideas?type=promotion')}
               className="text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center transition-colors"
             >
               ดูเพิ่มเติม <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-3">
@@ -880,13 +385,13 @@ export function ExploreDesktop({
           </div>
           <div className="relative z-[1] flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-[#292259]">บทความ Idea</h2>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/factory-ideas?type=idea')}
               className="text-[#A656A0] text-xs font-medium hover:underline flex items-center"
             >
               ดูทั้งหมด <ChevronRight size={14} />
-            </button>
+            </Button>
           </div>
 
           <div className="relative z-[1]">
@@ -918,7 +423,7 @@ export function ExploreDesktop({
                   </p>
                   <div className="mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between">
                     <span className="text-[10px] text-gray-400">แตะเพื่ออ่านต่อ</span>
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={(e) => e.stopPropagation()}
                       className="flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70"
@@ -926,7 +431,7 @@ export function ExploreDesktop({
                     >
                       <Heart className="w-2.5 h-2.5 shrink-0" />
                       <span className="text-[10px] leading-none">{Number(article.likes ?? 0)}</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -959,7 +464,7 @@ export function ExploreDesktop({
                        max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4
                        md:max-xl:right-8 md:max-xl:bottom-5"
           >
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/register/factory')}
               className="group relative shrink-0 inline-flex items-center gap-1.5 xl:gap-2 max-xl:px-4 max-xl:py-2 xl:px-7 xl:py-2.5 rounded-xl text-white font-bold text-xs xl:text-sm whitespace-nowrap
@@ -975,7 +480,7 @@ export function ExploreDesktop({
               <span>สมัครเลย</span>
               <ChevronRight size={14} className="text-white/90 group-hover:translate-x-1 transition-transform duration-200" />
               <span aria-hidden className="pointer-events-none absolute inset-0 rounded-xl bg-white/0 group-hover:bg-white/10 transition-colors" />
-            </button>
+            </Button>
           </div>
         </section>
 
@@ -985,7 +490,7 @@ export function ExploreDesktop({
       </div>
 
       {/* iPad FAB: create RFQ (same behavior as mobile) */}
-      <button
+      <Button variant="unstyled"
         data-tour="fab"
         type="button"
         onClick={() => navigate('/create-rfq')}
@@ -993,7 +498,7 @@ export function ExploreDesktop({
         style={{ background: '#A238FF', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
       >
         <Plus size={20} className="text-white" />
-      </button>
+      </Button>
 
     </div>
   );

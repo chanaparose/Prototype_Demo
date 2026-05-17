@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, ImageIcon, MapPin, MessageCircle, ShieldCheck, Star } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
 import { StatusBadge } from '../../../shared/ui';
+import { Button } from '../../ui/button';
 
 const NAVY = '#2E2252';
 
@@ -48,15 +49,15 @@ export function FactoryProfileHero({ factory, onBack, onChat, chatLoading, showC
         ) : null}
         <div className="absolute inset-0 bg-slate-900/25 pointer-events-none" aria-hidden />
 
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={onBack}
           className="absolute left-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/95 shadow-sm backdrop-blur-[1px] hover:bg-white"
         >
           <ArrowLeft className="h-4 w-4 text-gray-700" />
-        </button>
+        </Button>
         {showChat ? (
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={onChat}
             disabled={chatLoading}
@@ -68,7 +69,7 @@ export function FactoryProfileHero({ factory, onBack, onChat, chatLoading, showC
             ) : (
               <MessageCircle className="h-5 w-5" style={{ color: '#6C47FF' }} />
             )}
-          </button>
+          </Button>
         ) : null}
       </div>
 

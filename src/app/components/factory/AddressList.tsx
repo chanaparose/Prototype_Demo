@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Button } from '../ui/button';
 
 type Row = Record<string, unknown>;
 
@@ -62,7 +63,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-gray-800">รายการที่อยู่</h3>
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={onCreate}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
@@ -70,7 +71,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
         >
           <Plus size={14} />
           เพิ่มที่อยู่
-        </button>
+        </Button>
       </div>
 
       {addresses.length === 0 ? (
@@ -105,30 +106,30 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {!isDefault ? (
-                      <button
+                      <Button variant="unstyled"
                         type="button"
                         onClick={() => onSetDefault(row)}
                         className="px-2.5 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 text-xs font-semibold hover:bg-emerald-50"
                       >
                         ตั้งเป็นค่าเริ่มต้น
-                      </button>
+                      </Button>
                     ) : null}
-                    <button
+                    <Button variant="unstyled"
                       type="button"
                       onClick={() => onEdit(row)}
                       className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
                       aria-label="แก้ไขที่อยู่"
                     >
                       <Pencil size={14} />
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="unstyled"
                       type="button"
                       onClick={() => onDelete(row)}
                       className="p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50"
                       aria-label="ลบที่อยู่"
                     >
                       <Trash2 size={14} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );

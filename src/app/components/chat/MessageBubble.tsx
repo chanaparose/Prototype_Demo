@@ -7,6 +7,7 @@ import { ReferenceChip } from './ReferenceChip';
 import { normalizeIso } from '../../pages/messages/selectors';
 import { formatChatTime } from '../../utils/chatTime';
 import { formatCurrency } from '@/utils/formatting';
+import { Button } from '../ui/button';
 
 /** Tiny inline spinner for the "sending" status on optimistic bubbles. */
 function SendingSpinner({ color }: { color: string }) {
@@ -214,7 +215,7 @@ export function MessageBubble({
           <p className="text-[10px] font-semibold text-[#7A4B94] uppercase tracking-wide mb-1">คำขอ RFQ</p>
           <p className="text-sm font-bold text-gray-900">{msg.content || `RFQ #${rfqId}`}</p>
           <div className="border-t border-gray-100 my-3" />
-          <button
+          <Button variant="unstyled"
             type="button"
             className="text-sm font-semibold text-[#7A4B94] flex items-center gap-1 hover:underline"
             onClick={() => {
@@ -223,7 +224,7 @@ export function MessageBubble({
             }}
           >
             {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'} <ArrowRight size={14} />
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -275,7 +276,7 @@ export function MessageBubble({
 
     return (
       <div className="flex justify-center">
-        <button
+        <Button variant="unstyled"
           type="button"
           disabled={viewerRole === 'CT' ? rfqId <= 0 : !canOpen}
           onClick={() => {
@@ -322,7 +323,7 @@ export function MessageBubble({
               <p className="text-white/40 text-[9px] text-center mt-2">{msg.display_time}</p>
             ) : null}
           </div>
-        </button>
+        </Button>
       </div>
     );
   }

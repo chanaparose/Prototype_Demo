@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { quotationApi } from '../../services/api';
 import { MoneyText } from '../../shared/ui/MoneyText';
 import { DiffRow } from '../../shared/ui/DiffRow';
+import { Button } from '../../components/ui/button';
 
 type AnyObj = Record<string, unknown>;
 
@@ -98,7 +99,7 @@ export function QuoteDetailCustomer() {
         <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             {history.map((h, i) => (
-              <button
+              <Button variant="unstyled"
                 key={String(h.quotation_id ?? i)}
                 type="button"
                 onClick={() => {
@@ -108,7 +109,7 @@ export function QuoteDetailCustomer() {
                 className="px-2 py-1 rounded-lg text-xs border border-gray-200"
               >
                 v{String(h.version ?? i + 1)}
-              </button>
+              </Button>
             ))}
           </div>
           {compare ? (
@@ -122,7 +123,7 @@ export function QuoteDetailCustomer() {
       ) : null}
 
       <div className="grid grid-cols-3 gap-2">
-        <button
+        <Button variant="unstyled"
           type="button"
           disabled={accepted || requesting}
           onClick={async () => {
@@ -138,8 +139,8 @@ export function QuoteDetailCustomer() {
           className="py-2 rounded-xl border border-gray-200 text-sm disabled:opacity-50"
         >
           Request Revision
-        </button>
-        <button
+        </Button>
+        <Button variant="unstyled"
           type="button"
           disabled={accepted || rejecting}
           onClick={async () => {
@@ -155,8 +156,8 @@ export function QuoteDetailCustomer() {
           className="py-2 rounded-xl border border-rose-200 text-rose-600 text-sm disabled:opacity-50"
         >
           Reject
-        </button>
-        <button
+        </Button>
+        <Button variant="unstyled"
           type="button"
           disabled={accepted}
           onClick={async () => {
@@ -166,7 +167,7 @@ export function QuoteDetailCustomer() {
           className="py-2 rounded-xl bg-emerald-600 text-white text-sm disabled:opacity-50"
         >
           Accept
-        </button>
+        </Button>
       </div>
     </div>
   );

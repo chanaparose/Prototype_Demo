@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle, Clock, Circle, Camera, Pencil, X, Check, Package, Truck } from 'lucide-react';
 import { formatDateTh } from './utils';
 import { productionUpdatesApi } from '../../../services/api';
+import { Button } from '../../ui/button';
 
 export type TimelineMilestone = {
   id: string;
@@ -178,7 +179,7 @@ export function OrderTimelineSection({ order, leadTimeDays, shippingDays: shippi
                         )}
                         {editingId === milestone.id ? (
                           <>
-                            <button
+                            <Button variant="unstyled"
                               type="button"
                               onClick={() => saveEdit(milestone.id)}
                               disabled={!!savingId}
@@ -186,25 +187,25 @@ export function OrderTimelineSection({ order, leadTimeDays, shippingDays: shippi
                               aria-label="บันทึก"
                             >
                               <Check size={11} />
-                            </button>
-                            <button
+                            </Button>
+                            <Button variant="unstyled"
                               type="button"
                               onClick={() => setEditingId(null)}
                               className="p-1 rounded-full bg-gray-100 text-gray-500"
                               aria-label="ยกเลิก"
                             >
                               <X size={11} />
-                            </button>
+                            </Button>
                           </>
                         ) : (
-                          <button
+                          <Button variant="unstyled"
                             type="button"
                             onClick={() => startEdit(milestone)}
                             className="p-1 rounded-full bg-gray-100 text-gray-400 hover:bg-violet-50 hover:text-[#A238FF] transition-colors"
                             aria-label="แก้ไขบันทึก"
                           >
                             <Pencil size={11} />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -220,7 +221,7 @@ export function OrderTimelineSection({ order, leadTimeDays, shippingDays: shippi
                     )}
 
                     {milestone.photo && (
-                      <button
+                      <Button variant="unstyled"
                         onClick={() => onPhotoClick(milestone.photo!)}
                         className="mt-2 relative overflow-hidden rounded-xl"
                         style={{ width: '100%', height: 100 }}
@@ -239,7 +240,7 @@ export function OrderTimelineSection({ order, leadTimeDays, shippingDays: shippi
                             <span className="text-[10px] text-white">ดูรูป</span>
                           </div>
                         </div>
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

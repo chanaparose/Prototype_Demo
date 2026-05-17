@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, X, Plus } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { conversationsApi, rfqsApi } from "../../services/api";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/utils/formatting";
 import { StatusBadge } from "../../shared/ui";
+import { BaseModal } from "../../shared/ui/modals/BaseModal";
+import { Button } from "../ui/button";
 
 type Props = {
   conversationId: number;
@@ -111,22 +113,17 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
   };
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onCancel} />
-      <div className="fixed z-50 bottom-0 left-0 right-0 lg:inset-0 lg:flex lg:items-center lg:justify-center">
-        <div className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl max-h-[80vh] overflow-hidden flex flex-col lg:max-w-md lg:w-full">
-          <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-4 lg:hidden" />
-          <div className="px-4 pb-3 flex items-center justify-between border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900">แนบ RFQ</p>
-            <button
-              type="button"
-              onClick={onCancel}
-              title="ปิด"
-              className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center"
-            >
-              <X size={16} />
-            </button>
-          </div>
+    <BaseModal
+      isOpen
+      onClose={onCancel}
+      title="แนบ RFQ"
+      placement="bottom"
+      size="md"
+      overlayClassName="bg-black/40"
+      bodyClassName="px-0 py-0"
+      className="max-h-[80vh] overflow-hidden flex flex-col"
+    >
+      <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-4 lg:hidden" />
 
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="relative">
@@ -151,7 +148,7 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
               </p>
             ) : (
               filtered.map((rfq) => (
-                <button
+                <Button variant="unstyled"
                   key={rfq.rfq_id}
                   type="button"
                   onClick={() => void handleShare(rfq.rfq_id)}
@@ -186,11 +183,12 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
                       กำลังแนบ...
                     </p>
                   ) : null}
-                </button>
+                </Button>
               ))
             )}
 
-            <button
+            <Button
+              variant="unstyled"
               type="button"
               onClick={() => {
                 onCancel();
@@ -199,10 +197,8 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
               className="w-full px-4 py-4 text-sm text-[#7A4B94] font-medium flex items-center gap-1 hover:bg-violet-50"
             >
               <Plus size={14} /> สร้างคำขอราคา
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
-    </>
+    </BaseModal>
   );
 }

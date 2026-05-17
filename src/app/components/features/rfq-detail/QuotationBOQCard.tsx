@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '../../shared';
 import { StatusBadge } from '../../../shared/ui';
+import { Button } from '../../ui/button';
 
 /** ใบเสนอราคา (BOQ) จากโรงงาน — ใช้กับ BOQ Explorer / เปรียบเทียบข้อเสนอ */
 export interface Quotation {
@@ -193,7 +194,7 @@ export function QuotationBOQCard({
     <article
       className={`rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md ${className}`}
     >
-      <button
+      <Button variant="unstyled"
         type="button"
         id={headerId}
         aria-expanded={expanded}
@@ -247,7 +248,7 @@ export function QuotationBOQCard({
           className={`shrink-0 text-gray-400 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
           aria-hidden
         />
-      </button>
+      </Button>
 
       <div
         className={`grid transition-[grid-template-rows] duration-300 ease-out ${expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}

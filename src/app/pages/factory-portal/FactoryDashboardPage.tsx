@@ -39,6 +39,7 @@ import {
 } from './hooks/useFactoryDashboard';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
+import { Button } from '../../components/ui/button';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const COLORS = {
@@ -356,7 +357,7 @@ export function FactoryDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
           <AlertTriangle size={16} className="shrink-0 text-amber-600" />
           <p className="flex-1">{error}</p>
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => void reload()}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white shrink-0 transition-opacity hover:opacity-90"
@@ -364,7 +365,7 @@ export function FactoryDashboardPage() {
           >
             <RefreshCw size={14} />
             ลองอีกครั้ง
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -373,7 +374,7 @@ export function FactoryDashboardPage() {
         {kpis.map((k) => {
           const Icon = k.icon;
           return (
-            <button
+            <Button variant="unstyled"
               key={k.key}
               type="button"
               onClick={() => navigate(k.to)}
@@ -391,7 +392,7 @@ export function FactoryDashboardPage() {
               <p className="mt-3 text-[11px] font-medium uppercase tracking-wide text-gray-500">{k.title}</p>
               <p className="mt-1 text-xl font-bold tabular-nums break-words leading-none" style={{ color: COLORS.navy }}>{k.value}</p>
               {k.sub ? <p className="mt-1 text-[11px] text-gray-400">{k.sub}</p> : null}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -411,7 +412,7 @@ export function FactoryDashboardPage() {
           {TIMEFRAMES.map(({ id, label }) => {
             const on = timeframe === id;
             return (
-              <button
+              <Button variant="unstyled"
                 key={id}
                 type="button"
                 role="tab"
@@ -434,7 +435,7 @@ export function FactoryDashboardPage() {
                 }
               >
                 {label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -501,14 +502,14 @@ export function FactoryDashboardPage() {
               <h3 className="text-sm font-bold" style={{ color: COLORS.navy }}>คำสั่งซื้อ</h3>
               <p className="text-xs text-gray-400 mt-0.5">ออเดอร์ทั้งหมดและปิดสำเร็จ</p>
             </div>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/factory/orders')}
               className="text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{ color: COLORS.purple }}
             >
               ดูทั้งหมด <ArrowRight size={12} />
-            </button>
+            </Button>
           </div>
           <div className="w-full min-w-0 mt-4" style={{ height: barChartHeight }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -539,14 +540,14 @@ export function FactoryDashboardPage() {
               <h3 className="text-sm font-bold" style={{ color: COLORS.navy }}>RFQ ล่าสุด</h3>
               <p className="text-xs text-gray-400 mt-0.5">คำขอใบเสนอราคาที่เข้ามา</p>
             </div>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/factory/rfqs')}
               className="text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{ color: COLORS.orange }}
             >
               ดูทั้งหมด <ArrowRight size={12} />
-            </button>
+            </Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[400px]">
@@ -598,14 +599,14 @@ export function FactoryDashboardPage() {
               <h3 className="text-sm font-bold" style={{ color: COLORS.navy }}>คำสั่งซื้อล่าสุด</h3>
               <p className="text-xs text-gray-400 mt-0.5">สถานะออเดอร์ในช่วงนี้</p>
             </div>
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/factory/orders')}
               className="text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{ color: COLORS.orange }}
             >
               ดูทั้งหมด <ArrowRight size={12} />
-            </button>
+            </Button>
           </div>
 
           {/* Order summary cards */}
@@ -635,7 +636,7 @@ export function FactoryDashboardPage() {
 
           {/* CTA */}
           <div className="px-4 pb-4">
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => navigate('/factory/orders')}
               className="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 flex items-center justify-center gap-2"
@@ -643,7 +644,7 @@ export function FactoryDashboardPage() {
             >
               จัดการคำสั่งซื้อ
               <ArrowRight size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -697,13 +698,13 @@ export function FactoryDashboardPage() {
               <p className="text-xs text-amber-600 mt-0.5">
                 คุณตอบ RFQ เพียง {rfqReplyRatePct(summary)}% — การตอบกลับสูงขึ้นช่วยให้ได้งานมากขึ้น
               </p>
-              <button
+              <Button variant="unstyled"
                 type="button"
                 onClick={() => navigate('/factory/rfqs')}
                 className="mt-2 text-xs font-semibold text-amber-700 underline hover:text-amber-900"
               >
                 ไปตอบ RFQ ที่รอ →
-              </button>
+              </Button>
             </div>
           </div>
         )}

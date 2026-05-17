@@ -51,6 +51,7 @@ import {
 import { formatBudget, formatDate } from '../../components/features/rfq-and-orders/utils';
 import { useRfqAndOrdersState } from '../../hooks/useRfqAndOrdersState';
 import type { Rfq, Order } from '../../stores';
+import { Button } from '../../components/ui/button';
 
 // ─── Brand constants (from design brief) ──────────────────────────────────
 const GREEN = '#059669';
@@ -253,13 +254,13 @@ function RfqPanel({ rfqs, isMobile, isDesktop }: { rfqs: Rfq[]; isMobile?: boole
     <div className={isMobile ? '' : 'px-4 pb-4 pt-2'}>
       {/* FAB (mobile only) */}
       {isMobile && (
-        <button
+        <Button variant="unstyled"
           onClick={() => navigate('/create-rfq')}
           className="fixed bottom-24 right-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30"
           style={{ background: CTA_GRADIENT, boxShadow: '0 6px 20px rgba(162,56,255,0.35)' }}
         >
           <Plus size={24} className="text-white" />
-        </button>
+        </Button>
       )}
 
       {/* Section A header */}
@@ -317,7 +318,7 @@ function RfqPanel({ rfqs, isMobile, isDesktop }: { rfqs: Rfq[]; isMobile?: boole
       {/* Section B: History accordion */}
       {historyRfqs.length > 0 && (
         <div>
-          <button
+          <Button variant="unstyled"
             onClick={() => setHistoryOpen((v) => !v)}
             className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl border text-sm font-semibold transition-all"
             style={{
@@ -341,7 +342,7 @@ function RfqPanel({ rfqs, isMobile, isDesktop }: { rfqs: Rfq[]; isMobile?: boole
               className="transition-transform duration-200"
               style={{ transform: historyOpen ? 'rotate(180deg)' : 'rotate(0deg)', color: PLUM }}
             />
-          </button>
+          </Button>
 
           {historyOpen && (
             <div className="mt-2 space-y-1.5">
@@ -381,7 +382,7 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
     <div className={isDesktop ? 'px-4 pb-4 pt-2' : ''}>
       {/* Urgency banner */}
       {hasPendingPayment && orderFilter !== 'pending_payment' && (
-        <button
+        <Button variant="unstyled"
           onClick={() => setOrderFilter('pending_payment')}
           className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl mb-3 text-left border"
           style={{ background: '#FFF7ED', borderColor: ACCENT_ORANGE, color: ACCENT_ORANGE_DEEP }}
@@ -391,7 +392,7 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
             มี {orderTagCounts.pendingPayment} คำสั่งซื้อรอชำระมัดจำ
           </span>
           <ChevronRight size={13} />
-        </button>
+        </Button>
       )}
 
       {/* Tab bar */}
@@ -407,7 +408,7 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
           const isPendingTab = tab.id === 'pending_payment';
 
           return (
-            <button
+            <Button variant="unstyled"
               key={tab.id}
               onClick={() => setOrderFilter(tab.id)}
               className="relative flex flex-col items-center gap-0.5 py-0.5 rounded-lg transition-all"
@@ -438,7 +439,7 @@ function OrderPanel({ orderFilter, setOrderFilter, filteredOrders, orderTagCount
               >
                 {tab.shortLabel}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -586,13 +587,13 @@ export function RfqAndOrders() {
         <div className="text-center">
           <p className="text-sm text-red-600 font-semibold mb-2">เกิดข้อผิดพลาด</p>
           <p className="text-xs text-gray-500 mb-4">{error}</p>
-          <button
+          <Button variant="unstyled"
             onClick={() => window.location.reload()}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-white"
             style={{ background: PRIMARY_COLOR }}
           >
             ลองใหม่
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -621,7 +622,7 @@ export function RfqAndOrders() {
             className="flex p-1 rounded-2xl border"
             style={{ background: MOBILE_PRIMARY_TAB_BAR, borderColor: BORDER_WARM }}
           >
-            <button
+            <Button variant="unstyled"
               onClick={() => setPrimaryTab('rfq')}
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
               style={{
@@ -631,8 +632,8 @@ export function RfqAndOrders() {
               }}
             >
               คำขอราคา
-            </button>
-            <button
+            </Button>
+            <Button variant="unstyled"
               onClick={() => setPrimaryTab('orders')}
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative"
               style={{
@@ -648,7 +649,7 @@ export function RfqAndOrders() {
                   style={{ background: ACCENT_ORANGE }}
                 />
               )}
-            </button>
+            </Button>
           </div>
           </div>
 

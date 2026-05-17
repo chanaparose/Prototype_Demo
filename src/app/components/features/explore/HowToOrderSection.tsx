@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { Search, FileText, MessageCircle, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { Button } from '../../ui/button';
 
 /* ─── CSS animations ─────────────────────────────────────────────────────── */
 const ANIMATION_CSS = `
@@ -207,7 +208,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
             </p>
           </div>
 
-          <button
+          <Button variant="unstyled"
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent('tryly-open-tour'))}
             className="hidden sm:flex shrink-0 items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 hover:opacity-90"
@@ -215,7 +216,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
           >
             <span>สาธิตการใช้งาน</span>
             <ArrowRight size={15} />
-          </button>
+          </Button>
         </div>
 
         {/* ── Steps grid ── */}
@@ -242,7 +243,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                 )}
 
                 {/* Card */}
-                <button
+                <Button variant="unstyled"
                   type="button"
                   onClick={() => navigate(step.href)}
                   className="w-full text-left rounded-xl p-2.5 sm:p-3.5 lg:p-4 transition-all duration-300 group active:scale-[0.97] relative"
@@ -309,14 +310,14 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                     {step.action}
                     <ArrowRight size={10} className="opacity-70" />
                   </span>
-                </button>
+                </Button>
               </div>
             );
           })}
         </div>
 
         {/* ── Bottom CTA — mobile full-width ── */}
-        <button
+        <Button variant="unstyled"
           type="button"
           onClick={() => window.dispatchEvent(new CustomEvent('tryly-open-tour'))}
           className="sm:hidden mt-4 w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
@@ -324,7 +325,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
         >
           <span>สาธิตการใช้งาน</span>
           <ArrowRight size={15} />
-        </button>
+        </Button>
       </div>
     </section>
   );

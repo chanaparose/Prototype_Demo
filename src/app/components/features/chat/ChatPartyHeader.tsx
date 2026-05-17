@@ -2,6 +2,7 @@ import React from "react";
 import { BadgeCheck } from "lucide-react";
 import type { CounterpartyView } from "../../../utils/counterparty";
 import { FACTORY_FALLBACK_AVATAR } from "../../../utils/counterparty";
+import { Button } from '../../ui/button';
 
 interface Props {
   view: CounterpartyView;
@@ -19,7 +20,7 @@ export function ChatPartyHeader({
   const size = density === "header" ? 40 : 44;
   const frameClass = density === "header" ? "h-10 w-10" : "h-11 w-11";
   return (
-    <button
+    <Button variant="unstyled"
       type="button"
       onClick={onClick}
       className="w-full flex items-center gap-3 text-left"
@@ -52,6 +53,6 @@ export function ChatPartyHeader({
         ) : null}
       </div>
       {trailing}
-    </button>
+    </Button>
   );
 }

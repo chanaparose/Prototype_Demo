@@ -12,6 +12,7 @@ import {
   PEACH_MIST,
   PLUM,
 } from '../rfq-and-orders/constants';
+import { Button } from '../../ui/button';
 
 export type DepositPaymentMethod = 'WALLET' | 'PROMPTPAY' | 'BANK';
 
@@ -120,7 +121,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       footer={
         <div className="w-full space-y-2">
           {method === 'WALLET' && insufficient && !wallet.isPending ? (
-            <button
+            <Button variant="unstyled"
               type="button"
               onClick={() => {
                 onClose();
@@ -130,10 +131,10 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
               style={{ background: PLUM }}
             >
               เติมเงินเข้า Wallet
-            </button>
+            </Button>
           ) : null}
 
-          <button
+          <Button variant="unstyled"
             type="button"
             disabled={!canSubmit || submitting}
             onClick={handleSubmit}
@@ -145,7 +146,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
               : method === 'WALLET'
                 ? `ยืนยันชำระด้วย Wallet · ฿${amount.toLocaleString('th-TH')}`
                 : 'ดำเนินการต่อ'}
-          </button>
+          </Button>
         </div>
       }
     >
@@ -217,7 +218,7 @@ function MethodRow({
   warning?: string | null;
 }) {
   return (
-    <button
+    <Button variant="unstyled"
       type="button"
       onClick={onSelect}
       className="w-full flex items-center gap-3 rounded-2xl border p-3 mb-2 text-left transition-colors"
@@ -248,6 +249,6 @@ function MethodRow({
           background: selected ? PLUM : 'transparent',
         }}
       />
-    </button>
+    </Button>
   );
 }

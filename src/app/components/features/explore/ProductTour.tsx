@@ -10,6 +10,7 @@ import {
 } from '../../../utils/tourMocks';
 import { formatCurrency } from '@/utils/formatting';
 import { useAuth } from '../../../stores';
+import { Button } from '../../ui/button';
 
 export const TOUR_KEY = 'tryly_tour_seen_v1';
 
@@ -135,7 +136,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
           </div>
         </div>
         {/* CTA */}
-        <button
+        <Button variant="unstyled"
           type="button"
           className="tour-btn-glow"
           style={{
@@ -147,7 +148,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
           } as React.CSSProperties}
         >
           📋 ส่งคำขอราคาให้โรงงาน
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -210,7 +211,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, padding: '0 8px', color: '#6B7280', fontSize: 9 }}>
           <span style={{ fontSize: 16 }}>♡</span><span>1</span>
         </div>
-        <button
+        <Button variant="unstyled"
           type="button"
           className="tour-btn-glow"
           style={{
@@ -222,7 +223,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           } as React.CSSProperties}
         >
           💬 แชทกับโรงงาน
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -275,7 +276,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
       {/* Input bar */}
       <div style={{ flexShrink: 0, padding: '8px 10px', background: '#fff', borderTop: '1px solid #F3F4F6' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <button
+          <Button variant="unstyled"
             type="button"
             className="tour-btn-glow"
             style={{
@@ -287,7 +288,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
             } as React.CSSProperties}
           >
             📎 แนบ RFQ
-          </button>
+          </Button>
           <div style={{ flex: 1, background: '#F9FAFB', borderRadius: 20, padding: '7px 12px', fontSize: 12, color: '#9CA3AF', border: '1px solid #F3F4F6' }}>
             พิมพ์ข้อความ...
           </div>
@@ -353,7 +354,7 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
               💡 {o.reason}
             </div>
             {o.recommended && (
-              <button
+              <Button variant="unstyled"
                 type="button"
                 className="tour-btn-glow"
                 style={{
@@ -364,7 +365,7 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
                 } as React.CSSProperties}
               >
                 ✓ ยอมรับข้อเสนอนี้
-              </button>
+              </Button>
             )}
           </div>
         ))}
@@ -420,7 +421,7 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                 <span style={{ fontWeight: 700, color: green ? '#22C55E' : '#111827' }}>{val}</span>
               </div>
             ))}
-            <button
+            <Button variant="unstyled"
               type="button"
               className="tour-btn-glow"
               style={{
@@ -431,7 +432,7 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
               } as React.CSSProperties}
             >
               💰 ชำระยอดที่เหลือ ฿21,000
-            </button>
+            </Button>
           </div>
         </div>
         {/* Timeline */}
@@ -764,17 +765,17 @@ function TourCard({
           </div>
           <div style={{ display: 'flex', gap: 7 }}>
             {!isFirst ? (
-              <button type="button" onClick={onPrev} style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 600, padding: '7px 13px', borderRadius: 99, border: '1.5px solid #E5E7EB', background: 'transparent', color: '#6B7280', cursor: 'pointer' }}>
+              <Button variant="unstyled" type="button" onClick={onPrev} style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 600, padding: '7px 13px', borderRadius: 99, border: '1.5px solid #E5E7EB', background: 'transparent', color: '#6B7280', cursor: 'pointer' }}>
                 <ChevronLeft size={13} /> ย้อนกลับ
-              </button>
+              </Button>
             ) : (
-              <button type="button" onClick={onClose} style={{ fontSize: 12, fontWeight: 600, padding: '7px 13px', borderRadius: 99, border: '1.5px solid #E5E7EB', background: 'transparent', color: '#6B7280', cursor: 'pointer' }}>
+              <Button variant="unstyled" type="button" onClick={onClose} style={{ fontSize: 12, fontWeight: 600, padding: '7px 13px', borderRadius: 99, border: '1.5px solid #E5E7EB', background: 'transparent', color: '#6B7280', cursor: 'pointer' }}>
                 ข้ามทัวร์
-              </button>
+              </Button>
             )}
-            <button type="button" onClick={isLast ? onClose : onNext} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, padding: '7px 18px', borderRadius: 99, border: 'none', background: def.badgeColor, color: '#FFFFFF', cursor: 'pointer', boxShadow: `0 4px 14px ${def.badgeColor}55` }}>
+            <Button variant="unstyled" type="button" onClick={isLast ? onClose : onNext} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, padding: '7px 18px', borderRadius: 99, border: 'none', background: def.badgeColor, color: '#FFFFFF', cursor: 'pointer', boxShadow: `0 4px 14px ${def.badgeColor}55` }}>
               {isLast ? 'เริ่มเลย 🎉' : (<>ถัดไป <ChevronRight size={13} /></>)}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
