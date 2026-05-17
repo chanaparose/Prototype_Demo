@@ -120,7 +120,7 @@ export function Login() {
     <div className='relative min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4'>
       <Link
         to='/'
-        className='absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 hover:text-[#6C47FF] hover:bg-white/80 transition-colors'
+        className='absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 hover:text-brand-royal hover:bg-white/80 transition-colors'
       >
         <ArrowLeft className='w-4 h-4 shrink-0' aria-hidden />
         ย้อนกลับ
@@ -152,15 +152,15 @@ export function Login() {
                     ? '#FEF2F2'
                     : serverStatus === 'checking'
                       ? '#F5F3FF'
-                      : '#F9FAFB',
+                      : 'var(--neutral-surface)',
               color:
                 serverStatus === 'online'
-                  ? '#059669'
+                  ? 'var(--status-success)'
                   : serverStatus === 'offline'
-                    ? '#DC2626'
+                    ? 'var(--status-danger-deep)'
                     : serverStatus === 'checking'
-                      ? '#6C47FF'
-                      : '#6B7280',
+                      ? 'var(--brand-royal)'
+                      : 'var(--neutral-subtle)',
               fontWeight: 600,
             }}
           >
@@ -203,8 +203,8 @@ export function Login() {
               }}
               className='flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm transition-all'
               style={{
-                background: mode === 'login' ? '#fff' : 'transparent',
-                color: mode === 'login' ? '#6C47FF' : '#6B7280',
+                background: mode === 'login' ? 'var(--neutral-white)' : 'transparent',
+                color: mode === 'login' ? 'var(--brand-royal)' : 'var(--neutral-subtle)',
                 fontWeight: mode === 'login' ? 600 : 500,
                 boxShadow: mode === 'login' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
               }}
@@ -223,8 +223,8 @@ export function Login() {
               }}
               className='flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm transition-all'
               style={{
-                background: mode === 'register' ? '#fff' : 'transparent',
-                color: mode === 'register' ? '#6C47FF' : '#6B7280',
+                background: mode === 'register' ? 'var(--neutral-white)' : 'transparent',
+                color: mode === 'register' ? 'var(--brand-royal)' : 'var(--neutral-subtle)',
                 fontWeight: mode === 'register' ? 600 : 500,
                 boxShadow: mode === 'register' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
               }}
@@ -279,7 +279,10 @@ export function Login() {
                 type='submit'
                 disabled={loading || serverStatus === 'checking'}
                 className='w-full py-3.5 rounded-xl text-white text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2'
-                style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)', fontWeight: 700 }}
+                style={{
+                  background: 'linear-gradient(135deg, var(--brand-royal), #8B5CF6)',
+                  fontWeight: 700,
+                }}
               >
                 {loading && (
                   <div className='w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin' />
@@ -374,7 +377,10 @@ export function Login() {
                 type='submit'
                 disabled={loading || serverStatus === 'checking'}
                 className='w-full py-3.5 rounded-xl text-white text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2'
-                style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)', fontWeight: 700 }}
+                style={{
+                  background: 'linear-gradient(135deg, var(--brand-royal), #8B5CF6)',
+                  fontWeight: 700,
+                }}
               >
                 {loading && (
                   <div className='w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin' />
@@ -397,8 +403,8 @@ export function Login() {
         {/* Factory Registration CTA */}
         <div className='mt-5 bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between gap-3 border border-purple-100'>
           <div className='flex items-center gap-3'>
-            <div className='w-9 h-9 rounded-xl bg-[#F5F0FF] flex items-center justify-center shrink-0'>
-              <UserPlus size={18} className='text-[#6C47FF]' />
+            <div className='w-9 h-9 rounded-xl bg-brand-lavender flex items-center justify-center shrink-0'>
+              <UserPlus size={18} className='text-brand-royal' />
             </div>
             <div>
               <p className='text-sm font-semibold text-gray-800'>เป็นเจ้าของโรงงาน?</p>
@@ -408,7 +414,7 @@ export function Login() {
           <Link
             to='/register/factory'
             className='shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all active:scale-95'
-            style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+            style={{ background: 'linear-gradient(135deg, var(--brand-royal), #8B5CF6)' }}
           >
             สมัครบัญชีโรงงาน
           </Link>

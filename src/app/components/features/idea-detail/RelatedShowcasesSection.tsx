@@ -24,7 +24,7 @@ export function RelatedShowcasesSection({
 
   return (
     <section className='bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6'>
-      <h2 className='text-[16px] font-bold mb-4' style={{ color: '#2E2252' }}>
+      <h2 className='text-[16px] font-bold mb-4' style={{ color: 'var(--brand-navy)' }}>
         อ้างอิงในไอเดียนี้
       </h2>
       <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>

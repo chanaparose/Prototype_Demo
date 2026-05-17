@@ -1,15 +1,15 @@
 import type { Factory } from '@/stores';
 
 export const factoryIdeasTheme = {
-  purple: '#7A4B94',
+  purple: 'var(--brand-mauve)',
   purpleLight: '#9D77B2',
-  orange: '#E38844',
-  blue: '#2E2252',
+  orange: 'var(--brand-orange-deep)',
+  blue: 'var(--brand-navy)',
   productBadgeBlue: '#2563EB',
-  white: '#FFFFFF',
-  gray: '#F5F5F5',
-  lightPurpleBg: '#F8F6FA',
-  teal: '#0D9488',
+  white: 'var(--neutral-white)',
+  gray: 'var(--neutral-warm-surface)',
+  lightPurpleBg: 'var(--brand-page)',
+  teal: 'var(--brand-teal)',
 } as const;
 
 export type FactoryIdeasContentType =
@@ -46,7 +46,7 @@ export const factoryIdeasContentTypeBadge: Record<
 > = {
   product: factoryIdeasTheme.productBadgeBlue,
   promotion: factoryIdeasTheme.orange,
-  material: '#0EA5A4',
+  material: 'var(--brand-teal-light)',
   idea: factoryIdeasTheme.purple,
   factory: factoryIdeasTheme.teal,
 };

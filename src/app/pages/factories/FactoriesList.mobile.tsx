@@ -61,13 +61,14 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
             onClick={() => setFilterOpen(!filterOpen)}
             className='relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all'
             style={{
-              background: filterOpen || hasActiveFilters ? '#6C47FF' : '#FFFFFF',
-              border: filterOpen || hasActiveFilters ? 'none' : '1px solid #E5E7EB',
+              background:
+                filterOpen || hasActiveFilters ? 'var(--brand-royal)' : 'var(--neutral-white)',
+              border: filterOpen || hasActiveFilters ? 'none' : '1px solid var(--neutral-border)',
             }}
           >
             <SlidersHorizontal
               size={17}
-              color={filterOpen || hasActiveFilters ? '#FFFFFF' : '#6C47FF'}
+              color={filterOpen || hasActiveFilters ? 'var(--neutral-white)' : 'var(--brand-royal)'}
             />
             {activeFilterCount > 0 && !filterOpen && (
               <span className='absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-white'>
@@ -102,7 +103,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                   <svg width='10' height='6' fill='none' viewBox='0 0 10 6'>
                     <path
                       d='M1 1l4 4 4-4'
-                      stroke='#9CA3AF'
+                      stroke='var(--neutral-placeholder)'
                       strokeWidth='1.5'
                       strokeLinecap='round'
                       strokeLinejoin='round'
@@ -116,8 +117,8 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
             <label
               className='flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all'
               style={{
-                borderColor: filters.verifiedOnly ? '#7C3AED' : '#E5E7EB',
-                background: filters.verifiedOnly ? '#F5F3FF' : '#FFFFFF',
+                borderColor: filters.verifiedOnly ? 'var(--brand-violet)' : 'var(--neutral-border)',
+                background: filters.verifiedOnly ? '#F5F3FF' : 'var(--neutral-white)',
               }}
             >
               <input
@@ -130,8 +131,8 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
               <div
                 className='w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all'
                 style={{
-                  borderColor: filters.verifiedOnly ? '#7C3AED' : '#D1D5DB',
-                  background: filters.verifiedOnly ? '#7C3AED' : 'transparent',
+                  borderColor: filters.verifiedOnly ? 'var(--brand-violet)' : '#D1D5DB',
+                  background: filters.verifiedOnly ? 'var(--brand-violet)' : 'transparent',
                 }}
               >
                 {filters.verifiedOnly && (
@@ -154,7 +155,9 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                 <span
                   className='text-sm'
                   style={{
-                    color: filters.verifiedOnly ? '#6D28D9' : '#374151',
+                    color: filters.verifiedOnly
+                      ? 'var(--brand-violet-deep)'
+                      : 'var(--neutral-text)',
                     fontWeight: filters.verifiedOnly ? 600 : 400,
                   }}
                 >
@@ -183,7 +186,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                 type='button'
                 onClick={() => setFilterOpen(false)}
                 className='flex-1 py-2.5 text-[13px] font-semibold text-white rounded-xl'
-                style={{ background: '#6C47FF' }}
+                style={{ background: 'var(--brand-royal)' }}
               >
                 ดูผลลัพธ์ ({factories.length})
               </Button>

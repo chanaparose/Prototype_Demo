@@ -362,7 +362,7 @@ export function ImageCropModal({
               }
             }}
             className='px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50'
-            style={{ background: '#4F46E5' }}
+            style={{ background: 'var(--brand-indigo)' }}
           >
             {submitting ? (
               <span className='inline-flex items-center gap-1.5'>

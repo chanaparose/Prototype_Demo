@@ -46,10 +46,10 @@ const STEPS = [
   {
     num: 1,
     icon: Search,
-    accentColor: '#7C3AED',
+    accentColor: 'var(--brand-violet)',
     lightBg: 'rgba(124,58,237,0.08)',
     iconBg: 'rgba(124,58,237,0.12)',
-    iconColor: '#7C3AED',
+    iconColor: 'var(--brand-violet)',
     badgeBg: 'rgba(124,58,237,0.10)',
     borderColor: 'rgba(124,58,237,0.18)',
     hoverBorder: 'rgba(124,58,237,0.40)',
@@ -129,7 +129,8 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
     <section
       className={`relative overflow-hidden rounded-2xl ${className}`}
       style={{
-        background: 'linear-gradient(135deg, #FAF7FF 0%, #F3EDFF 50%, #FFF8F0 100%)',
+        background:
+          'linear-gradient(135deg, #FAF7FF 0%, #F3EDFF 50%, var(--surface-sun-wash) 100%)',
         boxShadow: '0 4px 32px rgba(124,58,237,0.08)',
       }}
     >
@@ -173,7 +174,8 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
       <div
         className='absolute top-0 left-0 right-0 h-[3px] pointer-events-none rounded-t-2xl'
         style={{
-          background: 'linear-gradient(90deg, #7C3AED 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
+          background:
+            'linear-gradient(90deg, var(--brand-violet) 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
           animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
         }}
       />
@@ -191,19 +193,22 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                   animation: 'hiw-pulse-ring 2.8s ease-in-out infinite',
                 }}
               >
-                <Sparkles size={13} style={{ color: '#7C3AED' }} />
+                <Sparkles size={13} style={{ color: 'var(--brand-violet)' }} />
               </div>
               <span
                 className='text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase'
-                style={{ color: '#7C3AED', animation: 'hiw-badge-text 3s ease-in-out infinite' }}
+                style={{
+                  color: 'var(--brand-violet)',
+                  animation: 'hiw-badge-text 3s ease-in-out infinite',
+                }}
               >
                 HOW IT WORKS
               </span>
             </div>
-            <h2 className='text-[#1E0A3C] text-lg sm:text-xl lg:text-2xl font-bold leading-tight'>
+            <h2 className='text-brand-ink-deep text-lg sm:text-xl lg:text-2xl font-bold leading-tight'>
               สั่งผลิตสินค้ากับ Tryly
             </h2>
-            <p className='mt-0.5 text-[12px] sm:text-sm text-[#6B5A8E]'>
+            <p className='mt-0.5 text-[12px] sm:text-sm text-brand-muted-purple'>
               ง่ายแค่ 4 ขั้นตอน ไม่ต้องมีประสบการณ์มาก่อน
             </p>
           </div>
@@ -214,7 +219,8 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
             onClick={() => window.dispatchEvent(new CustomEvent('tryly-open-tour'))}
             className='hidden sm:flex shrink-0 items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 hover:opacity-90'
             style={{
-              background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)',
+              background:
+                'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
               color: 'white',
               boxShadow: '0 4px 14px rgba(162,56,255,0.30)',
             }}
@@ -236,7 +242,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                   <div
                     className='hidden lg:flex absolute top-7 -right-2.5 z-10 items-center justify-center w-5 h-5 rounded-full'
                     style={{
-                      background: '#FFFFFF',
+                      background: 'var(--neutral-white)',
                       border: '1px solid rgba(124,58,237,0.18)',
                       boxShadow: '0 1px 6px rgba(124,58,237,0.10)',
                       animation: 'hiw-connector-pulse 2s ease-in-out infinite',
@@ -253,7 +259,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                   onClick={() => navigate(step.href)}
                   className='w-full text-left rounded-xl p-2.5 sm:p-3.5 lg:p-4 transition-all duration-300 group active:scale-[0.97] relative'
                   style={{
-                    background: '#FFFFFF',
+                    background: 'var(--neutral-white)',
                     border: `1px solid ${step.borderColor}`,
                     boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
                   }}
@@ -262,14 +268,14 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
                     el.style.border = `1px solid ${step.hoverBorder}`;
                     el.style.boxShadow = `0 8px 28px ${step.hoverShadow}, 0 1px 8px rgba(0,0,0,0.04)`;
                     el.style.transform = 'translateY(-2px) scale(1.015)';
-                    el.style.background = `linear-gradient(135deg, #FFFFFF 60%, ${step.lightBg.replace('0.07', '0.12')})`;
+                    el.style.background = `linear-gradient(135deg, var(--neutral-white) 60%, ${step.lightBg.replace('0.07', '0.12')})`;
                   }}
                   onMouseLeave={(e) => {
                     const el = e.currentTarget as HTMLButtonElement;
                     el.style.border = `1px solid ${step.borderColor}`;
                     el.style.boxShadow = '0 1px 8px rgba(0,0,0,0.04)';
                     el.style.transform = 'none';
-                    el.style.background = '#FFFFFF';
+                    el.style.background = 'var(--neutral-white)';
                   }}
                 >
                   {/* Colored top micro-bar */}
@@ -308,7 +314,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
 
                   {/* Title */}
                   <div className='relative z-10 mb-1 sm:mb-2'>
-                    <p className='text-[#1E0A3C] font-bold text-[12px] sm:text-[14px] lg:text-[15px] leading-snug'>
+                    <p className='text-brand-ink-deep font-bold text-[12px] sm:text-[14px] lg:text-[15px] leading-snug'>
                       {step.title}
                     </p>
                     <p
@@ -345,7 +351,7 @@ export function HowToOrderSection({ className = '' }: { className?: string }) {
           onClick={() => window.dispatchEvent(new CustomEvent('tryly-open-tour'))}
           className='sm:hidden mt-4 w-full py-2.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all active:scale-[0.98]'
           style={{
-            background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)',
+            background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
             boxShadow: '0 4px 14px rgba(162,56,255,0.30)',
           }}
         >

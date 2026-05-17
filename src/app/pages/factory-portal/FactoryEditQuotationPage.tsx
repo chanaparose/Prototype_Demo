@@ -170,7 +170,7 @@ export function FactoryEditQuotationPage() {
   if (isLoading) return <FormSkeleton sections={2} />;
 
   return (
-    <div style={{ backgroundColor: '#F8F6FA' }} className='min-h-screen pb-28'>
+    <div style={{ backgroundColor: 'var(--brand-page)' }} className='min-h-screen pb-28'>
       {/* Sticky top bar */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
         <Button
@@ -178,12 +178,12 @@ export function FactoryEditQuotationPage() {
           type='button'
           onClick={() => navigate(-1)}
           className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
-          style={{ color: '#4F46E5' }}
+          style={{ color: 'var(--brand-indigo)' }}
         >
           <ChevronLeft size={22} />
         </Button>
         <div className='flex-1 min-w-0'>
-          <h1 className='font-bold text-sm truncate' style={{ color: '#2E2252' }}>
+          <h1 className='font-bold text-sm truncate' style={{ color: 'var(--brand-navy)' }}>
             แก้ไขใบเสนอราคา #{id}
           </h1>
         </div>
@@ -227,46 +227,46 @@ export function FactoryEditQuotationPage() {
           {/* Quotation fields table */}
           <div className='rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden'>
             {/* Table header */}
-            <div className='bg-[#F8F6FA] px-4 py-2.5 flex gap-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
+            <div className='bg-brand-page px-4 py-2.5 flex gap-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wide'>
               <span className='flex-1'>รายการ</span>
               <span className='w-28 text-right'>ค่า</span>
             </div>
 
             {/* ราคาต่อชิ้น */}
-            <div className='px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4'>
+            <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
               <label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>ราคาต่อชิ้น *</span>
                 <input
                   type='number'
                   step='0.01'
                   disabled={isLocked}
-                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
+                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('price_per_piece')}
                 />
               </label>
             </div>
 
             {/* ค่าแม่พิมพ์ */}
-            <div className='px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4'>
+            <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
               <label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>ค่าแม่พิมพ์</span>
                 <input
                   type='number'
                   disabled={isLocked}
-                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
+                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('mold_cost')}
                 />
               </label>
             </div>
 
             {/* Lead time */}
-            <div className='px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] flex items-center gap-4'>
+            <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
               <label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>Lead time (วัน) *</span>
                 <input
                   type='number'
                   disabled={isLocked}
-                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
+                  className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
                   {...form.register('lead_time_days')}
                 />
               </label>
@@ -274,7 +274,7 @@ export function FactoryEditQuotationPage() {
 
             {/* Shipping method */}
             <div
-              className={`px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] ${isLocked ? 'opacity-70' : ''}`}
+              className={`px-4 py-3 border-t border-gray-50 hover:bg-brand-page ${isLocked ? 'opacity-70' : ''}`}
             >
               <span className='text-xs text-gray-500 block mb-1'>วิธีจัดส่ง</span>
               <ShippingMethodLockedField
@@ -287,7 +287,7 @@ export function FactoryEditQuotationPage() {
           {/* Summary card — navy gradient */}
           <div
             className='rounded-2xl p-4 space-y-2 text-white shadow-md'
-            style={{ background: 'linear-gradient(135deg, #2E2252 0%, #4A267D 100%)' }}
+            style={{ background: 'linear-gradient(135deg, var(--brand-navy) 0%, #4A267D 100%)' }}
           >
             <p className='text-[10px] font-semibold uppercase tracking-wide opacity-60'>
               สรุปใบเสนอราคา
@@ -328,7 +328,7 @@ export function FactoryEditQuotationPage() {
               <textarea
                 disabled={isLocked}
                 rows={3}
-                className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50 resize-none'
+                className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50 resize-none'
                 placeholder='เช่น ปรับลดราคาตามเจรจาลูกค้า'
                 {...form.register('reason')}
               />
@@ -340,9 +340,9 @@ export function FactoryEditQuotationPage() {
         <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
           <h2
             className='font-bold flex items-center gap-2 mb-3 text-sm'
-            style={{ color: '#2E2252' }}
+            style={{ color: 'var(--brand-navy)' }}
           >
-            <History size={16} style={{ color: '#4F46E5' }} /> ประวัติการแก้ไข
+            <History size={16} style={{ color: 'var(--brand-indigo)' }} /> ประวัติการแก้ไข
           </h2>
           {historyQ.isLoading ? (
             <p className='text-sm text-gray-400'>กำลังโหลดประวัติ…</p>
@@ -354,9 +354,9 @@ export function FactoryEditQuotationPage() {
                 <li
                   key={String(h.history_id ?? i)}
                   className='border-l-2 pl-3 py-1'
-                  style={{ borderColor: '#4F46E5' }}
+                  style={{ borderColor: 'var(--brand-indigo)' }}
                 >
-                  <div className='font-medium' style={{ color: '#2E2252' }}>
+                  <div className='font-medium' style={{ color: 'var(--brand-navy)' }}>
                     v{String(h.version ?? '?')} · {String(h.change_type ?? '')}
                   </div>
                   <div className='text-gray-500'>
@@ -381,7 +381,7 @@ export function FactoryEditQuotationPage() {
             disabled={isLocked || saving}
             onClick={() => void save()}
             className='flex-1 py-3 rounded-xl font-semibold text-sm border-2 disabled:opacity-50 inline-flex items-center justify-center gap-2'
-            style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
+            style={{ borderColor: 'var(--brand-indigo)', color: 'var(--brand-indigo)' }}
           >
             <Save size={14} /> บันทึกร่าง
           </Button>
@@ -392,7 +392,8 @@ export function FactoryEditQuotationPage() {
             onClick={() => void save()}
             className='flex-1 py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 inline-flex items-center justify-center gap-2'
             style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+              background:
+                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
               boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
             }}
           >

@@ -84,11 +84,11 @@ export function ExploreProductCarouselSection({
       }}
     >
       <div className='mt-[30px] flex items-center justify-between mb-2.5'>
-        <h2 className='text-base font-bold text-[#292259] flex items-center gap-1.5'>
+        <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
           {isMaterial ? (
-            <Leaf className='text-[#059669]' size={16} />
+            <Leaf className='text-status-success' size={16} />
           ) : (
-            <ShoppingBag className='text-[#F28A2E]' size={16} />
+            <ShoppingBag className='text-brand-orange' size={16} />
           )}
           {title}
         </h2>
@@ -97,7 +97,7 @@ export function ExploreProductCarouselSection({
           type='button'
           onClick={() => navigate(seeMoreHref)}
           className='text-xs font-medium hover:underline flex items-center gap-0.5 transition-colors'
-          style={{ color: isMaterial ? '#059669' : '#A656A0' }}
+          style={{ color: isMaterial ? 'var(--status-success)' : 'var(--brand-magenta)' }}
         >
           ดูเพิ่มเติม <ChevronRight size={14} />
         </Button>
@@ -122,7 +122,7 @@ export function ExploreProductCarouselSection({
         <div className='flex-1 relative min-w-0'>
           {!hasItems ? (
             <div className='flex min-h-[210px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-white px-6 text-center'>
-              <ShoppingBag className='text-[#F28A2E]/50' size={40} />
+              <ShoppingBag className='text-brand-orange/50' size={40} />
               <p className='text-sm font-medium text-gray-600'>ยังไม่มีสินค้าแนะนำในขณะนี้</p>
               <p className='text-xs text-gray-400 max-w-sm'>
                 ลองดูไอเดียสินค้าและโรงงานได้จากลิงก์ด้านล่าง
@@ -131,7 +131,7 @@ export function ExploreProductCarouselSection({
                 variant='unstyled'
                 type='button'
                 onClick={() => navigate('/factory-ideas?type=product')}
-                className='mt-1 rounded-full border border-[#A656A0]/40 bg-white px-4 py-2 text-sm font-medium text-[#A656A0] hover:bg-[#F8F5FF] transition-colors'
+                className='mt-1 rounded-full border border-brand-magenta/40 bg-white px-4 py-2 text-sm font-medium text-brand-magenta hover:bg-brand-panel-hover transition-colors'
               >
                 ดูสินค้าแนะนำ
               </Button>
@@ -181,13 +181,17 @@ export function ExploreProductCarouselSection({
                         />
                         <span
                           className='absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                          style={{ backgroundColor: isMaterial ? '#0EA5A4' : '#5185D4' }}
+                          style={{
+                            backgroundColor: isMaterial
+                              ? 'var(--brand-teal-light)'
+                              : 'var(--brand-sky)',
+                          }}
                         >
                           {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                         </span>
                       </div>
                       <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                           {product.title}
                         </p>
                         <div className='flex items-center gap-0.5 mt-0.5'>
@@ -237,7 +241,9 @@ export function ExploreProductCarouselSection({
                       type='button'
                       onClick={() => goTo(i)}
                       className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === idx ? 'w-6 bg-[#F28A2E]' : 'w-1.5 bg-gray-300 hover:bg-[#F28A2E]/50'
+                        i === idx
+                          ? 'w-6 bg-brand-orange'
+                          : 'w-1.5 bg-gray-300 hover:bg-brand-orange/50'
                       }`}
                     />
                   ))}

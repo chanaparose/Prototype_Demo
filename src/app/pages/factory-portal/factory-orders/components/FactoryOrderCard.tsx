@@ -102,7 +102,7 @@ export function FactoryOrderCard({
                   ? 'bg-sky-600 text-white'
                   : derived.primaryCta.kind === 'start_qc'
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-[#4F46E5] text-white'
+                    : 'bg-brand-indigo text-white'
             }`}
           >
             {derived.primaryCta.kind === 'update_step'

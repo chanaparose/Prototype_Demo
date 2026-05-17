@@ -10,7 +10,7 @@ export function ExploreFooter() {
     setOpen((prev) => (prev === key ? null : key));
 
   return (
-    <footer className='w-full bg-[#F2F2F2] border-t border-gray-200 pt-6 md:pt-10 mt-8 md:mt-12 flex-shrink-0'>
+    <footer className='w-full bg-neutral-footer border-t border-gray-200 pt-6 md:pt-10 mt-8 md:mt-12 flex-shrink-0'>
       <div className='max-w-7xl mx-auto px-4 md:px-6'>
         {/* Mobile accordion */}
         <div className='md:hidden mb-6 space-y-2'>
@@ -21,27 +21,27 @@ export function ExploreFooter() {
           >
             <ul className='space-y-2 text-[11px] text-gray-600'>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ขั้นตอน "เปิดร้าน"
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   เริ่มขายสินค้า/บริการ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ติดต่อเรา
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ลงทะเบียนธุรกิจ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ศูนย์ช่วยเหลือลูกค้า
                 </a>
               </li>
@@ -55,64 +55,64 @@ export function ExploreFooter() {
             <div className='grid grid-cols-2 gap-2 text-[11px] text-gray-600'>
               <ul className='space-y-2'>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     โรงพยาบาลสัตว์
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     อาบน้ำตัดขน
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     รับฝากสัตว์เลี้ยง
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     โรงเรียนฝึกสอน
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     สระว่ายน้ำสุนัข
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     คาเฟ่-ร้านอาหาร
                   </a>
                 </li>
               </ul>
               <ul className='space-y-2'>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     อาหารสัตว์
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     อุปกรณ์สัตว์เลี้ยง
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ห้องน้ำและทราย
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ทำความสะอาด
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ชุดสัตว์เลี้ยง
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ดูแลสุขภาพ
                   </a>
                 </li>
@@ -126,27 +126,27 @@ export function ExploreFooter() {
           >
             <ul className='space-y-2 text-[11px] text-gray-600'>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   คูปอง
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ค้นหาสถานที่และบริการ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   บทความ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   กิจกรรม
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   วิดีโอ
                 </a>
               </li>
@@ -184,32 +184,32 @@ export function ExploreFooter() {
         <div className='hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-7 md:mb-10'>
           {/* Col 1 */}
           <div>
-            <h3 className='font-bold text-[#292259] mb-2.5 text-sm md:text-base border-b-2 border-[#A656A0] pb-1 inline-block'>
+            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base border-b-2 border-brand-magenta pb-1 inline-block'>
               ศูนย์ดูแลลูกค้า
             </h3>
             <ul className='space-y-2 text-[11px] md:text-xs text-gray-600'>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ขั้นตอน "เปิดร้าน"
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   เริ่มขายสินค้า/บริการ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ติดต่อเรา
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ลงทะเบียนธุรกิจ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ศูนย์ช่วยเหลือลูกค้า
                 </a>
               </li>
@@ -217,70 +217,70 @@ export function ExploreFooter() {
           </div>
           {/* Col 2 */}
           <div>
-            <h3 className='font-bold text-[#292259] mb-2.5 text-sm md:text-base'>
+            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
               หมวดหมู่บริการและสินค้า
             </h3>
             <div className='grid grid-cols-2 gap-2 text-[11px] md:text-xs text-gray-600'>
               <ul className='space-y-2'>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     โรงพยาบาลสัตว์
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     อาบน้ำตัดขน
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     รับฝากสัตว์เลี้ยง
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     โรงเรียนฝึกสอน
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     สระว่ายน้ำสุนัข
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     คาเฟ่-ร้านอาหาร
                   </a>
                 </li>
               </ul>
               <ul className='space-y-2'>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     อาหารสัตว์
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     อุปกรณ์สัตว์เลี้ยง
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ห้องน้ำและทราย
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ทำความสะอาด
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ชุดสัตว์เลี้ยง
                   </a>
                 </li>
                 <li>
-                  <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                  <a href='#' className='hover:text-brand-magenta transition-colors'>
                     ดูแลสุขภาพ
                   </a>
                 </li>
@@ -289,32 +289,32 @@ export function ExploreFooter() {
           </div>
           {/* Col 3 */}
           <div>
-            <h3 className='font-bold text-[#292259] mb-2.5 text-sm md:text-base'>
+            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
               แหล่งความรู้และคูปอง
             </h3>
             <ul className='space-y-2 text-[11px] md:text-xs text-gray-600'>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   คูปอง
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   ค้นหาสถานที่และบริการ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   บทความ
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   กิจกรรม
                 </a>
               </li>
               <li>
-                <a href='#' className='hover:text-[#A656A0] transition-colors'>
+                <a href='#' className='hover:text-brand-magenta transition-colors'>
                   วิดีโอ
                 </a>
               </li>
@@ -322,7 +322,7 @@ export function ExploreFooter() {
           </div>
           {/* Col 4 */}
           <div>
-            <h3 className='font-bold text-[#292259] mb-2.5 text-sm md:text-base'>
+            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
               ดาวน์โหลดแอปพลิเคชัน
             </h3>
             <div className='flex flex-col gap-2 max-w-[140px] md:max-w-[150px]'>
@@ -356,7 +356,7 @@ export function ExploreFooter() {
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 py-4 md:py-6 border-t border-gray-300'>
           {/* Socials */}
           <div>
-            <h4 className='font-bold text-[#292259] mb-2.5 text-xs md:text-sm'>ติดตามเรา</h4>
+            <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>ติดตามเรา</h4>
             <div className='flex items-center gap-2'>
               <a
                 href='#'
@@ -378,7 +378,7 @@ export function ExploreFooter() {
               </a>
               <a
                 href='#'
-                className='w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-tr from-[#F28A2E] via-[#F27830] to-[#A656A0] text-white flex items-center justify-center hover:opacity-90 transition-opacity'
+                className='w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-tr from-brand-orange via-brand-orange-vivid to-brand-magenta text-white flex items-center justify-center hover:opacity-90 transition-opacity'
               >
                 <Instagram size={16} />
               </a>
@@ -386,7 +386,7 @@ export function ExploreFooter() {
           </div>
           {/* Shipping */}
           <div>
-            <h4 className='font-bold text-[#292259] mb-2.5 text-xs md:text-sm'>การจัดส่ง</h4>
+            <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>การจัดส่ง</h4>
             <div className='flex flex-wrap items-center gap-2.5 opacity-70 grayscale'>
               <span className='font-bold text-base md:text-lg italic text-red-600'>KERRY</span>
               <span className='font-bold text-base md:text-lg italic text-yellow-500'>FLASH</span>
@@ -395,7 +395,7 @@ export function ExploreFooter() {
           </div>
           {/* Payments */}
           <div>
-            <h4 className='font-bold text-[#292259] mb-2.5 text-xs md:text-sm'>
+            <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>
               ช่องทางการชำระเงิน
             </h4>
             <div className='flex flex-wrap items-center gap-2.5 opacity-70 grayscale'>
@@ -408,7 +408,7 @@ export function ExploreFooter() {
       </div>
 
       {/* Bottom Purple Bar */}
-      <div className='bg-[#292259] text-white py-2.5 md:py-3 text-[11px] md:text-xs mt-2 md:mt-3'>
+      <div className='bg-brand-navy-ink text-white py-2.5 md:py-3 text-[11px] md:text-xs mt-2 md:mt-3'>
         <div className='max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3'>
           <div>&copy; 2026 Tryly Shopping. By Digital Media Advertising Co., Ltd.</div>
           <div className='flex items-center gap-4 md:gap-6'>
@@ -445,7 +445,7 @@ function AccordionItem({
         variant='unstyled'
         type='button'
         onClick={onToggle}
-        className='w-full px-3 py-2.5 text-left text-sm font-semibold text-[#292259] flex items-center justify-between'
+        className='w-full px-3 py-2.5 text-left text-sm font-semibold text-brand-navy-ink flex items-center justify-between'
       >
         <span>{title}</span>
         <ChevronDown

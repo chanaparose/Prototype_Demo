@@ -136,16 +136,17 @@ export function RfqDetailOffersSection({
               }}
               aria-hidden
             >
-              <History size={19} strokeWidth={2} style={{ color: '#7C3AED' }} />
+              <History size={19} strokeWidth={2} style={{ color: 'var(--brand-violet)' }} />
             </div>
             <div className='min-w-0 flex-1 border-b border-gray-100/90 pb-3'>
               <div
                 className='mb-1.5 h-1 w-11 rounded-full'
                 style={{
-                  background: 'linear-gradient(90deg, #A238FF 0%, #F28A2E 100%)',
+                  background:
+                    'linear-gradient(90deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
                 }}
               />
-              <h3 className='text-base font-bold tracking-tight text-[#2E2252]'>
+              <h3 className='text-base font-bold tracking-tight text-brand-navy'>
                 ประวัติโรงงานที่เคยเสนอราคา
               </h3>
               <p className='mt-0.5 text-[11px] leading-relaxed text-gray-500'>
@@ -166,10 +167,12 @@ export function RfqDetailOffersSection({
                     </div>
                     <div>
                       <div className='flex items-center gap-1.5'>
-                        <p className='text-sm text-[#2E2252]' style={{ fontWeight: 600 }}>
+                        <p className='text-sm text-brand-navy' style={{ fontWeight: 600 }}>
                           {offer.factoryName}
                         </p>
-                        {offer.verified && <CheckCircle size={13} style={{ color: '#7A4B94' }} />}
+                        {offer.verified && (
+                          <CheckCircle size={13} style={{ color: 'var(--brand-mauve)' }} />
+                        )}
                       </div>
                       <div className='flex items-center gap-1'>
                         <Star size={10} className='text-yellow-400 fill-yellow-400' />
@@ -183,19 +186,19 @@ export function RfqDetailOffersSection({
                 </div>
                 <div className='grid grid-cols-3 gap-2 text-center'>
                   <div className='bg-gray-50 rounded-xl p-2.5'>
-                    <p className='text-sm text-[#2E2252]' style={{ fontWeight: 700 }}>
+                    <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
                       ฿{(offer.price / 1000).toFixed(0)}K
                     </p>
                     <p className='text-[9px] text-gray-500'>ราคารวม</p>
                   </div>
                   <div className='bg-gray-50 rounded-xl p-2.5'>
-                    <p className='text-sm text-[#2E2252]' style={{ fontWeight: 700 }}>
+                    <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
                       {offer.leadTime} วัน
                     </p>
                     <p className='text-[9px] text-gray-500'>lead time</p>
                   </div>
                   <div className='bg-gray-50 rounded-xl p-2.5'>
-                    <p className='text-sm text-[#2E2252]' style={{ fontWeight: 700 }}>
+                    <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
                       {offer.responseTime}
                     </p>
                     <p className='text-[9px] text-gray-500'>ตอบกลับ</p>
@@ -214,7 +217,7 @@ export function RfqDetailOffersSection({
                 🏭
               </div>
               <div className='flex-1 min-w-0'>
-                <p className='text-sm font-bold text-[#2E2252]'>{orderForRfq.factoryName}</p>
+                <p className='text-sm font-bold text-brand-navy'>{orderForRfq.factoryName}</p>
                 <p className='text-xs text-gray-500'>
                   ฿{orderForRfq.totalAmount.toLocaleString('th-TH')} •{' '}
                   {orderForRfq.quantity.toLocaleString('th-TH')} ชิ้น
@@ -298,7 +301,7 @@ export function RfqDetailOffersSection({
       <>
         <div
           className='rounded-2xl p-4 relative overflow-hidden'
-          style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
+          style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
         >
           <div className='absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 bg-white' />
           <div className='relative z-10'>
@@ -358,10 +361,11 @@ export function RfqDetailOffersSection({
               <div
                 className='mb-1.5 h-1 w-11 rounded-full'
                 style={{
-                  background: 'linear-gradient(90deg, #F28A2E 0%, #A238FF 100%)',
+                  background:
+                    'linear-gradient(90deg, var(--brand-orange) 0%, var(--brand-purple) 100%)',
                 }}
               />
-              <h3 className='text-base font-bold tracking-tight text-[#2E2252]'>
+              <h3 className='text-base font-bold tracking-tight text-brand-navy'>
                 เปรียบเทียบใบเสนอราคา
               </h3>
               <p className='mt-0.5 text-[11px] leading-relaxed text-gray-500'>
@@ -463,7 +467,7 @@ export function RfqDetailOffersSection({
                   className='bg-white rounded-2xl p-4 shadow-sm border-2 cursor-pointer transition-all'
                   style={{
                     borderColor: offer.recommended
-                      ? '#7A4B94'
+                      ? 'var(--brand-mauve)'
                       : selectedOfferId === offer.id
                         ? '#9D77B2'
                         : 'transparent',
@@ -473,16 +477,18 @@ export function RfqDetailOffersSection({
                     <div className='flex items-center gap-2'>
                       <div
                         className='w-9 h-9 rounded-xl flex items-center justify-center text-sm'
-                        style={{ background: '#F8F6FA' }}
+                        style={{ background: 'var(--brand-page)' }}
                       >
                         🏭
                       </div>
                       <div>
                         <div className='flex items-center gap-1.5'>
-                          <p className='text-sm text-[#2E2252]' style={{ fontWeight: 600 }}>
+                          <p className='text-sm text-brand-navy' style={{ fontWeight: 600 }}>
                             {offer.factoryName}
                           </p>
-                          {offer.verified && <CheckCircle size={13} style={{ color: '#7A4B94' }} />}
+                          {offer.verified && (
+                            <CheckCircle size={13} style={{ color: 'var(--brand-mauve)' }} />
+                          )}
                         </div>
                         <div className='flex items-center gap-1'>
                           <Star size={10} className='text-yellow-400 fill-yellow-400' />
@@ -498,8 +504,8 @@ export function RfqDetailOffersSection({
                         <span
                           className='flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px]'
                           style={{
-                            background: '#F8F6FA',
-                            color: '#7A4B94',
+                            background: 'var(--brand-page)',
+                            color: 'var(--brand-mauve)',
                             fontWeight: 600,
                           }}
                         >
@@ -516,30 +522,30 @@ export function RfqDetailOffersSection({
                   <div className='grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2'>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                       <p
-                        className='text-sm text-[#2E2252]'
-                        style={{ fontWeight: 700, color: '#7A4B94' }}
+                        className='text-sm text-brand-navy'
+                        style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
                       >
                         {formatTHB(boq.price_per_piece)}
                       </p>
                       <p className='text-[9px] text-gray-500'>ราคาต่อชิ้น</p>
                     </div>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                      <p className='text-sm text-[#2E2252]' style={{ fontWeight: 700 }}>
+                      <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
                         {boq.lead_time_days}
                       </p>
                       <p className='text-[9px] text-gray-500'>Lead time (วัน)</p>
                     </div>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                       <p
-                        className='text-sm text-[#2E2252]'
-                        style={{ fontWeight: 700, color: '#7A4B94' }}
+                        className='text-sm text-brand-navy'
+                        style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
                       >
                         {formatTHB(grandTotal)}
                       </p>
                       <p className='text-[9px] text-gray-500'>ราคารวมเสนอ</p>
                     </div>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                      <p className='text-sm text-[#2E2252]' style={{ fontWeight: 700 }}>
+                      <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
                         {validityDays > 0 ? `${validityDays}` : '-'}
                       </p>
                       <p className='text-[9px] text-gray-500'>อายุใบเสนอราคา (วัน)</p>
@@ -548,12 +554,12 @@ export function RfqDetailOffersSection({
                   <div className='rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 mb-3'>
                     <div className='flex items-center justify-between text-[11px] text-gray-600'>
                       <span>ค่าสินค้ารวม</span>
-                      <span className='font-semibold text-[#2E2252]'>{formatTHB(subtotal)}</span>
+                      <span className='font-semibold text-brand-navy'>{formatTHB(subtotal)}</span>
                     </div>
                     {shippingCost > 0 ? (
                       <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                         <span>ค่าขนส่ง</span>
-                        <span className='font-semibold text-[#2E2252]'>
+                        <span className='font-semibold text-brand-navy'>
                           {formatTHB(shippingCost)}
                         </span>
                       </div>
@@ -561,7 +567,7 @@ export function RfqDetailOffersSection({
                     {packagingCost > 0 ? (
                       <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                         <span>ค่าบรรจุภัณฑ์</span>
-                        <span className='font-semibold text-[#2E2252]'>
+                        <span className='font-semibold text-brand-navy'>
                           {formatTHB(packagingCost)}
                         </span>
                       </div>
@@ -569,7 +575,7 @@ export function RfqDetailOffersSection({
                     {toolingMoldCost > 0 ? (
                       <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                         <span>ค่าแม่พิมพ์</span>
-                        <span className='font-semibold text-[#2E2252]'>
+                        <span className='font-semibold text-brand-navy'>
                           {formatTHB(toolingMoldCost)}
                         </span>
                       </div>
@@ -584,11 +590,11 @@ export function RfqDetailOffersSection({
                     ) : null}
                     <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                       <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
-                      <span className='font-semibold text-[#2E2252]'>{formatTHB(vatAmount)}</span>
+                      <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>
                     </div>
                     <div className='border-t border-gray-200 mt-2 pt-2 flex items-center justify-between text-[12px]'>
-                      <span className='font-semibold text-[#2E2252]'>รวมทั้งหมด</span>
-                      <span className='font-bold text-[#7A4B94]'>{formatTHB(grandTotal)}</span>
+                      <span className='font-semibold text-brand-navy'>รวมทั้งหมด</span>
+                      <span className='font-bold text-brand-mauve'>{formatTHB(grandTotal)}</span>
                     </div>
                   </div>
                   {offer.factoryHighlight ? (
@@ -657,8 +663,8 @@ export function RfqDetailOffersSection({
                         }}
                         className='flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs border'
                         style={{
-                          borderColor: '#7A4B94',
-                          color: '#7A4B94',
+                          borderColor: 'var(--brand-mauve)',
+                          color: 'var(--brand-mauve)',
                           fontWeight: 600,
                         }}
                       >
@@ -682,7 +688,7 @@ export function RfqDetailOffersSection({
                           type='button'
                           disabled
                           className='flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60'
-                          style={{ background: '#059669', fontWeight: 600 }}
+                          style={{ background: 'var(--status-success)', fontWeight: 600 }}
                         >
                           ยอมรับแล้ว ✓
                         </Button>
@@ -718,7 +724,10 @@ export function RfqDetailOffersSection({
                         onClick={(e) => handleAcceptOffer(offer.id, e)}
                         disabled={!!acceptingId || isRejected}
                         className='flex-1 py-2.5 rounded-xl text-xs text-white disabled:opacity-60'
-                        style={{ background: isRejected ? '#94A3B8' : '#7A4B94', fontWeight: 600 }}
+                        style={{
+                          background: isRejected ? '#94A3B8' : 'var(--brand-mauve)',
+                          fontWeight: 600,
+                        }}
                       >
                         {acceptingId === offer.id
                           ? 'กำลังส่ง...'
@@ -741,7 +750,7 @@ export function RfqDetailOffersSection({
     <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
       <div
         className='w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3'
-        style={{ background: '#F3F4F6' }}
+        style={{ background: 'var(--neutral-muted)' }}
       >
         <Clock size={28} className='text-gray-400' />
       </div>

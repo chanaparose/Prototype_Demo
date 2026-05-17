@@ -40,16 +40,17 @@ import {
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
+import { appColors } from '@/styles/colors';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const COLORS = {
-  purple: '#4F46E5',
-  purpleLight: '#9D77B2',
-  orange: '#4F46E5',
-  navy: '#2E2252',
-  pageBg: '#F8F6FA',
-  teal: '#0D9488',
-  white: '#FFFFFF',
+  purple: appColors.brand.indigo,
+  purpleLight: appColors.brand.mauveLight,
+  orange: appColors.brand.indigo,
+  navy: appColors.brand.navy,
+  pageBg: appColors.brand.page,
+  teal: appColors.brand.teal,
+  white: appColors.neutral.white,
 };
 
 const TIMEFRAMES: { id: AnalyticsTimeframe; label: string }[] = [
@@ -58,10 +59,10 @@ const TIMEFRAMES: { id: AnalyticsTimeframe; label: string }[] = [
   { id: 'monthly', label: 'เดือน' },
 ];
 
-const PURPLE = '#4F46E5';
-const ORANGE = '#4F46E5';
-const GREEN = '#059669';
-const SLATE = '#94A3B8';
+const PURPLE = appColors.brand.indigo;
+const ORANGE = appColors.brand.indigo;
+const GREEN = appColors.status.success;
+const SLATE = appColors.neutral.slate;
 
 // ── Formatters ─────────────────────────────────────────────────────────────
 function formatBaht(n: number): string {
@@ -184,7 +185,7 @@ function kpiRows(summary: AnalyticsSummary) {
       value: `${replyRate}%`,
       sub: replyRate < 50 ? 'ต่ำกว่าเกณฑ์' : 'ดี',
       icon: MessageSquareReply,
-      accent: replyRate < 50 ? '#EF4444' : '#10B981',
+      accent: replyRate < 50 ? 'var(--status-danger)' : '#10B981',
       iconBg: replyRate < 50 ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
       to: '/factory/rfqs',
     },
@@ -215,7 +216,7 @@ function VerificationStepper({
       style={{
         background: isRejected
           ? 'linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%)'
-          : 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)',
+          : 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)',
       }}
     >
       {/* Decorative blur */}
@@ -225,7 +226,7 @@ function VerificationStepper({
       />
       <div
         className='absolute -left-6 -bottom-10 w-32 h-32 rounded-full opacity-10 blur-2xl'
-        style={{ backgroundColor: '#FFFFFF' }}
+        style={{ backgroundColor: 'var(--neutral-white)' }}
       />
 
       <div className='relative z-10'>
@@ -512,7 +513,7 @@ export function FactoryDashboardPage() {
                 data={chartData}
                 margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 4 }}
               >
-                <CartesianGrid strokeDasharray='3 3' stroke='#F1F5F9' />
+                <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
                 <XAxis
                   dataKey='label'
                   tick={{ fontSize: isDesktop ? 11 : 9, fill: SLATE }}
@@ -575,7 +576,7 @@ export function FactoryDashboardPage() {
                 data={chartData}
                 margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 2 }}
               >
-                <CartesianGrid strokeDasharray='3 3' stroke='#F1F5F9' />
+                <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
                 <XAxis
                   dataKey='label'
                   tick={{ fill: SLATE }}
@@ -789,7 +790,7 @@ export function FactoryDashboardPage() {
             <span className='text-[10px] font-medium text-gray-500'>อัตราตอบ</span>
             <span
               className='text-base font-bold tabular-nums'
-              style={{ color: rfqReplyRatePct(summary) < 50 ? '#EF4444' : '#10B981' }}
+              style={{ color: rfqReplyRatePct(summary) < 50 ? 'var(--status-danger)' : '#10B981' }}
             >
               {rfqReplyRatePct(summary)}%
             </span>
@@ -801,7 +802,7 @@ export function FactoryDashboardPage() {
               data={chartData}
               margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 2 }}
             >
-              <CartesianGrid strokeDasharray='3 3' stroke='#F1F5F9' />
+              <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
               <XAxis
                 dataKey='label'
                 tick={{ fill: SLATE }}

@@ -86,7 +86,7 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
         <div className='h-2 bg-gray-100 rounded-full overflow-hidden'>
           <div
             className='h-full rounded-full transition-all'
-            style={{ width: `${pct}%`, background: '#7C3AED' }}
+            style={{ width: `${pct}%`, background: 'var(--brand-violet)' }}
           />
         </div>
         <p className='text-xs text-gray-600 mt-1.5'>

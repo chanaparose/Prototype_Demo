@@ -37,7 +37,7 @@ export function ChatPartyHeader({ view, density = 'row', trailing, onClick }: Pr
           <p className='truncate text-sm text-gray-900' style={{ fontWeight: 600 }}>
             {view.title}
           </p>
-          {view.verified ? <BadgeCheck size={14} className='text-[#A238FF]' /> : null}
+          {view.verified ? <BadgeCheck size={14} className='text-brand-purple' /> : null}
         </div>
         {view.subtitle ? <p className='truncate text-xs text-gray-500'>{view.subtitle}</p> : null}
       </div>

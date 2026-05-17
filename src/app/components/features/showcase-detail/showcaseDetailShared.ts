@@ -1,12 +1,12 @@
 export const SHOWCASE_DETAIL_BRAND = {
   rose: '#E11D48',
-  roseSoft: '#FFF1F5',
-  orange: '#F28A2E',
-  orangeDark: '#F27830',
-  orangeSoft: '#FFF4E8',
-  purple: '#A238FF',
+  roseSoft: 'var(--surface-rose-soft)',
+  orange: 'var(--brand-orange)',
+  orangeDark: 'var(--brand-orange-vivid)',
+  orangeSoft: 'var(--surface-orange-tint)',
+  purple: 'var(--brand-purple)',
   purpleSoft: '#F5F3FF',
-  ink: '#1A0A2E',
+  ink: 'var(--brand-ink)',
   border: '#E7E2F0',
 } as const;
 

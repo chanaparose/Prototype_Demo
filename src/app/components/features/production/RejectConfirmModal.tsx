@@ -67,7 +67,7 @@ export function RejectConfirmModal({ open, stepNameTh, onClose, onConfirm }: Pro
           onClick={() => void submit()}
           disabled={busy}
           className='text-white disabled:opacity-50'
-          style={{ background: '#A238FF' }}
+          style={{ background: 'var(--brand-purple)' }}
         >
           {busy ? 'กำลังส่ง…' : 'ยืนยันการขอตรวจสอบ'}
         </Button>

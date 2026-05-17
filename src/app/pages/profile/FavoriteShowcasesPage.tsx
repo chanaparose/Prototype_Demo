@@ -79,8 +79,16 @@ export function FavoriteShowcasesPage() {
               className='px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border transition'
               style={
                 tab === t.id
-                  ? { background: '#6842FF', color: '#fff', borderColor: '#6842FF' }
-                  : { background: '#fff', color: '#475569', borderColor: '#E2E8F0' }
+                  ? {
+                      background: 'var(--brand-royal-dark)',
+                      color: 'var(--neutral-white)',
+                      borderColor: 'var(--brand-royal-dark)',
+                    }
+                  : {
+                      background: 'var(--neutral-white)',
+                      color: '#475569',
+                      borderColor: 'var(--neutral-slate-border)',
+                    }
               }
             >
               {t.label}

@@ -135,7 +135,10 @@ export function ProductDetailDesktop() {
   }
 
   return (
-    <div className='hidden lg:block min-h-[calc(100vh-4rem)]' style={{ background: '#F6F4FB' }}>
+    <div
+      className='hidden lg:block min-h-[calc(100vh-4rem)]'
+      style={{ background: 'var(--brand-panel)' }}
+    >
       {/* ── Breadcrumb / back row ── */}
       <div className='px-8 pt-5 pb-3'>
         <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
@@ -205,7 +208,11 @@ export function ProductDetailDesktop() {
                 >
                   <Heart
                     className='w-4 h-4'
-                    style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }}
+                    style={
+                      liked
+                        ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
+                        : { color: BRAND.orange }
+                    }
                   />
                   {likeCount} สนใจ
                 </Button>
@@ -273,11 +280,14 @@ export function ProductDetailDesktop() {
               {/* Price block */}
               <div
                 className='mt-4 px-4 py-4 rounded-xl border'
-                style={{ background: '#FFF9F2', borderColor: '#F8DEC1' }}
+                style={{ background: 'var(--surface-paper-warm)', borderColor: '#F8DEC1' }}
               >
                 {priceText ? (
                   <div className='flex items-baseline gap-2'>
-                    <p className='text-[26px] font-bold leading-none' style={{ color: '#7C3AED' }}>
+                    <p
+                      className='text-[26px] font-bold leading-none'
+                      style={{ color: 'var(--brand-violet)' }}
+                    >
                       {priceText}
                     </p>
                     {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
@@ -289,7 +299,7 @@ export function ProductDetailDesktop() {
                 ) : (
                   <p
                     className='text-[20px] font-semibold leading-none'
-                    style={{ color: '#7C3AED' }}
+                    style={{ color: 'var(--brand-violet)' }}
                   >
                     สอบถามราคากับโรงงาน
                   </p>
@@ -443,7 +453,7 @@ export function ProductDetailDesktop() {
                     type='button'
                     onClick={() => navigate(`/factories/${item.factoryId}`)}
                     className='inline-flex items-center gap-1.5 px-3.5 h-9 rounded-sm text-[13px] font-medium transition-colors hover:opacity-80'
-                    style={{ border: `1px solid ${BRAND.border}`, color: '#374151' }}
+                    style={{ border: `1px solid ${BRAND.border}`, color: 'var(--neutral-text)' }}
                   >
                     <Store className='w-3.5 h-3.5' /> ดูโรงงาน
                   </Button>
@@ -622,7 +632,7 @@ export function ProductDetailDesktop() {
         {/* ── CTA banner (bottom) ── */}
         <div
           className='rounded-2xl p-5 flex items-center justify-between shadow-sm'
-          style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
+          style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
         >
           <div className='min-w-0'>
             <p className='text-[13px]' style={{ color: '#EBD3FF' }}>
@@ -706,7 +716,7 @@ export function ProductDetailDesktop() {
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                       <div>
-                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                           {rp.title}
                         </p>
                         <div className='flex items-center gap-0.5 mt-0.5'>

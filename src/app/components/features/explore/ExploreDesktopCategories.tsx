@@ -54,7 +54,7 @@ export function ExploreDesktopCategories({
             variant='unstyled'
             type='button'
             onClick={() => void onRetryCategoriesApi()}
-            className='ml-2 font-semibold text-[#A238FF] underline hover:no-underline'
+            className='ml-2 font-semibold text-brand-purple underline hover:no-underline'
           >
             ลองอีกครั้ง
           </Button>
@@ -76,14 +76,14 @@ export function ExploreDesktopCategories({
                   navigate(href);
                 }
               }}
-              className='bg-white border border-gray-100 rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group'
+              className='bg-white border border-gray-100 rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-brand-purple/40 transition-all cursor-pointer group'
             >
               <div
                 className={`w-11 h-11 rounded-full flex items-center justify-center ${cfg.color} group-hover:scale-110 transition-transform`}
               >
                 <Icon size={20} />
               </div>
-              <span className='text-xs font-medium text-gray-700 text-center group-hover:text-[#2D1B4E]'>
+              <span className='text-xs font-medium text-gray-700 text-center group-hover:text-brand-navy-deep'>
                 {cfg.displayName}
               </span>
             </div>

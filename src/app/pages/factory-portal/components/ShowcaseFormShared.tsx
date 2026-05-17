@@ -73,7 +73,7 @@ export function ShowcaseImageManager({
     <section className='w-full max-w-[360px] xl:shrink-0'>
       <div
         className='relative aspect-[4/3] rounded-xl overflow-hidden border'
-        style={{ borderColor: '#E7E2F0', background: '#F5F5F5' }}
+        style={{ borderColor: '#E7E2F0', background: 'var(--neutral-warm-surface)' }}
       >
         {imageUrls[0] ? (
           <>
@@ -195,9 +195,9 @@ export function ShowcaseCategoryFields({
             variant={value === scope ? 'default' : 'secondary'}
             className='flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all'
             style={{
-              backgroundColor: value === scope ? '#4F46E5' : '#F8FAFC',
-              color: value === scope ? '#fff' : '#334155',
-              borderColor: value === scope ? '#4F46E5' : '#E2E8F0',
+              backgroundColor: value === scope ? 'var(--brand-indigo)' : '#F8FAFC',
+              color: value === scope ? 'var(--neutral-white)' : '#334155',
+              borderColor: value === scope ? 'var(--brand-indigo)' : 'var(--neutral-slate-border)',
             }}
           >
             {scope === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
@@ -241,7 +241,7 @@ export function ShowcaseCategoryFields({
               onChange={(event) =>
                 onSubCategoryChange(event.target.value ? Number(event.target.value) : null)
               }
-              className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none disabled:bg-gray-50 disabled:text-gray-400'
+              className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none disabled:bg-gray-50 disabled:text-gray-400'
             >
               <option value=''>
                 {categoryValue == null
@@ -265,7 +265,7 @@ export function ShowcaseCategoryFields({
             <select
               value={statusValue ?? 'DR'}
               onChange={(event) => onStatusChange(event.target.value as ShowcaseStatus)}
-              className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+              className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
             >
               <option value='DR'>ร่าง</option>
               <option value='AC'>Active</option>

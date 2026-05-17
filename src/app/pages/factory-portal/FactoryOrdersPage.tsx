@@ -19,7 +19,7 @@ import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPage
 import { Button } from '@/components/ui/button';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
-const INDIGO = '#4F46E5';
+const INDIGO = 'var(--brand-indigo)';
 const SLATE_DARK = '#0F172A';
 
 /* ─── Status meta (for table badges) ─────────────────────────────── */
@@ -184,7 +184,7 @@ export function FactoryOrdersPage() {
                     <th
                       key={h}
                       className='px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider'
-                      style={{ color: '#6B7280' }}
+                      style={{ color: 'var(--neutral-subtle)' }}
                     >
                       {h}
                     </th>
@@ -330,7 +330,7 @@ export function FactoryOrdersPage() {
               </Button>
             </div>
             <textarea
-              className='w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]'
+              className='w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
               placeholder='รายละเอียดความคืบหน้า'
               value={updateModal.notes}
               onChange={(e) =>
@@ -342,7 +342,9 @@ export function FactoryOrdersPage() {
               type='button'
               disabled={updateModal.busy || !updateModal.notes.trim()}
               className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
-              style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #334155 100%)' }}
+              style={{
+                background: 'linear-gradient(135deg, var(--brand-indigo) 0%, #334155 100%)',
+              }}
               onClick={async () => {
                 setUpdateModal((prev) => (prev ? { ...prev, busy: true } : prev));
                 try {
@@ -390,7 +392,7 @@ export function FactoryOrdersPage() {
               </Button>
             </div>
             <input
-              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]'
+              className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
               placeholder='เลขพัสดุ'
               value={shipModal.tracking}
               onChange={(e) =>
@@ -398,7 +400,7 @@ export function FactoryOrdersPage() {
               }
             />
             <textarea
-              className='w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-[#4F46E5]'
+              className='w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
               placeholder='หมายเหตุ (ไม่บังคับ)'
               value={shipModal.note}
               onChange={(e) =>
@@ -411,7 +413,8 @@ export function FactoryOrdersPage() {
               disabled={shipModal.busy || !shipModal.tracking.trim()}
               className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
               style={{
-                background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                background:
+                  'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                 boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
               }}
               onClick={async () => {

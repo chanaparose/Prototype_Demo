@@ -61,9 +61,9 @@ export function FactoryIdeasCategoryDropdown({
           onClick={() => setCategoryMenuOpen((o) => !o)}
           className='w-full flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg border text-[12px] transition-all'
           style={{
-            borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : '#E5E7EB',
+            borderColor: effectiveCategoryId !== 'all' ? COLORS.purple : 'var(--neutral-border)',
             backgroundColor: effectiveCategoryId !== 'all' ? COLORS.lightPurpleBg : COLORS.gray,
-            color: effectiveCategoryId !== 'all' ? COLORS.purple : '#6B7280',
+            color: effectiveCategoryId !== 'all' ? COLORS.purple : 'var(--neutral-subtle)',
             fontWeight: effectiveCategoryId !== 'all' ? 600 : 400,
           }}
         >
@@ -101,7 +101,7 @@ export function FactoryIdeasCategoryDropdown({
                     }}
                     className='w-full px-4 py-2.5 flex items-center justify-between gap-2 text-left text-[12px] transition-colors active:bg-gray-50'
                     style={{
-                      color: selected ? COLORS.purple : '#374151',
+                      color: selected ? COLORS.purple : 'var(--neutral-text)',
                       fontWeight: selected ? 600 : 400,
                       backgroundColor: selected ? COLORS.lightPurpleBg : 'transparent',
                     }}
@@ -145,7 +145,7 @@ export function FactoryIdeasCategoryDropdown({
                       }}
                       className='w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50'
                       style={{
-                        color: !selectedSubCategoryId ? COLORS.purple : '#374151',
+                        color: !selectedSubCategoryId ? COLORS.purple : 'var(--neutral-text)',
                         fontWeight: !selectedSubCategoryId ? 600 : 400,
                         backgroundColor: !selectedSubCategoryId
                           ? COLORS.lightPurpleBg
@@ -167,7 +167,7 @@ export function FactoryIdeasCategoryDropdown({
                           }}
                           className='w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50'
                           style={{
-                            color: selected ? COLORS.purple : '#374151',
+                            color: selected ? COLORS.purple : 'var(--neutral-text)',
                             fontWeight: selected ? 600 : 400,
                             backgroundColor: selected ? COLORS.lightPurpleBg : 'transparent',
                           }}
@@ -195,7 +195,9 @@ export function FactoryIdeasCategoryDropdown({
         className='flex items-center gap-2 max-w-[min(100vw-8rem,22rem)] px-4 py-2.5 rounded-xl border text-[13px] transition-all'
         style={{
           borderColor:
-            effectiveCategoryId !== 'all' || selectedSubCategoryId ? COLORS.purple : '#E5E7EB',
+            effectiveCategoryId !== 'all' || selectedSubCategoryId
+              ? COLORS.purple
+              : 'var(--neutral-border)',
           backgroundColor:
             effectiveCategoryId !== 'all' || selectedSubCategoryId
               ? COLORS.lightPurpleBg
@@ -243,7 +245,7 @@ export function FactoryIdeasCategoryDropdown({
                   }}
                   className='w-full flex items-center justify-between gap-1 px-3 py-2.5 text-left text-[13px] transition-colors'
                   style={{
-                    color: selected ? COLORS.purple : '#374151',
+                    color: selected ? COLORS.purple : 'var(--neutral-text)',
                     fontWeight: selected ? 600 : 500,
                     backgroundColor: rowHi ? COLORS.lightPurpleBg : 'transparent',
                   }}
@@ -283,7 +285,7 @@ export function FactoryIdeasCategoryDropdown({
                       color:
                         !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId
                           ? COLORS.purple
-                          : '#374151',
+                          : 'var(--neutral-text)',
                       fontWeight:
                         !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId
                           ? 600
@@ -308,7 +310,7 @@ export function FactoryIdeasCategoryDropdown({
                         onClick={() => pickSubCategory(s.id, menuHighlightCategoryId)}
                         className='w-full px-3 py-2.5 text-left text-[13px] transition-colors'
                         style={{
-                          color: active ? COLORS.purple : '#374151',
+                          color: active ? COLORS.purple : 'var(--neutral-text)',
                           fontWeight: active ? 600 : 400,
                           backgroundColor: active ? COLORS.lightPurpleBg : 'transparent',
                         }}

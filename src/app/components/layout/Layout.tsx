@@ -96,7 +96,7 @@ export function Layout() {
                           locked ? 'cursor-not-allowed opacity-60' : ''
                         }`}
                         style={{
-                          color: active ? '#4338CA' : '#475569',
+                          color: active ? 'var(--brand-indigo-dark)' : '#475569',
                           background: active ? '#EEF2FF' : 'transparent',
                           fontWeight: active ? 600 : 500,
                         }}
@@ -119,7 +119,7 @@ export function Layout() {
                       onClick={() => navigate(path)}
                       className='flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors duration-150'
                       style={{
-                        color: active ? '#A238FF' : '#6B7280',
+                        color: active ? 'var(--brand-purple)' : 'var(--neutral-subtle)',
                         background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
                         fontWeight: active ? 600 : 500,
                       }}
@@ -139,7 +139,7 @@ export function Layout() {
                     className='lg:hidden flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-indigo-50 transition-colors border border-indigo-100/80'
                     title='กระเป๋าเงิน'
                   >
-                    <Wallet size={18} style={{ color: '#4F46E5' }} />
+                    <Wallet size={18} style={{ color: 'var(--brand-indigo)' }} />
                     <span
                       className='text-xs font-bold tabular-nums max-w-[4.5rem] truncate'
                       style={{ color: '#0F172A' }}
@@ -152,11 +152,14 @@ export function Layout() {
                   to='/notifications'
                   className='relative w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors'
                 >
-                  <Bell size={20} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
+                  <Bell
+                    size={20}
+                    style={{ color: isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)' }}
+                  />
                   {unreadNotifications > 0 ? (
                     <span
                       className='absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white flex items-center justify-center text-[9px] border-2 border-white tabular-nums'
-                      style={{ background: '#F28A2E', fontWeight: 700 }}
+                      style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
                     >
                       {unreadNotifications > 99 ? '99+' : unreadNotifications}
                     </span>
@@ -168,8 +171,11 @@ export function Layout() {
                   onClick={() => navigate(isAuthenticated ? '/profile' : '/login')}
                   className='hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors'
                 >
-                  <User size={20} style={{ color: '#6B7280' }} />
-                  <span className='text-sm' style={{ color: '#374151', fontWeight: 500 }}>
+                  <User size={20} style={{ color: 'var(--neutral-subtle)' }} />
+                  <span
+                    className='text-sm'
+                    style={{ color: 'var(--neutral-text)', fontWeight: 500 }}
+                  >
                     {isAuthenticated ? 'โปรไฟล์' : 'Guest View'}
                   </span>
                 </Button>
@@ -182,9 +188,9 @@ export function Layout() {
                   aria-label='Toggle menu'
                 >
                   {mobileMenuOpen ? (
-                    <X size={22} style={{ color: '#374151' }} />
+                    <X size={22} style={{ color: 'var(--neutral-text)' }} />
                   ) : (
-                    <Menu size={22} style={{ color: '#374151' }} />
+                    <Menu size={22} style={{ color: 'var(--neutral-text)' }} />
                   )}
                 </Button>
               </div>
@@ -215,7 +221,7 @@ export function Layout() {
                           locked ? 'cursor-not-allowed opacity-60' : ''
                         }`}
                         style={{
-                          color: active ? '#4338CA' : '#334155',
+                          color: active ? 'var(--brand-indigo-dark)' : '#334155',
                           background: active ? '#EEF2FF' : 'transparent',
                           fontWeight: active ? 600 : 500,
                         }}
@@ -241,7 +247,7 @@ export function Layout() {
                       }}
                       className='flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm transition-colors duration-150'
                       style={{
-                        color: active ? '#A238FF' : '#374151',
+                        color: active ? 'var(--brand-purple)' : 'var(--neutral-text)',
                         background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
                         fontWeight: active ? 600 : 500,
                       }}
@@ -260,7 +266,10 @@ export function Layout() {
                   }}
                   className='flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm sm:hidden transition-colors duration-150'
                   style={{
-                    color: isAuthenticated && isActive('/profile') ? '#A238FF' : '#374151',
+                    color:
+                      isAuthenticated && isActive('/profile')
+                        ? 'var(--brand-purple)'
+                        : 'var(--neutral-text)',
                     background:
                       isAuthenticated && isActive('/profile')
                         ? 'rgba(162,56,255,0.08)'

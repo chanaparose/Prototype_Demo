@@ -20,10 +20,14 @@ export const PROMO_SLIDES = [
 ];
 
 export const EXPLORE_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  offers_received: { label: 'มีใบเสนอราคา', color: '#A656A0', bg: '#F2F2F2' },
-  reviewing: { label: 'กำลังพิจารณา', color: '#F28A2E', bg: '#FFF4E8' },
-  pending: { label: 'รอใบเสนอราคา', color: '#6B7280', bg: '#F3F4F6' },
-  in_production: { label: 'กำลังผลิต', color: '#3B82F6', bg: '#DBEAFE' },
-  shipped: { label: 'จัดส่งแล้ว', color: '#22C55E', bg: '#DCFCE7' },
-  completed: { label: 'เสร็จสิ้น', color: '#22C55E', bg: '#DCFCE7' },
+  offers_received: {
+    label: 'มีใบเสนอราคา',
+    color: 'var(--brand-magenta)',
+    bg: 'var(--neutral-footer)',
+  },
+  reviewing: { label: 'กำลังพิจารณา', color: 'var(--brand-orange)', bg: 'var(--surface-orange-tint)' },
+  pending: { label: 'รอใบเสนอราคา', color: 'var(--neutral-subtle)', bg: 'var(--neutral-muted)' },
+  in_production: { label: 'กำลังผลิต', color: 'var(--status-info)', bg: 'var(--status-info-soft)' },
+  shipped: { label: 'จัดส่งแล้ว', color: 'var(--status-success-bright)', bg: '#DCFCE7' },
+  completed: { label: 'เสร็จสิ้น', color: 'var(--status-success-bright)', bg: '#DCFCE7' },
 };

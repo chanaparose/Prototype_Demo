@@ -13,11 +13,12 @@ import {
 import { walletApi, transactionsApi } from '@/services/api';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
+import { appColors } from '@/styles/colors';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
-const NAVY = '#2E2252';
-const ORANGE = '#4F46E5';
-const TEAL = '#0D9488';
+const NAVY = appColors.brand.navy;
+const ORANGE = appColors.brand.indigo;
+const TEAL = appColors.brand.teal;
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 type TxRow = Record<string, unknown>;
@@ -118,15 +119,15 @@ function TxRow({ t }: { t: NormTx }) {
   const sLabel = statusLabel(t.status);
 
   return (
-    <div className='flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-[#F8F6FA] transition-colors'>
+    <div className='flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-brand-page transition-colors'>
       <div
         className='w-9 h-9 rounded-xl flex items-center justify-center shrink-0'
         style={{ backgroundColor: credit ? 'rgba(5,150,105,0.1)' : 'rgba(220,38,38,0.1)' }}
       >
         {credit ? (
-          <ArrowDownLeft size={16} style={{ color: '#059669' }} />
+          <ArrowDownLeft size={16} style={{ color: 'var(--status-success)' }} />
         ) : (
-          <ArrowUpRight size={16} style={{ color: '#DC2626' }} />
+          <ArrowUpRight size={16} style={{ color: 'var(--status-danger-deep)' }} />
         )}
       </div>
       <div className='flex-1 min-w-0'>
@@ -138,7 +139,10 @@ function TxRow({ t }: { t: NormTx }) {
         </p>
       </div>
       <div className='text-right shrink-0'>
-        <p className='text-sm font-bold' style={{ color: credit ? '#059669' : '#DC2626' }}>
+        <p
+          className='text-sm font-bold'
+          style={{ color: credit ? 'var(--status-success)' : 'var(--status-danger-deep)' }}
+        >
           {credit ? '+' : '-'}฿{t.amount.toLocaleString('th-TH')}
         </p>
         <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${sBadgeCls}`}>
@@ -333,7 +337,7 @@ export function FactoryWalletPage() {
             icon={TrendingUp}
             label='รายได้รวม'
             value={`฿${totalEarned.toLocaleString('th-TH')}`}
-            accent='#059669'
+            accent='var(--status-success)'
           />
           <StatCard
             icon={BarChart3}
@@ -364,7 +368,7 @@ export function FactoryWalletPage() {
         {pendingWithdrawals.length > 0 && (
           <section className='rounded-2xl border border-amber-100 bg-amber-50 overflow-hidden'>
             <div className='px-4 py-3 border-b border-amber-100 flex items-center gap-2'>
-              <Clock size={15} style={{ color: '#D97706' }} />
+              <Clock size={15} style={{ color: 'var(--status-warning-deep)' }} />
               <h2 className='text-sm font-bold' style={{ color: '#92400E' }}>
                 รายการถอนเงินรอดำเนินการ
               </h2>
@@ -438,10 +442,10 @@ export function FactoryWalletPage() {
                       active
                         ? {
                             backgroundColor: ORANGE,
-                            color: '#fff',
+                            color: 'var(--neutral-white)',
                             boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                           }
-                        : { backgroundColor: '#F3F4F6', color: '#4B5563' }
+                        : { backgroundColor: 'var(--neutral-muted)', color: '#4B5563' }
                     }
                   >
                     {label}
@@ -526,7 +530,7 @@ export function FactoryWalletPage() {
                       setWithdrawError('');
                     }}
                     placeholder='500'
-                    className='w-full pl-7 pr-3 py-3 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-[#0D9488]'
+                    className='w-full pl-7 pr-3 py-3 rounded-xl border border-gray-200 text-sm font-semibold focus:outline-none focus:border-brand-teal'
                     style={{ color: NAVY }}
                   />
                 </div>
@@ -588,7 +592,8 @@ export function FactoryWalletPage() {
                   }}
                   className='flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all hover:opacity-90'
                   style={{
-                    background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                    background:
+                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                     boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                   }}
                 >

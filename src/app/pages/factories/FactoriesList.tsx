@@ -13,7 +13,7 @@ export function FactoriesList() {
       <div className='min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-3 bg-gray-50'>
         <div
           className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-          style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+          style={{ borderColor: 'var(--brand-purple)', borderTopColor: 'transparent' }}
           aria-hidden
         />
         <p className='text-sm text-gray-500'>กำลังโหลดรายชื่อโรงงาน…</p>

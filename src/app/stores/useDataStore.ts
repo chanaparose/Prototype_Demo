@@ -99,7 +99,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
               id: String(c.id ?? c.category_id ?? ''),
               name,
               icon: String(c.icon ?? '') || guessCategoryIcon(name),
-              color: String(c.color ?? '#7C3AED'),
+              color: String(c.color ?? 'var(--brand-violet)'),
             } as Category;
           });
         })();
@@ -240,7 +240,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
                 id: String(c.id ?? c.category_id ?? ''),
                 name,
                 icon: String(c.icon ?? '') || guessCategoryIcon(name),
-                color: String(c.color ?? '#7C3AED'),
+                color: String(c.color ?? 'var(--brand-violet)'),
               } as Category;
             });
           }

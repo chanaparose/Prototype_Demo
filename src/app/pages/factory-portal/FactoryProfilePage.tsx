@@ -46,10 +46,10 @@ import { Button } from '@/components/ui/button';
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const COLORS = {
-  purple: '#4F46E5',
-  orange: '#4F46E5',
-  navy: '#2E2252',
-  pageBg: '#F8F6FA',
+  purple: 'var(--brand-indigo)',
+  orange: 'var(--brand-indigo)',
+  navy: 'var(--brand-navy)',
+  pageBg: 'var(--brand-page)',
 };
 
 function normalizeIds(ids: number[]): number[] {
@@ -128,7 +128,7 @@ function VerificationStepper({ steps }: { steps: StepDef[] }) {
             {i < steps.length - 1 && (
               <div
                 className='h-0.5 flex-1 mt-[18px] mx-1 shrink-0 transition-all'
-                style={{ backgroundColor: step.complete ? '#14b8a6' : '#E5E7EB' }}
+                style={{ backgroundColor: step.complete ? '#14b8a6' : 'var(--neutral-border)' }}
               />
             )}
           </React.Fragment>

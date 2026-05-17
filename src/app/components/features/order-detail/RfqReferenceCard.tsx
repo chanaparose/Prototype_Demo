@@ -332,30 +332,30 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                 <div className='grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2'>
                   <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                     <p
-                      className='text-sm text-[#2E2252]'
-                      style={{ fontWeight: 700, color: '#7A4B94' }}
+                      className='text-sm text-brand-navy'
+                      style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
                     >
                       {formatTHB(pricePerPiece)}
                     </p>
                     <p className='text-[12px] text-gray-500'>ราคาต่อชิ้น</p>
                   </div>
                   <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                    <p className='text-sm text-[#2E2252]' style={{ fontWeight: 700 }}>
+                    <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
                       {leadTimeDays > 0 ? leadTimeDays : '-'}
                     </p>
                     <p className='text-[12px] text-gray-500'>Lead time (วัน)</p>
                   </div>
                   <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                     <p
-                      className='text-sm text-[#2E2252]'
-                      style={{ fontWeight: 700, color: '#7A4B94' }}
+                      className='text-sm text-brand-navy'
+                      style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
                     >
                       {formatTHB(grandTotal)}
                     </p>
                     <p className='text-[12px] text-gray-500'>ราคารวมเสนอ</p>
                   </div>
                   <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                    <p className='text-sm text-[#2E2252]' style={{ fontWeight: 700 }}>
+                    <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
                       {validityDays > 0 ? `${validityDays}` : '-'}
                     </p>
                     <p className='text-[12px] text-gray-500'>อายุใบเสนอราคา (วัน)</p>
@@ -365,12 +365,12 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                 <div className='rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 mb-3'>
                   <div className='flex items-center justify-between text-[11px] text-gray-600'>
                     <span>ค่าสินค้ารวม</span>
-                    <span className='font-semibold text-[#2E2252]'>{formatTHB(subtotal)}</span>
+                    <span className='font-semibold text-brand-navy'>{formatTHB(subtotal)}</span>
                   </div>
                   {shippingCost > 0 ? (
                     <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                       <span>ค่าขนส่ง</span>
-                      <span className='font-semibold text-[#2E2252]'>
+                      <span className='font-semibold text-brand-navy'>
                         {formatTHB(shippingCost)}
                       </span>
                     </div>
@@ -378,7 +378,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                   {packagingCost > 0 ? (
                     <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                       <span>ค่าบรรจุภัณฑ์</span>
-                      <span className='font-semibold text-[#2E2252]'>
+                      <span className='font-semibold text-brand-navy'>
                         {formatTHB(packagingCost)}
                       </span>
                     </div>
@@ -386,7 +386,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                   {toolingMoldCost > 0 ? (
                     <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                       <span>ค่าแม่พิมพ์</span>
-                      <span className='font-semibold text-[#2E2252]'>
+                      <span className='font-semibold text-brand-navy'>
                         {formatTHB(toolingMoldCost)}
                       </span>
                     </div>
@@ -401,11 +401,11 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                   ) : null}
                   <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                     <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
-                    <span className='font-semibold text-[#2E2252]'>{formatTHB(vatAmount)}</span>
+                    <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>
                   </div>
                   <div className='border-t border-gray-200 mt-2 pt-2 flex items-center justify-between text-[12px]'>
-                    <span className='font-semibold text-[#2E2252]'>รวมทั้งหมด</span>
-                    <span className='font-bold text-[#7A4B94]'>{formatTHB(grandTotal)}</span>
+                    <span className='font-semibold text-brand-navy'>รวมทั้งหมด</span>
+                    <span className='font-bold text-brand-mauve'>{formatTHB(grandTotal)}</span>
                   </div>
                 </div>
 

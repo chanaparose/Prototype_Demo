@@ -420,7 +420,8 @@ export function UpdateStepDrawer({
             onClick={() => void confirmDone()}
             className='w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-40 transition-opacity'
             style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+              background:
+                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-violet) 100%)',
             }}
           >
             {guide?.confirmLabel ?? 'ยืนยันว่าเสร็จสิ้น'}

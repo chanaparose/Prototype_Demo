@@ -221,8 +221,8 @@ export function MessageBubble({
     const rfqId = Number(msg.reference_id ?? 0);
     return (
       <div className='flex justify-center'>
-        <div className='bg-white border-l-4 border-[#7A4B94] rounded-2xl p-4 shadow-sm max-w-[320px] w-full'>
-          <p className='text-[10px] font-semibold text-[#7A4B94] uppercase tracking-wide mb-1'>
+        <div className='bg-white border-l-4 border-brand-mauve rounded-2xl p-4 shadow-sm max-w-[320px] w-full'>
+          <p className='text-[10px] font-semibold text-brand-mauve uppercase tracking-wide mb-1'>
             คำขอ RFQ
           </p>
           <p className='text-sm font-bold text-gray-900'>{msg.content || `RFQ #${rfqId}`}</p>
@@ -230,7 +230,7 @@ export function MessageBubble({
           <Button
             variant='unstyled'
             type='button'
-            className='text-sm font-semibold text-[#7A4B94] flex items-center gap-1 hover:underline'
+            className='text-sm font-semibold text-brand-mauve flex items-center gap-1 hover:underline'
             onClick={() => {
               if (!Number.isFinite(rfqId) || rfqId <= 0) return;
               navigate(viewerRole === 'FT' ? `/factory/rfqs/${rfqId}` : `/rfqs/${rfqId}`);
@@ -302,7 +302,7 @@ export function MessageBubble({
             if (canOpen) navigate(quotationPath);
           }}
           className='w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm text-left disabled:cursor-default enabled:hover:shadow-md enabled:active:scale-[0.99] transition-all'
-          style={{ background: 'linear-gradient(135deg, #6C47FF, #8B5CF6)' }}
+          style={{ background: 'linear-gradient(135deg, var(--brand-royal), #8B5CF6)' }}
           aria-label='ดูรายละเอียดใบเสนอราคา'
         >
           <div className='p-4'>
@@ -360,7 +360,7 @@ export function MessageBubble({
         >
           <div
             className={`rounded-2xl overflow-hidden ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
-            style={{ background: isMine ? '#7A4B94' : '#F3F4F6' }}
+            style={{ background: isMine ? 'var(--brand-mauve)' : 'var(--neutral-muted)' }}
           >
             <ImageWithFallback
               src={msg.imageUrl}
@@ -370,7 +370,7 @@ export function MessageBubble({
             {msg.content.trim() ? (
               <p
                 className='text-sm px-4 py-2 whitespace-pre-wrap break-words'
-                style={{ color: isMine ? '#fff' : '#1F2937' }}
+                style={{ color: isMine ? 'var(--neutral-white)' : '#1F2937' }}
               >
                 {msg.content}
               </p>
@@ -378,12 +378,14 @@ export function MessageBubble({
             <p
               className='text-[10px] px-4 pb-2 flex items-center gap-1'
               style={{
-                color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
+                color: isMine ? 'rgba(255,255,255,0.5)' : 'var(--neutral-placeholder)',
                 justifyContent: isMine ? 'flex-end' : 'flex-start',
               }}
             >
               {msg.status === 'sending' ? (
-                <SendingSpinner color={isMine ? '#fff' : '#9CA3AF'} />
+                <SendingSpinner
+                  color={isMine ? 'var(--neutral-white)' : 'var(--neutral-placeholder)'}
+                />
               ) : null}
               <span>{msg.display_time}</span>
               {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}
@@ -419,23 +421,25 @@ export function MessageBubble({
       <div className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
         <div
           className={`px-4 py-2.5 rounded-2xl ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
-          style={{ background: isMine ? '#7A4B94' : '#F3F4F6' }}
+          style={{ background: isMine ? 'var(--brand-mauve)' : 'var(--neutral-muted)' }}
         >
           <p
             className='text-sm whitespace-pre-wrap break-words'
-            style={{ color: isMine ? '#fff' : '#1F2937' }}
+            style={{ color: isMine ? 'var(--neutral-white)' : '#1F2937' }}
           >
             {msg.content}
           </p>
           <p
             className='text-[10px] mt-0.5 flex items-center gap-1'
             style={{
-              color: isMine ? 'rgba(255,255,255,0.5)' : '#9CA3AF',
+              color: isMine ? 'rgba(255,255,255,0.5)' : 'var(--neutral-placeholder)',
               justifyContent: isMine ? 'flex-end' : 'flex-start',
             }}
           >
             {msg.status === 'sending' ? (
-              <SendingSpinner color={isMine ? '#fff' : '#9CA3AF'} />
+              <SendingSpinner
+                color={isMine ? 'var(--neutral-white)' : 'var(--neutral-placeholder)'}
+              />
             ) : null}
             <span>{msg.display_time}</span>
             {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}

@@ -117,7 +117,9 @@ export function CertUploadModal({
             disabled={submitting}
             onClick={() => void submit(false)}
             className='py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50'
-            style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
+            style={{
+              background: 'linear-gradient(135deg, var(--status-success) 0%, #10B981 100%)',
+            }}
           >
             {submitting ? 'กำลังบันทึก...' : 'บันทึก'}
           </Button>

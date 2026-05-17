@@ -568,7 +568,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 (factoryHighlight ?? '') === (initialFactoryHighlight ?? '')) ||
               Boolean(highlightError)
             }
-            className='w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-[#A238FF] to-[#7C3AED]'
+            className='w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-brand-purple to-brand-violet'
           >
             {saving ? (
               <>

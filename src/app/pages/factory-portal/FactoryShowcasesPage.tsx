@@ -20,10 +20,10 @@ const TAB_META = {
 } as const;
 
 const STATUS_META: Record<ShowcaseStatus, { label: string; bg: string; color: string }> = {
-  DR: { label: 'ร่าง', bg: 'rgba(107,114,128,0.12)', color: '#6B7280' },
-  AC: { label: 'Active', bg: 'rgba(16,185,129,0.12)', color: '#059669' },
-  HI: { label: 'ซ่อน', bg: 'rgba(245,158,11,0.12)', color: '#D97706' },
-  AR: { label: 'Archived', bg: 'rgba(107,114,128,0.10)', color: '#9CA3AF' },
+  DR: { label: 'ร่าง', bg: 'rgba(107,114,128,0.12)', color: 'var(--neutral-subtle)' },
+  AC: { label: 'Active', bg: 'rgba(16,185,129,0.12)', color: 'var(--status-success)' },
+  HI: { label: 'ซ่อน', bg: 'rgba(245,158,11,0.12)', color: 'var(--status-warning-deep)' },
+  AR: { label: 'Archived', bg: 'rgba(107,114,128,0.10)', color: 'var(--neutral-placeholder)' },
 };
 
 function rowId(r: Row): string {
@@ -154,8 +154,8 @@ export function FactoryShowcasesPage() {
               onClick={() => changeType(type)}
               className='flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all'
               style={{
-                backgroundColor: active ? '#4F46E5' : 'transparent',
-                color: active ? '#fff' : '#334155',
+                backgroundColor: active ? 'var(--brand-indigo)' : 'transparent',
+                color: active ? 'var(--neutral-white)' : '#334155',
                 fontWeight: active ? 700 : 500,
                 boxShadow: active ? '0 2px 8px rgba(79,70,229,0.25)' : 'none',
               }}
@@ -192,7 +192,7 @@ export function FactoryShowcasesPage() {
         /* Empty state */
         <div className='rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4'>
           <div className='text-5xl'>{icon}</div>
-          <p className='text-base font-bold' style={{ color: '#2E2252' }}>
+          <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
             {empty}
           </p>
           <p className='text-sm text-gray-400'>กดปุ่มด้านล่างเพื่อเริ่มต้น</p>
@@ -258,10 +258,10 @@ export function FactoryShowcasesPage() {
                         style={{
                           backgroundColor:
                             activeType === 'MT'
-                              ? '#0EA5A4'
+                              ? 'var(--brand-teal-light)'
                               : activeType === 'PM'
-                                ? '#F28A2E'
-                                : '#5185D4',
+                                ? 'var(--brand-orange)'
+                                : 'var(--brand-sky)',
                         }}
                       >
                         {activeType === 'MT'
@@ -272,7 +272,7 @@ export function FactoryShowcasesPage() {
                       </span>
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                      <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                      <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                         {String(r.title ?? '—')}
                       </p>
                       <div className='flex items-center gap-0.5 mt-0.5'>
@@ -311,7 +311,7 @@ export function FactoryShowcasesPage() {
                     </p>
                     <div className='border-t border-gray-100 mt-3 pt-2'>
                       <div className='flex items-center justify-between gap-2 text-[11px] text-gray-500'>
-                        <p className='min-w-0 flex-1 text-xs font-semibold text-[#2E2252] line-clamp-1'>
+                        <p className='min-w-0 flex-1 text-xs font-semibold text-brand-navy line-clamp-1'>
                           {String(
                             r.factory_name ?? user?.factory_name ?? user?.name ?? 'โรงงานของคุณ',
                           )}
@@ -332,7 +332,7 @@ export function FactoryShowcasesPage() {
                       })
                     }
                     className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors'
-                    style={{ backgroundColor: '#EEF2FF', color: '#4338CA' }}
+                    style={{ backgroundColor: '#EEF2FF', color: 'var(--brand-indigo-dark)' }}
                   >
                     <Pencil size={13} />
                     แก้ไข

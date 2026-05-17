@@ -107,7 +107,10 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
             onClick={handleConfirm}
             disabled={confirming}
             className='py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60'
-            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+            style={{
+              background:
+                'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
+            }}
           >
             {confirming ? 'กำลังโหลด…' : `ยืนยัน (${selected.length})`}
           </Button>

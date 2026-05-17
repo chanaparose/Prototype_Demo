@@ -21,9 +21,9 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, { bg: string; color: string }> = {
-  PD: { bg: 'rgba(162,56,255,0.12)', color: '#4F46E5' },
-  AC: { bg: 'rgba(16,185,129,0.12)', color: '#059669' },
-  RJ: { bg: 'rgba(239,68,68,0.10)', color: '#DC2626' },
+  PD: { bg: 'rgba(162,56,255,0.12)', color: 'var(--brand-indigo)' },
+  AC: { bg: 'rgba(16,185,129,0.12)', color: 'var(--status-success)' },
+  RJ: { bg: 'rgba(239,68,68,0.10)', color: 'var(--status-danger-deep)' },
 };
 
 export function FactoryQuotationsPage() {
@@ -60,7 +60,7 @@ export function FactoryQuotationsPage() {
         <div className='flex justify-center items-start pt-8'>
           <div
             className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-            style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
+            style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
           />
         </div>
       </div>
@@ -85,7 +85,7 @@ export function FactoryQuotationsPage() {
       {rows.length === 0 && !error ? (
         <div className='rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
           <div className='text-5xl'>📄</div>
-          <p className='text-base font-bold' style={{ color: '#2E2252' }}>
+          <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
             ยังไม่มีใบเสนอราคา
           </p>
           <p className='text-sm text-gray-400'>ไปที่กระดาน RFQ เพื่อเริ่มเสนอราคา</p>
@@ -93,7 +93,8 @@ export function FactoryQuotationsPage() {
             to='/factory/rfqs'
             className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white'
             style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+              background:
+                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
               boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
             }}
           >
@@ -115,7 +116,7 @@ export function FactoryQuotationsPage() {
                       #{id}
                       {rfqId(r) ? ` · RFQ ${rfqId(r)}` : ''}
                     </p>
-                    <p className='font-bold text-sm' style={{ color: '#2E2252' }}>
+                    <p className='font-bold text-sm' style={{ color: 'var(--brand-navy)' }}>
                       ฿{Number(r.price_per_piece ?? 0).toLocaleString('th-TH')}
                       {r.lead_time_days != null ? (
                         <span className='font-normal text-gray-500'>
@@ -136,7 +137,8 @@ export function FactoryQuotationsPage() {
                       to={`/factory/quotations/${id}/edit`}
                       className='shrink-0 inline-flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-xl text-white'
                       style={{
-                        background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                        background:
+                          'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                         boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                       }}
                     >

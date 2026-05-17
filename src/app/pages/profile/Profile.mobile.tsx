@@ -43,7 +43,7 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
         icon: User,
         label: 'ข้อมูลส่วนตัว',
         sub: 'แก้ไขโปรไฟล์',
-        color: '#6C47FF',
+        color: 'var(--brand-royal)',
         bg: '#EDE9FF',
         to: '/profile/edit',
       },
@@ -51,16 +51,16 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
         icon: Star,
         label: 'รีวิวของฉัน',
         sub: 'รีวิวที่ให้กับโรงงาน',
-        color: '#F59E0B',
-        bg: '#FEF3C7',
+        color: 'var(--status-warning)',
+        bg: 'var(--status-warning-soft)',
         to: '/profile/reviews',
       },
       {
         icon: Bell,
         label: 'การแจ้งเตือน',
         sub: 'จัดการการแจ้งเตือน',
-        color: '#3B82F6',
-        bg: '#DBEAFE',
+        color: 'var(--status-info)',
+        bg: 'var(--status-info-soft)',
         to: '/notifications',
       },
     ],
@@ -93,22 +93,22 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
         icon: Shield,
         label: 'ความปลอดภัย',
         sub: 'รหัสผ่านและความเป็นส่วนตัว',
-        color: '#6B7280',
-        bg: '#F3F4F6',
+        color: 'var(--neutral-subtle)',
+        bg: 'var(--neutral-muted)',
       },
       {
         icon: HelpCircle,
         label: 'ช่วยเหลือ',
         sub: 'FAQ และติดต่อ Support',
-        color: '#6B7280',
-        bg: '#F3F4F6',
+        color: 'var(--neutral-subtle)',
+        bg: 'var(--neutral-muted)',
       },
       {
         icon: Settings,
         label: 'ตั้งค่า',
         sub: 'ภาษา, การแสดงผล',
-        color: '#6B7280',
-        bg: '#F3F4F6',
+        color: 'var(--neutral-subtle)',
+        bg: 'var(--neutral-muted)',
       },
     ],
   },
@@ -302,14 +302,14 @@ export function ProfileMobile() {
         <div
           className='rounded-3xl p-5 relative overflow-hidden'
           style={{
-            background: 'linear-gradient(135deg, #6C47FF 0%, #8B5CF6 60%, #A78BFA 100%)',
+            background: 'linear-gradient(135deg, var(--brand-royal) 0%, #8B5CF6 60%, #A78BFA 100%)',
           }}
         >
           <div className='absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20 bg-white' />
           <div className='absolute right-4 bottom-0 w-16 h-16 rounded-full opacity-15 bg-white' />
           <div className='relative z-10'>
             <div className='flex items-center gap-3 mb-4'>
-              <div className='relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/30 bg-[#EFEAF7]'>
+              <div className='relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/30 bg-brand-lavender-muted'>
                 <img
                   src={HARDCODED_CUSTOMER_PROFILE_SRC}
                   alt='avatar'
@@ -364,7 +364,7 @@ export function ProfileMobile() {
                 className='w-9 h-9 rounded-xl flex items-center justify-center'
                 style={{ background: '#EDE9FF' }}
               >
-                <Wallet size={18} style={{ color: '#6C47FF' }} />
+                <Wallet size={18} style={{ color: 'var(--brand-royal)' }} />
               </div>
               <p className='text-sm text-gray-900' style={{ fontWeight: 700 }}>
                 กระเป๋าเงิน
@@ -378,7 +378,7 @@ export function ProfileMobile() {
               ฿{currentUser.walletBalance.toLocaleString()}
             </p>
             <div className='flex items-center gap-1 mt-1'>
-              <span className='text-[10px]' style={{ color: '#F59E0B' }}>
+              <span className='text-[10px]' style={{ color: 'var(--status-warning)' }}>
                 รอดำเนินการ: ฿{currentUser.pendingBalance.toLocaleString()}
               </span>
             </div>
@@ -388,14 +388,18 @@ export function ProfileMobile() {
             <Button
               variant='unstyled'
               className='flex-1 py-2.5 rounded-xl text-xs text-white'
-              style={{ background: '#6C47FF', fontWeight: 600 }}
+              style={{ background: 'var(--brand-royal)', fontWeight: 600 }}
             >
               + เติมเงิน
             </Button>
             <Button
               variant='unstyled'
               className='flex-1 py-2.5 rounded-xl text-xs border'
-              style={{ borderColor: '#6C47FF', color: '#6C47FF', fontWeight: 600 }}
+              style={{
+                borderColor: 'var(--brand-royal)',
+                color: 'var(--brand-royal)',
+                fontWeight: 600,
+              }}
             >
               ถอนเงิน
             </Button>
@@ -407,7 +411,7 @@ export function ProfileMobile() {
               <Button
                 variant='unstyled'
                 type='button'
-                className='inline-flex items-center gap-1 text-xs font-semibold text-[#6842FF]'
+                className='inline-flex items-center gap-1 text-xs font-semibold text-brand-royal-dark'
                 onClick={() => navigate('/profile/transactions')}
               >
                 ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
@@ -424,13 +428,16 @@ export function ProfileMobile() {
                     <div
                       className='w-8 h-8 rounded-xl flex items-center justify-center'
                       style={{
-                        background: tx.type === 'credit' ? '#DCFCE7' : '#FEE2E2',
+                        background: tx.type === 'credit' ? '#DCFCE7' : 'var(--status-danger-soft)',
                       }}
                     >
                       {tx.type === 'credit' ? (
-                        <ArrowDownLeft size={14} style={{ color: '#22C55E' }} />
+                        <ArrowDownLeft
+                          size={14}
+                          style={{ color: 'var(--status-success-bright)' }}
+                        />
                       ) : (
-                        <ArrowUpRight size={14} style={{ color: '#EF4444' }} />
+                        <ArrowUpRight size={14} style={{ color: 'var(--status-danger)' }} />
                       )}
                     </div>
                     <div>
@@ -447,7 +454,10 @@ export function ProfileMobile() {
                     className='text-xs shrink-0'
                     style={{
                       fontWeight: 700,
-                      color: tx.type === 'credit' ? '#22C55E' : '#EF4444',
+                      color:
+                        tx.type === 'credit'
+                          ? 'var(--status-success-bright)'
+                          : 'var(--status-danger)',
                     }}
                   >
                     {tx.type === 'credit' ? '+' : '-'}฿{tx.amount.toLocaleString()}
@@ -474,7 +484,7 @@ export function ProfileMobile() {
                 key={item.label}
                 type='button'
                 className='w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors'
-                style={{ borderTop: idx > 0 ? '1px solid #F9FAFB' : 'none' }}
+                style={{ borderTop: idx > 0 ? '1px solid var(--neutral-surface)' : 'none' }}
                 onClick={() => {
                   if (item.to) navigate(item.to);
                 }}
@@ -503,14 +513,14 @@ export function ProfileMobile() {
         <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>
           <div className='flex items-center justify-between px-4 pt-3 pb-2'>
             <div className='flex items-center gap-2'>
-              <Home size={15} style={{ color: '#6C47FF' }} />
+              <Home size={15} style={{ color: 'var(--brand-royal)' }} />
               <p className='text-[10px] text-gray-400 uppercase tracking-wider'>ที่อยู่จัดส่ง</p>
             </div>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => setShowAddressForm((v) => !v)}
-              className='flex items-center gap-0.5 text-[10px] font-semibold text-[#6C47FF]'
+              className='flex items-center gap-0.5 text-[10px] font-semibold text-brand-royal'
             >
               <Plus size={12} /> เพิ่ม
             </Button>
@@ -522,7 +532,7 @@ export function ProfileMobile() {
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
                 placeholder='กรอกที่อยู่จัดส่ง...'
-                className='flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6C47FF]/30'
+                className='flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-royal/30'
               />
               <Button
                 variant='unstyled'
@@ -530,7 +540,7 @@ export function ProfileMobile() {
                 onClick={addAddress}
                 disabled={addingAddress || !newAddress.trim()}
                 className='px-3 py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50'
-                style={{ background: '#6C47FF' }}
+                style={{ background: 'var(--brand-royal)' }}
               >
                 {addingAddress ? '...' : 'บันทึก'}
               </Button>
@@ -544,13 +554,13 @@ export function ProfileMobile() {
             <div className='divide-y divide-gray-50'>
               {addresses.map((addr) => (
                 <div key={addr.id} className='flex items-start gap-3 px-4 py-3'>
-                  <MapPin size={14} className='text-[#6C47FF] mt-0.5 shrink-0' />
+                  <MapPin size={14} className='text-brand-royal mt-0.5 shrink-0' />
                   <div className='flex-1 min-w-0'>
                     <p className='text-xs font-semibold text-gray-700 capitalize'>{addr.label}</p>
                     <p className='text-[11px] text-gray-500 truncate'>{addr.detail}</p>
                   </div>
                   {addr.isDefault && (
-                    <span className='text-[9px] font-bold text-[#6C47FF] bg-violet-50 px-1.5 py-0.5 rounded-full shrink-0'>
+                    <span className='text-[9px] font-bold text-brand-royal bg-violet-50 px-1.5 py-0.5 rounded-full shrink-0'>
                       หลัก
                     </span>
                   )}
@@ -567,7 +577,7 @@ export function ProfileMobile() {
             navigate('/login', { replace: true });
           }}
           className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]'
-          style={{ color: '#EF4444', fontWeight: 600 }}
+          style={{ color: 'var(--status-danger)', fontWeight: 600 }}
         >
           <LogOut size={18} />
           ออกจากระบบ

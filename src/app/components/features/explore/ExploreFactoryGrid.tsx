@@ -30,19 +30,23 @@ export function ExploreFactoryGrid({
       {/* Header — matches desktop gradient */}
       <div
         className='relative px-3 py-3.5 text-center overflow-hidden'
-        style={{ background: 'linear-gradient(120deg, #2D1B4E 0%, #3D2270 40%, #2D1B4E 100%)' }}
+        style={{
+          background:
+            'linear-gradient(120deg, var(--brand-navy-deep) 0%, #3D2270 40%, var(--brand-navy-deep) 100%)',
+        }}
       >
         <div
           className='absolute top-0 right-0 h-full w-[45%] opacity-80 pointer-events-none'
           style={{
-            background: 'linear-gradient(135deg, transparent 30%, #A238FF 100%)',
+            background: 'linear-gradient(135deg, transparent 30%, var(--brand-purple) 100%)',
             clipPath: 'polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)',
           }}
         />
         <div
           className='absolute top-0 right-0 h-full w-[22%] opacity-60 pointer-events-none'
           style={{
-            background: 'linear-gradient(180deg, #F28A2E 0%, #F27830 100%)',
+            background:
+              'linear-gradient(180deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
             clipPath: 'polygon(40% 0%, 100% 0%, 100% 100%, 0% 100%)',
           }}
         />
@@ -52,11 +56,11 @@ export function ExploreFactoryGrid({
         />
         <div
           className='absolute -bottom-6 left-6 w-20 h-20 rounded-full blur-3xl opacity-25 pointer-events-none'
-          style={{ background: '#A238FF' }}
+          style={{ background: 'var(--brand-purple)' }}
         />
         <div
           className='absolute top-2 left-5 w-3 h-3 rounded-full opacity-50 pointer-events-none'
-          style={{ background: '#F28A2E' }}
+          style={{ background: 'var(--brand-orange)' }}
         />
 
         <div className='relative z-10'>
@@ -64,7 +68,7 @@ export function ExploreFactoryGrid({
             โรงงานแนะนำ
             <span
               className='inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-bold'
-              style={{ background: '#F28A2E' }}
+              style={{ background: 'var(--brand-orange)' }}
             >
               <Plus size={12} />
             </span>
@@ -92,8 +96,14 @@ export function ExploreFactoryGrid({
                 />
                 {factory.verified === true && (
                   <div className='absolute top-1 left-1 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5'>
-                    <BadgeCheck className='w-2.5 h-2.5 shrink-0' style={{ color: '#A238FF' }} />
-                    <span className='font-medium text-[8px]' style={{ color: '#A238FF' }}>
+                    <BadgeCheck
+                      className='w-2.5 h-2.5 shrink-0'
+                      style={{ color: 'var(--brand-purple)' }}
+                    />
+                    <span
+                      className='font-medium text-[8px]'
+                      style={{ color: 'var(--brand-purple)' }}
+                    >
                       ยืนยัน
                     </span>
                   </div>
@@ -101,7 +111,7 @@ export function ExploreFactoryGrid({
               </div>
               <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                 <div>
-                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                     {factory.name}
                   </p>
                   <div className='flex items-center gap-0.5'>

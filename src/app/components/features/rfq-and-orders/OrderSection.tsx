@@ -105,7 +105,7 @@ export function OrderSection({
           onClick={() => setOrderFilter('pending_payment')}
           className='w-full flex items-center gap-2 px-3 py-2.5 rounded-xl mb-3 text-left border'
           style={{
-            background: '#FFF7ED',
+            background: 'var(--surface-orange-pale)',
             borderColor: ACCENT_ORANGE,
             color: ACCENT_ORANGE_DEEP,
           }}
@@ -147,7 +147,10 @@ export function OrderSection({
                   background: isActive ? th.activeBg : 'transparent',
                 }}
               >
-                <Icon size={14} style={{ color: isActive ? th.activeColor : '#6B7280' }} />
+                <Icon
+                  size={14}
+                  style={{ color: isActive ? th.activeColor : 'var(--neutral-subtle)' }}
+                />
               </div>
               {/* Badge — bold/pulsing for pending_payment */}
               {count > 0 && (
@@ -167,7 +170,7 @@ export function OrderSection({
               <span
                 className='text-[9px] text-center leading-tight'
                 style={{
-                  color: isActive ? th.activeColor : '#6B7280',
+                  color: isActive ? th.activeColor : 'var(--neutral-subtle)',
                   fontWeight: isActive ? 700 : 500,
                 }}
               >
@@ -182,7 +185,7 @@ export function OrderSection({
       {filteredOrders.length === 0 ? (
         <div
           className='flex flex-col items-center justify-center py-14 text-center rounded-2xl border'
-          style={{ borderColor: BORDER_WARM, background: '#FFFAF5' }}
+          style={{ borderColor: BORDER_WARM, background: 'var(--surface-orange-wash)' }}
         >
           <div
             className='w-16 h-16 rounded-2xl flex items-center justify-center mb-3'

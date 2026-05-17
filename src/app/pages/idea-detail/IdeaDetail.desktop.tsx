@@ -26,8 +26,8 @@ import { RelatedShowcasesSection } from '@/components/features/idea-detail/Relat
 import { Button } from '@/components/ui/button';
 
 const CARD = {
-  purple: '#7A4B94',
-  blue: '#2E2252',
+  purple: 'var(--brand-mauve)',
+  blue: 'var(--brand-navy)',
 } as const;
 
 export function IdeaDetailDesktop() {
@@ -146,7 +146,7 @@ export function IdeaDetailDesktop() {
             <div className='flex flex-wrap items-center gap-2'>
               <span
                 className='inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-semibold'
-                style={{ background: '#FFF4E8', color: BRAND.orange }}
+                style={{ background: 'var(--surface-orange-tint)', color: BRAND.orange }}
               >
                 บทความไอเดีย
               </span>
@@ -254,7 +254,7 @@ export function IdeaDetailDesktop() {
         />
 
         <section className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6'>
-          <h2 className='text-[16px] font-bold mb-4' style={{ color: '#2E2252' }}>
+          <h2 className='text-[16px] font-bold mb-4' style={{ color: 'var(--brand-navy)' }}>
             บทความที่น่าสนใจให้อ่านต่อ
           </h2>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -279,7 +279,7 @@ export function IdeaDetailDesktop() {
                     <span className='text-[10px] text-gray-400 truncate'>{next.factoryName}</span>
                   </div>
                   <h3
-                    className='text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors'
+                    className='text-[14px] font-bold line-clamp-2 leading-snug group-hover:text-brand-magenta transition-colors'
                     style={{ color: CARD.blue }}
                   >
                     {next.title}

@@ -30,13 +30,13 @@ export function RfqDetailStatusCard({
         <div className='flex items-center gap-2'>
           <div
             className='w-10 h-10 rounded-xl flex items-center justify-center text-lg'
-            style={{ background: '#F8F6FA' }}
+            style={{ background: 'var(--brand-page)' }}
           >
             {rfq.categoryIcon}
           </div>
           <div>
             <p className='text-[10px] text-gray-400'>{rfq.category}</p>
-            <p className='text-sm' style={{ color: '#2E2252', fontWeight: 700 }}>
+            <p className='text-sm' style={{ color: 'var(--brand-navy)', fontWeight: 700 }}>
               {rfq.projectName}
             </p>
           </div>

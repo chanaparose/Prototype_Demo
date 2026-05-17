@@ -463,7 +463,9 @@ function ChatRoomBody({
                   alt={conv.factoryName}
                   className='w-8 h-8 rounded-xl object-cover bg-gray-100'
                 />
-                <p className='text-sm font-bold text-[#2E2252]'>{conv.factoryName || 'การสนทนา'}</p>
+                <p className='text-sm font-bold text-brand-navy'>
+                  {conv.factoryName || 'การสนทนา'}
+                </p>
               </div>
             )}
           </div>
@@ -480,7 +482,7 @@ function ChatRoomBody({
         </div>
 
         {showMiniDash ? (
-          <div className='rounded-2xl overflow-hidden transition-all duration-300 bg-[#F8F6FA]'>
+          <div className='rounded-2xl overflow-hidden transition-all duration-300 bg-brand-page'>
             <Button
               variant='unstyled'
               type='button'
@@ -489,12 +491,12 @@ function ChatRoomBody({
             >
               <div className='flex items-center gap-2'>
                 <span className='text-sm'>📋</span>
-                <span className='text-xs truncate max-w-[200px] font-semibold text-[#2E2252]'>
+                <span className='text-xs truncate max-w-[200px] font-semibold text-brand-navy'>
                   {conv.rfqName || 'RFQ / ใบเสนอราคา'}
                 </span>
               </div>
               <div className='flex items-center gap-2 shrink-0'>
-                <span className='px-2 py-0.5 rounded-full bg-[#2E2252]/[0.08] text-[9px] font-semibold text-[#2E2252]'>
+                <span className='px-2 py-0.5 rounded-full bg-brand-navy/[0.08] text-[9px] font-semibold text-brand-navy'>
                   {apiConv?.has_quote ? 'มีใบเสนอราคา' : 'สถานะ'}
                 </span>
                 {miniDashOpen ? (
@@ -506,22 +508,22 @@ function ChatRoomBody({
             </Button>
 
             {miniDashOpen && latestQuote?.quoteData && (
-              <div className='px-3 pb-3 border-t border-[#7A4B94]/15'>
+              <div className='px-3 pb-3 border-t border-brand-mauve/15'>
                 <div className='flex gap-3 mt-2.5'>
                   <div className='flex-1 bg-white rounded-xl p-2.5 text-center'>
-                    <p className='text-sm font-bold text-[#E38844]'>
+                    <p className='text-sm font-bold text-brand-orange-deep'>
                       ฿{latestQuote.quoteData.price.toLocaleString()}
                     </p>
                     <p className='text-[9px] text-gray-500'>ราคา</p>
                   </div>
                   <div className='flex-1 bg-white rounded-xl p-2.5 text-center'>
-                    <p className='text-sm font-bold text-[#2E2252]'>
+                    <p className='text-sm font-bold text-brand-navy'>
                       {latestQuote.quoteData.leadTime} วัน
                     </p>
                     <p className='text-[9px] text-gray-500'>lead time</p>
                   </div>
                   <div className='flex-1 bg-white rounded-xl p-2.5 text-center'>
-                    <p className='text-sm font-bold text-[#2E2252]'>
+                    <p className='text-sm font-bold text-brand-navy'>
                       {latestQuote.quoteData.validUntil}
                     </p>
                     <p className='text-[9px] text-gray-500'>ใช้ได้ถึง</p>
@@ -601,7 +603,7 @@ function ChatRoomBody({
               scrollToBottom(true);
               setUnseenNewCount(0);
             }}
-            className='absolute -top-12 right-4 z-10 flex items-center gap-1.5 rounded-full bg-[#7A4B94] text-white text-xs font-semibold px-3 py-1.5 shadow-lg hover:opacity-90 transition-opacity'
+            className='absolute -top-12 right-4 z-10 flex items-center gap-1.5 rounded-full bg-brand-mauve text-white text-xs font-semibold px-3 py-1.5 shadow-lg hover:opacity-90 transition-opacity'
           >
             <ChevronDown size={14} />↓ {unseenNewCount} ข้อความใหม่
           </Button>
@@ -653,7 +655,7 @@ function ChatRoomBody({
               type='button'
               onClick={() => setShowRFQPicker(true)}
               disabled={!apiConv}
-              className='h-10 rounded-xl px-2.5 text-xs font-medium border border-[#7A4B94]/30 text-[#7A4B94] hover:bg-[#7A4B94]/5 shrink-0 disabled:opacity-50'
+              className='h-10 rounded-xl px-2.5 text-xs font-medium border border-brand-mauve/30 text-brand-mauve hover:bg-brand-mauve/5 shrink-0 disabled:opacity-50'
             >
               <span className='inline-flex items-center gap-1'>
                 <FileText size={14} /> แนบ RFQ
@@ -667,7 +669,7 @@ function ChatRoomBody({
             onClick={() => void sendMessage()}
             disabled={!message.trim() || sending || !apiConv}
             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${
-              message.trim() && !sending && apiConv ? 'bg-[#E38844]' : 'bg-[#E5E7EB]'
+              message.trim() && !sending && apiConv ? 'bg-brand-orange-deep' : 'bg-neutral-border'
             }`}
           >
             <Send

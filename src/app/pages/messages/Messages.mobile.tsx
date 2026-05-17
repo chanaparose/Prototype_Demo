@@ -52,15 +52,18 @@ export function MessagesMobile({
       {/* Header */}
       <div className='flex items-center justify-between mb-5'>
         <div>
-          <p className='text-[10px] uppercase tracking-wider' style={{ color: '#7A4B94' }}>
+          <p
+            className='text-[10px] uppercase tracking-wider'
+            style={{ color: 'var(--brand-mauve)' }}
+          >
             สื่อสาร
           </p>
           <div className='flex items-center gap-2'>
-            <h1 style={{ fontWeight: 700, color: '#2E2252' }}>ข้อความ</h1>
+            <h1 style={{ fontWeight: 700, color: 'var(--brand-navy)' }}>ข้อความ</h1>
             {totalUnread > 0 && (
               <span
                 className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px]'
-                style={{ background: '#E38844', fontWeight: 700 }}
+                style={{ background: 'var(--brand-orange-deep)', fontWeight: 700 }}
               >
                 {totalUnread}
               </span>
@@ -91,7 +94,7 @@ export function MessagesMobile({
             type='button'
             onClick={() => void onReload()}
             className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white'
-            style={{ background: '#7A4B94' }}
+            style={{ background: 'var(--brand-mauve)' }}
           >
             <RefreshCw size={16} />
             ลองอีกครั้ง
@@ -138,7 +141,7 @@ function ConversationCard({ conv, onClick }: { conv: UiConversation; onClick: ()
                 {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
               </span>
               {conv.unread > 0 ? (
-                <span className='px-1.5 py-0.5 rounded-full bg-[#A238FF] text-white text-[10px]'>
+                <span className='px-1.5 py-0.5 rounded-full bg-brand-purple text-white text-[10px]'>
                   {conv.unread}
                 </span>
               ) : null}
@@ -146,12 +149,14 @@ function ConversationCard({ conv, onClick }: { conv: UiConversation; onClick: ()
           }
         />
         <div className='pl-[56px]'>
-          <p className='text-[10px] mb-1 truncate' style={{ color: '#7A4B94' }}>
+          <p className='text-[10px] mb-1 truncate' style={{ color: 'var(--brand-mauve)' }}>
             {conv.rfqName}
           </p>
           <p
             className='text-xs truncate max-w-[220px]'
-            style={{ color: conv.unread > 0 ? '#374151' : '#9CA3AF' }}
+            style={{
+              color: conv.unread > 0 ? 'var(--neutral-text)' : 'var(--neutral-placeholder)',
+            }}
           >
             {conv.lastMessage}
           </p>
@@ -160,10 +165,10 @@ function ConversationCard({ conv, onClick }: { conv: UiConversation; onClick: ()
       {conv.hasQuote && (
         <div
           className='mt-3 flex items-center gap-2 px-3 py-2 rounded-xl'
-          style={{ background: '#FFF4E8' }}
+          style={{ background: 'var(--surface-orange-tint)' }}
         >
           <span className='text-sm'>💰</span>
-          <span className='text-xs' style={{ color: '#E38844', fontWeight: 600 }}>
+          <span className='text-xs' style={{ color: 'var(--brand-orange-deep)', fontWeight: 600 }}>
             มีใบเสนอราคาใหม่ — กดเพื่อดู
           </span>
         </div>
@@ -177,13 +182,13 @@ function MobileEmptyState() {
     <div className='flex flex-col items-center justify-center py-16 text-center'>
       <div
         className='w-20 h-20 rounded-3xl flex items-center justify-center mb-4'
-        style={{ background: 'linear-gradient(135deg, #F8F6FA, rgba(122,75,148,0.12))' }}
+        style={{ background: 'linear-gradient(135deg, var(--brand-page), rgba(122,75,148,0.12))' }}
       >
-        <span className='text-3xl' style={{ color: '#7A4B94' }}>
+        <span className='text-3xl' style={{ color: 'var(--brand-mauve)' }}>
           💬
         </span>
       </div>
-      <p className='mb-1' style={{ fontWeight: 600, color: '#2E2252' }}>
+      <p className='mb-1' style={{ fontWeight: 600, color: 'var(--brand-navy)' }}>
         ยังไม่มีข้อความ
       </p>
       <p className='text-sm text-gray-500 max-w-[200px]'>

@@ -148,7 +148,10 @@ export function PromotionDetailDesktop() {
     });
 
   return (
-    <div className='hidden lg:block min-h-[calc(100vh-4rem)]' style={{ background: '#F6F4FB' }}>
+    <div
+      className='hidden lg:block min-h-[calc(100vh-4rem)]'
+      style={{ background: 'var(--brand-panel)' }}
+    >
       {/* ── Breadcrumb / back row ── */}
       <div className='px-8 pt-5 pb-3'>
         <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
@@ -182,7 +185,7 @@ export function PromotionDetailDesktop() {
             <div className='w-[450px] shrink-0'>
               <div
                 className='relative aspect-[4/3] rounded-xl overflow-hidden border'
-                style={{ borderColor: BRAND.border, background: '#F5F5F5' }}
+                style={{ borderColor: BRAND.border, background: 'var(--neutral-warm-surface)' }}
               >
                 <ImageWithFallback
                   src={gallery[activeImage] ?? item.image}
@@ -274,7 +277,11 @@ export function PromotionDetailDesktop() {
                 >
                   <Heart
                     className='w-3.5 h-3.5'
-                    style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }}
+                    style={
+                      liked
+                        ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
+                        : { color: BRAND.orange }
+                    }
                   />
                   {likeCount} คนสนใจ
                 </Button>
@@ -282,9 +289,12 @@ export function PromotionDetailDesktop() {
 
               <div
                 className='mt-4 px-4 py-3 rounded-xl border'
-                style={{ background: '#FFF9F2', borderColor: '#F8DEC1' }}
+                style={{ background: 'var(--surface-paper-warm)', borderColor: '#F8DEC1' }}
               >
-                <p className='text-[22px] font-bold leading-none' style={{ color: '#7C3AED' }}>
+                <p
+                  className='text-[22px] font-bold leading-none'
+                  style={{ color: 'var(--brand-violet)' }}
+                >
                   {priceText}
                 </p>
                 {item.basePrice != null &&
@@ -550,7 +560,7 @@ export function PromotionDetailDesktop() {
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                       <div>
-                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                           {rp.title}
                         </p>
                         <div className='flex items-center gap-0.5 mt-0.5'>

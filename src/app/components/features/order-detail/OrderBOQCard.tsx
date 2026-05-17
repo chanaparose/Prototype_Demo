@@ -139,7 +139,7 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
             <div key={tile.label} className='bg-gray-50 rounded-xl p-2.5 text-center'>
               <p
                 className='text-sm font-bold'
-                style={{ color: tile.accent ? '#7A4B94' : '#2E2252' }}
+                style={{ color: tile.accent ? 'var(--brand-mauve)' : 'var(--brand-navy)' }}
               >
                 {tile.value}
               </p>
@@ -173,7 +173,7 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
               label='รวมทั้งหมด (Grand total)'
               value={`฿${fmt(grandTotal)}`}
               bold
-              valueColor='text-[#7A4B94]'
+              valueColor='text-brand-mauve'
             />
           </div>
         </div>
@@ -232,7 +232,7 @@ function Row({
       <span className={`text-[11px] ${muted ? 'text-gray-400' : 'text-gray-600'}`}>{label}</span>
       <span
         className={`text-[11px] ${bold ? 'font-bold' : 'font-semibold'} ${
-          valueColor ?? (muted ? 'text-gray-500' : 'text-[#2E2252]')
+          valueColor ?? (muted ? 'text-gray-500' : 'text-brand-navy')
         }`}
       >
         {value}

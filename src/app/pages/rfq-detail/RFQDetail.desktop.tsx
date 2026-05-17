@@ -17,15 +17,16 @@ import {
   STATUS_LABEL,
 } from '@/components/features/rfq-detail';
 import { Button } from '@/components/ui/button';
+import { appColors } from '@/styles/colors';
 
 const COLORS = {
-  purple: '#7A4B94',
-  purpleLight: '#9D77B2',
-  orange: '#E38844',
-  blue: '#2E2252',
-  white: '#FFFFFF',
-  gray: '#F5F5F5',
-  lightPurpleBg: '#F8F6FA',
+  purple: appColors.brand.mauve,
+  purpleLight: appColors.brand.mauveLight,
+  orange: appColors.brand.orangeDeep,
+  blue: appColors.brand.navy,
+  white: appColors.neutral.white,
+  gray: appColors.neutral.warmSurface,
+  lightPurpleBg: appColors.brand.page,
 };
 // สถานะที่ลูกค้าสามารถ "ปิดรับคำขอ" ด้วยตนเองได้ (ยังเปิดอยู่ มีหรือไม่มีข้อเสนอก็ได้)
 const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
@@ -140,14 +141,14 @@ export function RFQDetailDesktop() {
 
   const statusBadgeStyle = isHistoryView
     ? rfq.status === 'completed'
-      ? { background: '#D1FAE5', color: '#059669' }
+      ? { background: 'var(--status-success-soft)', color: 'var(--status-success)' }
       : rfq.status === 'cancelled'
-        ? { background: '#F1F5F9', color: '#64748B' }
-        : { background: '#FEF3C7', color: '#B45309' }
+        ? { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
+        : { background: 'var(--status-warning-soft)', color: '#B45309' }
     : isClosedRequest
       ? rfq.status === 'completed'
         ? { background: '#E8F7EE', color: '#0F9F6E' }
-        : { background: '#F1F5F9', color: '#64748B' }
+        : { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
       : { background: COLORS.lightPurpleBg, color: COLORS.purple };
 
   const statusLabel = isClosedRequest
@@ -226,7 +227,7 @@ export function RFQDetailDesktop() {
                 style={{
                   borderColor: COLORS.purple,
                   color: COLORS.purple,
-                  backgroundColor: '#F8F6FA',
+                  backgroundColor: 'var(--brand-page)',
                 }}
               >
                 {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
@@ -319,15 +320,17 @@ export function RFQDetailDesktop() {
 
             <div
               className='rounded-2xl p-5 text-white shadow-sm relative overflow-hidden'
-              style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
+              style={{
+                background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)',
+              }}
             >
               <div
                 className='absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-40 blur-2xl mix-blend-screen'
-                style={{ backgroundColor: '#FF7A00' }}
+                style={{ backgroundColor: 'var(--brand-orange-hot)' }}
               />
               <div
                 className='absolute -left-4 -bottom-4 w-20 h-20 rounded-full opacity-30 blur-xl mix-blend-screen'
-                style={{ backgroundColor: '#A238FF' }}
+                style={{ backgroundColor: 'var(--brand-purple)' }}
               />
               <div className='relative z-10'>
                 <p className='text-sm font-bold'>ต้องการ RFQ ใหม่?</p>

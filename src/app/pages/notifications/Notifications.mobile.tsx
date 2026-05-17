@@ -194,7 +194,7 @@ export function NotificationsMobile() {
               การแจ้งเตือน
             </h1>
             {unreadCount > 0 ? (
-              <span className='min-w-[18px] h-[18px] px-1 rounded-full bg-[#A238FF] text-white flex items-center justify-center text-[9px] font-bold'>
+              <span className='min-w-[18px] h-[18px] px-1 rounded-full bg-brand-purple text-white flex items-center justify-center text-[9px] font-bold'>
                 {unreadCount}
               </span>
             ) : null}
@@ -206,7 +206,7 @@ export function NotificationsMobile() {
             type='button'
             onClick={() => void markAllRead()}
             disabled={markingAll}
-            className='text-[11px] font-semibold text-[#A238FF] disabled:opacity-50 px-2 py-1 rounded-lg hover:bg-violet-50'
+            className='text-[11px] font-semibold text-brand-purple disabled:opacity-50 px-2 py-1 rounded-lg hover:bg-violet-50'
           >
             {markingAll ? '…' : 'อ่านทั้งหมด'}
           </Button>
@@ -224,7 +224,7 @@ export function NotificationsMobile() {
             type='text'
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className='block w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-sm text-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-[#A238FF] transition-all'
+            className='block w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl text-sm text-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-brand-purple transition-all'
             placeholder='ค้นหาการแจ้งเตือน...'
           />
         </div>
@@ -244,9 +244,9 @@ export function NotificationsMobile() {
                 onClick={() => setTab(t.key as 'all' | 'rfq' | 'order')}
                 className='rounded-lg px-2 py-1.5 text-[11px] font-semibold border transition-colors'
                 style={{
-                  borderColor: active ? '#A238FF' : '#E2E8F0',
-                  background: active ? '#F3E8FF' : '#fff',
-                  color: active ? '#7E22CE' : '#64748B',
+                  borderColor: active ? 'var(--brand-purple)' : 'var(--neutral-slate-border)',
+                  background: active ? '#F3E8FF' : 'var(--neutral-white)',
+                  color: active ? '#7E22CE' : 'var(--neutral-slate-subtle)',
                 }}
               >
                 {t.label}
@@ -261,9 +261,9 @@ export function NotificationsMobile() {
             onClick={() => setOnlyUnread((v) => !v)}
             className='inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors'
             style={{
-              borderColor: onlyUnread ? '#A238FF' : '#E2E8F0',
-              background: onlyUnread ? '#F3E8FF' : '#FFFFFF',
-              color: onlyUnread ? '#7E22CE' : '#64748B',
+              borderColor: onlyUnread ? 'var(--brand-purple)' : 'var(--neutral-slate-border)',
+              background: onlyUnread ? '#F3E8FF' : 'var(--neutral-white)',
+              color: onlyUnread ? '#7E22CE' : 'var(--neutral-slate-subtle)',
             }}
           >
             ยังไม่อ่าน
@@ -364,7 +364,7 @@ function NotificationCard({
   return (
     <div
       className={`bg-white p-3 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] border transition-all flex items-center gap-3 ${
-        read ? 'border-slate-50' : 'border-[#A238FF]/20 bg-violet-50/30'
+        read ? 'border-slate-50' : 'border-brand-purple/20 bg-violet-50/30'
       }`}
     >
       <div className='relative w-12 h-12 shrink-0'>
@@ -372,7 +372,7 @@ function NotificationCard({
           {icon}
         </div>
         {!read ? (
-          <span className='absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#A238FF] border-2 border-white rounded-full' />
+          <span className='absolute -top-1 -right-1 w-3.5 h-3.5 bg-brand-purple border-2 border-white rounded-full' />
         ) : null}
       </div>
 
@@ -384,7 +384,7 @@ function NotificationCard({
             {notif.title}
           </h3>
           <span
-            className={`text-[11px] font-semibold shrink-0 ${!read ? 'text-[#A238FF]' : 'text-slate-400'}`}
+            className={`text-[11px] font-semibold shrink-0 ${!read ? 'text-brand-purple' : 'text-slate-400'}`}
           >
             {formatTimeLabel(notif.created_at)}
           </span>
@@ -412,24 +412,24 @@ function NotificationCard({
 function getNotificationIcon(type: string) {
   switch (String(type).toUpperCase()) {
     case 'ORDER_PLACED':
-      return <ShoppingBag className='text-[#A238FF]' size={20} />;
+      return <ShoppingBag className='text-brand-purple' size={20} />;
     case 'ORDER_SHIPPED':
-      return <Truck className='text-[#A238FF]' size={20} />;
+      return <Truck className='text-brand-purple' size={20} />;
     case 'ORDER_COMPLETED':
       return <CheckCircle className='text-green-500' size={20} />;
     case 'ORDER_CANCELLED':
       return <XCircle className='text-red-400' size={20} />;
     case 'PAYMENT_RECEIVED':
-      return <CreditCard className='text-[#A238FF]' size={20} />;
+      return <CreditCard className='text-brand-purple' size={20} />;
     case 'REVIEW_RECEIVED':
       return <Star className='text-amber-500' size={20} />;
     case 'QUOTATION_ACCEPTED':
       return <FileCheck className='text-green-500' size={20} />;
     case 'QUOTATION_RECEIVED':
-      return <FileText className='text-[#A238FF]' size={20} />;
+      return <FileText className='text-brand-purple' size={20} />;
     case 'RFQ_RECEIVED':
-      return <Bell className='text-[#A238FF]' size={20} />;
+      return <Bell className='text-brand-purple' size={20} />;
     default:
-      return <Bell className='text-[#A238FF]' size={20} />;
+      return <Bell className='text-brand-purple' size={20} />;
   }
 }

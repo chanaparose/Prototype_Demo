@@ -171,7 +171,7 @@ export function PromotionDetailMobile() {
   }
 
   return (
-    <div className='min-h-screen bg-[#F6F4FB] pb-[72px]'>
+    <div className='min-h-screen bg-brand-panel pb-[72px]'>
       {/* ── Image carousel (เดียวกับหน้าสินค้ามือถือ) ── */}
       <div className='relative w-full aspect-[4/3] bg-white overflow-hidden'>
         <div className='absolute inset-0 flex items-center justify-center'>
@@ -277,11 +277,17 @@ export function PromotionDetailMobile() {
 
         <div className='flex items-baseline gap-2 flex-wrap mt-2'>
           {priceText ? (
-            <p className='text-[24px] font-bold leading-none' style={{ color: '#7C3AED' }}>
+            <p
+              className='text-[24px] font-bold leading-none'
+              style={{ color: 'var(--brand-violet)' }}
+            >
               {priceText}
             </p>
           ) : (
-            <p className='text-[18px] font-semibold leading-none' style={{ color: '#7C3AED' }}>
+            <p
+              className='text-[18px] font-semibold leading-none'
+              style={{ color: 'var(--brand-violet)' }}
+            >
               สอบถามราคากับโรงงาน
             </p>
           )}
@@ -307,7 +313,11 @@ export function PromotionDetailMobile() {
           >
             <Heart
               className='w-3 h-3'
-              style={liked ? { color: '#EF4444', fill: '#EF4444' } : { color: BRAND.orange }}
+              style={
+                liked
+                  ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
+                  : { color: BRAND.orange }
+              }
             />
             <span className='text-[11px]'>{likeCount}</span>
             <span className='text-[11px]'>สนใจ</span>
@@ -315,11 +325,11 @@ export function PromotionDetailMobile() {
         </div>
       </div>
 
-      <div className='h-2' style={{ background: '#F6F4FB' }} />
+      <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
       {item.tags.length > 0 ? (
         <>
-          <div className='h-2' style={{ background: '#F6F4FB' }} />
+          <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
           <div className='bg-white px-4 py-3'>
             <p className='text-[12px] font-semibold mb-2' style={{ color: BRAND.ink }}>
               แท็กสินค้า
@@ -339,7 +349,7 @@ export function PromotionDetailMobile() {
         </>
       ) : null}
 
-      <div className='h-2' style={{ background: '#F6F4FB' }} />
+      <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
       {/* ── Specifications (รวมช่วงเวลาโปรเป็นแถว — แทนการ์ดสีชมพูแยก) ── */}
       <div className='bg-white px-4 py-3'>
@@ -379,7 +389,7 @@ export function PromotionDetailMobile() {
         )}
       </div>
 
-      <div className='h-2' style={{ background: '#F6F4FB' }} />
+      <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
 
       {/* ── Shop card ── */}
       <Button
@@ -496,7 +506,7 @@ export function PromotionDetailMobile() {
       </div>
 
       <>
-        <div className='h-2' style={{ background: '#F6F4FB' }} />
+        <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
         <div className='bg-white px-4 py-3'>
           <div className='flex items-center justify-between mb-2'>
             <p className='text-[13px] font-bold' style={{ color: BRAND.ink }}>
@@ -539,7 +549,7 @@ export function PromotionDetailMobile() {
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5 min-w-0'>
                       <div>
-                        <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                        <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                           {rp.title}
                         </h3>
                         <div className='flex items-center gap-0.5 mt-0.5'>
@@ -600,7 +610,7 @@ export function PromotionDetailMobile() {
         >
           <Heart
             className='w-5 h-5 shrink-0'
-            style={liked ? { color: '#EF4444', fill: '#EF4444' } : {}}
+            style={liked ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' } : {}}
           />
           <span className='text-[10px] leading-none text-gray-500'>{likeCount}</span>
         </Button>
@@ -611,7 +621,7 @@ export function PromotionDetailMobile() {
           disabled={starting}
           className='flex-1 flex items-center justify-center gap-2 text-white font-bold text-[14px] disabled:opacity-70'
           style={{
-            background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)',
+            background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
           }}
         >
           {starting ? (

@@ -55,13 +55,13 @@ export function MessagesDesktop({
         {/* Header */}
         <div className='px-5 pt-6 pb-4 border-b border-gray-100'>
           <div className='flex items-center gap-2 mb-4'>
-            <h2 className='text-lg font-bold' style={{ color: '#2E2252' }}>
+            <h2 className='text-lg font-bold' style={{ color: 'var(--brand-navy)' }}>
               ข้อความ
             </h2>
             {totalUnread > 0 && (
               <span
                 className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] font-bold'
-                style={{ background: '#E38844' }}
+                style={{ background: 'var(--brand-orange-deep)' }}
               >
                 {totalUnread}
               </span>
@@ -92,7 +92,7 @@ export function MessagesDesktop({
                 type='button'
                 onClick={() => void onReload()}
                 className='inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white'
-                style={{ background: '#7A4B94' }}
+                style={{ background: 'var(--brand-mauve)' }}
               >
                 <RefreshCw size={16} />
                 ลองอีกครั้ง
@@ -104,9 +104,9 @@ export function MessagesDesktop({
                 className='w-14 h-14 rounded-2xl flex items-center justify-center mb-3'
                 style={{ background: 'rgba(122,75,148,0.10)' }}
               >
-                <MessageCircle size={26} style={{ color: '#7A4B94' }} />
+                <MessageCircle size={26} style={{ color: 'var(--brand-mauve)' }} />
               </div>
-              <p className='font-semibold text-sm mb-1' style={{ color: '#2E2252' }}>
+              <p className='font-semibold text-sm mb-1' style={{ color: 'var(--brand-navy)' }}>
                 ยังไม่มีข้อความ
               </p>
               <p className='text-xs text-gray-400'>ข้อความจะปรากฏหลังจากส่ง RFQ</p>
@@ -123,8 +123,10 @@ export function MessagesDesktop({
                     onClick={() => setSelectedId(conv.id)}
                     className='w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors'
                     style={{
-                      backgroundColor: isActive ? '#F8F6FA' : 'transparent',
-                      borderLeft: isActive ? '3px solid #7A4B94' : '3px solid transparent',
+                      backgroundColor: isActive ? 'var(--brand-page)' : 'transparent',
+                      borderLeft: isActive
+                        ? '3px solid var(--brand-mauve)'
+                        : '3px solid transparent',
                     }}
                   >
                     <div className='flex-1 min-w-0'>
@@ -137,21 +139,27 @@ export function MessagesDesktop({
                               {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
                             </span>
                             {conv.unread > 0 ? (
-                              <span className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2 font-bold bg-[#A238FF]'>
+                              <span className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px] shrink-0 ml-2 font-bold bg-brand-purple'>
                                 {conv.unread}
                               </span>
                             ) : null}
                           </div>
                         }
                       />
-                      <p className='text-[10px] mb-0.5 truncate' style={{ color: '#7A4B94' }}>
+                      <p
+                        className='text-[10px] mb-0.5 truncate'
+                        style={{ color: 'var(--brand-mauve)' }}
+                      >
                         {conv.rfqName}
                       </p>
                       <div className='flex items-center justify-between'>
                         <p
                           className='text-xs truncate'
                           style={{
-                            color: conv.unread > 0 ? '#374151' : '#9CA3AF',
+                            color:
+                              conv.unread > 0
+                                ? 'var(--neutral-text)'
+                                : 'var(--neutral-placeholder)',
                             fontWeight: conv.unread > 0 ? 500 : 400,
                           }}
                         >
@@ -190,11 +198,11 @@ export function MessagesDesktop({
           <div className='flex flex-col items-center justify-center flex-1'>
             <div
               className='w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5'
-              style={{ background: 'linear-gradient(135deg, #2D1B4E, #4A267D)' }}
+              style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep), #4A267D)' }}
             >
               <MessageSquareDot size={36} style={{ color: '#EBD3FF' }} />
             </div>
-            <h3 className='font-bold text-lg mb-2' style={{ color: '#2E2252' }}>
+            <h3 className='font-bold text-lg mb-2' style={{ color: 'var(--brand-navy)' }}>
               เลือกการสนทนา
             </h3>
             <p className='text-gray-500 text-sm leading-relaxed mb-2'>

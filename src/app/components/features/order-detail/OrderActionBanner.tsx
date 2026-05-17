@@ -33,7 +33,7 @@ export function OrderActionBanner({
   const amount = nextAction?.amount ?? pay?.amount ?? 0;
   const due = nextAction?.due_date ?? pay?.due_date ?? '';
   const daysLeft = diffDaysFromNow(due);
-  const urgencyBg = daysLeft <= 1 ? '#FEE2E2' : PEACH_MIST;
+  const urgencyBg = daysLeft <= 1 ? 'var(--status-danger-soft)' : PEACH_MIST;
   const ctaUrl = (nextAction?.cta_url || fallbackCtaUrl || '').trim();
   const ctaLabel = nextAction?.cta_label_th ?? 'ชำระเงินเต็มจำนวน';
 

@@ -138,7 +138,7 @@ export function OrderProductionTab({
       <div className='flex flex-col items-center justify-center py-16 gap-3'>
         <div
           className='w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mb-3'
-          style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+          style={{ borderColor: 'var(--brand-purple)', borderTopColor: 'transparent' }}
         />
         <p className='text-sm text-gray-500'>กำลังโหลดการผลิต…</p>
       </div>

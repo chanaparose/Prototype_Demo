@@ -34,7 +34,7 @@ export function ShowcaseHeroGallery({
     <div className={className}>
       <div
         className='relative aspect-[4/3] rounded-xl overflow-hidden border'
-        style={{ borderColor, background: '#F5F5F5' }}
+        style={{ borderColor, background: 'var(--neutral-warm-surface)' }}
       >
         <ImageWithFallback
           src={gallery[activeImage] ?? fallbackImage}

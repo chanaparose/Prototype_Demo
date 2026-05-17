@@ -223,7 +223,7 @@ export function MyReviewsPage() {
               type='button'
               disabled={editSaving}
               onClick={() => void saveEdit()}
-              className='w-full rounded-xl bg-[#6C47FF] py-2.5 text-sm font-semibold text-white disabled:opacity-60'
+              className='w-full rounded-xl bg-brand-royal py-2.5 text-sm font-semibold text-white disabled:opacity-60'
             >
               {editSaving ? 'กำลังบันทึก…' : 'บันทึก'}
             </Button>

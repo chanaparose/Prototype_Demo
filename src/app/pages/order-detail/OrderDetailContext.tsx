@@ -225,7 +225,7 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       <div className='min-h-[40vh] flex flex-col items-center justify-center px-4'>
         <div
           className='w-10 h-10 rounded-full border-3 border-t-transparent animate-spin mb-3'
-          style={{ borderColor: '#A238FF', borderTopColor: 'transparent' }}
+          style={{ borderColor: 'var(--brand-purple)', borderTopColor: 'transparent' }}
         />
         <p className='text-sm text-gray-500'>กำลังโหลดคำสั่งซื้อ…</p>
       </div>
@@ -239,7 +239,7 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
         <Link
           to='/orders'
           className='px-6 py-3 rounded-xl text-white font-semibold text-center inline-block'
-          style={{ background: '#A238FF' }}
+          style={{ background: 'var(--brand-purple)' }}
         >
           กลับไปรายการคำสั่งซื้อ
         </Link>

@@ -58,7 +58,7 @@ export function SubCategoryPickerModal({
           <Button
             onClick={() => onConfirm(working)}
             className='py-3 rounded-xl text-white text-sm font-semibold'
-            style={{ background: 'linear-gradient(135deg, #0D9488 0%, #14B8A6 100%)' }}
+            style={{ background: 'linear-gradient(135deg, var(--brand-teal) 0%, #14B8A6 100%)' }}
           >
             ยืนยัน ({selectedInScope} ในหมวดนี้)
           </Button>

@@ -40,7 +40,10 @@ export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard
             disabled={saving || !isDirty}
             size='sm'
             className='inline-flex items-center gap-1 px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-50'
-            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+            style={{
+              background:
+                'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
+            }}
           >
             <Check size={14} /> {saving ? 'กำลังบันทึก…' : 'บันทึกทั้งหมด'}
           </Button>

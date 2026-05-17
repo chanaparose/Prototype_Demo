@@ -29,9 +29,9 @@ const DEFAULT_USER_AVATAR_SRC =
   'data:image/svg+xml,' +
   encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-      <rect width="64" height="64" rx="14" fill="#EDE9FE"/>
-      <circle cx="32" cy="26" r="11" fill="#A238FF" opacity="0.35"/>
-      <ellipse cx="32" cy="48" rx="18" ry="14" fill="#A238FF" opacity="0.25"/>
+      <rect width="64" height="64" rx="14" fill="var(--brand-violet-soft)"/>
+      <circle cx="32" cy="26" r="11" fill="var(--brand-purple)" opacity="0.35"/>
+      <ellipse cx="32" cy="48" rx="18" ry="14" fill="var(--brand-purple)" opacity="0.25"/>
     </svg>`,
   );
 
@@ -105,7 +105,7 @@ export function DesktopSidebar() {
                     locked ? 'cursor-not-allowed opacity-60' : ''
                   } ${active ? 'border-l-4 border-indigo-600 pl-3' : 'border-l-4 border-transparent'}`}
                   style={{
-                    color: active ? '#4338CA' : '#475569',
+                    color: active ? 'var(--brand-indigo-dark)' : '#475569',
                     background: active ? '#EEF2FF' : 'transparent',
                     fontWeight: active ? 600 : 500,
                   }}
@@ -123,7 +123,7 @@ export function DesktopSidebar() {
                   {item.badge === 'unread-messages' && unreadMessages > 0 ? (
                     <span
                       className='w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center'
-                      style={{ background: '#F28A2E' }}
+                      style={{ background: 'var(--brand-orange)' }}
                     >
                       {unreadMessages}
                     </span>
@@ -141,7 +141,7 @@ export function DesktopSidebar() {
                   onClick={() => navigate(path)}
                   className='flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm transition-all duration-150'
                   style={{
-                    color: active ? '#A238FF' : '#6B7280',
+                    color: active ? 'var(--brand-purple)' : 'var(--neutral-subtle)',
                     background: active ? 'rgba(162,56,255,0.08)' : 'transparent',
                     fontWeight: active ? 600 : 500,
                   }}
@@ -151,7 +151,7 @@ export function DesktopSidebar() {
                   {path === '/messages' && unreadMessages > 0 ? (
                     <span
                       className='w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center'
-                      style={{ background: '#F28A2E' }}
+                      style={{ background: 'var(--brand-orange)' }}
                     >
                       {unreadMessages}
                     </span>
@@ -161,8 +161,8 @@ export function DesktopSidebar() {
                       className='w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center'
                       style={
                         active
-                          ? { background: '#A238FF', color: 'white' }
-                          : { background: '#F3F4F6', color: '#6B7280' }
+                          ? { background: 'var(--brand-purple)', color: 'white' }
+                          : { background: 'var(--neutral-muted)', color: 'var(--neutral-subtle)' }
                       }
                     >
                       {activeRfqCount}
@@ -185,51 +185,54 @@ export function DesktopSidebar() {
           ></div>
           <div className='flex items-center justify-between gap-2 mb-1.5'>
             <div className='flex items-center gap-1.5'>
-              <Wallet size={13} style={{ color: '#4F46E5' }} />
+              <Wallet size={13} style={{ color: 'var(--brand-indigo)' }} />
               <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
             </div>
-            <span className='text-[10px] font-semibold shrink-0' style={{ color: '#4F46E5' }}>
+            <span
+              className='text-[10px] font-semibold shrink-0'
+              style={{ color: 'var(--brand-indigo)' }}
+            >
               ดูรายละเอียด →
             </span>
           </div>
           <p className='text-base font-bold' style={{ color: '#0F172A' }}>
             ฿{currentUser?.walletBalance.toLocaleString()}
           </p>
-          <p className='text-[10px] mt-0.5 font-medium' style={{ color: '#4F46E5' }}>
+          <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-indigo)' }}>
             รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
           </p>
         </Link>
       ) : isAuthenticated ? (
         <div
           className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden'
-          style={{ background: '#F8F5FF', borderColor: 'rgba(162,56,255,0.20)' }}
+          style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
         >
           <div
             className='absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl'
             style={{ background: 'rgba(162,56,255,0.10)' }}
           ></div>
           <div className='flex items-center gap-1.5 mb-1.5'>
-            <Wallet size={13} style={{ color: '#F28A2E' }} />
+            <Wallet size={13} style={{ color: 'var(--brand-orange)' }} />
             <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
           </div>
-          <p className='text-base font-bold' style={{ color: '#2D1B4E' }}>
+          <p className='text-base font-bold' style={{ color: 'var(--brand-navy-deep)' }}>
             ฿{currentUser?.walletBalance.toLocaleString()}
           </p>
-          <p className='text-[10px] mt-0.5 font-medium' style={{ color: '#A238FF' }}>
+          <p className='text-[10px] mt-0.5 font-medium' style={{ color: 'var(--brand-purple)' }}>
             รอดำเนินการ ฿{currentUser?.pendingBalance.toLocaleString()}
           </p>
         </div>
       ) : (
         <div
           className='mx-3 mb-3 p-3.5 rounded-2xl border relative overflow-hidden'
-          style={{ background: '#F8F5FF', borderColor: 'rgba(162,56,255,0.20)' }}
+          style={{ background: 'var(--brand-panel-hover)', borderColor: 'rgba(162,56,255,0.20)' }}
         >
           <div
             className='absolute -right-4 -top-4 w-16 h-16 rounded-full blur-xl'
             style={{ background: 'rgba(162,56,255,0.10)' }}
           ></div>
           <div className='flex items-center gap-1.5 mb-2'>
-            <Wallet size={13} style={{ color: '#F28A2E' }} />
+            <Wallet size={13} style={{ color: 'var(--brand-orange)' }} />
             <span className='text-[11px] font-medium text-gray-500'>กระเป๋าเงิน</span>
           </div>
           <p className='text-xs text-gray-500 mb-2'>
@@ -240,8 +243,8 @@ export function DesktopSidebar() {
               variant='unstyled'
               type='button'
               onClick={() => navigate('/login')}
-              className='flex-1 rounded-lg bg-white border border-[#A238FF]/25 px-2 py-1.5 text-[11px] font-semibold'
-              style={{ color: '#A238FF' }}
+              className='flex-1 rounded-lg bg-white border border-brand-purple/25 px-2 py-1.5 text-[11px] font-semibold'
+              style={{ color: 'var(--brand-purple)' }}
             >
               Login
             </Button>
@@ -250,7 +253,10 @@ export function DesktopSidebar() {
               type='button'
               onClick={() => navigate('/login')}
               className='flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white'
-              style={{ background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)' }}
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
+              }}
             >
               Register
             </Button>
@@ -268,7 +274,8 @@ export function DesktopSidebar() {
             onClick={() => navigate('/create-rfq')}
             className='w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]'
             style={{
-              background: 'linear-gradient(135deg, #A238FF 0%, #F28A2E 100%)',
+              background:
+                'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
               boxShadow: '0 4px 14px rgba(162,56,255,0.30)',
             }}
           >
@@ -288,7 +295,7 @@ export function DesktopSidebar() {
               onClick={() => navigate('/profile')}
               className='flex items-center gap-2.5 flex-1 min-w-0 p-2 rounded-xl hover:bg-gray-50 transition-colors'
             >
-              <span className='relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-[#EFEAF7]'>
+              <span className='relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-brand-lavender-muted'>
                 <img
                   src={avatarSrc}
                   alt={currentUser?.name ?? 'โปรไฟล์'}
@@ -298,7 +305,7 @@ export function DesktopSidebar() {
               <div className='flex-1 text-left min-w-0'>
                 <p
                   className='text-xs font-semibold truncate'
-                  style={{ color: isFactory ? '#0F172A' : '#2D1B4E' }}
+                  style={{ color: isFactory ? '#0F172A' : 'var(--brand-navy-deep)' }}
                 >
                   {currentUser?.name}
                 </p>
@@ -309,11 +316,14 @@ export function DesktopSidebar() {
               to='/notifications'
               className='relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors shrink-0'
             >
-              <Bell size={17} style={{ color: isFactory ? '#4F46E5' : '#A238FF' }} />
+              <Bell
+                size={17}
+                style={{ color: isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)' }}
+              />
               {unreadNotifications > 0 ? (
                 <span
                   className='absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[9px] flex items-center justify-center font-bold border-2 border-white tabular-nums'
-                  style={{ background: '#F28A2E' }}
+                  style={{ background: 'var(--brand-orange)' }}
                 >
                   {unreadNotifications > 99 ? '99+' : unreadNotifications}
                 </span>
@@ -322,7 +332,7 @@ export function DesktopSidebar() {
           </div>
         ) : (
           <div className='flex items-center gap-2 p-2 rounded-xl bg-gray-50'>
-            <span className='relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-[#EFEAF7]'>
+            <span className='relative block w-8 h-8 rounded-xl overflow-hidden shrink-0 bg-brand-lavender-muted'>
               <img
                 src={DEFAULT_USER_AVATAR_SRC}
                 alt='Guest View'
@@ -330,7 +340,10 @@ export function DesktopSidebar() {
               />
             </span>
             <div className='flex-1 min-w-0'>
-              <p className='text-xs font-semibold truncate' style={{ color: '#2D1B4E' }}>
+              <p
+                className='text-xs font-semibold truncate'
+                style={{ color: 'var(--brand-navy-deep)' }}
+              >
                 Guest View
               </p>
               <p className='text-[10px] text-gray-400 truncate'>
@@ -341,8 +354,8 @@ export function DesktopSidebar() {
               variant='unstyled'
               type='button'
               onClick={() => navigate('/login')}
-              className='text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-[#A238FF]/25 bg-white'
-              style={{ color: '#A238FF' }}
+              className='text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-brand-purple/25 bg-white'
+              style={{ color: 'var(--brand-purple)' }}
             >
               Login
             </Button>

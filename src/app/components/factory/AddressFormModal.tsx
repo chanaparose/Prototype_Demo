@@ -114,7 +114,9 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             disabled={saving}
             onClick={() => void submit()}
             className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50'
-            style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
+            style={{
+              background: 'linear-gradient(135deg, var(--status-success) 0%, #10B981 100%)',
+            }}
           >
             {saving ? 'กำลังบันทึก...' : mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึกการแก้ไข'}
           </Button>
@@ -188,7 +190,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
           type='checkbox'
           checked={isDefault}
           onChange={(e) => setIsDefault(e.target.checked)}
-          className='rounded border-gray-300 text-[#A238FF] focus:ring-[#A238FF]'
+          className='rounded border-gray-300 text-brand-purple focus:ring-brand-purple'
         />
         ตั้งเป็นค่าเริ่มต้น
       </label>

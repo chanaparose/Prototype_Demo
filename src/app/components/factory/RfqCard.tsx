@@ -44,14 +44,14 @@ function boqStatusInfo(status: string | null): BoqStatusInfo {
   if (status === 'RJ')
     return {
       label: 'ใบเสนอราคาถูกปฏิเสธ',
-      bg: '#FEE2E2',
-      text: '#DC2626',
+      bg: 'var(--status-danger-soft)',
+      text: 'var(--status-danger-deep)',
       border: '#FCA5A5',
       icon: <XCircle size={13} />,
     };
   return {
     label: 'รอลูกค้าตัดสินใจ',
-    bg: '#FEF3C7',
+    bg: 'var(--status-warning-soft)',
     text: '#B45309',
     border: '#FCD34D',
     icon: <Clock4 size={13} />,
@@ -173,7 +173,7 @@ export function RfqCard({
             <div className='mt-3 flex items-center justify-end'>
               <span
                 className='inline-flex items-center gap-1 text-xs font-semibold'
-                style={{ color: '#4F46E5' }}
+                style={{ color: 'var(--brand-indigo)' }}
               >
                 ดูรายละเอียด BOQ
                 <ChevronRight size={15} className='text-indigo-400' />
@@ -242,7 +242,7 @@ export function RfqCard({
           </span>
           <span
             className='inline-flex items-center gap-1 text-xs font-semibold shrink-0'
-            style={{ color: '#A238FF' }}
+            style={{ color: 'var(--brand-purple)' }}
           >
             {row.hasMyQuote ? 'ดู →' : 'ดูและเสนอราคา →'}
             <ChevronRight size={16} className='text-violet-400' />

@@ -28,11 +28,11 @@ function renderStateIcon(state: StepDerivedState) {
     case 'active':
       return (
         <span
-          className='inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#A238FF] bg-[#A238FF]/10'
+          className='inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-brand-purple bg-brand-purple/10'
           aria-label='กำลังดำเนินการ'
           role='img'
         >
-          <span className='h-2 w-2 rounded-full bg-[#A238FF]' />
+          <span className='h-2 w-2 rounded-full bg-brand-purple' />
         </span>
       );
     case 'blocked':
@@ -48,7 +48,7 @@ function renderStateIcon(state: StepDerivedState) {
 function rowShell(state: StepDerivedState): string {
   switch (state) {
     case 'active':
-      return 'bg-[#F5ECFF] border-[#A238FF] shadow-sm';
+      return 'bg-brand-lavender-row border-brand-purple shadow-sm';
     case 'blocked':
       return 'bg-amber-50 border-amber-200';
     case 'rejected':
@@ -104,7 +104,7 @@ export function StepRow({
         onOpenDrawer();
       }}
       className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
-      style={{ background: '#7C3AED' }}
+      style={{ background: 'var(--brand-violet)' }}
     >
       อัปเดตขั้นนี้
     </Button>
@@ -129,7 +129,7 @@ export function StepRow({
         onOpenDrawer();
       }}
       className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
-      style={{ background: '#A238FF' }}
+      style={{ background: 'var(--brand-purple)' }}
     >
       ส่งใหม่
     </Button>
@@ -142,7 +142,7 @@ export function StepRow({
         onOpenDrawer();
       }}
       className='shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold text-white'
-      style={{ background: '#A238FF' }}
+      style={{ background: 'var(--brand-purple)' }}
     >
       เริ่มขั้นต่อไป
     </Button>

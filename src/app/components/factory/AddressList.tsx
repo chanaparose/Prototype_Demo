@@ -68,7 +68,9 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
           type='button'
           onClick={onCreate}
           className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white'
-          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+          style={{
+            background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
+          }}
         >
           <Plus size={14} />
           เพิ่มที่อยู่

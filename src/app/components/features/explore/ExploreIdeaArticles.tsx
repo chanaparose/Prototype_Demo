@@ -28,14 +28,14 @@ export function ExploreIdeaArticles({
   return (
     <div className='mb-3'>
       <div className='flex items-center justify-between px-4 mb-2'>
-        <h3 className='text-[#292259]' style={{ fontWeight: 700 }}>
+        <h3 className='text-brand-navy-ink' style={{ fontWeight: 700 }}>
           บทความ Idea
         </h3>
         <Button
           variant='unstyled'
           type='button'
           onClick={onSeeAll}
-          className='flex items-center gap-0.5 text-[#A656A0] hover:text-[#A656A0] transition-colors'
+          className='flex items-center gap-0.5 text-brand-magenta hover:text-brand-magenta transition-colors'
           style={{ fontSize: 13 }}
         >
           ดูทั้งหมด
@@ -55,7 +55,7 @@ export function ExploreIdeaArticles({
               </StatusBadge>
               <span className='text-[10px] text-gray-400 truncate'>{article.factoryName}</span>
             </div>
-            <h3 className='font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug'>
+            <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug'>
               {article.title}
             </h3>
             <p className='text-[12px] text-gray-500 line-clamp-2'>{article.excerpt || ' '}</p>

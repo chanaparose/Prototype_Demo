@@ -91,7 +91,7 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
         onClick={onToggle}
         className='w-full flex items-center justify-between p-4'
       >
-        <span className='text-sm' style={{ fontWeight: 600, color: '#2E2252' }}>
+        <span className='text-sm' style={{ fontWeight: 600, color: 'var(--brand-navy)' }}>
           สเปคของโครงการ
         </span>
         {open ? (
@@ -106,7 +106,7 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
             {rows.map((item) => (
               <div key={item.label} className='flex justify-between'>
                 <span className='text-xs text-gray-500'>{item.label}</span>
-                <span className='text-xs' style={{ fontWeight: 500, color: '#2E2252' }}>
+                <span className='text-xs' style={{ fontWeight: 500, color: 'var(--brand-navy)' }}>
                   {item.value}
                 </span>
               </div>

@@ -117,7 +117,7 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
 
 function HistoryItem({ entry }: { entry: QuotationHistoryEntry }) {
   const label = EVENT_LABEL[entry.event_type] ?? entry.event_type;
-  const color = EVENT_COLOR[entry.event_type] ?? '#6B7280';
+  const color = EVENT_COLOR[entry.event_type] ?? 'var(--neutral-subtle)';
   const date = entry.created_at
     ? new Date(entry.created_at).toLocaleString('th-TH', {
         day: '2-digit',

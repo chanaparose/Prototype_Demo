@@ -54,8 +54,8 @@ import type { Rfq, Order } from '@/stores';
 import { Button } from '@/components/ui/button';
 
 // ─── Brand constants (from design brief) ──────────────────────────────────
-const GREEN = '#059669';
-const GREEN_BG = '#D1FAE5';
+const GREEN = 'var(--status-success)';
+const GREEN_BG = 'var(--status-success-soft)';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function getActivityCounts(rfq: Rfq) {
@@ -104,8 +104,8 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
 
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
     label: rfq.status,
-    color: '#6B7280',
-    bg: '#F3F4F6',
+    color: 'var(--neutral-subtle)',
+    bg: 'var(--neutral-muted)',
   };
   const hasNewOffers = pending > 0;
 
@@ -150,7 +150,7 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           /* ยังไม่มีโรงงานตอบ */
           <div
             className='flex items-center gap-2 py-2 px-3 rounded-xl mb-3'
-            style={{ background: '#F5F5F5' }}
+            style={{ background: 'var(--neutral-warm-surface)' }}
           >
             <Factory size={13} className='text-gray-300 shrink-0' />
             <span className='text-xs text-gray-400'>ยังไม่มีโรงงานตอบรับ</span>
@@ -210,8 +210,8 @@ function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
 function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
     label: rfq.status,
-    color: '#6B7280',
-    bg: '#F3F4F6',
+    color: 'var(--neutral-subtle)',
+    bg: 'var(--neutral-muted)',
   };
   const totalOffers = rfq.offers?.length || rfq.offerCount || 0;
 
@@ -224,7 +224,7 @@ function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
         <div className='flex items-center gap-2.5 min-w-0 flex-1'>
           <div
             className='w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm'
-            style={{ background: '#F3F4F6' }}
+            style={{ background: 'var(--neutral-muted)' }}
           >
             {rfq.categoryIcon ?? <FileText size={14} className='text-gray-400' />}
           </div>
@@ -440,7 +440,11 @@ function OrderPanel({
           variant='unstyled'
           onClick={() => setOrderFilter('pending_payment')}
           className='w-full flex items-center gap-2 px-3 py-2.5 rounded-xl mb-3 text-left border'
-          style={{ background: '#FFF7ED', borderColor: ACCENT_ORANGE, color: ACCENT_ORANGE_DEEP }}
+          style={{
+            background: 'var(--surface-orange-pale)',
+            borderColor: ACCENT_ORANGE,
+            color: ACCENT_ORANGE_DEEP,
+          }}
         >
           <AlertTriangle size={14} style={{ color: ACCENT_ORANGE, flexShrink: 0 }} />
           <span className='text-xs font-semibold flex-1'>
@@ -477,7 +481,10 @@ function OrderPanel({
                 className='w-7 h-7 rounded-full flex items-center justify-center'
                 style={{ background: isActive ? th.activeBg : 'transparent' }}
               >
-                <Icon size={14} style={{ color: isActive ? th.activeColor : '#6B7280' }} />
+                <Icon
+                  size={14}
+                  style={{ color: isActive ? th.activeColor : 'var(--neutral-subtle)' }}
+                />
               </div>
               {count > 0 && (
                 <span
@@ -496,7 +503,7 @@ function OrderPanel({
               <span
                 className='text-[9px] text-center leading-tight'
                 style={{
-                  color: isActive ? th.activeColor : '#6B7280',
+                  color: isActive ? th.activeColor : 'var(--neutral-subtle)',
                   fontWeight: isActive ? 700 : 500,
                 }}
               >
@@ -511,7 +518,7 @@ function OrderPanel({
       {filteredOrders.length === 0 ? (
         <div
           className='flex flex-col items-center justify-center py-12 text-center rounded-2xl border min-h-[258px]'
-          style={{ borderColor: BORDER_WARM, background: '#FFFAF5' }}
+          style={{ borderColor: BORDER_WARM, background: 'var(--surface-orange-wash)' }}
         >
           <div
             className='w-14 h-14 rounded-2xl flex items-center justify-center mb-3'
@@ -710,7 +717,7 @@ export function RfqAndOrders() {
               className='flex-1 py-2.5 rounded-xl text-sm font-bold transition-all'
               style={{
                 background: primaryTab === 'rfq' ? 'rgba(255,255,255,0.95)' : 'transparent',
-                color: primaryTab === 'rfq' ? PLUM : '#6B7280',
+                color: primaryTab === 'rfq' ? PLUM : 'var(--neutral-subtle)',
                 boxShadow: primaryTab === 'rfq' ? '0 2px 14px rgba(109,40,217,0.18)' : 'none',
               }}
             >
@@ -722,7 +729,7 @@ export function RfqAndOrders() {
               className='flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative'
               style={{
                 background: primaryTab === 'orders' ? 'rgba(255,255,255,0.95)' : 'transparent',
-                color: primaryTab === 'orders' ? ACCENT_ORANGE_DEEP : '#6B7280',
+                color: primaryTab === 'orders' ? ACCENT_ORANGE_DEEP : 'var(--neutral-subtle)',
                 boxShadow: primaryTab === 'orders' ? '0 2px 14px rgba(242,120,48,0.22)' : 'none',
               }}
             >
@@ -852,7 +859,7 @@ export function RfqAndOrders() {
               {hasPendingPayment && (
                 <span
                   className='flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse'
-                  style={{ background: '#FFF3E0', color: ACCENT_ORANGE_DEEP }}
+                  style={{ background: 'var(--surface-orange-soft)', color: ACCENT_ORANGE_DEEP }}
                 >
                   <AlertTriangle size={10} />
                   {orderTagCounts.pendingPayment} รอชำระ

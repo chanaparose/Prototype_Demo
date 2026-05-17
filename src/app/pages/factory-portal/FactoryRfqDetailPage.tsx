@@ -509,7 +509,7 @@ export function FactoryRfqDetailPage() {
   }
 
   return (
-    <div style={{ backgroundColor: '#F8F6FA' }} className='min-h-screen pb-24'>
+    <div style={{ backgroundColor: 'var(--brand-page)' }} className='min-h-screen pb-24'>
       {/* Sticky top bar */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
         <Button
@@ -517,11 +517,14 @@ export function FactoryRfqDetailPage() {
           type='button'
           onClick={() => navigate(backPath)}
           className='flex items-center gap-1 text-sm font-medium'
-          style={{ color: '#4338CA' }}
+          style={{ color: 'var(--brand-indigo-dark)' }}
         >
           <ChevronLeft size={18} /> กลับ
         </Button>
-        <span className='flex-1 text-center text-sm font-bold' style={{ color: '#2E2252' }}>
+        <span
+          className='flex-1 text-center text-sm font-bold'
+          style={{ color: 'var(--brand-navy)' }}
+        >
           รายละเอียด RFQ
         </span>
         <span className='text-xs font-medium text-gray-400'>#{id}</span>
@@ -532,7 +535,7 @@ export function FactoryRfqDetailPage() {
           <div className='flex justify-center py-12'>
             <div
               className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-              style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
+              style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
             />
           </div>
         ) : null}
@@ -594,9 +597,17 @@ export function FactoryRfqDetailPage() {
                     className='text-xs font-semibold px-2.5 py-1 rounded-full'
                     style={{
                       backgroundColor:
-                        myStatus === 'AC' ? '#D1FAE5' : myStatus === 'PD' ? '#EDE9FE' : '#F3F4F6',
+                        myStatus === 'AC'
+                          ? 'var(--status-success-soft)'
+                          : myStatus === 'PD'
+                            ? 'var(--brand-violet-soft)'
+                            : 'var(--neutral-muted)',
                       color:
-                        myStatus === 'AC' ? '#065F46' : myStatus === 'PD' ? '#5B21B6' : '#374151',
+                        myStatus === 'AC'
+                          ? '#065F46'
+                          : myStatus === 'PD'
+                            ? '#5B21B6'
+                            : 'var(--neutral-text)',
                     }}
                   >
                     {myStatus === 'PD'
@@ -631,7 +642,7 @@ export function FactoryRfqDetailPage() {
                           type='button'
                           onClick={() => setLightbox(i)}
                           className='w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none'
-                          style={{ outlineColor: '#4F46E5' }}
+                          style={{ outlineColor: 'var(--brand-indigo)' }}
                         >
                           <img src={url} alt='' className='w-full h-full object-cover' />
                         </Button>
@@ -652,19 +663,28 @@ export function FactoryRfqDetailPage() {
                   </p>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>หมวดหมู่</span>
-                    <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                    <span
+                      className='text-sm font-medium text-right'
+                      style={{ color: 'var(--brand-navy)' }}
+                    >
                       {breadcrumb}
                     </span>
                   </div>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>จำนวน</span>
-                    <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                    <span
+                      className='text-sm font-medium text-right'
+                      style={{ color: 'var(--brand-navy)' }}
+                    >
                       {quantity != null ? `${quantity.toLocaleString('th-TH')} ชิ้น` : '—'}
                     </span>
                   </div>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>วัสดุ/เกรด</span>
-                    <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                    <span
+                      className='text-sm font-medium text-right'
+                      style={{ color: 'var(--brand-navy)' }}
+                    >
                       {String(rfqBody.material_grade ?? '-')}
                     </span>
                   </div>
@@ -699,7 +719,7 @@ export function FactoryRfqDetailPage() {
                       >
                         <p
                           className='text-sm break-words leading-relaxed'
-                          style={{ color: '#2E2252' }}
+                          style={{ color: 'var(--brand-navy)' }}
                         >
                           {String(rfqBody.details ?? rfqBody.description ?? '—')}
                         </p>
@@ -715,7 +735,10 @@ export function FactoryRfqDetailPage() {
                   </p>
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>งบประมาณรวม</span>
-                    <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                    <span
+                      className='text-sm font-medium text-right'
+                      style={{ color: 'var(--brand-navy)' }}
+                    >
                       {rfqBody.target_price != null
                         ? `${Number(rfqBody.target_price).toLocaleString('th-TH')} บาท`
                         : '-'}
@@ -724,7 +747,10 @@ export function FactoryRfqDetailPage() {
                   {targetDaysCustomer != null ? (
                     <div className='flex items-start justify-between gap-2'>
                       <span className='text-xs text-gray-500'>Lead time ที่ต้องการ</span>
-                      <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                      <span
+                        className='text-sm font-medium text-right'
+                        style={{ color: 'var(--brand-navy)' }}
+                      >
                         {targetDaysCustomer} วัน
                       </span>
                     </div>
@@ -742,7 +768,7 @@ export function FactoryRfqDetailPage() {
                       <span className='text-xs text-gray-500'>ที่อยู่ปลายทาง</span>
                       <span
                         className='text-sm font-medium text-right break-words'
-                        style={{ color: '#2E2252' }}
+                        style={{ color: 'var(--brand-navy)' }}
                       >
                         {addressSummary}
                       </span>
@@ -750,7 +776,10 @@ export function FactoryRfqDetailPage() {
                   ) : (
                     <div className='flex items-start justify-between gap-2'>
                       <span className='text-xs text-gray-500'>ที่อยู่ปลายทาง</span>
-                      <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                      <span
+                        className='text-sm font-medium text-right'
+                        style={{ color: 'var(--brand-navy)' }}
+                      >
                         —
                       </span>
                     </div>
@@ -761,7 +790,7 @@ export function FactoryRfqDetailPage() {
                 <div className='rounded-2xl bg-white border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between'>
                   <span className='text-xs text-gray-500'>คู่แข่งที่เสนอราคา</span>
                   <div className='flex items-center gap-1.5'>
-                    <span className='text-sm font-bold' style={{ color: '#2E2252' }}>
+                    <span className='text-sm font-bold' style={{ color: 'var(--brand-navy)' }}>
                       {competitorCount} ราย
                     </span>
                     <span className='text-[11px] text-gray-400'>(ซ่อนราคา)</span>
@@ -778,7 +807,7 @@ export function FactoryRfqDetailPage() {
                       ? 'ดูใบเสนอราคา'
                       : 'ส่งใบเสนอราคา'}
                 </p>
-                <h2 className='font-bold' style={{ color: '#2E2252' }}>
+                <h2 className='font-bold' style={{ color: 'var(--brand-navy)' }}>
                   {myQuote && canEdit
                     ? 'แก้ไขใบเสนอราคา'
                     : myQuote
@@ -872,7 +901,7 @@ export function FactoryRfqDetailPage() {
                 <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1'>
                   ติดต่อลูกค้า
                 </p>
-                <h2 className='text-sm font-bold' style={{ color: '#2E2252' }}>
+                <h2 className='text-sm font-bold' style={{ color: 'var(--brand-navy)' }}>
                   ส่งข้อความ
                 </h2>
                 <p className='text-xs text-gray-500'>
@@ -894,7 +923,10 @@ export function FactoryRfqDetailPage() {
                     disabled={chatBusy}
                     onClick={() => void sendQuoteMessageToCustomer()}
                     className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
-                    style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
+                    style={{
+                      background:
+                        'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+                    }}
                   >
                     ส่งใบเสนอราคาในแชท (QT)
                   </Button>

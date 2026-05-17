@@ -4,7 +4,7 @@ import { ImageWithFallback } from '@/components/shared';
 import { StatusBadge } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 
-const NAVY = '#2E2252';
+const NAVY = 'var(--brand-navy)';
 
 export type FactoryHeroInfo = {
   id: string;
@@ -76,9 +76,9 @@ export function FactoryProfileHero({
             aria-label='แชทกับโรงงาน'
           >
             {chatLoading ? (
-              <span className='h-4 w-4 animate-spin rounded-full border-2 border-[#6C47FF] border-t-transparent' />
+              <span className='h-4 w-4 animate-spin rounded-full border-2 border-brand-royal border-t-transparent' />
             ) : (
-              <MessageCircle className='h-5 w-5' style={{ color: '#6C47FF' }} />
+              <MessageCircle className='h-5 w-5' style={{ color: 'var(--brand-royal)' }} />
             )}
           </Button>
         ) : null}

@@ -85,20 +85,20 @@ export function FactoryIdeasMobile() {
         <div
           className='rounded-xl px-3 py-2.5 relative overflow-hidden text-white shadow-md mb-2.5'
           style={{
-            background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)',
+            background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)',
           }}
         >
           <div
             className='absolute -right-5 -top-5 w-24 h-24 rounded-full opacity-35 blur-xl mix-blend-screen pointer-events-none'
-            style={{ backgroundColor: '#FF7A00' }}
+            style={{ backgroundColor: 'var(--brand-orange-hot)' }}
           />
           <div
             className='absolute top-0 right-0 w-16 h-16 rounded-full opacity-50 transform translate-x-5 skew-x-[-15deg] pointer-events-none'
-            style={{ backgroundColor: '#A238FF' }}
+            style={{ backgroundColor: 'var(--brand-purple)' }}
           />
           <div
             className='absolute -left-2 -bottom-2 w-14 h-14 rounded-full opacity-25 blur-lg mix-blend-screen pointer-events-none'
-            style={{ backgroundColor: '#A238FF' }}
+            style={{ backgroundColor: 'var(--brand-purple)' }}
           />
           <div className='relative z-10 flex items-center gap-2.5'>
             <div
@@ -133,7 +133,7 @@ export function FactoryIdeasMobile() {
         {/* Search */}
         <div
           className='flex items-center gap-2 rounded-xl px-3 py-2 border transition-all'
-          style={{ backgroundColor: COLORS.gray, borderColor: '#E5E7EB' }}
+          style={{ backgroundColor: COLORS.gray, borderColor: 'var(--neutral-border)' }}
         >
           <Search size={15} className='text-gray-400 shrink-0' />
           <input
@@ -238,7 +238,7 @@ export function FactoryIdeasMobile() {
               className='p-1.5 rounded-md transition-all'
               style={{
                 backgroundColor: viewMode === 'grid' ? COLORS.white : 'transparent',
-                color: viewMode === 'grid' ? COLORS.purple : '#9CA3AF',
+                color: viewMode === 'grid' ? COLORS.purple : 'var(--neutral-placeholder)',
                 boxShadow: viewMode === 'grid' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
               }}
               aria-label='มุมมองตาราง'
@@ -252,7 +252,7 @@ export function FactoryIdeasMobile() {
               className='p-1.5 rounded-md transition-all'
               style={{
                 backgroundColor: viewMode === 'list' ? COLORS.white : 'transparent',
-                color: viewMode === 'list' ? COLORS.purple : '#9CA3AF',
+                color: viewMode === 'list' ? COLORS.purple : 'var(--neutral-placeholder)',
                 boxShadow: viewMode === 'list' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
               }}
               aria-label='มุมมองรายการ'
@@ -296,8 +296,14 @@ export function FactoryIdeasMobile() {
                   />
                   {factory.verified && (
                     <div className='absolute top-1 left-1 z-[1] flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5'>
-                      <BadgeCheck className='w-2.5 h-2.5 shrink-0' style={{ color: '#A238FF' }} />
-                      <span className='font-medium text-[8px]' style={{ color: '#A238FF' }}>
+                      <BadgeCheck
+                        className='w-2.5 h-2.5 shrink-0'
+                        style={{ color: 'var(--brand-purple)' }}
+                      />
+                      <span
+                        className='font-medium text-[8px]'
+                        style={{ color: 'var(--brand-purple)' }}
+                      >
                         ยืนยัน
                       </span>
                     </div>
@@ -305,7 +311,7 @@ export function FactoryIdeasMobile() {
                 </div>
                 {/* Body */}
                 <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                  <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                     {factory.name}
                   </p>
                   <div className='flex items-center gap-0.5'>
@@ -344,12 +350,12 @@ export function FactoryIdeasMobile() {
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   <div className='flex items-center gap-2 mb-1.5'>
-                    <span className='inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide'>
+                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
                       ไอเดีย
                     </span>
                     <span className='text-[10px] text-gray-400 truncate'>{item.factoryName}</span>
                   </div>
-                  <h3 className='font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug'>
+                  <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug'>
                     {item.title}
                   </h3>
                   <p className='text-[12px] text-gray-500 line-clamp-2'>{item.excerpt || ' '}</p>
@@ -367,7 +373,11 @@ export function FactoryIdeasMobile() {
                     >
                       <Heart
                         className='w-2.5 h-2.5 shrink-0'
-                        style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                        style={
+                          isLiked(item.id)
+                            ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
+                            : {}
+                        }
                       />
                       <span className='text-[10px] leading-none'>
                         {item.likes + (isLiked(item.id) ? 1 : 0)}
@@ -410,7 +420,7 @@ export function FactoryIdeasMobile() {
                   {/* ── Body: flex-1 ยืดเต็มที่เหลือ + min-w-0 ให้ truncate ทำงาน ── */}
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                     {/* Title — min-h-[36px] จอง 2 บรรทัดเสมอ */}
-                    <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                    <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                       {item.title}
                     </h3>
 
@@ -538,7 +548,11 @@ export function FactoryIdeasMobile() {
                       >
                         <Heart
                           className='w-4 h-4 shrink-0'
-                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          style={
+                            isLiked(item.id)
+                              ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
+                              : {}
+                          }
                         />
                         <span className='text-[9px] font-medium tabular-nums leading-none'>
                           {item.likes + (isLiked(item.id) ? 1 : 0)}
@@ -559,7 +573,7 @@ export function FactoryIdeasMobile() {
                 className='text-sm font-bold flex items-center gap-1.5'
                 style={{ color: COLORS.blue }}
               >
-                <Sparkles className='w-4 h-4' style={{ color: '#0EA5A4' }} />
+                <Sparkles className='w-4 h-4' style={{ color: 'var(--brand-teal-light)' }} />
                 วัตถุดิบแนะนำ
               </h3>
               <Button
@@ -589,13 +603,13 @@ export function FactoryIdeasMobile() {
                       />
                       <span
                         className='absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                        style={{ backgroundColor: '#0EA5A4' }}
+                        style={{ backgroundColor: 'var(--brand-teal-light)' }}
                       >
                         วัตถุดิบ
                       </span>
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                      <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                      <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                         {item.title}
                       </h3>
                       <div className='flex items-center gap-0.5 mt-0.5'>
@@ -664,8 +678,14 @@ export function FactoryIdeasMobile() {
                     />
                     {factory.verified === true && (
                       <div className='absolute top-1 left-1 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5'>
-                        <BadgeCheck className='w-2.5 h-2.5 shrink-0' style={{ color: '#A238FF' }} />
-                        <span className='font-medium text-[8px]' style={{ color: '#A238FF' }}>
+                        <BadgeCheck
+                          className='w-2.5 h-2.5 shrink-0'
+                          style={{ color: 'var(--brand-purple)' }}
+                        />
+                        <span
+                          className='font-medium text-[8px]'
+                          style={{ color: 'var(--brand-purple)' }}
+                        >
                           ยืนยัน
                         </span>
                       </div>
@@ -673,7 +693,7 @@ export function FactoryIdeasMobile() {
                   </div>
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                     <div>
-                      <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                      <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                         {factory.name}
                       </p>
                       <div className='flex items-center gap-0.5'>
@@ -733,12 +753,12 @@ export function FactoryIdeasMobile() {
                     onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                   >
                     <div className='flex items-center gap-2 mb-1.5'>
-                      <span className='inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide'>
+                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
                         ไอเดีย
                       </span>
                       <span className='text-[10px] text-gray-400 truncate'>{item.factoryName}</span>
                     </div>
-                    <h3 className='font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug'>
+                    <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug'>
                       {item.title}
                     </h3>
                     <p className='text-[12px] text-gray-500 line-clamp-2'>{item.excerpt || ' '}</p>
@@ -756,7 +776,11 @@ export function FactoryIdeasMobile() {
                       >
                         <Heart
                           className='w-2.5 h-2.5 shrink-0'
-                          style={isLiked(item.id) ? { color: '#EF4444', fill: '#EF4444' } : {}}
+                          style={
+                            isLiked(item.id)
+                              ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
+                              : {}
+                          }
                         />
                         <span className='text-[10px] leading-none'>
                           {item.likes + (isLiked(item.id) ? 1 : 0)}
@@ -776,7 +800,7 @@ export function FactoryIdeasMobile() {
                 className='text-sm font-bold flex items-center gap-1.5'
                 style={{ color: COLORS.blue }}
               >
-                <Sparkles className='w-4 h-4' style={{ color: '#0EA5A4' }} />
+                <Sparkles className='w-4 h-4' style={{ color: 'var(--brand-teal-light)' }} />
                 วัตถุดิบแนะนำ
               </h3>
               <Button
@@ -806,13 +830,13 @@ export function FactoryIdeasMobile() {
                       />
                       <span
                         className='absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                        style={{ backgroundColor: '#0EA5A4' }}
+                        style={{ backgroundColor: 'var(--brand-teal-light)' }}
                       >
                         วัตถุดิบ
                       </span>
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                      <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                      <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                         {item.title}
                       </h3>
                       <div className='flex items-center gap-0.5 mt-0.5'>

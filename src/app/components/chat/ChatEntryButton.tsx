@@ -66,7 +66,7 @@ export function ChatEntryButton({
       onClick={() => void onClick()}
       disabled={disabled || loading}
       className={`${base} ${className}`}
-      style={variant === 'primary' ? { background: '#7A4B94' } : undefined}
+      style={variant === 'primary' ? { background: 'var(--brand-mauve)' } : undefined}
     >
       {loading ? (
         <span className='w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin' />

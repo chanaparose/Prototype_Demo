@@ -412,7 +412,10 @@ export function FactoryShowcaseNewPage() {
                   onClick={() => void onSubmit('AC')}
                   disabled={saving || !canPublish}
                   className='w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm transition-all'
-                  style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
+                  style={{
+                    background:
+                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+                  }}
                 >
                   {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
                 </Button>
@@ -456,7 +459,7 @@ export function FactoryShowcaseNewPage() {
 
           {contentType === 'ID' && myFactoryId != null ? (
             <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
-              <label className='block text-sm font-semibold text-[#2E2252]'>
+              <label className='block text-sm font-semibold text-brand-navy'>
                 อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
               </label>
               <p className='text-xs text-gray-500'>
@@ -492,7 +495,10 @@ export function FactoryShowcaseNewPage() {
           onClick={() => void onSubmit('AC')}
           disabled={saving || !canPublish}
           className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm active:scale-95 transition-all'
-          style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
+          style={{
+            background:
+              'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+          }}
         >
           {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
         </Button>

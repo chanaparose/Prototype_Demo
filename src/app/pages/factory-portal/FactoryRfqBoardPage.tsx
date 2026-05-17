@@ -363,7 +363,7 @@ export function FactoryRfqBoardPage() {
         <div className='flex justify-center items-start pt-8'>
           <div
             className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-            style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
+            style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
           />
         </div>
       </div>
@@ -404,7 +404,8 @@ export function FactoryRfqBoardPage() {
             to='/factory/profile'
             className='inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold text-white'
             style={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+              background:
+                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
               boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
             }}
           >
@@ -428,8 +429,8 @@ export function FactoryRfqBoardPage() {
                   onClick={() => setTab(k.key)}
                   className='rounded-2xl border px-3 py-2.5 text-left transition-all'
                   style={{
-                    borderColor: active ? '#4F46E5' : '#E5E7EB',
-                    background: active ? '#EEF2FF' : '#FFFFFF',
+                    borderColor: active ? 'var(--brand-indigo)' : 'var(--neutral-border)',
+                    background: active ? '#EEF2FF' : 'var(--neutral-white)',
                     boxShadow: active ? '0 2px 10px rgba(79,70,229,0.12)' : 'none',
                   }}
                 >
@@ -456,8 +457,8 @@ export function FactoryRfqBoardPage() {
                     <span
                       className='text-xs font-bold rounded-full px-2 py-0.5'
                       style={{
-                        background: active ? '#4F46E5' : '#EEF2FF',
-                        color: active ? '#fff' : '#4F46E5',
+                        background: active ? 'var(--brand-indigo)' : '#EEF2FF',
+                        color: active ? 'var(--neutral-white)' : 'var(--brand-indigo)',
                       }}
                     >
                       {k.count}
@@ -496,8 +497,8 @@ export function FactoryRfqBoardPage() {
                     onClick={() => setTab(t.key)}
                     className='flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[13px] transition-all'
                     style={{
-                      backgroundColor: on ? '#4F46E5' : 'transparent',
-                      color: on ? '#fff' : '#334155',
+                      backgroundColor: on ? 'var(--brand-indigo)' : 'transparent',
+                      color: on ? 'var(--neutral-white)' : '#334155',
                       fontWeight: on ? 700 : 500,
                       boxShadow: on ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
                     }}
@@ -512,7 +513,7 @@ export function FactoryRfqBoardPage() {
           )}
 
           {/* ── Search + Sort controls ── */}
-          <div className='sticky top-14 z-[5] bg-[#F8F6FA] py-2 -my-1'>
+          <div className='sticky top-14 z-[5] bg-brand-page py-2 -my-1'>
             <div className='flex flex-col sm:flex-row gap-2'>
               <div className='relative flex-1'>
                 <Search
@@ -524,7 +525,7 @@ export function FactoryRfqBoardPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder='ค้นหา ชื่อ / เลข RFQ'
-                  className='w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- bg-white'
+                  className='w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-brand-indigo focus:ring-1 focus:ring-indigo- bg-white'
                 />
               </div>
               <FilterDropdown
@@ -584,7 +585,11 @@ export function FactoryRfqBoardPage() {
                   type='button'
                   onClick={clearFilters}
                   className='shrink-0 px-3 py-2 rounded-full text-xs font-semibold border'
-                  style={{ borderColor: '#4F46E5', color: '#4F46E5', backgroundColor: '#F3E8FF' }}
+                  style={{
+                    borderColor: 'var(--brand-indigo)',
+                    color: 'var(--brand-indigo)',
+                    backgroundColor: '#F3E8FF',
+                  }}
                 >
                   ล้างตัวกรอง ✕
                 </Button>
@@ -639,7 +644,7 @@ export function FactoryRfqBoardPage() {
           {pipeline.length === 0 ? (
             <div className='rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
               <div className='text-5xl'>🔍</div>
-              <p className='text-base font-bold' style={{ color: '#2E2252' }}>
+              <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
                 {rows.length === 0
                   ? 'ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ'
                   : 'ไม่พบ RFQ ตามเงื่อนไข'}
@@ -656,7 +661,8 @@ export function FactoryRfqBoardPage() {
                   onClick={clearFilters}
                   className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white'
                   style={{
-                    background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                    background:
+                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                     boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
                   }}
                 >
@@ -667,7 +673,8 @@ export function FactoryRfqBoardPage() {
                   to='/factory/profile'
                   className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white'
                   style={{
-                    background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                    background:
+                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                     boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
                   }}
                 >

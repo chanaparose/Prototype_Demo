@@ -467,7 +467,10 @@ export function FactoryShowcaseEditPage() {
   if (isLoading) return <FormSkeleton sections={4} />;
 
   return (
-    <form className='max-w-6xl mx-auto w-full min-w-0 pb-28' style={{ backgroundColor: '#F8F6FA' }}>
+    <form
+      className='max-w-6xl mx-auto w-full min-w-0 pb-28'
+      style={{ backgroundColor: 'var(--brand-page)' }}
+    >
       {/* ── Sticky top bar ── */}
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3'>
         <Button
@@ -475,7 +478,7 @@ export function FactoryShowcaseEditPage() {
           type='button'
           onClick={onBack}
           className='flex items-center gap-1.5 text-sm font-medium transition-colors'
-          style={{ color: '#4F46E5' }}
+          style={{ color: 'var(--brand-indigo)' }}
         >
           <ChevronLeft size={18} /> กลับ
         </Button>
@@ -489,7 +492,7 @@ export function FactoryShowcaseEditPage() {
           onClick={() => void save('DR')}
           disabled={saving}
           className='text-sm font-semibold disabled:opacity-40 transition-colors whitespace-nowrap'
-          style={{ color: '#4F46E5' }}
+          style={{ color: 'var(--brand-indigo)' }}
         >
           บันทึกร่าง
         </Button>
@@ -597,7 +600,7 @@ export function FactoryShowcaseEditPage() {
                       <span className='text-xs text-gray-500 mb-1.5 block'>MOQ</span>
                       <input
                         type='number'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('moq', {
                           setValueAs: (v) => (v === '' ? null : Number(v)),
                         })}
@@ -607,7 +610,7 @@ export function FactoryShowcaseEditPage() {
                       <span className='text-xs text-gray-500 mb-1.5 block'>Lead time (วัน)</span>
                       <input
                         type='number'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('lead_time_days', {
                           setValueAs: (v) => (v === '' ? null : Number(v)),
                         })}
@@ -618,7 +621,7 @@ export function FactoryShowcaseEditPage() {
                       <input
                         type='number'
                         step='0.01'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('base_price', {
                           setValueAs: (v) => (v === '' ? null : Number(v)),
                         })}
@@ -634,7 +637,7 @@ export function FactoryShowcaseEditPage() {
                       <span className='text-xs text-gray-500 mb-1.5 block'>ราคาโปรโมชัน (฿)</span>
                       <input
                         type='number'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('promo_price', {
                           setValueAs: (v) => (v === '' ? null : Number(v)),
                         })}
@@ -645,7 +648,7 @@ export function FactoryShowcaseEditPage() {
                       <span className='text-xs text-gray-500 mb-1.5 block'>วันที่เริ่มโปร</span>
                       <input
                         type='date'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('start_date')}
                       />
                     </label>
@@ -653,7 +656,7 @@ export function FactoryShowcaseEditPage() {
                       <span className='text-xs text-gray-500 mb-1.5 block'>วันที่สิ้นสุดโปร</span>
                       <input
                         type='date'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-[#4F46E5] focus:ring-1 focus:ring-indigo- outline-none'
+                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('end_date')}
                       />
                     </label>
@@ -696,7 +699,7 @@ export function FactoryShowcaseEditPage() {
                   onClick={() => void save('DR')}
                   disabled={saving}
                   className='w-full py-2.5 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors'
-                  style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
+                  style={{ borderColor: 'var(--brand-indigo)', color: 'var(--brand-indigo)' }}
                 >
                   บันทึกร่าง
                 </Button>
@@ -706,7 +709,10 @@ export function FactoryShowcaseEditPage() {
                   onClick={() => void save('AC')}
                   disabled={saving || !canPublish}
                   className='w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
-                  style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
+                  style={{
+                    background:
+                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+                  }}
                 >
                   เผยแพร่
                 </Button>
@@ -750,7 +756,7 @@ export function FactoryShowcaseEditPage() {
 
           {contentType === 'ID' ? (
             <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
-              <label className='block text-sm font-semibold text-[#2E2252]'>
+              <label className='block text-sm font-semibold text-brand-navy'>
                 อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
               </label>
               <p className='text-xs text-gray-500'>
@@ -777,7 +783,7 @@ export function FactoryShowcaseEditPage() {
           onClick={() => void save('DR')}
           disabled={saving}
           className='flex-1 py-3 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors'
-          style={{ borderColor: '#4F46E5', color: '#4F46E5' }}
+          style={{ borderColor: 'var(--brand-indigo)', color: 'var(--brand-indigo)' }}
         >
           บันทึกร่าง
         </Button>
@@ -787,7 +793,10 @@ export function FactoryShowcaseEditPage() {
           onClick={() => void save('AC')}
           disabled={saving || !canPublish}
           className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
-          style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' }}
+          style={{
+            background:
+              'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+          }}
         >
           เผยแพร่
         </Button>

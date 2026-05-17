@@ -145,15 +145,18 @@ export function ExplorePromoCarousel({
           >
             <div
               className='relative overflow-hidden rounded-2xl p-3 text-white'
-              style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
+              }}
             >
               <div
                 className='absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-30'
-                style={{ background: '#A238FF' }}
+                style={{ background: 'var(--brand-purple)' }}
               />
               <div
                 className='absolute top-0 right-0 w-16 h-16 rounded-full opacity-20 blur-xl'
-                style={{ background: '#A238FF' }}
+                style={{ background: 'var(--brand-purple)' }}
               />
               <div
                 className='absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-20'
@@ -162,7 +165,7 @@ export function ExplorePromoCarousel({
               <div className='relative z-10'>
                 <div
                   className='inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full mb-1.5'
-                  style={{ background: '#A238FF' }}
+                  style={{ background: 'var(--brand-purple)' }}
                 >
                   <Gift className='w-3 h-3 text-white' />
                   <span style={{ fontSize: 11 }} className='text-white font-semibold tracking-wide'>
@@ -199,7 +202,7 @@ export function ExplorePromoCarousel({
                       type='button'
                       onClick={() => handleCopy(promo.code, promo.id)}
                       className='flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors font-semibold'
-                      style={{ background: '#2D1B4E', color: 'white', fontSize: 13 }}
+                      style={{ background: 'var(--brand-navy-deep)', color: 'white', fontSize: 13 }}
                     >
                       <Copy className='w-3.5 h-3.5' />
                       {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
@@ -226,7 +229,7 @@ export function ExplorePromoCarousel({
             className='h-1.5 rounded-full transition-all duration-300'
             style={
               i === promoIndex
-                ? { width: '20px', background: '#F28A2E' }
+                ? { width: '20px', background: 'var(--brand-orange)' }
                 : { width: '6px', background: '#D1D5DB' }
             }
           />

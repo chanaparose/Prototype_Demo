@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 
 const inputBase =
   'w-full px-4 py-2.5 md:py-3 rounded-xl border text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-shadow bg-gray-50/50 focus:bg-white';
-const inputNormal = 'border-gray-200 focus:ring-2 focus:ring-[#A238FF]/25 focus:border-[#A238FF]';
+const inputNormal =
+  'border-gray-200 focus:ring-2 focus:ring-brand-purple/25 focus:border-brand-purple';
 const inputError = 'border-red-400 focus:ring-2 focus:ring-red-200 focus:border-red-500';
 
 function FieldBlock({
@@ -27,7 +28,7 @@ function FieldBlock({
 }) {
   return (
     <div ref={setFieldRef(fieldKey)} className={`space-y-1.5 ${className}`}>
-      <label className='block text-sm font-medium text-[#2D1B4E]'>{label}</label>
+      <label className='block text-sm font-medium text-brand-navy-deep'>{label}</label>
       {children}
       {error ? <p className='text-xs md:text-sm text-red-600 mt-1'>{error}</p> : null}
     </div>
@@ -58,11 +59,11 @@ export function RegisterFactoryPage() {
   const inClass = (err?: string) => `${inputBase} ${err ? inputError : inputNormal}`;
 
   return (
-    <div className='min-h-screen bg-gradient-to-b from-[#F8F5FF] to-white py-6 md:py-12 px-4 flex items-center justify-center'>
+    <div className='min-h-screen bg-gradient-to-b from-brand-panel-hover to-white py-6 md:py-12 px-4 flex items-center justify-center'>
       {/* ปรับ Max Width ให้กว้างขึ้นเล็กน้อยเพื่อรองรับ Grid 2 คอลัมน์ */}
-      <div className='w-full max-w-[1024px] bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden md:flex border border-[#A238FF]/10'>
+      <div className='w-full max-w-[1024px] bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden md:flex border border-brand-purple/10'>
         {/* Left Side: Hero / Promo Banner (Desktop Only) */}
-        <div className='hidden md:flex md:w-[45%] flex-col justify-between bg-[#2D1B4E] text-white p-12 relative overflow-hidden'>
+        <div className='hidden md:flex md:w-[45%] flex-col justify-between bg-brand-navy-deep text-white p-12 relative overflow-hidden'>
           <div
             className='absolute inset-0 opacity-40 mix-blend-overlay'
             style={{
@@ -72,7 +73,7 @@ export function RegisterFactoryPage() {
               backgroundPosition: 'center',
             }}
           />
-          <div className='absolute inset-0 bg-gradient-to-t from-[#1A0F2E] via-[#2D1B4E]/80 to-transparent' />
+          <div className='absolute inset-0 bg-gradient-to-t from-brand-hero-ink via-brand-navy-deep/80 to-transparent' />
           <div className='relative z-10 flex flex-col h-full justify-center'>
             <div className='flex items-center gap-3 mb-8'>
               <div className='bg-white/10 p-3 rounded-2xl backdrop-blur-sm'>
@@ -100,7 +101,9 @@ export function RegisterFactoryPage() {
           noValidate
         >
           <div className='mb-6 md:mb-8'>
-            <h2 className='text-2xl md:text-3xl font-bold text-[#2D1B4E] mb-2'>สมัครบัญชีโรงงาน</h2>
+            <h2 className='text-2xl md:text-3xl font-bold text-brand-navy-deep mb-2'>
+              สมัครบัญชีโรงงาน
+            </h2>
             <p className='text-sm md:text-base text-gray-500'>
               กรุณากรอกข้อมูลธุรกิจของคุณเพื่อเริ่มต้นใช้งาน
             </p>
@@ -122,8 +125,8 @@ export function RegisterFactoryPage() {
           <div className='space-y-8'>
             {/* Section 1: Business Info */}
             <div>
-              <h3 className='text-base font-semibold text-[#A238FF] mb-4 flex items-center gap-2'>
-                <span className='w-6 h-6 rounded-full bg-[#A238FF]/10 flex items-center justify-center text-xs'>
+              <h3 className='text-base font-semibold text-brand-purple mb-4 flex items-center gap-2'>
+                <span className='w-6 h-6 rounded-full bg-brand-purple/10 flex items-center justify-center text-xs'>
                   1
                 </span>
                 ข้อมูลธุรกิจ
@@ -217,8 +220,8 @@ export function RegisterFactoryPage() {
 
                 {/* Section 2: Account Info — shown only for guests */}
                 <div>
-                  <h3 className='text-base font-semibold text-[#A238FF] mb-4 flex items-center gap-2'>
-                    <span className='w-6 h-6 rounded-full bg-[#A238FF]/10 flex items-center justify-center text-xs'>
+                  <h3 className='text-base font-semibold text-brand-purple mb-4 flex items-center gap-2'>
+                    <span className='w-6 h-6 rounded-full bg-brand-purple/10 flex items-center justify-center text-xs'>
                       2
                     </span>
                     บัญชีผู้ดูแลระบบ
@@ -279,7 +282,7 @@ export function RegisterFactoryPage() {
                           type='button'
                           tabIndex={-1}
                           onClick={() => setShowPassword((v) => !v)}
-                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#A238FF] transition-colors'
+                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple transition-colors'
                         >
                           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </Button>
@@ -307,7 +310,7 @@ export function RegisterFactoryPage() {
                           type='button'
                           tabIndex={-1}
                           onClick={() => setShowConfirm((v) => !v)}
-                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#A238FF] transition-colors'
+                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple transition-colors'
                         >
                           {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                         </Button>
@@ -320,9 +323,9 @@ export function RegisterFactoryPage() {
 
             {/* Info banner for logged-in users */}
             {!authLoading && isAuthenticated && (
-              <div className='flex items-start gap-3 bg-[#F5F0FF] border border-[#A238FF]/20 rounded-xl px-4 py-3'>
+              <div className='flex items-start gap-3 bg-brand-lavender border border-brand-purple/20 rounded-xl px-4 py-3'>
                 <svg
-                  className='w-5 h-5 text-[#A238FF] shrink-0 mt-0.5'
+                  className='w-5 h-5 text-brand-purple shrink-0 mt-0.5'
                   fill='currentColor'
                   viewBox='0 0 20 20'
                 >
@@ -332,7 +335,7 @@ export function RegisterFactoryPage() {
                     clipRule='evenodd'
                   />
                 </svg>
-                <p className='text-sm text-[#6B21A8] leading-relaxed'>
+                <p className='text-sm text-brand-violet-ink leading-relaxed'>
                   ระบบจะเชื่อมโยงโรงงานนี้กับบัญชีที่คุณล็อกอินอยู่โดยอัตโนมัติ
                   ไม่จำเป็นต้องกรอกข้อมูลบัญชีซ้ำ
                 </p>
@@ -351,11 +354,11 @@ export function RegisterFactoryPage() {
                   checked={form.acceptTerms}
                   onChange={(e) => setField('acceptTerms', e.target.checked)}
                   onBlur={() => blurField('acceptTerms')}
-                  className='mt-1 w-4 h-4 rounded border-gray-300 text-[#A238FF] focus:ring-[#A238FF] transition-colors cursor-pointer'
+                  className='mt-1 w-4 h-4 rounded border-gray-300 text-brand-purple focus:ring-brand-purple transition-colors cursor-pointer'
                 />
                 <span className='leading-relaxed'>
                   ข้าพเจ้ายอมรับ{' '}
-                  <a href='#' className='font-semibold text-[#A238FF] hover:underline'>
+                  <a href='#' className='font-semibold text-brand-purple hover:underline'>
                     ข้อตกลงและเงื่อนไขการใช้บริการ
                   </a>{' '}
                   และนโยบายความเป็นส่วนตัวของแพลตฟอร์ม
@@ -370,7 +373,7 @@ export function RegisterFactoryPage() {
               variant='unstyled'
               type='submit'
               disabled={submitting}
-              className='w-full flex items-center justify-center gap-2 bg-[#A238FF] hover:bg-[#8B2BE2] disabled:opacity-60 disabled:pointer-events-none text-white py-3.5 md:py-4 rounded-xl font-bold text-base transition-all shadow-lg shadow-[#A238FF]/20 active:scale-[0.98]'
+              className='w-full flex items-center justify-center gap-2 bg-brand-purple hover:bg-brand-purple-hover disabled:opacity-60 disabled:pointer-events-none text-white py-3.5 md:py-4 rounded-xl font-bold text-base transition-all shadow-lg shadow-brand-purple/20 active:scale-[0.98]'
             >
               {submitting ? (
                 <>
@@ -386,7 +389,7 @@ export function RegisterFactoryPage() {
               มีบัญชีผู้ใช้งานอยู่แล้ว?{' '}
               <Link
                 to='/login'
-                className='text-[#A238FF] hover:text-[#8B2BE2] transition-colors hover:underline'
+                className='text-brand-purple hover:text-brand-purple-hover transition-colors hover:underline'
               >
                 เข้าสู่ระบบที่นี่
               </Link>

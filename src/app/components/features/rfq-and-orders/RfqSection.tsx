@@ -29,8 +29,8 @@ import { CollapsibleCard } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
 
 // Brand colors per brief
-const GREEN = '#059669';
-const GREEN_BG = '#D1FAE5';
+const GREEN = 'var(--status-success)';
+const GREEN_BG = 'var(--status-success-soft)';
 
 export type RfqItem = {
   id: string;
@@ -86,8 +86,8 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
 
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
     label: rfq.status,
-    color: '#6B7280',
-    bg: '#F3F4F6',
+    color: 'var(--neutral-subtle)',
+    bg: 'var(--neutral-muted)',
   };
 
   const hasNewOffers = pending > 0;
@@ -135,7 +135,7 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
             {/* Total offers */}
             <span
               className='flex items-center gap-1.5 text-xs'
-              style={{ color: totalOffers > 0 ? PLUM : '#9CA3AF' }}
+              style={{ color: totalOffers > 0 ? PLUM : 'var(--neutral-placeholder)' }}
             >
               <Factory size={12} />
               <span className='font-semibold'>{totalOffers}</span>
@@ -196,8 +196,8 @@ function ActiveRfqCard({ rfq, idx }: { rfq: RfqItem; idx: number }) {
 function HistoryRfqRow({ rfq }: { rfq: RfqItem }) {
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
     label: rfq.status,
-    color: '#6B7280',
-    bg: '#F3F4F6',
+    color: 'var(--neutral-subtle)',
+    bg: 'var(--neutral-muted)',
   };
   const totalOffers = rfq.offers?.length || rfq.offerCount || 0;
 
@@ -210,7 +210,7 @@ function HistoryRfqRow({ rfq }: { rfq: RfqItem }) {
         <div className='flex items-center gap-2.5 min-w-0'>
           <div
             className='w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm'
-            style={{ background: '#F3F4F6' }}
+            style={{ background: 'var(--neutral-muted)' }}
           >
             {rfq.categoryIcon ?? <FileText size={14} className='text-gray-400' />}
           </div>

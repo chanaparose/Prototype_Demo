@@ -77,7 +77,7 @@ function MockStatusBar() {
   return (
     <div
       style={{
-        background: '#fff',
+        background: 'var(--neutral-white)',
         padding: '5px 14px 3px',
         display: 'flex',
         justifyContent: 'space-between',
@@ -85,9 +85,11 @@ function MockStatusBar() {
         flexShrink: 0,
       }}
     >
-      <span style={{ fontSize: 11, fontWeight: 700, color: '#374151' }}>9:41</span>
-      <span style={{ fontSize: 9, color: '#9CA3AF', letterSpacing: 2 }}>● ● ●</span>
-      <span style={{ fontSize: 10, color: '#374151' }}>🔋 100%</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--neutral-text)' }}>9:41</span>
+      <span style={{ fontSize: 9, color: 'var(--neutral-placeholder)', letterSpacing: 2 }}>
+        ● ● ●
+      </span>
+      <span style={{ fontSize: 10, color: 'var(--neutral-text)' }}>🔋 100%</span>
     </div>
   );
 }
@@ -96,9 +98,9 @@ function MockNav({ title, showBack = true }: { title?: string; showBack?: boolea
   return (
     <div
       style={{
-        background: '#fff',
+        background: 'var(--neutral-white)',
         padding: '8px 14px',
-        borderBottom: '1px solid #F3F4F6',
+        borderBottom: '1px solid var(--neutral-muted)',
         display: 'flex',
         alignItems: 'center',
         gap: 10,
@@ -111,12 +113,12 @@ function MockNav({ title, showBack = true }: { title?: string; showBack?: boolea
             width: 30,
             height: 30,
             borderRadius: 9,
-            background: '#F3F4F6',
+            background: 'var(--neutral-muted)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: 14,
-            color: '#374151',
+            color: 'var(--neutral-text)',
           }}
         >
           ←
@@ -127,7 +129,7 @@ function MockNav({ title, showBack = true }: { title?: string; showBack?: boolea
           style={{
             fontSize: 14,
             fontWeight: 700,
-            color: '#1A0A2E',
+            color: 'var(--brand-ink)',
             flex: 1,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -153,7 +155,14 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <MockStatusBar />
       <MockNav title='ส่งคำขอราคา (RFQ)' />
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 20px', background: '#F9FAFB' }}>
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '14px 14px 20px',
+          background: 'var(--neutral-surface)',
+        }}
+      >
         {/* Category pill */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
           {['ของเล่นสัตว์เลี้ยง', 'อาหารสัตว์', 'เสื้อผ้าสัตว์เลี้ยง'].map((c, i) => (
@@ -164,9 +173,9 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
                 borderRadius: 99,
                 fontSize: 11,
                 fontWeight: 600,
-                background: i === 0 ? badgeColor : '#F3F4F6',
-                color: i === 0 ? '#fff' : '#374151',
-                border: i === 0 ? 'none' : '1px solid #E5E7EB',
+                background: i === 0 ? badgeColor : 'var(--neutral-muted)',
+                color: i === 0 ? 'var(--neutral-white)' : 'var(--neutral-text)',
+                border: i === 0 ? 'none' : '1px solid var(--neutral-border)',
               }}
             >
               {c}
@@ -202,7 +211,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
               style={{
                 fontSize: 12,
                 fontWeight: 700,
-                color: '#374151',
+                color: 'var(--neutral-text)',
                 display: 'block',
                 marginBottom: 4,
               }}
@@ -211,12 +220,12 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
             </label>
             <div
               style={{
-                background: f.filled ? '#fff' : '#F9FAFB',
+                background: f.filled ? 'var(--neutral-white)' : 'var(--neutral-surface)',
                 borderRadius: 10,
                 padding: f.multiline ? '9px 12px' : '9px 12px',
-                border: `1.5px solid ${f.filled ? '#E9D5FF' : '#E5E7EB'}`,
+                border: `1.5px solid ${f.filled ? '#E9D5FF' : 'var(--neutral-border)'}`,
                 fontSize: 12,
-                color: f.filled ? '#111827' : '#9CA3AF',
+                color: f.filled ? 'var(--neutral-black)' : 'var(--neutral-placeholder)',
                 minHeight: f.multiline ? 56 : 'auto',
                 lineHeight: 1.5,
               }}
@@ -231,7 +240,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: '#374151',
+              color: 'var(--neutral-text)',
               display: 'block',
               marginBottom: 4,
             }}
@@ -240,18 +249,18 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
           </label>
           <div
             style={{
-              background: '#fff',
+              background: 'var(--neutral-white)',
               borderRadius: 10,
               padding: '9px 12px',
               border: '1.5px solid #E9D5FF',
               fontSize: 12,
-              color: '#111827',
+              color: 'var(--neutral-black)',
               display: 'flex',
               justifyContent: 'space-between',
             }}
           >
             <span>15 มี.ค. 2569</span>
-            <span style={{ color: '#9CA3AF' }}>📅</span>
+            <span style={{ color: 'var(--neutral-placeholder)' }}>📅</span>
           </div>
         </div>
         {/* CTA */}
@@ -266,7 +275,7 @@ function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
               borderRadius: 12,
               border: 'none',
               background: badgeColor,
-              color: '#fff',
+              color: 'var(--neutral-white)',
               fontWeight: 700,
               fontSize: 14,
               cursor: 'default',
@@ -295,7 +304,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           flexShrink: 0,
           height: 185,
           position: 'relative',
-          background: '#E5E7EB',
+          background: 'var(--neutral-border)',
           overflow: 'hidden',
         }}
       >
@@ -326,7 +335,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             bottom: 8,
             right: 8,
             background: 'rgba(0,0,0,0.52)',
-            color: '#fff',
+            color: 'var(--neutral-white)',
             fontSize: 10,
             padding: '2px 8px',
             borderRadius: 20,
@@ -342,8 +351,8 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           display: 'flex',
           gap: 6,
           padding: '6px 12px',
-          background: '#fff',
-          borderBottom: '1px solid #F3F4F6',
+          background: 'var(--neutral-white)',
+          borderBottom: '1px solid var(--neutral-muted)',
         }}
       >
         <div
@@ -351,9 +360,9 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             width: 42,
             height: 42,
             borderRadius: 8,
-            background: '#E5E7EB',
+            background: 'var(--neutral-border)',
             overflow: 'hidden',
-            border: '2px solid #A238FF',
+            border: '2px solid var(--brand-purple)',
           }}
         >
           <img
@@ -367,7 +376,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             width: 42,
             height: 42,
             borderRadius: 8,
-            background: '#E5E7EB',
+            background: 'var(--neutral-border)',
             overflow: 'hidden',
           }}
         >
@@ -379,13 +388,24 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
         </div>
       </div>
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px 0', background: '#fff' }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: '#F28A2E', marginBottom: 7 }}>฿40</div>
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '12px 14px 0',
+          background: 'var(--neutral-white)',
+        }}
+      >
+        <div
+          style={{ fontSize: 22, fontWeight: 800, color: 'var(--brand-orange)', marginBottom: 7 }}
+        >
+          ฿40
+        </div>
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
           <span
             style={{
               background: '#EEF2FF',
-              color: '#4338CA',
+              color: 'var(--brand-indigo-dark)',
               fontSize: 10,
               padding: '2px 8px',
               borderRadius: 99,
@@ -396,8 +416,8 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           </span>
           <span
             style={{
-              background: '#F3F4F6',
-              color: '#374151',
+              background: 'var(--neutral-muted)',
+              color: 'var(--neutral-text)',
               fontSize: 10,
               padding: '2px 7px',
               borderRadius: 99,
@@ -407,8 +427,8 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           </span>
           <span
             style={{
-              background: '#F3F4F6',
-              color: '#374151',
+              background: 'var(--neutral-muted)',
+              color: 'var(--neutral-text)',
               fontSize: 10,
               padding: '2px 7px',
               borderRadius: 99,
@@ -417,7 +437,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             ของเล่นสัตว์เลี้ยง
           </span>
         </div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#1A0A2E', marginBottom: 7 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--brand-ink)', marginBottom: 7 }}>
           ของเล่นแมว
         </div>
         <div
@@ -426,10 +446,10 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             alignItems: 'center',
             gap: 8,
             fontSize: 12,
-            color: '#9CA3AF',
+            color: 'var(--neutral-placeholder)',
             marginBottom: 10,
             paddingBottom: 10,
-            borderBottom: '1px solid #F3F4F6',
+            borderBottom: '1px solid var(--neutral-muted)',
           }}
         >
           <span style={{ color: '#FBBF24', fontWeight: 600 }}>★ 0.0</span>
@@ -448,12 +468,12 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
               display: 'flex',
               justifyContent: 'space-between',
               padding: '7px 0',
-              borderBottom: '1px solid #F9FAFB',
+              borderBottom: '1px solid var(--neutral-surface)',
               fontSize: 12,
             }}
           >
-            <span style={{ color: '#6B7280' }}>{label}</span>
-            <span style={{ fontWeight: 700, color: '#111827' }}>{value}</span>
+            <span style={{ color: 'var(--neutral-subtle)' }}>{label}</span>
+            <span style={{ fontWeight: 700, color: 'var(--neutral-black)' }}>{value}</span>
           </div>
         ))}
       </div>
@@ -462,8 +482,8 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
         style={{
           flexShrink: 0,
           padding: '9px 12px',
-          background: '#fff',
-          borderTop: '1px solid #F3F4F6',
+          background: 'var(--neutral-white)',
+          borderTop: '1px solid var(--neutral-muted)',
           display: 'flex',
           gap: 8,
           alignItems: 'center',
@@ -476,7 +496,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             alignItems: 'center',
             gap: 1,
             padding: '0 8px',
-            color: '#6B7280',
+            color: 'var(--neutral-subtle)',
             fontSize: 9,
           }}
         >
@@ -490,7 +510,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
             alignItems: 'center',
             gap: 1,
             padding: '0 8px',
-            color: '#6B7280',
+            color: 'var(--neutral-subtle)',
             fontSize: 9,
           }}
         >
@@ -508,7 +528,7 @@ function MockProductDetail({ badgeColor }: { badgeColor: string }) {
               borderRadius: 12,
               border: 'none',
               background: badgeColor,
-              color: '#fff',
+              color: 'var(--neutral-white)',
               fontWeight: 700,
               fontSize: 13,
               cursor: 'default',
@@ -539,19 +559,21 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
         style={{
           flexShrink: 0,
           padding: '7px 12px',
-          background: '#F8F5FF',
-          borderBottom: '1px solid #EDE9FE',
+          background: 'var(--brand-panel-hover)',
+          borderBottom: '1px solid var(--brand-violet-soft)',
           display: 'flex',
           alignItems: 'center',
           gap: 6,
         }}
       >
         <span style={{ fontSize: 13 }}>📋</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: '#7C3AED' }}>RFQ: ของเล่นแมว</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--brand-violet)' }}>
+          RFQ: ของเล่นแมว
+        </span>
         <span
           style={{
-            background: '#EDE9FE',
-            color: '#7C3AED',
+            background: 'var(--brand-violet-soft)',
+            color: 'var(--brand-violet)',
             fontSize: 9,
             fontWeight: 700,
             padding: '2px 7px',
@@ -580,7 +602,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
               width: 26,
               height: 26,
               borderRadius: '50%',
-              background: '#A238FF1A',
+              background: 'var(--brand-purple)1A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -593,18 +615,25 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
           <div style={{ maxWidth: '78%' }}>
             <div
               style={{
-                background: '#fff',
+                background: 'var(--neutral-white)',
                 padding: '7px 11px',
                 borderRadius: '10px 10px 10px 2px',
                 fontSize: 12,
-                color: '#374151',
+                color: 'var(--neutral-text)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.07)',
                 lineHeight: 1.5,
               }}
             >
               สวัสดีครับ! สนใจสินค้าตัวไหนครับ? 🐾
             </div>
-            <div style={{ fontSize: 9, color: '#9CA3AF', marginTop: 2, paddingLeft: 3 }}>
+            <div
+              style={{
+                fontSize: 9,
+                color: 'var(--neutral-placeholder)',
+                marginTop: 2,
+                paddingLeft: 3,
+              }}
+            >
               10:32 น.
             </div>
           </div>
@@ -614,11 +643,11 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
           <div style={{ maxWidth: '78%' }}>
             <div
               style={{
-                background: '#A238FF',
+                background: 'var(--brand-purple)',
                 padding: '7px 11px',
                 borderRadius: '10px 10px 2px 10px',
                 fontSize: 12,
-                color: '#fff',
+                color: 'var(--neutral-white)',
                 lineHeight: 1.5,
               }}
             >
@@ -627,7 +656,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
             <div
               style={{
                 fontSize: 9,
-                color: '#9CA3AF',
+                color: 'var(--neutral-placeholder)',
                 marginTop: 2,
                 textAlign: 'right',
                 paddingRight: 3,
@@ -644,7 +673,7 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
               width: 26,
               height: 26,
               borderRadius: '50%',
-              background: '#A238FF1A',
+              background: 'var(--brand-purple)1A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -657,11 +686,11 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
           <div style={{ maxWidth: '78%' }}>
             <div
               style={{
-                background: '#fff',
+                background: 'var(--neutral-white)',
                 padding: '7px 11px',
                 borderRadius: '10px 10px 10px 2px',
                 fontSize: 12,
-                color: '#374151',
+                color: 'var(--neutral-text)',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.07)',
                 lineHeight: 1.5,
               }}
@@ -669,7 +698,14 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
               ราคา 40 บาท/ชิ้นครับ กรุณาส่ง RFQ
               มาเพื่อยืนยันรายละเอียดและรับใบเสนอราคาอย่างเป็นทางการ 🙏
             </div>
-            <div style={{ fontSize: 9, color: '#9CA3AF', marginTop: 2, paddingLeft: 3 }}>
+            <div
+              style={{
+                fontSize: 9,
+                color: 'var(--neutral-placeholder)',
+                marginTop: 2,
+                paddingLeft: 3,
+              }}
+            >
               10:38 น.
             </div>
           </div>
@@ -680,8 +716,8 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
         style={{
           flexShrink: 0,
           padding: '8px 10px',
-          background: '#fff',
-          borderTop: '1px solid #F3F4F6',
+          background: 'var(--neutral-white)',
+          borderTop: '1px solid var(--neutral-muted)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -714,12 +750,12 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
           <div
             style={{
               flex: 1,
-              background: '#F9FAFB',
+              background: 'var(--neutral-surface)',
               borderRadius: 20,
               padding: '7px 12px',
               fontSize: 12,
-              color: '#9CA3AF',
-              border: '1px solid #F3F4F6',
+              color: 'var(--neutral-placeholder)',
+              border: '1px solid var(--neutral-muted)',
             }}
           >
             พิมพ์ข้อความ...
@@ -729,13 +765,13 @@ function MockMessages({ badgeColor }: { badgeColor: string }) {
               width: 30,
               height: 30,
               borderRadius: '50%',
-              background: '#A238FF',
+              background: 'var(--brand-purple)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
               fontSize: 13,
-              color: '#fff',
+              color: 'var(--neutral-white)',
             }}
           >
             ➤
@@ -792,14 +828,14 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <div style={{ fontSize: 11, color: '#6B7280', marginBottom: 2 }}>
+            <div style={{ fontSize: 11, color: 'var(--neutral-subtle)', marginBottom: 2 }}>
               🐾 อาหารสัตว์ • 1,000 ชิ้น
             </div>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#065F46' }}>
               ✅ ได้รับ 3 ข้อเสนอแล้ว
             </div>
           </div>
-          <div style={{ fontSize: 11, color: '#6B7280', textAlign: 'right' }}>
+          <div style={{ fontSize: 11, color: 'var(--neutral-subtle)', textAlign: 'right' }}>
             <div>งบประมาณ ฿50,000</div>
             <div>ส่งมอบ 15 มี.ค. 69</div>
           </div>
@@ -814,17 +850,19 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
           display: 'flex',
           flexDirection: 'column',
           gap: 9,
-          background: '#F9FAFB',
+          background: 'var(--neutral-surface)',
         }}
       >
         {offers.map((o, i) => (
           <div
             key={i}
             style={{
-              background: '#fff',
+              background: 'var(--neutral-white)',
               borderRadius: 14,
               padding: '11px 12px',
-              border: o.recommended ? `2px solid ${badgeColor}` : '1.5px solid #F3F4F6',
+              border: o.recommended
+                ? `2px solid ${badgeColor}`
+                : '1.5px solid var(--neutral-muted)',
               boxShadow: o.recommended
                 ? `0 4px 18px ${badgeColor}25`
                 : '0 1px 4px rgba(0,0,0,0.05)',
@@ -839,7 +877,7 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
                   right: 12,
                   transform: 'translateY(-50%)',
                   background: badgeColor,
-                  color: '#fff',
+                  color: 'var(--neutral-white)',
                   fontSize: 9,
                   fontWeight: 700,
                   padding: '2px 8px',
@@ -862,32 +900,34 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: '#111827',
+                    color: 'var(--neutral-black)',
                     marginBottom: 3,
                     lineHeight: 1.3,
                   }}
                 >
                   {o.name}
                 </div>
-                <div style={{ fontSize: 10.5, color: '#6B7280' }}>
+                <div style={{ fontSize: 10.5, color: 'var(--neutral-subtle)' }}>
                   ⏱ {o.leadTime} วัน &nbsp;⭐ {o.rating}{' '}
                   {o.verified ? (
-                    <span style={{ color: '#22C55E', fontWeight: 600 }}>✓ ยืนยัน</span>
+                    <span style={{ color: 'var(--status-success-bright)', fontWeight: 600 }}>
+                      ✓ ยืนยัน
+                    </span>
                   ) : null}
                 </div>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#111827' }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--neutral-black)' }}>
                   {formatCurrency(o.price, 'THB')}
                 </div>
-                <div style={{ fontSize: 9.5, color: '#9CA3AF' }}>รวมทั้งหมด</div>
+                <div style={{ fontSize: 9.5, color: 'var(--neutral-placeholder)' }}>รวมทั้งหมด</div>
               </div>
             </div>
             <div
               style={{
                 fontSize: 10.5,
-                color: '#6B7280',
-                background: '#F9FAFB',
+                color: 'var(--neutral-subtle)',
+                background: 'var(--neutral-surface)',
                 borderRadius: 8,
                 padding: '4px 8px',
                 marginBottom: o.recommended ? 8 : 0,
@@ -907,7 +947,7 @@ function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
                     borderRadius: 10,
                     border: 'none',
                     background: badgeColor,
-                    color: '#fff',
+                    color: 'var(--neutral-white)',
                     fontWeight: 700,
                     fontSize: 12.5,
                     cursor: 'default',
@@ -960,15 +1000,15 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <MockStatusBar />
       <MockNav title='คำสั่งซื้อ: สายจูงสัตว์เลี้ยง' />
-      <div style={{ flex: 1, overflowY: 'auto', background: '#F9FAFB' }}>
+      <div style={{ flex: 1, overflowY: 'auto', background: 'var(--neutral-surface)' }}>
         {/* Summary */}
         <div style={{ padding: '10px 12px 0' }}>
           <div
             style={{
-              background: '#fff',
+              background: 'var(--neutral-white)',
               borderRadius: 14,
               padding: 12,
-              border: '1px solid #F3F4F6',
+              border: '1px solid var(--neutral-muted)',
               marginBottom: 10,
             }}
           >
@@ -981,17 +1021,24 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
               }}
             >
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#1A0A2E', marginBottom: 3 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: 'var(--brand-ink)',
+                    marginBottom: 3,
+                  }}
+                >
                   สายจูงและปลอกคอสัตว์เลี้ยง
                 </div>
-                <div style={{ fontSize: 11, color: '#7C3AED' }}>
+                <div style={{ fontSize: 11, color: 'var(--brand-violet)' }}>
                   ของเล่นสัตว์เลี้ยง แฮปปี้ • 500 ชิ้น
                 </div>
               </div>
               <span
                 style={{
-                  background: '#FEF3C7',
-                  color: '#D97706',
+                  background: 'var(--status-warning-soft)',
+                  color: 'var(--status-warning-deep)',
                   fontSize: 10,
                   fontWeight: 700,
                   padding: '3px 8px',
@@ -1005,7 +1052,7 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
             <div
               style={{
                 fontSize: 11,
-                color: '#6B7280',
+                color: 'var(--neutral-subtle)',
                 marginBottom: 4,
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -1014,12 +1061,19 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
               <span>ความคืบหน้า</span>
               <span style={{ fontWeight: 700, color: badgeColor }}>65%</span>
             </div>
-            <div style={{ height: 6, background: '#F3F4F6', borderRadius: 99, overflow: 'hidden' }}>
+            <div
+              style={{
+                height: 6,
+                background: 'var(--neutral-muted)',
+                borderRadius: 99,
+                overflow: 'hidden',
+              }}
+            >
               <div
                 style={{
                   height: '100%',
                   width: '65%',
-                  background: `linear-gradient(90deg, ${badgeColor}, #A238FF)`,
+                  background: `linear-gradient(90deg, ${badgeColor}, var(--brand-purple))`,
                   borderRadius: 99,
                 }}
               />
@@ -1030,13 +1084,20 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
         <div style={{ padding: '0 12px 10px' }}>
           <div
             style={{
-              background: '#fff',
+              background: 'var(--neutral-white)',
               borderRadius: 14,
               padding: 12,
-              border: '1.5px solid #F3F4F6',
+              border: '1.5px solid var(--neutral-muted)',
             }}
           >
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 8 }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: 'var(--neutral-black)',
+                marginBottom: 8,
+              }}
+            >
               💳 สรุปการชำระเงิน (Escrow)
             </div>
             {[
@@ -1053,8 +1114,15 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                   marginBottom: 5,
                 }}
               >
-                <span style={{ color: '#6B7280' }}>{label}</span>
-                <span style={{ fontWeight: 700, color: green ? '#22C55E' : '#111827' }}>{val}</span>
+                <span style={{ color: 'var(--neutral-subtle)' }}>{label}</span>
+                <span
+                  style={{
+                    fontWeight: 700,
+                    color: green ? 'var(--status-success-bright)' : 'var(--neutral-black)',
+                  }}
+                >
+                  {val}
+                </span>
               </div>
             ))}
             <Button
@@ -1069,7 +1137,7 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                   borderRadius: 10,
                   border: 'none',
                   background: badgeColor,
-                  color: '#fff',
+                  color: 'var(--neutral-white)',
                   fontWeight: 700,
                   fontSize: 12.5,
                   cursor: 'default',
@@ -1084,7 +1152,14 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
         </div>
         {/* Timeline */}
         <div style={{ padding: '0 12px 14px' }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 9 }}>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: 'var(--neutral-black)',
+              marginBottom: 9,
+            }}
+          >
             📋 ความคืบหน้าการผลิต
           </div>
           {timeline.map((t, i) => (
@@ -1104,15 +1179,15 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                     borderRadius: '50%',
                     background:
                       t.status === 'done'
-                        ? '#22C55E'
+                        ? 'var(--status-success-bright)'
                         : t.status === 'current'
                           ? badgeColor
-                          : '#E5E7EB',
+                          : 'var(--neutral-border)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: 10,
-                    color: '#fff',
+                    color: 'var(--neutral-white)',
                     fontWeight: 700,
                   }}
                 >
@@ -1124,7 +1199,8 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                       width: 2,
                       flex: 1,
                       minHeight: 14,
-                      background: t.status === 'done' ? '#D1FAE5' : '#F3F4F6',
+                      background:
+                        t.status === 'done' ? 'var(--status-success-soft)' : 'var(--neutral-muted)',
                       margin: '2px 0',
                     }}
                   />
@@ -1135,14 +1211,19 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                   style={{
                     fontSize: 12,
                     fontWeight: t.status === 'current' ? 700 : 500,
-                    color: t.status === 'pending' ? '#9CA3AF' : '#111827',
+                    color:
+                      t.status === 'pending'
+                        ? 'var(--neutral-placeholder)'
+                        : 'var(--neutral-black)',
                     lineHeight: 1.3,
                   }}
                 >
                   {t.title}
                 </div>
                 {t.date && (
-                  <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 1 }}>{t.date}</div>
+                  <div style={{ fontSize: 10, color: 'var(--neutral-placeholder)', marginTop: 1 }}>
+                    {t.date}
+                  </div>
                 )}
                 {t.status === 'current' && (
                   <div style={{ fontSize: 10, color: badgeColor, fontWeight: 600, marginTop: 2 }}>
@@ -1150,7 +1231,9 @@ function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                   </div>
                 )}
                 {t.desc && t.status !== 'current' && (
-                  <div style={{ fontSize: 10, color: '#9CA3AF', marginTop: 1 }}>{t.desc}</div>
+                  <div style={{ fontSize: 10, color: 'var(--neutral-placeholder)', marginTop: 1 }}>
+                    {t.desc}
+                  </div>
                 )}
               </div>
             </div>
@@ -1177,7 +1260,7 @@ function MockScreenOverlay({ stepIdx, def }: { stepIdx: number; def: StepDef }) 
           width: 'calc(100% - 20px)',
           maxWidth: 420,
           height: 'calc(100svh - 215px)',
-          background: '#F9FAFB',
+          background: 'var(--neutral-surface)',
           borderRadius: 20,
           overflow: 'hidden',
           display: 'flex',
@@ -1206,7 +1289,7 @@ const STEPS: StepDef[] = [
     targetTexts: ['สินค้า', 'ทั้งหมด'],
     spotlightRadius: 24,
     spotlightPad: 6,
-    badgeColor: '#A238FF',
+    badgeColor: 'var(--brand-purple)',
     icon: '🔍',
     badge: 'ขั้นตอนที่ 1 / 7',
     title: 'เลือกดูสินค้าและโรงงาน',
@@ -1224,7 +1307,7 @@ const STEPS: StepDef[] = [
     spotlightRadius: 12,
     spotlightPad: 8,
     cardPlacement: 'top', // FAB sits at bottom-right → keep card up top from the start
-    badgeColor: '#F28A2E',
+    badgeColor: 'var(--brand-orange)',
     icon: '➕',
     badge: 'ขั้นตอนที่ 2 / 7',
     title: 'กดปุ่มสร้างคำขอราคา',
@@ -1237,7 +1320,7 @@ const STEPS: StepDef[] = [
     targetTexts: ['ประเภทคำขอ', 'ขอตัวอย่างสินค้า', 'ขอราคาผลิต'],
     spotlightRadius: 14,
     spotlightPad: 10,
-    badgeColor: '#F28A2E',
+    badgeColor: 'var(--brand-orange)',
     icon: '📋',
     badge: 'ขั้นตอนที่ 3 / 7',
     title: 'เลือกประเภทคำขอที่เหมาะกับคุณ',
@@ -1250,7 +1333,7 @@ const STEPS: StepDef[] = [
     targetTexts: ['แชทกับโรงงาน', 'แชท'],
     spotlightRadius: 12,
     cardPlacement: 'top', // chat CTA sits in bottom action bar
-    badgeColor: '#0D9488',
+    badgeColor: 'var(--brand-teal)',
     icon: '💬',
     badge: 'ขั้นตอนที่ 4 / 7',
     title: 'แชทกับโรงงานที่สนใจ',
@@ -1263,7 +1346,7 @@ const STEPS: StepDef[] = [
     targetTexts: ['📎', 'แนบ RFQ', 'RFQ', 'พิมพ์ข้อความ'],
     spotlightRadius: 10,
     cardPlacement: 'top', // chat input + RFQ attach btn sit at bottom of viewport
-    badgeColor: '#3B82F6',
+    badgeColor: 'var(--status-info)',
     icon: '📩',
     badge: 'ขั้นตอนที่ 5 / 7',
     title: 'ส่ง คำขอราคา ให้โรงงานใน Chat',
@@ -1275,7 +1358,7 @@ const STEPS: StepDef[] = [
     mockScenario: 'rfq',
     targetTexts: ['ยอมรับข้อเสนอ', 'ยอมรับ', 'ข้อเสนอ', 'AI แนะนำ', 'ใบเสนอราคา'],
     spotlightRadius: 12,
-    badgeColor: '#7C3AED',
+    badgeColor: 'var(--brand-violet)',
     icon: '⚖️',
     badge: 'ขั้นตอนที่ 6 / 7',
     title: 'เปรียบเทียบและยอมรับข้อเสนอ',
@@ -1287,7 +1370,7 @@ const STEPS: StepDef[] = [
     mockScenario: 'order',
     targetTexts: ['การผลิต', 'ภาพรวม', 'กำลังผลิต', 'ชำระ'],
     spotlightRadius: 12,
-    badgeColor: '#22C55E',
+    badgeColor: 'var(--status-success-bright)',
     icon: '✅',
     badge: 'ขั้นตอนที่ 7 / 7',
     title: 'จ่ายเงินและติดตามสถานะ',
@@ -1459,7 +1542,7 @@ function TourCard({
         zIndex: 9999,
         maxWidth: 440,
         margin: '0 auto',
-        background: '#FFFFFF',
+        background: 'var(--neutral-white)',
         borderRadius: 20,
         boxShadow: placeAtTop ? '0 4px 40px rgba(0,0,0,0.28)' : '0 -4px 40px rgba(0,0,0,0.28)',
         overflow: 'visible',
@@ -1502,7 +1585,7 @@ function TourCard({
         style={{
           height: 4,
           borderRadius: '20px 20px 0 0',
-          background: `linear-gradient(90deg, ${def.badgeColor} 0%, #A238FF 100%)`,
+          background: `linear-gradient(90deg, ${def.badgeColor} 0%, var(--brand-purple) 100%)`,
         }}
       />
       <div style={{ padding: '14px 16px 16px' }}>
@@ -1543,7 +1626,7 @@ function TourCard({
               style={{
                 fontSize: 15,
                 fontWeight: 700,
-                color: '#1A0A2E',
+                color: 'var(--brand-ink)',
                 lineHeight: 1.3,
                 margin: 0,
               }}
@@ -1578,7 +1661,7 @@ function TourCard({
                   width: i === stepIdx ? 20 : 6,
                   height: 6,
                   borderRadius: 99,
-                  background: i === stepIdx ? def.badgeColor : '#E5E7EB',
+                  background: i === stepIdx ? def.badgeColor : 'var(--neutral-border)',
                   transition: 'all 0.25s',
                 }}
               />
@@ -1598,9 +1681,9 @@ function TourCard({
                   fontWeight: 600,
                   padding: '7px 13px',
                   borderRadius: 99,
-                  border: '1.5px solid #E5E7EB',
+                  border: '1.5px solid var(--neutral-border)',
                   background: 'transparent',
-                  color: '#6B7280',
+                  color: 'var(--neutral-subtle)',
                   cursor: 'pointer',
                 }}
               >
@@ -1616,9 +1699,9 @@ function TourCard({
                   fontWeight: 600,
                   padding: '7px 13px',
                   borderRadius: 99,
-                  border: '1.5px solid #E5E7EB',
+                  border: '1.5px solid var(--neutral-border)',
                   background: 'transparent',
-                  color: '#6B7280',
+                  color: 'var(--neutral-subtle)',
                   cursor: 'pointer',
                 }}
               >
@@ -1639,7 +1722,7 @@ function TourCard({
                 borderRadius: 99,
                 border: 'none',
                 background: def.badgeColor,
-                color: '#FFFFFF',
+                color: 'var(--neutral-white)',
                 cursor: 'pointer',
                 boxShadow: `0 4px 14px ${def.badgeColor}55`,
               }}

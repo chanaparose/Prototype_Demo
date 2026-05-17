@@ -71,10 +71,25 @@ export function ExploreFactoryShowcase({
 
   // Card pastel palettes — rotate per card for visual variety (Tryly brand colors)
   const palettes = [
-    { bg: '#F5F3FF', accent: '#A238FF', chip: '#EDE4FF', chipText: '#6D28D9' },
-    { bg: '#FFF4E8', accent: '#F28A2E', chip: '#FFE6CB', chipText: '#C2410C' },
-    { bg: '#ECFDF5', accent: '#0D9488', chip: '#D1FAE5', chipText: '#047857' },
-    { bg: '#FFF1F5', accent: '#E11D48', chip: '#FCE7F0', chipText: '#9D174D' },
+    {
+      bg: '#F5F3FF',
+      accent: 'var(--brand-purple)',
+      chip: '#EDE4FF',
+      chipText: 'var(--brand-violet-deep)',
+    },
+    {
+      bg: 'var(--surface-orange-tint)',
+      accent: 'var(--brand-orange)',
+      chip: '#FFE6CB',
+      chipText: '#C2410C',
+    },
+    {
+      bg: '#ECFDF5',
+      accent: 'var(--brand-teal)',
+      chip: 'var(--status-success-soft)',
+      chipText: '#047857',
+    },
+    { bg: 'var(--surface-rose-soft)', accent: '#E11D48', chip: '#FCE7F0', chipText: '#9D174D' },
   ];
 
   return (
@@ -90,7 +105,7 @@ export function ExploreFactoryShowcase({
       {/* Section title — light, no gradient banner */}
       <div className='flex items-end justify-between mb-3 px-1'>
         <div>
-          <h2 className='text-base lg:text-xl font-bold text-[#1A0A2E]'>โรงงานแนะนำ</h2>
+          <h2 className='text-base lg:text-xl font-bold text-brand-ink'>โรงงานแนะนำ</h2>
           <p className='text-[11px] lg:text-xs text-gray-500 mt-0.5'>
             โรงงานที่ผ่านการยืนยัน พร้อมรับผลิตสินค้าคุณภาพสูง
           </p>
@@ -100,7 +115,7 @@ export function ExploreFactoryShowcase({
             variant='unstyled'
             type='button'
             onClick={onSeeAll}
-            className='shrink-0 inline-flex items-center gap-0.5 text-[11px] lg:text-xs font-medium text-[#A238FF] hover:underline'
+            className='shrink-0 inline-flex items-center gap-0.5 text-[11px] lg:text-xs font-medium text-brand-purple hover:underline'
           >
             ดูทั้งหมด <ArrowRight size={12} />
           </Button>
@@ -194,7 +209,7 @@ export function ExploreFactoryShowcase({
                       {factory.location || 'โรงงาน'}
                     </div>
                     <h3
-                      className='font-bold text-[#1A0A2E] mb-1.5 leading-tight line-clamp-2'
+                      className='font-bold text-brand-ink mb-1.5 leading-tight line-clamp-2'
                       style={{ fontSize: variant === 'desktop' ? 18 : 15 }}
                     >
                       {factory.name}
@@ -238,7 +253,7 @@ export function ExploreFactoryShowcase({
               className='h-1.5 rounded-full transition-all'
               style={{
                 width: activeIdx === i ? 18 : 6,
-                backgroundColor: activeIdx === i ? '#A238FF' : '#D6D3E6',
+                backgroundColor: activeIdx === i ? 'var(--brand-purple)' : '#D6D3E6',
               }}
               aria-label={`ไปที่ลำดับ ${i + 1}`}
             />

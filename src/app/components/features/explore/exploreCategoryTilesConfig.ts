@@ -12,13 +12,13 @@ export const EXPLORE_CATEGORY_TILES: {
     categoryId: '3',
     fallbackName: 'ของเล่น',
     icon: Volleyball,
-    color: 'bg-[#FF7A00]/10 text-[#FF7A00]',
+    color: 'bg-brand-orange-hot/10 text-brand-orange-hot',
   },
   {
     categoryId: '1',
     fallbackName: 'อาหารสัตว์เลี้ยง',
     icon: Cat,
-    color: 'bg-[#A238FF]/10 text-[#A238FF]',
+    color: 'bg-brand-purple/10 text-brand-purple',
   },
   {
     categoryId: '11',

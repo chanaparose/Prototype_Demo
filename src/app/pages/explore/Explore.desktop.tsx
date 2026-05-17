@@ -164,7 +164,7 @@ export function ExploreDesktop({
           <Button
             variant='unstyled'
             type='button'
-            className='px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-1.5 text-xs font-medium shrink-0 text-[#A656A0] hover:border-[#A656A0]/30 transition-colors'
+            className='px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-1.5 text-xs font-medium shrink-0 text-brand-magenta hover:border-brand-magenta/30 transition-colors'
           >
             <SlidersHorizontal size={14} />
             ตัวกรอง
@@ -175,8 +175,8 @@ export function ExploreDesktop({
         {desktopPromoSlides.length > 0 && (
           <section>
             <div className='flex items-center justify-between mb-3'>
-              <h2 className='text-base font-bold text-[#292259] flex items-center gap-1.5'>
-                <Sparkles className='text-[#F28A2E]' size={16} />
+              <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
+                <Sparkles className='text-brand-orange' size={16} />
                 โค้ดส่วนลดพิเศษ
               </h2>
             </div>
@@ -189,16 +189,19 @@ export function ExploreDesktop({
                 >
                   <div
                     className='relative overflow-hidden p-3.5 text-white h-full flex-1 flex flex-col'
-                    style={{ background: 'linear-gradient(135deg, #F28A2E 0%, #F27830 100%)' }}
+                    style={{
+                      background:
+                        'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
+                    }}
                   >
                     {/* Purple ribbon circle top-right */}
                     <div
                       className='absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30'
-                      style={{ background: '#A238FF' }}
+                      style={{ background: 'var(--brand-purple)' }}
                     />
                     <div
                       className='absolute top-0 right-0 w-14 h-14 rounded-full opacity-20 blur-xl'
-                      style={{ background: '#A238FF' }}
+                      style={{ background: 'var(--brand-purple)' }}
                     />
                     {/* Cream circle bottom-left */}
                     <div
@@ -209,7 +212,7 @@ export function ExploreDesktop({
                       {/* Purple ribbon badge */}
                       <div
                         className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-1.5'
-                        style={{ background: '#A238FF' }}
+                        style={{ background: 'var(--brand-purple)' }}
                       >
                         <Gift className='w-3 h-3 text-white' />
                         <span className='text-[10px] text-white font-semibold tracking-wide'>
@@ -242,7 +245,7 @@ export function ExploreDesktop({
                           type='button'
                           onClick={() => handleCopy(promo.code, promo.id)}
                           className='flex items-center gap-1 rounded-lg px-2.5 py-1 transition-colors text-[12px] font-semibold text-white'
-                          style={{ background: '#2D1B4E' }}
+                          style={{ background: 'var(--brand-navy-deep)' }}
                         >
                           <Copy className='w-3 h-3' />
                           {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
@@ -320,15 +323,15 @@ export function ExploreDesktop({
         {/* ═══ 2. โปรโมชันแนะนำ — ORANGE THEME ═══ */}
         <section>
           <div className='mt-[30px] flex items-center justify-between mb-3'>
-            <h2 className='text-base font-bold text-[#292259] flex items-center gap-1.5'>
-              <Tag className='text-[#F27830]' size={16} />
+            <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
+              <Tag className='text-brand-orange-vivid' size={16} />
               โปรโมชันแนะนำ
             </h2>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => navigate('/factory-ideas?type=promotion')}
-              className='text-[#F28A2E] text-xs font-medium hover:text-[#F27830] flex items-center transition-colors'
+              className='text-brand-orange text-xs font-medium hover:text-brand-orange-vivid flex items-center transition-colors'
             >
               ดูเพิ่มเติม <ChevronRight size={14} />
             </Button>
@@ -365,12 +368,12 @@ export function ExploreDesktop({
                       alt={item.title}
                       className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                     />
-                    <div className='absolute top-1 left-1 bg-[#F28A2E] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
+                    <div className='absolute top-1 left-1 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
                       โปรโมชัน
                     </div>
                   </div>
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                    <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+                    <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                       {item.title}
                     </h3>
                     <div className='flex items-center gap-0.5 mt-0.5'>
@@ -417,7 +420,7 @@ export function ExploreDesktop({
         </section>
 
         {/* ═══ 7. บทความ Idea — พื้นหลัง gradient โทนเดียวกับ HowToOrderSection (shimmer bar) ═══ */}
-        <section className='relative -mx-8 px-8 py-5 rounded-xl overflow-hidden bg-[#EFEFF2]'>
+        <section className='relative -mx-8 px-8 py-5 rounded-xl overflow-hidden bg-neutral-cool-surface'>
           {/* เลเยอร์นอกลดความเข้ม — ข้างในใช้ gradient + hiw-shimmer-bar เหมือน HowToOrderSection */}
           <div
             aria-hidden
@@ -428,18 +431,18 @@ export function ExploreDesktop({
               className='absolute inset-0 rounded-xl'
               style={{
                 background:
-                  'linear-gradient(90deg, #7C3AED 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
+                  'linear-gradient(90deg, var(--brand-violet) 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
                 animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
               }}
             />
           </div>
           <div className='relative z-[1] flex items-center justify-between mb-3'>
-            <h2 className='text-base font-bold text-[#292259]'>บทความ Idea</h2>
+            <h2 className='text-base font-bold text-brand-navy-ink'>บทความ Idea</h2>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => navigate('/factory-ideas?type=idea')}
-              className='text-[#A656A0] text-xs font-medium hover:underline flex items-center'
+              className='text-brand-magenta text-xs font-medium hover:underline flex items-center'
             >
               ดูทั้งหมด <ChevronRight size={14} />
             </Button>
@@ -459,14 +462,14 @@ export function ExploreDesktop({
                     className='bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]'
                   >
                     <div className='flex items-center gap-2 mb-1.5'>
-                      <span className='inline-flex items-center rounded-full bg-[#F6EEFC] px-2 py-0.5 text-[10px] font-bold text-[#A656A0] uppercase tracking-wide'>
+                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
                         {article.tag || 'Idea'}
                       </span>
                       <span className='text-[10px] text-gray-400 truncate'>
                         {article.factoryName}
                       </span>
                     </div>
-                    <h3 className='font-bold text-[13px] text-[#292259] mb-1 line-clamp-2 leading-snug group-hover:text-[#A656A0] transition-colors'>
+                    <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug group-hover:text-brand-magenta transition-colors'>
                       {article.title}
                     </h3>
                     <p className='text-[12px] text-gray-500 line-clamp-2'>{article.excerpt}</p>
@@ -494,7 +497,7 @@ export function ExploreDesktop({
       </div>
 
       {/* ═══ 8. Registration CTA — mt-6 เท่ากับ space-y-6 ในคอลัมน์หลัก (รวม iPad กับ desktop) ═══ */}
-      <section className='mt-6 rounded-xl overflow-hidden border border-[#A238FF]/30 shadow-sm relative py-5 px-4 md:px-8'>
+      <section className='mt-6 rounded-xl overflow-hidden border border-brand-purple/30 shadow-sm relative py-5 px-4 md:px-8'>
         {/* Desktop (xl+): full-bleed hero inside section */}
         <img
           src='assets/tryly_banner_v9.png'
@@ -520,13 +523,13 @@ export function ExploreDesktop({
             type='button'
             onClick={() => navigate('/register/factory')}
             className='group relative shrink-0 inline-flex items-center gap-1.5 xl:gap-2 max-xl:px-4 max-xl:py-2 xl:px-7 xl:py-2.5 rounded-xl text-white font-bold text-xs xl:text-sm whitespace-nowrap
-                         bg-gradient-to-r from-[#A238FF] via-[#8B2BE2] to-[#6D28D9]
-                         shadow-lg shadow-[#A238FF]/40
+                         bg-gradient-to-r from-brand-purple via-brand-purple-hover to-brand-violet-deep
+                         shadow-lg shadow-brand-purple/40
                          ring-1 ring-white/20
                          transition-all duration-200 ease-out
-                         hover:shadow-xl hover:shadow-[#A238FF]/60 hover:-translate-y-0.5 hover:brightness-110
+                         hover:shadow-xl hover:shadow-brand-purple/60 hover:-translate-y-0.5 hover:brightness-110
                          active:translate-y-0 active:scale-[0.97]
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#A238FF]'
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple'
           >
             <Sparkles
               size={14}
@@ -557,7 +560,7 @@ export function ExploreDesktop({
         type='button'
         onClick={() => navigate('/create-rfq')}
         className='hidden md:flex xl:hidden fixed bottom-6 right-5 w-12 h-12 rounded-full items-center justify-center shadow-lg transition-transform active:scale-95 z-30'
-        style={{ background: '#A238FF', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
+        style={{ background: 'var(--brand-purple)', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
       >
         <Plus size={20} className='text-white' />
       </Button>

@@ -61,7 +61,7 @@ export function OrderSummaryCard({
   return (
     <div
       className='rounded-2xl p-4 relative overflow-hidden'
-      style={{ background: 'linear-gradient(135deg, #2D1B4E 0%, #4A267D 100%)' }}
+      style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
     >
       <div className='absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white' />
       <div className='relative z-10'>
@@ -83,7 +83,11 @@ export function OrderSummaryCard({
           </div>
           <span
             className='px-2.5 py-1 rounded-full text-[10px]'
-            style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', fontWeight: 600 }}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              color: 'var(--neutral-white)',
+              fontWeight: 600,
+            }}
           >
             {badgeLabel}
           </span>
@@ -91,7 +95,9 @@ export function OrderSummaryCard({
         <div className='space-y-1.5 mb-3'>
           <div className='flex justify-between text-xs text-white/80'>
             <span>ความคืบหน้า</span>
-            <span style={{ fontWeight: 700, color: '#fff' }}>{order.progress}%</span>
+            <span style={{ fontWeight: 700, color: 'var(--neutral-white)' }}>
+              {order.progress}%
+            </span>
           </div>
           <div className='h-2 bg-white/30 rounded-full overflow-hidden'>
             <div

@@ -315,7 +315,7 @@ function OrderDetailMobileBody() {
           onClick={() => openOrderChat()}
           className='w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center'
         >
-          <MessageCircle size={20} style={{ color: '#A238FF' }} />
+          <MessageCircle size={20} style={{ color: 'var(--brand-purple)' }} />
         </Button>
       </div>
 
@@ -389,7 +389,7 @@ function OrderDetailMobileBody() {
               onClick={() => setActiveSection('overview')}
               className={`flex-1 py-3 border-b-2 transition-colors ${
                 activeSection === 'overview'
-                  ? 'border-[#A238FF] text-[#A238FF]'
+                  ? 'border-brand-purple text-brand-purple'
                   : 'border-transparent text-gray-400'
               }`}
               style={{ fontSize: 14 }}
@@ -402,7 +402,7 @@ function OrderDetailMobileBody() {
               onClick={() => setActiveSection('production')}
               className={`flex-1 py-3 border-b-2 transition-colors ${
                 activeSection === 'production'
-                  ? 'border-[#A238FF] text-[#A238FF]'
+                  ? 'border-brand-purple text-brand-purple'
                   : 'border-transparent text-gray-400'
               }`}
               style={{ fontSize: 14 }}
@@ -440,7 +440,11 @@ function OrderDetailMobileBody() {
                     type='button'
                     onClick={() => setCancelModalOpen(true)}
                     className='w-full py-3 rounded-2xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors'
-                    style={{ borderColor: '#FCA5A5', color: '#DC2626', backgroundColor: '#FFF5F5' }}
+                    style={{
+                      borderColor: '#FCA5A5',
+                      color: 'var(--status-danger-deep)',
+                      backgroundColor: 'var(--surface-rose-tint)',
+                    }}
                   >
                     <X size={16} />
                     ยกเลิกคำสั่งซื้อ
@@ -476,7 +480,7 @@ function OrderDetailMobileBody() {
               disabled={order.status === 'shipped' ? confirmingReceive : false}
               className='w-full py-4 rounded-2xl text-white text-sm shadow-xl'
               style={{
-                background: 'linear-gradient(135deg, #2D1B4E, #4A267D)',
+                background: 'linear-gradient(135deg, var(--brand-navy-deep), #4A267D)',
                 fontWeight: 700,
                 opacity: order.status === 'shipped' && confirmingReceive ? 0.7 : 1,
               }}
@@ -541,7 +545,7 @@ function OrderDetailMobileBody() {
             onClick={() => void onCancelOrder()}
             disabled={cancellingOrder}
             className='py-3 rounded-2xl text-sm font-semibold text-white disabled:opacity-60 flex items-center justify-center gap-1.5'
-            style={{ background: cancellingOrder ? '#F87171' : '#DC2626' }}
+            style={{ background: cancellingOrder ? '#F87171' : 'var(--status-danger-deep)' }}
           >
             {cancellingOrder ? (
               <>
@@ -643,7 +647,7 @@ function OrderDetailMobileBody() {
               onClick={() => void onSubmitReview()}
               disabled={reviewSubmitting}
               className='w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-60'
-              style={{ background: '#6C47FF' }}
+              style={{ background: 'var(--brand-royal)' }}
             >
               {reviewSubmitting ? 'กำลังส่งรีวิว...' : 'ส่งรีวิว'}
             </Button>

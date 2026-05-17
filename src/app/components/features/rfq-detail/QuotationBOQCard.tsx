@@ -43,9 +43,9 @@ export interface Quotation {
   image_urls?: string[];
 }
 
-const MIDNIGHT = '#2E2252';
-const PLUM = '#7A4B94';
-const PLUM_SOFT = '#F8F6FA';
+const MIDNIGHT = 'var(--brand-navy)';
+const PLUM = 'var(--brand-mauve)';
+const PLUM_SOFT = 'var(--brand-page)';
 
 const STATUS_STYLES: Record<
   Quotation['status'],
@@ -201,7 +201,7 @@ export function QuotationBOQCard({
         aria-expanded={expanded}
         aria-controls={panelId}
         onClick={toggle}
-        className='flex w-full items-start gap-3 rounded-2xl p-4 text-left outline-none ring-[#7A4B94] ring-offset-2 transition-colors hover:bg-gray-50/80 focus-visible:ring-2'
+        className='flex w-full items-start gap-3 rounded-2xl p-4 text-left outline-none ring-brand-mauve ring-offset-2 transition-colors hover:bg-gray-50/80 focus-visible:ring-2'
       >
         <div
           className='flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg'
@@ -299,7 +299,7 @@ export function QuotationBOQDetailsPanel({
       {q.certifications.length > 0 && (
         <div>
           <div className='mb-2 flex items-center gap-1.5 text-[11px] font-bold text-gray-500'>
-            <Shield size={14} className='text-[#7A4B94]' />
+            <Shield size={14} className='text-brand-mauve' />
             ใบรับรอง & ความน่าเชื่อถือ
           </div>
           <ul className='flex flex-wrap gap-2'>
@@ -317,7 +317,7 @@ export function QuotationBOQDetailsPanel({
       {Array.isArray(q.image_urls) && q.image_urls.length > 0 && (
         <div>
           <div className='mb-2 flex items-center gap-1.5 text-[11px] font-bold text-gray-500'>
-            <Package size={14} className='text-[#7A4B94]' />
+            <Package size={14} className='text-brand-mauve' />
             ภาพแนบจากใบเสนอราคา
           </div>
           <div className='grid grid-cols-3 sm:grid-cols-5 gap-2'>
@@ -362,7 +362,7 @@ function DetailRow({
   return (
     <div className='rounded-xl border border-gray-100 bg-gray-50/50 p-3'>
       <div className='mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-500'>
-        <span className='text-[#7A4B94]' aria-hidden>
+        <span className='text-brand-mauve' aria-hidden>
           {icon}
         </span>
         {label}

@@ -163,7 +163,7 @@ export function FactoryProfileTabContent({
         </span>
       </div>
       <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-[#A238FF] transition-colors'>
+        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
           {item.title}
         </p>
         <div className='flex items-center gap-0.5 mt-0.5'>
@@ -198,9 +198,9 @@ export function FactoryProfileTabContent({
               onClick={() => onTabChange(tab.id)}
               className='shrink-0 px-3.5 py-2 rounded-xl text-sm flex items-center gap-1.5'
               style={{
-                background: active ? '#6C47FF' : '#FFFFFF',
-                color: active ? '#FFFFFF' : '#6B7280',
-                border: active ? 'none' : '1px solid #E5E7EB',
+                background: active ? 'var(--brand-royal)' : 'var(--neutral-white)',
+                color: active ? 'var(--neutral-white)' : 'var(--neutral-subtle)',
+                border: active ? 'none' : '1px solid var(--neutral-border)',
                 fontWeight: active ? 600 : 500,
               }}
             >
@@ -225,7 +225,7 @@ export function FactoryProfileTabContent({
                   item={item}
                   onClick={() => onProductClick(item.id)}
                   badgeLabel='สินค้า'
-                  badgeColor='#5185D4'
+                  badgeColor='var(--brand-sky)'
                 />
               ))}
             </div>
@@ -247,7 +247,7 @@ export function FactoryProfileTabContent({
                   item={item}
                   onClick={() => onPromotionClick(item.id)}
                   badgeLabel='โปรโมชัน'
-                  badgeColor='#E38844'
+                  badgeColor='var(--brand-orange-deep)'
                 />
               ))}
             </div>
@@ -269,7 +269,7 @@ export function FactoryProfileTabContent({
                   item={item}
                   onClick={() => onProductClick(item.id)}
                   badgeLabel='วัตถุดิบ'
-                  badgeColor='#0EA5A4'
+                  badgeColor='var(--brand-teal-light)'
                 />
               ))}
             </div>

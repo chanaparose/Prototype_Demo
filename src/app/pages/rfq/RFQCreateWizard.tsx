@@ -360,7 +360,7 @@ export function RFQCreateWizard() {
   return (
     <div className='max-w-5xl mx-auto px-4 py-6 pb-28'>
       <div className='mb-4'>
-        <h1 className='text-xl font-bold text-[#2E2252]'>สร้างคำขอใบเสนอราคา (RFQ)</h1>
+        <h1 className='text-xl font-bold text-brand-navy'>สร้างคำขอใบเสนอราคา (RFQ)</h1>
         <p className='text-sm text-gray-500 mt-1'>
           {step === 0 ? 'กรอกรายละเอียดที่โรงงานต้องรู้' : 'ตรวจสอบข้อมูลก่อนส่ง'}
         </p>
@@ -402,7 +402,7 @@ export function RFQCreateWizard() {
               data-tour='request-kind'
               className='rounded-xl border border-gray-100 p-3 sm:p-4'
             >
-              <p className='text-sm font-semibold text-[#2E2252] mb-2'>ประเภทคำขอ</p>
+              <p className='text-sm font-semibold text-brand-navy mb-2'>ประเภทคำขอ</p>
               <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
                 {(
                   [
@@ -443,7 +443,7 @@ export function RFQCreateWizard() {
             </section>
 
             <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
-              <p className='text-sm font-semibold text-[#2E2252] mb-3'>ข้อมูลสินค้า</p>
+              <p className='text-sm font-semibold text-brand-navy mb-3'>ข้อมูลสินค้า</p>
               <Step1Basic
                 draft={draft}
                 setDraft={setDraft}
@@ -455,7 +455,7 @@ export function RFQCreateWizard() {
             </section>
 
             <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
-              <p className='text-sm font-semibold text-[#2E2252] mb-3'>สเปกเพิ่มเติม</p>
+              <p className='text-sm font-semibold text-brand-navy mb-3'>สเปกเพิ่มเติม</p>
               <Step2Specifications draft={draft} setDraft={setDraft} />
             </section>
 
@@ -482,13 +482,13 @@ export function RFQCreateWizard() {
             </section>
 
             <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
-              <p className='text-sm font-semibold text-[#2E2252] mb-3'>เงื่อนไขส่งมอบ</p>
+              <p className='text-sm font-semibold text-brand-navy mb-3'>เงื่อนไขส่งมอบ</p>
               <Step3Commercial draft={draft} setDraft={setDraft} />
             </section>
 
             {!isSampleMode ? (
               <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
-                <p className='text-sm font-semibold text-[#2E2252] mb-3'>เงื่อนไขคุณภาพ</p>
+                <p className='text-sm font-semibold text-brand-navy mb-3'>เงื่อนไขคุณภาพ</p>
                 <Step4QualityReview draft={draft} setDraft={setDraft} />
               </section>
             ) : null}
@@ -502,7 +502,7 @@ export function RFQCreateWizard() {
         ) : (
           <div className='space-y-4 text-sm'>
             <section className='rounded-xl border border-gray-100 p-4'>
-              <p className='font-semibold text-[#2E2252] mb-3'>ข้อมูลสินค้า</p>
+              <p className='font-semibold text-brand-navy mb-3'>ข้อมูลสินค้า</p>
               <div className='grid sm:grid-cols-2 gap-2 text-gray-700'>
                 <p>
                   <span className='text-gray-500'>ชื่อสินค้า:</span> {draft.title || '-'}
@@ -526,7 +526,7 @@ export function RFQCreateWizard() {
             </section>
 
             <section className='rounded-xl border border-gray-100 p-4'>
-              <p className='font-semibold text-[#2E2252] mb-3'>เงื่อนไขส่งมอบและงบ</p>
+              <p className='font-semibold text-brand-navy mb-3'>เงื่อนไขส่งมอบและงบ</p>
               <div className='grid sm:grid-cols-2 gap-2 text-gray-700'>
                 <p>
                   <span className='text-gray-500'>งบประมาณรวม:</span> {draft.target_price ?? '-'}
@@ -546,7 +546,7 @@ export function RFQCreateWizard() {
 
             {!isSampleMode ? (
               <section className='rounded-xl border border-gray-100 p-4'>
-                <p className='font-semibold text-[#2E2252] mb-3'>สเปกและคุณภาพ</p>
+                <p className='font-semibold text-brand-navy mb-3'>สเปกและคุณภาพ</p>
                 <div className='grid sm:grid-cols-2 gap-2 text-gray-700'>
                   <p>
                     <span className='text-gray-500'>วัตถุดิบ:</span> {draft.material_grade || '-'}
@@ -565,7 +565,7 @@ export function RFQCreateWizard() {
               </section>
             ) : (
               <section className='rounded-xl border border-gray-100 p-4'>
-                <p className='font-semibold text-[#2E2252] mb-2'>ยืนยันการขอตัวอย่าง</p>
+                <p className='font-semibold text-brand-navy mb-2'>ยืนยันการขอตัวอย่าง</p>
                 <label className='flex items-start gap-2 text-sm text-gray-700'>
                   <input
                     type='checkbox'

@@ -107,11 +107,12 @@ export function OrderTimelineSection({
                       style={{
                         background:
                           milestone.status === 'completed'
-                            ? '#A238FF'
+                            ? 'var(--brand-purple)'
                             : milestone.status === 'current'
                               ? 'rgba(162,56,255,0.12)'
-                              : '#F3F4F6',
-                        border: milestone.status === 'current' ? '2px solid #A238FF' : 'none',
+                              : 'var(--neutral-muted)',
+                        border:
+                          milestone.status === 'current' ? '2px solid var(--brand-purple)' : 'none',
                       }}
                     >
                       {milestone.status === 'completed' ? (
@@ -119,7 +120,7 @@ export function OrderTimelineSection({
                       ) : milestone.status === 'current' ? (
                         <div
                           className='w-3 h-3 rounded-full animate-pulse'
-                          style={{ background: '#A238FF' }}
+                          style={{ background: 'var(--brand-purple)' }}
                         />
                       ) : (
                         <Circle size={16} className='text-gray-300' />
@@ -129,7 +130,10 @@ export function OrderTimelineSection({
                       <div
                         className='w-0.5 flex-1 my-1'
                         style={{
-                          background: milestone.status === 'completed' ? '#A238FF' : '#E5E7EB',
+                          background:
+                            milestone.status === 'completed'
+                              ? 'var(--brand-purple)'
+                              : 'var(--neutral-border)',
                           minHeight: milestone.photo ? 120 : 32,
                         }}
                       />
@@ -145,10 +149,10 @@ export function OrderTimelineSection({
                             fontWeight: 600,
                             color:
                               milestone.status === 'current'
-                                ? '#A238FF'
+                                ? 'var(--brand-purple)'
                                 : milestone.status === 'completed'
                                   ? '#1F2937'
-                                  : '#9CA3AF',
+                                  : 'var(--neutral-placeholder)',
                           }}
                         >
                           {milestone.title}
@@ -169,7 +173,7 @@ export function OrderTimelineSection({
                             className='px-2 py-0.5 rounded-full text-[9px]'
                             style={{
                               background: 'rgba(162,56,255,0.12)',
-                              color: '#A238FF',
+                              color: 'var(--brand-purple)',
                               fontWeight: 600,
                             }}
                           >
@@ -203,7 +207,7 @@ export function OrderTimelineSection({
                             variant='unstyled'
                             type='button'
                             onClick={() => startEdit(milestone)}
-                            className='p-1 rounded-full bg-gray-100 text-gray-400 hover:bg-violet-50 hover:text-[#A238FF] transition-colors'
+                            className='p-1 rounded-full bg-gray-100 text-gray-400 hover:bg-violet-50 hover:text-brand-purple transition-colors'
                             aria-label='แก้ไขบันทึก'
                           >
                             <Pencil size={11} />
@@ -218,7 +222,7 @@ export function OrderTimelineSection({
                         onChange={(e) => setEditNote(e.target.value)}
                         placeholder='เพิ่มบันทึก...'
                         rows={2}
-                        className='w-full mt-1.5 text-[11px] border border-[#A238FF]/30 rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-[#A238FF] resize-none'
+                        className='w-full mt-1.5 text-[11px] border border-brand-purple/30 rounded-xl p-2 focus:outline-none focus:ring-1 focus:ring-brand-purple resize-none'
                       />
                     )}
 
@@ -253,12 +257,12 @@ export function OrderTimelineSection({
         )}
       </div>
 
-      <div className='bg-gradient-to-br from-[#F8F6FA] to-[#F3EFF8] border border-[rgba(162,56,255,0.20)] rounded-2xl p-4 space-y-3'>
+      <div className='bg-gradient-to-br from-brand-page to-brand-panel-soft border border-[rgba(162,56,255,0.20)] rounded-2xl p-4 space-y-3'>
         {/* Progress bar */}
         <div>
           <div className='flex items-center justify-between mb-2'>
             <span className='text-gray-700 text-sm'>ความคืบหน้าโดยรวม</span>
-            <span className='text-[#A238FF] text-base' style={{ fontWeight: 700 }}>
+            <span className='text-brand-purple text-base' style={{ fontWeight: 700 }}>
               {order.progress}%
             </span>
           </div>
@@ -267,7 +271,7 @@ export function OrderTimelineSection({
               className='h-full rounded-full'
               style={{
                 width: `${order.progress}%`,
-                background: 'linear-gradient(90deg, #A238FF, #4A267D)',
+                background: 'linear-gradient(90deg, var(--brand-purple), #4A267D)',
               }}
             />
           </div>
@@ -279,12 +283,12 @@ export function OrderTimelineSection({
           {hasLeadTime && (
             <div className='flex items-center gap-2 flex-wrap'>
               <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-white border border-[rgba(162,56,255,0.20)] text-gray-600'>
-                <Package size={10} className='text-[#A238FF]' />
+                <Package size={10} className='text-brand-purple' />
                 ผลิต {leadTimeDays} วัน
               </span>
               <span className='text-gray-300 text-xs'>+</span>
               <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-white border border-[rgba(162,56,255,0.20)] text-gray-600'>
-                <Truck size={10} className='text-[#A238FF]' />
+                <Truck size={10} className='text-brand-purple' />
                 จัดส่ง {shippingDays} วัน
               </span>
               {productionEtaStr && (
@@ -301,7 +305,7 @@ export function OrderTimelineSection({
           {/* Receipt date highlight */}
           <div className='flex items-center justify-between'>
             <span className='text-sm text-gray-600'>คาดว่าจะได้รับสินค้า</span>
-            <span className='text-sm font-bold' style={{ color: '#A238FF' }}>
+            <span className='text-sm font-bold' style={{ color: 'var(--brand-purple)' }}>
               {receiptDateStr ? formatDateTh(receiptDateStr) : '—'}
             </span>
           </div>

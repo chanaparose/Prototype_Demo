@@ -159,7 +159,7 @@ export function RelatedShowcasePicker({
           <div className='w-full max-w-3xl rounded-2xl border border-gray-100 bg-white shadow-xl max-h-[85vh] flex flex-col'>
             <div className='px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3'>
               <div>
-                <p className='text-sm font-bold text-[#2E2252]'>เลือกสินค้า/โปรโมชันอ้างอิง</p>
+                <p className='text-sm font-bold text-brand-navy'>เลือกสินค้า/โปรโมชันอ้างอิง</p>
                 <p className='text-xs text-gray-500'>เลือกได้สูงสุด {max} รายการ</p>
               </div>
               <Button
@@ -202,8 +202,8 @@ export function RelatedShowcasePicker({
                       className='px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors'
                       style={{
                         borderColor: active ? 'rgba(122,75,148,0.35)' : 'rgba(17,24,39,0.10)',
-                        background: active ? 'rgba(122,75,148,0.08)' : '#fff',
-                        color: active ? '#7A4B94' : '#4B5563',
+                        background: active ? 'rgba(122,75,148,0.08)' : 'var(--neutral-white)',
+                        color: active ? 'var(--brand-mauve)' : '#4B5563',
                       }}
                     >
                       {t.label}
@@ -277,7 +277,8 @@ export function RelatedShowcasePicker({
                   disabled={disabled}
                   className='px-4 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-60'
                   style={{
-                    background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)',
+                    background:
+                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                   }}
                 >
                   ยืนยันรายการอ้างอิง

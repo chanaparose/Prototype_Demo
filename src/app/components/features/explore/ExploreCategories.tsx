@@ -45,7 +45,7 @@ export function ExploreCategories({
         <h3 className='text-gray-800 font-bold'>หมวดหมู่</h3>
         <Link
           to='/factory-ideas'
-          className='text-[#A238FF] text-[13px] flex items-center gap-0.5 hover:underline'
+          className='text-brand-purple text-[13px] flex items-center gap-0.5 hover:underline'
         >
           ดูทั้งหมด <ChevronRight size={13} />
         </Link>
@@ -67,7 +67,7 @@ export function ExploreCategories({
             variant='unstyled'
             type='button'
             onClick={() => void onRetryCategoriesApi()}
-            className='ml-2 font-semibold text-[#A238FF] underline hover:no-underline'
+            className='ml-2 font-semibold text-brand-purple underline hover:no-underline'
           >
             ลองอีกครั้ง
           </Button>
@@ -84,14 +84,14 @@ export function ExploreCategories({
             <Link
               key={row.categoryId}
               to={`/factory-ideas?category_id=${encodeURIComponent(row.categoryId)}`}
-              className='bg-white border border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center gap-1.5 hover:shadow-md hover:border-[#A238FF]/40 transition-all cursor-pointer group'
+              className='bg-white border border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center gap-1.5 hover:shadow-md hover:border-brand-purple/40 transition-all cursor-pointer group'
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${row.color} group-hover:scale-110 transition-transform`}
               >
                 <Icon size={18} />
               </div>
-              <span className='text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-[#2D1B4E]'>
+              <span className='text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-brand-navy-deep'>
                 {row.displayName}
               </span>
             </Link>

@@ -17,14 +17,15 @@ import {
   STATUS_LABEL,
 } from '@/components/features/rfq-detail';
 import { Button } from '@/components/ui/button';
+import { appColors } from '@/styles/colors';
 
 const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
 const COLORS = {
-  purple: '#7A4B94',
-  orange: '#E38844',
-  blue: '#2E2252',
-  lightPurpleBg: '#F8F6FA',
+  purple: appColors.brand.mauve,
+  orange: appColors.brand.orangeDeep,
+  blue: appColors.brand.navy,
+  lightPurpleBg: appColors.brand.page,
 };
 
 export function RFQDetailMobile() {
@@ -144,14 +145,14 @@ export function RFQDetailMobile() {
 
   const statusBadgeStyle = isHistoryView
     ? rfq.status === 'completed'
-      ? { background: '#D1FAE5', color: '#059669' }
+      ? { background: 'var(--status-success-soft)', color: 'var(--status-success)' }
       : rfq.status === 'cancelled'
-        ? { background: '#F1F5F9', color: '#64748B' }
-        : { background: '#FEF3C7', color: '#B45309' }
+        ? { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
+        : { background: 'var(--status-warning-soft)', color: '#B45309' }
     : isClosedRequest
       ? rfq.status === 'completed'
         ? { background: '#E8F7EE', color: '#0F9F6E' }
-        : { background: '#F1F5F9', color: '#64748B' }
+        : { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
       : { background: COLORS.lightPurpleBg, color: COLORS.purple };
 
   const statusLabel = isClosedRequest

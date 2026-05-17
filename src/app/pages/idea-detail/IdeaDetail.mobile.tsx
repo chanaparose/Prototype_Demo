@@ -26,8 +26,8 @@ import { RelatedShowcasesSection } from '@/components/features/idea-detail/Relat
 import { Button } from '@/components/ui/button';
 
 const CARD = {
-  purple: '#7A4B94',
-  blue: '#2E2252',
+  purple: 'var(--brand-mauve)',
+  blue: 'var(--brand-navy)',
 } as const;
 
 export function IdeaDetailMobile() {
@@ -98,7 +98,7 @@ export function IdeaDetailMobile() {
           onClick={handleBack}
           aria-label='กลับไป'
           className='mb-4 inline-flex items-center gap-1 text-sm'
-          style={{ color: '#7A4B94' }}
+          style={{ color: 'var(--brand-mauve)' }}
         >
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
@@ -114,7 +114,7 @@ export function IdeaDetailMobile() {
   const markdown = String(item.content ?? '').trim();
 
   return (
-    <div className='min-h-screen bg-[#F5F5F5] pb-[72px]'>
+    <div className='min-h-screen bg-neutral-warm-surface pb-[72px]'>
       <div className='bg-white px-4 pt-4 pb-3 border-b' style={{ borderColor: BRAND.divider }}>
         <div className='flex items-start'>
           <Button
@@ -258,7 +258,7 @@ export function IdeaDetailMobile() {
         />
 
         <section className='bg-white rounded-2xl border border-gray-100 shadow-sm p-4'>
-          <h2 className='text-[14px] font-bold mb-3' style={{ color: '#2E2252' }}>
+          <h2 className='text-[14px] font-bold mb-3' style={{ color: 'var(--brand-navy)' }}>
             บทความที่น่าสนใจให้อ่านต่อ
           </h2>
           <div className='space-y-3'>

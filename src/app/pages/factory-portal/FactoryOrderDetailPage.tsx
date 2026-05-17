@@ -56,11 +56,13 @@ function statusLabel(code: string): string {
 
 function statusColor(code: string): { bg: string; text: string; border: string } {
   const s = code.toUpperCase();
-  if (s === 'CP') return { bg: '#D1FAE5', text: '#065F46', border: '#A7F3D0' };
-  if (s === 'CN' || s === 'PE') return { bg: '#FEE2E2', text: '#991B1B', border: '#FECACA' };
-  if (s === 'SH') return { bg: '#DBEAFE', text: '#1E40AF', border: '#BFDBFE' };
-  if (s === 'QC' || s === 'PR') return { bg: '#EDE9FE', text: '#5B21B6', border: '#DDD6FE' };
-  return { bg: '#FEF3C7', text: '#92400E', border: '#FDE68A' };
+  if (s === 'CP') return { bg: 'var(--status-success-soft)', text: '#065F46', border: '#A7F3D0' };
+  if (s === 'CN' || s === 'PE')
+    return { bg: 'var(--status-danger-soft)', text: '#991B1B', border: '#FECACA' };
+  if (s === 'SH') return { bg: 'var(--status-info-soft)', text: '#1E40AF', border: '#BFDBFE' };
+  if (s === 'QC' || s === 'PR')
+    return { bg: 'var(--brand-violet-soft)', text: '#5B21B6', border: '#DDD6FE' };
+  return { bg: 'var(--status-warning-soft)', text: '#92400E', border: '#FDE68A' };
 }
 
 function getStepId(step: MergedProductionStep | null): number {
@@ -181,7 +183,10 @@ function NextActionCard({
       {/* Header bar */}
       <div
         className='px-4 py-3 flex items-center justify-between'
-        style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)' }}
+        style={{
+          background:
+            'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-violet-deep) 100%)',
+        }}
       >
         <div className='flex items-center gap-2'>
           <span className='text-xl leading-none'>{guide.emoji}</span>
@@ -280,7 +285,10 @@ function NextActionCard({
             type='button'
             onClick={onUpdate}
             className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm'
-            style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)' }}
+            style={{
+              background:
+                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-violet) 100%)',
+            }}
           >
             <Package size={16} />
             {step.update.status === 'IP'
@@ -475,7 +483,7 @@ export function FactoryOrderDetailPage() {
           <div className='flex justify-center py-16'>
             <div
               className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
-              style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
+              style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
             />
           </div>
         ) : (
@@ -511,7 +519,8 @@ export function FactoryOrderDetailPage() {
                         className='h-full rounded-full transition-all duration-700'
                         style={{
                           width: `${progressPct}%`,
-                          background: 'linear-gradient(90deg, #4F46E5, #7C3AED)',
+                          background:
+                            'linear-gradient(90deg, var(--brand-indigo), var(--brand-violet))',
                         }}
                       />
                     </div>
@@ -562,7 +571,10 @@ export function FactoryOrderDetailPage() {
                 ].map(({ label, value }) => (
                   <div key={label} className='flex items-center justify-between gap-2'>
                     <span className='text-xs text-gray-500'>{label}</span>
-                    <span className='text-sm font-medium text-right' style={{ color: '#2E2252' }}>
+                    <span
+                      className='text-sm font-medium text-right'
+                      style={{ color: 'var(--brand-navy)' }}
+                    >
                       {value}
                     </span>
                   </div>
@@ -616,7 +628,7 @@ export function FactoryOrderDetailPage() {
                   <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
                     <div
                       className='w-5 h-5 border-2 border-t-transparent rounded-full animate-spin'
-                      style={{ borderColor: '#4F46E5', borderTopColor: 'transparent' }}
+                      style={{ borderColor: 'var(--brand-indigo)', borderTopColor: 'transparent' }}
                     />
                     กำลังโหลด…
                   </div>

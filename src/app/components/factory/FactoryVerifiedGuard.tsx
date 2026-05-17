@@ -43,7 +43,9 @@ export function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
         <Link
           to='/factory/profile'
           className='inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-95'
-          style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+          style={{
+            background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
+          }}
         >
           {status === 'RJ' ? 'แก้ไขและส่งใหม่' : 'ไปที่โปรไฟล์'}
         </Link>
