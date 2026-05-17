@@ -12,7 +12,11 @@ import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailS
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
-import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/components/features/rfq-detail/constants';
+import {
+  CLOSEABLE_STATUSES,
+  HISTORY_STATUSES,
+  STATUS_LABEL,
+} from '@/domain/rfq/constants';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 

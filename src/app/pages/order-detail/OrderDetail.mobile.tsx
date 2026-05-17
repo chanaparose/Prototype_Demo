@@ -20,6 +20,7 @@ import { formatDateTh } from '@/components/features/order-detail/utils';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { OrderProductionTab } from '@/components/features/production/OrderProductionTab';
+import { useRfqDetailQuery } from '@/domain/rfq/queries/useRfqDetailQuery';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
 import { BaseModal } from '@/shared/ui/modals/BaseModal';
 import { Textarea } from '@/components/ui/textarea';
@@ -88,7 +89,8 @@ function OrderDetailMobileBody() {
     setDepositModalOpen(true);
   };
 
-  const relatedRfq = data.rfqs.find((r) => r.id === order.rfqId);
+  const { data: rfqDetail } = useRfqDetailQuery(order.rfqId || undefined);
+  const relatedRfq = rfqDetail?.rfq ?? undefined;
   const relatedFactory = data.factories.find((f) => f.id === order.factoryId);
   const rfqOffers = relatedRfq?.offers ?? [];
 

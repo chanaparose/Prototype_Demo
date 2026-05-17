@@ -1,23 +1,12 @@
-/**
- * useRfqAndOrdersState — ดึงข้อมูลจาก CRUD endpoint ตรงๆ
- *
- * - Tab "คำขอราคา"   → GET /api/v1/rfqs/       (auth: Bearer token)
- * - Tab "คำสั่งซื้อ"    → GET /api/v1/orders      (auth: Bearer token)
- *
- * Token ถูกแนบอัตโนมัติผ่าน api.ts wrapper (Authorization: Bearer <token>)
- * ข้อมูล category name / factory name ดึงจาก DataContext (bootstrap) สำหรับ enrich
- */
 import React from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { type Rfq, type Order } from '@/stores/types';
-import { rfqsApi } from '@/services/api/rfqApi';
-import { ordersApi } from '@/services/api/ordersApi';
-import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
-import { mapRfqStatusFromApi } from '@/domain/rfq/status';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
 import { getRfqFilterId } from '@/components/features/rfq-and-orders/utils';
 import { type RfqFilterId, type OrderFilterId } from '@/components/features/rfq-and-orders/constants';
+import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
+import { useOrderListQuery } from '@/domain/order/queries/useOrderListQuery';
+import { rfqKeys, orderKeys } from '@/lib/queryKeys';
 
 type PrimaryTab = 'rfq' | 'orders';
 
@@ -27,61 +16,9 @@ type InitialState = {
   orderFilter?: OrderFilterId;
 };
 
-type RawRfq = {
-  rfq_id: number;
-  user_id: number;
-  category_id: number;
-  title: string;
-  quantity: number;
-  details?: string;
-  description?: string;
-  target_price?: number;
-  budget_total?: number;
-  address_id: number;
-  status: string;
-  created_at: string;
-  [key: string]: unknown;
-};
-
-type RawOrder = {
-  order_id: number;
-  quote_id: number;
-  user_id: number;
-  factory_id: number;
-  total_amount: number;
-  deposit_amount: number;
-  status: string;
-  estimated_delivery?: string;
-  created_at: string;
-  [key: string]: unknown;
-};
-
-type RawQuotation = {
-  quote_id: number;
-  rfq_id: number;
-  factory_id: number;
-  price_per_piece: number;
-  mold_cost: number;
-  lead_time_days: number;
-  shipping_method_id: number;
-  status: string;
-  [key: string]: unknown;
-};
-
 export function useRfqAndOrdersState(initial?: InitialState) {
   const { isAuthenticated } = useAuth();
-  // DataContext ใช้สำหรับ lookup category name / factory name
-  const dataCtx = useData();
-  const categoryMap = React.useMemo(() => {
-    const m = new Map<string, string>();
-    for (const c of dataCtx.categories) m.set(String(c.id), c.name);
-    return m;
-  }, [dataCtx.categories]);
-  const factoryMap = React.useMemo(() => {
-    const m = new Map<string, string>();
-    for (const f of dataCtx.factories) m.set(String(f.id), f.name);
-    return m;
-  }, [dataCtx.factories]);
+  const queryClient = useQueryClient();
 
   const [primaryTab, setPrimaryTab] = React.useState<PrimaryTab>(initial?.primaryTab ?? 'rfq');
   const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
@@ -89,180 +26,18 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     initial?.orderFilter ?? 'pending_payment',
   );
 
-  const [rfqs, setRfqs] = React.useState<Rfq[]>([]);
-  const [orders, setOrders] = React.useState<Order[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const rfqQuery = useRfqListQuery();
+  const orderQuery = useOrderListQuery();
 
-  const fetchRfqs = React.useCallback(async () => {
-    try {
-      const rawList = (await rfqsApi.list()) as RawRfq[] | null;
-      if (!Array.isArray(rawList)) {
-        setRfqs([]);
-        return;
-      }
+  const rfqs: Rfq[] = isAuthenticated ? (rfqQuery.data ?? []) : [];
+  const orders: Order[] = isAuthenticated ? (orderQuery.data ?? []) : [];
 
-      // Fetch quotations per RFQ in parallel (for offer count + status mapping)
-      const withQuotes = await Promise.all(
-        rawList.map(async (r) => {
-          let quotes: RawQuotation[] = [];
-          try {
-            const q = await rfqsApi.listQuotations(r.rfq_id);
-            if (Array.isArray(q)) {
-              quotes = q as RawQuotation[];
-            } else if (q && typeof q === 'object') {
-              const obj = q as Record<string, unknown>;
-              const nested = obj.quotations ?? obj.data ?? obj.items ?? obj.results;
-              if (Array.isArray(nested)) quotes = nested as RawQuotation[];
-            }
-          } catch {
-            /* no quotes */
-          }
-          return { raw: r, quotes };
-        }),
-      );
-
-      const mapped: Rfq[] = withQuotes.map(({ raw, quotes }) => {
-        const catName = categoryMap.get(String(raw.category_id)) ?? '';
-        const totalBudget = Number(
-          raw.target_price ??
-            raw.budget_total ??
-            (raw as Record<string, unknown>).total_budget ??
-            0,
-        );
-        const legacyBudgetPerPiece = Number((raw as Record<string, unknown>).budget_per_piece ?? 0);
-        const budget = Math.round(
-          (Number.isFinite(totalBudget) && totalBudget > 0 ? totalBudget : 0) ||
-            (legacyBudgetPerPiece > 0 && raw.quantity > 0
-              ? legacyBudgetPerPiece * raw.quantity
-              : 0),
-        );
-        const hasAccepted = quotes.some((q) => String(q.status ?? '').toUpperCase() === 'AC');
-        const status = mapRfqStatusFromApi(raw.status, {
-          quoteCount: quotes.length,
-          hasAcceptedQuote: hasAccepted,
-        });
-        const createdDate = raw.created_at ? raw.created_at.split('T')[0] : '';
-
-        return {
-          id: String(raw.rfq_id),
-          projectName: raw.title,
-          category: catName,
-          categoryIcon: guessCategoryIcon(catName),
-          status,
-          offerCount: quotes.length,
-          budget,
-          quantity: raw.quantity,
-          material: '',
-          deadline: '',
-          createdAt: createdDate,
-          description: String(raw.details ?? raw.description ?? ''),
-          offers: quotes.map((q) => ({
-            id: String(q.quote_id),
-            factoryId: String(q.factory_id),
-            factoryName: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
-            price: Math.round(q.price_per_piece * raw.quantity + (q.mold_cost ?? 0)),
-            leadTime: q.lead_time_days,
-            rating: 0,
-            verified: true,
-            recommended: false,
-            aiReason: '',
-            completedOrders: 0,
-            responseTime: '',
-            quoteStatus: String(q.status ?? '').toUpperCase(),
-          })),
-        };
-      });
-
-      setRfqs(mapped);
-    } catch (err) {
-      console.error('[useRfqAndOrdersState] fetchRfqs failed:', err);
-      setError(err instanceof Error ? err.message : 'ไม่สามารถโหลด RFQ ได้');
-    }
-  }, [categoryMap, factoryMap]);
-
-  const fetchOrders = React.useCallback(async () => {
-    try {
-      const rawList = (await ordersApi.list()) as RawOrder[] | null;
-      if (!Array.isArray(rawList)) {
-        setOrders([]);
-        return;
-      }
-
-      // We need project name from rfqs. If rfqs is already loaded, use it.
-      // Also build a quote_id → rfq_id mapping from rfqs' offers
-      const mapped: Order[] = rawList.map((raw) => {
-        const status = mapOrderStatusFromApi(String(raw.status ?? ''));
-        const fName = factoryMap.get(String(raw.factory_id)) ?? `โรงงาน #${raw.factory_id}`;
-        const deliveryDate = raw.estimated_delivery
-          ? String(raw.estimated_delivery).split('T')[0]
-          : '';
-        const createdDate = raw.created_at ? raw.created_at.split('T')[0] : '';
-
-        // Orders store quote_id, not rfq_id directly — we look for matching rfq via offers
-        let projectName = '';
-        let category = '';
-        let rfqId = '';
-        let quantity = 0;
-        for (const rfq of rfqs) {
-          const matchOffer = rfq.offers.find((o) => String(o.id) === String(raw.quote_id));
-          if (matchOffer) {
-            projectName = rfq.projectName;
-            category = rfq.category;
-            rfqId = rfq.id;
-            quantity = rfq.quantity;
-            break;
-          }
-        }
-
-        return {
-          id: String(raw.order_id),
-          rfqId,
-          factoryId: String(raw.factory_id),
-          factoryName: fName,
-          projectName: projectName || `คำสั่งซื้อ #${raw.order_id}`,
-          category,
-          status,
-          progress: guessOrderProgress(status),
-          totalAmount: raw.total_amount ?? 0,
-          depositPaid: raw.deposit_amount ?? 0,
-          quantity,
-          createdAt: createdDate,
-          estimatedDelivery: deliveryDate,
-          timeline: [],
-        };
-      });
-
-      setOrders(mapped);
-    } catch (err) {
-      console.error('[useRfqAndOrdersState] fetchOrders failed:', err);
-      setError(err instanceof Error ? err.message : 'ไม่สามารถโหลดคำสั่งซื้อได้');
-    }
-  }, [factoryMap, rfqs]);
-
-  const isMounted = React.useRef(false);
-
-  React.useEffect(() => {
-    if (!isAuthenticated) {
-      setRfqs([]);
-      setOrders([]);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-    if (isMounted.current) return;
-    isMounted.current = true;
-    setLoading(true);
-    fetchRfqs().finally(() => setLoading(false));
-  }, [fetchRfqs, isAuthenticated]);
-
-  // Fetch orders after rfqs are loaded (need rfqs for project name lookup)
-  React.useEffect(() => {
-    if (!isAuthenticated) return;
-    if (rfqs.length > 0 || !loading) {
-      fetchOrders();
-    }
-  }, [rfqs, loading, fetchOrders, isAuthenticated]);
+  const loading =
+    isAuthenticated &&
+    (rfqQuery.isLoading || (rfqQuery.isSuccess && orderQuery.isLoading && !orderQuery.data));
+  const error =
+    (rfqQuery.error instanceof Error ? rfqQuery.error.message : null) ??
+    (orderQuery.error instanceof Error ? orderQuery.error.message : null);
 
   const filteredRfqs = React.useMemo(() => {
     return rfqs.filter((r) => {
@@ -317,19 +92,12 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     orders,
     loading,
     error,
-    /** Force-refresh ทั้ง RFQ + Order จาก CRUD endpoint */
     refetch: async () => {
-      if (!isAuthenticated) {
-        setRfqs([]);
-        setOrders([]);
-        setError(null);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      await fetchRfqs();
-      await fetchOrders();
-      setLoading(false);
+      if (!isAuthenticated) return;
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: rfqKeys.list() }),
+        queryClient.invalidateQueries({ queryKey: orderKeys.list() }),
+      ]);
     },
   };
 }

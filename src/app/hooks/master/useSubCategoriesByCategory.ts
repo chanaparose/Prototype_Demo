@@ -1,4 +1,5 @@
 import { useQueries } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { categoriesApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -22,7 +23,7 @@ function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
 export function useSubCategoriesByCategories(categoryIds: number[]) {
   const queries = useQueries({
     queries: categoryIds.map((cid) => ({
-      queryKey: ['master', 'sub-categories', cid] as const,
+      queryKey: masterKeys.subCategories(cid) as const,
       queryFn: async (): Promise<SubCategoryOption[]> => {
         const raw = await categoriesApi.subCategories(cid);
         const arr = (Array.isArray(raw) ? raw : []) as Row[];

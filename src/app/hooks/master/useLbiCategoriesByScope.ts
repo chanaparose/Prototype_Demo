@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 export interface CategoryOption {
@@ -8,7 +9,7 @@ export interface CategoryOption {
 
 export function useLbiCategoriesByScope(scope: 'PD' | 'MT') {
   return useQuery({
-    queryKey: ['master', 'lbi-categories', scope] as const,
+    queryKey: masterKeys.lbiCategories(scope) as const,
     queryFn: async () => {
       const raw = await masterApi.lbiCategories(scope);
       const obj = raw as Record<string, unknown>;

@@ -1,4 +1,3 @@
-/** ป้ายสถานะออเดอร์จากรหัส API (ภาษาไทย) */
 export const ORDER_API_STATUS_LABEL_TH: Record<string, string> = {
   PP: 'รอชำระเงิน',
   PE: 'หมดกำหนดชำระ',

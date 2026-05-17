@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -10,7 +11,7 @@ export interface CertTypeOption {
 
 export function useMasterCerts() {
   return useQuery({
-    queryKey: ['master', 'certificates'] as const,
+    queryKey: masterKeys.certificates() as const,
     queryFn: async () => {
       const raw = await masterApi.certificates();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];

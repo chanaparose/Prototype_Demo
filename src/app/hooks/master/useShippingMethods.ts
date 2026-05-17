@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -10,9 +11,9 @@ export interface ShippingMethodOption {
 
 export function useShippingMethods() {
   return useQuery({
-    queryKey: ['master', 'shipping-methods'] as const,
+    queryKey: masterKeys.shippingMethods() as const,
     queryFn: async () => {
-      const raw = await masterApi.shippingMethods();
+      const raw = await masterApi.getShippingMethods();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];
       return arr
         .map((r): ShippingMethodOption | null => {

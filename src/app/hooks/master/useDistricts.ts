@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -20,7 +21,7 @@ export function useDistricts(provinceId: number | string | null | undefined) {
   const pid = Number(provinceId);
   const enabled = Number.isFinite(pid) && pid > 0;
   return useQuery({
-    queryKey: ['master', 'districts', pid] as const,
+    queryKey: masterKeys.districts(pid) as const,
     enabled,
     queryFn: async () => {
       const raw = await masterApi.districts(pid);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { categoriesApi } from '@/services/api/masterApi';
 import { BaseModal } from '@/shared/ui/modals/BaseModal';
@@ -66,7 +67,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
       await Promise.all(
         selected.map((cid) =>
           qc.fetchQuery({
-            queryKey: ['master', 'sub-categories', cid] as const,
+            queryKey: masterKeys.subCategories(cid),
             queryFn: async () => {
               const raw = await categoriesApi.subCategories(cid);
               const arr = (Array.isArray(raw) ? raw : []) as Row[];

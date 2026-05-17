@@ -7,7 +7,7 @@ import type {
   ProductionLockContext,
   ProductionUpdatesBundle,
 } from '@/components/features/production/types';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/utils/orderCustomerStatus';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
 import { useOrderDetailQuery } from '@/hooks/order-detail/useOrderDetailQuery';
 import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';
 import {

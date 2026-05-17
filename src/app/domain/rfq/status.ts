@@ -1,14 +1,5 @@
-/**
- * แมปรหัสสถานะ RFQ จาก API → ค่า UI (pending, offers_received, completed, …)
- *
- * OP = เปิดรับใบเสนอราคา
- * CL = ปิดคำขอ (มี AC → completed, ไม่มี → expired)
- * CC = ยกเลิก
- */
 export type MapRfqStatusOptions = {
-  /** จำนวนใบเสนอราคา (หรือ offers.length) */
   quoteCount?: number;
-  /** มี quotation status AC อย่างน้อย 1 ใบ */
   hasAcceptedQuote?: boolean;
 };
 

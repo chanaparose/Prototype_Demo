@@ -1,6 +1,3 @@
-/**
- * แมปชื่อหมวดหมู่ → emoji สำหรับการ์ด RFQ / รายการ
- */
 export const CATEGORY_ICON_MAP: Record<string, string> = {
   อาหารสัตว์: '🐾',
   อาหารเม็ดสัตว์: '🐾',

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -18,7 +19,7 @@ function toOption(r: Row): ProvinceOption | null {
 
 export function useProvinces() {
   return useQuery({
-    queryKey: ['master', 'provinces'] as const,
+    queryKey: masterKeys.provinces() as const,
     queryFn: async () => {
       const raw = await masterApi.provinces();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];

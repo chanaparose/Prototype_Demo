@@ -1,7 +1,3 @@
-/**
- * แมปรหัสสถานะออเดอร์จาก API → ค่า UI ฝั่งลูกค้า
- * PP = รอชำระมัดจำ
- */
 export function mapOrderStatusFromApi(code: string): string {
   const u = String(code ?? '').toUpperCase();
   if (u === 'PP') return 'pending_payment';

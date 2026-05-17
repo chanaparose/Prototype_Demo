@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -10,7 +11,7 @@ export interface CategoryOption {
 
 export function useProductCategories() {
   return useQuery({
-    queryKey: ['master', 'product-categories'] as const,
+    queryKey: masterKeys.productCategories() as const,
     queryFn: async () => {
       const raw = await masterApi.productCategories();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];

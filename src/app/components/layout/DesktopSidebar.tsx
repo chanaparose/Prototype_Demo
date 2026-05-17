@@ -19,6 +19,7 @@ import {
 } from '@/components/layout/factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
+import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
@@ -62,7 +63,8 @@ export function DesktopSidebar() {
 
   const unreadMessages = data.conversations.reduce((s, c) => s + c.unread, 0);
   const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
-  const activeRfqCount = data.rfqs.filter(
+  const { data: rfqList = [] } = useRfqListQuery();
+  const activeRfqCount = rfqList.filter(
     (r) => r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired',
   ).length;
 

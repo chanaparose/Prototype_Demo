@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -10,7 +11,7 @@ export interface UnitOption {
 
 export function useUnits() {
   return useQuery({
-    queryKey: ['master', 'units'] as const,
+    queryKey: masterKeys.units() as const,
     queryFn: async () => {
       const raw = await masterApi.units();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];

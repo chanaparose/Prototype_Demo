@@ -2,14 +2,12 @@ import { create } from 'zustand';
 import { useAuth } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
 import { notificationsApi, conversationsApi } from '@/services/api/chatApi';
-import { rfqsApi } from '@/services/api/rfqApi';
 import { walletApi } from '@/services/api/userApi';
+import { queryClient } from '@/lib/queryClient';
+import { orderKeys, rfqKeys } from '@/lib/queryKeys';
 import {
   normalizeFactoryRow,
-  mapOrderStatusFromApi,
-  guessOrderProgress,
   guessCategoryIcon,
-  normalizeRfqRecord,
   mapConversationRowsFromApi,
 } from '@/stores/utils';
 import type {
@@ -115,29 +113,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
 
     set((state) => ({ ...state, isLoading: true, error: null }));
 
-    const normOrder = (r: Record<string, unknown>, rfqList?: Rfq[]): Order => {
-      const rfqId = String(r.rfqId ?? r.rfq_id ?? '');
-      const status = mapOrderStatusFromApi(String(r.status ?? 'PR'));
-      const linkedRfq = rfqList?.find((q) => q.id === rfqId);
-      return {
-        id: String(r.order_id ?? r.id ?? ''),
-        rfqId,
-        factoryId: String(r.factoryId ?? r.factory_id ?? ''),
-        factoryName: String(r.factoryName ?? r.factory_name ?? ''),
-        projectName: String(r.projectName ?? r.project_name ?? r.title ?? ''),
-        category: String(r.category ?? '') || (linkedRfq?.category ?? ''),
-        status,
-        progress:
-          Number(r.progress ?? 0) > 0 ? Number(r.progress ?? 0) : guessOrderProgress(status),
-        totalAmount: Number(r.totalAmount ?? r.total_amount ?? 0),
-        depositPaid: Number(r.depositPaid ?? r.deposit_paid ?? r.deposit_amount ?? 0),
-        quantity: Number(r.quantity ?? 0) || (linkedRfq?.quantity ?? 0),
-        createdAt: String(r.createdAt ?? r.created_at ?? ''),
-        estimatedDelivery: String(r.estimatedDelivery ?? r.estimated_delivery ?? ''),
-        timeline: Array.isArray(r.timeline) ? (r.timeline as Order['timeline']) : [],
-      };
-    };
-
     try {
       const [bootstrapRes, notifRes, convsRes] = await Promise.allSettled([
         frontendApi.getBootstrap(),
@@ -190,26 +165,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           .filter((f) => f.id && f.name);
       })();
 
-      const mappedRfqs: Rfq[] = (() => {
-        const raw = boot?.rfqs;
-        if (Array.isArray(raw) && raw.length > 0) {
-          return (raw as Record<string, unknown>[])
-            .map((row) => normalizeRfqRecord(row, factoryList, guessCategoryIcon))
-            .filter((r) => r.id);
-        }
-        return [];
-      })();
-
-      const mappedOrders: Order[] = (() => {
-        const raw = boot?.orders;
-        if (Array.isArray(raw) && raw.length > 0) {
-          return (raw as Record<string, unknown>[])
-            .map((o) => normOrder(o, mappedRfqs))
-            .filter((o) => o.id);
-        }
-        return [];
-      })();
-
       set({
         currentUser: boot?.currentUser
           ? (() => {
@@ -248,8 +203,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         factoryReviews: [],
         ideaArticles: [],
         factoryShowcases: [],
-        rfqs: mappedRfqs,
-        orders: mappedOrders,
+        rfqs: [],
+        orders: [],
         conversations: mappedConvs,
         notifications: mappedNotifs,
         isLoading: false,
@@ -274,105 +229,16 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     },
 
     refetchRfqs: async () => {
-      try {
-        const data = await frontendApi.getBootstrap();
-        const raw = data.rfqs;
-        if (Array.isArray(raw) && raw.length > 0) {
-          set((state) => {
-            const mapped = (raw as Record<string, unknown>[])
-              .map((row) => normalizeRfqRecord(row, state.factories, guessCategoryIcon))
-              .filter((r) => r.id);
-            return { ...state, rfqs: mapped };
-          });
-        }
-      } catch (err) {
-        console.error('Failed to refetch RFQs:', err);
-      }
+      await queryClient.invalidateQueries({ queryKey: rfqKeys.list() });
     },
 
     refetchRfq: async (id: string) => {
-      try {
-        const payload = (await frontendApi.getRfq(id)) as Record<string, unknown>;
-        let quotes: unknown[] = [];
-        try {
-          const raw = await rfqsApi.listQuotations(id);
-          if (Array.isArray(raw)) quotes = raw;
-          else if (raw && typeof raw === 'object') {
-            const o = raw as Record<string, unknown>;
-            if (Array.isArray(o.data)) quotes = o.data;
-            else if (Array.isArray(o.quotations)) quotes = o.quotations;
-          }
-        } catch {
-          // some environments may not have this endpoint yet
-        }
-        const merged: Record<string, unknown> =
-          quotes.length > 0 ? { ...payload, quotations: quotes } : payload;
-        set((state) => {
-          const mapped = normalizeRfqRecord(merged, state.factories, guessCategoryIcon);
-          if (!mapped.id) return state;
-          const exists = state.rfqs.some((r) => r.id === mapped.id);
-          return {
-            ...state,
-            rfqs: exists
-              ? state.rfqs.map((r) => (r.id === mapped.id ? mapped : r))
-              : [mapped, ...state.rfqs],
-          };
-        });
-      } catch (err) {
-        console.error('Failed to refetch RFQ:', err);
-      }
+      await queryClient.invalidateQueries({ queryKey: rfqKeys.detail(id) });
+      await queryClient.invalidateQueries({ queryKey: rfqKeys.list() });
     },
 
     refetchOrders: async () => {
-      try {
-        const data = await frontendApi.getBootstrap();
-        const rawOrders = data.orders;
-        const rawRfqs = data.rfqs;
-        if (Array.isArray(rawOrders) && rawOrders.length > 0) {
-          set((state) => {
-            const rfqList: Rfq[] = Array.isArray(rawRfqs)
-              ? (rawRfqs as Record<string, unknown>[]).map((r) =>
-                  normalizeRfqRecord(r, state.factories, guessCategoryIcon),
-                )
-              : [];
-            const gp = (s: string, v: number) =>
-              v > 0
-                ? v
-                : s === 'in_production'
-                  ? 35
-                  : s === 'shipped'
-                    ? 85
-                    : s === 'completed'
-                      ? 100
-                      : 0;
-            const mapO = (r: Record<string, unknown>): Order => {
-              const rfqId = String(r.rfqId ?? r.rfq_id ?? '');
-              const status = String(r.status ?? 'in_production');
-              const linked = rfqList.find((q) => q.id === rfqId);
-              return {
-                id: String(r.order_id ?? r.id ?? ''),
-                rfqId,
-                factoryId: String(r.factoryId ?? r.factory_id ?? ''),
-                factoryName: String(r.factoryName ?? r.factory_name ?? ''),
-                projectName: String(r.projectName ?? r.project_name ?? r.title ?? ''),
-                category: String(r.category ?? '') || (linked?.category ?? ''),
-                status,
-                progress: gp(status, Number(r.progress ?? 0)),
-                totalAmount: Number(r.totalAmount ?? r.total_amount ?? 0),
-                depositPaid: Number(r.depositPaid ?? r.deposit_paid ?? r.deposit_amount ?? 0),
-                quantity: Number(r.quantity ?? 0) || (linked?.quantity ?? 0),
-                createdAt: String(r.createdAt ?? r.created_at ?? ''),
-                estimatedDelivery: String(r.estimatedDelivery ?? r.estimated_delivery ?? ''),
-                timeline: Array.isArray(r.timeline) ? (r.timeline as Order['timeline']) : [],
-              };
-            };
-            const mapped = (rawOrders as Record<string, unknown>[]).map(mapO).filter((o) => o.id);
-            return { ...state, orders: mapped };
-          });
-        }
-      } catch (err) {
-        console.error('Failed to refetch orders:', err);
-      }
+      await queryClient.invalidateQueries({ queryKey: orderKeys.list() });
     },
 
     refetchMessages: async () => {

@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi } from '@/services/api/ordersApi';
+import { orderKeys } from '@/lib/queryKeys';
 
 export function useOrderDetailQuery(orderId: string | undefined) {
   return useQuery({
-    queryKey: ['order', orderId] as const,
+    queryKey: orderKeys.detail(orderId ?? ''),
     queryFn: async () => ordersApi.getOne(orderId!),
     enabled: Boolean(orderId),
     staleTime: 30_000,

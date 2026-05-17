@@ -1,17 +1,13 @@
-/** สถานะ RFQ ที่แสดงแผงประวัติ (ปิดแล้ว / ยกเลิก / หมดอายุ) */
 export const HISTORY_STATUSES = ['completed', 'cancelled', 'expired'] as const;
 
-/** สถานะที่ลูกค้าปิดคำขอ RFQ ได้เอง */
 export const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
-/** ป้ายสถานะ RFQ ฝั่งลูกค้า (ค่า UI หลัง mapRfqStatusFromApi) */
 export const RFQ_UI_STATUS_LABEL: Record<string, string> = {
   completed: 'ปิดคำขอแล้ว',
   cancelled: 'ยกเลิก',
   expired: 'หมดอายุ',
 };
 
-/** @deprecated ใช้ RFQ_UI_STATUS_LABEL — คงชื่อเดิมให้ import เก่า */
 export const STATUS_LABEL = RFQ_UI_STATUS_LABEL;
 
 /** รหัสสถานะใบเสนอราคา (API) — มุมมองลูกค้า / ประวัติ */

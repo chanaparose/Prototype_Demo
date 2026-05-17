@@ -10,7 +10,6 @@ export type OrderSummary = {
   status: string;
   progress: number;
   totalAmount: number;
-  /** @deprecated — prefer passing `rfqSummary.quantity` derived from order.rfq */
   quantity?: number;
   estimatedDelivery: string;
 };

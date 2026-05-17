@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -26,7 +27,7 @@ export function useSubDistricts(districtId: number | string | null | undefined) 
   const did = Number(districtId);
   const enabled = Number.isFinite(did) && did > 0;
   return useQuery({
-    queryKey: ['master', 'sub-districts', did] as const,
+    queryKey: masterKeys.subDistricts(did) as const,
     enabled,
     queryFn: async () => {
       const raw = await masterApi.subDistricts(did);

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;
@@ -10,7 +11,7 @@ export interface FactoryTypeOption {
 
 export function useFactoryTypes() {
   return useQuery({
-    queryKey: ['master', 'factory-types'] as const,
+    queryKey: masterKeys.factoryTypes() as const,
     queryFn: async () => {
       const raw = await masterApi.factoryTypes();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];
