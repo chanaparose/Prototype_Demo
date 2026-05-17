@@ -1,3 +1,4 @@
+import { Input } from '@/components/ui/input';
 /**
  * Step 3 — ที่อยู่จัดส่ง + วิธีจัดส่ง + วันกำหนดส่ง
  *
@@ -277,7 +278,7 @@ export function Step3Commercial({ draft, setDraft }: Props) {
       {/* ══ 3. Lead time (optional) ══ */}
       <div>
         <p className='text-[13px] font-bold text-gray-700 mb-2'>ระยะเวลาผลิตที่ต้องการ (วัน)</p>
-        <input
+        <Input
           type='number'
           min={1}
           value={draft.target_lead_time_days ?? ''}

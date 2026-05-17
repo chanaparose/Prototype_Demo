@@ -23,6 +23,7 @@ import { ImageWithFallback } from '@/components/shared';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
+import { Input } from '@/components/ui/input';
 type ShowcaseItem = {
   id: string;
   title: string;
@@ -153,7 +154,7 @@ export function ExploreDesktop({
         <div data-tour='search' className='flex gap-2.5'>
           <div className='flex-1 flex items-center gap-2.5 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100'>
             <Search size={16} className='text-gray-400 shrink-0' />
-            <input
+            <Input
               type='text'
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}

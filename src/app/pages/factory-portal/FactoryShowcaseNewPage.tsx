@@ -18,6 +18,7 @@ import {
   type ShowcaseType,
 } from '@/pages/factory-portal/components/ShowcaseFormShared';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type FormValues = {
   title: string;
@@ -265,7 +266,7 @@ export function FactoryShowcaseNewPage() {
               {/* ── Title & excerpt ── */}
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
                 <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
-                <input
+                <Input
                   className='w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
                   placeholder='ชื่อ *'
                   value={form.title}
@@ -304,7 +305,7 @@ export function FactoryShowcaseNewPage() {
                   <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
                     <label className='block'>
                       <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
-                      <input
+                      <Input
                         type='number'
                         step='0.01'
                         placeholder='0.00'
@@ -315,7 +316,7 @@ export function FactoryShowcaseNewPage() {
                     </label>
                     <label className='block'>
                       <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
-                      <input
+                      <Input
                         type='number'
                         placeholder='500'
                         className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
@@ -325,7 +326,7 @@ export function FactoryShowcaseNewPage() {
                     </label>
                     <label className='block'>
                       <span className='text-xs text-gray-500'>Lead time (วัน)</span>
-                      <input
+                      <Input
                         type='number'
                         placeholder='30'
                         className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
@@ -343,7 +344,7 @@ export function FactoryShowcaseNewPage() {
                       <span className='text-xs font-medium text-indigo-600'>
                         ราคาโปรโมชัน (฿) *
                       </span>
-                      <input
+                      <Input
                         type='number'
                         step='0.01'
                         placeholder='0.00'
@@ -354,7 +355,7 @@ export function FactoryShowcaseNewPage() {
                     </label>
                     <label className='block'>
                       <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
-                      <input
+                      <Input
                         type='date'
                         className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none'
                         value={form.start_date}
@@ -365,7 +366,7 @@ export function FactoryShowcaseNewPage() {
                       <span className='text-xs font-medium text-indigo-600'>
                         วันที่สิ้นสุดโปร *
                       </span>
-                      <input
+                      <Input
                         type='date'
                         className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none'
                         value={form.end_date}

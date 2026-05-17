@@ -2,6 +2,13 @@ import React, { useEffect, useMemo } from 'react';
 import { useProvinces } from '@/hooks/master/useProvinces';
 import { useDistricts } from '@/hooks/master/useDistricts';
 import { useSubDistricts, type SubDistrictOption } from '@/hooks/master/useSubDistricts';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export type LbiAddressValue = {
   provinceId: string;
@@ -83,19 +90,23 @@ function Cell({ label, value, loading, disabled, options, placeholder, onChange 
   return (
     <label className='block'>
       <span className='text-xs text-gray-500'>{label}</span>
-      <select
-        className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60'
+      <Select
         value={value}
         disabled={disabled || loading}
-        onChange={(e) => onChange(e.target.value)}
+        onValueChange={(next) => onChange(next === '__empty' ? '' : next)}
       >
-        <option value=''>{loading ? 'กำลังโหลด…' : placeholder}</option>
-        {options.map((o) => (
-          <option key={o.id} value={String(o.id)}>
-            {o.name}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className='mt-1 w-full'>
+          <SelectValue placeholder={loading ? 'กำลังโหลด…' : placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='__empty'>{loading ? 'กำลังโหลด…' : placeholder}</SelectItem>
+          {options.map((o) => (
+            <SelectItem key={o.id} value={String(o.id)}>
+              {o.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </label>
   );
 }

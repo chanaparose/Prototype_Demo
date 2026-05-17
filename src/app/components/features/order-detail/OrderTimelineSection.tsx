@@ -3,6 +3,7 @@ import { CheckCircle, Clock, Circle, Camera, Pencil, X, Check, Package, Truck } 
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { productionUpdatesApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 export type TimelineMilestone = {
   id: string;
@@ -217,7 +218,7 @@ export function OrderTimelineSection({
                     </div>
 
                     {editingId === milestone.id && (
-                      <textarea
+                      <Textarea
                         value={editNote}
                         onChange={(e) => setEditNote(e.target.value)}
                         placeholder='เพิ่มบันทึก...'

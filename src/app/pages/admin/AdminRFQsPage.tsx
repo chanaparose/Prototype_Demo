@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { adminApi, type AdminRfqRow } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type RfqStatusTab = 'all' | 'open' | 'matched' | 'closed';
 
@@ -240,7 +241,7 @@ export function AdminRFQsPage() {
       <div className='bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3'>
         <div className='relative'>
           <Search size={15} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
-          <input
+          <Input
             type='text'
             placeholder='ค้นหา RFQ title, ลูกค้า...'
             value={search}

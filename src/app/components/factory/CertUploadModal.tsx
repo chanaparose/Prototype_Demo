@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BaseModal } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 type CertTypeOption = {
   id: number;
@@ -153,22 +161,23 @@ export function CertUploadModal({
 
       <label className='block'>
         <span className='text-xs text-gray-500'>ประเภทใบรับรอง *</span>
-        <select
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-          value={certId}
-          onChange={(e) => setCertId(e.target.value)}
-        >
-          {certTypes.map((m) => (
-            <option key={m.id} value={String(m.id)}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+        <Select value={certId} onValueChange={setCertId}>
+          <SelectTrigger className='mt-1 w-full'>
+            <SelectValue placeholder='เลือกประเภทใบรับรอง' />
+          </SelectTrigger>
+          <SelectContent>
+            {certTypes.map((m) => (
+              <SelectItem key={m.id} value={String(m.id)}>
+                {m.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </label>
 
       <label className='block'>
         <span className='text-xs text-gray-500'>เลขที่เอกสาร (ถ้ามี)</span>
-        <input
+        <Input
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           value={certNumber}
           onChange={(e) => setCertNumber(e.target.value)}
@@ -177,7 +186,7 @@ export function CertUploadModal({
 
       <label className='block'>
         <span className='text-xs text-gray-500'>วันหมดอายุ *</span>
-        <input
+        <Input
           type='date'
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           value={expireDate}
@@ -189,7 +198,7 @@ export function CertUploadModal({
         <span className='text-xs text-gray-500'>
           ไฟล์เอกสาร {mode === 'create' ? '*' : '(อัปโหลดใหม่หากต้องการแทนไฟล์เดิม)'}
         </span>
-        <input
+        <Input
           type='file'
           accept='image/*,.pdf'
           className='mt-1 text-sm block w-full'

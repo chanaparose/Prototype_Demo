@@ -6,6 +6,8 @@ import type { MergedProductionStep } from '@/components/features/production/type
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
 import { getStepGuide } from '@/components/features/production/stepGuideConfig';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 /** ข้อมูลที่อยู่จัดส่งลูกค้า — ส่งมาจาก order API */
 export interface CustomerShippingInfo {
@@ -303,7 +305,7 @@ export function UpdateStepDrawer({
             <span className='text-xs font-medium text-gray-600'>
               หมายเหตุ / รายละเอียดเพิ่มเติม
             </span>
-            <textarea
+            <Textarea
               className='mt-1.5 w-full min-h-[88px] rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-100'
               maxLength={500}
               value={notes}
@@ -367,7 +369,7 @@ export function UpdateStepDrawer({
                 <label className='aspect-square rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-indigo-300 transition-colors'>
                   <Plus size={22} className='text-gray-400' />
                   <span className='text-[10px] text-gray-500 mt-1'>เพิ่มภาพ</span>
-                  <input
+                  <Input
                     type='file'
                     accept='image/*'
                     multiple

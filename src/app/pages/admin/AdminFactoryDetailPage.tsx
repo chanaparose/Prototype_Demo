@@ -25,6 +25,14 @@ import {
 } from '@/services/api';
 import type { FactoryApprovalStatus } from '@/pages/admin/AdminFactoriesPage';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
 
@@ -455,31 +463,34 @@ export function AdminFactoryDetailPage() {
               <label className='block text-xs font-semibold text-slate-700 mb-1.5'>
                 เปลี่ยน Config
               </label>
-              <select
+              <Select
                 value={selectedConfigId === '' ? '' : String(selectedConfigId)}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (v === '') setSelectedConfigId('');
-                  else setSelectedConfigId(Number(v));
+                onValueChange={(next) => {
+                  if (next === '__empty') setSelectedConfigId('');
+                  else setSelectedConfigId(Number(next));
                 }}
                 disabled={!canAssignConfig}
-                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50'
               >
-                <option value=''>เลือก Config Package</option>
-                <option value='0'>กลับเป็นมาตรฐาน (ใช้ default จากระบบ)</option>
-                {configList.map((cfg) => (
-                  <option key={cfg.config_id} value={cfg.config_id}>
-                    [{cfg.config_id}]{' '}
-                    {cfg.label ??
-                      `Commission ${cfg.default_commission_rate}% / VAT ${cfg.vat_rate}%`}{' '}
-                    — คอม {cfg.default_commission_rate}%
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className='w-full rounded-lg text-slate-900 disabled:bg-slate-50'>
+                  <SelectValue placeholder='เลือก Config Package' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='__empty'>เลือก Config Package</SelectItem>
+                  <SelectItem value='0'>กลับเป็นมาตรฐาน (ใช้ default จากระบบ)</SelectItem>
+                  {configList.map((cfg) => (
+                    <SelectItem key={cfg.config_id} value={String(cfg.config_id)}>
+                      [{cfg.config_id}]{' '}
+                      {cfg.label ??
+                        `Commission ${cfg.default_commission_rate}% / VAT ${cfg.vat_rate}%`}{' '}
+                      — คอม {cfg.default_commission_rate}%
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className='block text-xs font-semibold text-slate-700 mb-1.5'>หมายเหตุ</label>
-              <input
+              <Input
                 value={configNote}
                 onChange={(e) => setConfigNote(e.target.value)}
                 disabled={!canAssignConfig}

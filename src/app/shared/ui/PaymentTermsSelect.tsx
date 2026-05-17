@@ -1,4 +1,11 @@
 import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type PaymentTerm = '50_50' | '30_70' | 'net_30' | 'lc_at_sight';
 
@@ -17,17 +24,21 @@ const OPTIONS: { value: PaymentTerm; label: string }[] = [
 
 export function PaymentTermsSelect({ value, onChange, className }: Props) {
   return (
-    <select
+    <Select
       value={value ?? ''}
-      onChange={(e) => onChange((e.target.value || undefined) as PaymentTerm | undefined)}
-      className={className ?? 'w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'}
+      onValueChange={(next) => onChange(next === '__empty' ? undefined : (next as PaymentTerm))}
     >
-      <option value=''>เลือกเงื่อนไขชำระเงิน</option>
-      {OPTIONS.map((it) => (
-        <option key={it.value} value={it.value}>
-          {it.label}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger className={className ?? 'w-full'}>
+        <SelectValue placeholder='เลือกเงื่อนไขชำระเงิน' />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value='__empty'>เลือกเงื่อนไขชำระเงิน</SelectItem>
+        {OPTIONS.map((it) => (
+          <SelectItem key={it.value} value={it.value}>
+            {it.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

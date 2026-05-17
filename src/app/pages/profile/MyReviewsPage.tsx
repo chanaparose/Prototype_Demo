@@ -7,6 +7,7 @@ import { useAuth } from '@/stores';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 type ReviewItem = {
   review_id: number;
@@ -205,7 +206,7 @@ export function MyReviewsPage() {
                 </Button>
               ))}
             </div>
-            <textarea
+            <Textarea
               aria-label='ข้อความรีวิว'
               value={editComment}
               onChange={(e) => setEditComment(e.target.value)}

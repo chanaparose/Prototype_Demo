@@ -1,5 +1,14 @@
 import React from 'react';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 type SubCategory = {
   id: number;
@@ -33,13 +42,13 @@ export function Step1Basic({
   const showSubCategory = mode !== 'MS';
   return (
     <div className='space-y-3'>
-      <input
+      <Input
         value={draft.title}
         onChange={(e) => setDraft({ title: e.target.value })}
         placeholder='ชื่อสินค้า *'
         className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
-      <textarea
+      <Textarea
         value={draft.description}
         onChange={(e) => setDraft({ description: e.target.value })}
         placeholder={descriptionPlaceholder}
@@ -47,42 +56,54 @@ export function Step1Basic({
         className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
       />
       <div className={`${showSubCategory ? 'grid grid-cols-3' : 'grid grid-cols-2'} gap-2`}>
-        <select
+        <Select
           value={draft.category_id ?? ''}
-          onChange={(e) =>
+          onValueChange={(next) =>
             setDraft({
-              category_id: Number(e.target.value) || null,
+              category_id: next === '__empty' ? null : Number(next),
               sub_category_id: undefined,
             })
           }
-          className='rounded-xl border border-gray-200 px-3 py-2 text-sm'
         >
-          <option value=''>หมวดหมู่ *</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-        {showSubCategory ? (
-          <select
-            value={draft.sub_category_id ?? ''}
-            onChange={(e) => setDraft({ sub_category_id: Number(e.target.value) || undefined })}
-            disabled={!draft.category_id || subCategoriesLoading}
-            className='rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-100'
-          >
-            <option value=''>
-              {subCategoriesLoading ? 'กำลังโหลดหมวดย่อย...' : 'หมวดย่อย (ไม่บังคับ)'}
-            </option>
-            {subCategories.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-                {s.sortOrder === 99 ? ' (ส่งทุกโรงงานในหมวดหลัก)' : ''}
-              </option>
+          <SelectTrigger>
+            <SelectValue placeholder='หมวดหมู่ *' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='__empty'>หมวดหมู่ *</SelectItem>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={String(c.id)}>
+                {c.name}
+              </SelectItem>
             ))}
-          </select>
+          </SelectContent>
+        </Select>
+        {showSubCategory ? (
+          <Select
+            value={draft.sub_category_id ?? ''}
+            onValueChange={(next) =>
+              setDraft({ sub_category_id: next === '__empty' ? undefined : Number(next) })
+            }
+            disabled={!draft.category_id || subCategoriesLoading}
+          >
+            <SelectTrigger className='disabled:bg-gray-100'>
+              <SelectValue
+                placeholder={subCategoriesLoading ? 'กำลังโหลดหมวดย่อย...' : 'หมวดย่อย (ไม่บังคับ)'}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='__empty'>
+                {subCategoriesLoading ? 'กำลังโหลดหมวดย่อย...' : 'หมวดย่อย (ไม่บังคับ)'}
+              </SelectItem>
+              {subCategories.map((s) => (
+                <SelectItem key={s.id} value={String(s.id)}>
+                  {s.name}
+                  {s.sortOrder === 99 ? ' (ส่งทุกโรงงานในหมวดหลัก)' : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         ) : null}
-        <input
+        <Input
           type='number'
           min={1}
           value={draft.qty ?? ''}
@@ -91,7 +112,7 @@ export function Step1Basic({
           className='rounded-xl border border-gray-200 px-3 py-2 text-sm'
         />
       </div>
-      <input
+      <Input
         type='number'
         min={0}
         value={draft.target_price ?? ''}

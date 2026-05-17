@@ -3,6 +3,14 @@ import { useNavigate } from 'react-router';
 import { Users, Search, AlertTriangle } from 'lucide-react';
 import { adminCustomerApi, type AdminCustomerListItem } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -107,7 +115,7 @@ export function AdminCustomersPage() {
       <div className='flex flex-wrap gap-3'>
         <div className='relative flex-1 min-w-[200px] max-w-sm'>
           <Search size={15} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
-          <input
+          <Input
             type='text'
             placeholder='ค้นหา email / ชื่อ...'
             value={search}
@@ -115,17 +123,19 @@ export function AdminCustomersPage() {
             className='w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
           />
         </div>
-        <select
+        <Select
           value={isActive === undefined ? '' : String(isActive)}
-          onChange={(e) =>
-            setIsActive(e.target.value === '' ? undefined : e.target.value === 'true')
-          }
-          className='px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+          onValueChange={(next) => setIsActive(next === '__empty' ? undefined : next === 'true')}
         >
-          <option value=''>ทุกสถานะ</option>
-          <option value='true'>Active</option>
-          <option value='false'>Inactive</option>
-        </select>
+          <SelectTrigger className='w-full sm:w-36 rounded-lg'>
+            <SelectValue placeholder='ทุกสถานะ' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='__empty'>ทุกสถานะ</SelectItem>
+            <SelectItem value='true'>Active</SelectItem>
+            <SelectItem value='false'>Inactive</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Error */}

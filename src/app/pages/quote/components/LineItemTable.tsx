@@ -1,6 +1,7 @@
 import React from 'react';
 import type { QuotationCreateInput } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   items: QuotationCreateInput['items'];
@@ -14,7 +15,7 @@ export function LineItemTable({ items, onChange }: Props) {
       <div className='space-y-2'>
         {items.map((it, idx) => (
           <div key={idx} className='grid grid-cols-12 gap-2'>
-            <input
+            <Input
               className='col-span-5 rounded-lg border border-gray-200 px-2 py-1.5 text-xs'
               value={it.description}
               onChange={(e) => {
@@ -24,7 +25,7 @@ export function LineItemTable({ items, onChange }: Props) {
               }}
               placeholder='Description'
             />
-            <input
+            <Input
               type='number'
               className='col-span-2 rounded-lg border border-gray-200 px-2 py-1.5 text-xs'
               value={it.qty}
@@ -35,7 +36,7 @@ export function LineItemTable({ items, onChange }: Props) {
               }}
               placeholder='Qty'
             />
-            <input
+            <Input
               className='col-span-2 rounded-lg border border-gray-200 px-2 py-1.5 text-xs'
               value={it.unit ?? ''}
               onChange={(e) => {
@@ -45,7 +46,7 @@ export function LineItemTable({ items, onChange }: Props) {
               }}
               placeholder='Unit'
             />
-            <input
+            <Input
               type='number'
               className='col-span-3 rounded-lg border border-gray-200 px-2 py-1.5 text-xs'
               value={it.unit_price}

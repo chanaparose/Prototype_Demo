@@ -17,6 +17,8 @@ import { FactoryOrdersFilterBar } from '@/pages/factory-portal/factory-orders/co
 import { FactoryOrdersKpiStrip } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersKpiStrip';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
 const INDIGO = 'var(--brand-indigo)';
@@ -329,7 +331,7 @@ export function FactoryOrdersPage() {
                 <X size={18} />
               </Button>
             </div>
-            <textarea
+            <Textarea
               className='w-full min-h-[90px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
               placeholder='รายละเอียดความคืบหน้า'
               value={updateModal.notes}
@@ -391,7 +393,7 @@ export function FactoryOrdersPage() {
                 <X size={18} />
               </Button>
             </div>
-            <input
+            <Input
               className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
               placeholder='เลขพัสดุ'
               value={shipModal.tracking}
@@ -399,7 +401,7 @@ export function FactoryOrdersPage() {
                 setShipModal((prev) => (prev ? { ...prev, tracking: e.target.value } : prev))
               }
             />
-            <textarea
+            <Textarea
               className='w-full min-h-[72px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-brand-indigo'
               placeholder='หมายเหตุ (ไม่บังคับ)'
               value={shipModal.note}

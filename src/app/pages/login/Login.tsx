@@ -4,6 +4,7 @@ import { ArrowLeft, Eye, EyeOff, UserPlus, LogIn, Wifi, WifiOff, RefreshCw } fro
 import { useAuth } from '@/stores';
 import { frontendApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Mode = 'login' | 'register';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
@@ -244,7 +245,7 @@ export function Login() {
             <form onSubmit={handleLogin} className='space-y-4'>
               <div>
                 <label className='text-xs text-gray-500 mb-1 block'>อีเมล</label>
-                <input
+                <Input
                   type='email'
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -256,7 +257,7 @@ export function Login() {
               <div>
                 <label className='text-xs text-gray-500 mb-1 block'>รหัสผ่าน</label>
                 <div className='relative'>
-                  <input
+                  <Input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -307,7 +308,7 @@ export function Login() {
               <div className='grid grid-cols-2 gap-3'>
                 <div>
                   <label className='text-xs text-gray-500 mb-1 block'>ชื่อ</label>
-                  <input
+                  <Input
                     type='text'
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -318,7 +319,7 @@ export function Login() {
                 </div>
                 <div>
                   <label className='text-xs text-gray-500 mb-1 block'>นามสกุล</label>
-                  <input
+                  <Input
                     type='text'
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -330,7 +331,7 @@ export function Login() {
               </div>
               <div>
                 <label className='text-xs text-gray-500 mb-1 block'>อีเมล</label>
-                <input
+                <Input
                   type='email'
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -341,7 +342,7 @@ export function Login() {
               </div>
               <div>
                 <label className='text-xs text-gray-500 mb-1 block'>เบอร์โทรศัพท์</label>
-                <input
+                <Input
                   type='tel'
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -353,7 +354,7 @@ export function Login() {
               <div>
                 <label className='text-xs text-gray-500 mb-1 block'>รหัสผ่าน</label>
                 <div className='relative'>
-                  <input
+                  <Input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

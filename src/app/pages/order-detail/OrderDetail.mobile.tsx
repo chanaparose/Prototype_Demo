@@ -23,6 +23,7 @@ import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { OrderProductionTab } from '@/components/features/production/OrderProductionTab';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
 import { BaseModal } from '@/shared/ui';
+import { Textarea } from '@/components/ui/textarea';
 
 type OrderReviewState = {
   order_id: number;
@@ -628,7 +629,7 @@ function OrderDetailMobileBody() {
                 </Button>
               ))}
             </div>
-            <textarea
+            <Textarea
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
               maxLength={1000}

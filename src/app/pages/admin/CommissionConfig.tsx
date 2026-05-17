@@ -1,6 +1,8 @@
 import React from 'react';
 import { platformConfigApi, type PlatformConfig } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 
 type FormState = {
   default_commission_rate: number;
@@ -50,7 +52,7 @@ export function CommissionConfig() {
         <p className='text-base font-bold text-gray-900'>Commission Config</p>
         <label className='block text-sm'>
           <span className='text-gray-500'>Default Rate (%)</span>
-          <input
+          <Input
             type='number'
             step='0.01'
             placeholder='0.00'
@@ -66,16 +68,15 @@ export function CommissionConfig() {
         </label>
         <div className='border-t border-gray-100 pt-3 space-y-3'>
           <label className='inline-flex items-center gap-2 text-sm'>
-            <input
-              type='checkbox'
+            <Checkbox
               checked={form.promo_enabled}
-              onChange={(e) => setForm({ ...form, promo_enabled: e.target.checked })}
+              onCheckedChange={(checked) => setForm({ ...form, promo_enabled: checked === true })}
             />
             Enable Promo
           </label>
           {form.promo_enabled ? (
             <>
-              <input
+              <Input
                 type='number'
                 step='0.01'
                 value={form.promo_commission_rate}
@@ -88,21 +89,21 @@ export function CommissionConfig() {
                 placeholder='Promo rate (%)'
                 className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
               />
-              <input
+              <Input
                 value={form.promo_label}
                 onChange={(e) => setForm({ ...form, promo_label: e.target.value })}
                 placeholder='Promo label'
                 className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
               />
               <div className='grid grid-cols-2 gap-2'>
-                <input
+                <Input
                   type='date'
                   title='วันเริ่มต้นโปรโมชัน'
                   value={form.promo_start_at}
                   onChange={(e) => setForm({ ...form, promo_start_at: e.target.value })}
                   className='rounded-xl border border-gray-200 px-3 py-2 text-sm'
                 />
-                <input
+                <Input
                   type='date'
                   title='วันสิ้นสุดโปรโมชัน'
                   value={form.promo_end_at}
@@ -115,7 +116,7 @@ export function CommissionConfig() {
         </div>
         <label className='block text-sm'>
           <span className='text-gray-500'>VAT (%)</span>
-          <input
+          <Input
             type='number'
             step='0.01'
             placeholder='0.00'

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
 import { BaseModal } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Props {
   open: boolean;
@@ -86,12 +87,7 @@ export function SubCategoryPickerModal({
           {subs.map((s) => (
             <li key={s.id}>
               <label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
-                <input
-                  type='checkbox'
-                  checked={working.includes(s.id)}
-                  onChange={() => toggle(s.id)}
-                  className='rounded border-gray-300'
-                />
+                <Checkbox checked={working.includes(s.id)} onCheckedChange={() => toggle(s.id)} />
                 {s.name}
               </label>
             </li>

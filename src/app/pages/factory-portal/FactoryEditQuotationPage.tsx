@@ -14,6 +14,8 @@ import { useShippingMethods } from '@/hooks/master/useShippingMethods';
 import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 type Raw = Record<string, unknown>;
 
@@ -236,7 +238,7 @@ export function FactoryEditQuotationPage() {
             <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
               <label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>ราคาต่อชิ้น *</span>
-                <input
+                <Input
                   type='number'
                   step='0.01'
                   disabled={isLocked}
@@ -250,7 +252,7 @@ export function FactoryEditQuotationPage() {
             <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
               <label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>ค่าแม่พิมพ์</span>
-                <input
+                <Input
                   type='number'
                   disabled={isLocked}
                   className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
@@ -263,7 +265,7 @@ export function FactoryEditQuotationPage() {
             <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
               <label className='flex-1 min-w-0'>
                 <span className='text-xs text-gray-500 block mb-1'>Lead time (วัน) *</span>
-                <input
+                <Input
                   type='number'
                   disabled={isLocked}
                   className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50'
@@ -325,7 +327,7 @@ export function FactoryEditQuotationPage() {
               <span className='text-xs text-gray-500 mb-1.5 block'>
                 เหตุผล * (บันทึกลง audit log)
               </span>
-              <textarea
+              <Textarea
                 disabled={isLocked}
                 rows={3}
                 className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none transition-colors disabled:bg-gray-50 resize-none'

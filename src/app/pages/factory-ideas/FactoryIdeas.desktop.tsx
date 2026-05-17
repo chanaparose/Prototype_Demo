@@ -22,6 +22,7 @@ import {
   factoryIdeasTheme as COLORS,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared';
+import { Input } from '@/components/ui/input';
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
@@ -173,7 +174,7 @@ export function FactoryIdeasDesktop() {
               style={{ backgroundColor: COLORS.gray, borderColor: 'var(--neutral-border)' }}
             >
               <Search size={14} className='text-gray-400 shrink-0' />
-              <input
+              <Input
                 type='text'
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}

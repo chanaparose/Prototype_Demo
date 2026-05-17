@@ -18,6 +18,7 @@ import { StatusBadge } from '@/shared/ui';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { formatThaiDate } from '@/components/features/factory-profile/utils';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export type TabId = 'products' | 'promotions' | 'materials' | 'articles' | 'about';
 
@@ -410,7 +411,7 @@ export function FactoryProfileTabContent({
 
             <div className='mb-3 relative'>
               <Search className='w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2' />
-              <input
+              <Input
                 type='text'
                 disabled
                 placeholder='ค้นหารีวิวจากผู้ซื้อคนอื่น'

@@ -2,6 +2,14 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import type { SortKey, TabId } from '@/pages/factory-portal/factory-orders/types';
 import { TabNavigation } from '@/shared/ui';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
@@ -38,22 +46,23 @@ export function FactoryOrdersFilterBar(props: {
       <div className='flex flex-col sm:flex-row gap-2'>
         <label className='flex-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2'>
           <Search size={16} className='text-slate-400' />
-          <input
+          <Input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder='ค้นหา #ออเดอร์ / ชื่อสินค้า / ชื่อลูกค้า'
             className='w-full bg-transparent outline-none text-sm text-slate-700 placeholder:text-slate-400'
           />
         </label>
-        <select
-          className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700'
-          value={sortKey}
-          onChange={(e) => onSortChange(e.target.value as SortKey)}
-        >
-          <option value='newest'>ล่าสุด</option>
-          <option value='deadline'>ใกล้กำหนดส่ง</option>
-          <option value='amount_desc'>มูลค่าสูงสุด</option>
-        </select>
+        <Select value={sortKey} onValueChange={(next) => onSortChange(next as SortKey)}>
+          <SelectTrigger className='w-full sm:w-44 text-slate-700'>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='newest'>ล่าสุด</SelectItem>
+            <SelectItem value='deadline'>ใกล้กำหนดส่ง</SelectItem>
+            <SelectItem value='amount_desc'>มูลค่าสูงสุด</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

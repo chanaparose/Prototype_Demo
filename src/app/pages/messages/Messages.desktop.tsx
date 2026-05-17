@@ -5,6 +5,7 @@ import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type MessagesDesktopProps = {
   searchText: string;
@@ -70,7 +71,7 @@ export function MessagesDesktop({
           {/* Search */}
           <div className='flex items-center gap-2 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-100'>
             <Search size={15} className='text-gray-400 shrink-0' />
-            <input
+            <Input
               type='text'
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}

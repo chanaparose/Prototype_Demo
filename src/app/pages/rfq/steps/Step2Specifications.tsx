@@ -3,6 +3,7 @@ import { mediaApi } from '@/services/api';
 import { DimensionInput } from '@/shared/ui/DimensionInput';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   draft: RFQDraft;
@@ -40,7 +41,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
       >
         {advanced ? 'Basic' : 'Advanced'}
       </Button>
-      <input
+      <Input
         value={draft.material_grade}
         onChange={(e) => setDraft({ material_grade: e.target.value })}
         placeholder='วัตถุดิบ'
@@ -48,13 +49,13 @@ export function Step2Specifications({ draft, setDraft }: Props) {
       />
       {advanced ? (
         <>
-          <input
+          <Input
             value={draft.tolerance}
             onChange={(e) => setDraft({ tolerance: e.target.value })}
             placeholder='Tolerance'
             className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           />
-          <input
+          <Input
             value={draft.color_finish}
             onChange={(e) => setDraft({ color_finish: e.target.value })}
             placeholder='Color / Finish'
@@ -64,7 +65,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
             value={draft.dimension_spec}
             onChange={(v) => setDraft({ dimension_spec: v })}
           />
-          <input
+          <Input
             value={draft.packaging_spec}
             onChange={(e) => setDraft({ packaging_spec: e.target.value })}
             placeholder='Packaging spec'
@@ -74,7 +75,7 @@ export function Step2Specifications({ draft, setDraft }: Props) {
       ) : null}
 
       <div className='space-y-2'>
-        <input
+        <Input
           ref={ref}
           type='file'
           accept='image/*,.pdf'

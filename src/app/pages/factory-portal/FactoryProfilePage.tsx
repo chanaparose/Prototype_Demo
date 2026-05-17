@@ -43,6 +43,7 @@ import {
 } from '@/components/factory/profile/ProfileFormTypes';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 // ── Design tokens ─────────────────────────────────────────────────────────
 const COLORS = {
@@ -237,7 +238,7 @@ function FactoryHeroCard({
         ) : null}
 
         <label className='absolute inset-0 z-[1] cursor-pointer group flex flex-col items-center justify-center text-center px-4'>
-          <input
+          <Input
             ref={coverInputRef}
             type='file'
             accept='image/jpeg,image/png,image/webp'
@@ -328,7 +329,7 @@ function FactoryHeroCard({
                   <Upload size={22} className='text-white drop-shadow-md' />
                 </div>
               )}
-              <input
+              <Input
                 ref={profileInputRef}
                 type='file'
                 accept='image/jpeg,image/png,image/webp'

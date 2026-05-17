@@ -1,4 +1,5 @@
 import React from 'react';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   discount_amount: number;
@@ -23,7 +24,7 @@ export function ExtraChargesForm(props: Props) {
   const row = (key: keyof Omit<Props, 'onChange'>, label: string) => (
     <label className='block'>
       <span className='text-xs text-gray-500'>{label}</span>
-      <input
+      <Input
         type='number'
         value={props[key] as number}
         onChange={(e) => props.onChange({ ...charges, [key]: Number(e.target.value) || 0 })}

@@ -3,6 +3,14 @@ import { Camera, Plus, X } from 'lucide-react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { LookupSelect } from '@/components/common/LookupSelect';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 export type ShowcaseScope = 'PD' | 'MT';
@@ -95,7 +103,7 @@ export function ShowcaseImageManager({
               {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
             </span>
             <span className='text-xs opacity-70'>PNG, JPG, WEBP · สูงสุด 5 รูป</span>
-            <input
+            <Input
               type='file'
               accept='image/*'
               className='hidden'
@@ -129,7 +137,7 @@ export function ShowcaseImageManager({
             <label className='w-14 h-14 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors'>
               <Plus size={16} />
               <span className='text-[9px] mt-0.5'>เพิ่ม</span>
-              <input
+              <Input
                 type='file'
                 accept='image/*'
                 className='hidden'
@@ -235,43 +243,59 @@ export function ShowcaseCategoryFields({
         {!hideSubCat ? (
           <label className='block'>
             <span className='text-xs text-gray-500 mb-1.5 block'>หมวดหมู่ย่อย</span>
-            <select
+            <Select
               disabled={categoryValue == null || subCategoriesLoading}
               value={subCategoryValue != null ? String(subCategoryValue) : ''}
-              onChange={(event) =>
-                onSubCategoryChange(event.target.value ? Number(event.target.value) : null)
+              onValueChange={(next) =>
+                onSubCategoryChange(next === '__empty' ? null : Number(next))
               }
-              className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none disabled:bg-gray-50 disabled:text-gray-400'
             >
-              <option value=''>
-                {categoryValue == null
-                  ? '— เลือกหมวดหมู่ก่อน —'
-                  : subCategoriesLoading
-                    ? 'กำลังโหลด…'
-                    : '— เลือกหมวดย่อย —'}
-              </option>
-              {subOptions.map((option) => (
-                <option key={option.id} value={String(option.id)}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className='w-full h-10 disabled:bg-gray-50 disabled:text-gray-400'>
+                <SelectValue
+                  placeholder={
+                    categoryValue == null
+                      ? '— เลือกหมวดหมู่ก่อน —'
+                      : subCategoriesLoading
+                        ? 'กำลังโหลด…'
+                        : '— เลือกหมวดย่อย —'
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='__empty'>
+                  {categoryValue == null
+                    ? '— เลือกหมวดหมู่ก่อน —'
+                    : subCategoriesLoading
+                      ? 'กำลังโหลด…'
+                      : '— เลือกหมวดย่อย —'}
+                </SelectItem>
+                {subOptions.map((option) => (
+                  <SelectItem key={option.id} value={String(option.id)}>
+                    {option.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
         ) : null}
 
         {onStatusChange ? (
           <label className='block'>
             <span className='text-xs text-gray-500 mb-1.5 block'>สถานะ</span>
-            <select
+            <Select
               value={statusValue ?? 'DR'}
-              onChange={(event) => onStatusChange(event.target.value as ShowcaseStatus)}
-              className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
+              onValueChange={(next) => onStatusChange(next as ShowcaseStatus)}
             >
-              <option value='DR'>ร่าง</option>
-              <option value='AC'>Active</option>
-              <option value='HI'>Hidden</option>
-              <option value='AR'>เก็บเข้าคลัง</option>
-            </select>
+              <SelectTrigger className='w-full h-10'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='DR'>ร่าง</SelectItem>
+                <SelectItem value='AC'>Active</SelectItem>
+                <SelectItem value='HI'>Hidden</SelectItem>
+                <SelectItem value='AR'>เก็บเข้าคลัง</SelectItem>
+              </SelectContent>
+            </Select>
           </label>
         ) : null}
       </div>

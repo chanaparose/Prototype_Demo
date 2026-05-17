@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { BaseModal } from '@/shared/ui/modals/BaseModal';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
+import { Textarea } from '@/components/ui/textarea';
 
 type Props = {
   open: boolean;
@@ -50,7 +51,7 @@ export function RejectConfirmModal({ open, stepNameTh, onClose, onConfirm }: Pro
         <br />
         โปรดระบุเหตุผล (อย่างน้อย 10 ตัวอักษร)
       </p>
-      <textarea
+      <Textarea
         className='w-full min-h-[100px] rounded-xl border border-gray-200 px-3 py-2 text-sm'
         value={reason}
         onChange={(e) => setReason(e.target.value)}

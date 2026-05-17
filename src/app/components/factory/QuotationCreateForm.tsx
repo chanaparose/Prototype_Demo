@@ -19,6 +19,7 @@ import { FactoryHighlightField } from '@/components/features/factory-rfq/Factory
 import { formatCurrencyNoDecimals } from '@/utils/formatting';
 import { FormField } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 /* ── Constants ──────────────────────────────────────────────────── */
 /** ค่า payment_terms ที่ล็อคไว้ตามข้อกำหนดล่าสุด */
@@ -319,7 +320,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               : undefined
           }
         >
-          <input
+          <Input
             type='number'
             step='0.01'
             min={0}
@@ -335,7 +336,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           <p className='text-xs font-semibold text-gray-600 mb-2'>ค่าใช้จ่ายเพิ่มเติม</p>
           <div className='grid grid-cols-3 gap-2'>
             <FormField label='ค่าขนส่ง' labelClassName='text-[11px]'>
-              <input
+              <Input
                 type='number'
                 step='0.01'
                 min={0}
@@ -346,7 +347,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               />
             </FormField>
             <FormField label='ค่าบรรจุภัณฑ์' labelClassName='text-[11px]'>
-              <input
+              <Input
                 type='number'
                 step='0.01'
                 min={0}
@@ -357,7 +358,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               />
             </FormField>
             <FormField label='ค่าแม่พิมพ์' labelClassName='text-[11px]'>
-              <input
+              <Input
                 type='number'
                 step='0.01'
                 min={0}
@@ -379,7 +380,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               targetDaysCustomer != null ? `ลูกค้าต้องการ ${targetDaysCustomer} วัน` : undefined
             }
           >
-            <input
+            <Input
               type='number'
               min={1}
               disabled={readOnly}
@@ -389,7 +390,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             />
           </FormField>
           <FormField label='ใบเสนอราคาหมดอายุ (วัน)'>
-            <input
+            <Input
               type='number'
               min={1}
               disabled={readOnly}
@@ -456,7 +457,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
                 ))}
               </div>
             ) : null}
-            <input
+            <Input
               ref={imageInputRef}
               type='file'
               accept='image/*'

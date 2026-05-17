@@ -25,7 +25,11 @@ export const EXPLORE_STATUS_CONFIG: Record<string, { label: string; color: strin
     color: 'var(--brand-magenta)',
     bg: 'var(--neutral-footer)',
   },
-  reviewing: { label: 'กำลังพิจารณา', color: 'var(--brand-orange)', bg: 'var(--surface-orange-tint)' },
+  reviewing: {
+    label: 'กำลังพิจารณา',
+    color: 'var(--brand-orange)',
+    bg: 'var(--surface-orange-tint)',
+  },
   pending: { label: 'รอใบเสนอราคา', color: 'var(--neutral-subtle)', bg: 'var(--neutral-muted)' },
   in_production: { label: 'กำลังผลิต', color: 'var(--status-info)', bg: 'var(--status-info-soft)' },
   shipped: { label: 'จัดส่งแล้ว', color: 'var(--status-success-bright)', bg: '#DCFCE7' },

@@ -14,6 +14,7 @@ import { walletApi, transactionsApi } from '@/services/api';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
+import { Input } from '@/components/ui/input';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
 const NAVY = appColors.brand.navy;
@@ -520,7 +521,7 @@ export function FactoryWalletPage() {
                   <span className='absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500'>
                     ฿
                   </span>
-                  <input
+                  <Input
                     type='number'
                     min={500}
                     max={good ?? 0}

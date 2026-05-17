@@ -9,6 +9,7 @@ import { Step2Specifications } from '@/pages/rfq/steps/Step2Specifications';
 import { Step3Commercial } from '@/pages/rfq/steps/Step3Commercial';
 import { Step4QualityReview } from '@/pages/rfq/steps/Step4QualityReview';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const step1Schema = z.object({
   title: z.string().min(1),
@@ -567,10 +568,9 @@ export function RFQCreateWizard() {
               <section className='rounded-xl border border-gray-100 p-4'>
                 <p className='font-semibold text-brand-navy mb-2'>ยืนยันการขอตัวอย่าง</p>
                 <label className='flex items-start gap-2 text-sm text-gray-700'>
-                  <input
-                    type='checkbox'
+                  <Checkbox
                     checked={acceptSampleTerms}
-                    onChange={(e) => setAcceptSampleTerms(e.target.checked)}
+                    onCheckedChange={(checked) => setAcceptSampleTerms(checked === true)}
                     className='mt-1'
                   />
                   <span>

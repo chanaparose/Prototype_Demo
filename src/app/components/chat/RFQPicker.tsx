@@ -8,6 +8,7 @@ import { formatCurrency, formatDate } from '@/utils/formatting';
 import { StatusBadge } from '@/shared/ui';
 import { BaseModal } from '@/shared/ui/modals/BaseModal';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   conversationId: number;
@@ -111,7 +112,7 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
       <div className='px-4 py-3 border-b border-gray-100'>
         <div className='relative'>
           <Search className='w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2' />
-          <input
+          <Input
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder='ค้นหา RFQ...'

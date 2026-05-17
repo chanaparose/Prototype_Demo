@@ -20,6 +20,8 @@ import { mediaApi } from '@/services/api';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { BaseModal } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 // ---------------------------------------------------------------------------
 // ข้อมูลเทมเพลต (สามารถเพิ่ม/ลด ได้ตามต้องการ)
@@ -377,7 +379,7 @@ export function MarkdownEditor({
                 <label htmlFor='file-input' className='hidden'>
                   อัปโหลดรูปภาพ
                 </label>
-                <input
+                <Input
                   id='file-input'
                   ref={fileRef}
                   type='file'
@@ -426,7 +428,7 @@ export function MarkdownEditor({
               </div>
             </div>
 
-            <textarea
+            <Textarea
               ref={textareaRef}
               className='w-full resize-y font-mono text-sm px-3 py-3 border-0 outline-none leading-relaxed text-gray-700'
               style={{ minHeight: `${minHeight}px` }}

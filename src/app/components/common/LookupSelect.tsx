@@ -1,6 +1,13 @@
 import React from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface LookupSelectProps<Option> {
   label: string;
@@ -38,25 +45,26 @@ export function LookupSelect<Option>({
         {required ? ' *' : ''}
       </span>
       <div className='relative'>
-        <select
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:opacity-60'
+        <Select
           value={selected}
           disabled={disabled || isLoading}
-          onChange={(e) => {
-            const v = e.target.value;
-            onChange(v ? Number(v) : null);
-          }}
+          onValueChange={(next) => onChange(next === '__empty' ? null : Number(next))}
         >
-          <option value=''>{isLoading ? 'กำลังโหลด…' : placeholder}</option>
-          {opts.map((o) => {
-            const id = getId(o);
-            return (
-              <option key={id} value={String(id)}>
-                {getLabel(o)}
-              </option>
-            );
-          })}
-        </select>
+          <SelectTrigger className='mt-1 w-full'>
+            <SelectValue placeholder={isLoading ? 'กำลังโหลด…' : placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='__empty'>{isLoading ? 'กำลังโหลด…' : placeholder}</SelectItem>
+            {opts.map((o) => {
+              const id = getId(o);
+              return (
+                <SelectItem key={id} value={String(id)}>
+                  {getLabel(o)}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
         {isError ? (
           <Button
             onClick={() => void refetch()}

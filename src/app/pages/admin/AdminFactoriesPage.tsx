@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
 import { adminApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 export type FactoryApprovalStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
@@ -113,7 +115,7 @@ function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: Confi
             <label className='block text-xs font-semibold text-slate-700 mb-1.5'>
               เหตุผล <span className='text-red-500'>*</span>
             </label>
-            <textarea
+            <Textarea
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -250,7 +252,7 @@ export function AdminFactoriesPage() {
         <div className='flex flex-col sm:flex-row gap-3'>
           <div className='relative flex-1'>
             <Search size={15} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
-            <input
+            <Input
               type='text'
               placeholder='ค้นหาชื่อโรงงาน, อีเมล, เจ้าของ...'
               value={search}

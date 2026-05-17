@@ -4,6 +4,8 @@ import { normShowcase } from '@/hooks/useShowcases';
 import type { FactoryShowcase } from '@/stores';
 import { Search, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 
 interface RelatedShowcasePickerProps {
   factoryId: number;
@@ -179,7 +181,7 @@ export function RelatedShowcasePicker({
                   size={14}
                   className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'
                 />
-                <input
+                <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder='ค้นหาชื่อสินค้า / หมวดหมู่'
@@ -230,12 +232,10 @@ export function RelatedShowcasePicker({
                           checked ? 'border-violet-300 bg-violet-50' : 'border-gray-200 bg-white'
                         } ${disableThis ? 'opacity-60' : 'cursor-pointer hover:border-violet-200'}`}
                       >
-                        <input
-                          type='checkbox'
+                        <Checkbox
                           checked={checked}
                           disabled={disableThis}
-                          onChange={() => toggleDraft(item.id)}
-                          className='h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-400'
+                          onCheckedChange={() => toggleDraft(item.id)}
                         />
                         <div className='w-10 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 shrink-0'>
                           {item.image ? (

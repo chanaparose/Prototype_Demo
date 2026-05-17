@@ -1,6 +1,7 @@
 import React from 'react';
 import { IncotermSelect } from '@/shared/ui/IncotermSelect';
 import { PaymentTermsSelect } from '@/shared/ui/PaymentTermsSelect';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   lead_time_days?: number;
@@ -20,7 +21,7 @@ export function CommercialTermsForm({
   return (
     <div className='rounded-2xl border border-gray-100 bg-white p-4 space-y-3'>
       <p className='text-sm font-bold text-gray-900'>Commercial terms</p>
-      <input
+      <Input
         type='number'
         value={lead_time_days ?? ''}
         onChange={(e) => onChange({ lead_time_days: Number(e.target.value) || undefined })}
@@ -29,7 +30,7 @@ export function CommercialTermsForm({
       />
       <IncotermSelect value={incoterms} onChange={(v) => onChange({ incoterms: v })} />
       <PaymentTermsSelect value={payment_terms} onChange={(v) => onChange({ payment_terms: v })} />
-      <input
+      <Input
         type='number'
         value={validity_days ?? ''}
         onChange={(e) => onChange({ validity_days: Number(e.target.value) || undefined })}

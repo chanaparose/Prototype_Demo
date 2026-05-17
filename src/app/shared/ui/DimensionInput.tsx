@@ -1,4 +1,12 @@
 import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 export type DimensionValue = { L: number; W: number; H: number; unit: 'mm' | 'cm' | 'm' };
 
@@ -12,7 +20,7 @@ export function DimensionInput({ value, onChange }: Props) {
   return (
     <div className='grid grid-cols-4 gap-2'>
       {(['L', 'W', 'H'] as const).map((key) => (
-        <input
+        <Input
           key={key}
           type='number'
           min={0}
@@ -22,15 +30,19 @@ export function DimensionInput({ value, onChange }: Props) {
           className='rounded-xl border border-gray-200 px-3 py-2 text-sm'
         />
       ))}
-      <select
+      <Select
         value={v.unit}
-        onChange={(e) => onChange({ ...v, unit: e.target.value as 'mm' | 'cm' | 'm' })}
-        className='rounded-xl border border-gray-200 px-3 py-2 text-sm'
+        onValueChange={(next) => onChange({ ...v, unit: next as 'mm' | 'cm' | 'm' })}
       >
-        <option value='mm'>mm</option>
-        <option value='cm'>cm</option>
-        <option value='m'>m</option>
-      </select>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='mm'>mm</SelectItem>
+          <SelectItem value='cm'>cm</SelectItem>
+          <SelectItem value='m'>m</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

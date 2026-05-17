@@ -4,6 +4,15 @@ import { Search, SlidersHorizontal, MapPin, Star, ShieldCheck, Package, X } from
 import { ImageWithFallback } from '@/components/shared';
 import type { useFactoriesList } from '@/hooks/useFactoriesList';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 type FactoriesListState = ReturnType<typeof useFactoriesList>;
 type FactoriesListMobileProps = { state: FactoriesListState };
@@ -42,7 +51,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
         <div className='flex gap-2'>
           <div className='flex-1 flex items-center gap-2.5 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-200 focus-within:border-violet-400 focus-within:bg-white transition-all'>
             <Search size={16} className='text-gray-400 shrink-0' />
-            <input
+            <Input
               type='text'
               value={filters.searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -87,29 +96,22 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                 พื้นที่ผลิต
               </p>
               <div className='relative'>
-                <select
+                <Select
                   value={filters.location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className='w-full appearance-none text-sm rounded-xl border border-gray-200 pl-3.5 pr-8 py-2.5 bg-white text-gray-700 focus:outline-none focus:border-violet-400'
+                  onValueChange={(next) => setLocation(next === '__empty' ? '' : next)}
                 >
-                  <option value=''>ทุกพื้นที่</option>
-                  {locations.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </select>
-                <div className='pointer-events-none absolute right-3 top-1/2 -translate-y-1/2'>
-                  <svg width='10' height='6' fill='none' viewBox='0 0 10 6'>
-                    <path
-                      d='M1 1l4 4 4-4'
-                      stroke='var(--neutral-placeholder)'
-                      strokeWidth='1.5'
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                    />
-                  </svg>
-                </div>
+                  <SelectTrigger className='h-10 text-gray-700'>
+                    <SelectValue placeholder='ทุกพื้นที่' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='__empty'>ทุกพื้นที่</SelectItem>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -121,10 +123,9 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                 background: filters.verifiedOnly ? '#F5F3FF' : 'var(--neutral-white)',
               }}
             >
-              <input
-                type='checkbox'
+              <Checkbox
                 checked={filters.verifiedOnly}
-                onChange={(e) => setVerifiedOnly(e.target.checked)}
+                onCheckedChange={(checked) => setVerifiedOnly(checked === true)}
                 className='sr-only'
                 aria-label='โรงงานยืนยันตัวตนเท่านั้น'
               />

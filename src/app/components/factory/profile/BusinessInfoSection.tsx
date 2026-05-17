@@ -3,6 +3,8 @@ import { Controller, type UseFormReturn } from 'react-hook-form';
 import { LookupSelect } from '@/components/common/LookupSelect';
 import { useFactoryTypes } from '@/hooks/master/useFactoryTypes';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 interface Props {
   form: UseFormReturn<ProfileFormValues>;
@@ -16,7 +18,7 @@ export function BusinessInfoSection({ form }: Props) {
     <div className='grid gap-4 sm:grid-cols-2'>
       <label className='block sm:col-span-2'>
         <span className='text-xs text-gray-500'>ชื่อโรงงาน *</span>
-        <input
+        <Input
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           {...register('factory_name', { required: true })}
         />
@@ -40,7 +42,7 @@ export function BusinessInfoSection({ form }: Props) {
 
       <label className='block'>
         <span className='text-xs text-gray-500'>เลขประจำตัวผู้เสียภาษี</span>
-        <input
+        <Input
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           {...register('tax_id')}
         />
@@ -51,7 +53,7 @@ export function BusinessInfoSection({ form }: Props) {
           ขั้นต่ำในการรับผลิต (ชิ้น)
           <span className='ml-1 text-gray-400 font-normal'>— MOQ</span>
         </span>
-        <input
+        <Input
           type='number'
           inputMode='numeric'
           min={0}
@@ -72,7 +74,7 @@ export function BusinessInfoSection({ form }: Props) {
           ระยะเวลาผลิต (Lead time)
           <span className='ml-1 text-gray-400 font-normal'>— เช่น 15-20 วัน</span>
         </span>
-        <input
+        <Input
           placeholder='15-20 วัน'
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
           {...register('lead_time_desc')}
@@ -81,7 +83,7 @@ export function BusinessInfoSection({ form }: Props) {
 
       <label className='block sm:col-span-2'>
         <span className='text-xs text-gray-500'>รายละเอียด</span>
-        <textarea
+        <Textarea
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[96px]'
           {...register('description')}
         />

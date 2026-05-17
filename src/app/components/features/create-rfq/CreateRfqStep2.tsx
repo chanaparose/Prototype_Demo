@@ -1,3 +1,4 @@
+import { Input } from '@/components/ui/input';
 /**
  * Step 2: จำนวนและงบประมาณ
  *
@@ -13,13 +14,19 @@ import {
   Loader,
   X,
   Plus,
-  ChevronDown,
 } from 'lucide-react';
 import type { CreateRfqForm } from '@/components/features/create-rfq/types';
 import type { Unit } from '@/components/features/create-rfq/types';
 import { mediaApi } from '@/services/api';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type CreateRfqStep2Props = {
   form: CreateRfqForm;
@@ -65,7 +72,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
         </label>
         <div className='flex gap-2'>
           {/* Quantity input */}
-          <input
+          <Input
             type='number'
             min={1}
             inputMode='numeric'
@@ -76,27 +83,28 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
           />
           {/* Unit selector — dropdown */}
           <div className='relative shrink-0 w-[min(11rem,40vw)] min-w-[7.5rem]'>
-            <select
+            <Select
               value={form.unitId}
-              onChange={(e) => onUpdate('unitId', e.target.value)}
-              aria-label='หน่วยนับ'
-              className='w-full appearance-none bg-gray-50 border border-gray-200 text-gray-800 text-[14px] rounded-xl pl-4 pr-10 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 cursor-pointer'
+              onValueChange={(next) => onUpdate('unitId', next === '__empty' ? '' : next)}
             >
-              {units.length === 0 ? (
-                <option value=''>— เลือกหน่วย —</option>
-              ) : (
-                units.map((unit) => (
-                  <option key={unit.id} value={unit.id}>
-                    {unit.name}
-                  </option>
-                ))
-              )}
-            </select>
-            <ChevronDown
-              size={18}
-              className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none'
-              aria-hidden
-            />
+              <SelectTrigger
+                aria-label='หน่วยนับ'
+                className='h-[46px] bg-gray-50 text-gray-800 text-[14px] font-medium'
+              >
+                <SelectValue placeholder='— เลือกหน่วย —' />
+              </SelectTrigger>
+              <SelectContent>
+                {units.length === 0 ? (
+                  <SelectItem value='__empty'>— เลือกหน่วย —</SelectItem>
+                ) : (
+                  units.map((unit) => (
+                    <SelectItem key={unit.id} value={unit.id}>
+                      {unit.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         {form.quantity && selectedUnit && (
@@ -116,7 +124,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
           <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-[14px] font-medium'>
             ฿
           </span>
-          <input
+          <Input
             type='text'
             inputMode='decimal'
             value={form.budgetPerPiece}
@@ -146,7 +154,7 @@ export function CreateRfqStep2({ form, units, onUpdate }: CreateRfqStep2Props) {
           <ImageIcon size={14} className='text-amber-500' />
           รูปอ้างอิง / ไฟล์แนบ
         </label>
-        <input
+        <Input
           ref={fileInputRef}
           type='file'
           accept='image/png,image/jpeg,image/jpg,application/pdf'

@@ -2,6 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { BaseModal } from '@/shared/ui';
 import { LbiAddressPicker, type LbiAddressValue } from '@/components/common/LbiAddressPicker';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 type Row = Record<string, unknown>;
 
@@ -140,15 +150,19 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
 
       <label className='block sm:max-w-sm mb-4'>
         <span className='text-xs text-gray-500'>ประเภทที่อยู่ *</span>
-        <select
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+        <Select
           value={addressType}
-          onChange={(e) => setAddressType(e.target.value as 'M' | 'B' | 'S')}
+          onValueChange={(next) => setAddressType(next as 'M' | 'B' | 'S')}
         >
-          <option value='M'>ที่อยู่หลัก</option>
-          <option value='B'>ออกใบกำกับภาษี</option>
-          <option value='S'>จัดส่ง</option>
-        </select>
+          <SelectTrigger className='mt-1 w-full'>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='M'>ที่อยู่หลัก</SelectItem>
+            <SelectItem value='B'>ออกใบกำกับภาษี</SelectItem>
+            <SelectItem value='S'>จัดส่ง</SelectItem>
+          </SelectContent>
+        </Select>
       </label>
 
       <div className='mb-4'>
@@ -165,7 +179,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       <div className='grid gap-3 sm:grid-cols-3 mb-4'>
         <label className='block sm:col-span-1'>
           <span className='text-xs text-gray-500'>รหัสไปรษณีย์ *</span>
-          <input
+          <Input
             className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
             value={zipCode}
             inputMode='numeric'
@@ -176,7 +190,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
         </label>
         <label className='block sm:col-span-2'>
           <span className='text-xs text-gray-500'>ที่อยู่ *</span>
-          <textarea
+          <Textarea
             className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
@@ -186,11 +200,9 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       </div>
 
       <label className='inline-flex items-center gap-2 text-sm text-gray-700'>
-        <input
-          type='checkbox'
+        <Checkbox
           checked={isDefault}
-          onChange={(e) => setIsDefault(e.target.checked)}
-          className='rounded border-gray-300 text-brand-purple focus:ring-brand-purple'
+          onCheckedChange={(checked) => setIsDefault(checked === true)}
         />
         ตั้งเป็นค่าเริ่มต้น
       </label>

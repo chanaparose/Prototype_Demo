@@ -4,6 +4,8 @@ import { ChevronLeft } from 'lucide-react';
 import { profileApi } from '@/services/api';
 import { useAuth } from '@/stores';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 export function EditProfilePage() {
   const navigate = useNavigate();
@@ -123,7 +125,7 @@ export function EditProfilePage() {
           />
           <label className='text-xs font-semibold text-indigo-600 cursor-pointer'>
             เปลี่ยนรูปโปรไฟล์
-            <input
+            <Input
               type='file'
               accept='image/*'
               className='hidden'
@@ -158,7 +160,7 @@ export function EditProfilePage() {
         ].map(([label, key]) => (
           <label key={key} className='block'>
             <span className='text-xs text-slate-500'>{label}</span>
-            <input
+            <Input
               value={(form as Record<string, string>)[key]}
               onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
               className='mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm'
@@ -168,7 +170,7 @@ export function EditProfilePage() {
 
         <label className='block'>
           <span className='text-xs text-slate-500'>บันทึกย่อ</span>
-          <textarea
+          <Textarea
             value={form.bio}
             onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value.slice(0, 300) }))}
             rows={3}

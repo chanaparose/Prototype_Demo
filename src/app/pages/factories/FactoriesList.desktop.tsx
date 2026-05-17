@@ -14,6 +14,7 @@ import {
 import { ImageWithFallback } from '@/components/shared';
 import type { useFactoriesList } from '@/hooks/useFactoriesList';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type FactoriesListState = ReturnType<typeof useFactoriesList>;
 type FactoriesListDesktopProps = { state: FactoriesListState };
@@ -67,7 +68,7 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
             {/* Search */}
             <div className='flex items-center gap-2 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-200 focus-within:border-purple-400 focus-within:bg-white transition-all w-72'>
               <Search size={14} className='text-gray-400 shrink-0' />
-              <input
+              <Input
                 type='text'
                 value={filters.searchText}
                 onChange={(e) => setSearchText(e.target.value)}

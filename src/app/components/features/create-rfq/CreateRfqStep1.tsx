@@ -1,3 +1,4 @@
+import { Input } from '@/components/ui/input';
 /**
  * Step 1: สินค้าของคุณ
  *
@@ -15,6 +16,7 @@ import {
   DEFAULT_PLACEHOLDER,
 } from '@/components/features/create-rfq/types';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 type Category = { id: string; name: string };
 
@@ -162,7 +164,7 @@ export function CreateRfqStep1({
           <FileText size={14} className='text-violet-500' />
           ชื่อสินค้าที่ต้องการผลิต <span className='text-red-400'>*</span>
         </label>
-        <input
+        <Input
           type='text'
           maxLength={100}
           value={form.title}
@@ -179,7 +181,7 @@ export function CreateRfqStep1({
           <Sparkles size={14} className='text-amber-500' />
           รายละเอียดเพิ่มเติม
         </label>
-        <textarea
+        <Textarea
           value={form.details}
           onChange={(e) => onUpdate('details', e.target.value)}
           placeholder={placeholder}

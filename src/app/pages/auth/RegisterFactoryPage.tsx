@@ -4,6 +4,15 @@ import { Eye, EyeOff, Factory, Loader2 } from 'lucide-react';
 import { useRegisterFactory } from '@/pages/auth/useRegisterFactory';
 import type { FormState } from '@/pages/auth/useRegisterFactory';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 const inputBase =
   'w-full px-4 py-2.5 md:py-3 rounded-xl border text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-shadow bg-gray-50/50 focus:bg-white';
@@ -139,7 +148,7 @@ export function RegisterFactoryPage() {
                   setFieldRef={setFieldRef}
                   className='md:col-span-2'
                 >
-                  <input
+                  <Input
                     type='text'
                     autoComplete='organization'
                     maxLength={150}
@@ -157,24 +166,34 @@ export function RegisterFactoryPage() {
                   fieldKey='factory_type_id'
                   setFieldRef={setFieldRef}
                 >
-                  <select
+                  <Select
                     value={form.factory_type_id || ''}
-                    onChange={(e) => setField('factory_type_id', Number(e.target.value) || 0)}
-                    onBlur={() => blurField('factory_type_id')}
+                    onValueChange={(next) => {
+                      setField('factory_type_id', next === '__empty' ? 0 : Number(next));
+                      blurField('factory_type_id');
+                    }}
                     disabled={factoryTypesLoading}
-                    className={inClass(errors.factory_type_id)}
                   >
-                    {factoryTypesLoading ? (
-                      <option value=''>กำลังโหลดประเภทโรงงาน...</option>
-                    ) : (
-                      <option value=''>— เลือกประเภท —</option>
-                    )}
-                    {factoryTypes.map((t) => (
-                      <option key={t.factory_type_id} value={t.factory_type_id}>
-                        {t.name_th}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className={inClass(errors.factory_type_id)}>
+                      <SelectValue
+                        placeholder={
+                          factoryTypesLoading ? 'กำลังโหลดประเภทโรงงาน...' : '— เลือกประเภท —'
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {factoryTypesLoading ? (
+                        <SelectItem value='__empty'>กำลังโหลดประเภทโรงงาน...</SelectItem>
+                      ) : (
+                        <SelectItem value='__empty'>— เลือกประเภท —</SelectItem>
+                      )}
+                      {factoryTypes.map((t) => (
+                        <SelectItem key={t.factory_type_id} value={String(t.factory_type_id)}>
+                          {t.name_th}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {factoryTypesLoadFailed && factoryTypes.length === 0 && (
                     <p className='text-xs text-amber-600 mt-1 flex items-center gap-2'>
                       ไม่สามารถโหลดข้อมูลได้
@@ -196,7 +215,7 @@ export function RegisterFactoryPage() {
                   fieldKey='tax_id'
                   setFieldRef={setFieldRef}
                 >
-                  <input
+                  <Input
                     type='text'
                     inputMode='numeric'
                     autoComplete='off'
@@ -233,7 +252,7 @@ export function RegisterFactoryPage() {
                       fieldKey='email'
                       setFieldRef={setFieldRef}
                     >
-                      <input
+                      <Input
                         type='email'
                         autoComplete='email'
                         value={form.email}
@@ -250,7 +269,7 @@ export function RegisterFactoryPage() {
                       fieldKey='phone'
                       setFieldRef={setFieldRef}
                     >
-                      <input
+                      <Input
                         type='tel'
                         autoComplete='tel'
                         value={form.phone}
@@ -268,7 +287,7 @@ export function RegisterFactoryPage() {
                       setFieldRef={setFieldRef}
                     >
                       <div className='relative'>
-                        <input
+                        <Input
                           type={showPassword ? 'text' : 'password'}
                           autoComplete='new-password'
                           value={form.password}
@@ -296,7 +315,7 @@ export function RegisterFactoryPage() {
                       setFieldRef={setFieldRef}
                     >
                       <div className='relative'>
-                        <input
+                        <Input
                           type={showConfirm ? 'text' : 'password'}
                           autoComplete='new-password'
                           value={form.confirmPassword}
@@ -349,12 +368,11 @@ export function RegisterFactoryPage() {
               className='bg-gray-50/50 p-4 rounded-xl border border-gray-100'
             >
               <label className='flex items-start gap-3 cursor-pointer text-sm text-gray-600'>
-                <input
-                  type='checkbox'
+                <Checkbox
                   checked={form.acceptTerms}
-                  onChange={(e) => setField('acceptTerms', e.target.checked)}
+                  onCheckedChange={(checked) => setField('acceptTerms', checked === true)}
                   onBlur={() => blurField('acceptTerms')}
-                  className='mt-1 w-4 h-4 rounded border-gray-300 text-brand-purple focus:ring-brand-purple transition-colors cursor-pointer'
+                  className='mt-1'
                 />
                 <span className='leading-relaxed'>
                   ข้าพเจ้ายอมรับ{' '}

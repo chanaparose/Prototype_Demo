@@ -25,6 +25,7 @@ import {
   type ShowcaseType,
 } from '@/pages/factory-portal/components/ShowcaseFormShared';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -546,13 +547,13 @@ export function FactoryShowcaseEditPage() {
               {/* ── Title & excerpt (card) ── */}
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
                 <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
-                <input
+                <Input
                   className='w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
                   placeholder='ชื่อ *'
                   {...form.register('title', { required: true })}
                 />
                 {contentType !== 'ID' ? (
-                  <input
+                  <Input
                     className='w-full text-sm text-gray-500 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
                     placeholder='คำโปรย (excerpt) — ประโยคสั้นๆ บอกจุดเด่น'
                     {...form.register('excerpt')}
@@ -598,7 +599,7 @@ export function FactoryShowcaseEditPage() {
                   <div className='grid gap-3 sm:grid-cols-3'>
                     <label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>MOQ</span>
-                      <input
+                      <Input
                         type='number'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('moq', {
@@ -608,7 +609,7 @@ export function FactoryShowcaseEditPage() {
                     </label>
                     <label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>Lead time (วัน)</span>
-                      <input
+                      <Input
                         type='number'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('lead_time_days', {
@@ -618,7 +619,7 @@ export function FactoryShowcaseEditPage() {
                     </label>
                     <label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>ราคา (฿)</span>
-                      <input
+                      <Input
                         type='number'
                         step='0.01'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
@@ -635,7 +636,7 @@ export function FactoryShowcaseEditPage() {
                   <div className='grid gap-3 sm:grid-cols-3'>
                     <label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>ราคาโปรโมชัน (฿)</span>
-                      <input
+                      <Input
                         type='number'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('promo_price', {
@@ -646,7 +647,7 @@ export function FactoryShowcaseEditPage() {
                     </label>
                     <label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>วันที่เริ่มโปร</span>
-                      <input
+                      <Input
                         type='date'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('start_date')}
@@ -654,7 +655,7 @@ export function FactoryShowcaseEditPage() {
                     </label>
                     <label className='block'>
                       <span className='text-xs text-gray-500 mb-1.5 block'>วันที่สิ้นสุดโปร</span>
-                      <input
+                      <Input
                         type='date'
                         className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
                         {...form.register('end_date')}

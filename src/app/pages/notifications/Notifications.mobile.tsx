@@ -18,6 +18,7 @@ import { motion } from 'motion/react';
 import { notificationsApi } from '@/services/api';
 import { NOTIFICATIONS_CHANGED_EVENT } from '@/hooks/useNotificationUnreadCount';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type NotificationItem = {
   noti_id: number;
@@ -220,7 +221,7 @@ export function NotificationsMobile() {
           <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
             <Search className='h-5 w-5 text-slate-400' />
           </div>
-          <input
+          <Input
             type='text'
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}

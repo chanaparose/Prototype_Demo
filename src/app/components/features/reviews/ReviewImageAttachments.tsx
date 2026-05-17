@@ -3,6 +3,7 @@ import { ImagePlus, X } from 'lucide-react';
 import { mediaApi } from '@/services/api';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Props = {
   urls: string[];
@@ -91,7 +92,7 @@ export function ReviewImageAttachments({
         ))}
         {editable && urls.length < REVIEW_IMAGE_MAX ? (
           <>
-            <input
+            <Input
               ref={inputRef}
               type='file'
               accept='image/*'

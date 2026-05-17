@@ -1,5 +1,6 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface FactoryHighlightFieldProps {
   value: string;
@@ -27,7 +28,7 @@ export function FactoryHighlightField({
       <div
         className={`rounded-xl border ${error ? 'border-red-300' : 'border-gray-200'} p-2.5 bg-white`}
       >
-        <textarea
+        <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder='เช่น วัตถุดิบ Grade A ผ่าน ISO9001 · Lead time 7 วัน · ส่งฟรีสั่ง ≥ 300 ชิ้น'

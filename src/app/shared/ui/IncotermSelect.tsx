@@ -1,4 +1,11 @@
 import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type Incoterm = 'EXW' | 'FOB' | 'CIF' | 'DDP';
 
@@ -12,17 +19,21 @@ const OPTIONS: Incoterm[] = ['EXW', 'FOB', 'CIF', 'DDP'];
 
 export function IncotermSelect({ value, onChange, className }: Props) {
   return (
-    <select
+    <Select
       value={value ?? ''}
-      onChange={(e) => onChange((e.target.value || undefined) as Incoterm | undefined)}
-      className={className ?? 'w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'}
+      onValueChange={(next) => onChange(next === '__empty' ? undefined : (next as Incoterm))}
     >
-      <option value=''>เลือก Incoterm</option>
-      {OPTIONS.map((it) => (
-        <option key={it} value={it}>
-          {it}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger className={className ?? 'w-full'}>
+        <SelectValue placeholder='เลือก Incoterm' />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value='__empty'>เลือก Incoterm</SelectItem>
+        {OPTIONS.map((it) => (
+          <SelectItem key={it} value={it}>
+            {it}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

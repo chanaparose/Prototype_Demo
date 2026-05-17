@@ -5,6 +5,7 @@ import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type MessagesMobileProps = {
   searchText: string;
@@ -75,7 +76,7 @@ export function MessagesMobile({
       {/* Search */}
       <div className='flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 mb-5'>
         <Search size={18} className='text-gray-400 shrink-0' />
-        <input
+        <Input
           type='text'
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}

@@ -16,6 +16,7 @@ import { useFactoryRfqBoard, type FactoryBoardRow } from '@/hooks/useFactoryRfqB
 import { useDisclosure, useToggle } from '@/hooks/ui';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
@@ -520,7 +521,7 @@ export function FactoryRfqBoardPage() {
                   className='absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none'
                   size={16}
                 />
-                <input
+                <Input
                   type='search'
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}

@@ -7,6 +7,7 @@ import {
   type UpdatePlatformConfigRequest,
 } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const RANK: Record<string, number> = { AM: 1, AD: 2, SA: 3 };
 function canEdit(role: string, minRole: 'AM' | 'AD' | 'SA'): boolean {
@@ -535,7 +536,7 @@ function Field({
   return (
     <div>
       <label className='block text-xs font-semibold text-slate-700 mb-1.5'>{label}</label>
-      <input
+      <Input
         type={type}
         value={value}
         disabled={disabled}
@@ -561,7 +562,7 @@ function RateField({
     <div>
       <label className='block text-xs font-semibold text-slate-700 mb-1.5'>{label}</label>
       <div className='relative'>
-        <input
+        <Input
           type='number'
           min={0}
           max={100}

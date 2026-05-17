@@ -4,6 +4,7 @@ import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { categoriesApi } from '@/services/api';
 import { BaseModal } from '@/shared/ui';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Props {
   open: boolean;
@@ -136,12 +137,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
           {categories.map((c) => (
             <li key={c.id}>
               <label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
-                <input
-                  type='checkbox'
-                  checked={selected.includes(c.id)}
-                  onChange={() => toggle(c.id)}
-                  className='rounded border-gray-300'
-                />
+                <Checkbox checked={selected.includes(c.id)} onCheckedChange={() => toggle(c.id)} />
                 {c.name}
               </label>
             </li>

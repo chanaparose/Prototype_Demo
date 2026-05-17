@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import { profileApi } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export function ChangePasswordPage() {
           <label key={key} className='block'>
             <span className='text-xs text-slate-500'>{label}</span>
             <div className='mt-1 relative'>
-              <input
+              <Input
                 type={show[vis as 'c' | 'n' | 'cf'] ? 'text' : 'password'}
                 value={(form as Record<string, string>)[key]}
                 onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}

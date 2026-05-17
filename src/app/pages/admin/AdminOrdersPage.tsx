@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
 import { adminApi, type AdminOrderRow } from '@/services/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type OrderStatusTab = 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
 
@@ -179,7 +180,7 @@ export function AdminOrdersPage() {
               size={13}
               className='absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400'
             />
-            <input
+            <Input
               type='text'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -196,7 +197,7 @@ export function AdminOrdersPage() {
                 size={13}
                 className='absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400'
               />
-              <input
+              <Input
                 type='date'
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
@@ -211,7 +212,7 @@ export function AdminOrdersPage() {
                 size={13}
                 className='absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400'
               />
-              <input
+              <Input
                 type='date'
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
