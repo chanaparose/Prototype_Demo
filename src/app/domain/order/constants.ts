@@ -1,4 +1,4 @@
-export const ORDER_API_STATUS_LABEL_TH: Record<string, string> = {
+const ORDER_API_STATUS_LABEL_TH: Record<string, string> = {
   PP: 'รอชำระเงิน',
   PE: 'หมดกำหนดชำระ',
   PD: 'ชำระเงินแล้ว รอเริ่มผลิต',

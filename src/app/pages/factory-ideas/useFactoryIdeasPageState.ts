@@ -2,33 +2,23 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { useData } from '@/stores/useDataStore';
-import { type Factory } from '@/stores/types';
-import { useApiCall } from '@/hooks/data/useApiCall';
-import { factoriesApi } from '@/services/api/factoryApi';
-import { masterApi } from '@/services/api/masterApi';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useFactoryIdeasCategorySelection } from '@/hooks/useFactoryIdeasCategoryFromUrl';
 import { showcaseQueryTypeFromTab, useShowcases } from '@/hooks/useShowcases';
-import { fetchExploreCategoriesMerged } from '@/utils/exploreCategoriesFromApi';
+import {
+  useFactoryIdeasCategoriesQuery,
+  useFactoryIdeasFactoryListQuery,
+  useFactoryIdeasSubCategoriesQuery,
+} from '@/domain/factory/queries/useFactoryIdeasQueries';
 import {
   factoryIdeasCategoryOptionSelected,
-  parseMasterProductCategories,
   showcaseMatchesSelectedCategoryId,
 } from '@/utils/exploreToFactoryIdeasCategory';
 import { logFactoryIdeasCategory } from '@/utils/debugFactoryIdeasCategory';
 import {
-  getCachedSubCategoriesSync,
-  loadSubCategories,
-  prefetchSubCategoriesFor,
-} from '@/utils/subCategoriesCache';
-import {
   getFactoryIdeaDetailPath,
-  normalizeFactoryIdeaFactory,
   type FactoryIdeasContentType,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
-
-type CategoryRow = { id: string; name: string };
-type SubCategoryRow = { id: string; name: string; sortOrder: number };
 
 type UseFactoryIdeasPageStateOptions = {
   layout: 'desktop' | 'mobile';
@@ -51,55 +41,13 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   const isFactoryTab = selectedType === 'factory';
   const isMaterialTab = selectedType === 'material';
 
-  const { data: apiCategoriesAll = [] } = useApiCall(
-    async () => {
-      if (isMaterialTab) {
-        const raw = (await masterApi.lbiCategories('MT')) as unknown as Record<string, unknown>;
-        const arr = (Array.isArray(raw.categories) ? raw.categories : []) as Record<
-          string,
-          unknown
-        >[];
-        return arr
-          .map((c) => ({ id: String(c.category_id ?? c.id ?? ''), name: String(c.name ?? '') }))
-          .filter((r) => r.id && r.name);
-      }
-
-      const res = await fetchExploreCategoriesMerged();
-      let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
-      let categorySource: 'exploreMerged' | 'masterProductCategories' | 'empty' = 'exploreMerged';
-      if (rows.length === 0) {
-        categorySource = 'empty';
-        try {
-          const rawPD = await masterApi.productCategories();
-          rows = parseMasterProductCategories(rawPD);
-          categorySource = rows.length > 0 ? 'masterProductCategories' : 'empty';
-        } catch {
-          /* keep [] */
-        }
-      }
-      prefetchSubCategoriesFor(rows.map((r) => r.id));
-      logFactoryIdeasCategory('categoryMenu.apiCategoriesAll', {
-        source: categorySource,
-        exploreMergedCount: res.merged.length,
-        rowCount: rows.length,
-        rows,
-      });
-      return rows;
-    },
-    [isMaterialTab],
-    { initialData: [] as CategoryRow[] },
-  );
+  const categoriesQ = useFactoryIdeasCategoriesQuery(isMaterialTab);
+  const apiCategoriesAll = categoriesQ.data ?? [];
 
   const loadFactories = selectedType === 'all' || selectedType === 'factory';
-  const { data: factoryList = [], loading: factoriesLoading } = useApiCall(
-    async () => {
-      const raw = await factoriesApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-      return arr.map(normalizeFactoryIdeaFactory).filter((f) => f.id && f.name);
-    },
-    [selectedType],
-    { enabled: loadFactories, initialData: [] as Factory[] },
-  );
+  const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories);
+  const factoryList = factoriesQ.data ?? [];
+  const factoriesLoading = factoriesQ.isLoading;
 
   const showcaseApiType = isFactoryTab ? undefined : showcaseQueryTypeFromTab(selectedType);
   const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
@@ -118,50 +66,20 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     Boolean(menuHighlightCategoryId) &&
     menuHighlightCategoryId !== 'all';
 
-  const { data: panelSubs = [], loading: panelSubsLoading } = useApiCall(
-    async () => {
-      if (!menuHighlightCategoryId) return [];
-      const cached = getCachedSubCategoriesSync(menuHighlightCategoryId);
-      if (cached) {
-        logFactoryIdeasCategory('panelSubs.cacheHit', {
-          menuHighlightCategoryId,
-          panelSubs: cached,
-        });
-        return cached;
-      }
-      logFactoryIdeasCategory('panelSubs.request', {
-        endpoint: `GET sub-categories (category_id=${menuHighlightCategoryId})`,
-        menuHighlightCategoryId,
-      });
-      const mapped = await loadSubCategories(menuHighlightCategoryId);
-      logFactoryIdeasCategory('panelSubs.apiResponse', {
-        menuHighlightCategoryId,
-        mappedLength: mapped.length,
-        mapped,
-      });
-      return mapped;
-    },
-    [menuHighlightCategoryId, categoryMenuOpen, isMaterialTab],
-    { enabled: panelSubsEnabled, initialData: [] as SubCategoryRow[] },
-  );
+  const panelSubsQ = useFactoryIdeasSubCategoriesQuery(menuHighlightCategoryId, {
+    enabled: panelSubsEnabled,
+    logContext: 'panelSubs',
+  });
+  const panelSubs = panelSubsEnabled ? (panelSubsQ.data ?? []) : [];
+  const panelSubsLoading = panelSubsQ.isLoading;
 
-  const {
-    data: subCategories = [],
-    loading: subCategoriesLoading,
-    setData: setSubCategories,
-  } = useApiCall(
-    async () => {
-      if (!selectedCategoryIdForSubs) return [];
-      const cached = getCachedSubCategoriesSync(selectedCategoryIdForSubs);
-      if (cached) return cached;
-      return loadSubCategories(selectedCategoryIdForSubs);
-    },
-    [selectedCategoryIdForSubs, isMaterialTab],
-    {
-      enabled: !isMaterialTab && Boolean(selectedCategoryIdForSubs),
-      initialData: [] as SubCategoryRow[],
-    },
-  );
+  const subCategoriesQ = useFactoryIdeasSubCategoriesQuery(selectedCategoryIdForSubs, {
+    enabled: !isMaterialTab && Boolean(selectedCategoryIdForSubs),
+    logContext: 'selected',
+  });
+  const subCategories =
+    !isMaterialTab && selectedCategoryIdForSubs ? (subCategoriesQ.data ?? []) : [];
+  const subCategoriesLoading = subCategoriesQ.isLoading;
 
   useEffect(() => {
     const t = searchParams.get('type');
@@ -243,7 +161,6 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   useEffect(() => {
     if (isMaterialTab) {
       setSelectedSubCategoryId(null);
-      setSubCategories([]);
       return;
     }
 
@@ -252,10 +169,7 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     } else {
       setSelectedSubCategoryId(null);
     }
-    if (!selectedCategoryIdForSubs) {
-      setSubCategories([]);
-    }
-  }, [selectedCategoryIdForSubs, isMaterialTab, setSubCategories]);
+  }, [selectedCategoryIdForSubs, isMaterialTab]);
 
   const categoryMenuTriggerLabel = useMemo(() => {
     if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';

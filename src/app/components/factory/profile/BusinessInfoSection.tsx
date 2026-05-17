@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function BusinessInfoSection({ form }: Props) {
-  const { register, control } = form;
+  const { register, control, formState: { errors } } = form;
   const factoryTypesQ = useFactoryTypes();
 
   return (
@@ -21,8 +21,11 @@ export function BusinessInfoSection({ form }: Props) {
         <span className='text-xs text-gray-500'>ชื่อโรงงาน *</span>
         <Input
           className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-          {...register('factory_name', { required: true })}
+          {...register('factory_name')}
         />
+        {errors.factory_name?.message ? (
+          <p className='text-xs text-red-600 mt-1'>{errors.factory_name.message}</p>
+        ) : null}
       </Label>
 
       <Controller

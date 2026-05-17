@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowRight, BadgeCheck, ChevronLeft, ChevronRight, MapPin, Star } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
+import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 

@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { profileFormSchema } from '@/domain/factory/schemas/profileForm.schema';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Building2,
@@ -429,6 +431,7 @@ export function FactoryProfilePage() {
   );
 
   const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
     defaultValues: PROFILE_FORM_DEFAULTS,
     mode: 'onBlur',
   });
@@ -473,11 +476,12 @@ export function FactoryProfilePage() {
       setError('ไม่พบรหัสโรงงาน');
       return;
     }
-    const v = form.getValues();
-    if (!v.factory_name.trim()) {
-      setError('กรุณากรอกชื่อโรงงาน');
+    const valid = await form.trigger();
+    if (!valid) {
+      setError(form.formState.errors.factory_name?.message ?? 'กรุณาตรวจสอบข้อมูลในฟอร์ม');
       return;
     }
+    const v = form.getValues();
     setSaving(true);
     setError('');
     setOkMsg('');

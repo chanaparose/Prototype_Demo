@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 
-export function MockStatusBar() {
+function MockStatusBar() {
   return (
     <div
       style={{
@@ -24,7 +24,7 @@ export function MockStatusBar() {
   );
 }
 
-export function MockNav({ title, showBack = true }: { title?: string; showBack?: boolean }) {
+function MockNav({ title, showBack = true }: { title?: string; showBack?: boolean }) {
   return (
     <div
       style={{

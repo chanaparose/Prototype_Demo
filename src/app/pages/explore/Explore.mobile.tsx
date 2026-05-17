@@ -21,7 +21,7 @@ import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
-import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
+import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';

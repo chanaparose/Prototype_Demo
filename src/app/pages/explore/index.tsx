@@ -5,7 +5,7 @@ import { useManualApiPageGate } from '@/hooks/useManualApiPageGate';
 import { ManualApiDevGate } from '@/components/shared/ManualApiDevGate';
 import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
-import type { FactoryItem } from '@/components/features/explore/ExploreFactoryGrid';
+import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import { ExploreMobile } from '@/pages/explore/Explore.mobile';
 import { ExploreDesktop } from '@/pages/explore/Explore.desktop';
 

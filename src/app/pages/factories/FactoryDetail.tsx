@@ -1,6 +1,6 @@
 import React from 'react';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
-import { useFactoryProfile } from '@/hooks/useFactoryProfile';
+import { useFactoryProfile } from '@/components/features/factory/hooks/useFactoryProfile';
 import { FactoryDetailMobile } from '@/pages/factories/FactoryDetail.mobile';
 import { FactoryDetailDesktop } from '@/pages/factories/FactoryDetail.desktop';
 

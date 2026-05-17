@@ -1,8 +1,7 @@
 import { Link } from 'react-router';
 import { ChevronRight, FileCheck } from 'lucide-react';
-import { quotationsApi } from '@/services/api/rfqApi';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
-import { useApiCall } from '@/hooks/data/useApiCall';
+import { useFactoryQuotationsListQuery } from '@/domain/factory/queries/useFactoryQuotationsListQuery';
 import {
   QUOTATION_STATUS_BADGE_FACTORY,
   QUOTATION_STATUS_LABEL_FACTORY,
@@ -19,21 +18,10 @@ function rfqId(r: Row): string {
 }
 
 export function FactoryQuotationsPage() {
-  const {
-    data: rows = [],
-    loading,
-    error,
-  } = useApiCall(
-    async () => {
-      const raw = await quotationsApi.listMine();
-      return Array.isArray(raw) ? (raw as Row[]) : [];
-    },
-    [],
-    {
-      initialData: [] as Row[],
-      onError: () => undefined,
-    },
-  );
+  const listQ = useFactoryQuotationsListQuery();
+  const rows = (listQ.data ?? []) as Row[];
+  const loading = listQ.isLoading;
+  const error = listQ.error;
 
   if (loading) {
     return (

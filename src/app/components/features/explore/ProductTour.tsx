@@ -17,7 +17,7 @@ import {
 } from '@/components/features/explore/product-tour/TourMockScreens';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
 
-export const TOUR_KEY = 'tryly_tour_seen_v1';
+const TOUR_KEY = 'tryly_tour_seen_v1';
 
 export function ProductTour() {
   const navigate = useNavigate();

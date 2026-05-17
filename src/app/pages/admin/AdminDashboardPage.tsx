@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useApiCall } from '@/hooks/data/useApiCall';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router';
 import {
   TrendingUp,
@@ -24,7 +23,9 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { adminApi, adminCustomerApi, type AdminOrderRow, type AdminRfqRow, type AdminRevenueChartResponse, type AdminTopCustomer } from '@/services/api/adminApi';
+import { EMPTY_ADMIN_DASHBOARD } from '@/domain/admin/mappers/mapAdminDashboard';
+import { useAdminDashboardQuery } from '@/domain/admin/queries/useAdminDashboardQuery';
+import { useAdminTopCustomersQuery } from '@/domain/admin/queries/useAdminTopCustomersQuery';
 import { StatusBadge as SharedStatusBadge } from '@/shared/ui/badges/StatusBadge';
 import {
   Table,
@@ -43,71 +44,6 @@ interface KpiCard {
   icon: React.ElementType;
   iconBg: string;
   iconColor: string;
-}
-
-interface ChartRow {
-  month: string;
-  revenue: number;
-  commission: number;
-}
-
-type AdminDashboardData = {
-  summary: Record<string, unknown>;
-  revenueRows: ChartRow[];
-  recentOrders: AdminOrderRow[];
-  recentRfqs: AdminRfqRow[];
-};
-
-const EMPTY_DASHBOARD: AdminDashboardData = {
-  summary: {},
-  revenueRows: [],
-  recentOrders: [],
-  recentRfqs: [],
-};
-
-async function fetchAdminDashboard(): Promise<AdminDashboardData> {
-  const [summaryRaw, revenueRaw, ordersRaw, rfqsRaw] = await Promise.all([
-    adminApi.dashboardSummary(),
-    adminApi.dashboardRevenueChart(),
-    adminApi.listOrders({ page: 1, page_size: 5 }),
-    adminApi.listRfqs({ page: 1, page_size: 5 }),
-  ]);
-
-  const summary = summaryRaw as Record<string, unknown>;
-
-  const revenueObj =
-    revenueRaw && typeof revenueRaw === 'object'
-      ? (revenueRaw as AdminRevenueChartResponse)
-      : null;
-  const sourceRows =
-    revenueObj && Array.isArray(revenueObj.data)
-      ? revenueObj.data
-      : parseRows<Record<string, unknown>>(revenueRaw);
-  const revenueRows = sourceRows.map((r) => ({
-    month: String(
-      r.month ?? r.date ?? r.period ?? r.label ?? '-',
-    ),
-    revenue: Number(r.revenue ?? r.gross_order_value ?? 0),
-    commission: Number(r.commission ?? r.platform_commission ?? 0),
-  }));
-
-  return {
-    summary,
-    revenueRows: revenueRows.slice(-6),
-    recentOrders: parseRows<AdminOrderRow>(ordersRaw).slice(0, 5),
-    recentRfqs: parseRows<AdminRfqRow>(rfqsRaw).slice(0, 5),
-  };
-}
-
-function parseRows<T extends Record<string, unknown>>(raw: unknown): T[] {
-  if (Array.isArray(raw)) return raw as T[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as T[];
-    if (Array.isArray(obj.rows)) return obj.rows as T[];
-    if (Array.isArray(obj.data)) return obj.data as T[];
-  }
-  return [];
 }
 
 function toCurrency(value: number): string {
@@ -150,21 +86,9 @@ function AdminStatusBadge({ label, cls }: { label: string; cls: string }) {
 }
 
 function TopCustomersWidget() {
-  const [topCustomers, setTopCustomers] = useState<AdminTopCustomer[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    adminCustomerApi
-      .topCustomers(5)
-      .then((res) => {
-        const data = res as unknown as { top_customers: AdminTopCustomer[] };
-        setTopCustomers(data.top_customers ?? []);
-      })
-      .catch(() => {
-        /* silent — non-critical widget */
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const topCustomersQ = useAdminTopCustomersQuery(5);
+  const topCustomers = topCustomersQ.data ?? [];
+  const loading = topCustomersQ.isLoading;
 
   return (
     <div className='bg-white rounded-xl border border-slate-200 p-5 shadow-sm'>
@@ -221,11 +145,15 @@ function TopCustomersWidget() {
 }
 
 export function AdminDashboardPage() {
-  const {
-    data: dashboard = EMPTY_DASHBOARD,
-    loading,
-    error,
-  } = useApiCall(fetchAdminDashboard, [], { initialData: EMPTY_DASHBOARD });
+  const dashboardQ = useAdminDashboardQuery();
+  const dashboard = dashboardQ.data ?? EMPTY_ADMIN_DASHBOARD;
+  const loading = dashboardQ.isLoading;
+  const error =
+    dashboardQ.error instanceof Error
+      ? dashboardQ.error.message
+      : dashboardQ.error
+        ? 'โหลดข้อมูลไม่สำเร็จ'
+        : '';
 
   const { summary, revenueRows, recentOrders, recentRfqs } = dashboard;
 

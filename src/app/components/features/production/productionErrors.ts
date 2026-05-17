@@ -1,6 +1,6 @@
 import { ApiHttpError } from '@/services/api/httpClient';
 
-export function productionErrorToThai(code: string, details?: Record<string, unknown>): string {
+function productionErrorToThai(code: string, details?: Record<string, unknown>): string {
   switch (code) {
     case 'NOT_ORDER_FACTORY':
       return 'คุณไม่มีสิทธิ์แก้ไขคำสั่งซื้อนี้';

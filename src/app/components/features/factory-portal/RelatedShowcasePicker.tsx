@@ -1,6 +1,4 @@
 import React from 'react';
-import { showcasesApi } from '@/services/api/factoryApi';
-import { normShowcase } from '@/hooks/useShowcases';
 import { type FactoryShowcase } from '@/stores/types';
 import { Search, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
-import { useApiCall } from '@/hooks/data/useApiCall';
+import { useFactoryShowcasesQuery } from '@/domain/showcase/queries/useFactoryShowcasesQuery';
 
 interface RelatedShowcasePickerProps {
   factoryId: number;
@@ -32,16 +30,9 @@ export function RelatedShowcasePicker({
   const [typeFilter, setTypeFilter] = React.useState<'all' | 'product' | 'promotion'>('all');
   const [draft, setDraft] = React.useState<number[]>([]);
 
-  const { data: items = [], loading } = useApiCall(
-    async () => {
-      const rows = await showcasesApi.listByFactory(factoryId);
-      return (Array.isArray(rows) ? rows : [])
-        .map((r) => normShowcase((r ?? {}) as Record<string, unknown>))
-        .filter((s) => s.contentType === 'product' || s.contentType === 'promotion');
-    },
-    [factoryId],
-    { initialData: [] as FactoryShowcase[] },
-  );
+  const showcasesQ = useFactoryShowcasesQuery(factoryId);
+  const items = showcasesQ.data ?? [];
+  const loading = showcasesQ.isLoading;
 
   const selected = React.useMemo(() => {
     const set = new Set<number>();

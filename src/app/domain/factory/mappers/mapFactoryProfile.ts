@@ -1,0 +1,316 @@
+import {
+  type Factory,
+  type FactoryProfile,
+  type FactoryReview,
+  type FactoryShowcase,
+} from '@/stores/types';
+import { conversationsApi } from '@/services/api/chatApi';
+import { factoriesApi, showcasesApi } from '@/services/api/factoryApi';
+import { frontendApi } from '@/services/api/exploreApi';
+import { reviewsApi } from '@/services/api/userApi';
+import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
+import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
+import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
+
+export type FactorySubCategoryPair = { categoryLabel: string; subLabel: string };
+
+export type FactoryProfileDetail = {
+  factory: Factory;
+  profile: FactoryProfile | null;
+  reviews: FactoryReview[];
+  showcases: FactoryShowcase[];
+  factoryCategoryNames: string[];
+  factorySubCategoryNames: string[];
+  factorySubCategoryPairs: FactorySubCategoryPair[];
+  apiCertificates: Record<string, unknown>[];
+};
+
+export type FactoryProfileFallbacks = {
+  factory?: Factory | null;
+  profile?: FactoryProfile | null;
+};
+
+function nameFromCatRow(row: unknown): string | null {
+  if (!row || typeof row !== 'object') return null;
+  const o = row as Record<string, unknown>;
+  const n = String(o.name ?? o.category_name ?? o.sub_category_name ?? '').trim();
+  return n || null;
+}
+
+function extractNestedArray(
+  top: Record<string, unknown>,
+  inner: Record<string, unknown>,
+  key: string,
+): unknown[] {
+  if (Array.isArray(top[key])) return top[key] as unknown[];
+  if (Array.isArray(inner[key])) return inner[key] as unknown[];
+  return [];
+}
+
+function mapFactoryFromApi(
+  row: Record<string, unknown>,
+  id: string,
+  fallback?: Factory | null,
+): Factory {
+  const b = fallback ?? undefined;
+  const ftn = String(row.factory_type_name ?? row.factoryTypeName ?? '').trim();
+  const coverImageUrl = pickFactoryCoverUrl(row) || String(b?.coverImageUrl ?? '').trim();
+  let image = String(row.image_url ?? row.image ?? row.logo_url ?? '').trim();
+  if (!image) image = String(b?.image ?? '').trim();
+  if (!image && coverImageUrl) image = coverImageUrl;
+  return {
+    id: String(row.id ?? row.factory_id ?? id),
+    name: String(row.name ?? row.factory_name ?? b?.name ?? ''),
+    location: String(row.location ?? row.province_name ?? row.city ?? b?.location ?? ''),
+    rating: Number(row.avg_rating ?? row.rating ?? b?.rating ?? 0),
+    reviews: Number(row.review_count ?? row.reviews ?? b?.reviews ?? 0),
+    specialization: String(row.specialization ?? row.description ?? b?.specialization ?? ''),
+    tags: Array.isArray(row.tags) ? row.tags.map(String) : (b?.tags ?? []),
+    minOrder: Number(row.min_order ?? row.minOrder ?? b?.minOrder ?? 0),
+    leadTime: String(row.lead_time ?? row.leadTime ?? b?.leadTime ?? ''),
+    image,
+    ...(coverImageUrl ? { coverImageUrl } : {}),
+    verified: Boolean(row.is_verified ?? row.verified ?? b?.verified ?? false),
+    completedOrders: Number(row.completed_orders ?? row.completedOrders ?? b?.completedOrders ?? 0),
+    priceRange: String(row.price_range ?? row.priceRange ?? b?.priceRange ?? ''),
+    ...(ftn ? { factoryTypeName: ftn } : {}),
+  };
+}
+
+function mapProfileFromApi(
+  p: Record<string, unknown>,
+  factoryId: string,
+  fallback?: FactoryProfile | null,
+): FactoryProfile {
+  const b = fallback;
+  const addr = String(p.address ?? p.address_detail ?? b?.address ?? '');
+  const types = Array.isArray(p.accepted_product_types)
+    ? p.accepted_product_types.map(String)
+    : Array.isArray(p.acceptedProductTypes)
+      ? p.acceptedProductTypes.map(String)
+      : (b?.acceptedProductTypes ?? []);
+  const certs = Array.isArray(p.certificates)
+    ? p.certificates.map(String)
+    : (b?.certificates ?? []);
+  return {
+    factoryId: String(p.factory_id ?? factoryId),
+    address: addr,
+    acceptedProductTypes: types,
+    certificates: certs,
+  };
+}
+
+function mapReviewFromApi(
+  r: Record<string, unknown>,
+  factoryId: string,
+): FactoryReview | null {
+  const rid = String(r.id ?? r.review_id ?? '');
+  if (!rid) return null;
+  const userId = Number(r.user_id ?? r.userId ?? 0);
+  const firstName = String(r.first_name ?? r.firstName ?? '').trim();
+  const lastName = String(r.last_name ?? r.lastName ?? '').trim();
+  const fullName = `${firstName} ${lastName}`.trim();
+  const fallbackByUserId = Number.isFinite(userId) && userId > 0 ? `ผู้ใช้ #${userId}` : '';
+  const reviewer = String(
+    fullName ||
+      r.reviewer_name ||
+      r.reviewer ||
+      r.user_name ||
+      r.display_name ||
+      fallbackByUserId ||
+      'ลูกค้า',
+  ).trim();
+  const imageUrls = normalizeReviewImageUrls(r.image_urls);
+  return {
+    id: rid,
+    factoryId,
+    reviewer,
+    rating: Number(r.rating ?? 0),
+    comment: String(r.comment ?? r.text ?? ''),
+    date: String(r.created_at ?? r.date ?? ''),
+    helpfulCount: Number(r.helpful_count ?? r.useful_count ?? 0),
+    optionText: String(r.option_text ?? r.variant ?? r.sku_option ?? '').trim() || undefined,
+    ...(imageUrls.length > 0 ? { imageUrls } : {}),
+  };
+}
+
+export async function fetchAndMapFactoryProfile(
+  factoryId: string,
+  fallbacks: FactoryProfileFallbacks = {},
+): Promise<FactoryProfileDetail> {
+  const fid = String(factoryId);
+  const fb = fallbacks.factory ?? null;
+  const profFallback = fallbacks.profile ?? null;
+
+  const factorySubCategoryPairs: FactorySubCategoryPair[] = [];
+  const factoryCategoryNames: string[] = [];
+  const factorySubCategoryNames: string[] = [];
+  let apiCertificates: Record<string, unknown>[] = [];
+
+  const pushPair = (cat: string, sub: string) => {
+    const c = cat.trim();
+    const s = sub.trim();
+    if (!s) return;
+    factorySubCategoryPairs.push({ categoryLabel: c || 'หมวด', subLabel: s });
+  };
+
+  const [factRes, frontRes, summaryRes] = await Promise.allSettled([
+    factoriesApi.get(fid),
+    frontendApi.getFactory(factoryId),
+    reviewsApi.summaryByFactory(fid),
+  ]);
+
+  let factory: Factory | null = null;
+  let profile: FactoryProfile | null = profFallback;
+  let reviews: FactoryReview[] = [];
+  let showcases: FactoryShowcase[] = [];
+
+  if (factRes.status === 'fulfilled' && factRes.value && typeof factRes.value === 'object') {
+    const raw = factRes.value as Record<string, unknown>;
+    const rawF =
+      raw.factory && typeof raw.factory === 'object'
+        ? (raw.factory as Record<string, unknown>)
+        : raw;
+    factory = mapFactoryFromApi(rawF, fid, fb);
+
+    for (const row of extractNestedArray(raw, rawF, 'categories')) {
+      const n = nameFromCatRow(row);
+      if (n) factoryCategoryNames.push(n);
+    }
+    for (const row of extractNestedArray(raw, rawF, 'sub_categories')) {
+      const n = nameFromCatRow(row);
+      if (n) factorySubCategoryNames.push(n);
+    }
+
+    for (const row of extractNestedArray(raw, rawF, 'factory_sub_categories')) {
+      if (!row || typeof row !== 'object') continue;
+      const o = row as Record<string, unknown>;
+      pushPair(
+        String(o.category_name ?? o.parent_category_name ?? ''),
+        String(o.sub_category_name ?? o.name ?? ''),
+      );
+    }
+    for (const row of extractNestedArray(raw, rawF, 'sub_categories')) {
+      if (!row || typeof row !== 'object') continue;
+      const o = row as Record<string, unknown>;
+      const cat = String(o.category_name ?? o.parent_category_name ?? '').trim();
+      const sub = String(o.sub_category_name ?? o.name ?? '').trim();
+      if (cat && sub) pushPair(cat, sub);
+    }
+
+    const seen = new Set<string>();
+    const dedupedPairs = factorySubCategoryPairs.filter((p) => {
+      const k = `${p.categoryLabel}|${p.subLabel}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    factorySubCategoryPairs.length = 0;
+    factorySubCategoryPairs.push(...dedupedPairs);
+
+    const certArr = extractNestedArray(raw, rawF, 'certificates');
+    apiCertificates = certArr.filter(
+      (x): x is Record<string, unknown> => x != null && typeof x === 'object',
+    );
+  }
+
+  if (frontRes.status === 'fulfilled' && frontRes.value) {
+    const res = frontRes.value;
+    const rawF = (res.factory && typeof res.factory === 'object' ? res.factory : {}) as Record<
+      string,
+      unknown
+    >;
+    factory = mapFactoryFromApi(rawF, fid, factory ?? fb);
+
+    const rawP =
+      res.profile && typeof res.profile === 'object'
+        ? (res.profile as Record<string, unknown>)
+        : null;
+    profile =
+      rawP && Object.keys(rawP).length > 0
+        ? mapProfileFromApi(rawP, fid, profFallback)
+        : profFallback;
+
+    const revRows = Array.isArray(res.reviews) ? (res.reviews as Record<string, unknown>[]) : [];
+    reviews = revRows
+      .map((r) => mapReviewFromApi(r, fid))
+      .filter((x): x is FactoryReview => x != null);
+
+    for (const key of ['products', 'promotions', 'ideas'] as const) {
+      const arr = res[key];
+      if (Array.isArray(arr)) {
+        for (const raw of arr) {
+          const s = mapShowcaseFromApi(raw as Record<string, unknown>);
+          if (s.id && s.title) {
+            if (!s.factoryId) s.factoryId = fid;
+            showcases.push(s);
+          }
+        }
+      }
+    }
+  }
+
+  if (factory) {
+    try {
+      const rawList = await showcasesApi.listByFactory(factoryId);
+      const arr = (Array.isArray(rawList) ? rawList : []) as Record<string, unknown>[];
+      const fromApi = arr
+        .map((row) => mapShowcaseFromApi(row))
+        .filter((s) => s.id && s.title)
+        .map((s) => {
+          if (!s.factoryId) s.factoryId = String(factoryId);
+          return s;
+        });
+      if (fromApi.length > 0) showcases = fromApi;
+    } catch {
+      /* keep BFF showcases */
+    }
+  }
+
+  if (factRes.status === 'fulfilled' && reviews.length === 0) {
+    const raw = factRes.value as Record<string, unknown>;
+    const rawF =
+      raw.factory && typeof raw.factory === 'object'
+        ? (raw.factory as Record<string, unknown>)
+        : raw;
+    const revRows = extractNestedArray(raw, rawF, 'reviews') as Record<string, unknown>[];
+    reviews = revRows
+      .map((r) => mapReviewFromApi(r, fid))
+      .filter((x): x is FactoryReview => x != null);
+  }
+
+  if (!factory) {
+    throw new Error('factory not found');
+  }
+
+  if (summaryRes.status === 'fulfilled' && summaryRes.value) {
+    const s = summaryRes.value as Record<string, unknown>;
+    const avg = Number(s.average_rating);
+    const count = Number(s.review_count);
+    if (Number.isFinite(avg) && avg >= 0) factory.rating = avg;
+    if (Number.isFinite(count) && count >= 0) factory.reviews = count;
+  }
+
+  return {
+    factory,
+    profile,
+    reviews,
+    showcases,
+    factoryCategoryNames,
+    factorySubCategoryNames,
+    factorySubCategoryPairs,
+    apiCertificates,
+  };
+}
+
+export async function createFactoryConversation(
+  factoryId: string,
+  customerId: number | string,
+): Promise<string | null> {
+  const res = (await conversationsApi.create({
+    customer_id: Number(customerId),
+    factory_id: Number(factoryId),
+  })) as Record<string, unknown>;
+  const id = String(res.conversation_id ?? res.id ?? '').trim();
+  return id || null;
+}

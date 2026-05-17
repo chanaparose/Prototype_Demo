@@ -22,7 +22,7 @@ export type PaymentScheduleItem = {
   triggered_by_step: string | null;
 };
 
-export { ORDER_API_STATUS_LABEL_TH, orderStatusLabelTh } from '@/domain/order/constants';
+export { orderStatusLabelTh } from '@/domain/order/constants';
 
 export function parsePaymentSchedule(row: Record<string, unknown>): PaymentScheduleItem[] {
   const raw = row.payment_schedule;

@@ -2,11 +2,12 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
 import { type FactoryShowcase } from '@/stores/types';
-import { useApiCall } from '@/hooks/data/useApiCall';
+import { useQuery } from '@tanstack/react-query';
+import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
+import { showcaseKeys } from '@/lib/queryKeys';
 import { showcasesApi } from '@/services/api/factoryApi';
-import { normShowcase } from '@/hooks/useShowcases';
 
-export function showcaseIdMatches(a: string, b: string): boolean {
+function showcaseIdMatches(a: string, b: string): boolean {
   const sa = String(a).trim();
   const sb = String(b).trim();
   if (sa === sb) return true;
@@ -62,23 +63,29 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
 
   const shouldFetchDetail = Boolean(resolvedId && !hasRichSections(fromContext));
 
-  const {
-    data: apiItem,
-    loading: fetchLoading,
-    error: fetchError,
-  } = useApiCall(
-    async () => {
+  const detailQ = useQuery({
+    queryKey: showcaseKeys.detail(resolvedId),
+    queryFn: async () => {
       const raw = await showcasesApi.get(resolvedId);
       const row = unwrapShowcaseDetailPayload(raw as Record<string, unknown>);
-      const s = normShowcase(row);
+      const s = mapShowcaseFromApi(row);
       if (!s.id || !acceptTypes.includes(s.contentType)) {
         throw new Error('ไม่พบข้อมูลโชว์เคส');
       }
       return s;
     },
-    [resolvedId, acceptTypes.join(',')],
-    { enabled: shouldFetchDetail, initialData: null as FactoryShowcase | null },
-  );
+    enabled: shouldFetchDetail,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const apiItem = detailQ.data ?? null;
+  const fetchLoading = detailQ.isLoading;
+  const fetchError =
+    detailQ.error instanceof Error
+      ? detailQ.error.message
+      : detailQ.error
+        ? 'โหลดไม่สำเร็จ'
+        : null;
 
   useEffect(() => {
     viewedIdRef.current = '';
@@ -88,11 +95,12 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
 
   const shouldFetchRelated = kind !== 'idea' && Boolean(resolvedId);
 
-  const { data: relatedApiShowcases = [] } = useApiCall(
-    async () => {
+  const relatedQ = useQuery({
+    queryKey: [...showcaseKeys.detail(resolvedId), 'related', kind],
+    queryFn: async () => {
       const detailRaw = await showcasesApi.get(resolvedId).catch(() => ({}));
       const detailRow = unwrapShowcaseDetailPayload((detailRaw as Record<string, unknown>) ?? {});
-      const detail = item ?? normShowcase(detailRow);
+      const detail = item ?? mapShowcaseFromApi(detailRow);
       const apiTypes: Array<'PD' | 'PM' | 'MT'> = ['PD', 'PM', 'MT'];
 
       const subIdFromDetail = detail.sub_category_id ?? Number(detailRow.sub_category_id ?? NaN);
@@ -113,7 +121,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         );
         for (const rawSub of subLists) {
           const subRows = (Array.isArray(rawSub) ? rawSub : []) as Record<string, unknown>[];
-          buckets.push(...subRows.map(normShowcase));
+          buckets.push(...subRows.map(mapShowcaseFromApi));
         }
       }
 
@@ -127,7 +135,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         );
         for (const rawCat of catLists) {
           const catRows = (Array.isArray(rawCat) ? rawCat : []) as Record<string, unknown>[];
-          buckets.push(...catRows.map(normShowcase));
+          buckets.push(...catRows.map(mapShowcaseFromApi));
         }
       }
 
@@ -137,7 +145,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
         );
         for (const rawAll of allLists) {
           const allRows = (Array.isArray(rawAll) ? rawAll : []) as Record<string, unknown>[];
-          buckets.push(...allRows.map(normShowcase));
+          buckets.push(...allRows.map(mapShowcaseFromApi));
         }
       }
 
@@ -158,9 +166,11 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
       }
       return [...uniq.values()].slice(0, 8);
     },
-    [kind, resolvedId, item?.id],
-    { enabled: shouldFetchRelated, initialData: [] as FactoryShowcase[] },
-  );
+    enabled: shouldFetchRelated && Boolean(resolvedId),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const relatedApiShowcases = relatedQ.data ?? [];
 
   const relatedShowcases = useMemo(() => {
     if (!item || kind === 'idea') return [] as FactoryShowcase[];

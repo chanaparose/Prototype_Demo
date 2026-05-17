@@ -1,4 +1,4 @@
-export const CATEGORY_ICON_MAP: Record<string, string> = {
+const CATEGORY_ICON_MAP: Record<string, string> = {
   อาหารสัตว์: '🐾',
   อาหารเม็ดสัตว์: '🐾',
   อาหารเสริม: '💊',

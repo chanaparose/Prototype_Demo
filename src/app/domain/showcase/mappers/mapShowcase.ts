@@ -1,0 +1,186 @@
+import { type FactoryShowcase, type ShowcaseImageRow, type ShowcaseSpecRow } from '@/stores/types';
+import { showcasesApi } from '@/services/api/factoryApi';
+import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
+
+export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';
+
+const CT_MAP: Record<string, 'product' | 'promotion' | 'idea' | 'material'> = {
+  PD: 'product',
+  PR: 'product',
+  PM: 'promotion',
+  ID: 'idea',
+  MT: 'material',
+  product: 'product',
+  promotion: 'promotion',
+  idea: 'idea',
+  material: 'material',
+};
+
+function parseImageUrls(raw: unknown): string[] {
+  const src = Array.isArray(raw)
+    ? raw
+    : typeof raw === 'string' && raw.trim().startsWith('[')
+      ? (() => {
+          try {
+            const p = JSON.parse(raw) as unknown;
+            return Array.isArray(p) ? p : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
+  return src
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      if (!item || typeof item !== 'object') return '';
+      const row = item as Record<string, unknown>;
+      return String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
+    })
+    .filter((u) => u !== '')
+    .slice(0, 5);
+}
+
+export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase {
+  const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
+  const leadTime = leadRaw != null && leadRaw !== '' ? String(leadRaw) : '';
+  const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
+  const { imageUrls: linkedImageUrls, showcaseIds } = partitionLinkedShowcases(
+    r.linked_showcases ?? r.linkedShowcases,
+  );
+  const linkedFirstImage = linkedImageUrls[0] ?? '';
+  const ctRaw = String(r.content_type ?? r.type ?? '')
+    .trim()
+    .toUpperCase();
+  const firstImage =
+    ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM'
+      ? linkedFirstImage || imageUrls[0] || String(r.image_url ?? r.image ?? '').trim()
+      : imageUrls[0] || linkedFirstImage || String(r.image_url ?? r.image ?? '').trim();
+
+  const catIdRaw = r.category_id ?? r.categoryId;
+  const categoryId =
+    catIdRaw != null && String(catIdRaw).trim() !== '' ? String(catIdRaw).trim() : undefined;
+
+  const subRaw = r.sub_category_id ?? r.subCategoryId;
+  let sub_category_id: number | undefined;
+  if (subRaw != null && String(subRaw).trim() !== '') {
+    const n = Number(subRaw);
+    if (Number.isFinite(n)) sub_category_id = n;
+  }
+  const subNameRaw = r.sub_category_name ?? r.subCategoryName;
+  const sub_category_name =
+    subNameRaw != null && String(subNameRaw).trim() !== '' ? String(subNameRaw) : null;
+
+  const factoryImageUrl = String(r.factory_image_url ?? r.factoryImageUrl ?? '').trim();
+  const fr = r.factory_rating ?? r.factoryRating;
+  const factoryRating =
+    fr != null && String(fr).trim() !== '' && Number.isFinite(Number(fr)) ? Number(fr) : undefined;
+  const factoryVerified = Boolean(r.factory_verified ?? r.factoryVerified);
+
+  return {
+    id: String(r.showcase_id ?? r.id ?? r.showcaseId ?? ''),
+    factoryId: String(r.factory_id ?? r.factoryId ?? ''),
+    factoryName: String(r.factory_name ?? r.factoryName ?? ''),
+    title: String(r.title ?? r.name ?? r.headline ?? ''),
+    excerpt: String(r.excerpt ?? r.summary ?? ''),
+    image: firstImage,
+    ...(imageUrls.length > 0 ? { imageUrls } : {}),
+    contentType: CT_MAP[String(r.content_type ?? r.type ?? '').trim()] ?? 'product',
+    category: String(r.category_name ?? r.category ?? ''),
+    categoryId,
+    sub_category_id,
+    sub_category_name,
+    postedAt: String(r.created_at ?? r.postedAt ?? ''),
+    likes: Number(r.likes_count ?? r.likes ?? 0),
+    minOrder: Number(r.moq ?? r.min_order ?? r.minOrder ?? 0),
+    leadTime,
+    ...(r.content != null && String(r.content).trim() !== '' ? { content: String(r.content) } : {}),
+    ...(r.base_price != null && Number.isFinite(Number(r.base_price))
+      ? { basePrice: Number(r.base_price) }
+      : {}),
+    ...(r.promo_price != null && Number.isFinite(Number(r.promo_price))
+      ? { promoPrice: Number(r.promo_price) }
+      : {}),
+    ...(r.start_date != null && String(r.start_date).trim() !== ''
+      ? { startDate: String(r.start_date) }
+      : {}),
+    ...(r.end_date != null && String(r.end_date).trim() !== ''
+      ? { endDate: String(r.end_date) }
+      : {}),
+    ...(r.status != null && String(r.status).trim() !== '' ? { status: String(r.status) } : {}),
+    tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+    ...(factoryImageUrl ? { factoryImageUrl } : {}),
+    ...(factoryRating != null ? { factoryRating } : {}),
+    ...(factoryVerified ? { factoryVerified } : {}),
+    ...(r.description != null && String(r.description).trim() !== ''
+      ? { description: String(r.description) }
+      : {}),
+    ...(r.price_range != null && String(r.price_range).trim() !== ''
+      ? { priceRange: String(r.price_range) }
+      : r.priceRange != null && String(r.priceRange).trim() !== ''
+        ? { priceRange: String(r.priceRange) }
+        : {}),
+    ...(Array.isArray(r.sections) && r.sections.length > 0
+      ? { sections: r.sections as import('@/stores/types').ShowcaseSection[] }
+      : {}),
+    ...(Array.isArray(r.images) && r.images.length > 0
+      ? { images: r.images as ShowcaseImageRow[] }
+      : {}),
+    ...(Array.isArray(r.specs) && r.specs.length > 0
+      ? {
+          specs: (r.specs as Record<string, unknown>[]).map((sp) => ({
+            spec_key: String(sp.spec_key ?? ''),
+            spec_value: String(sp.spec_value ?? ''),
+            sort_order: Number(sp.sort_order ?? 0),
+          })) as ShowcaseSpecRow[],
+        }
+      : {}),
+    ...(linkedImageUrls.length > 0 || showcaseIds.length > 0
+      ? { linkedShowcases: [...linkedImageUrls, ...showcaseIds] }
+      : {}),
+  };
+}
+
+function unwrapShowcaseRow(raw: unknown): Record<string, unknown> | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const inner = o.showcase;
+  if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
+    return inner as Record<string, unknown>;
+  }
+  return o;
+}
+
+export function extractShowcaseRows(raw: unknown): Record<string, unknown>[] {
+  const top = raw as Record<string, unknown> | null;
+  const rows: unknown[] = Array.isArray(raw)
+    ? raw
+    : Array.isArray((top as Record<string, unknown> | null)?.showcases)
+      ? ((top as Record<string, unknown>).showcases as unknown[])
+      : Array.isArray((top as Record<string, unknown> | null)?.data)
+        ? ((top as Record<string, unknown>).data as unknown[])
+        : Array.isArray((top as Record<string, unknown> | null)?.items)
+          ? ((top as Record<string, unknown>).items as unknown[])
+          : Array.isArray((top as Record<string, unknown> | null)?.results)
+            ? ((top as Record<string, unknown>).results as unknown[])
+            : [];
+  return rows.map(unwrapShowcaseRow).filter((r): r is Record<string, unknown> => r != null);
+}
+
+export async function fetchAndMapShowcaseList(type?: ShowcaseApiType): Promise<FactoryShowcase[]> {
+  const raw = await showcasesApi.list(type);
+  const arr = extractShowcaseRows(raw);
+  return arr.map(mapShowcaseFromApi).filter((s) => s.id && s.title);
+}
+
+/** @deprecated Use mapShowcaseFromApi */
+export const normShowcase = mapShowcaseFromApi;
+
+export function showcaseQueryTypeFromTab(
+  tab: 'all' | 'product' | 'promotion' | 'idea' | 'material' | 'factory',
+): ShowcaseApiType | undefined {
+  if (tab === 'all' || tab === 'factory') return undefined;
+  if (tab === 'product') return 'PD';
+  if (tab === 'promotion') return 'PM';
+  if (tab === 'material') return 'MT';
+  return 'ID';
+}

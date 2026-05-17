@@ -8,6 +8,7 @@ import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { parseCategorySelection } from '@/domain/factory/schemas/categoryPicker.schema';
 
 interface Props {
   open: boolean;
@@ -61,6 +62,11 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
 
   const handleConfirm = async () => {
     if (confirming) return;
+    const parsed = parseCategorySelection(selected);
+    if (!parsed.success) {
+      setConfirmError(parsed.error.issues[0]?.message ?? 'เลือกอย่างน้อย 1 หมวดหมู่');
+      return;
+    }
     setConfirming(true);
     setConfirmError('');
     try {

@@ -8,8 +8,11 @@ import {
   Search,
   AlertTriangle,
 } from 'lucide-react';
-import { useApiCall } from '@/hooks/data/useApiCall';
-import { adminApi, type AdminRfqRow } from '@/services/api/adminApi';
+import { type AdminRfqRow } from '@/services/api/adminApi';
+import {
+  useAdminRfqDetailQuery,
+  useAdminRfqListQuery,
+} from '@/domain/admin/queries/useAdminRfqQueries';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -64,17 +67,6 @@ const STATUS_TABS: { key: RfqStatusTab; label: string }[] = [
   { key: 'closed', label: 'ปิด' },
 ];
 
-function toRows(raw: unknown): AdminRfqRow[] {
-  if (Array.isArray(raw)) return raw as AdminRfqRow[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as AdminRfqRow[];
-    if (Array.isArray(obj.data)) return obj.data as AdminRfqRow[];
-    if (Array.isArray(obj.rows)) return obj.rows as AdminRfqRow[];
-  }
-  return [];
-}
-
 function mapRfq(row: AdminRfqRow): AdminRfqView {
   return {
     rfq_id: String(row.rfq_id),
@@ -91,15 +83,15 @@ function mapRfq(row: AdminRfqRow): AdminRfqView {
 }
 
 function RfqDetailPanel({ rfqId }: { rfqId: string }) {
-  const {
-    data: detail,
-    loading,
-    error,
-  } = useApiCall(
-    () => adminApi.getRfq(rfqId) as Promise<Record<string, unknown>>,
-    [rfqId],
-    { initialData: null as Record<string, unknown> | null },
-  );
+  const detailQ = useAdminRfqDetailQuery(rfqId);
+  const detail = detailQ.data ?? null;
+  const loading = detailQ.isLoading;
+  const error =
+    detailQ.error instanceof Error
+      ? detailQ.error.message
+      : detailQ.error
+        ? 'โหลดไม่สำเร็จ'
+        : '';
 
   const rfq = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
   const deliveryDate = String(rfq.required_delivery_date ?? rfq.deadline ?? '');
@@ -167,35 +159,26 @@ export function AdminRFQsPage() {
   const [statusTab, setStatusTab] = useState<RfqStatusTab>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [rows, setRows] = useState<AdminRfqView[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const loadRfqs = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const raw = await adminApi.listRfqs({
-        status: toApiStatus(statusTab),
-        search: search.trim() || undefined,
-        page: 1,
-        page_size: 100,
-      });
-      setRows(toRows(raw).map(mapRfq));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดข้อมูล RFQ ไม่สำเร็จ');
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
-    const id = setTimeout(() => {
-      void loadRfqs();
-    }, 250);
+    const id = setTimeout(() => setDebouncedSearch(search), 250);
     return () => clearTimeout(id);
-  }, [statusTab, search]);
+  }, [search]);
+
+  const listQ = useAdminRfqListQuery({
+    status: toApiStatus(statusTab),
+    search: debouncedSearch,
+  });
+
+  const rows = useMemo(() => (listQ.data ?? []).map(mapRfq), [listQ.data]);
+  const loading = listQ.isLoading;
+  const error =
+    listQ.error instanceof Error
+      ? listQ.error.message
+      : listQ.error
+        ? 'โหลดข้อมูล RFQ ไม่สำเร็จ'
+        : '';
 
   const counts = useMemo(() => {
     const result = { all: rows.length, open: 0, matched: 0, closed: 0 };

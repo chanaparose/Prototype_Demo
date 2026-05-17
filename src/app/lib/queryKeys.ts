@@ -31,3 +31,48 @@ export const orderKeys = {
   details: () => [...orderKeys.all, 'detail'] as const,
   detail: (id: string) => [...orderKeys.details(), id] as const,
 };
+
+export const factoryKeys = {
+  all: ['factory'] as const,
+  details: () => [...factoryKeys.all, 'detail'] as const,
+  detail: (id: string) => [...factoryKeys.details(), id] as const,
+};
+
+export const quotationKeys = {
+  all: ['quotation'] as const,
+  lists: () => [...quotationKeys.all, 'list'] as const,
+  listMine: () => [...quotationKeys.lists(), 'mine'] as const,
+  detail: (id: string) => [...quotationKeys.all, id] as const,
+  history: (id: string) => [...quotationKeys.all, id, 'history'] as const,
+};
+
+export const exploreKeys = {
+  all: ['explore'] as const,
+  pageData: () => [...exploreKeys.all, 'page-data'] as const,
+};
+
+export const adminKeys = {
+  all: ['admin'] as const,
+  dashboard: () => [...adminKeys.all, 'dashboard'] as const,
+  topCustomers: (limit: number) => [...adminKeys.all, 'top-customers', limit] as const,
+  rfqList: (status: string, search: string) =>
+    [...adminKeys.all, 'rfqs', status, search] as const,
+  rfqDetail: (id: string) => [...adminKeys.all, 'rfq', id] as const,
+};
+
+export const factoryIdeasKeys = {
+  all: ['factory-ideas'] as const,
+  categories: (materialTab: boolean) =>
+    [...factoryIdeasKeys.all, 'categories', materialTab ? 'MT' : 'PD'] as const,
+  factoryList: () => [...factoryIdeasKeys.all, 'factories'] as const,
+};
+
+export const showcaseKeys = {
+  all: ['showcase'] as const,
+  lists: () => [...showcaseKeys.all, 'list'] as const,
+  list: (type?: string) => [...showcaseKeys.lists(), type ?? 'ALL'] as const,
+  detail: (id: string | number) => [...showcaseKeys.all, 'detail', String(id)] as const,
+  related: (idsKey: string) => [...showcaseKeys.all, 'related', idsKey] as const,
+  factoryList: (factoryId: string | number) =>
+    [...showcaseKeys.all, 'factory', String(factoryId)] as const,
+};

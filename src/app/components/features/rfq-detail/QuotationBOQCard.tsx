@@ -1,17 +1,7 @@
-import React, { useCallback, useId, useState } from 'react';
-import {
-  BadgeCheck,
-  Calendar,
-  ChevronDown,
-  Factory,
-  Package,
-  Shield,
-  Timer,
-  Truck,
-} from 'lucide-react';
+import React from 'react';
+import { BadgeCheck, Calendar, Factory, Package, Shield, Truck } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
-import { Button } from '@/components/ui/button';
 
 export interface Quotation {
   quote_id: number;
@@ -45,27 +35,6 @@ export interface Quotation {
 const MIDNIGHT = 'var(--brand-navy)';
 const PLUM = 'var(--brand-mauve)';
 const PLUM_SOFT = 'var(--brand-page)';
-
-const STATUS_STYLES: Record<
-  Quotation['status'],
-  { label: string; className: string; dot: string }
-> = {
-  Pending: {
-    label: 'รอพิจารณา',
-    className: 'bg-amber-50 text-amber-900 ring-amber-200/80',
-    dot: 'bg-amber-500',
-  },
-  Accepted: {
-    label: 'ยอมรับแล้ว',
-    className: 'bg-emerald-50 text-emerald-800 ring-emerald-200/80',
-    dot: 'bg-emerald-500',
-  },
-  Rejected: {
-    label: 'ไม่ได้รับเลือก',
-    className: 'bg-slate-100 text-slate-600 ring-slate-200/80',
-    dot: 'bg-slate-400',
-  },
-};
 
 function formatTHB(n: number): string {
   return (
@@ -144,125 +113,6 @@ export function quotationFromOfferSource(
   };
 }
 
-export const MOCK_QUOTATION_BOQ: Quotation = {
-  quote_id: 1042,
-  factory_name: 'โรงงานบรรจุภัณฑ์สัตว์เลี้ยง พรีเมียร์แพ็ค',
-  price_per_piece: 14.5,
-  mold_cost: 8500,
-  moq: 3000,
-  lead_time_days: 18,
-  shipping_method: 'ขนส่งเต็มคัน (FTL) — กรุงเทพฯ และปริมณฑล',
-  status: 'Pending',
-  material_detail:
-    'กระดาษคราฟท์ 350 gsm, เคลือบด้าน, พิมพ์ 4 สี + Spot UV โลโก้, กาวเป็นมิตรต่อสิ่งแวดล้อม',
-  payment_condition: 'มัดจำ 40% หลังสั่งผลิต, 60% ก่อนจัดส่ง (โอน/T/T)',
-  sample_cost: 2500,
-  valid_until: '2026-05-15',
-  certifications: ['ISO 9001', 'GMP สำหรับบรรจุภัณฑ์สัมผัสอาหาร', 'FSC (กระดาษรีไซเคิล)'],
-};
-
-export type QuotationBOQCardProps = {
-  quotation: Quotation;
-  defaultExpanded?: boolean;
-  className?: string;
-  onToggle?: (expanded: boolean) => void;
-};
-
-export function QuotationBOQCard({
-  quotation: q,
-  defaultExpanded = false,
-  className = '',
-  onToggle,
-}: QuotationBOQCardProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  const panelId = useId();
-  const headerId = useId();
-  const st = STATUS_STYLES[q.status];
-
-  const toggle = useCallback(() => {
-    setExpanded((v) => {
-      const next = !v;
-      onToggle?.(next);
-      return next;
-    });
-  }, [onToggle]);
-
-  const estLineTotal = q.price_per_piece * q.moq + q.mold_cost;
-
-  return (
-    <article
-      className={`rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md ${className}`}
-    >
-      <Button
-        variant='unstyled'
-        type='button'
-        id={headerId}
-        aria-expanded={expanded}
-        aria-controls={panelId}
-        onClick={toggle}
-        className='flex w-full items-start gap-3 rounded-2xl p-4 text-left outline-none ring-brand-mauve ring-offset-2 transition-colors hover:bg-gray-50/80 focus-visible:ring-2'
-      >
-        <div
-          className='flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg'
-          style={{ backgroundColor: PLUM_SOFT }}
-          aria-hidden
-        >
-          <Factory size={20} style={{ color: PLUM }} />
-        </div>
-        <div className='min-w-0 flex-1'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <h3 className='truncate text-sm font-bold' style={{ color: MIDNIGHT }}>
-              {q.factory_name}
-            </h3>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ${st.className}`}
-            >
-              <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
-              {st.label}
-            </span>
-          </div>
-          <p className='mt-1 text-[11px] text-gray-500'>ใบเสนอราคา #{q.quote_id}</p>
-          <div className='mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs'>
-            <span className='font-semibold' style={{ color: PLUM }}>
-              {formatTHB(q.price_per_piece)}
-              <span className='font-normal text-gray-500'> / ชิ้น</span>
-            </span>
-            <span className='flex items-center gap-1 text-gray-600'>
-              <Timer size={12} className='shrink-0 text-gray-400' />
-              {q.lead_time_days} วัน
-            </span>
-            <span className='flex items-center gap-1 text-gray-600'>
-              <Package size={12} className='shrink-0 text-gray-400' />
-              MOQ {q.moq.toLocaleString('th-TH')} ชิ้น
-            </span>
-          </div>
-          <p className='mt-2 text-[10px] text-gray-400'>
-            ประมาณการรวม (MOQ + แม่พิมพ์):{' '}
-            <span className='font-semibold text-gray-600'>{formatTHB(estLineTotal)}</span>
-          </p>
-        </div>
-        <ChevronDown
-          size={22}
-          className={`shrink-0 text-gray-400 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
-          aria-hidden
-        />
-      </Button>
-
-      <div
-        className={`grid transition-[grid-template-rows] duration-300 ease-out ${expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-      >
-        <div
-          id={panelId}
-          role='region'
-          aria-labelledby={headerId}
-          className='overflow-hidden min-h-0'
-        >
-          <QuotationBOQDetailsPanel quotation={q} className='px-4 pb-5 pt-2' />
-        </div>
-      </div>
-    </article>
-  );
-}
 
 export type QuotationBOQDetailsPanelProps = {
   quotation: Quotation;

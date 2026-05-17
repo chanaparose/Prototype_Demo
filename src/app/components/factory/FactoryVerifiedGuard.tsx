@@ -20,7 +20,7 @@ export function FactoryVerifiedGuard() {
   return <FactoryPendingPlaceholder status={st} />;
 }
 
-export function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
+function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
   const { user } = useAuth();
   const reason = String(
     (user as Record<string, unknown> | null)?.verify_rejection_reason ??

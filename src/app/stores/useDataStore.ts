@@ -5,11 +5,8 @@ import { notificationsApi, conversationsApi } from '@/services/api/chatApi';
 import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
 import { orderKeys, rfqKeys } from '@/lib/queryKeys';
-import {
-  normalizeFactoryRow,
-  guessCategoryIcon,
-  mapConversationRowsFromApi,
-} from '@/stores/utils';
+import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
+import { normalizeFactoryRow, mapConversationRowsFromApi } from '@/stores/utils';
 import type {
   Category,
   Factory,

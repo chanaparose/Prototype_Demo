@@ -3,19 +3,12 @@ import { useSearchParams } from 'react-router';
 
 type Cat = { id: string; name: string };
 
-export function decodeCategoryParam(raw: string): string {
+function decodeCategoryParam(raw: string): string {
   try {
     return decodeURIComponent(raw).trim();
   } catch {
     return raw.trim();
   }
-}
-
-/** อ่าน category_id / categoryId จาก URL (ว่าง = ไม่มีใน query) */
-export function getCategoryIdFromSearchParams(sp: URLSearchParams): string {
-  const raw = sp.get('category_id') ?? sp.get('categoryId');
-  if (raw == null || raw === '') return '';
-  return decodeCategoryParam(raw);
 }
 
 /**

@@ -2,13 +2,11 @@ export const HISTORY_STATUSES = ['completed', 'cancelled', 'expired'] as const;
 
 export const CLOSEABLE_STATUSES = new Set(['pending', 'offers_received', 'reviewing']);
 
-export const RFQ_UI_STATUS_LABEL: Record<string, string> = {
+export const STATUS_LABEL: Record<string, string> = {
   completed: 'ปิดคำขอแล้ว',
   cancelled: 'ยกเลิก',
   expired: 'หมดอายุ',
 };
-
-export const STATUS_LABEL = RFQ_UI_STATUS_LABEL;
 
 /** รหัสสถานะใบเสนอราคา (API) — มุมมองลูกค้า / ประวัติ */
 export const QUOTATION_STATUS_LABEL: Record<string, string> = {
@@ -32,12 +30,3 @@ export const QUOTATION_STATUS_BADGE_FACTORY: Record<string, { bg: string; color:
   RJ: { bg: 'rgba(239,68,68,0.10)', color: 'var(--status-danger-deep)' },
   EX: { bg: 'rgba(107,114,128,0.12)', color: 'var(--text-muted)' },
 };
-
-export function quotationStatusLabel(
-  code: string,
-  view: 'customer' | 'factory' = 'customer',
-): string {
-  const key = String(code ?? '').toUpperCase();
-  const map = view === 'factory' ? QUOTATION_STATUS_LABEL_FACTORY : QUOTATION_STATUS_LABEL;
-  return map[key] ?? code;
-}

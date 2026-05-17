@@ -83,24 +83,6 @@ export function buildSendPayload(params: {
   };
 }
 
-export function initialMessageForReference(ref: ChatReference): string {
-  const t = ref.title?.trim() || 'รายการนี้';
-  switch (ref.type) {
-    case 'PD':
-      return `สนใจสินค้า: ${t}`;
-    case 'PM':
-      return `สนใจโปรโมชัน: ${t}`;
-    case 'ID':
-      return `สนใจไอเดียนี้: ${t}`;
-    case 'RQ':
-      return `สอบถามเกี่ยวกับ RFQ: ${t}`;
-    case 'OD':
-      return `สอบถามเกี่ยวกับคำสั่งซื้อ: ${t}`;
-    default:
-      return `สอบถามเกี่ยวกับ "${t}"`;
-  }
-}
-
 export function chatRoomPath(convId: string | number): string {
   return `/chat-room/${convId}`;
 }

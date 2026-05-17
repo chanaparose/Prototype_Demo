@@ -5,6 +5,7 @@ import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { parseSubCategorySelection } from '@/domain/factory/schemas/categoryPicker.schema';
 
 interface Props {
   open: boolean;
@@ -30,9 +31,13 @@ export function SubCategoryPickerModal({
     (s) => Number.isFinite(s.id) && s.id > 0,
   );
   const [working, setWorking] = useState<number[]>(initialSelected);
+  const [confirmError, setConfirmError] = useState('');
 
   useEffect(() => {
-    if (open) setWorking(initialSelected);
+    if (open) {
+      setWorking(initialSelected);
+      setConfirmError('');
+    }
   }, [open, initialSelected]);
 
   if (!open || categoryId == null) return null;
@@ -62,7 +67,17 @@ export function SubCategoryPickerModal({
           accent='teal'
           primary={{
             label: `ยืนยัน (${selectedInScope} ในหมวดนี้)`,
-            onClick: () => onConfirm(working),
+            onClick: () => {
+              const inScopeIds = subs.filter((s) => working.includes(s.id)).map((s) => s.id);
+              const parsed = parseSubCategorySelection(inScopeIds);
+              if (!parsed.success) {
+                setConfirmError(
+                  parsed.error.issues[0]?.message ?? 'เลือกอย่างน้อย 1 หมวดหมู่ย่อย',
+                );
+                return;
+              }
+              onConfirm(working);
+            },
           }}
           secondary={{ label: 'ยกเลิก', onClick: onClose, tone: 'muted' }}
         />
@@ -70,7 +85,7 @@ export function SubCategoryPickerModal({
     >
       <FormField
         helperText={`ภายใต้: ${categoryName}`}
-        error={isError ? 'โหลดไม่สำเร็จ' : undefined}
+        error={confirmError || (isError ? 'โหลดไม่สำเร็จ' : undefined)}
       >
         {isLoading ? (
           <p className='text-sm text-gray-400'>กำลังโหลด…</p>

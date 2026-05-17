@@ -18,7 +18,7 @@ export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 export type ShowcaseScope = 'PD' | 'MT';
 export type ShowcaseStatus = 'DR' | 'AC' | 'HI' | 'AR';
 
-export const SHOWCASE_TYPE_META: Record<
+const SHOWCASE_TYPE_META: Record<
   ShowcaseType,
   { icon: string; label: string; sub: string; cls: string }
 > = {

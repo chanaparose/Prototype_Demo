@@ -19,7 +19,7 @@ export interface StepGuide {
   requiresShippingInfo?: boolean;
 }
 
-export const STEP_GUIDES: Record<number, StepGuide> = {
+const STEP_GUIDES: Record<number, StepGuide> = {
   1: {
     emoji: '✅',
     whatToDo: 'ยืนยันรับงานและเริ่มกระบวนการผลิต',
@@ -103,7 +103,7 @@ export const STEP_GUIDES: Record<number, StepGuide> = {
 };
 
 /** Fallback สำหรับขั้นตอนที่ไม่ได้กำหนดใน STEP_GUIDES */
-export const DEFAULT_STEP_GUIDE: StepGuide = {
+const DEFAULT_STEP_GUIDE: StepGuide = {
   emoji: '📋',
   whatToDo: 'อัปเดตขั้นตอนการผลิต',
   guidance: 'แนบภาพหลักฐานและระบุหมายเหตุให้ชัดเจน',
