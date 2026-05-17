@@ -9,9 +9,10 @@ import {
   ChevronUp,
   FileText,
 } from 'lucide-react';
-import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
 import { type Conversation } from '@/stores/types';
+import { mapConversationToStoreModel } from '@/domain/chat/mappers/mapConversationStore';
+import { useConversationsQuery } from '@/domain/chat/queries/useConversationsQuery';
 import { messagesApi } from '@/services/api/chatApi';
 import { ordersApi } from '@/services/api/ordersApi';
 import { quotationsApi } from '@/services/api/rfqApi';
@@ -80,9 +81,13 @@ export function ChatRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const data = useData();
+  const { isAuthenticated } = useAuth();
+  const conversationsQ = useConversationsQuery(Boolean(id) && isAuthenticated);
   const seedReference = (location.state as { reference?: ChatReference } | null)?.reference ?? null;
-  const fromCtx = id ? data.conversations.find((c) => c.id === id) : undefined;
+  const fromCtx = React.useMemo(() => {
+    const raw = id ? conversationsQ.data?.find((c) => String(c.conv_id) === id) : undefined;
+    return raw ? mapConversationToStoreModel(raw, raw.viewer_role) : undefined;
+  }, [conversationsQ.data, id]);
   const preview: ChatRoomPreview | undefined = fromCtx
     ? {
         factoryId: fromCtx.factoryId,
@@ -134,10 +139,10 @@ type ChatRoomBodyProps = {
 export function ChatRoomEmbedded({
   conversationId,
   preview,
-}: {
+}: Readonly<{
   conversationId: string;
   preview?: ChatRoomPreview;
-}) {
+}>) {
   const { conv, apiConv, messages, setMessages, msgLoading, refetchConversations } =
     useChatRoomSession(conversationId, preview);
   return (
@@ -164,7 +169,7 @@ function ChatRoomBody({
   refetchConversations,
   seedReference,
   clearSeedReference,
-}: ChatRoomBodyProps) {
+}: Readonly<ChatRoomBodyProps>) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const currentUserId = getCurrentUserId(user);
@@ -259,16 +264,16 @@ function ChatRoomBody({
     async (text: string, tempKey: string, attachRef: ChatReference | null) => {
       if (!apiConv || currentUserId == null) return;
       try {
-        const res = (await messagesApi.send(apiConv.conv_id, {
-          body: text,
-          ...buildSendPayload({
+        const res = (await messagesApi.send(
+          apiConv.conv_id,
+          buildSendPayload({
             conv: apiConv,
             currentUserId,
             content: text,
             reference: attachRef ?? undefined,
             messageType: 'TX',
           }),
-        })) as unknown as Record<string, unknown>;
+        )) as unknown as Record<string, unknown>;
         const serverRow = rowToRoomMessage(res);
         if (serverRow && serverRow.key) {
           setMessages((prev) =>

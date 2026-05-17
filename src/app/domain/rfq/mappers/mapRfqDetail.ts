@@ -6,6 +6,7 @@ import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
 import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 function collectUrlsFromUnknown(input: unknown): string[] {
   if (input == null) return [];
@@ -32,7 +33,7 @@ function collectUrlsFromUnknown(input: unknown): string[] {
       }
       if (item && typeof item === 'object') {
         const o = item as Record<string, unknown>;
-        const u = String(o.url ?? o.image_url ?? o.public_url ?? '').trim();
+        const u = pickScalarString(o.url, o.image_url, o.public_url);
         if (u) out.push(u);
       }
     }
@@ -50,20 +51,11 @@ function collectUrlsFromUnknown(input: unknown): string[] {
 }
 
 function numberOrNull(...candidates: unknown[]): number | null {
-  for (const candidate of candidates) {
-    if (candidate == null) continue;
-    const n = Number(candidate);
-    if (Number.isFinite(n)) return n;
-  }
-  return null;
+  return pickScalarNumber(...candidates);
 }
 
 function firstNonEmptyString(...candidates: unknown[]): string {
-  for (const candidate of candidates) {
-    const s = String(candidate ?? '').trim();
-    if (s) return s;
-  }
-  return '';
+  return pickScalarString(...candidates);
 }
 
 function collectStringArrayFromUnknown(input: unknown): string[] {
@@ -81,7 +73,7 @@ function collectStringArrayFromUnknown(input: unknown): string[] {
     return [raw];
   }
   if (Array.isArray(input)) {
-    return input.map((x) => String(x ?? '').trim()).filter(Boolean);
+    return input.map((x) => pickScalarString(x)).filter(Boolean);
   }
   if (typeof input === 'object') {
     const o = input as Record<string, unknown>;
@@ -133,19 +125,19 @@ function extractSubCategoryNameFromRfqResponse(
   detailPayload: Record<string, unknown> | null,
   rawRfq: Record<string, unknown>,
 ): string {
-  const fromRfq = String(
-    rawRfq.sub_category_name ?? rawRfq.subCategoryName ?? rawRfq.SubCategoryName ?? '',
-  ).trim();
+  const fromRfq = pickScalarString(
+    rawRfq.sub_category_name,
+    rawRfq.subCategoryName,
+    rawRfq.SubCategoryName,
+  );
   if (fromRfq) return fromRfq;
   if (!detailPayload) return '';
-  const fromRoot = String(
-    detailPayload.sub_category_name ?? detailPayload.subCategoryName ?? '',
-  ).trim();
+  const fromRoot = pickScalarString(detailPayload.sub_category_name, detailPayload.subCategoryName);
   if (fromRoot) return fromRoot;
   const inner = detailPayload.rfq;
   if (inner && typeof inner === 'object') {
     const o = inner as Record<string, unknown>;
-    return String(o.sub_category_name ?? o.subCategoryName ?? '').trim();
+    return pickScalarString(o.sub_category_name, o.subCategoryName);
   }
   return '';
 }
@@ -156,13 +148,13 @@ async function resolveSubCategoryNameById(
 ): Promise<string> {
   if (currentName) return currentName;
   const subId = Number(rawRfq.sub_category_id ?? rawRfq.subCategoryId ?? 0);
-  const catId = String(rawRfq.category_id ?? '');
+  const catId = pickScalarString(rawRfq.category_id);
   if (!Number.isFinite(subId) || subId <= 0 || !catId) return '';
   try {
     const rawSubs = await categoriesApi.subCategories(catId);
     const rows = Array.isArray(rawSubs) ? rawSubs : [];
     const row = rows.find((x) => Number(x.sub_category_id ?? x.id) === subId);
-    return String(row?.name ?? row?.sub_category_name ?? '').trim();
+    return pickScalarString(row?.name, row?.sub_category_name);
   } catch {
     return '';
   }
@@ -255,17 +247,22 @@ export async function fetchAndMapRfqDetail(
       );
       const budgetFallback = budgetPerPiece != null ? budgetPerPiece * quantity : 0;
       const budget = Math.max(0, Math.round(budgetTotalExplicit ?? budgetFallback ?? 0));
-      const catName = categoryMap.get(String(rawRfq.category_id)) ?? '';
-      const hasAcceptedQuote = quotes.some((q) => String(q.status ?? '').toUpperCase() === 'AC');
+      const rawCategoryId = pickScalarString(rawRfq.category_id);
+      const catName = categoryMap.get(rawCategoryId) ?? '';
+      const hasAcceptedQuote = quotes.some(
+        (q) => pickScalarString(q.status).toUpperCase() === 'AC',
+      );
       const status = mapRfqStatusFromApi(rawRfq.status, {
         quoteCount: quotes.length,
         hasAcceptedQuote,
       });
       const createdDate = rawRfq.created_at ? rawRfq.created_at.split('T')[0] : '';
 
-      const deadlineRaw = String(
-        rExtra.deadline ?? rExtra.target_date ?? rExtra.delivery_deadline ?? '',
-      ).trim();
+      const deadlineRaw = pickScalarString(
+        rExtra.deadline,
+        rExtra.target_date,
+        rExtra.delivery_deadline,
+      );
       const deadline =
         deadlineRaw && deadlineRaw.includes('T') ? deadlineRaw.split('T')[0] : deadlineRaw;
 
@@ -278,7 +275,7 @@ export async function fetchAndMapRfqDetail(
       const subCategoryId =
         Number.isFinite(subCategoryIdNum) && subCategoryIdNum > 0 ? subCategoryIdNum : undefined;
 
-      let shippingMethodName = String(rExtra.shipping_method_name ?? '').trim();
+      let shippingMethodName = pickScalarString(rExtra.shipping_method_name);
       const shipIdRaw = rExtra.shipping_method_id;
       if (!shippingMethodName && shipIdRaw != null && Number(shipIdRaw) > 0) {
         try {
@@ -288,7 +285,7 @@ export async function fetchAndMapRfqDetail(
             (x) => Number(x.shipping_method_id ?? x.id) === sid,
           );
           if (row) {
-            shippingMethodName = String(row.method_name ?? row.name_th ?? row.name ?? '').trim();
+            shippingMethodName = pickScalarString(row.method_name, row.name_th, row.name);
           }
         } catch {
           /* ignore */
@@ -392,27 +389,29 @@ export async function fetchAndMapRfqDetail(
           return {
             id: String(q.quote_id),
             factoryId: String(q.factory_id),
-            factoryName: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
+            factoryName:
+              factoryMap.get(pickScalarString(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
             price: Math.round(grandTotal),
             leadTime: q.lead_time_days,
             rating: 0,
             verified: true,
             recommended: false,
-            aiReason: `เสนอราคาเมื่อ ${q.create_time ? new Date(String(q.create_time)).toLocaleDateString('th-TH') : '-'}`,
-            factoryHighlight: String(q.factory_highlight ?? '').trim(),
+            aiReason: `เสนอราคาเมื่อ ${q.create_time ? new Date(pickScalarString(q.create_time)).toLocaleDateString('th-TH') : '-'}`,
+            factoryHighlight: pickScalarString(q.factory_highlight),
             completedOrders: 0,
             responseTime: '',
 
             quoteStatus: q.status,
             quotationDetail: {
               quote_id: q.quote_id,
-              factory_name: factoryMap.get(String(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
+              factory_name:
+                factoryMap.get(pickScalarString(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
               price_per_piece: q.price_per_piece,
               mold_cost: toolingMoldCost,
               moq: qty > 0 ? qty : undefined,
               lead_time_days: q.lead_time_days,
               shipping_method:
-                shippingMethodName || `วิธีจัดส่ง #${String(q.shipping_method_id ?? '-')}`,
+                shippingMethodName || `วิธีจัดส่ง #${pickScalarString(q.shipping_method_id, '-')}`,
               image_urls: collectUrlsFromUnknown(q.image_urls),
               sample_cost: 0,
               status:
@@ -424,7 +423,9 @@ export async function fetchAndMapRfqDetail(
                       ? 'Expired'
                       : 'Pending',
               valid_until:
-                q.valid_until != null && String(q.valid_until).trim() ? String(q.valid_until) : '',
+                q.valid_until != null && pickScalarString(q.valid_until)
+                  ? pickScalarString(q.valid_until)
+                  : '',
               validity_days: Number.isFinite(Number(q.validity_days)) ? Number(q.validity_days) : 0,
               subtotal,
               discount_amount: discountAmount,
@@ -490,7 +491,7 @@ export async function fetchAndMapRfqDetail(
         inspectionType: inspectionType || undefined,
       };
 
-  const shipIdNum = Number(shipIdRaw ?? 0);
+  const shipIdNum = pickScalarNumber(shipIdRaw) ?? 0;
   const shippingMethodId =
     Number.isFinite(shipIdNum) && shipIdNum > 0 ? shipIdNum : null;
   const addressSummary = deliveryAddress;
@@ -517,12 +518,12 @@ export async function fetchAndMapRfqDetail(
       }
       const matchingOrder = rawOrders.find((o) => acceptedQuoteIds.includes(o.quote_id));
       if (matchingOrder) {
-        const oStatus = mapOrderStatusFromApi(String(matchingOrder.status ?? 'PR'));
+        const oStatus = mapOrderStatusFromApi(pickScalarString(matchingOrder.status) || 'PR');
         relatedOrder = {
           id: String(matchingOrder.order_id),
           rfqId: String(rawRfq.rfq_id),
           factoryId: String(matchingOrder.factory_id),
-          factoryName: factoryMap.get(String(matchingOrder.factory_id)) ?? '',
+          factoryName: factoryMap.get(pickScalarString(matchingOrder.factory_id)) ?? '',
           projectName: rawRfq.title,
           category: catName,
           status: oStatus,
@@ -531,7 +532,7 @@ export async function fetchAndMapRfqDetail(
           depositPaid: matchingOrder.deposit_amount,
           quantity: rawRfq.quantity,
           createdAt: matchingOrder.created_at.split('T')[0],
-          estimatedDelivery: String(matchingOrder.estimated_delivery ?? '').split('T')[0],
+          estimatedDelivery: pickScalarString(matchingOrder.estimated_delivery).split('T')[0],
           timeline: [],
         };
       }

@@ -5,6 +5,7 @@ import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 
@@ -85,41 +86,51 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
   }, [quotation?.quote_id]);
 
   const data = rfqDetail ?? (rfq as unknown as Record<string, unknown>);
-  const quantity = Math.max(0, Number(data.quantity ?? rfq.quantity ?? 0) || 0);
-  const categoryName = String(data.category_name ?? rfq.category_name ?? '').trim() || '-';
-  const subCategoryName = String(data.sub_category_name ?? data.subCategoryName ?? '').trim();
-  const subCategoryId = Number(data.sub_category_id ?? data.subCategoryId ?? 0);
-  const shippingMethodName = String(
-    data.shipping_method_name ?? data.shippingMethodName ?? '',
-  ).trim();
-  const deliveryAddress = summarizeRfqAddress(data);
-  const materialGrade = String(data.material_grade ?? data.materialGrade ?? '').trim();
-  const tolerance = String(data.tolerance ?? '').trim();
-  const colorFinish = String(data.color_finish ?? data.colorFinish ?? '').trim();
-  const dimensionSpec = String(data.dimension_spec ?? data.dimensionSpec ?? '').trim();
-  const weightTargetG = Number(data.weight_target_g ?? data.weightTargetG ?? 0);
-  const packagingSpec = String(data.packaging_spec ?? data.packagingSpec ?? '').trim();
-  const targetLeadTimeDays = Number(data.target_lead_time_days ?? data.targetLeadTimeDays ?? 0);
-  const requiredDeliveryDateRaw = String(
-    data.required_delivery_date ?? data.requiredDeliveryDate ?? '',
-  ).trim();
-  const deadlineRaw = String(
-    data.deadline ?? data.target_date ?? data.delivery_deadline ?? rfq.deadline_date ?? '',
-  ).trim();
-  const inspectionType = String(data.inspection_type ?? data.inspectionType ?? '').trim();
-  const budgetTotal = Number(
-    data.total_budget ?? data.target_total_budget ?? data.budget_total ?? data.target_price ?? 0,
+  const quantity = Math.max(0, pickScalarNumber(data.quantity, rfq.quantity) ?? 0);
+  const categoryName = pickScalarString(data.category_name, rfq.category_name) || '-';
+  const subCategoryName = pickScalarString(data.sub_category_name, data.subCategoryName);
+  const subCategoryId = pickScalarNumber(data.sub_category_id, data.subCategoryId) ?? 0;
+  const shippingMethodName = pickScalarString(
+    data.shipping_method_name,
+    data.shippingMethodName,
   );
-  const description = String(data.details ?? data.description ?? rfq.details ?? '').trim();
+  const deliveryAddress = summarizeRfqAddress(data);
+  const materialGrade = pickScalarString(data.material_grade, data.materialGrade);
+  const tolerance = pickScalarString(data.tolerance);
+  const colorFinish = pickScalarString(data.color_finish, data.colorFinish);
+  const dimensionSpec = pickScalarString(data.dimension_spec, data.dimensionSpec);
+  const weightTargetG = pickScalarNumber(data.weight_target_g, data.weightTargetG) ?? 0;
+  const packagingSpec = pickScalarString(data.packaging_spec, data.packagingSpec);
+  const targetLeadTimeDays =
+    pickScalarNumber(data.target_lead_time_days, data.targetLeadTimeDays) ?? 0;
+  const requiredDeliveryDateRaw = pickScalarString(
+    data.required_delivery_date,
+    data.requiredDeliveryDate,
+  );
+  const deadlineRaw = pickScalarString(
+    data.deadline,
+    data.target_date,
+    data.delivery_deadline,
+    rfq.deadline_date,
+  );
+  const inspectionType = pickScalarString(data.inspection_type, data.inspectionType);
+  const budgetTotal =
+    pickScalarNumber(
+      data.total_budget,
+      data.target_total_budget,
+      data.budget_total,
+      data.target_price,
+    ) ?? 0;
+  const description = pickScalarString(data.details, data.description, rfq.details);
   const certifications = useMemo(() => {
     const input = data.certifications_required ?? data.certificationsRequired;
     if (Array.isArray(input)) {
-      return input.map((x) => String(x ?? '').trim()).filter(Boolean);
+      return input.map((x) => pickScalarString(x)).filter(Boolean);
     }
     if (typeof input === 'string' && input.trim()) {
       try {
         const parsed = JSON.parse(input);
-        if (Array.isArray(parsed)) return parsed.map((x) => String(x ?? '').trim()).filter(Boolean);
+        if (Array.isArray(parsed)) return parsed.map((x) => pickScalarString(x)).filter(Boolean);
       } catch {
         return [input.trim()];
       }
@@ -130,7 +141,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
   const imageUrls = useMemo(() => {
     const fromImages =
       Array.isArray(rfq.images) && rfq.images.length > 0
-        ? rfq.images.map((img) => String(img.image_url ?? '').trim()).filter(Boolean)
+        ? rfq.images.map((img) => pickScalarString(img.image_url)).filter(Boolean)
         : [];
     const collect = (input: unknown): string[] => {
       if (!input) return [];
@@ -140,7 +151,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
             if (typeof x === 'string') return x.trim();
             if (x && typeof x === 'object') {
               const o = x as Record<string, unknown>;
-              return String(o.url ?? o.image_url ?? o.public_url ?? '').trim();
+              return pickScalarString(o.url, o.image_url, o.public_url);
             }
             return '';
           })
@@ -410,13 +421,13 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                   </div>
                 </div>
 
-                {String(q.factory_highlight ?? q.highlight ?? '').trim() ? (
+                {pickScalarString(q.factory_highlight, q.highlight) ? (
                   <div className='rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2 mb-2'>
                     <p className='text-[12px] font-semibold text-violet-700 mb-0.5'>
                       จุดเด่นจากโรงงาน
                     </p>
                     <p className='text-[11px] text-violet-900 leading-relaxed'>
-                      {String(q.factory_highlight ?? q.highlight ?? '').trim()}
+                      {pickScalarString(q.factory_highlight, q.highlight)}
                     </p>
                   </div>
                 ) : null}

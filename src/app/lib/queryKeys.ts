@@ -56,6 +56,14 @@ export const chatKeys = {
   conversations: () => [...chatKeys.all, 'conversations'] as const,
 };
 
+export const notificationKeys = {
+  all: ['notifications'] as const,
+  lists: () => [...notificationKeys.all, 'list'] as const,
+  list: (page: number, limit: number, unread: boolean) =>
+    [...notificationKeys.lists(), page, limit, unread] as const,
+  unreadCount: () => [...notificationKeys.all, 'unread-count'] as const,
+};
+
 export const adminKeys = {
   all: ['admin'] as const,
   dashboard: () => [...adminKeys.all, 'dashboard'] as const,

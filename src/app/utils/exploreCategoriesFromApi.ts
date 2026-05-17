@@ -115,7 +115,7 @@ export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCate
 export async function fetchExploreCategoriesMerged(): Promise<FetchExploreCategoriesResult> {
   const [catRes, masterRes] = await Promise.allSettled([
     categoriesApi.list(),
-    masterApi.productCategories(),
+    masterApi.getProductCategories(),
   ]);
 
   const fromCat = catRes.status === 'fulfilled' ? parseCategoriesResponse(catRes.value) : [];

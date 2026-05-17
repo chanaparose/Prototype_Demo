@@ -56,6 +56,13 @@ export const showcasesApi = {
     return httpClient.get<unknown[]>(endpoint);
   },
 
+  listByFactory: (factoryId: string | number, contentType?: string) => {
+    const params = new URLSearchParams({ factory_id: String(factoryId) });
+    if (contentType) params.set('content_type', contentType);
+    const query = params.toString();
+    return httpClient.get<unknown[]>(`/showcases${query ? `?${query}` : ''}`);
+  },
+
   get: (id: string | number) => httpClient.get<Record<string, unknown>>(`/showcases/${id}`),
 
   create: (data: Record<string, unknown>) =>

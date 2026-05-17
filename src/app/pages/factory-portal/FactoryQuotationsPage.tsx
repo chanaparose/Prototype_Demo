@@ -3,24 +3,23 @@ import { ChevronRight, FileCheck } from 'lucide-react';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { useFactoryQuotationsListQuery } from '@/domain/factory/queries/useFactoryQuotationsListQuery';
+import type { IQuotationResponse } from '@/services/api/types/rfq.types';
 import {
   QUOTATION_STATUS_BADGE_FACTORY,
   QUOTATION_STATUS_LABEL_FACTORY,
 } from '@/domain/rfq/constants';
 
-type Row = Record<string, unknown>;
-
-function quoteId(r: Row): string {
-  return String(r.quote_id ?? r.id ?? '');
+function quoteId(r: IQuotationResponse): string {
+  return String(r.quote_id);
 }
 
-function rfqId(r: Row): string {
-  return String(r.rfq_id ?? r.rfqId ?? '');
+function rfqId(r: IQuotationResponse): string {
+  return String(r.rfq_id);
 }
 
 export function FactoryQuotationsPage() {
   const listQ = useFactoryQuotationsListQuery();
-  const rows = (listQ.data ?? []) as Row[];
+  const rows = listQ.data ?? [];
   const loading = listQ.isLoading;
   const error = listQ.error;
 
@@ -76,7 +75,7 @@ export function FactoryQuotationsPage() {
         <ul className='space-y-3'>
           {rows.map((r, idx) => {
             const id = quoteId(r);
-            const st = String(r.status ?? 'PD').toUpperCase();
+            const st = String(r.status || 'PD').toUpperCase();
             const canEdit = st === 'PD';
             const badge = QUOTATION_STATUS_BADGE_FACTORY[st] ?? QUOTATION_STATUS_BADGE_FACTORY.PD;
             return (
@@ -88,11 +87,11 @@ export function FactoryQuotationsPage() {
                       {rfqId(r) ? ` · RFQ ${rfqId(r)}` : ''}
                     </p>
                     <p className='font-bold text-sm' style={{ color: 'var(--brand-navy)' }}>
-                      {formatCurrencyNoDecimals(Number(r.price_per_piece ?? 0))}
-                      {r.lead_time_days != null ? (
+                      {formatCurrencyNoDecimals(r.price_per_piece)}
+                      {r.lead_time_days > 0 ? (
                         <span className='font-normal text-gray-500'>
                           {' '}
-                          · {String(r.lead_time_days)} วัน
+                          · {r.lead_time_days} วัน
                         </span>
                       ) : null}
                     </p>

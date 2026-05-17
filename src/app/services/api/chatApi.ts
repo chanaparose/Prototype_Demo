@@ -41,7 +41,14 @@ export const messagesApi = {
 };
 
 export const notificationsApi = {
-  list: () => httpClient.get<unknown[]>('/notifications'),
+  list: (params?: { page?: number; limit?: number; unread?: boolean }) => {
+    const search = new URLSearchParams();
+    if (params?.page != null) search.set('page', String(params.page));
+    if (params?.limit != null) search.set('limit', String(params.limit));
+    if (params?.unread != null) search.set('unread', String(params.unread));
+    const query = search.toString();
+    return httpClient.get<unknown[]>(`/notifications${query ? `?${query}` : ''}`);
+  },
 
   get: (id: string | number) => httpClient.get<unknown>(`/notifications/${id}`),
 
@@ -57,5 +64,12 @@ export const notificationsApi = {
   getUnreadCount: () =>
     httpClient.get<{
       total: number;
+      count?: number;
+    }>('/notifications/unread-count'),
+
+  unreadCount: () =>
+    httpClient.get<{
+      total: number;
+      count?: number;
     }>('/notifications/unread-count'),
 };

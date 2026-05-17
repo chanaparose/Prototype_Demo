@@ -27,8 +27,18 @@ export interface IExploreShowcaseResponse {
 export interface IExploreCategoryResponse {
   category_id: number;
   id?: number;
+  categoryId?: number;
+  lbi_category_id?: number;
+  product_category_id?: number;
+  lbi_product_category_id?: number;
   name: string;
+  name_th?: string;
+  name_en?: string;
   category_name?: string;
+  title?: string;
+  label?: string;
+  parent_id?: number | string | null;
+  parentId?: number | string | null;
   display_order?: number;
   sort_order?: number;
 }

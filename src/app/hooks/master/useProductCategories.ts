@@ -13,7 +13,7 @@ export function useProductCategories() {
   return useQuery({
     queryKey: masterKeys.productCategories() as const,
     queryFn: async () => {
-      const raw = await masterApi.productCategories();
+      const raw = await masterApi.getProductCategories();
       const arr = (Array.isArray(raw) ? raw : []) as Row[];
       return arr
         .map((r): CategoryOption | null => {

@@ -2,6 +2,12 @@ import React from 'react';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
 import type { IQuotationBreakdown } from '@/services/api/types/rfq.types';
+import { pickScalarString } from '@/utils/pickScalarString';
+
+function resolveCurrencyCode(platformConfig?: IPlatformConfigResponse | null): string {
+  const code = pickScalarString(platformConfig?.currency_code);
+  return code || 'THB';
+}
 
 type Props = {
   loading: boolean;
@@ -9,7 +15,7 @@ type Props = {
   platformConfig?: IPlatformConfigResponse | null;
 };
 
-function Row({ label, value, currency }: { label: string; value: number; currency: string }) {
+function Row({ label, value, currency }: Readonly<{ label: string; value: number; currency: string }>) {
   return (
     <div className='flex items-center justify-between text-sm'>
       <span className='text-gray-500'>{label}</span>
@@ -18,8 +24,8 @@ function Row({ label, value, currency }: { label: string; value: number; currenc
   );
 }
 
-export function BreakdownCard({ loading, breakdown, platformConfig }: Props) {
-  const ccy = platformConfig?.currency_code ?? 'THB';
+export function BreakdownCard({ loading, breakdown, platformConfig }: Readonly<Props>) {
+  const ccy = resolveCurrencyCode(platformConfig);
   if (loading) {
     return (
       <div

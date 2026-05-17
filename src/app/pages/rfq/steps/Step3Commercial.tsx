@@ -3,21 +3,14 @@ import { Input } from '@/components/ui/input';
 import React from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
-import { mapAddressFromApi } from '@/domain/shared/mappers/mapAddressFromApi';
+import {
+  mapAddressFromApi,
+  type MappedAddress,
+} from '@/domain/shared/mappers/mapAddressFromApi';
 import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';
-
-type Address = {
-  id: number;
-  addressDetail: string;
-  subDistrict: string;
-  district: string;
-  province: string;
-  zipCode: string;
-  isDefault: boolean;
-};
 
 type ShippingMethod = {
   id: number;
@@ -45,7 +38,7 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
 
 export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
   /* addresses */
-  const [addresses, setAddresses] = React.useState<Address[]>([]);
+  const [addresses, setAddresses] = React.useState<MappedAddress[]>([]);
   const [addrLoading, setAddrLoading] = React.useState(true);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
@@ -53,14 +46,14 @@ export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
 
   const [shippingMethods, setShippingMethods] = React.useState<ShippingMethod[]>(FALLBACK_SHIPPING);
 
-  const loadAddresses = React.useCallback(async (): Promise<Address[]> => {
+  const loadAddresses = React.useCallback(async (): Promise<MappedAddress[]> => {
     setAddrLoading(true);
     try {
       const raw = await addressesApi.list();
       const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
       const mapped = arr
         .map(mapAddressFromApi)
-        .filter((a): a is Address => a != null);
+        .filter((a): a is MappedAddress => a != null);
       setAddresses(mapped);
       return mapped;
     } catch {

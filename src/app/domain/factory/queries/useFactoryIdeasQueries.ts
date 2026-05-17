@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { factoriesApi } from '@/services/api/factoryApi';
-import { masterApi } from '@/services/api/masterApi';
+import { getLbiCategories, getProductCategories } from '@/services/api/masterApi';
 import { type Factory } from '@/stores/types';
 import { factoryIdeasKeys } from '@/lib/queryKeys';
 import { fetchExploreCategoriesMerged } from '@/utils/exploreCategoriesFromApi';
 import { parseMasterProductCategories } from '@/utils/exploreToFactoryIdeasCategory';
+import { pickScalarString } from '@/utils/pickScalarString';
 import {
   getCachedSubCategoriesSync,
   loadSubCategories,
@@ -20,13 +21,13 @@ export function useFactoryIdeasCategoriesQuery(materialTab: boolean) {
     queryKey: factoryIdeasKeys.categories(materialTab),
     queryFn: async (): Promise<FactoryIdeasCategoryRow[]> => {
       if (materialTab) {
-        const raw = (await masterApi.lbiCategories('MT')) as unknown as Record<string, unknown>;
-        const arr = (Array.isArray(raw.categories) ? raw.categories : []) as Record<
-          string,
-          unknown
-        >[];
+        const raw = await getLbiCategories('MT');
+        const arr = Array.isArray(raw.categories) ? raw.categories : [];
         return arr
-          .map((c) => ({ id: String(c.category_id ?? c.id ?? ''), name: String(c.name ?? '') }))
+          .map((c) => ({
+            id: pickScalarString(c.category_id, c.id),
+            name: pickScalarString(c.category_name, c.name),
+          }))
           .filter((r) => r.id && r.name);
       }
 
@@ -34,7 +35,7 @@ export function useFactoryIdeasCategoriesQuery(materialTab: boolean) {
       let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
       if (rows.length === 0) {
         try {
-          const rawPD = await masterApi.productCategories();
+          const rawPD = await getProductCategories();
           rows = parseMasterProductCategories(rawPD);
         } catch {
           /* keep [] */
@@ -53,8 +54,10 @@ export function useFactoryIdeasFactoryListQuery(enabled: boolean) {
     queryKey: factoryIdeasKeys.factoryList(),
     queryFn: async () => {
       const raw = await factoriesApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-      return arr.map(normalizeFactoryIdeaFactory).filter((f) => f.id && f.name) as Factory[];
+      const arr = (Array.isArray(raw) ? raw : []) as unknown as Record<string, unknown>[];
+      return arr
+        .map((row) => normalizeFactoryIdeaFactory(row))
+        .filter((f) => f.id && f.name) as Factory[];
     },
     enabled,
     staleTime: 60_000,

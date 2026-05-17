@@ -1,29 +1,28 @@
-import type { Category, Factory } from '@/stores/types';
+import type { BootstrapCategoryModel, Factory } from '@/stores/types';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import type { IExploreCategoryResponse } from '@/services/api/types/explore.types';
 import { pickScalarString } from '@/utils/pickScalarString';
 
 export function mapExploreCategoryFromApi(row: IExploreCategoryResponse): IExploreCategory | null {
-  const source = row as Record<string, unknown>;
   const id = pickScalarString(
-    source.id,
-    source.category_id,
-    source.categoryId,
-    source.lbi_category_id,
-    source.product_category_id,
-    source.lbi_product_category_id,
+    row.id,
+    row.category_id,
+    row.categoryId,
+    row.lbi_category_id,
+    row.product_category_id,
+    row.lbi_product_category_id,
   );
   const name = pickScalarString(
-    source.name,
-    source.name_th,
-    source.name_en,
-    source.category_name,
-    source.title,
-    source.label,
+    row.name,
+    row.name_th,
+    row.name_en,
+    row.category_name,
+    row.title,
+    row.label,
   );
   if (!id || !name) return null;
-  const parentId = pickScalarString(source.parent_id, source.parentId);
+  const parentId = pickScalarString(row.parent_id, row.parentId);
   return {
     id,
     name,
@@ -31,7 +30,9 @@ export function mapExploreCategoryFromApi(row: IExploreCategoryResponse): IExplo
   };
 }
 
-export function mapStoreCategoryToExploreCategory(category: Category): IExploreCategory {
+export function mapStoreCategoryToExploreCategory(
+  category: BootstrapCategoryModel,
+): IExploreCategory {
   return {
     id: category.id,
     name: category.name,
@@ -39,7 +40,9 @@ export function mapStoreCategoryToExploreCategory(category: Category): IExploreC
   };
 }
 
-export function mapStoreCategoriesToExplore(categories: Category[]): IExploreCategory[] {
+export function mapStoreCategoriesToExplore(
+  categories: BootstrapCategoryModel[],
+): IExploreCategory[] {
   return categories.map(mapStoreCategoryToExploreCategory);
 }
 

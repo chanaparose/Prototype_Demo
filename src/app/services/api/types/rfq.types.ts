@@ -127,6 +127,7 @@ export interface IQuotationBreakdown {
   grand_total: number;
   factory_net_receivable: number;
   platform_commission_rate: number;
+  platform_commission_amount: number;
 }
 
 export interface IRfqWizardCreateInput {

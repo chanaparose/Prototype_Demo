@@ -2,14 +2,14 @@
  * Legacy bootstrap/store UI models.
  * These are camelCase client models, not API response contracts.
  */
-export type Category = {
+export type BootstrapCategoryModel = {
   id: string;
   name: string;
   icon: string;
   color: string;
 };
 
-export type Factory = {
+export type BootstrapFactoryModel = {
   id: string;
   name: string;
   location: string;
@@ -28,24 +28,26 @@ export type Factory = {
   factoryTypeName?: string;
 };
 
-export type FactoryProfile = {
+export type BootstrapFactoryProfileModel = {
   factoryId: string;
   address: string;
   acceptedProductTypes: string[];
   certificates: string[];
 };
 
-export type FactoryReview = {
+export type BootstrapFactoryReviewModel = {
   id: string;
   factoryId: string;
   reviewer: string;
   rating: number;
   comment: string;
   date: string;
+  helpfulCount?: number;
+  optionText?: string;
   imageUrls?: string[];
 };
 
-export type IdeaArticle = {
+export type BootstrapIdeaArticleModel = {
   id: string;
   factoryId: string;
   factoryName: string;
@@ -80,7 +82,7 @@ export type ShowcaseSpecRow = {
   sort_order?: number;
 };
 
-export type FactoryShowcase = {
+export type BootstrapFactoryShowcaseModel = {
   id: string;
   factoryId: string;
   factoryName: string;
@@ -115,7 +117,7 @@ export type FactoryShowcase = {
   linkedShowcases?: (string | number)[];
 };
 
-export type RfqOffer = {
+export type BootstrapRfqOfferModel = {
   id: string;
   factoryId: string;
   factoryName: string;
@@ -132,7 +134,7 @@ export type RfqOffer = {
   orderId?: string;
 };
 
-export type Rfq = {
+export type BootstrapRfqModel = {
   id: string;
   projectName: string;
   category: string;
@@ -146,7 +148,7 @@ export type Rfq = {
   createdAt: string;
   description: string;
   imageUrls: string[];
-  offers: RfqOffer[];
+  offers: BootstrapRfqOfferModel[];
   subCategoryName?: string;
   subCategoryId?: number;
   shippingMethodName?: string;
@@ -174,7 +176,7 @@ export type OrderTimeline = {
   description: string;
 };
 
-export type Order = {
+export type BootstrapOrderModel = {
   id: string;
   rfqId: string;
   factoryId: string;
@@ -200,7 +202,7 @@ export type Message = {
   quoteData?: { price: number; leadTime: number; validUntil: string };
 };
 
-export type Conversation = {
+export type BootstrapConversationModel = {
   id: string;
   factoryId: string;
   rfqId: string;
@@ -214,7 +216,7 @@ export type Conversation = {
   messages: Message[];
 };
 
-export type Notification = {
+export type BootstrapNotificationModel = {
   id: string;
   type: string;
   title: string;
@@ -228,7 +230,7 @@ export type Notification = {
   conversationId?: string;
 };
 
-export type CurrentUser = {
+export type BootstrapCurrentUserModel = {
   id: string;
   name: string;
   nameEn?: string;
@@ -241,10 +243,14 @@ export type CurrentUser = {
   memberSince: string;
 };
 
-export type BootstrapCategoryModel = Category;
-export type BootstrapFactoryModel = Factory;
-export type BootstrapFactoryShowcaseModel = FactoryShowcase;
-export type BootstrapRfqModel = Rfq;
-export type BootstrapOrderModel = Order;
-export type BootstrapConversationModel = Conversation;
-export type BootstrapNotificationModel = Notification;
+export type Factory = BootstrapFactoryModel;
+export type FactoryProfile = BootstrapFactoryProfileModel;
+export type FactoryReview = BootstrapFactoryReviewModel;
+export type IdeaArticle = BootstrapIdeaArticleModel;
+export type FactoryShowcase = BootstrapFactoryShowcaseModel;
+export type RfqOffer = BootstrapRfqOfferModel;
+export type Rfq = BootstrapRfqModel;
+export type Order = BootstrapOrderModel;
+export type Conversation = BootstrapConversationModel;
+export type Notification = BootstrapNotificationModel;
+export type CurrentUser = BootstrapCurrentUserModel;

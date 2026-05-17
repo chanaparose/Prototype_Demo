@@ -8,6 +8,7 @@ import type {
   ISubCategoryResponse,
   IUnitResponse,
 } from '@/services/api/types/master.types';
+import type { IProductionStepTemplateResponse } from '@/services/api/types/production.types';
 
 export const categoriesApi = {
   list: () => httpClient.get<ICategoryResponse[]>('/categories'),
@@ -17,6 +18,18 @@ export const categoriesApi = {
   subCategories: (categoryId: string | number) =>
     httpClient.get<ISubCategoryResponse[]>(`/categories/${categoryId}/sub-categories`),
 };
+
+export function getProductCategories(parentCategoryId?: string | number) {
+  const endpoint =
+    parentCategoryId != null
+      ? `/master/product-categories?parent_category_id=${parentCategoryId}`
+      : '/master/product-categories';
+  return httpClient.get<ICategoryResponse[]>(endpoint);
+}
+
+export function getLbiCategories(scope: 'PD' | 'MT' | 'ALL' = 'PD') {
+  return httpClient.get<{ categories: ICategoryResponse[] }>(`/lbi/categories?scope=${scope}`);
+}
 
 export const masterApi = {
   getAll: () =>
@@ -30,13 +43,29 @@ export const masterApi = {
 
   getCategories: () => httpClient.get<ICategoryResponse[]>('/master/categories'),
 
+  getProductCategories: getProductCategories,
+  productCategories: getProductCategories,
+
+  getLbiCategories: getLbiCategories,
+  lbiCategories: getLbiCategories,
+
   getUnits: () => httpClient.get<IUnitResponse[]>('/master/units'),
 
   getCertifications: () => httpClient.get<ICertificationResponse[]>('/master/certifications'),
 
+  certificates: () => httpClient.get<ICertificationResponse[]>('/master/certifications'),
   getShippingMethods: () => httpClient.get<IShippingMethodResponse[]>('/master/shipping-methods'),
 
   getFactoryTypes: () => httpClient.get<IFactoryTypeResponse[]>('/master/factory-types'),
+  factoryTypes: () => httpClient.get<IFactoryTypeResponse[]>('/master/factory-types'),
+
+  getProductionSteps: (factoryTypeId?: string | number) => {
+    const endpoint =
+      factoryTypeId != null
+        ? `/master/production-steps?factory_type_id=${factoryTypeId}`
+        : '/master/production-steps';
+    return httpClient.get<IProductionStepTemplateResponse[]>(endpoint);
+  },
 
   getMaterials: (categoryId?: string | number) => {
     const endpoint = categoryId
@@ -44,6 +73,14 @@ export const masterApi = {
       : '/master/materials';
     return httpClient.get<IMaterialResponse[]>(endpoint);
   },
+
+  provinces: () => httpClient.get<unknown[]>('/master/provinces'),
+
+  districts: (provinceId: string | number) =>
+    httpClient.get<unknown[]>(`/master/districts?province_id=${provinceId}`),
+
+  subDistricts: (districtId: string | number) =>
+    httpClient.get<unknown[]>(`/master/sub-districts?district_id=${districtId}`),
 };
 
 export const addressesApi = {

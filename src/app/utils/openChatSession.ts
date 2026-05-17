@@ -73,16 +73,16 @@ export async function openChatSession(
 
   const fm = firstMessage?.content?.trim();
   if (fm) {
-    await messagesApi.send(conv.conv_id, {
-      body: fm,
-      ...buildSendPayload({
+    await messagesApi.send(
+      conv.conv_id,
+      buildSendPayload({
         conv,
         currentUserId,
         content: fm,
         reference: firstMessage.reference ?? undefined,
         messageType: 'TX',
       }),
-    });
+    );
     navigate(chatRoomPath(conv.conv_id));
     return String(conv.conv_id);
   }

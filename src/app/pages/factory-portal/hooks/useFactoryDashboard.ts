@@ -5,6 +5,7 @@ import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
 import { ordersApi } from '@/services/api/ordersApi';
 import { walletApi } from '@/services/api/userApi';
 import { factoriesApi } from '@/services/api/factoryApi';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type AnalyticsTimeframe = 'daily' | 'weekly' | 'monthly';
 
@@ -31,46 +32,49 @@ export type AnalyticsSummary = {
 
 function orderFactoryId(row: Record<string, unknown>): number | null {
   const inner = (row.order as Record<string, unknown>) ?? row;
-  const n = Number(inner.factory_id ?? row.factory_id ?? row.factoryId);
+  const n = pickScalarNumber(inner.factory_id, row.factory_id, row.factoryId);
   return Number.isFinite(n) ? n : null;
 }
 
 function orderStatus(row: Record<string, unknown>): string {
   const inner = (row.order as Record<string, unknown>) ?? row;
-  return String(inner.status ?? row.status ?? '').toUpperCase();
+  return pickScalarString(inner.status, row.status).toUpperCase();
 }
 
 function orderCreatedTs(row: Record<string, unknown>): number | null {
   const inner = (row.order as Record<string, unknown>) ?? row;
-  const raw = inner.created_at ?? row.created_at ?? inner.updated_at ?? row.updated_at;
-  if (raw == null) return null;
-  const t = new Date(String(raw)).getTime();
+  const raw = pickScalarString(inner.created_at, row.created_at, inner.updated_at, row.updated_at);
+  if (!raw) return null;
+  const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : null;
 }
 
 function orderTotalAmount(row: Record<string, unknown>): number {
   const inner = (row.order as Record<string, unknown>) ?? row;
-  return Number(
-    inner.total_amount ?? inner.totalAmount ?? row.total_amount ?? row.totalAmount ?? 0,
-  );
+  return pickScalarNumber(
+    inner.total_amount,
+    inner.totalAmount,
+    row.total_amount,
+    row.totalAmount,
+  ) ?? 0;
 }
 
 function rfqCreatedTs(r: Record<string, unknown>): number | null {
-  const raw = r.created_at ?? r.createdAt;
-  if (raw == null) return null;
-  const t = new Date(String(raw)).getTime();
+  const raw = pickScalarString(r.created_at, r.createdAt);
+  if (!raw) return null;
+  const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : null;
 }
 
 function quoteFactoryId(q: Record<string, unknown>): number | null {
-  const n = Number(q.factory_id ?? q.factoryId);
+  const n = pickScalarNumber(q.factory_id, q.factoryId);
   return Number.isFinite(n) ? n : null;
 }
 
 function quoteCreatedTs(q: Record<string, unknown>): number | null {
-  const raw = q.created_at ?? q.updated_at ?? q.createdAt;
-  if (raw == null) return null;
-  const t = new Date(String(raw)).getTime();
+  const raw = pickScalarString(q.created_at, q.updated_at, q.createdAt);
+  if (!raw) return null;
+  const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : null;
 }
 
@@ -287,7 +291,7 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
 
   const summary: AnalyticsSummary = useMemo(() => {
     const pendingFund =
-      wallet != null ? Number(wallet.pending_fund ?? wallet.pendingBalance ?? 0) : 0;
+      wallet != null ? (pickScalarNumber(wallet.pending_fund, wallet.pendingBalance) ?? 0) : 0;
     const rfq_received_client = opRfqs.length;
     const rfq_replies_client =
       fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
@@ -304,7 +308,8 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
     const pending_quotations_client =
       fid != null
         ? myQuotes.filter(
-            (q) => quoteFactoryId(q) === fid && String(q.status ?? 'PD').toUpperCase() === 'PD',
+            (q) =>
+              quoteFactoryId(q) === fid && (pickScalarString(q.status) || 'PD').toUpperCase() === 'PD',
           ).length
         : 0;
 
@@ -314,24 +319,24 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
     const hasD = D != null;
 
     const revenue_total = hasA
-      ? Number(A.total_revenue ?? A.revenue_total ?? revenue_client)
+      ? (pickScalarNumber(A.total_revenue, A.revenue_total) ?? revenue_client)
       : revenue_client;
     const closed_orders_total = hasA
-      ? Number(A.completed_orders ?? A.closed_orders_total ?? closed_orders_client)
+      ? (pickScalarNumber(A.completed_orders, A.closed_orders_total) ?? closed_orders_client)
       : closed_orders_client;
     const total_orders_total = hasA
-      ? Number(A.total_orders ?? A.total_orders_total ?? total_orders_client)
+      ? (pickScalarNumber(A.total_orders, A.total_orders_total) ?? total_orders_client)
       : total_orders_client;
     const rfq_received_total = hasA
-      ? Number(A.total_quotations ?? A.rfq_received_total ?? rfq_received_client)
+      ? (pickScalarNumber(A.total_quotations, A.rfq_received_total) ?? rfq_received_client)
       : rfq_received_client;
     const rfq_replies_total = hasA
-      ? Number(
-          A.accepted_quotes ?? A.accepted_quotes_count ?? A.rfq_replies_total ?? rfq_replies_client,
-        )
+      ? (pickScalarNumber(A.accepted_quotes, A.accepted_quotes_count, A.rfq_replies_total) ??
+        rfq_replies_client)
       : rfq_replies_client;
     const pending_quotations_total = hasD
-      ? Number(D.pending_quotations_total ?? D.pending_quotations ?? pending_quotations_client)
+      ? (pickScalarNumber(D.pending_quotations_total, D.pending_quotations) ??
+        pending_quotations_client)
       : pending_quotations_client;
 
     return {

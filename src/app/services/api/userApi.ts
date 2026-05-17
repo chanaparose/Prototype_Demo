@@ -111,6 +111,31 @@ export const favoritesApi = {
     }>(`/favorites/${showcase_id}/check`),
 };
 
+export type IFactoryReviewSummaryResponse = {
+  average_rating: number;
+  total_reviews: number;
+  review_count?: number;
+  rating_distribution: Record<string, number>;
+};
+
+function fetchFactoryReviews(
+  factoryId: string | number,
+  limit = 20,
+  offset = 0,
+) {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  return httpClient.get<unknown[]>(`/factories/${factoryId}/reviews?${params}`);
+}
+
+function fetchFactoryReviewSummary(factoryId: string | number) {
+  return httpClient.get<IFactoryReviewSummaryResponse>(
+    `/factories/${factoryId}/reviews/summary`,
+  );
+}
+
 export const reviewsApi = {
   list: () => httpClient.get<unknown[]>('/reviews'),
 
@@ -126,20 +151,15 @@ export const reviewsApi = {
 
   delete: (id: string | number) => httpClient.delete<void>(`/reviews/${id}`),
 
-  getForFactory: (factoryId: string | number, limit = 20, offset = 0) => {
-    const params = new URLSearchParams({
-      limit: String(limit),
-      offset: String(offset),
-    });
-    return httpClient.get<unknown[]>(`/factories/${factoryId}/reviews?${params}`);
-  },
+  getForFactory: fetchFactoryReviews,
 
-  getSummary: (factoryId: string | number) =>
-    httpClient.get<{
-      average_rating: number;
-      total_reviews: number;
-      rating_distribution: Record<string, number>;
-    }>(`/factories/${factoryId}/reviews/summary`),
+  getSummary: fetchFactoryReviewSummary,
+
+  /** @deprecated Use `getSummary` */
+  summaryByFactory: fetchFactoryReviewSummary,
+
+  /** @deprecated Use `getForFactory` */
+  listByFactory: fetchFactoryReviews,
 };
 
 export const certificatesApi = {

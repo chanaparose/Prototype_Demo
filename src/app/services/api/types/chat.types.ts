@@ -44,11 +44,16 @@ export interface IMessageResponse {
   }>;
 }
 
+/** POST /conversations/:id/messages — matches backend CreateMessageRequest */
 export interface IMessageSendRequest {
-  body: string;
-  rfq_id?: number;
-  quote_id?: number;
-  order_id?: number;
+  content: string;
+  receiver_id: number;
+  conv_id?: number;
+  message_type?: string;
+  reference_type?: string;
+  reference_id?: number;
+  quote_data?: string;
+  attachment_url?: string;
 }
 
 export interface IThreadResponse {
@@ -59,10 +64,3 @@ export interface IThreadResponse {
   messages: IMessageResponse[];
   created_at: string;
 }
-
-export type CustomerPartyInfoDTO = ICustomerPartyInfoResponse;
-export type FactoryPartyInfoDTO = IFactoryPartyInfoResponse;
-export type ConversationDTO = IConversationResponse;
-export type MessageDTO = IMessageResponse;
-export type MessageSendPayload = IMessageSendRequest;
-export type ThreadResponse = IThreadResponse;

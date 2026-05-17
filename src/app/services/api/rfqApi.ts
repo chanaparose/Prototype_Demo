@@ -57,6 +57,8 @@ export const quotationsApi = {
     const endpoint = rfqId ? `/quotations?rfq_id=${rfqId}` : '/quotations';
     return httpClient.get<IQuotationResponse[]>(endpoint);
   },
+
+  listMine: () => httpClient.get<IQuotationResponse[]>('/quotations'),
 };
 
 export const quotationApi = {

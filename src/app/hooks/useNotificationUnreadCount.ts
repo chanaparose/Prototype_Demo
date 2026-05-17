@@ -1,32 +1,25 @@
-import { useCallback, useEffect, useState } from 'react';
-import { notificationsApi } from '@/services/api/chatApi';
+import { useEffect } from 'react';
+import { queryClient } from '@/lib/queryClient';
+import { notificationKeys } from '@/lib/queryKeys';
+import { useNotificationUnreadCountQuery } from '@/domain/notifications/queries/useNotificationQueries';
 
 export const NOTIFICATIONS_CHANGED_EVENT = 'notifications:changed';
 
 export function useNotificationUnreadCount(enabled: boolean) {
-  const [count, setCount] = useState(0);
-
-  const load = useCallback(async () => {
-    if (!enabled) {
-      setCount(0);
-      return;
-    }
-    try {
-      const res = await notificationsApi.unreadCount();
-      setCount(Number((res as { count?: number })?.count ?? 0));
-    } catch {}
-  }, [enabled]);
+  const { data = 0, refetch } = useNotificationUnreadCountQuery(enabled);
 
   useEffect(() => {
-    void load();
-    const id = window.setInterval(() => void load(), 60_000);
-    const onChanged = () => void load();
+    if (!enabled) return undefined;
+    const id = window.setInterval(() => void refetch(), 60_000);
+    const onChanged = () => {
+      void queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount() });
+    };
     window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, onChanged);
     return () => {
       window.clearInterval(id);
       window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, onChanged);
     };
-  }, [load]);
+  }, [enabled, refetch]);
 
-  return count;
+  return enabled ? data : 0;
 }

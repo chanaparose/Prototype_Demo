@@ -3,11 +3,14 @@ import { useParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
 import { type IdeaArticle } from '@/stores/types';
 import { type TabId } from '@/components/features/factory-profile/FactoryProfileTabContent';
+import { mapConversationToStoreModel } from '@/domain/chat/mappers/mapConversationStore';
+import { useConversationsQuery } from '@/domain/chat/queries/useConversationsQuery';
 import {
   createFactoryConversation,
   type FactoryProfileDetail,
 } from '@/domain/factory/mappers/mapFactoryProfile';
 import { useFactoryProfileQuery } from '@/domain/factory/queries/useFactoryProfileQuery';
+import { useAuth } from '@/stores/useAuthStore';
 
 export type { FactoryProfileDetail };
 
@@ -16,6 +19,8 @@ export function useFactoryProfile() {
   const [activeTab, setActiveTab] = React.useState<TabId>('products');
   const [startingConversation, setStartingConversation] = React.useState(false);
   const data = useData();
+  const { isAuthenticated } = useAuth();
+  const conversationsQ = useConversationsQuery(Boolean(id) && isAuthenticated);
 
   const factoryFallback = React.useMemo(
     () => data.factories.find((f) => String(f.id) === String(id)),
@@ -32,7 +37,10 @@ export function useFactoryProfile() {
   });
 
   const detail = detailQuery.data;
-  const conversation = data.conversations.find((c) => String(c.factoryId) === String(id));
+  const conversation = React.useMemo(() => {
+    const raw = conversationsQ.data?.find((c) => String(c.factory_id) === String(id));
+    return raw ? mapConversationToStoreModel(raw, raw.viewer_role) : undefined;
+  }, [conversationsQ.data, id]);
 
   const factory = detail?.factory ?? factoryFallback ?? null;
   const profile = detail?.profile ?? profileFallback ?? null;

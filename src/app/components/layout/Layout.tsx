@@ -16,6 +16,7 @@ import { DesktopSidebar } from '@/components/layout/DesktopSidebar';
 import { ProductTour } from '@/components/features/explore/ProductTour';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
+import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { isFactoryRole } from '@/utils/factoryUser';
 import {
   FACTORY_SIDEBAR_NAV,
@@ -40,7 +41,7 @@ export function Layout() {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const data = useData();
-  const unreadNotifications = data.notifications.filter((n) => !n.read).length;
+  const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isFactory = isFactoryRole(user);
   const userRole = String(user?.role ?? '').toUpperCase();

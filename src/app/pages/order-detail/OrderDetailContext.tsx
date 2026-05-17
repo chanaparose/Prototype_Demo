@@ -9,7 +9,7 @@ import type {
 } from '@/components/features/production/types';
 import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
 import { useOrderDetailQuery } from '@/hooks/order-detail/useOrderDetailQuery';
-import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';
+import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
 import {
   getOrderUiMode,
   type LockReason,

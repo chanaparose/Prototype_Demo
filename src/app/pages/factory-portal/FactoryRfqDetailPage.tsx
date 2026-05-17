@@ -380,9 +380,9 @@ export function FactoryRfqDetailPage() {
         has_quote: false,
         updated_at: new Date().toISOString(),
       };
-      await messagesApi.send(convId, {
-        body: 'ใบเสนอราคา',
-        ...buildSendPayload({
+      await messagesApi.send(
+        convId,
+        buildSendPayload({
           conv: apiConv,
           currentUserId: uid,
           content: 'ใบเสนอราคา',
@@ -390,7 +390,7 @@ export function FactoryRfqDetailPage() {
           reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
           quoteData,
         }),
-      });
+      );
       navigate(chatRoomPath(convId));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ส่งใบเสนอราคาในแชทไม่สำเร็จ');

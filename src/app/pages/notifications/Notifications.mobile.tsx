@@ -17,43 +17,19 @@ import {
 import { motion } from 'motion/react';
 import { notificationsApi } from '@/services/api/chatApi';
 import { NOTIFICATIONS_CHANGED_EVENT } from '@/hooks/useNotificationUnreadCount';
+import {
+  fetchNotificationUnreadCount,
+  fetchNotificationsPage,
+} from '@/domain/notifications/queries/useNotificationQueries';
+import type { INotificationModel } from '@/domain/notifications/types/notification.model';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatDateTime } from '@/utils/formatting/formatDate';
 
-type NotificationItem = {
-  noti_id: number;
-  type: string;
-  title: string;
-  message: string;
-  link_to?: string;
-  is_read: boolean;
-  created_at: string;
-};
-
-function mapNotification(row: Record<string, unknown>): NotificationItem | null {
-  const notiId = Number(row.noti_id ?? row.id ?? 0);
-  if (!Number.isFinite(notiId) || notiId <= 0) return null;
-  return {
-    noti_id: notiId,
-    type: String(row.type ?? ''),
-    title: String(row.title ?? 'การแจ้งเตือน'),
-    message: String(row.message ?? ''),
-    link_to:
-      typeof row.link_to === 'string' && row.link_to
-        ? row.link_to
-        : typeof row.link === 'string' && row.link
-          ? row.link
-          : undefined,
-    is_read: Boolean(row.is_read ?? false),
-    created_at: String(row.created_at ?? ''),
-  };
-}
-
 export function NotificationsMobile() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notifications, setNotifications] = useState<INotificationModel[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -69,23 +45,14 @@ export function NotificationsMobile() {
     else setLoading(true);
     setError('');
     try {
-      const [listRes, unreadRes] = await Promise.all([
-        notificationsApi.list({ page: nextPage, limit: 20, unread: false }),
-        notificationsApi.unreadCount(),
+      const [pageRes, unread] = await Promise.all([
+        fetchNotificationsPage(nextPage, 20, false),
+        fetchNotificationUnreadCount(),
       ]);
-      const listObj = listRes as Record<string, unknown>;
-      const rows = Array.isArray(listObj.data)
-        ? (listObj.data as Record<string, unknown>[])
-        : Array.isArray(listRes)
-          ? (listRes as Record<string, unknown>[])
-          : [];
-      const mapped = rows
-        .map(mapNotification)
-        .filter((item): item is NotificationItem => item !== null);
-      setPage(Number(listObj.page ?? nextPage));
-      setTotal(Number(listObj.total ?? mapped.length));
-      setNotifications((prev) => (append ? [...prev, ...mapped] : mapped));
-      setUnreadCount(Number((unreadRes as { count?: number }).count ?? listObj.unread_count ?? 0));
+      setPage(pageRes.page);
+      setTotal(pageRes.total);
+      setNotifications((prev) => (append ? [...prev, ...pageRes.items] : pageRes.items));
+      setUnreadCount(unread || pageRes.unreadCount);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดการแจ้งเตือนไม่สำเร็จ');
     } finally {
@@ -346,7 +313,7 @@ function NotificationCard({
   notif,
   onDelete,
 }: {
-  notif: NotificationItem;
+  notif: INotificationModel;
   onDelete: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }) {
   const read = notif.is_read;

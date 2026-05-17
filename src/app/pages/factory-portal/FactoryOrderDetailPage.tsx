@@ -20,8 +20,8 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
 import { ordersApi } from '@/services/api/ordersApi';
 import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
-import { useProductionTemplate } from '@/hooks/production/useProductionTemplate';
-import { useOrderProductionUpdates } from '@/hooks/production/useOrderProductionUpdates';
+import { useProductionTemplate } from '@/domain/production/queries/useProductionTemplate';
+import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
 import { ProductionHeader } from '@/components/features/production/ProductionHeader';
 import { ProductionTimeline } from '@/components/features/production/ProductionTimeline';
 import {

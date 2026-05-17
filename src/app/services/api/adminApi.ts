@@ -26,6 +26,10 @@ import type {
   IUpdatePlatformConfigRequest,
 } from '@/services/api/types/admin.types';
 
+export type {
+  IPlatformConfigResponse,
+} from '@/services/api/types/admin.types';
+
 function qs(params: Record<string, string | number | boolean | undefined | null>): string {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {

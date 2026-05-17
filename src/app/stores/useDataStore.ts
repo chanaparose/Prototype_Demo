@@ -1,19 +1,17 @@
 import { create } from 'zustand';
 import { useAuth } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
-import { notificationsApi, conversationsApi } from '@/services/api/chatApi';
 import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
-import { orderKeys, rfqKeys } from '@/lib/queryKeys';
+import { chatKeys, orderKeys, rfqKeys } from '@/lib/queryKeys';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
-import { mapConversationsFromApi } from '@/domain/chat/mappers/mapConversation';
 import { refreshConversationsCache } from '@/domain/chat/chatCache';
-import { chatKeys } from '@/lib/queryKeys';
-import { mapConversationRowsFromApi } from '@/stores/utils';
+import { fetchNotificationsList } from '@/domain/notifications/queries/useNotificationQueries';
+import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/mapNotification';
 import { normalizeFactoryRow } from '@/stores/utils';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import type {
-  Category,
+  BootstrapCategoryModel,
   Factory,
   FactoryProfile,
   FactoryReview,
@@ -21,14 +19,13 @@ import type {
   FactoryShowcase,
   Rfq,
   Order,
-  Conversation,
   Notification,
   CurrentUser,
 } from '@/stores/types';
 
 export interface DataState {
   currentUser: CurrentUser | null;
-  categories: Category[];
+  categories: BootstrapCategoryModel[];
   factories: Factory[];
   factoryProfiles: FactoryProfile[];
   factoryReviews: FactoryReview[];
@@ -36,7 +33,6 @@ export interface DataState {
   factoryShowcases: FactoryShowcase[];
   rfqs: Rfq[];
   orders: Order[];
-  conversations: Conversation[];
   notifications: Notification[];
   isLoading: boolean;
   error: string | null;
@@ -47,7 +43,9 @@ export interface DataActions {
   refetchRfqs: () => Promise<void>;
   refetchRfq: (id: string) => Promise<void>;
   refetchOrders: () => Promise<void>;
+  /** @deprecated Use chat query invalidation/refetch instead. */
   refetchMessages: () => Promise<void>;
+  /** @deprecated Use `refreshConversationsCache` or `useConversationsQuery().refetch()`. */
   refetchConversations: () => Promise<void>;
   refetchFactory: (id: string) => Promise<void>;
   refetchWallet: () => Promise<void>;
@@ -63,7 +61,6 @@ const INITIAL_STATE: DataState = {
   factoryShowcases: [],
   rfqs: [],
   orders: [],
-  conversations: [],
   notifications: [],
   isLoading: false,
   error: null,
@@ -87,7 +84,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
             .map((row) => normalizeFactoryRow(row))
             .filter((f) => f.id && f.name);
         })();
-        const categories: Category[] = (() => {
+        const categories: BootstrapCategoryModel[] = (() => {
           const raw = boot?.categories;
           if (!Array.isArray(raw) || raw.length === 0) return [];
           return (raw as Record<string, unknown>[]).map((c) => {
@@ -97,7 +94,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
               name,
               icon: pickScalarString(c.icon) || guessCategoryIcon(name),
               color: pickScalarString(c.color) || 'var(--brand-violet)',
-            } as Category;
+            } as BootstrapCategoryModel;
           });
         })();
         set({
@@ -116,43 +113,17 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     set((state) => ({ ...state, isLoading: true, error: null }));
 
     try {
-      const [bootstrapRes, notifRes, convsRes] = await Promise.allSettled([
+      const [bootstrapRes, notifRes] = await Promise.allSettled([
         frontendApi.getBootstrap(),
-        notificationsApi.list(),
-        conversationsApi.list(),
+        fetchNotificationsList(),
       ]);
 
       const boot = bootstrapRes.status === 'fulfilled' ? bootstrapRes.value : null;
-      const rawNotifs =
-        notifRes.status === 'fulfilled'
-          ? ((Array.isArray(notifRes.value) ? notifRes.value : []) as Record<string, unknown>[])
-          : [];
-      const rawConvs =
-        convsRes.status === 'fulfilled'
-          ? ((Array.isArray(convsRes.value) ? convsRes.value : []) as Record<string, unknown>[])
-          : [];
+      const notificationModels = notifRes.status === 'fulfilled' ? notifRes.value : [];
 
-      const mappedNotifs: Notification[] = rawNotifs
-        .map((r) => ({
-          id: pickScalarString(r.notification_id, r.id),
-          type: pickScalarString(r.type),
-          title: pickScalarString(r.title),
-          message: pickScalarString(r.message, r.body),
-          time: pickScalarString(r.created_at, r.time),
-          read: Boolean(r.is_read ?? r.read ?? false),
-          linkTo: pickScalarString(r.link_to, r.linkTo),
-          avatar: pickScalarString(r.avatar),
-          rfqId: r.rfq_id != null ? pickScalarString(r.rfq_id) : undefined,
-          orderId: r.order_id != null ? pickScalarString(r.order_id) : undefined,
-          conversationId:
-            r.conversation_id != null ? pickScalarString(r.conversation_id) : undefined,
-        }))
-        .filter((n) => n.id);
-
-      const mappedConvs: Conversation[] = mapConversationRowsFromApi(rawConvs);
-      if (convsRes.status === 'fulfilled') {
-        queryClient.setQueryData(chatKeys.conversations(), mapConversationsFromApi(rawConvs));
-      }
+      const mappedNotifs: Notification[] = notificationModels.map(
+        mapNotificationToBootstrapModel,
+      );
 
       const factoryList: Factory[] = (() => {
         const raw = boot?.factories;
@@ -190,7 +161,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
                 name,
                 icon: pickScalarString(c.icon) || guessCategoryIcon(name),
                 color: pickScalarString(c.color) || 'var(--brand-violet)',
-              } as Category;
+              } as BootstrapCategoryModel;
             });
           }
           return [];
@@ -202,7 +173,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         factoryShowcases: [],
         rfqs: [],
         orders: [],
-        conversations: mappedConvs,
         notifications: mappedNotifs,
         isLoading: false,
         error: null,
@@ -238,15 +208,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     },
 
     refetchMessages: async () => {
-      try {
-        const threads = await frontendApi.getMessageThreads();
-        set((state) => ({
-          ...state,
-          conversations: (threads as Conversation[]) ?? state.conversations,
-        }));
-      } catch {
-        /* keep cached conversations */
-      }
+      await queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
 
     refetchConversations: async () => {

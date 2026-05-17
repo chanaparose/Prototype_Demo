@@ -1,4 +1,17 @@
 export interface IPlatformConfigResponse {
+  config_id?: number;
+  label?: string | null;
+  default_commission_rate?: number;
+  promo_commission_rate?: number | null;
+  promo_start_at?: string | null;
+  promo_end_at?: string | null;
+  promo_label?: string | null;
+  vat_rate?: number;
+  currency_code?: string;
+  effective_from?: string;
+  effective_to?: string | null;
+  created_by?: number | null;
+  created_at?: string;
   [key: string]: unknown;
 }
 

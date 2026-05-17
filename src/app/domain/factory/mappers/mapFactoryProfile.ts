@@ -11,7 +11,15 @@ import { reviewsApi } from '@/services/api/userApi';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
+import type { IFactoryWithDetailsResponse } from '@/services/api/types/factory.types';
+import type { IFactoryReviewSummaryResponse } from '@/services/api/userApi';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
 export type FactorySubCategoryPair = { categoryLabel: string; subLabel: string };
 
@@ -167,12 +175,10 @@ export async function fetchAndMapFactoryProfile(
   let reviews: FactoryReview[] = [];
   let showcases: FactoryShowcase[] = [];
 
-  if (factRes.status === 'fulfilled' && factRes.value && typeof factRes.value === 'object') {
-    const raw = factRes.value as Record<string, unknown>;
-    const rawF =
-      raw.factory && typeof raw.factory === 'object'
-        ? (raw.factory as Record<string, unknown>)
-        : raw;
+  if (factRes.status === 'fulfilled' && factRes.value) {
+    const details = factRes.value as IFactoryWithDetailsResponse;
+    const raw = asRecord(details);
+    const rawF = asRecord(details.factory);
     factory = mapFactoryFromApi(rawF, fid, fb);
 
     for (const row of extractNestedArray(raw, rawF, 'categories')) {
@@ -269,12 +275,10 @@ export async function fetchAndMapFactoryProfile(
     }
   }
 
-  if (factRes.status === 'fulfilled' && reviews.length === 0) {
-    const raw = factRes.value as Record<string, unknown>;
-    const rawF =
-      raw.factory && typeof raw.factory === 'object'
-        ? (raw.factory as Record<string, unknown>)
-        : raw;
+  if (factRes.status === 'fulfilled' && reviews.length === 0 && factRes.value) {
+    const details = factRes.value as IFactoryWithDetailsResponse;
+    const raw = asRecord(details);
+    const rawF = asRecord(details.factory);
     const revRows = extractNestedArray(raw, rawF, 'reviews') as Record<string, unknown>[];
     reviews = revRows
       .map((r) => mapReviewFromApi(r, fid))
@@ -286,11 +290,11 @@ export async function fetchAndMapFactoryProfile(
   }
 
   if (summaryRes.status === 'fulfilled' && summaryRes.value) {
-    const s = summaryRes.value as Record<string, unknown>;
+    const s = summaryRes.value as IFactoryReviewSummaryResponse;
     const avg = pickScalarNumber(s.average_rating);
-    const count = pickScalarNumber(s.review_count);
-    if (Number.isFinite(avg) && avg >= 0) factory.rating = avg;
-    if (Number.isFinite(count) && count >= 0) factory.reviews = count;
+    const count = pickScalarNumber(s.review_count, s.total_reviews);
+    if (avg != null && avg >= 0) factory.rating = avg;
+    if (count != null && count >= 0) factory.reviews = count;
   }
 
   return {
@@ -309,10 +313,9 @@ export async function createFactoryConversation(
   factoryId: string,
   customerId: number | string,
 ): Promise<string | null> {
-  const res = (await conversationsApi.create({
+  const res = await conversationsApi.create({
     customer_id: pickScalarNumber(customerId) ?? 0,
     factory_id: pickScalarNumber(factoryId) ?? 0,
-  })) as Record<string, unknown>;
-  const id = pickScalarString(res.conversation_id, res.id);
-  return id || null;
+  });
+  return res.conv_id > 0 ? String(res.conv_id) : null;
 }

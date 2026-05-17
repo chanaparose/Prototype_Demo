@@ -43,16 +43,7 @@ export type ApiConversation = {
   updated_at: string;
 };
 
-export type IChatMessageSendRequest = IMessageSendRequest & {
-  conv_id: number;
-  receiver_id: number;
-  content: string;
-  message_type: 'TX' | 'QT' | 'IM' | 'rfq_card' | 'quotation_card' | 'system';
-  reference_type?: ChatReferenceType;
-  reference_id?: number;
-  quote_data?: string;
-  attachment_url?: string;
-};
+export type IChatMessageSendRequest = IMessageSendRequest;
 
 export function getCurrentUserId(user: IUser | null): number | null {
   if (!user) return null;
@@ -72,7 +63,7 @@ export function buildSendPayload(params: {
   reference?: ChatReference | null;
   messageType?: 'TX' | 'QT' | 'IM' | 'rfq_card' | 'quotation_card' | 'system';
   quoteData?: string;
-}): IChatMessageSendRequest {
+}): IMessageSendRequest {
   const { conv, currentUserId, content, reference, messageType = 'TX', quoteData } = params;
   return {
     conv_id: conv.conv_id,

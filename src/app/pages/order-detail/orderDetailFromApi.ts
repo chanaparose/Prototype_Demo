@@ -1,6 +1,7 @@
 import type { ProductionLockContext } from '@/components/features/production/types';
 import type { LockReason } from '@/pages/order-detail/getOrderUiMode';
 import { getOrderUiMode } from '@/pages/order-detail/getOrderUiMode';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type NextAction = {
   actor: string;
@@ -30,24 +31,25 @@ export function parsePaymentSchedule(row: Record<string, unknown>): PaymentSched
     return raw.map((x) => {
       const r = x as Record<string, unknown>;
       return {
-        stage: String(r.stage ?? '').toUpperCase(),
-        percent: Number(r.percent ?? 0) || 0,
-        amount: Number(r.amount ?? 0) || 0,
-        status: String(r.status ?? 'LOCKED').toUpperCase(),
-        due_date: r.due_date != null ? String(r.due_date) : null,
-        paid_at: r.paid_at != null ? String(r.paid_at) : null,
-        triggered_by_step: r.triggered_by_step != null ? String(r.triggered_by_step) : null,
+        stage: pickScalarString(r.stage).toUpperCase(),
+        percent: pickScalarNumber(r.percent) ?? 0,
+        amount: pickScalarNumber(r.amount) ?? 0,
+        status: (pickScalarString(r.status) || 'LOCKED').toUpperCase(),
+        due_date: r.due_date != null ? pickScalarString(r.due_date) : null,
+        paid_at: r.paid_at != null ? pickScalarString(r.paid_at) : null,
+        triggered_by_step:
+          r.triggered_by_step != null ? pickScalarString(r.triggered_by_step) : null,
       };
     });
   }
 
-  const total = Number(row.total_amount ?? 0);
+  const total = pickScalarNumber(row.total_amount) ?? 0;
   if (!Number.isFinite(total) || total <= 0) return [];
 
-  const apiSt = String(row.status ?? '').toUpperCase();
+  const apiSt = pickScalarString(row.status).toUpperCase();
   const paid = apiSt !== 'PP' && apiSt !== 'PE';
   const overdue = apiSt === 'PE';
-  const due = row.deposit_due_date != null ? String(row.deposit_due_date) : null;
+  const due = row.deposit_due_date != null ? pickScalarString(row.deposit_due_date) : null;
 
   // Business rule: 100% upfront payment — single FULL_PAYMENT stage.
   return [
@@ -57,7 +59,7 @@ export function parsePaymentSchedule(row: Record<string, unknown>): PaymentSched
       amount: total,
       status: overdue ? 'OVERDUE' : paid ? 'PAID' : 'PENDING',
       due_date: due,
-      paid_at: paid ? String(row.updated_at ?? row.created_at ?? '') || null : null,
+      paid_at: paid ? pickScalarString(row.updated_at, row.created_at) || null : null,
       triggered_by_step: null,
     },
   ];
@@ -73,17 +75,17 @@ export function parseNextAction(
     const o = na as Record<string, unknown>;
     if (o.type === 'NONE' || o.type === null) return null;
     return {
-      actor: String(o.actor ?? 'CUSTOMER'),
-      type: String(o.type ?? 'NONE'),
-      amount: Number(o.amount ?? 0) || 0,
-      currency: String(o.currency ?? 'THB'),
-      due_date: String(o.due_date ?? ''),
-      cta_url: String(o.cta_url ?? `/orders/${orderId}/payment?stage=full`),
-      cta_label_th: String(o.cta_label_th ?? 'ชำระเงินเต็มจำนวน'),
+      actor: pickScalarString(o.actor) || 'CUSTOMER',
+      type: pickScalarString(o.type) || 'NONE',
+      amount: pickScalarNumber(o.amount) ?? 0,
+      currency: pickScalarString(o.currency) || 'THB',
+      due_date: pickScalarString(o.due_date),
+      cta_url: pickScalarString(o.cta_url) || `/orders/${orderId}/payment?stage=full`,
+      cta_label_th: pickScalarString(o.cta_label_th) || 'ชำระเงินเต็มจำนวน',
     };
   }
 
-  const u = String(apiStatus ?? '').toUpperCase();
+  const u = pickScalarString(apiStatus).toUpperCase();
   if (u !== 'PP' && u !== 'PE') return null;
   const sched = parsePaymentSchedule(row);
   const fullPay = sched.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');
@@ -106,9 +108,12 @@ export function buildFallbackLockContext(
   schedule: PaymentScheduleItem[],
 ): ProductionLockContext {
   const fullPay = schedule.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');
-  const amount = (fullPay?.amount ?? Number(row.total_amount ?? row.deposit_amount ?? 0)) || 0;
+  const amount =
+    fullPay?.amount ?? pickScalarNumber(row.total_amount, row.deposit_amount) ?? 0;
   const deposit_due_date =
-    (fullPay?.due_date ?? (row.deposit_due_date != null ? String(row.deposit_due_date) : '')) || '';
+    (fullPay?.due_date ??
+      (row.deposit_due_date != null ? pickScalarString(row.deposit_due_date) : '')) ||
+    '';
   return {
     deposit_amount: amount,
     deposit_currency: 'THB',
@@ -119,7 +124,7 @@ export function buildFallbackLockContext(
 }
 
 export function normalizeLockReason(fromApi: string | undefined, apiStatus: string): LockReason {
-  const r = String(fromApi ?? '').toUpperCase();
+  const r = pickScalarString(fromApi).toUpperCase();
   if (r === 'PENDING_DEPOSIT' || r === 'DEPOSIT_EXPIRED' || r === 'ORDER_CANCELLED') {
     return r as LockReason;
   }
