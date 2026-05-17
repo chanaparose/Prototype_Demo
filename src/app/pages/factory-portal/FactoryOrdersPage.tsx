@@ -342,8 +342,7 @@ export function FactoryOrdersPage() {
                   });
                   setUpdateModal(null);
                   await refetch();
-                } catch (e) {
-                  console.error(e);
+                } catch {
                   setUpdateModal((prev) => (prev ? { ...prev, busy: false } : prev));
                 }
               }}
@@ -411,8 +410,7 @@ export function FactoryOrdersPage() {
                   });
                   setShipModal(null);
                   await refetch();
-                } catch (e) {
-                  console.error(e);
+                } catch {
                   setShipModal((prev) => (prev ? { ...prev, busy: false } : prev));
                 }
               }}

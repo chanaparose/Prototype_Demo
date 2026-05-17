@@ -33,7 +33,6 @@ export function useLoginSubmission() {
         await navigateAfterAuth(navigate);
         return true;
       } catch (err) {
-        console.error('[Login Error]', err);
         setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'));
         return false;
       } finally {
@@ -59,7 +58,6 @@ export function useLoginSubmission() {
         await navigateAfterAuth(navigate);
         return true;
       } catch (err) {
-        console.error('[Register Error]', err);
         setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'));
         return false;
       } finally {

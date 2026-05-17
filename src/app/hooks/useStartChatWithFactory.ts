@@ -45,8 +45,7 @@ export function useStartChatWithFactory() {
           });
         }
         return 'ok';
-      } catch (err) {
-        console.error('[startChat]', err);
+      } catch {
         toast.error('เริ่มแชทไม่สำเร็จ กรุณาลองใหม่');
         return null;
       } finally {

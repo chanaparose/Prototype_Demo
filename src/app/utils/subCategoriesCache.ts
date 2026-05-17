@@ -42,8 +42,7 @@ export function loadSubCategories(categoryId: string | number): Promise<SubCateg
       pending.delete(key);
       return mapped;
     })
-    .catch((err) => {
-      console.error('[sub-categories] fetch failed for category', key, err);
+    .catch(() => {
       pending.delete(key);
       return [] as SubCategoryRow[];
     });

@@ -293,8 +293,7 @@ function ChatRoomBody({
         }
         void refetchConversations?.();
         if (attachRef) setPendingRef(null);
-      } catch (e) {
-        console.error('[chat.send]', e);
+      } catch {
         setMessages((prev) =>
           prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
         );

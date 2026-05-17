@@ -1,39 +1,33 @@
-/**
- * Factory API — Factory profile and showcase management
- */
-
 import { httpClient } from '@/services/api/httpClient';
 import {
-  type FactoryAnalyticsResponse,
-  type FactoryBase,
-  type FactoryDashboardResponse,
-  type FactoryProfile,
-  type FactoryWithDetails,
+  type IFactoryAnalyticsResponse,
+  type IFactoryBaseResponse,
+  type IFactoryDashboardResponse,
+  type IFactoryProfileResponse,
+  type IFactoryWithDetailsResponse,
 } from '@/services/api/types/factory.types';
 
 export const factoriesApi = {
-  list: () => httpClient.get<FactoryBase[]>('/factories'),
+  list: () => httpClient.get<IFactoryBaseResponse[]>('/factories'),
 
-  get: (id: string | number) => httpClient.get<FactoryWithDetails>(`/factories/${id}`),
+  get: (id: string | number) => httpClient.get<IFactoryWithDetailsResponse>(`/factories/${id}`),
 
-  create: (data: FactoryProfile) => httpClient.post<FactoryBase>('/factories/', data),
+  create: (data: IFactoryProfileResponse) =>
+    httpClient.post<IFactoryBaseResponse>('/factories/', data),
 
-  update: (id: string | number, data: Partial<FactoryProfile>) =>
-    httpClient.put<FactoryBase>(`/factories/${id}`, data),
+  update: (id: string | number, data: Partial<IFactoryProfileResponse>) =>
+    httpClient.put<IFactoryBaseResponse>(`/factories/${id}`, data),
 
-  patch: (id: string | number, data: Partial<FactoryProfile>) =>
-    httpClient.patch<FactoryBase>(`/factories/${id}`, data),
+  patch: (id: string | number, data: Partial<IFactoryProfileResponse>) =>
+    httpClient.patch<IFactoryBaseResponse>(`/factories/${id}`, data),
 
   delete: (id: string | number) => httpClient.delete<void>(`/factories/${id}`),
 
-  /** GET /factories/me — own factory profile (JWT role=FT) */
-  getMe: () => httpClient.get<FactoryProfile>('/factories/me'),
+  getMe: () => httpClient.get<IFactoryProfileResponse>('/factories/me'),
 
-  /** GET /factories/me/dashboard */
-  getDashboard: () => httpClient.get<FactoryDashboardResponse>('/factories/me/dashboard'),
+  getDashboard: () => httpClient.get<IFactoryDashboardResponse>('/factories/me/dashboard'),
 
-  /** GET /factories/me/analytics */
-  getAnalytics: () => httpClient.get<FactoryAnalyticsResponse>('/factories/me/analytics'),
+  getAnalytics: () => httpClient.get<IFactoryAnalyticsResponse>('/factories/me/analytics'),
 
   setCategories: (factoryId: string | number, categoryIds: number[]) =>
     httpClient.put<void>(`/factories/${factoryId}/categories`, { category_ids: categoryIds }),
@@ -75,7 +69,6 @@ export const showcasesApi = {
 
   delete: (id: string | number) => httpClient.delete<void>(`/showcases/${id}`),
 
-  /** GET /showcases/:id/with-details */
   getWithDetails: (id: string | number) =>
     httpClient.get<Record<string, unknown>>(`/showcases/${id}/with-details`),
 

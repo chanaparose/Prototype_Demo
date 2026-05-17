@@ -22,15 +22,9 @@ import { Input } from '@/components/ui/input';
 
 export type TabId = 'products' | 'promotions' | 'materials' | 'articles' | 'about';
 
-export type ShowcaseItem = {
-  id: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  minOrder?: number;
-  leadTime?: string;
-  postedAt?: string;
-};
+import type { IFactoryProfileShowcase } from '@/domain/factory/types/factoryProfile.model';
+
+export type { IFactoryProfileShowcase };
 
 export type IdeaArticle = {
   id: string;
@@ -79,10 +73,10 @@ const TABS: { id: TabId; label: string; icon: React.ComponentType<{ className?: 
 type FactoryProfileTabContentProps = {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
-  productItems: ShowcaseItem[];
-  promotionItems: ShowcaseItem[];
-  materialItems: ShowcaseItem[];
-  articleShowcases: ShowcaseItem[];
+  productItems: IFactoryProfileShowcase[];
+  promotionItems: IFactoryProfileShowcase[];
+  materialItems: IFactoryProfileShowcase[];
+  articleShowcases: IFactoryProfileShowcase[];
   factory: FactoryAbout;
   factoryId?: string;
   profile: FactoryProfileExtra | null | undefined;
@@ -141,7 +135,7 @@ export function FactoryProfileTabContent({
     badgeLabel,
     badgeColor,
   }: {
-    item: ShowcaseItem;
+    item: IFactoryProfileShowcase;
     onClick: () => void;
     badgeLabel: string;
     badgeColor: string;

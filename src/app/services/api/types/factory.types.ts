@@ -1,8 +1,4 @@
-/**
- * Factory API Types
- */
-
-export interface FactoryBase {
+export interface IFactoryBaseResponse {
   factory_id?: number;
   id?: string | number;
   factory_name: string;
@@ -32,7 +28,7 @@ export interface FactoryBase {
   priceRange?: string;
 }
 
-export interface FactoryProfile extends FactoryBase {
+export interface IFactoryProfileResponse extends IFactoryBaseResponse {
   description?: string;
   website?: string;
   phone?: string;
@@ -43,8 +39,8 @@ export interface FactoryProfile extends FactoryBase {
   certifications?: string[];
 }
 
-export interface FactoryWithDetails {
-  factory: FactoryProfile;
+export interface IFactoryWithDetailsResponse {
+  factory: IFactoryProfileResponse;
   profile: Record<string, unknown>;
   reviews: unknown[];
   products: unknown[];
@@ -60,7 +56,7 @@ export interface IFactorySubCategoriesRequest {
   sub_category_ids: number[];
 }
 
-export interface FactoryDashboardResponse {
+export interface IFactoryDashboardResponse {
   total_rfqs: number;
   pending_quotes: number;
   active_orders: number;
@@ -69,7 +65,7 @@ export interface FactoryDashboardResponse {
   recent_inquiries: unknown[];
 }
 
-export interface FactoryAnalyticsResponse {
+export interface IFactoryAnalyticsResponse {
   total_revenue: number;
   total_orders: number;
   average_rating: number;

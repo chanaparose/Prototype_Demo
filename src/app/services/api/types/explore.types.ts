@@ -1,10 +1,6 @@
-/**
- * Explore API Types
- */
+export type ExploreContentType = 'product' | 'promotion' | 'idea' | 'material' | 'factory';
 
-export type ContentType = 'product' | 'promotion' | 'idea' | 'material' | 'factory';
-
-export interface ShowcaseItem {
+export interface IExploreShowcaseResponse {
   id: string;
   factory_id: string;
   factory_name: string;
@@ -14,7 +10,7 @@ export interface ShowcaseItem {
   image?: string;
   image_url?: string;
   images?: string[];
-  content_type: ContentType;
+  content_type: ExploreContentType;
   category?: string;
   category_id?: number;
   sub_category?: string;
@@ -47,16 +43,16 @@ export interface IExploreSubCategoryResponse {
   sort_order?: number;
 }
 
-export interface ExploreResponse {
-  products: ShowcaseItem[];
-  promotions: ShowcaseItem[];
+export interface IExploreResponse {
+  products: IExploreShowcaseResponse[];
+  promotions: IExploreShowcaseResponse[];
   promo_codes: unknown[];
   factories: unknown[];
-  idea_articles: ShowcaseItem[];
+  idea_articles: IExploreShowcaseResponse[];
   categories: IExploreCategoryResponse[];
 }
 
-export interface PromoSlide {
+export interface IPromoSlideResponse {
   slide_id: string;
   id?: string;
   title: string;
@@ -67,6 +63,6 @@ export interface PromoSlide {
   display_order?: number;
 }
 
-export interface PromoSlidesResponse {
-  slides: PromoSlide[];
+export interface IPromoSlidesResponse {
+  slides: IPromoSlideResponse[];
 }

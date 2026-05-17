@@ -4,10 +4,7 @@ import { masterApi } from '@/services/api/masterApi';
 import { type Factory } from '@/stores/types';
 import { factoryIdeasKeys } from '@/lib/queryKeys';
 import { fetchExploreCategoriesMerged } from '@/utils/exploreCategoriesFromApi';
-import {
-  parseMasterProductCategories,
-} from '@/utils/exploreToFactoryIdeasCategory';
-import { logFactoryIdeasCategory } from '@/utils/debugFactoryIdeasCategory';
+import { parseMasterProductCategories } from '@/utils/exploreToFactoryIdeasCategory';
 import {
   getCachedSubCategoriesSync,
   loadSubCategories,
@@ -35,24 +32,15 @@ export function useFactoryIdeasCategoriesQuery(materialTab: boolean) {
 
       const res = await fetchExploreCategoriesMerged();
       let rows = res.merged.map((c) => ({ id: String(c.id), name: c.name }));
-      let categorySource: 'exploreMerged' | 'masterProductCategories' | 'empty' = 'exploreMerged';
       if (rows.length === 0) {
-        categorySource = 'empty';
         try {
           const rawPD = await masterApi.productCategories();
           rows = parseMasterProductCategories(rawPD);
-          categorySource = rows.length > 0 ? 'masterProductCategories' : 'empty';
         } catch {
           /* keep [] */
         }
       }
       prefetchSubCategoriesFor(rows.map((r) => r.id));
-      logFactoryIdeasCategory('categoryMenu.apiCategoriesAll', {
-        source: categorySource,
-        exploreMergedCount: res.merged.length,
-        rowCount: rows.length,
-        rows,
-      });
       return rows;
     },
     staleTime: 5 * 60_000,
@@ -76,7 +64,7 @@ export function useFactoryIdeasFactoryListQuery(enabled: boolean) {
 
 export function useFactoryIdeasSubCategoriesQuery(
   categoryId: string | null,
-  options?: { enabled?: boolean; logContext?: 'panelSubs' | 'selected' },
+  options?: { enabled?: boolean },
 ) {
   const enabled = Boolean(categoryId) && (options?.enabled !== false);
 
@@ -85,30 +73,8 @@ export function useFactoryIdeasSubCategoriesQuery(
     queryFn: async (): Promise<SubCategoryRow[]> => {
       if (!categoryId) return [];
       const cached = getCachedSubCategoriesSync(categoryId);
-      if (cached) {
-        if (options?.logContext === 'panelSubs') {
-          logFactoryIdeasCategory('panelSubs.cacheHit', {
-            menuHighlightCategoryId: categoryId,
-            panelSubs: cached,
-          });
-        }
-        return cached;
-      }
-      if (options?.logContext === 'panelSubs') {
-        logFactoryIdeasCategory('panelSubs.request', {
-          endpoint: `GET sub-categories (category_id=${categoryId})`,
-          menuHighlightCategoryId: categoryId,
-        });
-      }
-      const mapped = await loadSubCategories(categoryId);
-      if (options?.logContext === 'panelSubs') {
-        logFactoryIdeasCategory('panelSubs.apiResponse', {
-          menuHighlightCategoryId: categoryId,
-          mappedLength: mapped.length,
-          mapped,
-        });
-      }
-      return mapped;
+      if (cached) return cached;
+      return loadSubCategories(categoryId);
     },
     enabled,
     staleTime: 5 * 60_000,

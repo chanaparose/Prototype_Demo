@@ -42,6 +42,8 @@ export interface IShippingMethodResponse {
   id?: number;
   shipping_method_id?: number;
   name: string;
+  method_name?: string;
+  name_th?: string;
   description?: string;
 }
 

@@ -14,7 +14,6 @@ import {
   factoryIdeasCategoryOptionSelected,
   showcaseMatchesSelectedCategoryId,
 } from '@/utils/exploreToFactoryIdeasCategory';
-import { logFactoryIdeasCategory } from '@/utils/debugFactoryIdeasCategory';
 import {
   getFactoryIdeaDetailPath,
   type FactoryIdeasContentType,
@@ -68,14 +67,12 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
 
   const panelSubsQ = useFactoryIdeasSubCategoriesQuery(menuHighlightCategoryId, {
     enabled: panelSubsEnabled,
-    logContext: 'panelSubs',
   });
   const panelSubs = panelSubsEnabled ? (panelSubsQ.data ?? []) : [];
   const panelSubsLoading = panelSubsQ.isLoading;
 
   const subCategoriesQ = useFactoryIdeasSubCategoriesQuery(selectedCategoryIdForSubs, {
     enabled: !isMaterialTab && Boolean(selectedCategoryIdForSubs),
-    logContext: 'selected',
   });
   const subCategories =
     !isMaterialTab && selectedCategoryIdForSubs ? (subCategoriesQ.data ?? []) : [];
@@ -110,15 +107,6 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
       .sort((a, b) => a.name.localeCompare(b.name, 'th'));
     return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
   }, [apiCategoriesAll, data.categories, isMaterialTab]);
-
-  useEffect(() => {
-    logFactoryIdeasCategory('categoryMenu.categoryFilters', {
-      count: categoryFilters.length,
-      items: categoryFilters,
-      dataContextCategoriesCount: data.categories.length,
-      apiCategoriesAllCount: apiCategoriesAll.length,
-    });
-  }, [categoryFilters, data.categories.length, apiCategoriesAll.length]);
 
   const prevIsMaterialTabRef = useRef<boolean | null>(null);
   useEffect(() => {

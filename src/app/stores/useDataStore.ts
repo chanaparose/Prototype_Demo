@@ -145,15 +145,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
 
       const mappedConvs: Conversation[] = mapConversationRowsFromApi(rawConvs);
 
-      console.info(
-        '[DataStore] bootstrap:',
-        bootstrapRes.status,
-        '| notifs:',
-        rawNotifs.length,
-        '| convs:',
-        rawConvs.length,
-      );
-
       const factoryList: Factory[] = (() => {
         const raw = boot?.factories;
         if (!Array.isArray(raw)) return [];
@@ -209,7 +200,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
       });
       lastFetchTime = Date.now();
     } catch (err) {
-      console.error('DataStore fetchAll failed:', err);
       set((state) => ({
         ...state,
         isLoading: false,
@@ -245,8 +235,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           ...state,
           conversations: (threads as Conversation[]) ?? state.conversations,
         }));
-      } catch (err) {
-        console.error('Failed to refetch messages:', err);
+      } catch {
+        /* keep cached conversations */
       }
     },
 
@@ -258,8 +248,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         const rawConvs = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
         const mappedConvs = mapConversationRowsFromApi(rawConvs);
         set((state) => ({ ...state, conversations: mappedConvs }));
-      } catch (err) {
-        console.error('Failed to refetch conversations:', err);
+      } catch {
+        /* keep cached conversations */
       }
     },
 
@@ -272,8 +262,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           );
           return { ...state, factories };
         });
-      } catch (err) {
-        console.error('Failed to refetch factory:', err);
+      } catch {
+        /* keep cached factory row */
       }
     },
 
@@ -293,8 +283,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
             },
           };
         });
-      } catch (err) {
-        console.error('Failed to refetch wallet:', err);
+      } catch {
+        /* keep cached wallet */
       }
     },
   };

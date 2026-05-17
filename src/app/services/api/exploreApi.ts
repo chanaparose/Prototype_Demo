@@ -3,7 +3,10 @@
  */
 
 import { httpClient } from '@/services/api/httpClient';
-import { type ExploreResponse, type PromoSlidesResponse } from '@/services/api/types/explore.types';
+import {
+  type IExploreResponse,
+  type IPromoSlidesResponse,
+} from '@/services/api/types/explore.types';
 
 export interface FrontendBootstrapResponse {
   currentUser: Record<string, unknown>;
@@ -40,7 +43,7 @@ export const frontendApi = {
 
   getMessageThreads: () => httpClient.get<unknown[]>('/frontend/messages/threads'),
 
-  getExplore: () => httpClient.get<ExploreResponse>('/frontend/explore'),
+  getExplore: () => httpClient.get<IExploreResponse>('/frontend/explore'),
 
   getProducts: (limit = 8, categoryId?: string) => {
     const params = new URLSearchParams({ limit: String(limit) });
@@ -54,5 +57,5 @@ export const frontendApi = {
 };
 
 export const promoSlidesApi = {
-  list: () => httpClient.get<PromoSlidesResponse>('/promo-slides'),
+  list: () => httpClient.get<IPromoSlidesResponse>('/promo-slides'),
 };

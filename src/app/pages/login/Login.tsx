@@ -68,8 +68,7 @@ export function Login() {
       const res = await fetch(HEALTH_URL, { signal: controller.signal });
       clearTimeout(timer);
       setServerStatus(res.ok ? 'online' : 'offline');
-    } catch (err) {
-      console.error('[Health Check]', err);
+    } catch {
       setServerStatus('offline');
     }
   };

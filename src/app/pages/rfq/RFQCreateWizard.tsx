@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { addressesApi, categoriesApi, masterApi } from '@/services/api/masterApi';
+import { mapShippingMethodsToRecord } from '@/domain/master/mappers/mapShippingMethod';
+import { pickScalarString } from '@/utils/pickScalarString';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { useCreateRFQ } from '@/pages/rfq/useCreateRFQ';
 import { useRFQDraft } from '@/pages/rfq/useRFQDraft';
@@ -212,11 +214,11 @@ export function RFQCreateWizard() {
           const id = Number(r.address_id ?? r.id ?? 0);
           if (!Number.isFinite(id) || id <= 0) continue;
           const label = [
-            String(r.address_detail ?? '').trim(),
-            String(r.sub_district_name ?? r.sub_district ?? '').trim(),
-            String(r.district_name ?? r.district ?? '').trim(),
-            String(r.province_name ?? r.province ?? '').trim(),
-            String(r.zip_code ?? '').trim(),
+            pickScalarString(r.address_detail),
+            pickScalarString(r.sub_district_name, r.sub_district),
+            pickScalarString(r.district_name, r.district),
+            pickScalarString(r.province_name, r.province),
+            pickScalarString(r.zip_code),
           ]
             .filter(Boolean)
             .join(', ');
@@ -229,17 +231,10 @@ export function RFQCreateWizard() {
       });
 
     void masterApi
-      .shippingMethods()
+      .getShippingMethods()
       .then((raw) => {
         if (!active) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped: Record<number, string> = {};
-        for (const r of arr) {
-          const id = Number(r.shipping_method_id ?? r.id ?? 0);
-          const name = String(r.method_name ?? r.name ?? '').trim();
-          if (Number.isFinite(id) && id > 0 && name) mapped[id] = name;
-        }
-        setShippingMap(mapped);
+        setShippingMap(mapShippingMethodsToRecord(raw));
       })
       .catch(() => {
         if (active) setShippingMap({});

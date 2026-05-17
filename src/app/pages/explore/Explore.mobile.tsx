@@ -25,19 +25,7 @@ import type { FactoryItem } from '@/components/features/explore/factoryItemTypes
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
-
-type ShowcaseItem = {
-  id: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  factoryName: string;
-  factoryId: string;
-  minOrder: number;
-  contentType: string;
-  category?: string;
-  subCategoryName?: string;
-};
+import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 
 type ExploreMobileProps = {
   searchText: string;
@@ -49,12 +37,12 @@ type ExploreMobileProps = {
   reloadExploreCategories: () => void;
   factories: FactoryItem[];
   ideaArticles: IdeaArticleItem[];
-  factoryShowcases: ShowcaseItem[];
-  exploreProducts: ShowcaseItem[];
-  explorePromotions: ShowcaseItem[];
-  exploreMatrials?: ShowcaseItem[];
-  explorePromoCodes: unknown[];
-  promoSlides: unknown[];
+  factoryShowcases: IExploreShowcase[];
+  exploreProducts: IExploreShowcase[];
+  explorePromotions: IExploreShowcase[];
+  exploreMatrials?: IExploreShowcase[];
+  explorePromoCodes: IExploreSlide[];
+  promoSlides: IExploreSlide[];
 };
 
 export function ExploreMobile({

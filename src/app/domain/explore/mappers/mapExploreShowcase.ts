@@ -1,38 +1,26 @@
 import { frontendApi, promoSlidesApi } from '@/services/api/exploreApi';
 import { showcasesApi } from '@/services/api/factoryApi';
+import type { IExploreShowcaseResponse } from '@/services/api/types/explore.types';
 import {
   extractShowcaseRows,
   mapShowcaseFromApi,
 } from '@/domain/showcase/mappers/mapShowcase';
+import {
+  EMPTY_EXPLORE_PAGE_DATA,
+  type IExploreArticle,
+  type IExplorePageData,
+  type IExploreShowcase,
+  type IExploreSlide,
+} from '@/domain/explore/types/explore.model';
 
-export type IExploreShowcase = {
-  id: string;
-  factoryId: string;
-  factoryName: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  contentType: 'product' | 'promotion' | 'idea' | 'material';
-  category: string;
-  subCategoryName: string;
-  postedAt: string;
-  likes: number;
-  minOrder: number;
-  leadTime: string;
-  tags: string[];
-};
+export type {
+  IExploreArticle,
+  IExplorePageData,
+  IExploreShowcase,
+  IExploreSlide,
+} from '@/domain/explore/types/explore.model';
 
-export type IExploreArticle = {
-  id: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  tag: string;
-  factoryName: string;
-  likes: number;
-};
-
-export type IExploreSlide = { id: string; title: string; subtitle: string; code: string };
+export { EMPTY_EXPLORE_PAGE_DATA };
 
 function mapRowToExploreShowcase(row: Record<string, unknown>): IExploreShowcase {
   const s = mapShowcaseFromApi(row);
@@ -54,6 +42,10 @@ function mapRowToExploreShowcase(row: Record<string, unknown>): IExploreShowcase
   };
 }
 
+export function mapExploreShowcaseResponse(row: IExploreShowcaseResponse): IExploreShowcase {
+  return mapRowToExploreShowcase(row as unknown as Record<string, unknown>);
+}
+
 function mapExploreShowcaseList(raw: unknown): IExploreShowcase[] {
   return extractShowcaseRows(raw)
     .map(mapRowToExploreShowcase)
@@ -68,24 +60,6 @@ function normSlide(r: Record<string, unknown>): IExploreSlide {
     code: String(r.code ?? ''),
   };
 }
-
-export type IExplorePageData = {
-  pdShowcases: IExploreShowcase[];
-  pmShowcases: IExploreShowcase[];
-  idShowcases: IExploreShowcase[];
-  mtShowcases: IExploreShowcase[];
-  promoSlides: IExploreSlide[];
-  promoCodes: IExploreSlide[];
-};
-
-export const EMPTY_EXPLORE_PAGE_DATA: IExplorePageData = {
-  pdShowcases: [],
-  pmShowcases: [],
-  idShowcases: [],
-  mtShowcases: [],
-  promoSlides: [],
-  promoCodes: [],
-};
 
 export async function fetchExplorePageData(): Promise<IExplorePageData> {
   const [pdRes, pmRes, idRes, mtRes, exploreRes, slidesRes] = await Promise.allSettled([

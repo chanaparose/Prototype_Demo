@@ -3,15 +3,9 @@ import { ChevronRight, Heart } from 'lucide-react';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Button } from '@/components/ui/button';
 
-export type IdeaArticleItem = {
-  id: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  tag: string;
-  factoryName: string;
-  likes?: number;
-};
+import type { IExploreArticle } from '@/domain/explore/types/explore.model';
+
+export type IdeaArticleItem = IExploreArticle;
 
 type ExploreIdeaArticlesProps = {
   articles: IdeaArticleItem[];

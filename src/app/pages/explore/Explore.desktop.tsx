@@ -13,6 +13,7 @@ import {
   Tag,
   Heart,
 } from 'lucide-react';
+import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
@@ -25,18 +26,7 @@ import type { FactoryItem } from '@/components/features/explore/factoryItemTypes
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
-type ShowcaseItem = {
-  id: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  factoryName: string;
-  factoryId: string;
-  minOrder: number;
-  contentType: string;
-  category?: string;
-  subCategoryName?: string;
-};
+import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 
 type ExploreDesktopProps = {
   searchText: string;
@@ -49,16 +39,77 @@ type ExploreDesktopProps = {
   exploreCategoriesError: string | null;
   reloadExploreCategories: () => void;
   factories: FactoryItem[];
-  activeRFQs: any[];
-  recentOrders: any[];
   ideaArticles: IdeaArticleItem[];
-  factoryShowcases: ShowcaseItem[];
-  exploreProducts: ShowcaseItem[];
-  explorePromotions: ShowcaseItem[];
-  exploreMatrials?: ShowcaseItem[];
-  explorePromoCodes: unknown[];
-  promoSlides: unknown[];
+  factoryShowcases: IExploreShowcase[];
+  exploreProducts: IExploreShowcase[];
+  explorePromotions: IExploreShowcase[];
+  exploreMatrials?: IExploreShowcase[];
+  explorePromoCodes: IExploreSlide[];
+  promoSlides: IExploreSlide[];
 };
+
+/* ═══ Style Constants ═══ */
+const FILTER_BUTTON_CLASS = cn(
+  'px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100',
+  'flex items-center gap-1.5 text-xs font-medium shrink-0',
+  'text-brand-magenta hover:border-brand-magenta/30 transition-colors'
+);
+
+const PROMO_GRADIENT = {
+  background: 'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
+};
+
+const PROMO_PURPLE_BG = { background: 'var(--brand-purple)' };
+const PROMO_LIGHT_BG = { background: '#FAEBD7' };
+
+const PROMO_BADGE_STYLE = { background: 'var(--brand-purple)' };
+const PROMO_CODE_WRAPPER = {
+  background: 'rgba(255,255,255,0.25)',
+  borderColor: 'rgba(255,255,255,0.40)',
+};
+
+const PROMO_COPY_BTN = { background: 'var(--brand-navy-deep)' };
+
+const SHIMMER_GRADIENT = {
+  background:
+    'linear-gradient(90deg, var(--brand-violet) 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
+  animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
+};
+
+const OVERLAY_GRADIENT = {
+  background:
+    'linear-gradient(to top right, rgba(0, 60, 100, 0.2), rgba(3, 153, 190, 0.1), transparent)',
+};
+
+const FAB_BUTTON_STYLE = {
+  background: 'var(--brand-purple)',
+  boxShadow: '0 6px 20px rgba(162,56,255,0.40)',
+};
+
+const REGISTER_BUTTON_CLASS = cn(
+  'group relative shrink-0 inline-flex items-center gap-1.5 xl:gap-2',
+  'max-xl:px-4 max-xl:py-2 xl:px-7 xl:py-2.5 rounded-xl',
+  'text-white font-bold text-xs xl:text-sm whitespace-nowrap',
+  'bg-gradient-to-r from-brand-purple via-brand-purple-hover to-brand-violet-deep',
+  'shadow-lg shadow-brand-purple/40 ring-1 ring-white/20',
+  'transition-all duration-200 ease-out',
+  'hover:shadow-xl hover:shadow-brand-purple/60 hover:-translate-y-0.5 hover:brightness-110',
+  'active:translate-y-0 active:scale-[0.97]',
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple'
+);
+
+/* ═══ Helper Functions ═══ */
+function getFactoryMeta(
+  factoryId: string | number | undefined,
+  factories: FactoryItem[] | undefined
+) {
+  const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
+  return {
+    location: (f?.location ?? '').trim() || '—',
+    rating: Number(f?.rating ?? 0),
+    reviews: Number(f?.reviews ?? 0),
+  };
+}
 
 export function ExploreDesktop({
   searchText,
@@ -76,7 +127,7 @@ export function ExploreDesktop({
   explorePromotions,
   exploreMatrials,
   promoSlides,
-}: ExploreDesktopProps) {
+}: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
   const navigate = useNavigate();
   const ideaArticlesList = ideaArticles ?? [];
   const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 10), [factories]);
@@ -119,11 +170,11 @@ export function ExploreDesktop({
   const desktopPromoSlides = useMemo(() => {
     const slides = Array.isArray(promoSlides) ? promoSlides : [];
     return slides
-      .map((r: any) => ({
-        id: String(r.slide_id ?? r.id ?? ''),
-        title: String(r.title ?? ''),
-        subtitle: String(r.subtitle ?? ''),
-        code: String(r.code ?? ''),
+      .map((r) => ({
+        id: r.id,
+        title: r.title,
+        subtitle: r.subtitle,
+        code: r.code,
       }))
       .filter((s) => s.id && s.title);
   }, [promoSlides]);
@@ -164,7 +215,7 @@ export function ExploreDesktop({
           <Button
             variant='unstyled'
             type='button'
-            className='px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-1.5 text-xs font-medium shrink-0 text-brand-magenta hover:border-brand-magenta/30 transition-colors'
+            className={FILTER_BUTTON_CLASS}
           >
             <SlidersHorizontal size={14} />
             ตัวกรอง
@@ -189,28 +240,25 @@ export function ExploreDesktop({
                 >
                   <div
                     className='relative overflow-hidden p-3.5 text-white h-full flex-1 flex flex-col'
-                    style={{
-                      background:
-                        'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
-                    }}
+                    style={PROMO_GRADIENT}
                   >
                     <div
                       className='absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30'
-                      style={{ background: 'var(--brand-purple)' }}
+                      style={PROMO_PURPLE_BG}
                     />
                     <div
                       className='absolute top-0 right-0 w-14 h-14 rounded-full opacity-20 blur-xl'
-                      style={{ background: 'var(--brand-purple)' }}
+                      style={PROMO_PURPLE_BG}
                     />
 
                     <div
                       className='absolute -bottom-3 -left-3 w-12 h-12 rounded-full opacity-20'
-                      style={{ background: '#FAEBD7' }}
+                      style={PROMO_LIGHT_BG}
                     />
                     <div className='relative z-10'>
                       <div
                         className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-1.5'
-                        style={{ background: 'var(--brand-purple)' }}
+                        style={PROMO_BADGE_STYLE}
                       >
                         <Gift className='w-3 h-3 text-white' />
                         <span className='text-[10px] text-white font-semibold tracking-wide'>
@@ -229,10 +277,7 @@ export function ExploreDesktop({
                       <div className='flex items-center gap-2'>
                         <div
                           className='flex items-center rounded-lg px-2.5 py-1 border'
-                          style={{
-                            background: 'rgba(255,255,255,0.25)',
-                            borderColor: 'rgba(255,255,255,0.40)',
-                          }}
+                          style={PROMO_CODE_WRAPPER}
                         >
                           <span className='text-sm font-mono tracking-widest font-bold text-white'>
                             {promo.code}
@@ -243,7 +288,7 @@ export function ExploreDesktop({
                           type='button'
                           onClick={() => handleCopy(promo.code, promo.id)}
                           className='flex items-center gap-1 rounded-lg px-2.5 py-1 transition-colors text-[12px] font-semibold text-white'
-                          style={{ background: 'var(--brand-navy-deep)' }}
+                          style={PROMO_COPY_BTN}
                         >
                           <Copy className='w-3 h-3' />
                           {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
@@ -274,14 +319,7 @@ export function ExploreDesktop({
             bannerImg={'assets/tryly_vertical_banner_v5_oval_final.png'}
             bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
             onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
-            getFactoryMeta={(factoryId) => {
-              const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
-              return {
-                location: (f?.location ?? '').trim() || '—',
-                rating: Number(f?.rating ?? 0),
-                reviews: Number(f?.reviews ?? 0),
-              };
-            }}
+            getFactoryMeta={(factoryId) => getFactoryMeta(factoryId, factories)}
           />
         </div>
 
@@ -293,14 +331,7 @@ export function ExploreDesktop({
           bannerImg={'assets/tryly_vertical_banner_raw_material_v5_oval_final.png'}
           bannerText='วัตถุดิบคุณภาพสูง'
           onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
-          getFactoryMeta={(factoryId) => {
-            const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
-            return {
-              location: (f?.location ?? '').trim() || '—',
-              rating: Number(f?.rating ?? 0),
-              reviews: Number(f?.reviews ?? 0),
-            };
-          }}
+          getFactoryMeta={(factoryId) => getFactoryMeta(factoryId, factories)}
         />
 
         <HowToOrderSection className='mx-0' />
@@ -339,73 +370,59 @@ export function ExploreDesktop({
               />
               <div
                 className='absolute inset-0 z-[1] flex flex-col justify-end p-5 pointer-events-none'
-                style={{
-                  background:
-                    'linear-gradient(to top right, rgba(0, 60, 100, 0.2), rgba(3, 153, 190, 0.1), transparent)',
-                }}
+                style={OVERLAY_GRADIENT}
               ></div>
             </div>
 
             <div className='w-full lg:w-[60%] flex gap-3 overflow-x-auto snap-x hide-scrollbar pb-2'>
-              {promoShowcases.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)}
-                  className='min-w-[180px] bg-white border border-gray-100 rounded-lg overflow-hidden snap-start shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer'
-                >
-                  <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.title}
-                      className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                    />
-                    <div className='absolute top-1 left-1 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
-                      โปรโมชัน
+              {promoShowcases.map((item) => {
+                const meta = getFactoryMeta(item.factoryId, factories);
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)}
+                    className='min-w-[180px] bg-white border border-gray-100 rounded-lg overflow-hidden snap-start shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer'
+                  >
+                    <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
+                      <ImageWithFallback
+                        src={item.image}
+                        alt={item.title}
+                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+                      />
+                      <div className='absolute top-1 left-1 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
+                        โปรโมชัน
+                      </div>
                     </div>
-                  </div>
-                  <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                    <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                      {item.title}
-                    </h3>
-                    <div className='flex items-center gap-0.5 mt-0.5'>
-                      <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                      <span className='text-gray-500 text-[10px] truncate'>
-                        {(
-                          (factories ?? []).find(
-                            (f) => String(f.id) === String(item.factoryId ?? ''),
-                          )?.location ?? ''
-                        ).trim() || '—'}
-                      </span>
-                    </div>
-                    <div className='mt-auto pt-1 border-t border-gray-50'>
-                      <div className='flex items-center justify-between min-w-0'>
-                        <div className='flex items-center gap-0.5 min-w-0'>
-                          <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                          <span className='text-gray-700 text-[10px] font-semibold'>
-                            {Number(
-                              (factories ?? []).find(
-                                (f) => String(f.id) === String(item.factoryId ?? ''),
-                              )?.rating ?? 0,
-                            )}
-                          </span>
-                          <span className='text-gray-400 text-[9px] truncate'>
-                            (
-                            {Number(
-                              (factories ?? []).find(
-                                (f) => String(f.id) === String(item.factoryId ?? ''),
-                              )?.reviews ?? 0,
-                            )}
-                            )
+                    <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
+                      <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
+                        {item.title}
+                      </h3>
+                      <div className='flex items-center gap-0.5 mt-0.5'>
+                        <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
+                        <span className='text-gray-500 text-[10px] truncate'>
+                          {meta.location}
+                        </span>
+                      </div>
+                      <div className='mt-auto pt-1 border-t border-gray-50'>
+                        <div className='flex items-center justify-between min-w-0'>
+                          <div className='flex items-center gap-0.5 min-w-0'>
+                            <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
+                            <span className='text-gray-700 text-[10px] font-semibold'>
+                              {meta.rating}
+                            </span>
+                            <span className='text-gray-400 text-[9px] truncate'>
+                              ({meta.reviews})
+                            </span>
+                          </div>
+                          <span className='text-gray-400 text-[8px] shrink-0'>
+                            ขั้นต่ำ {item.minOrder ?? 0}
                           </span>
                         </div>
-                        <span className='text-gray-400 text-[8px] shrink-0'>
-                          ขั้นต่ำ {item.minOrder ?? 0}
-                        </span>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -418,11 +435,7 @@ export function ExploreDesktop({
           >
             <div
               className='absolute inset-0 rounded-xl'
-              style={{
-                background:
-                  'linear-gradient(90deg, var(--brand-violet) 0%, #A855F7 35%, #EA6C00 65%, #16A34A 100%)',
-                animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
-              }}
+              style={SHIMMER_GRADIENT}
             />
           </div>
           <div className='relative z-[1] flex items-center justify-between mb-3'>
@@ -500,22 +513,13 @@ export function ExploreDesktop({
         />
 
         <div
-          className='z-10 flex justify-end items-center w-full xl:relative xl:mt-0
-                       max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4
-                       md:max-xl:right-8 md:max-xl:bottom-5'
+          className='z-10 flex justify-end items-center w-full xl:relative xl:mt-0 max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4 md:max-xl:right-8 md:max-xl:bottom-5'
         >
           <Button
             variant='unstyled'
             type='button'
             onClick={() => navigate('/register/factory')}
-            className='group relative shrink-0 inline-flex items-center gap-1.5 xl:gap-2 max-xl:px-4 max-xl:py-2 xl:px-7 xl:py-2.5 rounded-xl text-white font-bold text-xs xl:text-sm whitespace-nowrap
-                         bg-gradient-to-r from-brand-purple via-brand-purple-hover to-brand-violet-deep
-                         shadow-lg shadow-brand-purple/40
-                         ring-1 ring-white/20
-                         transition-all duration-200 ease-out
-                         hover:shadow-xl hover:shadow-brand-purple/60 hover:-translate-y-0.5 hover:brightness-110
-                         active:translate-y-0 active:scale-[0.97]
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple'
+            className={REGISTER_BUTTON_CLASS}
           >
             <Sparkles
               size={14}
@@ -544,7 +548,7 @@ export function ExploreDesktop({
         type='button'
         onClick={() => navigate('/create-rfq')}
         className='hidden md:flex xl:hidden fixed bottom-6 right-5 w-12 h-12 rounded-full items-center justify-center shadow-lg transition-transform active:scale-95 z-30'
-        style={{ background: 'var(--brand-purple)', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
+        style={FAB_BUTTON_STYLE}
       >
         <Plus size={20} className='text-white' />
       </Button>

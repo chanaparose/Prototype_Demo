@@ -74,13 +74,13 @@ export function FactoryQuotationsPage() {
         </div>
       ) : (
         <ul className='space-y-3'>
-          {rows.map((r) => {
+          {rows.map((r, idx) => {
             const id = quoteId(r);
             const st = String(r.status ?? 'PD').toUpperCase();
             const canEdit = st === 'PD';
             const badge = QUOTATION_STATUS_BADGE_FACTORY[st] ?? QUOTATION_STATUS_BADGE_FACTORY.PD;
             return (
-              <li key={id || JSON.stringify(r)}>
+              <li key={id || String(idx)}>
                 <div className='flex items-center justify-between gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 sm:p-4 min-w-0 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'>
                   <div className='min-w-0 flex-1 space-y-1'>
                     <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>

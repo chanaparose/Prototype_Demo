@@ -3,6 +3,8 @@ import { Input } from '@/components/ui/input';
 import React from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
+import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
+import { pickScalarString } from '@/utils/pickScalarString';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';
@@ -37,11 +39,11 @@ type Props = {
 function mapAddress(r: Record<string, unknown>): Address {
   return {
     id: Number(r.address_id ?? r.id ?? 0),
-    addressDetail: String(r.address_detail ?? ''),
-    subDistrict: String(r.sub_district_name ?? r.sub_district ?? ''),
-    district: String(r.district_name ?? r.district ?? ''),
-    province: String(r.province_name ?? r.province ?? ''),
-    zipCode: String(r.zip_code ?? ''),
+    addressDetail: pickScalarString(r.address_detail),
+    subDistrict: pickScalarString(r.sub_district_name, r.sub_district),
+    district: pickScalarString(r.district_name, r.district),
+    province: pickScalarString(r.province_name, r.province),
+    zipCode: pickScalarString(r.zip_code),
     isDefault: Boolean(r.is_default ?? false),
   };
 }
@@ -53,7 +55,7 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
   { id: 4, name: 'รถบรรทุกโรงงาน' },
 ];
 
-export function Step3Commercial({ draft, setDraft }: Props) {
+export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
   /* addresses */
   const [addresses, setAddresses] = React.useState<Address[]>([]);
   const [addrLoading, setAddrLoading] = React.useState(true);
@@ -91,28 +93,25 @@ export function Step3Commercial({ draft, setDraft }: Props) {
     });
 
     void masterApi
-      .shippingMethods()
+      .getShippingMethods()
       .then((raw) => {
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped: ShippingMethod[] = arr
-          .map((r) => ({
-            id: Number(r.shipping_method_id ?? r.id ?? 0),
-            name: String(r.method_name ?? r.name ?? '').trim(),
-          }))
-          .filter((m) => m.id > 0 && m.name);
+        const mapped = mapShippingMethodsList(raw);
         if (mapped.length > 0) setShippingMethods(mapped);
       })
       .catch(() => {
-        /* ใช้ fallback */
+        setShippingMethods(FALLBACK_SHIPPING);
       });
-  }, [loadAddresses]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadAddresses, setDraft]);
 
   const handleAddAddress = React.useCallback(
     async (payload: AddressFormPayload) => {
       setSaving(true);
       try {
-        const created = (await addressesApi.create(payload)) as Record<string, unknown>;
-        const createdId = Number(created.address_id ?? created.id ?? 0);
+        const created = await addressesApi.create(payload);
+        if (!created || typeof created !== 'object') {
+          throw new Error('Invalid API response from address creation');
+        }
+        const createdId = Number((created as Record<string, unknown>).address_id ?? (created as Record<string, unknown>).id ?? 0);
         const latest = await loadAddresses();
         const selectId =
           (createdId > 0 ? createdId : null) ??

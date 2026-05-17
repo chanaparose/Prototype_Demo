@@ -3,23 +3,21 @@ import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { useExploreData } from '@/hooks/useExploreData';
 import { useManualApiPageGate } from '@/hooks/useManualApiPageGate';
 import { ManualApiDevGate } from '@/components/shared/ManualApiDevGate';
-import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
-import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import { ExploreMobile } from '@/pages/explore/Explore.mobile';
 import { ExploreDesktop } from '@/pages/explore/Explore.desktop';
 
 export function Explore() {
   const isDesktop = useIsDesktop(768);
   const { showGate, pageApisReady, setPageApisReady } = useManualApiPageGate();
-  const data = useData();
   const { isAuthenticated } = useAuth();
   const {
     searchText,
     setSearchText,
     copiedId,
     setCopiedId,
-    categories,
+    exploreBootstrapCategories,
+    exploreFactories,
     ideaArticles,
     showcases,
     productShowcases,
@@ -32,22 +30,6 @@ export function Explore() {
     reloadExploreCategories,
     isLoading,
   } = useExploreData({ enablePageApis: pageApisReady });
-
-  /** การ์ดโรงงาน — จาก GET /frontend/bootstrap (DataContext) เท่านั้น */
-  const factories = React.useMemo<FactoryItem[]>(
-    () =>
-      data.factories.map((f) => ({
-        id: f.id,
-        name: f.name,
-        image: f.image,
-        location: f.location,
-        rating: f.rating,
-        reviews: f.reviews,
-        minOrder: f.minOrder,
-        verified: f.verified,
-      })),
-    [data.factories],
-  );
 
   if (showGate) {
     return <ManualApiDevGate pageLabel='Explore' onLoad={() => setPageApisReady(true)} />;
@@ -78,21 +60,21 @@ export function Explore() {
           setSearchText={setSearchText}
           copiedId={copiedId}
           setCopiedId={setCopiedId}
-          categories={categories as any}
-          exploreCategoriesMerged={exploreCategoriesMerged as any}
+          categories={exploreBootstrapCategories}
+          exploreCategoriesMerged={exploreCategoriesMerged}
           exploreCategoriesLoading={exploreCategoriesLoading}
           exploreCategoriesError={exploreCategoriesError}
           reloadExploreCategories={reloadExploreCategories}
-          factories={factories as any}
+          factories={exploreFactories}
           activeRFQs={[]}
           recentOrders={[]}
-          ideaArticles={ideaArticles as any}
-          factoryShowcases={showcases as any}
-          exploreProducts={productShowcases as any}
-          explorePromotions={promotionShowcases as any}
-          exploreMatrials={materialShowcases as any}
+          ideaArticles={ideaArticles}
+          factoryShowcases={showcases}
+          exploreProducts={productShowcases}
+          explorePromotions={promotionShowcases}
+          exploreMatrials={materialShowcases}
           explorePromoCodes={[]}
-          promoSlides={promoSlides as any}
+          promoSlides={promoSlides}
         />
       </>
     );
@@ -104,19 +86,19 @@ export function Explore() {
       <ExploreMobile
         searchText={searchText}
         setSearchText={setSearchText}
-        categories={categories as any}
-        exploreCategoriesMerged={exploreCategoriesMerged as any}
+        categories={exploreBootstrapCategories}
+        exploreCategoriesMerged={exploreCategoriesMerged}
         exploreCategoriesLoading={exploreCategoriesLoading}
         exploreCategoriesError={exploreCategoriesError}
         reloadExploreCategories={reloadExploreCategories}
-        factories={factories as any}
-        ideaArticles={ideaArticles as any}
-        factoryShowcases={showcases as any}
-        exploreProducts={productShowcases as any}
-        explorePromotions={promotionShowcases as any}
-        exploreMatrials={materialShowcases as any}
+        factories={exploreFactories}
+        ideaArticles={ideaArticles}
+        factoryShowcases={showcases}
+        exploreProducts={productShowcases}
+        explorePromotions={promotionShowcases}
+        exploreMatrials={materialShowcases}
         explorePromoCodes={[]}
-        promoSlides={promoSlides as any}
+        promoSlides={promoSlides}
       />
     </>
   );

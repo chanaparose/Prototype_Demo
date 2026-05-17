@@ -14,8 +14,6 @@ import {
 import { Link, useNavigate } from 'react-router';
 import {
   TrendingUp,
-  PiggyBank,
-  CheckCircle2,
   Package,
   MessageSquareReply,
   RefreshCw,
@@ -26,7 +24,6 @@ import {
   ClipboardList,
   ShoppingBag,
   CheckCircle,
-  Clock,
   ShieldAlert,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
@@ -203,10 +200,10 @@ const VERIFY_STEPS = [
 function VerificationStepper({
   verifySt,
   verifyReason,
-}: {
+}: Readonly<{
   verifySt: string;
   verifyReason: string;
-}) {
+}>) {
   const isRejected = verifySt === 'RJ';
   const currentStep = isRejected ? 3 : verifySt === 'PD' ? 3 : 0;
 

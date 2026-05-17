@@ -33,7 +33,7 @@ export function useLocalStorage<T = any>(key: string, initialValue?: T): UseLoca
           }
         }
       } catch {
-        console.error(`Failed to set localStorage key "${key}"`);
+        /* ignore quota / private mode */
       }
     },
     [key],

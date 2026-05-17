@@ -4,6 +4,15 @@ import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCu
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
+function mapQuotationStatus(qSt: string): 'Pending' | 'Accepted' | 'Rejected' | 'Expired' {
+  const statusMap: Record<string, 'Pending' | 'Accepted' | 'Rejected' | 'Expired'> = {
+    'AC': 'Accepted',
+    'RJ': 'Rejected',
+    'EX': 'Expired',
+  };
+  return statusMap[qSt] ?? 'Pending';
+}
+
 export interface Quotation {
   quote_id: number;
   factory_name: string;
@@ -66,9 +75,7 @@ export function quotationFromOfferSource(
         ));
   const pricePerPiece = detail?.price_per_piece ?? (moq > 0 ? offer.price / moq : offer.price);
   const qSt = (offer.quoteStatus ?? 'PD').toUpperCase();
-  const status: Quotation['status'] =
-    detail?.status ??
-    (qSt === 'AC' ? 'Accepted' : qSt === 'RJ' ? 'Rejected' : qSt === 'EX' ? 'Expired' : 'Pending');
+  const status: Quotation['status'] = detail?.status ?? mapQuotationStatus(qSt);
 
   return {
     quote_id,

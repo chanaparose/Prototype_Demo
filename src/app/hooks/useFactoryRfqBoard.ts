@@ -5,6 +5,7 @@ import { daysUntilDeadline } from '@/utils/rfqDeadline';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { masterApi, categoriesApi, addressesApi } from '@/services/api/masterApi';
+import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
 import type { RfqCardModel } from '@/components/factory/RfqCard';
 
 function innerRfq(row: Record<string, unknown>): Record<string, unknown> {
@@ -35,7 +36,7 @@ export function useFactoryRfqBoard() {
     try {
       const [rawMatch, ships] = await Promise.all([
         rfqsApi.matching(),
-        masterApi.shippingMethods().catch(() => []),
+        masterApi.getShippingMethods().catch(() => []),
       ]);
       const catRaw = await categoriesApi.list().catch(() => []);
       const cats = (Array.isArray(catRaw) ? catRaw : []) as Record<string, unknown>[];
@@ -55,13 +56,9 @@ export function useFactoryRfqBoard() {
         const text = [detail, zip].filter(Boolean).join(' ');
         if (Number.isFinite(aid) && aid > 0 && text) addrById.set(aid, text);
       }
-      const shipArr = (Array.isArray(ships) ? ships : []) as Record<string, unknown>[];
       const sm = new Map<number, string>();
-      for (const m of shipArr) {
-        const id = Number(m.shipping_method_id ?? m.id);
-        if (Number.isFinite(id) && id > 0) {
-          sm.set(id, String(m.method_name ?? m.name ?? id).trim());
-        }
+      for (const m of mapShippingMethodsList(ships)) {
+        sm.set(m.id, m.name);
       }
       setShipNameById(sm);
 

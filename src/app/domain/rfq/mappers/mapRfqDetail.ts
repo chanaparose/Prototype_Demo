@@ -283,11 +283,12 @@ export async function fetchAndMapRfqDetail(
       if (!shippingMethodName && shipIdRaw != null && Number(shipIdRaw) > 0) {
         try {
           const ships = await masterApi.getShippingMethods();
-          const arr = Array.isArray(ships) ? ships : [];
           const sid = Number(shipIdRaw);
-          const row = arr.find((x) => Number(x.shipping_method_id ?? x.id) === sid);
+          const row = (Array.isArray(ships) ? ships : []).find(
+            (x) => Number(x.shipping_method_id ?? x.id) === sid,
+          );
           if (row) {
-            shippingMethodName = String(row.name ?? '').trim();
+            shippingMethodName = String(row.method_name ?? row.name_th ?? row.name ?? '').trim();
           }
         } catch {
           /* ignore */
