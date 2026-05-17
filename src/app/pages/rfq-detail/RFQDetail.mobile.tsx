@@ -7,7 +7,7 @@ import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { ChevronLeft } from 'lucide-react';
-import { useRfqDetail } from '@/hooks/useRfqDetail';
+import { useRfqDetail } from '@/components/features/rfq/hooks/useRfqDetail';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';

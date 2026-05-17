@@ -19,17 +19,22 @@ export function AddressesSection() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ['addresses', 'me'] });
 
   const submit = async (payload: AddressFormPayload, editingId?: string | number) => {
-    const ok = await modal.runAsync(async () => {
+    modal.setLoading(true);
+    modal.clearError();
+    try {
       if (mode === 'create') {
         await addressesApi.create(payload);
       } else if (editingId != null) {
         await addressesApi.update(editingId, payload);
       }
       invalidate();
-    });
-    if (ok === undefined) return;
-    modal.closeModal();
-    setEditing(null);
+      modal.closeModal();
+      setEditing(null);
+    } catch (err) {
+      throw err;
+    } finally {
+      modal.setLoading(false);
+    }
   };
 
   const remove = async (row: Row) => {

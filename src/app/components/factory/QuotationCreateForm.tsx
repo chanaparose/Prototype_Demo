@@ -9,6 +9,12 @@ import React, {
 } from 'react';
 import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { getErrorMessage } from '@/lib/apiError';
+import {
+  quotationFormSchema,
+  type QuotationFormSchemaValues,
+} from '@/domain/factory/schemas/quotationForm.schema';
 import { useQueryClient } from '@tanstack/react-query';
 import { rfqsApi, quotationsApi, quotationApi } from '@/services/api/rfqApi';
 import { mediaApi } from '@/services/api/factoryApi';
@@ -26,14 +32,7 @@ import { Image } from '@/components/ui/image';
 
 const LOCKED_PAYMENT_TERMS = 'lc_at_sight';
 
-export interface QuotationCreateFormValues {
-  price_per_piece: string;
-  tooling_mold_cost: string; // แม่พิมพ์ / Tooling
-  shipping_cost: string; // ค่าขนส่ง
-  packaging_cost: string; // ค่าบรรจุภัณฑ์
-  lead_time_days: string;
-  validity_days: string; // วันหมดอายุใบเสนอราคา (default 14)
-}
+export type QuotationCreateFormValues = QuotationFormSchemaValues;
 
 const DEFAULTS: QuotationCreateFormValues = {
   price_per_piece: '',
@@ -99,6 +98,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       (shipId > 0 ? `#${shipId}` : '—');
 
     const form = useForm<QuotationCreateFormValues>({
+      resolver: zodResolver(quotationFormSchema),
       defaultValues: DEFAULTS,
       values: {
         price_per_piece: String(initial?.price_per_piece ?? ''),
@@ -223,22 +223,25 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
     const submit = useCallback(async () => {
       if (readOnly) return;
-      const v = form.getValues();
-      const priceN = Number(v.price_per_piece);
-      const leadN = Number(v.lead_time_days);
-
-      if (!Number.isFinite(priceN) || priceN <= 0) {
-        setError('ราคาต่อชิ้นต้องมากกว่า 0');
-        return;
-      }
-      if (!Number.isFinite(leadN) || leadN <= 0) {
-        setError('Lead time ต้องมากกว่า 0');
-        return;
-      }
       if (highlightError) {
         setError(highlightError);
         return;
       }
+
+      const valid = await form.trigger();
+      if (!valid) {
+        const first =
+          form.formState.errors.price_per_piece?.message ??
+          form.formState.errors.lead_time_days?.message ??
+          form.formState.errors.validity_days?.message ??
+          'กรุณาตรวจสอบข้อมูลในฟอร์ม';
+        setError(first);
+        return;
+      }
+
+      const v = form.getValues();
+      const priceN = Number(v.price_per_piece);
+      const leadN = Number(v.lead_time_days);
 
       setSaving(true);
       setError('');
@@ -270,7 +273,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         await qc.invalidateQueries({ queryKey: ['rfq', rfqId, 'quotations'] });
         await onSubmitted?.();
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'ส่งไม่สำเร็จ');
+        setError(getErrorMessage(e, 'ส่งไม่สำเร็จ'));
       } finally {
         setSaving(false);
       }
@@ -303,6 +306,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         <FormField
           label='ราคาต่อชิ้น (บาท)'
           required
+          error={form.formState.errors.price_per_piece?.message}
           helperText={
             budgetPerPiece != null
               ? `งบลูกค้า ${budgetPerPiece.toLocaleString('th-TH')} บ./ชิ้น`
@@ -363,6 +367,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           <FormField
             label='Lead time (วัน)'
             required
+            error={form.formState.errors.lead_time_days?.message}
             helperText={
               targetDaysCustomer != null ? `ลูกค้าต้องการ ${targetDaysCustomer} วัน` : undefined
             }
@@ -376,7 +381,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               {...form.register('lead_time_days')}
             />
           </FormField>
-          <FormField label='ใบเสนอราคาหมดอายุ (วัน)'>
+          <FormField
+            label='ใบเสนอราคาหมดอายุ (วัน)'
+            error={form.formState.errors.validity_days?.message}
+          >
             <Input
               type='number'
               min={1}

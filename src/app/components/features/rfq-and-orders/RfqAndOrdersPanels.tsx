@@ -39,7 +39,7 @@ import {
   getOrderTabCount,
   getRfqActivityCounts,
 } from '@/components/features/rfq-and-orders/utils';
-import { useRfqAndOrdersState } from '@/hooks/useRfqAndOrdersState';
+import { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks/useRfqAndOrdersState';
 import { type Rfq, type Order } from '@/stores/types';
 import { Button } from '@/components/ui/button';
 

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { Plus, FileText, Package, AlertTriangle } from 'lucide-react';
-import { useRfqAndOrdersState } from '@/hooks/useRfqAndOrdersState';
+import { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks/useRfqAndOrdersState';
 import { Button } from '@/components/ui/button';
-import { OrderPanel, RfqPanel } from '@/pages/rfq-and-orders/RfqAndOrdersPanels';
+import { OrderPanel, RfqPanel } from '@/components/features/rfq-and-orders/RfqAndOrdersPanels';
 
 export function RfqAndOrders() {
   const {

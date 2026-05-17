@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { BaseModal } from '@/shared/ui/modals/BaseModal';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { LbiAddressPicker, type LbiAddressValue } from '@/components/common/LbiAddressPicker';
+import { LbiAddressPicker } from '@/components/common/LbiAddressPicker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -15,18 +17,19 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toFormErrors } from '@/lib/apiError';
+import {
+  addressFormSchema,
+  addressFormValuesFromRow,
+  defaultAddressFormValues,
+  toAddressFormPayload,
+  type AddressFormPayload,
+  type AddressFormValues,
+} from '@/domain/factory/schemas/addressForm.schema';
 
 type Row = Record<string, unknown>;
 
-export type AddressFormPayload = {
-  address_type: 'M' | 'B' | 'S';
-  address_detail: string;
-  sub_district_id: number;
-  district_id: number;
-  province_id: number;
-  zip_code: string;
-  is_default?: boolean;
-};
+export type { AddressFormPayload };
 
 type Props = {
   open: boolean;
@@ -37,80 +40,54 @@ type Props = {
   onSubmit: (payload: AddressFormPayload, editingId?: string | number) => Promise<void>;
 };
 
-function readAddressType(row: Row | null | undefined): 'M' | 'B' | 'S' {
-  const t = String(row?.address_type ?? '').toUpperCase();
-  if (t === 'B' || t === 'S') return t;
-  return 'M';
-}
-
 export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmit }: Props) {
-  const [addressType, setAddressType] = useState<'M' | 'B' | 'S'>('M');
-  const [pickerValue, setPickerValue] = useState<LbiAddressValue>({
-    provinceId: '',
-    districtId: '',
-    subDistrictId: '',
+  const form = useForm<AddressFormValues>({
+    resolver: zodResolver(addressFormSchema),
+    defaultValues: defaultAddressFormValues,
+    mode: 'onSubmit',
   });
-  const [zipCode, setZipCode] = useState('');
-  const [detail, setDetail] = useState('');
-  const [isDefault, setIsDefault] = useState(false);
-  const [error, setError] = useState('');
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    setError,
+    formState: { errors },
+  } = form;
 
   useEffect(() => {
     if (!open) return;
-    const provinceId = String(initial?.province_id ?? '').trim();
-    const districtId = String(initial?.district_id ?? '').trim();
-    const subDistrictId = String(initial?.sub_district_id ?? '').trim();
-    setAddressType(readAddressType(initial));
-    setPickerValue({ provinceId, districtId, subDistrictId });
-    setZipCode(String(initial?.zip_code ?? '').trim());
-    setDetail(String(initial?.address_detail ?? '').trim());
-    setIsDefault(Boolean(initial?.is_default));
-    setError('');
-  }, [open, initial]);
+    reset(initial ? addressFormValuesFromRow(initial) : defaultAddressFormValues);
+  }, [open, initial, reset]);
 
   if (!open) return null;
 
-  const submit = async () => {
-    const zip = zipCode.trim();
-    const addr = detail.trim();
-    if (
-      !pickerValue.provinceId ||
-      !pickerValue.districtId ||
-      !pickerValue.subDistrictId ||
-      !addr ||
-      !zip
-    ) {
-      setError('กรุณากรอกข้อมูลที่อยู่ให้ครบทุกช่องที่มี *');
-      return;
-    }
-    if (!/^\d{5}$/.test(zip)) {
-      setError('รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก');
-      return;
-    }
-    const province_id = Number(pickerValue.provinceId);
-    const district_id = Number(pickerValue.districtId);
-    const sub_district_id = Number(pickerValue.subDistrictId);
-    if (
-      !Number.isFinite(province_id) ||
-      !Number.isFinite(district_id) ||
-      !Number.isFinite(sub_district_id)
-    ) {
-      setError('ข้อมูลจังหวัด/อำเภอ/ตำบลไม่ถูกต้อง');
-      return;
-    }
+  const rootError = errors.root?.message;
+  const fieldError =
+    errors.province_id?.message ||
+    errors.district_id?.message ||
+    errors.sub_district_id?.message ||
+    errors.zip_code?.message ||
+    errors.address_detail?.message;
 
-    const payload: AddressFormPayload = {
-      address_type: addressType,
-      address_detail: addr,
-      province_id,
-      district_id,
-      sub_district_id,
-      zip_code: zip,
-      ...(isDefault ? { is_default: true } : {}),
-    };
-
+  const onValid = async (values: AddressFormValues) => {
     const editingId = initial?.address_id ?? initial?.id;
-    await onSubmit(payload, editingId as string | number | undefined);
+    try {
+      await onSubmit(toAddressFormPayload(values), editingId as string | number | undefined);
+    } catch (err) {
+      const { root, fields } = toFormErrors(err);
+      if (root) setError('root', { message: root });
+      if (fields) {
+        for (const [key, message] of Object.entries(fields)) {
+          const k = key as keyof AddressFormValues;
+          if (k in defaultAddressFormValues) {
+            setError(k, { message });
+          }
+        }
+      }
+    }
   };
 
   return (
@@ -128,7 +105,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             loadingLabel: 'กำลังบันทึก...',
             loading: saving,
             disabled: saving,
-            onClick: () => void submit(),
+            onClick: () => void handleSubmit(onValid)(),
             className: 'flex-1',
           }}
           secondary={{
@@ -140,60 +117,96 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
         />
       }
     >
-      {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
+      {rootError || fieldError ? (
+        <ErrorAlert className='mb-4'>{rootError ?? fieldError}</ErrorAlert>
+      ) : null}
 
       <FormField label='ประเภทที่อยู่' required className='sm:max-w-sm mb-4'>
-        <Select
-          value={addressType}
-          onValueChange={(next) => setAddressType(next as 'M' | 'B' | 'S')}
-        >
-          <SelectTrigger className='w-full'>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='M'>ที่อยู่หลัก</SelectItem>
-            <SelectItem value='B'>ออกใบกำกับภาษี</SelectItem>
-            <SelectItem value='S'>จัดส่ง</SelectItem>
-          </SelectContent>
-        </Select>
+        <Controller
+          control={control}
+          name='address_type'
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={(v) => field.onChange(v as 'M' | 'B' | 'S')}>
+              <SelectTrigger className='w-full'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='M'>ที่อยู่หลัก</SelectItem>
+                <SelectItem value='B'>ออกใบกำกับภาษี</SelectItem>
+                <SelectItem value='S'>จัดส่ง</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
       </FormField>
 
       <div className='mb-4'>
-        <LbiAddressPicker
-          value={pickerValue}
-          onChange={setPickerValue}
-          onZipCodeAutoFill={(nextZip) => {
-            if (/^\d{5}$/.test(nextZip)) setZipCode(nextZip);
-          }}
-          disabled={saving}
+        <Controller
+          control={control}
+          name='province_id'
+          render={({ field: provinceField }) => (
+            <Controller
+              control={control}
+              name='district_id'
+              render={({ field: districtField }) => (
+                <Controller
+                  control={control}
+                  name='sub_district_id'
+                  render={({ field: subField }) => (
+                    <LbiAddressPicker
+                      value={{
+                        provinceId: provinceField.value,
+                        districtId: districtField.value,
+                        subDistrictId: subField.value,
+                      }}
+                      onChange={(next) => {
+                        provinceField.onChange(next.provinceId);
+                        districtField.onChange(next.districtId);
+                        subField.onChange(next.subDistrictId);
+                      }}
+                      onZipCodeAutoFill={(zip) => {
+                        if (/^\d{5}$/.test(zip)) setValue('zip_code', zip, { shouldValidate: true });
+                      }}
+                      disabled={saving}
+                    />
+                  )}
+                />
+              )}
+            />
+          )}
         />
       </div>
 
       <div className='grid gap-3 sm:grid-cols-3 mb-4'>
-        <FormField label='รหัสไปรษณีย์' required className='sm:col-span-1'>
+        <FormField label='รหัสไปรษณีย์' required className='sm:col-span-1' error={errors.zip_code?.message}>
           <Input
             className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-            value={zipCode}
             inputMode='numeric'
             maxLength={5}
-            onChange={(e) => setZipCode(e.target.value.replace(/\D/g, '').slice(0, 5))}
             placeholder='10110'
+            {...register('zip_code', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5);
+              },
+            })}
           />
         </FormField>
-        <FormField label='ที่อยู่' required className='sm:col-span-2'>
+        <FormField label='ที่อยู่' required className='sm:col-span-2' error={errors.address_detail?.message}>
           <Textarea
             className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
-            value={detail}
-            onChange={(e) => setDetail(e.target.value)}
             placeholder='บ้านเลขที่ หมู่ ซอย ถนน'
+            {...register('address_detail')}
           />
         </FormField>
       </div>
 
       <Label className='inline-flex items-center gap-2 text-sm text-gray-700'>
-        <Checkbox
-          checked={isDefault}
-          onCheckedChange={(checked) => setIsDefault(checked === true)}
+        <Controller
+          control={control}
+          name='is_default'
+          render={({ field }) => (
+            <Checkbox checked={field.value} onCheckedChange={(c) => field.onChange(c === true)} />
+          )}
         />
         ตั้งเป็นค่าเริ่มต้น
       </Label>

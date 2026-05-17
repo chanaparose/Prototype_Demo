@@ -66,7 +66,9 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
     qc.invalidateQueries({ queryKey: ['factory', String(factoryId), 'certs'] });
 
   const submit = async (value: CertFormSubmitValue, keepOpen: boolean) => {
-    const ok = await modal.runAsync(async () => {
+    modal.setLoading(true);
+    modal.clearError();
+    try {
       let documentUrl = '';
       if (value.file) {
         const up = await mediaApi.upload(value.file);
@@ -91,11 +93,14 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
         });
       }
       invalidate();
-    });
-    if (ok === undefined) return;
-    if (!keepOpen || mode === 'edit') {
-      modal.closeModal();
-      setEditing(null);
+      if (!keepOpen || mode === 'edit') {
+        modal.closeModal();
+        setEditing(null);
+      }
+    } catch (err) {
+      throw err;
+    } finally {
+      modal.setLoading(false);
     }
   };
 

@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { BaseModal } from '@/shared/ui/modals/BaseModal';
 import { FormField } from '@/shared/ui/forms/FormField';
@@ -11,42 +13,33 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { toFormErrors } from '@/lib/apiError';
+import {
+  certFormSchema,
+  certFormValuesFromRow,
+  toCertSubmitValue,
+  validateCertFormForSubmit,
+  type CertFormInput,
+  type CertFormSubmitValue,
+  type CertFormValues,
+} from '@/domain/factory/schemas/certForm.schema';
 
 type CertTypeOption = {
   id: number;
   label: string;
 };
 
-export type CertFormSubmitValue = {
-  cert_id: number;
-  cert_number?: string;
-  expire_date: string;
-  file: File | null;
-};
+export type { CertFormSubmitValue };
 
 type Props = {
-  open: boolean;
-  mode: 'create' | 'edit';
-  certTypes: CertTypeOption[];
-  initial?: Record<string, unknown> | null;
-  submitting?: boolean;
-  onClose: () => void;
-  onSubmit: (value: CertFormSubmitValue, keepOpen: boolean) => Promise<void>;
+  readonly open: boolean;
+  readonly mode: 'create' | 'edit';
+  readonly certTypes: readonly CertTypeOption[];
+  readonly initial?: Record<string, unknown> | null;
+  readonly submitting?: boolean;
+  readonly onClose: () => void;
+  readonly onSubmit: (value: CertFormSubmitValue, keepOpen: boolean) => Promise<void>;
 };
-
-function toDateInputValue(raw: unknown): string {
-  const s = String(raw ?? '').trim();
-  if (!s) return '';
-  return s.length >= 10 ? s.slice(0, 10) : s;
-}
-
-function isFutureOrToday(raw: string): boolean {
-  const d = new Date(`${raw}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return false;
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  return d >= now;
-}
 
 export function CertUploadModal({
   open,
@@ -58,55 +51,67 @@ export function CertUploadModal({
   onSubmit,
 }: Props) {
   const fallbackCertId = useMemo(() => certTypes[0]?.id ?? 1, [certTypes]);
-  const [certId, setCertId] = useState(String(fallbackCertId));
-  const [certNumber, setCertNumber] = useState('');
-  const [expireDate, setExpireDate] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState('');
+
+  const form = useForm<CertFormInput, unknown, CertFormValues>({
+    resolver: zodResolver(certFormSchema),
+    defaultValues: certFormValuesFromRow(null, fallbackCertId),
+    mode: 'onSubmit',
+  });
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    setError,
+    formState: { errors },
+  } = form;
 
   useEffect(() => {
     if (!open) return;
-    const rawCertId = Number(initial?.certificate_id ?? initial?.cert_id ?? fallbackCertId);
-    setCertId(String(Number.isFinite(rawCertId) && rawCertId > 0 ? rawCertId : fallbackCertId));
-    setCertNumber(String(initial?.cert_number ?? '').trim());
-    setExpireDate(toDateInputValue(initial?.expire_date));
-    setFile(null);
-    setError('');
-  }, [open, initial, fallbackCertId]);
+    reset(certFormValuesFromRow(initial, fallbackCertId));
+  }, [open, initial, fallbackCertId, reset]);
 
   if (!open) return null;
 
-  const validate = (requireFile: boolean): string | null => {
-    const idNum = Number(certId);
-    if (!Number.isFinite(idNum) || idNum <= 0) return 'กรุณาเลือกประเภทใบรับรอง';
-    if (!expireDate) return 'กรุณาเลือกวันหมดอายุ';
-    if (!isFutureOrToday(expireDate)) return 'วันหมดอายุต้องเป็นวันนี้หรืออนาคต';
-    if (requireFile && !file) return 'กรุณาอัปโหลดไฟล์เอกสาร';
-    return null;
-  };
+  const rootError = errors.root?.message;
+  const fieldError =
+    errors.cert_id?.message ||
+    errors.expire_date?.message ||
+    errors.file?.message;
 
-  const submit = async (keepOpen: boolean) => {
-    const requireFile = mode === 'create';
-    const err = validate(requireFile);
-    if (err) {
-      setError(err);
+  const selectedFile = form.watch('file');
+  let fileHelperText: string | undefined;
+  if (selectedFile) {
+    fileHelperText = selectedFile.name;
+  } else if (mode === 'edit') {
+    fileHelperText = 'อัปโหลดใหม่หากต้องการแทนไฟล์เดิม';
+  }
+
+  const runSubmit = async (values: CertFormValues, keepOpen: boolean) => {
+    const fileErr = validateCertFormForSubmit(values, mode);
+    if (fileErr) {
+      setError('file', { message: fileErr });
       return;
     }
-    setError('');
-    await onSubmit(
-      {
-        cert_id: Number(certId),
-        cert_number: certNumber.trim() || undefined,
-        expire_date: expireDate,
-        file,
-      },
-      keepOpen,
-    );
-    if (mode === 'create' && keepOpen) {
-      setCertNumber('');
-      setExpireDate('');
-      setFile(null);
-      setCertId(String(fallbackCertId));
+
+    try {
+      await onSubmit(toCertSubmitValue(values), keepOpen);
+      if (mode === 'create' && keepOpen) {
+        reset(certFormValuesFromRow(null, fallbackCertId));
+      }
+    } catch (err) {
+      const { root, fields } = toFormErrors(err);
+      if (root) setError('root', { message: root });
+      if (fields) {
+        for (const [key, message] of Object.entries(fields)) {
+          const k = key as keyof CertFormInput;
+          if (k === 'cert_id' || k === 'cert_number' || k === 'expire_date' || k === 'file') {
+            setError(k, { message });
+          }
+        }
+      }
     }
   };
 
@@ -130,14 +135,14 @@ export function CertUploadModal({
             loadingLabel: 'กำลังบันทึก...',
             loading: submitting,
             disabled: submitting,
-            onClick: () => void submit(false),
+            onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
           }}
           alternatePrimary={
             mode === 'create'
               ? {
                   label: 'บันทึกและเพิ่มใบรับรองถัดไป',
                   disabled: submitting,
-                  onClick: () => void submit(true),
+                  onClick: () => void handleSubmit((v) => runSubmit(v, true))(),
                 }
               : undefined
           }
@@ -149,56 +154,63 @@ export function CertUploadModal({
         />
       }
     >
-      {error ? <ErrorAlert>{error}</ErrorAlert> : null}
+      {rootError || fieldError ? (
+        <ErrorAlert>{rootError ?? fieldError}</ErrorAlert>
+      ) : null}
 
-      <FormField label='ประเภทใบรับรอง' required>
-        <Select value={certId} onValueChange={setCertId}>
-          <SelectTrigger className='w-full'>
-            <SelectValue placeholder='เลือกประเภทใบรับรอง' />
-          </SelectTrigger>
-          <SelectContent>
-            {certTypes.map((m) => (
-              <SelectItem key={m.id} value={String(m.id)}>
-                {m.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </FormField>
-
-      <FormField label='เลขที่เอกสาร (ถ้ามี)'>
-        <Input
-          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-          value={certNumber}
-          onChange={(e) => setCertNumber(e.target.value)}
+      <FormField label='ประเภทใบรับรอง' required error={errors.cert_id?.message}>
+        <Controller
+          control={control}
+          name='cert_id'
+          render={({ field }) => (
+            <Select
+              value={String(field.value)}
+              onValueChange={(v) => field.onChange(Number(v))}
+            >
+              <SelectTrigger className='w-full'>
+                <SelectValue placeholder='เลือกประเภทใบรับรอง' />
+              </SelectTrigger>
+              <SelectContent>
+                {certTypes.map((m) => (
+                  <SelectItem key={m.id} value={String(m.id)}>
+                    {m.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         />
       </FormField>
 
-      <FormField label='วันหมดอายุ' required>
+      <FormField label='เลขที่เอกสาร (ถ้ามี)' error={errors.cert_number?.message}>
+        <Input
+          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          {...register('cert_number')}
+        />
+      </FormField>
+
+      <FormField label='วันหมดอายุ' required error={errors.expire_date?.message}>
         <Input
           type='date'
           className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-          value={expireDate}
-          onChange={(e) => setExpireDate(e.target.value)}
+          {...register('expire_date')}
         />
       </FormField>
 
       <FormField
         label='ไฟล์เอกสาร'
         required={mode === 'create'}
-        helperText={
-          file
-            ? file.name
-            : mode === 'edit'
-              ? 'อัปโหลดใหม่หากต้องการแทนไฟล์เดิม'
-              : undefined
-        }
+        error={errors.file?.message}
+        helperText={fileHelperText}
       >
         <Input
           type='file'
           accept='image/*,.pdf'
           className='text-sm block w-full'
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            const f = e.target.files?.[0] ?? null;
+            setValue('file', f, { shouldValidate: true });
+          }}
         />
       </FormField>
     </BaseModal>

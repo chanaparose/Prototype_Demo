@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/stores/useAuthStore';
-import { useRfqDetail } from '@/hooks/useRfqDetail';
+import { useRfqDetail } from '@/components/features/rfq/hooks/useRfqDetail';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';

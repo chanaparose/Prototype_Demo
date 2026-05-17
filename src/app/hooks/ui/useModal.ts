@@ -1,8 +1,5 @@
 import { useCallback, useState } from 'react';
-
-function toErrorMessage(error: unknown, fallback = 'ดำเนินการไม่สำเร็จ') {
-  return error instanceof Error ? error.message : fallback;
-}
+import { getErrorMessage } from '@/lib/apiError';
 
 export type UseModalReturn = {
   isOpen: boolean;
@@ -57,7 +54,7 @@ export function useModal(initialIsOpen = false): UseModalReturn {
     try {
       return await fn();
     } catch (err) {
-      setError(toErrorMessage(err));
+      setError(getErrorMessage(err));
       return undefined;
     } finally {
       setIsLoading(false);
