@@ -1,9 +1,9 @@
-import type { ConversationDTO } from '@/types/api';
+import type { IConversationResponse } from '@/types/api';
 import type { CounterpartyView } from '@/utils/counterparty';
 
 export type UiConversation = {
   id: string;
-  conv: ConversationDTO;
+  conv: IConversationResponse;
   view: CounterpartyView;
   rfqName: string;
   lastMessage: string;
@@ -13,7 +13,7 @@ export type UiConversation = {
   hasQuote: boolean;
 };
 
-export function unreadForViewer(conv: ConversationDTO, role: 'CT' | 'FT') {
+export function unreadForViewer(conv: IConversationResponse, role: 'CT' | 'FT') {
   return role === 'CT' ? conv.unread_customer : conv.unread_factory;
 }
 

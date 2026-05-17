@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { type Conversation } from '@/stores/types';
 import { conversationsApi, messagesApi } from '@/services/api/chatApi';
-import { getCurrentUserId, parseApiConversation, type ApiConversation } from '@/utils/chatContract';
+import { refreshConversationsCache } from '@/domain/chat/chatCache';
+import { mapConversationFromApi } from '@/domain/chat/mappers/mapConversation';
+import { mapConversationToApiConversation } from '@/domain/chat/mappers/mapConversationStore';
+import { getCurrentUserId, type ApiConversation } from '@/utils/chatContract';
+import { pickScalarString } from '@/utils/pickScalarString';
 import { rowToRoomMessage, type RoomMessage } from '@/components/chat/MessageBubble';
 import { dedupeByKey, sortMessagesByCreatedAt } from '@/pages/messages/selectors';
 import { useMarkAsRead } from '@/pages/messages/useMarkAsRead';
@@ -37,7 +40,6 @@ export function messagesFromApi(raw: unknown): RoomMessage[] {
 export function useChatRoomSession(conversationId: string, preview?: ChatRoomPreview) {
   const { user } = useAuth();
   const currentUserId = getCurrentUserId(user);
-  const { refetchConversations } = useData();
   const markAsRead = useMarkAsRead();
   const [messages, setMessages] = useState<RoomMessage[]>([]);
   const [msgLoading, setMsgLoading] = useState(true);
@@ -49,6 +51,10 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     rfqName: preview?.rfqName ?? '',
     hasQuote: Boolean(preview?.hasQuote),
   });
+
+  const refreshConversations = useCallback(async () => {
+    await refreshConversationsCache();
+  }, []);
 
   useEffect(() => {
     setHeader({
@@ -77,48 +83,40 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     setMsgLoading(true);
     Promise.all([
       messagesApi.list(conversationId).catch(() => [] as unknown[]),
-      conversationsApi.get(conversationId).catch(() => null as Record<string, unknown> | null),
+      conversationsApi.get(conversationId).catch(() => null),
     ])
       .then(([rawMsgs, rawConv]) => {
         if (cancelled) return;
         setMessages(messagesFromApi(rawMsgs));
 
         if (rawConv && typeof rawConv === 'object') {
-          const r = rawConv as Record<string, unknown>;
-          const parsed = parseApiConversation(r);
-          if (parsed) setApiConv(parsed);
-          setHeader((h) => ({
-            factoryId:
-              r.factory_id != null && String(r.factory_id).trim()
-                ? String(r.factory_id)
-                : r.factoryId != null && String(r.factoryId).trim()
-                  ? String(r.factoryId)
-                  : h.factoryId,
-            factoryName:
-              r.factory_name != null && String(r.factory_name).trim()
-                ? String(r.factory_name)
-                : h.factoryName,
-            factoryAvatar:
-              r.factory_image != null && String(r.factory_image).trim()
-                ? String(r.factory_image)
-                : r.factory_image_url != null && String(r.factory_image_url).trim()
-                  ? String(r.factory_image_url)
-                  : r.factory_avatar != null && String(r.factory_avatar).trim()
-                    ? String(r.factory_avatar)
-                    : h.factoryAvatar,
-            rfqName:
-              r.rfq_title != null && String(r.rfq_title).trim()
-                ? String(r.rfq_title)
-                : r.rfq_name != null && String(r.rfq_name).trim()
-                  ? String(r.rfq_name)
-                  : h.rfqName,
-            hasQuote: Boolean(r.has_quote ?? r.hasQuote ?? h.hasQuote),
-          }));
+          const mapped = mapConversationFromApi(rawConv as Record<string, unknown>);
+          if (mapped) {
+            const parsed = mapConversationToApiConversation(mapped);
+            setApiConv({
+              ...parsed,
+              rfq_title: pickScalarString(
+                (rawConv as Record<string, unknown>).rfq_title,
+                (rawConv as Record<string, unknown>).rfq_name,
+              ) || null,
+            });
+            setHeader((h) => ({
+              factoryId: String(mapped.factory_id) || h.factoryId,
+              factoryName: mapped.factory.factory_name || h.factoryName,
+              factoryAvatar: mapped.factory.image_url || h.factoryAvatar,
+              rfqName:
+                pickScalarString(
+                  (rawConv as Record<string, unknown>).rfq_title,
+                  (rawConv as Record<string, unknown>).rfq_name,
+                ) || h.rfqName,
+              hasQuote: mapped.has_quote,
+            }));
+          }
         }
 
         void (async () => {
           await markAsRead(conversationId);
-          await refetchConversations();
+          await refreshConversations();
         })();
       })
       .catch(() => {
@@ -130,7 +128,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     return () => {
       cancelled = true;
     };
-  }, [conversationId, markAsRead, refetchConversations]);
+  }, [conversationId, markAsRead, refreshConversations]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -138,7 +136,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
       if (document.hidden) return;
       void (async () => {
         await markAsRead(conversationId, { force: true });
-        await refetchConversations();
+        await refreshConversations();
       })();
     };
     window.addEventListener('focus', onFocusOrVisible);
@@ -147,7 +145,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
       window.removeEventListener('focus', onFocusOrVisible);
       document.removeEventListener('visibilitychange', onFocusOrVisible);
     };
-  }, [conversationId, markAsRead, refetchConversations]);
+  }, [conversationId, markAsRead, refreshConversations]);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -170,8 +168,6 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
           setMessages((prev) => {
             const pending = prev.filter((m) => m.status === 'sending' || m.status === 'error');
             const next = sortMessagesByCreatedAt(dedupeByKey([...serverRows, ...pending]));
-            // Bail out if nothing actually changed — prevents the visible
-
             if (next.length === prev.length) {
               let same = true;
               for (let i = 0; i < next.length; i++) {
@@ -194,7 +190,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
           if (hasUnreadForMe) {
             void (async () => {
               await markAsRead(conversationId, { force: true });
-              await refetchConversations();
+              await refreshConversations();
             })();
           }
         })
@@ -204,7 +200,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
       stop = true;
       window.clearInterval(timer);
     };
-  }, [conversationId, currentUserId, markAsRead, refetchConversations]);
+  }, [conversationId, currentUserId, markAsRead, refreshConversations]);
 
   const conv: Conversation = useMemo(
     () => ({
@@ -229,6 +225,8 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     messages,
     setMessages,
     msgLoading,
-    refetchConversations,
+    refreshConversations,
+    /** @deprecated Use `refreshConversations` */
+    refetchConversations: refreshConversations,
   };
 }

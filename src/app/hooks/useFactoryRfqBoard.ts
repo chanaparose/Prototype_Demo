@@ -7,6 +7,7 @@ import { factoriesApi } from '@/services/api/factoryApi';
 import { masterApi, categoriesApi, addressesApi } from '@/services/api/masterApi';
 import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
 import type { RfqCardModel } from '@/components/factory/RfqCard';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 function innerRfq(row: Record<string, unknown>): Record<string, unknown> {
   const r = row.rfq;
@@ -42,19 +43,19 @@ export function useFactoryRfqBoard() {
       const cats = (Array.isArray(catRaw) ? catRaw : []) as Record<string, unknown>[];
       const catNameById = new Map<number, string>();
       for (const c of cats) {
-        const id = Number(c.category_id ?? c.id);
-        const name = String(c.category_name ?? c.name ?? '').trim();
-        if (Number.isFinite(id) && id > 0 && name) catNameById.set(id, name);
+        const id = pickScalarNumber(c.category_id, c.id);
+        const name = pickScalarString(c.category_name, c.name).trim();
+        if (id != null && id > 0 && name) catNameById.set(id, name);
       }
       const addrRaw = await addressesApi.list().catch(() => []);
       const addrRows = (Array.isArray(addrRaw) ? addrRaw : []) as Record<string, unknown>[];
       const addrById = new Map<number, string>();
       for (const a of addrRows) {
-        const aid = Number(a.address_id ?? a.id);
-        const detail = String(a.address_detail ?? '').trim();
-        const zip = String(a.zip_code ?? '').trim();
+        const aid = pickScalarNumber(a.address_id, a.id);
+        const detail = pickScalarString(a.address_detail).trim();
+        const zip = pickScalarString(a.zip_code).trim();
         const text = [detail, zip].filter(Boolean).join(' ');
-        if (Number.isFinite(aid) && aid > 0 && text) addrById.set(aid, text);
+        if (aid != null && aid > 0 && text) addrById.set(aid, text);
       }
       const sm = new Map<number, string>();
       for (const m of mapShippingMethodsList(ships)) {
@@ -93,21 +94,21 @@ export function useFactoryRfqBoard() {
           const subsRaw = await categoriesApi.subCategories(cid).catch(() => []);
           const subs = (Array.isArray(subsRaw) ? subsRaw : []) as Record<string, unknown>[];
           for (const s of subs) {
-            const sid = Number(s.sub_category_id ?? s.id);
-            const sName = String(s.name ?? '').trim();
-            if (Number.isFinite(sid) && sid > 0 && sName) subNameByKey.set(`${cid}:${sid}`, sName);
+            const sid = pickScalarNumber(s.sub_category_id, s.id);
+            const sName = pickScalarString(s.name).trim();
+            if (sid != null && sid > 0 && sName) subNameByKey.set(`${cid}:${sid}`, sName);
           }
         }),
       );
 
       for (const row of arr) {
         const inner = innerRfq(row);
-        const id = String(inner.rfq_id ?? inner.id ?? row.rfq_id ?? row.id ?? '');
+        const id = pickScalarString(inner.rfq_id, inner.id, row.rfq_id, row.id);
         if (!id) continue;
 
-        const title = String(inner.title ?? row.title ?? 'RFQ');
-        const requestKind = String(inner.request_kind ?? row.request_kind ?? 'PR').toUpperCase();
-        const status = String(inner.status ?? row.status ?? '').toUpperCase();
+        const title = pickScalarString(inner.title, row.title, 'RFQ');
+        const requestKind = pickScalarString(inner.request_kind, row.request_kind, 'PR').toUpperCase();
+        const status = pickScalarString(inner.status, row.status).toUpperCase();
         const quantity = inner.quantity != null ? Number(inner.quantity) : null;
         const totalBudgetRaw = Number(
           inner.target_price ?? inner.budget_total ?? inner.total_budget ?? 0,
@@ -135,23 +136,23 @@ export function useFactoryRfqBoard() {
         const categoryId = Number(inner.category_id ?? row.category_id ?? 0);
         const subCategoryId = Number(inner.sub_category_id ?? row.sub_category_id ?? 0);
         const categoryName =
-          String(inner.category_name ?? row.category_name ?? '').trim() ||
+          pickScalarString(inner.category_name, row.category_name).trim() ||
           catNameById.get(categoryId) ||
           '';
         const subCategoryName =
-          String(inner.sub_category_name ?? row.sub_category_name ?? '').trim() ||
+          pickScalarString(inner.sub_category_name, row.sub_category_name).trim() ||
           (Number.isFinite(subCategoryId) && subCategoryId > 0
             ? (subNameByKey.get(`${categoryId}:${subCategoryId}`) ?? '')
             : '');
 
-        const deadlineRaw = String(inner.required_delivery_date ?? '').trim();
+        const deadlineRaw = pickScalarString(inner.required_delivery_date).trim();
         const deadlineIso = deadlineRaw || null;
         const dLeft = daysUntilDeadline(deadlineIso);
 
         const shipIdRaw = inner.shipping_method_id ?? row.shipping_method_id;
         const shippingMethodId =
           shipIdRaw != null && Number(shipIdRaw) > 0 ? Number(shipIdRaw) : null;
-        let shippingMethodName = String(inner.shipping_method_name ?? '').trim();
+        let shippingMethodName = pickScalarString(inner.shipping_method_name).trim();
         if (!shippingMethodName && shippingMethodId != null) {
           shippingMethodName = sm.get(shippingMethodId) ?? '';
         }
@@ -167,18 +168,18 @@ export function useFactoryRfqBoard() {
         const leadTargetDays =
           Number.isFinite(leadTargetDaysRaw) && leadTargetDaysRaw > 0 ? leadTargetDaysRaw : null;
 
-        const created = String(inner.created_at ?? row.created_at ?? '').trim();
+        const created = pickScalarString(inner.created_at, row.created_at).trim();
         const createdAtMs = created ? new Date(created).getTime() : 0;
 
         const addressId = Number(inner.address_id ?? 0);
         const addressSummary =
-          String(inner.address_summary ?? '').trim() ||
+          pickScalarString(inner.address_summary).trim() ||
           (Number.isFinite(addressId) && addressId > 0 ? (addrById.get(addressId) ?? '') : '');
 
         // Backend guarantees: AC rows are excluded, so my_quote_status is null / PD / RJ only
         const myQuoteStatusRaw = inner.my_quote_status ?? row.my_quote_status;
-        const hasMyQuote = myQuoteStatusRaw != null && String(myQuoteStatusRaw).trim() !== '';
-        const myQuoteStatus = hasMyQuote ? String(myQuoteStatusRaw).toUpperCase() : null;
+        const hasMyQuote = pickScalarString(myQuoteStatusRaw) !== '';
+        const myQuoteStatus = hasMyQuote ? pickScalarString(myQuoteStatusRaw).toUpperCase() : null;
         const myQuotedPriceRaw = Number(inner.my_quoted_price ?? row.my_quoted_price ?? NaN);
         const myQuotedPrice =
           hasMyQuote && Number.isFinite(myQuotedPriceRaw) ? myQuotedPriceRaw : null;

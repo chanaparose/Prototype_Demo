@@ -1,16 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi } from '@/services/api/ordersApi';
-import type { ProductionUpdatesBundle } from '@/components/features/production/types';
+import type {
+  IProductionUpdateRequest,
+  IProductionUpdatesBundle,
+} from '@/domain/production/types/production.model';
 
-type PostBody = {
-  step_id: number;
+type PostBody = Pick<IProductionUpdateRequest, 'step_id' | 'status' | 'description' | 'image_urls' | 'confirm_payment_trigger'> & {
   status: 'IP' | 'CD';
-  description?: string;
-  image_urls: string[];
-  confirm_payment_trigger?: boolean;
 };
 
-function applyOptimistic(old: ProductionUpdatesBundle, body: PostBody): ProductionUpdatesBundle {
+function applyOptimistic(old: IProductionUpdatesBundle, body: PostBody): IProductionUpdatesBundle {
   const updates = old.updates.map((u) =>
     u.step_id === body.step_id
       ? {
@@ -38,7 +37,7 @@ export function usePostProductionUpdate(orderId: string | undefined) {
     },
     onMutate: async ({ body }) => {
       await qc.cancelQueries({ queryKey: key });
-      const prev = qc.getQueryData<ProductionUpdatesBundle>(key);
+      const prev = qc.getQueryData<IProductionUpdatesBundle>(key);
       if (prev) qc.setQueryData(key, applyOptimistic(prev, body));
       return { prev };
     },

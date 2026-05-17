@@ -11,7 +11,7 @@ import { reviewsApi } from '@/services/api/userApi';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
-import { pickScalarString } from '@/utils/pickScalarString';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type FactorySubCategoryPair = { categoryLabel: string; subLabel: string };
 
@@ -63,16 +63,17 @@ function mapFactoryFromApi(
     id: pickScalarString(row.id, row.factory_id, id),
     name: pickScalarString(row.name, row.factory_name, b?.name),
     location: pickScalarString(row.location, row.province_name, row.city, b?.location),
-    rating: Number(row.avg_rating ?? row.rating ?? b?.rating ?? 0),
-    reviews: Number(row.review_count ?? row.reviews ?? b?.reviews ?? 0),
+    rating: pickScalarNumber(row.avg_rating, row.rating, b?.rating) ?? 0,
+    reviews: pickScalarNumber(row.review_count, row.reviews, b?.reviews) ?? 0,
     specialization: pickScalarString(row.specialization, row.description, b?.specialization),
     tags: Array.isArray(row.tags) ? row.tags.map(String) : (b?.tags ?? []),
-    minOrder: Number(row.min_order ?? row.minOrder ?? b?.minOrder ?? 0),
+    minOrder: pickScalarNumber(row.min_order, row.minOrder, b?.minOrder) ?? 0,
     leadTime: pickScalarString(row.lead_time, row.leadTime, b?.leadTime),
     image,
     ...(coverImageUrl ? { coverImageUrl } : {}),
     verified: Boolean(row.is_verified ?? row.verified ?? b?.verified ?? false),
-    completedOrders: Number(row.completed_orders ?? row.completedOrders ?? b?.completedOrders ?? 0),
+    completedOrders:
+      pickScalarNumber(row.completed_orders, row.completedOrders, b?.completedOrders) ?? 0,
     priceRange: pickScalarString(row.price_range, row.priceRange, b?.priceRange),
     ...(ftn ? { factoryTypeName: ftn } : {}),
   };
@@ -107,7 +108,7 @@ function mapReviewFromApi(
 ): FactoryReview | null {
   const rid = pickScalarString(r.id, r.review_id);
   if (!rid) return null;
-  const userId = Number(r.user_id ?? r.userId ?? 0);
+  const userId = pickScalarNumber(r.user_id, r.userId) ?? 0;
   const firstName = pickScalarString(r.first_name, r.firstName);
   const lastName = pickScalarString(r.last_name, r.lastName);
   const fullName = `${firstName} ${lastName}`.trim();
@@ -126,10 +127,10 @@ function mapReviewFromApi(
     id: rid,
     factoryId,
     reviewer,
-    rating: Number(r.rating ?? 0),
+    rating: pickScalarNumber(r.rating) ?? 0,
     comment: pickScalarString(r.comment, r.text),
     date: pickScalarString(r.created_at, r.date),
-    helpfulCount: Number(r.helpful_count ?? r.useful_count ?? 0),
+    helpfulCount: pickScalarNumber(r.helpful_count, r.useful_count) ?? 0,
     optionText: pickScalarString(r.option_text, r.variant, r.sku_option) || undefined,
     ...(imageUrls.length > 0 ? { imageUrls } : {}),
   };
@@ -286,8 +287,8 @@ export async function fetchAndMapFactoryProfile(
 
   if (summaryRes.status === 'fulfilled' && summaryRes.value) {
     const s = summaryRes.value as Record<string, unknown>;
-    const avg = Number(s.average_rating);
-    const count = Number(s.review_count);
+    const avg = pickScalarNumber(s.average_rating);
+    const count = pickScalarNumber(s.review_count);
     if (Number.isFinite(avg) && avg >= 0) factory.rating = avg;
     if (Number.isFinite(count) && count >= 0) factory.reviews = count;
   }
@@ -309,8 +310,8 @@ export async function createFactoryConversation(
   customerId: number | string,
 ): Promise<string | null> {
   const res = (await conversationsApi.create({
-    customer_id: Number(customerId),
-    factory_id: Number(factoryId),
+    customer_id: pickScalarNumber(customerId) ?? 0,
+    factory_id: pickScalarNumber(factoryId) ?? 0,
   })) as Record<string, unknown>;
   const id = pickScalarString(res.conversation_id, res.id);
   return id || null;

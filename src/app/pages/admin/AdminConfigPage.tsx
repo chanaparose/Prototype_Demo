@@ -18,6 +18,7 @@ import {
 } from '@/domain/admin/schemas/adminConfig.schema';
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import { formatDate } from '@/utils/formatting/formatDate';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -105,7 +106,7 @@ function SaveButton({
 
 export function AdminConfigPage() {
   const { user } = useAuth();
-  const role = String(user?.role ?? '');
+  const role = pickScalarString(user?.role);
   const isSA = canEdit(role, 'SA');
 
   const [activeTab, setActiveTab] = useState<TabKey>('general');
@@ -157,8 +158,8 @@ export function AdminConfigPage() {
     if (!defaultConfig) return;
     defaultCommissionForm.reset({
       label: defaultConfig.label ?? 'มาตรฐาน (Default)',
-      commission: String(defaultConfig.default_commission_rate),
-      vat: String(defaultConfig.vat_rate),
+      commission: pickScalarString(defaultConfig.default_commission_rate),
+      vat: pickScalarString(defaultConfig.vat_rate),
     });
   }, [defaultConfig, defaultCommissionForm]);
 
@@ -196,8 +197,8 @@ export function AdminConfigPage() {
     try {
       const payload: IUpdatePlatformConfigRequest = {
         label: values.label.trim(),
-        default_commission_rate: Number(values.commission),
-        vat_rate: Number(values.vat),
+        default_commission_rate: pickScalarNumber(values.commission) ?? 0,
+        vat_rate: pickScalarNumber(values.vat) ?? 0,
       };
       const updated = await adminConfigApi.updateConfig(defaultConfig.config_id, payload);
       setConfigs((prev) => prev.map((c) => (c.config_id === updated.config_id ? updated : c)));
@@ -212,8 +213,8 @@ export function AdminConfigPage() {
 
   const handleCreateConfig = newConfigForm.handleSubmit(async (values) => {
     if (!isSA) return;
-    const commission = Number(values.default_commission_rate);
-    const vat = Number(values.vat_rate || '7');
+    const commission = pickScalarNumber(values.default_commission_rate) ?? 0;
+    const vat = pickScalarNumber(values.vat_rate, '7') ?? 7;
 
     setSavingConfig(true);
     setError('');
@@ -475,10 +476,10 @@ export function AdminConfigPage() {
                             {isDefault ? <span className='text-xs text-slate-400'>🔒</span> : null}
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm text-right tabular-nums text-indigo-700 font-bold'>
-                            {formatCompactNumber(Number(cfg.default_commission_rate))}%
+                            {formatCompactNumber(pickScalarNumber(cfg.default_commission_rate) ?? 0)}%
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm text-right tabular-nums'>
-                            {formatCompactNumber(Number(cfg.vat_rate))}%
+                            {formatCompactNumber(pickScalarNumber(cfg.vat_rate) ?? 0)}%
                           </TableCell>
                           <TableCell className='px-4 py-3 text-xs text-slate-500'>
                             {fmtDate(cfg.effective_to)}

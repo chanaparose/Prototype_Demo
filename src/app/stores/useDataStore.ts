@@ -6,7 +6,12 @@ import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
 import { orderKeys, rfqKeys } from '@/lib/queryKeys';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
-import { normalizeFactoryRow, mapConversationRowsFromApi } from '@/stores/utils';
+import { mapConversationsFromApi } from '@/domain/chat/mappers/mapConversation';
+import { refreshConversationsCache } from '@/domain/chat/chatCache';
+import { chatKeys } from '@/lib/queryKeys';
+import { mapConversationRowsFromApi } from '@/stores/utils';
+import { normalizeFactoryRow } from '@/stores/utils';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import type {
   Category,
   Factory,
@@ -86,12 +91,12 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           const raw = boot?.categories;
           if (!Array.isArray(raw) || raw.length === 0) return [];
           return (raw as Record<string, unknown>[]).map((c) => {
-            const name = String(c.name ?? '');
+            const name = pickScalarString(c.name);
             return {
-              id: String(c.id ?? c.category_id ?? ''),
+              id: pickScalarString(c.id, c.category_id),
               name,
-              icon: String(c.icon ?? '') || guessCategoryIcon(name),
-              color: String(c.color ?? 'var(--brand-violet)'),
+              icon: pickScalarString(c.icon) || guessCategoryIcon(name),
+              color: pickScalarString(c.color) || 'var(--brand-violet)',
             } as Category;
           });
         })();
@@ -129,21 +134,25 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
 
       const mappedNotifs: Notification[] = rawNotifs
         .map((r) => ({
-          id: String(r.notification_id ?? r.id ?? ''),
-          type: String(r.type ?? ''),
-          title: String(r.title ?? ''),
-          message: String(r.message ?? r.body ?? ''),
-          time: String(r.created_at ?? r.time ?? ''),
+          id: pickScalarString(r.notification_id, r.id),
+          type: pickScalarString(r.type),
+          title: pickScalarString(r.title),
+          message: pickScalarString(r.message, r.body),
+          time: pickScalarString(r.created_at, r.time),
           read: Boolean(r.is_read ?? r.read ?? false),
-          linkTo: String(r.link_to ?? r.linkTo ?? ''),
-          avatar: String(r.avatar ?? ''),
-          rfqId: r.rfq_id ? String(r.rfq_id) : undefined,
-          orderId: r.order_id ? String(r.order_id) : undefined,
-          conversationId: r.conversation_id ? String(r.conversation_id) : undefined,
+          linkTo: pickScalarString(r.link_to, r.linkTo),
+          avatar: pickScalarString(r.avatar),
+          rfqId: r.rfq_id != null ? pickScalarString(r.rfq_id) : undefined,
+          orderId: r.order_id != null ? pickScalarString(r.order_id) : undefined,
+          conversationId:
+            r.conversation_id != null ? pickScalarString(r.conversation_id) : undefined,
         }))
         .filter((n) => n.id);
 
       const mappedConvs: Conversation[] = mapConversationRowsFromApi(rawConvs);
+      if (convsRes.status === 'fulfilled') {
+        queryClient.setQueryData(chatKeys.conversations(), mapConversationsFromApi(rawConvs));
+      }
 
       const factoryList: Factory[] = (() => {
         const raw = boot?.factories;
@@ -158,16 +167,16 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           ? (() => {
               const u = boot.currentUser;
               return {
-                id: String(u.id ?? ''),
-                name: String(u.name ?? ''),
-                nameEn: u.nameEn ? String(u.nameEn) : undefined,
-                avatar: String(u.avatar ?? ''),
-                company: String(u.company ?? ''),
-                email: String(u.email ?? ''),
-                phone: String(u.phone ?? ''),
-                walletBalance: Number(u.walletBalance ?? 0),
-                pendingBalance: Number(u.pendingBalance ?? 0),
-                memberSince: String(u.memberSince ?? ''),
+                id: pickScalarString(u.id),
+                name: pickScalarString(u.name),
+                nameEn: u.nameEn != null ? pickScalarString(u.nameEn) : undefined,
+                avatar: pickScalarString(u.avatar),
+                company: pickScalarString(u.company),
+                email: pickScalarString(u.email),
+                phone: pickScalarString(u.phone),
+                walletBalance: pickScalarNumber(u.walletBalance) ?? 0,
+                pendingBalance: pickScalarNumber(u.pendingBalance) ?? 0,
+                memberSince: pickScalarString(u.memberSince),
               } as CurrentUser;
             })()
           : null,
@@ -175,12 +184,12 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           const raw = boot?.categories;
           if (Array.isArray(raw) && raw.length > 0) {
             return (raw as Record<string, unknown>[]).map((c) => {
-              const name = String(c.name ?? '');
+              const name = pickScalarString(c.name);
               return {
-                id: String(c.id ?? c.category_id ?? ''),
+                id: pickScalarString(c.id, c.category_id),
                 name,
-                icon: String(c.icon ?? '') || guessCategoryIcon(name),
-                color: String(c.color ?? 'var(--brand-violet)'),
+                icon: pickScalarString(c.icon) || guessCategoryIcon(name),
+                color: pickScalarString(c.color) || 'var(--brand-violet)',
               } as Category;
             });
           }
@@ -203,7 +212,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
       set((state) => ({
         ...state,
         isLoading: false,
-        error: String(err),
+        error: err instanceof Error ? err.message : pickScalarString(err) || 'โหลดข้อมูลไม่สำเร็จ',
       }));
     }
   };
@@ -241,16 +250,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     },
 
     refetchConversations: async () => {
-      const { isAuthenticated } = useAuth();
-      if (!isAuthenticated) return;
-      try {
-        const raw = await conversationsApi.list();
-        const rawConvs = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mappedConvs = mapConversationRowsFromApi(rawConvs);
-        set((state) => ({ ...state, conversations: mappedConvs }));
-      } catch {
-        /* keep cached conversations */
-      }
+      await refreshConversationsCache();
     },
 
     refetchFactory: async (id: string) => {
@@ -270,8 +270,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     refetchWallet: async () => {
       try {
         const w = (await walletApi.getMe()) as Record<string, unknown>;
-        const balance = Number(w.good_fund ?? w.walletBalance ?? 0) || 0;
-        const pending = Number(w.pending_fund ?? w.pendingBalance ?? 0) || 0;
+        const balance = pickScalarNumber(w.good_fund, w.walletBalance) ?? 0;
+        const pending = pickScalarNumber(w.pending_fund, w.pendingBalance) ?? 0;
         set((state) => {
           if (!state.currentUser) return state;
           return {

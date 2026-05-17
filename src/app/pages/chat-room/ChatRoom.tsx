@@ -50,7 +50,7 @@ import {
 } from '@/pages/chat-room/useChatRoomSession';
 import { resolveCounterparty, FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
 import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
-import type { ConversationDTO } from '@/types/api';
+import type { IConversationResponse } from '@/types/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -358,7 +358,7 @@ function ChatRoomBody({
   const showMiniDash = Boolean(apiConv?.has_quote ?? conv.hasQuote);
   const counterpartyView = useMemo(() => {
     if (!apiConv || currentUserId == null) return null;
-    const normalized: ConversationDTO = {
+    const normalized: IConversationResponse = {
       conv_id: apiConv.conv_id,
       customer_id: apiConv.customer_id,
       factory_id: apiConv.factory_id,

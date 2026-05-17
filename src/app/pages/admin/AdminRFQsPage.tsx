@@ -11,7 +11,7 @@ import {
 import type { IAdminRfqListResponse } from '@/services/api/types/admin.types';
 import { formatIsoDate } from '@/utils/formatting/formatDate';
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
-import { pickScalarString } from '@/utils/pickScalarString';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import {
   useAdminRfqDetailQuery,
   useAdminRfqListQuery,
@@ -75,11 +75,11 @@ function mapRfq(row: IAdminRfqListResponse): AdminRfqView {
     rfq_id: pickScalarString(row.rfq_id),
     buyer_name: pickScalarString(row.customer_name, '-'),
     factory_name: undefined,
-    budget: Number(row.target_price ?? 0),
+    budget: pickScalarNumber(row.target_price) ?? 0,
     status: pickScalarString(row.status, 'OP'),
     created_at: pickScalarString(row.created_at),
     title: pickScalarString(row.title, '-'),
-    quantity: Number(row.quantity ?? 0),
+    quantity: pickScalarNumber(row.quantity) ?? 0,
     category: pickScalarString(row.category_name, '-'),
     sub_category: pickScalarString(row.sub_category_name, '-'),
   };
@@ -97,7 +97,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
         : '';
 
   const rfq = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
-  const deliveryDate = String(rfq.required_delivery_date ?? rfq.deadline ?? '');
+  const deliveryDate = pickScalarString(rfq.required_delivery_date, rfq.deadline);
 
   return (
     <TableRow>
@@ -113,13 +113,15 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
                 <Package size={14} className='text-indigo-500 mt-0.5 shrink-0' />
                 <div>
                   <p className='text-[10px] text-slate-400 uppercase font-semibold'>สินค้า</p>
-                  <p className='text-sm text-slate-900 font-medium'>{String(rfq.title ?? '-')}</p>
+                  <p className='text-sm text-slate-900 font-medium'>
+                    {pickScalarString(rfq.title, '-')}
+                  </p>
                   <p className='text-xs text-slate-500 mt-0.5'>
-                    จำนวน: {formatCompactNumber(Number(rfq.quantity ?? 0))} ชิ้น
+                    จำนวน: {formatCompactNumber(pickScalarNumber(rfq.quantity) ?? 0)} ชิ้น
                   </p>
                   <p className='text-xs text-slate-500'>
-                    หมวดหมู่: {String(rfq.category_name ?? '-')} /{' '}
-                    {String(rfq.sub_category_name ?? '-')}
+                    หมวดหมู่: {pickScalarString(rfq.category_name, '-')} /{' '}
+                    {pickScalarString(rfq.sub_category_name, '-')}
                   </p>
                 </div>
               </div>
@@ -140,7 +142,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
                 <div>
                   <p className='text-[10px] text-slate-400 uppercase font-semibold'>งบประมาณ</p>
                   <p className='text-sm text-slate-900 font-bold'>
-                    ฿{formatCompactNumber(Number(rfq.target_price ?? 0))}
+                    ฿{formatCompactNumber(pickScalarNumber(rfq.target_price) ?? 0)}
                   </p>
                 </div>
               </div>
@@ -148,7 +150,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
             <div className='mt-3 pt-3 border-t border-indigo-100'>
               <p className='text-[10px] text-slate-400 uppercase font-semibold mb-1'>หมายเหตุ</p>
               <p className='text-sm text-slate-700 whitespace-pre-wrap'>
-                {String(rfq.details ?? rfq.description ?? '-')}
+                {pickScalarString(rfq.details, rfq.description, '-')}
               </p>
             </div>
           </>

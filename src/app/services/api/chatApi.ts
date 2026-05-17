@@ -3,7 +3,7 @@ import type {
   IConversationResponse,
   IMessageResponse,
   IMessageSendRequest,
-  ThreadResponse,
+  IThreadResponse,
 } from '@/services/api/types/chat.types';
 
 export const conversationsApi = {
@@ -37,7 +37,7 @@ export const messagesApi = {
     httpClient.delete<void>(`/conversations/${convId}/messages/${msgId}`),
 
   getThread: (convId: string | number) =>
-    httpClient.get<ThreadResponse>(`/conversations/${convId}/thread`),
+    httpClient.get<IThreadResponse>(`/conversations/${convId}/thread`),
 };
 
 export const notificationsApi = {

@@ -3,8 +3,6 @@ import { mapExploreCategoryFromApi } from '@/domain/explore/mappers/mapExploreCa
 import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import type { IExploreCategoryResponse } from '@/services/api/types/explore.types';
 
-export type ExploreCategoryItem = IExploreCategory;
-
 export const TILE_DB_ID_TO_CONTEXT_ID: Record<string, string> = {
   '1': 'pet_food',
   '2': 'supplements',
@@ -34,16 +32,16 @@ export function categoryIdsMatch(a: string, b: string): boolean {
   return false;
 }
 
-export function parseCategoriesResponse(raw: unknown): ExploreCategoryItem[] {
+export function parseCategoriesResponse(raw: unknown): IExploreCategory[] {
   const rows = extractCategoriesArray(raw);
-  const parsed: ExploreCategoryItem[] = [];
+  const parsed: IExploreCategory[] = [];
   for (const item of rows) {
     if (!item || typeof item !== 'object') continue;
     const mapped = mapExploreCategoryFromApi(item as IExploreCategoryResponse);
     if (mapped) parsed.push(mapped);
   }
 
-  const dedupe = new Map<string, ExploreCategoryItem>();
+  const dedupe = new Map<string, IExploreCategory>();
   for (const c of parsed) {
     dedupe.set(String(c.id), c);
   }
@@ -51,10 +49,10 @@ export function parseCategoriesResponse(raw: unknown): ExploreCategoryItem[] {
 }
 
 export function mergeCategoryLists(
-  primary: ExploreCategoryItem[],
-  secondary: ExploreCategoryItem[],
-): ExploreCategoryItem[] {
-  const map = new Map<string, ExploreCategoryItem>();
+  primary: IExploreCategory[],
+  secondary: IExploreCategory[],
+): IExploreCategory[] {
+  const map = new Map<string, IExploreCategory>();
   for (const c of secondary) map.set(String(c.id), c);
   for (const c of primary) map.set(String(c.id), c);
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
@@ -63,8 +61,8 @@ export function mergeCategoryLists(
 export function exploreDisplayNameForTile(
   categoryId: string,
   fallbackName: string,
-  fromApi: ExploreCategoryItem[],
-  fromProp?: ExploreCategoryItem[],
+  fromApi: IExploreCategory[],
+  fromProp?: IExploreCategory[],
 ): string {
   const matchApi = fromApi.find((c) => categoryIdsMatch(c.id, categoryId));
   if (matchApi?.name) return matchApi.name;
@@ -79,7 +77,7 @@ export function exploreDisplayNameForTile(
 }
 
 export type FetchExploreCategoriesResult = {
-  merged: ExploreCategoryItem[];
+  merged: IExploreCategory[];
   bothFailed: boolean;
   catRejected: boolean;
   masterRejected: boolean;

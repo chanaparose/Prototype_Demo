@@ -2,7 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
-import { pickScalarString } from '@/utils/pickScalarString';
+import {
+  extractAdminFactoryRows,
+  mapAdminFactory,
+} from '@/domain/admin/mappers/mapAdminFactory';
+import type {
+  AdminFactory,
+  FactoryApprovalStatus,
+} from '@/domain/admin/types/adminFactory.model';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -17,21 +24,7 @@ import {
   TableSkeletonRows,
 } from '@/components/ui/table';
 
-export type FactoryApprovalStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
-
-export interface AdminFactory {
-  id: string;
-  factory_id: number;
-  factory_name: string;
-  owner_name: string;
-  email: string;
-  phone: string;
-  registered_at: string;
-  approval_status: FactoryApprovalStatus;
-  business_type: string;
-  province: string;
-  is_verified: boolean;
-}
+export type { FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
 
 type FactoryActionType = 'approve' | 'reject';
 
@@ -50,14 +43,6 @@ const STATUS_TABS: { key: 'all' | FactoryApprovalStatus; label: string; apiStatu
   { key: 'suspended', label: 'Suspended', apiStatus: 'SU' },
 ];
 
-function toLocalStatus(raw: unknown): FactoryApprovalStatus {
-  const s = String(raw ?? '').toUpperCase();
-  if (s === 'AP' || s === 'APPROVED') return 'approved';
-  if (s === 'RJ' || s === 'REJECTED') return 'rejected';
-  if (s === 'SU' || s === 'SUSPENDED') return 'suspended';
-  return 'pending';
-}
-
 function formatThaiDate(input: string): string {
   if (!input) return '-';
   const d = new Date(input);
@@ -67,34 +52,6 @@ function formatThaiDate(input: string): string {
     month: 'short',
     day: '2-digit',
   });
-}
-
-function getRows(raw: unknown): Record<string, unknown>[] {
-  if (Array.isArray(raw)) return raw as Record<string, unknown>[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as Record<string, unknown>[];
-    if (Array.isArray(obj.rows)) return obj.rows as Record<string, unknown>[];
-    if (Array.isArray(obj.data)) return obj.data as Record<string, unknown>[];
-  }
-  return [];
-}
-
-function mapFactory(row: Record<string, unknown>): AdminFactory {
-  const factoryId = Number(row.factory_id ?? row.id ?? 0);
-  return {
-    id: pickScalarString(factoryId || row.id),
-    factory_id: factoryId,
-    factory_name: pickScalarString(row.factory_name, row.name, '-'),
-    owner_name: pickScalarString(row.owner_name, row.contact_name, row.full_name, '-'),
-    email: pickScalarString(row.owner_email, row.email, '-'),
-    phone: pickScalarString(row.owner_phone, row.phone, '-'),
-    registered_at: pickScalarString(row.submitted_at, row.registered_at, row.created_at),
-    approval_status: toLocalStatus(row.approval_status),
-    business_type: pickScalarString(row.business_type_name, row.business_type, '-'),
-    province: pickScalarString(row.province_name, row.province, '-'),
-    is_verified: Boolean(row.is_verified ?? false),
-  };
 }
 
 interface ConfirmDialogProps {
@@ -188,7 +145,7 @@ export function AdminFactoriesPage() {
         page: 1,
         page_size: 100,
       });
-      setFactories(getRows(raw).map(mapFactory));
+      setFactories(extractAdminFactoryRows(raw).map(mapAdminFactory));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดข้อมูลโรงงานไม่สำเร็จ');
       setFactories([]);

@@ -1,4 +1,4 @@
-import type { ConversationDTO } from '@/types/api';
+import type { IConversationResponse } from '@/types/api';
 
 const CUSTOMER_AVATAR = '/assets/avatars/customer-default.svg';
 export const FACTORY_FALLBACK_AVATAR = '/assets/avatars/factory-fallback.svg';
@@ -13,7 +13,7 @@ export interface CounterpartyView {
 }
 
 export function resolveCounterparty(
-  conv: ConversationDTO,
+  conv: IConversationResponse,
   currentUserId: number,
 ): CounterpartyView {
   const viewerRole: 'CT' | 'FT' =

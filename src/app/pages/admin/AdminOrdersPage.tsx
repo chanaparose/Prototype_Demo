@@ -3,7 +3,7 @@ import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
 import type { IAdminOrderListResponse } from '@/services/api/types/admin.types';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
-import { pickScalarString } from '@/utils/pickScalarString';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,9 +70,9 @@ function mapOrder(row: IAdminOrderListResponse): AdminOrderView {
     order_id: pickScalarString(row.order_id),
     buyer: pickScalarString(row.customer_name, '-'),
     factory: pickScalarString(row.factory_name, '-'),
-    total_amount: Number(row.total_amount ?? 0),
-    commission_amount: Number(row.platform_commission_amount ?? 0),
-    vat_amount: Number(row.vat_amount ?? 0),
+    total_amount: pickScalarNumber(row.total_amount) ?? 0,
+    commission_amount: pickScalarNumber(row.platform_commission_amount) ?? 0,
+    vat_amount: pickScalarNumber(row.vat_amount) ?? 0,
     status: pickScalarString(row.status, 'OP'),
     created_at: pickScalarString(row.created_at),
   };

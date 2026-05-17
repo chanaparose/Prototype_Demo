@@ -20,6 +20,7 @@ import {
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
+import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
@@ -62,7 +63,7 @@ export function DesktopSidebar() {
       ? location.pathname === '/'
       : location.pathname === path || location.pathname.startsWith(`${path}/`);
 
-  const unreadMessages = data.conversations.reduce((s, c) => s + c.unread, 0);
+  const unreadMessages = useConversationUnreadCount();
   const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
   const { data: rfqList = [] } = useRfqListQuery();
   const activeRfqCount = rfqList.filter(

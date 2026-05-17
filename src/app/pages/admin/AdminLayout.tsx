@@ -16,6 +16,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { pickScalarString } from '@/utils/pickScalarString';
 
 const ADMIN_ROLES = ['AM', 'AD', 'SA'] as const;
 type AdminRole = (typeof ADMIN_ROLES)[number];
@@ -78,7 +79,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const role = String(user?.role ?? '');
+  const role = pickScalarString(user?.role);
   const roleLabel = ROLE_LABELS[role] ?? role;
   const roleCls = ROLE_COLORS[role] ?? 'bg-slate-100 text-slate-600';
 
@@ -138,7 +139,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       <div className='px-3 pb-4 shrink-0 border-t border-slate-200 pt-3'>
         <div className='flex items-center gap-3 px-2 py-2 rounded-lg bg-slate-50 mb-2'>
           <div className='w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0'>
-            {String(user?.name ?? 'A')
+            {pickScalarString(user?.name, 'A')
               .charAt(0)
               .toUpperCase()}
           </div>
@@ -179,7 +180,7 @@ export function AdminLayout() {
     );
   }
 
-  const role = String(user?.role ?? '');
+  const role = pickScalarString(user?.role);
   if (!ADMIN_ROLES.includes(role as AdminRole)) {
     return <Navigate to='/' replace />;
   }
@@ -240,7 +241,7 @@ export function AdminLayout() {
 
             <div className='flex items-center gap-2 pl-2 border-l border-slate-200'>
               <div className='w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm'>
-                {String(user?.name ?? 'A')
+                {pickScalarString(user?.name, 'A')
                   .charAt(0)
                   .toUpperCase()}
               </div>

@@ -15,6 +15,7 @@ export type {
   IFactoryPartyInfoResponse,
   IMessageResponse,
   IMessageSendRequest,
+  IThreadResponse,
   MessageDTO,
   MessageSendPayload,
   ThreadResponse,

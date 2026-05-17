@@ -51,7 +51,7 @@ export interface IMessageSendRequest {
   order_id?: number;
 }
 
-export interface ThreadResponse {
+export interface IThreadResponse {
   thread_id: number;
   customer_id: number;
   factory_id: number;
@@ -65,3 +65,4 @@ export type FactoryPartyInfoDTO = IFactoryPartyInfoResponse;
 export type ConversationDTO = IConversationResponse;
 export type MessageDTO = IMessageResponse;
 export type MessageSendPayload = IMessageSendRequest;
+export type ThreadResponse = IThreadResponse;

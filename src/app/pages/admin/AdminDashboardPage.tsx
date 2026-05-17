@@ -27,6 +27,7 @@ import {
   formatCompactNumber,
   formatCurrencyNoDecimals,
 } from '@/utils/formatting/formatCurrency';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { EMPTY_ADMIN_DASHBOARD } from '@/domain/admin/mappers/mapAdminDashboard';
 import { useAdminDashboardQuery } from '@/domain/admin/queries/useAdminDashboardQuery';
 import { useAdminTopCustomersQuery } from '@/domain/admin/queries/useAdminTopCustomersQuery';
@@ -55,7 +56,7 @@ function toCurrency(value: number): string {
 }
 
 function orderStatusMeta(status: string): { label: string; cls: string } {
-  const s = String(status || '').toUpperCase();
+  const s = pickScalarString(status).toUpperCase();
   if (s === 'CM' || s === 'DONE' || s === 'COMPLETED')
     return { label: 'เสร็จสิ้น', cls: 'bg-emerald-100 text-emerald-700' };
   if (s === 'CL' || s === 'CANCELLED') return { label: 'ยกเลิก', cls: 'bg-red-100 text-red-700' };
@@ -65,7 +66,7 @@ function orderStatusMeta(status: string): { label: string; cls: string } {
 }
 
 function rfqStatusMeta(status: string): { label: string; cls: string } {
-  const s = String(status || '').toUpperCase();
+  const s = pickScalarString(status).toUpperCase();
   if (s === 'CL' || s === 'CC') return { label: 'ปิด', cls: 'bg-slate-100 text-slate-500' };
   if (s === 'MT' || s === 'MATCHED')
     return { label: 'จับคู่แล้ว', cls: 'bg-blue-100 text-blue-700' };
@@ -136,7 +137,7 @@ function TopCustomersWidget() {
               </Link>
               <div className='text-right shrink-0'>
                 <p className='text-sm font-semibold text-indigo-700'>
-                  {formatCurrencyNoDecimals(Number(c.total_spend || 0))}
+                  {formatCurrencyNoDecimals(pickScalarNumber(c.total_spend) ?? 0)}
                 </p>
                 <p className='text-xs text-slate-400'>{c.total_orders} ออเดอร์</p>
               </div>
@@ -162,16 +163,15 @@ export function AdminDashboardPage() {
   const { summary, revenueRows, recentOrders, recentRfqs } = dashboard;
 
   const kpiData = useMemo<KpiCard[]>(() => {
-    const gross = Number(summary.gross_order_value ?? summary.total_revenue ?? 0);
-    const commission = Number(
-      summary.platform_commission ?? summary.platform_commission_amount ?? 0,
-    );
-    const vat = Number(summary.vat_collected ?? summary.vat_amount ?? 0);
-    const totalOrders = Number(summary.total_orders ?? summary.order_count ?? recentOrders.length);
-    const totalRfqs = Number(summary.total_rfqs ?? summary.new_rfqs ?? recentRfqs.length);
-    const pendingFactories = Number(
-      summary.pending_factory_approvals ?? summary.pending_factories ?? 0,
-    );
+    const gross = pickScalarNumber(summary.gross_order_value, summary.total_revenue) ?? 0;
+    const commission =
+      pickScalarNumber(summary.platform_commission, summary.platform_commission_amount) ?? 0;
+    const vat = pickScalarNumber(summary.vat_collected, summary.vat_amount) ?? 0;
+    const totalOrders =
+      pickScalarNumber(summary.total_orders, summary.order_count) ?? recentOrders.length;
+    const totalRfqs = pickScalarNumber(summary.total_rfqs, summary.new_rfqs) ?? recentRfqs.length;
+    const pendingFactories =
+      pickScalarNumber(summary.pending_factory_approvals, summary.pending_factories) ?? 0;
 
     return [
       {
@@ -222,7 +222,7 @@ export function AdminDashboardPage() {
   const orderStatusData = useMemo(() => {
     const counts = { completed: 0, processing: 0, pending: 0, cancelled: 0 };
     recentOrders.forEach((o) => {
-      const s = String(o.status ?? '').toUpperCase();
+      const s = pickScalarString(o.status).toUpperCase();
       if (s === 'CM' || s === 'DONE' || s === 'COMPLETED') counts.completed += 1;
       else if (s === 'CL' || s === 'CANCELLED') counts.cancelled += 1;
       else if (s === 'OP' || s === 'PENDING' || s === 'PD') counts.pending += 1;
@@ -386,10 +386,10 @@ export function AdminDashboardPage() {
                   </TableRow>
                 ) : (
                   recentOrders.map((order) => {
-                    const status = orderStatusMeta(String(order.status ?? ''));
+                    const status = orderStatusMeta(pickScalarString(order.status));
                     return (
                       <TableRow
-                        key={String(order.order_id)}
+                        key={pickScalarString(order.order_id)}
                         className='hover:bg-slate-50 transition-colors'
                       >
                         <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
@@ -399,7 +399,7 @@ export function AdminDashboardPage() {
                           {order.customer_name ?? '-'}
                         </TableCell>
                         <TableCell className='px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums'>
-                          {toCurrency(Number(order.total_amount ?? 0))}
+                          {toCurrency(pickScalarNumber(order.total_amount) ?? 0)}
                         </TableCell>
                         <TableCell className='px-4 py-3'>
                           <AdminStatusBadge label={status.label} cls={status.cls} />
@@ -450,10 +450,10 @@ export function AdminDashboardPage() {
                   </TableRow>
                 ) : (
                   recentRfqs.map((rfq) => {
-                    const status = rfqStatusMeta(String(rfq.status ?? ''));
+                    const status = rfqStatusMeta(pickScalarString(rfq.status));
                     return (
                       <TableRow
-                        key={String(rfq.rfq_id)}
+                        key={pickScalarString(rfq.rfq_id)}
                         className='hover:bg-slate-50 transition-colors'
                       >
                         <TableCell className='px-4 py-3 font-mono text-xs text-indigo-600 font-semibold'>
@@ -466,7 +466,7 @@ export function AdminDashboardPage() {
                           <AdminStatusBadge label={status.label} cls={status.cls} />
                         </TableCell>
                         <TableCell className='px-4 py-3 text-xs text-slate-400 tabular-nums'>
-                          {String(rfq.created_at ?? '-').slice(0, 10)}
+                          {pickScalarString(rfq.created_at, '-').slice(0, 10)}
                         </TableCell>
                       </TableRow>
                     );

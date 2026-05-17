@@ -1,6 +1,7 @@
 import { type FactoryShowcase, type ShowcaseImageRow, type ShowcaseSpecRow } from '@/stores/types';
 import { showcasesApi } from '@/services/api/factoryApi';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';
 
@@ -34,7 +35,7 @@ function parseImageUrls(raw: unknown): string[] {
       if (typeof item === 'string') return item.trim();
       if (!item || typeof item !== 'object') return '';
       const row = item as Record<string, unknown>;
-      return String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
+      return pickScalarString(row.url, row.image_url, row.public_url);
     })
     .filter((u) => u !== '')
     .slice(0, 5);
@@ -42,83 +43,70 @@ function parseImageUrls(raw: unknown): string[] {
 
 export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase {
   const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
-  const leadTime = leadRaw != null && leadRaw !== '' ? String(leadRaw) : '';
+  const leadTime =
+    leadRaw != null && leadRaw !== '' ? pickScalarString(leadRaw) : '';
   const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
   const { imageUrls: linkedImageUrls, showcaseIds } = partitionLinkedShowcases(
     r.linked_showcases ?? r.linkedShowcases,
   );
   const linkedFirstImage = linkedImageUrls[0] ?? '';
-  const ctRaw = String(r.content_type ?? r.type ?? '')
-    .trim()
-    .toUpperCase();
+  const ctRaw = pickScalarString(r.content_type, r.type).toUpperCase();
   const firstImage =
     ctRaw === 'PD' || ctRaw === 'PR' || ctRaw === 'PM'
-      ? linkedFirstImage || imageUrls[0] || String(r.image_url ?? r.image ?? '').trim()
-      : imageUrls[0] || linkedFirstImage || String(r.image_url ?? r.image ?? '').trim();
+      ? linkedFirstImage || imageUrls[0] || pickScalarString(r.image_url, r.image)
+      : imageUrls[0] || linkedFirstImage || pickScalarString(r.image_url, r.image);
 
-  const catIdRaw = r.category_id ?? r.categoryId;
-  const categoryId =
-    catIdRaw != null && String(catIdRaw).trim() !== '' ? String(catIdRaw).trim() : undefined;
+  const catIdRaw = pickScalarString(r.category_id, r.categoryId);
+  const categoryId = catIdRaw !== '' ? catIdRaw : undefined;
 
   const subRaw = r.sub_category_id ?? r.subCategoryId;
   let sub_category_id: number | undefined;
-  if (subRaw != null && String(subRaw).trim() !== '') {
-    const n = Number(subRaw);
-    if (Number.isFinite(n)) sub_category_id = n;
-  }
-  const subNameRaw = r.sub_category_name ?? r.subCategoryName;
-  const sub_category_name =
-    subNameRaw != null && String(subNameRaw).trim() !== '' ? String(subNameRaw) : null;
+  const subIdNum = pickScalarNumber(subRaw);
+  if (subIdNum != null && subIdNum > 0) sub_category_id = subIdNum;
 
-  const factoryImageUrl = String(r.factory_image_url ?? r.factoryImageUrl ?? '').trim();
+  const sub_category_name = pickScalarString(r.sub_category_name, r.subCategoryName) || null;
+
+  const factoryImageUrl = pickScalarString(r.factory_image_url, r.factoryImageUrl);
   const fr = r.factory_rating ?? r.factoryRating;
   const factoryRating =
     fr != null && String(fr).trim() !== '' && Number.isFinite(Number(fr)) ? Number(fr) : undefined;
   const factoryVerified = Boolean(r.factory_verified ?? r.factoryVerified);
 
   return {
-    id: String(r.showcase_id ?? r.id ?? r.showcaseId ?? ''),
-    factoryId: String(r.factory_id ?? r.factoryId ?? ''),
-    factoryName: String(r.factory_name ?? r.factoryName ?? ''),
-    title: String(r.title ?? r.name ?? r.headline ?? ''),
-    excerpt: String(r.excerpt ?? r.summary ?? ''),
+    id: pickScalarString(r.showcase_id, r.id, r.showcaseId),
+    factoryId: pickScalarString(r.factory_id, r.factoryId),
+    factoryName: pickScalarString(r.factory_name, r.factoryName),
+    title: pickScalarString(r.title, r.name, r.headline),
+    excerpt: pickScalarString(r.excerpt, r.summary),
     image: firstImage,
     ...(imageUrls.length > 0 ? { imageUrls } : {}),
-    contentType: CT_MAP[String(r.content_type ?? r.type ?? '').trim()] ?? 'product',
-    category: String(r.category_name ?? r.category ?? ''),
+    contentType: CT_MAP[pickScalarString(r.content_type, r.type)] ?? 'product',
+    category: pickScalarString(r.category_name, r.category),
     categoryId,
     sub_category_id,
     sub_category_name,
-    postedAt: String(r.created_at ?? r.postedAt ?? ''),
+    postedAt: pickScalarString(r.created_at, r.postedAt),
     likes: Number(r.likes_count ?? r.likes ?? 0),
     minOrder: Number(r.moq ?? r.min_order ?? r.minOrder ?? 0),
     leadTime,
-    ...(r.content != null && String(r.content).trim() !== '' ? { content: String(r.content) } : {}),
+    ...(pickScalarString(r.content) !== '' ? { content: pickScalarString(r.content) } : {}),
     ...(r.base_price != null && Number.isFinite(Number(r.base_price))
       ? { basePrice: Number(r.base_price) }
       : {}),
     ...(r.promo_price != null && Number.isFinite(Number(r.promo_price))
       ? { promoPrice: Number(r.promo_price) }
       : {}),
-    ...(r.start_date != null && String(r.start_date).trim() !== ''
-      ? { startDate: String(r.start_date) }
-      : {}),
-    ...(r.end_date != null && String(r.end_date).trim() !== ''
-      ? { endDate: String(r.end_date) }
-      : {}),
-    ...(r.status != null && String(r.status).trim() !== '' ? { status: String(r.status) } : {}),
+    ...(pickScalarString(r.start_date) !== '' ? { startDate: pickScalarString(r.start_date) } : {}),
+    ...(pickScalarString(r.end_date) !== '' ? { endDate: pickScalarString(r.end_date) } : {}),
+    ...(pickScalarString(r.status) !== '' ? { status: pickScalarString(r.status) } : {}),
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
     ...(factoryImageUrl ? { factoryImageUrl } : {}),
     ...(factoryRating != null ? { factoryRating } : {}),
     ...(factoryVerified ? { factoryVerified } : {}),
-    ...(r.description != null && String(r.description).trim() !== ''
-      ? { description: String(r.description) }
+    ...(pickScalarString(r.description) !== '' ? { description: pickScalarString(r.description) } : {}),
+    ...(pickScalarString(r.price_range, r.priceRange) !== ''
+      ? { priceRange: pickScalarString(r.price_range, r.priceRange) }
       : {}),
-    ...(r.price_range != null && String(r.price_range).trim() !== ''
-      ? { priceRange: String(r.price_range) }
-      : r.priceRange != null && String(r.priceRange).trim() !== ''
-        ? { priceRange: String(r.priceRange) }
-        : {}),
     ...(Array.isArray(r.sections) && r.sections.length > 0
       ? { sections: r.sections as import('@/stores/types').ShowcaseSection[] }
       : {}),
@@ -128,8 +116,8 @@ export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase 
     ...(Array.isArray(r.specs) && r.specs.length > 0
       ? {
           specs: (r.specs as Record<string, unknown>[]).map((sp) => ({
-            spec_key: String(sp.spec_key ?? ''),
-            spec_value: String(sp.spec_value ?? ''),
+            spec_key: pickScalarString(sp.spec_key),
+            spec_value: pickScalarString(sp.spec_value),
             sort_order: Number(sp.sort_order ?? 0),
           })) as ShowcaseSpecRow[],
         }

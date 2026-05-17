@@ -22,6 +22,7 @@ import {
   TableSkeletonRows,
 } from '@/components/ui/table';
 import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { pickScalarNumber } from '@/utils/pickScalarString';
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -33,7 +34,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 function toCurrency(n: number) {
-  return formatCurrencyNoDecimals(Number(n || 0));
+  return formatCurrencyNoDecimals(pickScalarNumber(n) ?? 0);
 }
 
 const LIMIT = 20;

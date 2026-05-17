@@ -15,12 +15,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { adminApi, adminConfigApi, adminFactoryConfigApi, adminSettlementApi } from '@/services/api/adminApi';
+import { mapFactoryApprovalStatus } from '@/domain/admin/mappers/mapAdminFactory';
 import type {
   IAdminSettlementListItemResponse,
   IFactoryConfigResponse,
   IPlatformConfigItemResponse,
 } from '@/services/api/types/admin.types';
-import type { FactoryApprovalStatus } from '@/pages/admin/AdminFactoriesPage';
+import type { FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
+import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -101,14 +103,6 @@ const DOC_STATUS_META = {
   missing: { label: 'ยังไม่มี', cls: 'bg-red-100 text-red-600' },
 };
 
-function toLocalStatus(raw: unknown): FactoryApprovalStatus {
-  const s = String(raw ?? '').toUpperCase();
-  if (s === 'AP' || s === 'APPROVED') return 'approved';
-  if (s === 'RJ' || s === 'REJECTED') return 'rejected';
-  if (s === 'SU' || s === 'SUSPENDED') return 'suspended';
-  return 'pending';
-}
-
 function getArray(raw: unknown, key: string): Record<string, unknown>[] {
   if (!raw || typeof raw !== 'object') return [];
   const v = (raw as Record<string, unknown>)[key];
@@ -122,20 +116,22 @@ function mapDetail(raw: unknown): AdminFactoryDetailState {
   const docs = getArray(root, 'certificates');
   const categories = getArray(root, 'categories');
 
-  const factoryId = Number(factory.factory_id ?? factory.id ?? root.factory_id ?? 0);
-  const approvalStatus = toLocalStatus(factory.approval_status);
-  const registeredAt = String(
-    factory.submitted_at ?? factory.created_at ?? factory.registered_at ?? '',
+  const factoryId = pickScalarNumber(factory.factory_id, factory.id, root.factory_id) ?? 0;
+  const approvalStatus = mapFactoryApprovalStatus(factory.approval_status);
+  const registeredAt = pickScalarString(
+    factory.submitted_at,
+    factory.created_at,
+    factory.registered_at,
   );
 
   const timeline: TimelineRow[] = [
     { status: 'submitted', timestamp: registeredAt || '', note: 'ส่งใบสมัครเข้ามา' },
     {
       status: approvalStatus,
-      timestamp: String(factory.updated_at ?? registeredAt ?? ''),
+      timestamp: pickScalarString(factory.updated_at, registeredAt),
       note:
         approvalStatus === 'rejected'
-          ? String(factory.rejection_reason ?? 'ปฏิเสธโดยผู้ดูแล')
+          ? pickScalarString(factory.rejection_reason, 'ปฏิเสธโดยผู้ดูแล')
           : approvalStatus === 'approved'
             ? 'อนุมัติโดยผู้ดูแลระบบ'
             : approvalStatus === 'suspended'
@@ -145,35 +141,35 @@ function mapDetail(raw: unknown): AdminFactoryDetailState {
   ].filter((r) => r.timestamp);
 
   return {
-    id: String(factoryId || ''),
+    id: pickScalarString(factoryId),
     factory_id: factoryId,
-    factory_name: String(factory.factory_name ?? factory.name ?? '-'),
-    owner_name: String(factory.owner_name ?? factory.contact_name ?? '-'),
-    email: String(factory.owner_email ?? factory.email ?? '-'),
-    phone: String(factory.owner_phone ?? factory.phone ?? '-'),
+    factory_name: pickScalarString(factory.factory_name, factory.name, '-'),
+    owner_name: pickScalarString(factory.owner_name, factory.contact_name, '-'),
+    email: pickScalarString(factory.owner_email, factory.email, '-'),
+    phone: pickScalarString(factory.owner_phone, factory.phone, '-'),
     registered_at: registeredAt,
     approval_status: approvalStatus,
-    business_type: String(factory.business_type_name ?? factory.business_type ?? '-'),
-    province: String(factory.province_name ?? factory.province ?? '-'),
-    address: String(factory.address_detail ?? factory.address ?? '-'),
-    tax_id: String(factory.tax_id ?? '-'),
-    website: String(factory.website ?? ''),
+    business_type: pickScalarString(factory.business_type_name, factory.business_type, '-'),
+    province: pickScalarString(factory.province_name, factory.province, '-'),
+    address: pickScalarString(factory.address_detail, factory.address, '-'),
+    tax_id: pickScalarString(factory.tax_id, '-'),
+    website: pickScalarString(factory.website),
     documents:
       docs.length > 0
         ? docs.map((d) => ({
-            name: String(d.cert_name ?? d.name ?? 'เอกสารโรงงาน'),
+            name: pickScalarString(d.cert_name, d.name, 'เอกสารโรงงาน'),
             status:
-              String(d.status ?? d.is_verified ?? '').toLowerCase() === 'verified' ||
+              pickScalarString(d.status, d.is_verified).toLowerCase() === 'verified' ||
               Boolean(d.is_verified)
                 ? 'verified'
-                : String(d.document_url ?? d.url ?? '').trim()
+                : pickScalarString(d.document_url, d.url)
                   ? 'uploaded'
                   : 'missing',
-            url: String(d.document_url ?? d.url ?? ''),
+            url: pickScalarString(d.document_url, d.url),
           }))
         : [
             ...categories.map((c) => ({
-              name: `หมวด: ${String(c.category_name ?? c.name ?? '-')}`,
+              name: `หมวด: ${pickScalarString(c.category_name, c.name, '-')}`,
               status: 'verified' as const,
               url: '',
             })),
@@ -192,7 +188,7 @@ export function AdminFactoryDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const role = String(user?.role ?? '');
+  const role = pickScalarString(user?.role);
 
   const [factory, setFactory] = useState<AdminFactoryDetailState>(EMPTY_DETAIL);
   const [loading, setLoading] = useState(true);
@@ -240,7 +236,7 @@ export function AdminFactoryDetailPage() {
   const loadFactoryConfig = async () => {
     if (!id) return;
     try {
-      const fid = Number(id);
+      const fid = pickScalarNumber(id) ?? 0;
       if (!Number.isFinite(fid) || fid <= 0) return;
       const [configRes, listRes] = await Promise.all([
         adminFactoryConfigApi.getFactoryConfig(fid),
@@ -819,7 +815,7 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
                         </Link>
                       </TableCell>
                       <TableCell className='px-4 py-3 text-right font-semibold tabular-nums'>
-                        {formatCurrencyNoDecimals(Number(s.amount || 0))}
+                        {formatCurrencyNoDecimals(pickScalarNumber(s.amount) ?? 0)}
                       </TableCell>
                       <TableCell className='px-4 py-3 text-center'>
                         <span

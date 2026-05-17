@@ -1,3 +1,7 @@
+/**
+ * Legacy bootstrap/store UI models.
+ * These are camelCase client models, not API response contracts.
+ */
 export type Category = {
   id: string;
   name: string;
@@ -236,3 +240,11 @@ export type CurrentUser = {
   pendingBalance: number;
   memberSince: string;
 };
+
+export type BootstrapCategoryModel = Category;
+export type BootstrapFactoryModel = Factory;
+export type BootstrapFactoryShowcaseModel = FactoryShowcase;
+export type BootstrapRfqModel = Rfq;
+export type BootstrapOrderModel = Order;
+export type BootstrapConversationModel = Conversation;
+export type BootstrapNotificationModel = Notification;
