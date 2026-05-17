@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { Button } from '../../../components/ui/button';
 
 type CollapsibleCardProps = {
   defaultOpen?: boolean;
@@ -32,9 +33,10 @@ export function CollapsibleCard({
 
   return (
     <div className={`rounded-2xl border border-gray-100 bg-white overflow-hidden ${className}`}>
-      <button
-        type="button"
+      <Button
         onClick={handleToggle}
+        variant="ghost"
+        size="default"
         className={`w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors ${headerClassName}`}
       >
         {header}
@@ -44,7 +46,7 @@ export function CollapsibleCard({
             className={`text-gray-400 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}
           />
         )}
-      </button>
+      </Button>
 
       {isOpen && (
         <div className={`px-4 pb-5 space-y-4 border-t border-gray-100 ${contentClassName}`}>

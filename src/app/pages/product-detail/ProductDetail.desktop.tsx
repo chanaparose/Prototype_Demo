@@ -24,6 +24,8 @@ import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
 import { useFavorites } from '../../hooks/useFavorites';
+import { SubCategoryTag } from '../../components/SubCategoryTag';
+import { StrictSpecsBlock } from '../../shared/ui/StrictSpecsBlock/StrictSpecsBlock';
 
 // Aligned with Explore page palette — vibrant brand purple + bright accent orange
 const BRAND = {
@@ -152,8 +154,7 @@ export function ProductDetailDesktop() {
   const specRows: { label: string; value: React.ReactNode }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
   if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
-  specRows.push({ label: 'ขั้นต่ำการสั่งผลิต', value: `${item.minOrder} ชิ้น (MOQ)` });
-  if (item.leadTime) specRows.push({ label: 'ระยะเวลาผลิต', value: item.leadTime });
+  const leadTimeDays = Number(String(item.leadTime ?? '').replace(/[^\d.]/g, ''));
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
   if (Array.isArray(item.specs) && item.specs.length > 0) {
     const sorted = [...item.specs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -300,6 +301,9 @@ export function ProductDetailDesktop() {
                   <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-medium text-gray-500 border border-gray-200">
                     {item.category}
                   </span>
+                ) : null}
+                {subName && !isMaterial ? (
+                  <SubCategoryTag name={subName} size="sm" showSubPrefix />
                 ) : null}
               </div>
 
@@ -562,6 +566,12 @@ export function ProductDetailDesktop() {
             </p>
           </div>
           <div className="p-6">
+            <StrictSpecsBlock
+              showcase={{
+                moq: Number.isFinite(Number(item.minOrder)) ? Number(item.minOrder) : null,
+                lead_time_days: Number.isFinite(leadTimeDays) && leadTimeDays > 0 ? leadTimeDays : null,
+              }}
+            />
             <table className="w-full text-[13px]">
               <tbody>
                 {specRows.map((row, idx) => (

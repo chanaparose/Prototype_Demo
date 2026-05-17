@@ -10,6 +10,9 @@ type SectionCardProps = {
   headerClassName?: string;
   contentClassName?: string;
   actionButton?: React.ReactNode;
+  iconClassName?: string;
+  iconStyle?: React.CSSProperties;
+  titleClassName?: string;
 };
 
 export function SectionCard({
@@ -22,6 +25,9 @@ export function SectionCard({
   headerClassName = '',
   contentClassName = '',
   actionButton,
+  iconClassName = 'w-11 h-11 rounded-xl bg-violet-50 text-base',
+  iconStyle,
+  titleClassName = 'text-sm font-semibold text-gray-900',
 }: SectionCardProps) {
   return (
     <div className={`bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm ${className}`}>
@@ -30,12 +36,15 @@ export function SectionCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1">
             {icon && (
-              <div className="w-11 h-11 shrink-0 rounded-xl bg-violet-50 flex items-center justify-center text-base">
+              <div
+                className={`shrink-0 flex items-center justify-center ${iconClassName}`}
+                style={iconStyle}
+              >
                 {icon}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+              <h3 className={titleClassName}>{title}</h3>
               {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
             </div>
           </div>

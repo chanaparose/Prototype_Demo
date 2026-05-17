@@ -100,5 +100,11 @@ export const mediaApi = {
       url: string;
     }>('/media/upload', formData),
 
+  upload: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return mediaApi.uploadImage(formData);
+  },
+
   deleteImage: (imageId: string) => httpClient.delete<void>(`/media/${imageId}`),
 };

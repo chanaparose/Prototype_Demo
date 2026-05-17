@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { Button } from '../../../../components/ui/button';
 import type { TabId } from '../types';
 
 const TAB_LABEL: Record<TabId, string> = {
@@ -32,7 +33,7 @@ export function FactoryOrdersEmptyState({
   return (
     <div className="text-sm text-gray-400 bg-white rounded-2xl border border-gray-100 p-6 text-center lg:col-span-2">
       <p>ไม่มีออเดอร์ในหมวด {TAB_LABEL[tabId]}</p>
-      <button type="button" className="text-violet-700 underline" onClick={onResetTab}>ดูทั้งหมด</button>
+      <Button variant="link" className="text-violet-700" onClick={onResetTab}>ดูทั้งหมด</Button>
     </div>
   );
 }

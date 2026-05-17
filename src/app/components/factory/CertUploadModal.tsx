@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { BaseModal } from '../../shared/ui';
+import { Button } from '../ui/button';
 
 type CertTypeOption = {
   id: number;
@@ -99,22 +101,48 @@ export function CertUploadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40" role="dialog" aria-modal>
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-w-lg w-full max-h-[min(90vh,100dvh)] overflow-y-auto p-4 sm:p-5 pb-6 space-y-4">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-lg font-bold text-gray-900">
-            {mode === 'create' ? 'เพิ่มใบรับรอง' : 'แก้ไขใบรับรอง'}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-sm text-gray-500 hover:text-gray-800"
+    <BaseModal
+      isOpen={open}
+      onClose={onClose}
+      title={mode === 'create' ? 'เพิ่มใบรับรอง' : 'แก้ไขใบรับรอง'}
+      placement="bottom"
+      size="lg"
+      className="sm:rounded-2xl max-w-lg max-h-[min(90vh,100dvh)]"
+      bodyClassName="p-4 sm:p-5 pb-6 space-y-4"
+      closeOnBackdropClick={!submitting}
+      footerClassName="p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2"
+      footer={
+        <>
+          <Button
             disabled={submitting}
+            onClick={() => void submit(false)}
+            className="py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
           >
-            ปิด
-          </button>
-        </div>
-
+            {submitting ? 'กำลังบันทึก...' : 'บันทึก'}
+          </Button>
+          {mode === 'create' ? (
+            <Button
+              disabled={submitting}
+              onClick={() => void submit(true)}
+              variant="outline"
+              className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
+            >
+              บันทึกและเพิ่มใบรับรองถัดไป
+            </Button>
+          ) : (
+            <Button
+              onClick={onClose}
+              disabled={submitting}
+              variant="outline"
+              className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
+            >
+              ยกเลิก
+            </Button>
+          )}
+        </>
+      }
+    >
         {error ? (
           <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
             {error}
@@ -167,38 +195,6 @@ export function CertUploadModal({
           />
           {file ? <p className="text-[11px] text-gray-500 mt-1">{file.name}</p> : null}
         </label>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-          <button
-            type="button"
-            disabled={submitting}
-            onClick={() => void submit(false)}
-            className="py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #059669 0%, #10B981 100%)' }}
-          >
-            {submitting ? 'กำลังบันทึก...' : 'บันทึก'}
-          </button>
-          {mode === 'create' ? (
-            <button
-              type="button"
-              disabled={submitting}
-              onClick={() => void submit(true)}
-              className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
-            >
-              บันทึกและเพิ่มใบรับรองถัดไป
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50"
-            >
-              ยกเลิก
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 }

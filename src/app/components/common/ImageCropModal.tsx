@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, RotateCcw, X } from 'lucide-react';
+import { Button } from '../ui/button';
 
 type CropPoint = { x: number; y: number };
 type Size = { width: number; height: number };
@@ -231,15 +232,16 @@ export function ImageCropModal({
       <div className="w-full max-w-3xl max-h-[92vh] rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <p className="text-sm font-semibold text-slate-900">{title}</p>
-          <button
-            type="button"
+          <Button
             onClick={onCancel}
             disabled={submitting}
+            variant="outline"
+            size="icon-sm"
             className="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center disabled:opacity-50"
             aria-label="ปิด"
           >
             <X size={15} />
-          </button>
+          </Button>
         </div>
 
         <div className="p-4 space-y-3 overflow-y-auto">
@@ -314,32 +316,33 @@ export function ImageCropModal({
               className="w-full"
               disabled={submitting}
             />
-            <button
-              type="button"
+            <Button
               onClick={() => {
                 setZoom(1);
                 setOffset({ x: 0, y: 0 });
               }}
               disabled={submitting}
+              variant="outline"
+              size="xs"
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600 disabled:opacity-50"
             >
               <RotateCcw size={12} />
               รีเซ็ต
-            </button>
+            </Button>
           </div>
         </div>
 
         <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-end gap-2">
-          <button
-            type="button"
+          <Button
             onClick={onCancel}
             disabled={submitting}
+            variant="outline"
+            size="sm"
             className="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-700 disabled:opacity-50"
           >
             ยกเลิก
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             disabled={!canRender || submitting}
             onClick={async () => {
               if (!canRender || !sourceUrl) return;
@@ -371,7 +374,7 @@ export function ImageCropModal({
             ) : (
               'ใช้รูปนี้'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

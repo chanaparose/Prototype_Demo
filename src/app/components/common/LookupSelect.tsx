@@ -1,5 +1,6 @@
 import React from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
+import { Button } from '../ui/button';
 
 interface LookupSelectProps<Option> {
   label: string;
@@ -57,14 +58,15 @@ export function LookupSelect<Option>({
           })}
         </select>
         {isError ? (
-          <button
-            type="button"
+          <Button
             onClick={() => void refetch()}
+            variant="link"
+            size="xs"
             className="absolute right-2 top-2 text-xs text-red-600 underline"
             title="โหลดใหม่"
           >
             โหลดใหม่
-          </button>
+          </Button>
         ) : null}
       </div>
     </label>

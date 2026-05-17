@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import { ChevronRight } from 'lucide-react';
 import { formatDateTh } from '../../../../components/features/order-detail/utils';
+import { Button } from '../../../../components/ui/button';
 import type { DerivedCardState, FactoryOrderRow } from '../types';
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: string }> = {
@@ -61,10 +62,10 @@ export function FactoryOrderCard({
           ดูรายละเอียด <ChevronRight size={16} />
         </Link>
         {derived.primaryCta.kind !== 'view_only' ? (
-          <button
-            type="button"
+          <Button
             disabled={derived.primaryCta.kind === 'waiting_customer'}
             onClick={() => onPrimaryCta(row, derived.primaryCta)}
+            size="sm"
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
               derived.primaryCta.kind === 'waiting_customer'
                 ? 'bg-gray-100 text-gray-500'
@@ -82,7 +83,7 @@ export function FactoryOrderCard({
                 : derived.primaryCta.kind === 'mark_shipped'
                   ? 'บันทึกจัดส่ง'
                   : 'รอลูกค้า'}
-          </button>
+          </Button>
         ) : null}
       </div>
     </article>

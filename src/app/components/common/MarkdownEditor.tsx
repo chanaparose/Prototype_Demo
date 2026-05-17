@@ -14,11 +14,12 @@ import {
   Table as TableIcon, 
   Image as ImageIcon,
   LayoutTemplate,
-  X,
   CheckCircle2
 } from 'lucide-react';
 import { mediaApi } from '../../services/api';
 import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
+import { BaseModal } from '../../shared/ui';
+import { Button } from '../ui/button';
 
 // ---------------------------------------------------------------------------
 // ข้อมูลเทมเพลต (สามารถเพิ่ม/ลด ได้ตามต้องการ)
@@ -210,9 +211,10 @@ export function MarkdownEditor({
       >
         <div className="px-3 pt-2 pb-2 flex items-center justify-end border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
               onClick={() => setTab('write')}
+              variant="outline"
+              size="xs"
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'write'
                   ? 'bg-orange-50 border-orange-200 text-orange-700'
@@ -220,10 +222,11 @@ export function MarkdownEditor({
               }`}
             >
               Write
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               onClick={() => setTab('preview')}
+              variant="outline"
+              size="xs"
               className={`px-2 py-1 text-xs rounded-md border ${
                 tab === 'preview'
                   ? 'bg-orange-50 border-orange-200 text-orange-700'
@@ -231,7 +234,7 @@ export function MarkdownEditor({
               }`}
             >
               Preview
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -241,44 +244,45 @@ export function MarkdownEditor({
             <div className="px-2 py-1.5 border-b border-gray-100 flex items-center flex-wrap gap-2 bg-white">
               
               <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
-                <button type="button" onClick={() => applyInsert('**', '**')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวหนา (Bold)"><Bold size={15} /></button>
-                <button type="button" onClick={() => applyInsert('_', '_')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวเอียง (Italic)"><Italic size={15} /></button>
-                <button type="button" onClick={() => applyInsert('`', '`')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ไฮไลท์โค้ด (Inline Code)"><Code size={15} /></button>
+                <Button onClick={() => applyInsert('**', '**')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวหนา (Bold)"><Bold size={15} /></Button>
+                <Button onClick={() => applyInsert('_', '_')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ตัวเอียง (Italic)"><Italic size={15} /></Button>
+                <Button onClick={() => applyInsert('`', '`')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="ไฮไลท์โค้ด (Inline Code)"><Code size={15} /></Button>
               </div>
 
               <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
-                <button type="button" onClick={() => applyInsert('\n### ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="หัวข้อ (Heading)"><Heading size={15} /></button>
-                <button type="button" onClick={() => applyInsert('\n> ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="คำคม (Blockquote)"><Quote size={15} /></button>
-                <button type="button" onClick={() => applyInsert('\n\n---\n\n')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="เส้นคั่น (Divider)"><Minus size={15} /></button>
+                <Button onClick={() => applyInsert('\n### ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="หัวข้อ (Heading)"><Heading size={15} /></Button>
+                <Button onClick={() => applyInsert('\n> ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="คำคม (Blockquote)"><Quote size={15} /></Button>
+                <Button onClick={() => applyInsert('\n\n---\n\n')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="เส้นคั่น (Divider)"><Minus size={15} /></Button>
               </div>
 
               <div className="flex items-center gap-0.5 pr-2 border-r border-gray-200">
-                <button type="button" onClick={() => applyInsert('\n- ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการแบบจุด (Bullet List)"><List size={15} /></button>
-                <button type="button" onClick={() => applyInsert('\n1. ')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการตัวเลข (Numbered List)"><ListOrdered size={15} /></button>
+                <Button onClick={() => applyInsert('\n- ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการแบบจุด (Bullet List)"><List size={15} /></Button>
+                <Button onClick={() => applyInsert('\n1. ')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="รายการตัวเลข (Numbered List)"><ListOrdered size={15} /></Button>
               </div>
 
               <div className="flex items-center gap-0.5">
-                <button type="button" onClick={() => applyInsert('[', '](url)')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกลิงก์ (Link)"><Link size={15} /></button>
-                <button type="button" onClick={() => applyTemplate('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')} disabled={disabled} className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกตาราง (Table)"><TableIcon size={15} /></button>
-                <button type="button" onClick={() => fileRef.current?.click()} disabled={disabled || uploading} className="inline-flex items-center gap-1.5 p-1.5 px-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แนบรูปภาพ (Image)">
+                <Button onClick={() => applyInsert('[', '](url)')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกลิงก์ (Link)"><Link size={15} /></Button>
+                <Button onClick={() => applyTemplate('\n| หัวข้อ 1 | หัวข้อ 2 |\n| --- | --- |\n| ค่า A | ค่า B |\n')} disabled={disabled} variant="ghost" size="icon-xs" className="p-1.5 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แทรกตาราง (Table)"><TableIcon size={15} /></Button>
+                <Button onClick={() => fileRef.current?.click()} disabled={disabled || uploading} variant="ghost" size="sm" className="inline-flex items-center gap-1.5 p-1.5 px-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-40" title="แนบรูปภาพ (Image)">
                   <ImageIcon size={15} />
                   {uploading && <span className="text-xs font-medium text-orange-600">กำลังอัปโหลด...</span>}
-                </button>
+                </Button>
                 <label htmlFor="file-input" className="hidden">อัปโหลดรูปภาพ</label>
                 <input id="file-input" ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }} aria-label="อัปโหลดรูปภาพ" />
               </div>
 
               {/* ปุ่มเปิด Modal เลือกเทมเพลต */}
               <div className="ml-auto flex items-center">
-                <button 
-                  type="button" 
+                <Button
                   onClick={() => openTemplate()} 
                   disabled={disabled} 
+                  variant="outline"
+                  size="sm"
                   className="inline-flex items-center gap-1.5 p-1.5 px-2.5 rounded-md text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-[13px] font-medium transition-colors" 
                 >
                   <LayoutTemplate size={14} />
                   เลือกเทมเพลต...
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -324,37 +328,50 @@ export function MarkdownEditor({
       {/* --------------------------------------------------------------------------- */}
       {/* TEMPLATE SELECTION MODAL */}
       {/* --------------------------------------------------------------------------- */}
-      {isTemplateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
-            
-            {/* Modal Header */}
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <div className="flex items-center gap-2 text-gray-800">
-                <LayoutTemplate size={20} className="text-orange-500" />
-                <h3 className="text-lg font-semibold">เลือกเทมเพลตเริ่มต้น</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => closeTemplate()}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                aria-label="ปิด"
-              >
-                <X size={20} />
-              </button>
+      <BaseModal
+        isOpen={isTemplateModalOpen}
+        onClose={closeTemplate}
+        title="เลือกเทมเพลตเริ่มต้น"
+        size="xl"
+        className="max-w-5xl flex flex-col overflow-hidden"
+        bodyClassName="p-0 flex flex-1 overflow-hidden flex-col md:flex-row"
+        headerClassName="bg-gray-50/50"
+        overlayClassName="bg-black/60 backdrop-blur-sm"
+        footerClassName="px-5 py-4 bg-gray-50/50 justify-end gap-3"
+        footer={
+          <>
+            <Button
+              onClick={() => closeTemplate()}
+              variant="ghost"
+              className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              ยกเลิก
+            </Button>
+            <Button
+              onClick={handleSelectTemplate}
+              className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-sm transition-colors flex items-center gap-2"
+            >
+              <CheckCircle2 size={16} />
+              นำเทมเพลตนี้ไปใช้
+            </Button>
+          </>
+        }
+      >
+            <div className="hidden">
+              <LayoutTemplate size={20} className="text-orange-500" />
             </div>
 
             {/* Modal Body: Split Screen */}
-            <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+            <>
               
               {/* Left Side: Template List */}
               <div className="w-full md:w-1/3 border-r border-gray-100 bg-gray-50/30 overflow-y-auto p-4 flex flex-col gap-3">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 px-1">รูปแบบที่มีให้เลือก</p>
                 {TEMPLATES.map((tpl, idx) => (
-                  <button
+                  <Button
                     key={tpl.id}
-                    type="button"
                     onClick={() => setActiveTemplateIndex(idx)}
+                    variant="outline"
                     className={`text-left p-4 rounded-xl border transition-all duration-200 relative overflow-hidden ${
                       activeTemplateIndex === idx 
                         ? 'bg-orange-50 border-orange-300 ring-1 ring-orange-300 shadow-sm' 
@@ -372,7 +389,7 @@ export function MarkdownEditor({
                     <p className={`text-[13px] leading-snug ${activeTemplateIndex === idx ? 'text-orange-600/80' : 'text-gray-500'}`}>
                       {tpl.description}
                     </p>
-                  </button>
+                  </Button>
                 ))}
               </div>
 
@@ -390,30 +407,8 @@ export function MarkdownEditor({
                 </div>
               </div>
 
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-5 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => closeTemplate()}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-200 transition-colors"
-              >
-                ยกเลิก
-              </button>
-              <button
-                type="button"
-                onClick={handleSelectTemplate}
-                className="px-6 py-2 rounded-lg text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 shadow-sm transition-colors flex items-center gap-2"
-              >
-                <CheckCircle2 size={16} />
-                นำเทมเพลตนี้ไปใช้
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+            </>
+      </BaseModal>
     </div>
   );
 }

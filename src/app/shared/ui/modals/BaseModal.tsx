@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { Button } from '../../../components/ui/button';
 
 type BaseModalProps = {
   isOpen: boolean;
@@ -9,8 +10,14 @@ type BaseModalProps = {
   footer?: React.ReactNode;
   placement?: 'center' | 'right' | 'bottom';
   showCloseButton?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   closeOnBackdropClick?: boolean;
+  className?: string;
+  bodyClassName?: string;
+  headerClassName?: string;
+  footerClassName?: string;
+  overlayClassName?: string;
+  zIndexClassName?: string;
 };
 
 const placementStyles = {
@@ -23,6 +30,8 @@ const sizeStyles = {
   sm: 'lg:max-w-sm',
   md: 'lg:max-w-md',
   lg: 'lg:max-w-lg',
+  xl: 'lg:max-w-5xl',
+  full: 'lg:max-w-[min(96vw,1200px)]',
 };
 
 const contentClasses = {
@@ -41,43 +50,50 @@ export function BaseModal({
   showCloseButton = true,
   size = 'md',
   closeOnBackdropClick = true,
+  className = '',
+  bodyClassName = 'px-4 py-4',
+  headerClassName = '',
+  footerClassName = '',
+  overlayClassName = 'bg-black/40',
+  zIndexClassName = 'z-50',
 }: BaseModalProps) {
   if (!isOpen) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/40 z-40"
+        className={`fixed inset-0 ${overlayClassName} ${zIndexClassName}`}
         onClick={closeOnBackdropClick ? onClose : undefined}
       />
-      <div className={`fixed z-50 ${placementStyles[placement]}`}>
+      <div className={`fixed ${zIndexClassName} ${placementStyles[placement]}`}>
         <div
-          className={`bg-white ${contentClasses[placement]} ${sizeStyles[size]}`}
+          className={`bg-white ${contentClasses[placement]} ${sizeStyles[size]} ${className}`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+            <div className={`flex items-center justify-between px-4 py-3 border-b border-gray-100 ${headerClassName}`}>
               {title && <h2 className="text-sm font-semibold text-gray-900">{title}</h2>}
               {showCloseButton && (
-                <button
-                  type="button"
+                <Button
                   onClick={onClose}
-                  className="ml-auto w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="ml-auto"
                   aria-label="Close"
                 >
                   <X size={16} />
-                </button>
+                </Button>
               )}
             </div>
           )}
 
           {/* Content */}
-          <div className="px-4 py-4">{children}</div>
+          <div className={bodyClassName}>{children}</div>
 
           {/* Footer */}
           {footer && (
-            <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
+            <div className={`px-4 py-3 border-t border-gray-100 flex gap-2 ${footerClassName}`}>
               {footer}
             </div>
           )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 import type { SortKey, TabId } from '../types';
+import { TabNavigation } from '../../../../shared/ui';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
@@ -25,31 +26,13 @@ export function FactoryOrdersFilterBar(props: {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4 shadow-sm space-y-3">
       <div className="flex p-1 rounded-xl bg-slate-100 w-full overflow-x-auto gap-1" role="tablist">
-        {TABS.map((t) => {
-          const on = tabId === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={on}
-              aria-label={`${t.label} ${tabCounts[t.id]} รายการ`}
-              onClick={() => onTabChange(t.id)}
-              className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 transition-colors ${
-                on ? 'text-white bg-indigo-600' : 'text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              <span>{t.label}</span>{' '}
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                  on ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600'
-                }`}
-              >
-                {tabCounts[t.id]}
-              </span>
-            </button>
-          );
-        })}
+        <TabNavigation
+          tabs={TABS.map((tab) => ({ ...tab, count: tabCounts[tab.id] }))}
+          activeTabId={tabId}
+          onTabChange={(id) => onTabChange(id as TabId)}
+          className="border-b-0 gap-1"
+          tabClassName="px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0"
+        />
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
         <label className="flex-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">

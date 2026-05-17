@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../../components/ui/button';
 
 type TabItem = {
   id: string;
@@ -25,10 +26,11 @@ export function TabNavigation({
   return (
     <div className={`flex gap-2 border-b border-gray-100 ${className}`}>
       {tabs.map((tab) => (
-        <button
+        <Button
           key={tab.id}
-          type="button"
           onClick={() => onTabChange(tab.id)}
+          variant="ghost"
+          size="default"
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${tabClassName} ${
             activeTabId === tab.id
               ? 'text-gray-900'
@@ -47,7 +49,7 @@ export function TabNavigation({
           {activeTabId === tab.id && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-500" />
           )}
-        </button>
+        </Button>
       ))}
     </div>
   );

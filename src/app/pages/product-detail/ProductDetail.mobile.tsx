@@ -21,6 +21,8 @@ import { MarkdownBody } from '../../shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '../../hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '../../hooks/useFactoryReviewList';
 import { useFavorites } from '../../hooks/useFavorites';
+import { SubCategoryTag } from '../../components/SubCategoryTag';
+import { StrictSpecsBlock } from '../../shared/ui/StrictSpecsBlock/StrictSpecsBlock';
 
 // Aligned with Explore page palette — vibrant brand purple + bright accent orange
 const BRAND = {
@@ -143,8 +145,7 @@ export function ProductDetailMobile() {
   const specRows: { label: string; value: string }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
   if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
-  specRows.push({ label: 'ขั้นต่ำผลิต (MOQ)', value: `${item.minOrder} ชิ้น` });
-  if (item.leadTime) specRows.push({ label: 'ระยะเวลาผลิต', value: item.leadTime });
+  const leadTimeDays = Number(String(item.leadTime ?? '').replace(/[^\d.]/g, ''));
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
   if (Array.isArray(item.specs) && item.specs.length > 0) {
     const sorted = [...item.specs].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -244,6 +245,9 @@ export function ProductDetailMobile() {
           {item.category ? (
             <span className="text-[10px] text-gray-500">{item.category}</span>
           ) : null}
+          {subName && !isMaterial ? (
+            <SubCategoryTag name={subName} size="sm" showSubPrefix />
+          ) : null}
         </div>
 
         <h1 className="mt-2 text-[15px] font-medium leading-snug" style={{ color: BRAND.ink }}>
@@ -323,6 +327,12 @@ export function ProductDetailMobile() {
           </p>
         </div>
         <div className="divide-y" style={{ borderColor: BRAND.divider }}>
+          <StrictSpecsBlock
+            showcase={{
+              moq: Number.isFinite(Number(item.minOrder)) ? Number(item.minOrder) : null,
+              lead_time_days: Number.isFinite(leadTimeDays) && leadTimeDays > 0 ? leadTimeDays : null,
+            }}
+          />
           {specRows.map((row, idx) => (
             <div
               key={`${row.label}-${idx}`}

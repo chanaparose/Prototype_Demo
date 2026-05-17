@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProductCategories } from '../../../hooks/master/useProductCategories';
 import { categoriesApi } from '../../../services/api';
+import { BaseModal } from '../../../shared/ui';
+import { Button } from '../../ui/button';
 
 interface Props {
   open: boolean;
@@ -89,9 +91,37 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-4 sm:p-5 space-y-4">
-        <h3 className="text-lg font-bold text-gray-900">เลือกหมวดหมู่หลัก</h3>
+    <BaseModal
+      isOpen={open}
+      onClose={onClose}
+      title="เลือกหมวดหมู่หลัก"
+      placement="bottom"
+      size="lg"
+      className="sm:rounded-2xl max-w-lg"
+      bodyClassName="p-4 sm:p-5 space-y-4"
+      closeOnBackdropClick={!confirming}
+      footerClassName="p-4 sm:p-5 pt-2 grid grid-cols-[1fr_auto] gap-2"
+      footer={
+        <>
+          <Button
+            onClick={handleConfirm}
+            disabled={confirming}
+            className="py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
+          >
+            {confirming ? 'กำลังโหลด…' : `ยืนยัน (${selected.length})`}
+          </Button>
+          <Button
+            onClick={onClose}
+            disabled={confirming}
+            variant="outline"
+            className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-60"
+          >
+            ยกเลิก
+          </Button>
+        </>
+      }
+    >
         {isLoading ? (
           <p className="text-sm text-gray-400">กำลังโหลด…</p>
         ) : isError ? (
@@ -118,26 +148,6 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
         {confirmError && (
           <p className="text-xs text-red-600">{confirmError}</p>
         )}
-        <div className="flex gap-2 pt-2">
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={confirming}
-            className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
-          >
-            {confirming ? 'กำลังโหลด…' : `ยืนยัน (${selected.length})`}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={confirming}
-            className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 disabled:opacity-60"
-          >
-            ยกเลิก
-          </button>
-        </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 }

@@ -2,18 +2,19 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   X,
-  Search,
   ChevronRight,
   Clock,
 } from 'lucide-react';
 import { ordersApi } from '../../services/api';
 import { useFactoryOrdersData } from './factory-orders/useFactoryOrdersData';
 import { deriveOrderCardState } from './factory-orders/deriveOrderCardState';
-import { countByTab } from './factory-orders/factoryOrderKpi';
+import { computeKpi, countByTab } from './factory-orders/factoryOrderKpi';
 import { matchTab, searchMatch, sortCompare } from './factory-orders/factoryOrderFilters';
 import type { FactoryOrderRow, SortKey, TabId } from './factory-orders/types';
 import { FactoryOrderCard } from './factory-orders/components/FactoryOrderCard';
 import { FactoryOrdersEmptyState } from './factory-orders/components/FactoryOrdersEmptyState';
+import { FactoryOrdersFilterBar } from './factory-orders/components/FactoryOrdersFilterBar';
+import { FactoryOrdersKpiStrip } from './factory-orders/components/FactoryOrdersKpiStrip';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 /* ─── Design tokens ──────────────────────────────────────────────── */
@@ -37,16 +38,6 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
 function statusMeta(code: string) {
   return STATUS_LABEL[code] ?? { label: code, cls: 'bg-gray-100 text-gray-600' };
 }
-
-/* ─── Tab definitions ─────────────────────────────────────────────── */
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'needs_action', label: 'ต้องดำเนินการ' },
-  { id: 'in_production', label: 'กำลังผลิต' },
-  { id: 'awaiting_customer', label: 'รอลูกค้า' },
-  { id: 'shipped', label: 'จัดส่งแล้ว' },
-  { id: 'completed', label: 'เสร็จสิ้น' },
-  { id: 'cancelled', label: 'ยกเลิก' },
-];
 
 /* ─── Skeleton ────────────────────────────────────────────────────── */
 function TableSkeleton() {
@@ -89,6 +80,7 @@ export function FactoryOrdersPage() {
   const now = useMemo(() => new Date(), []);
   const derived = useMemo(() => rows.map((r) => deriveOrderCardState(r, now)), [rows, now]);
   const tabCounts = useMemo(() => countByTab(rows, derived), [rows, derived]);
+  const kpi = useMemo(() => computeKpi(rows, derived), [rows, derived]);
 
   const filteredRows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -140,67 +132,27 @@ export function FactoryOrdersPage() {
           </div>
         ) : null}
 
-        {/* ── Tab bar ─────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 space-y-3 overflow-hidden">
-          <div className="flex gap-1.5 overflow-x-auto pb-1 -mb-1 scrollbar-none" role="tablist">
-            {TABS.map((tab) => {
-              const active = statusTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setStatusTab(tab.id)}
-                  className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all"
-                  style={
-                    active
-                      ? {
-                          backgroundColor: INDIGO,
-                          color: '#fff',
-                          boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
-                        }
-                      : { backgroundColor: '#F3F4F6', color: '#4B5563' }
-                  }
-                >
-                  {tab.label}
-                  <span
-                    className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px]"
-                    style={
-                      active
-                        ? { backgroundColor: 'rgba(255,255,255,0.3)', color: '#fff' }
-                        : { backgroundColor: '#E5E7EB', color: '#6B7280' }
-                    }
-                  >
-                    {tabCounts[tab.id]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+        <FactoryOrdersKpiStrip
+          kpi={kpi}
+          onSelectKpi={(key) => {
+            if (key === 'overdue') {
+              setStatusTab('needs_action');
+              setSortMode('deadline');
+              return;
+            }
+            setStatusTab(key);
+          }}
+        />
 
-          {/* Search + sort row */}
-          <div className="mt-2 flex flex-col sm:flex-row gap-2">
-            <label className="flex-1 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-              <Search size={15} className="text-gray-400 shrink-0" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="ค้นหา #ออเดอร์ / ชื่อสินค้า / ชื่อลูกค้า"
-                className="w-full bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
-              />
-            </label>
-            <select
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#4F46E5]"
-              value={sortMode}
-              onChange={(e) => setSortMode(e.target.value as SortKey)}
-            >
-              <option value="newest">ล่าสุด</option>
-              <option value="deadline">ใกล้กำหนดส่ง</option>
-              <option value="amount_desc">มูลค่าสูงสุด</option>
-            </select>
-          </div>
-        </div>
+        <FactoryOrdersFilterBar
+          tabId={statusTab}
+          onTabChange={setStatusTab}
+          tabCounts={tabCounts}
+          sortKey={sortMode}
+          onSortChange={setSortMode}
+          searchQuery={search}
+          onSearchChange={setSearch}
+        />
 
         {/* ── Desktop table ────────────────────────────────────────── */}
         <div className="hidden md:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">

@@ -3,6 +3,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { SubCategoryOption } from '../../../hooks/master/useSubCategoriesByCategory';
 import { factoriesApi } from '../../../services/api';
+import { Button } from '../../ui/button';
 
 interface Props {
   factoryId: number | string;
@@ -67,22 +68,24 @@ export function CategoryCard({
           <p className="text-xs text-gray-500 mt-0.5">{selectedHere.length} หมวดย่อยที่เลือกไว้</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
+          <Button
             onClick={() => onEditSubs(categoryId)}
+            variant="outline"
+            size="xs"
             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50"
           >
             <Pencil size={12} /> แก้ไข
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={handleRemove}
             disabled={deleting}
+            variant="outline"
+            size="icon-xs"
             className="p-1.5 rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-60"
             aria-label={`ลบหมวด ${categoryName}`}
           >
             <Trash2 size={13} />
-          </button>
+          </Button>
         </div>
       </div>
       {deleteError && (

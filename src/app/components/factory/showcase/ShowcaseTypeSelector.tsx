@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type ShowcaseType = 'PD' | 'PM' | 'ID';
+export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 
 interface ShowcaseTypeSelectorProps {
   value: ShowcaseType;
@@ -12,11 +12,12 @@ const OPTIONS = [
   { type: 'PD', icon: '🏷', label: 'สินค้า', sublabel: 'Product Design' },
   { type: 'PM', icon: '🎁', label: 'โปรโมชัน', sublabel: 'Promotion' },
   { type: 'ID', icon: '💡', label: 'ไอเดีย', sublabel: 'Industrial Design' },
+  { type: 'MT', icon: '🧱', label: 'วัตถุดิบ', sublabel: 'Material' },
 ] as const;
 
 export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseTypeSelectorProps) {
   return (
-    <div className="grid grid-cols-3 gap-2 rounded-xl bg-gray-50 p-1 border border-gray-200">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-xl bg-gray-50 p-1 border border-gray-200">
       {OPTIONS.map((opt) => {
         const active = value === opt.type;
         return (

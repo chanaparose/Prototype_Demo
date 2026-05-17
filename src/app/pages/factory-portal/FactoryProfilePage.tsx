@@ -8,8 +8,6 @@ import {
   Award,
   Landmark,
   AlertTriangle,
-  Save,
-  RotateCcw,
   ShieldCheck,
   Clock,
   XCircle,
@@ -36,6 +34,8 @@ import { CategoriesSection } from '../../components/factory/profile/CategoriesSe
 import { AddressesSection } from '../../components/factory/profile/AddressesSection';
 import { CertificatesSection } from '../../components/factory/profile/CertificatesSection';
 import { BankAccountPlaceholder } from '../../components/factory/profile/BankAccountPlaceholder';
+import { ProfileSaveBar } from '../../components/factory/profile/ProfileSaveBar';
+import { SectionCard, StatusBadge } from '../../shared/ui';
 
 import {
   PROFILE_FORM_DEFAULTS,
@@ -68,6 +68,14 @@ function countDirty(dirtyFields: Record<string, unknown>): number {
     }
   }
   return n;
+}
+
+function sectionBadge(complete: boolean) {
+  return (
+    <StatusBadge variant={complete ? 'success' : 'pending'} size="sm">
+      {complete ? 'ครบถ้วน ✓' : 'ยังไม่ครบ !'}
+    </StatusBadge>
+  );
 }
 
 // ── Verification Stepper ──────────────────────────────────────────────────
@@ -118,52 +126,6 @@ function VerificationStepper({ steps }: { steps: StepDef[] }) {
         ))}
       </div>
     </div>
-  );
-}
-
-// ── Section card wrapper ──────────────────────────────────────────────────
-interface SectionCardProps {
-  icon: React.ElementType;
-  title: string;
-  iconColor?: string;
-  iconBg?: string;
-  badge?: { label: string; complete: boolean };
-  action?: React.ReactNode;
-  children: React.ReactNode;
-}
-
-function SectionCard({ icon: Icon, title, iconColor, iconBg, badge, action, children }: SectionCardProps) {
-  return (
-    <section className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-      {/* Section header */}
-      <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: iconBg ?? 'rgba(122,75,148,0.1)' }}
-          >
-            <Icon size={14} style={{ color: iconColor ?? COLORS.purple }} strokeWidth={2} />
-          </div>
-          <p className="text-[12px] font-bold leading-none text-gray-800 truncate">{title}</p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {badge && (
-            <span
-              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                badge.complete
-                  ? 'bg-teal-100 text-teal-700'
-                  : 'bg-amber-100 text-amber-700'
-              }`}
-            >
-              {badge.complete ? `ครบถ้วน ✓` : `ยังไม่ครบ !`}
-            </span>
-          )}
-          {action}
-        </div>
-      </div>
-      {/* Content */}
-      <div className="px-6 py-5">{children}</div>
-    </section>
   );
 }
 
@@ -802,23 +764,29 @@ export function FactoryProfilePage() {
       >
         {/* ── ข้อมูลพื้นฐาน ── */}
         <SectionCard
-          icon={Building2}
+          icon={<Building2 size={14} style={{ color: COLORS.purple }} strokeWidth={2} />}
           title="ข้อมูลพื้นฐาน"
-          iconColor={COLORS.purple}
-          iconBg="rgba(79,70,229,0.1)"
-          badge={{ label: 'ข้อมูลพื้นฐาน', complete: requiredStatus.hasBusiness }}
+          iconClassName="h-8 w-8 rounded-lg"
+          iconStyle={{ backgroundColor: 'rgba(79,70,229,0.1)' }}
+          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
+          headerClassName="px-6 py-4"
+          contentClassName="px-6 py-5"
+          badge={sectionBadge(requiredStatus.hasBusiness)}
         >
           <BusinessInfoSection form={form} />
         </SectionCard>
 
         {/* ── หมวดหมู่การผลิต ── */}
         <SectionCard
-          icon={Award}
+          icon={<Award size={14} style={{ color: '#0EA5E9' }} strokeWidth={2} />}
           title="ข้อมูลการผลิตและหมวดหมู่"
-          iconColor="#0EA5E9"
-          iconBg="rgba(14,165,233,0.1)"
-          badge={{ label: 'หมวดหมู่', complete: requiredStatus.hasCategories }}
-          action={
+          iconClassName="h-8 w-8 rounded-lg"
+          iconStyle={{ backgroundColor: 'rgba(14,165,233,0.1)' }}
+          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
+          headerClassName="px-6 py-4"
+          contentClassName="px-6 py-5"
+          badge={sectionBadge(requiredStatus.hasCategories)}
+          actionButton={
             <button
               type="button"
               onClick={() => openCategoryPickerRef.current?.()}
@@ -840,23 +808,29 @@ export function FactoryProfilePage() {
 
         {/* ── ที่อยู่และการติดต่อ ── */}
         <SectionCard
-          icon={MapPin}
+          icon={<MapPin size={14} style={{ color: '#F97316' }} strokeWidth={2} />}
           title="ที่อยู่และการติดต่อ"
-          iconColor="#F97316"
-          iconBg="rgba(249,115,22,0.1)"
-          badge={{ label: 'ที่อยู่', complete: requiredStatus.hasAddress }}
+          iconClassName="h-8 w-8 rounded-lg"
+          iconStyle={{ backgroundColor: 'rgba(249,115,22,0.1)' }}
+          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
+          headerClassName="px-6 py-4"
+          contentClassName="px-6 py-5"
+          badge={sectionBadge(requiredStatus.hasAddress)}
         >
           <AddressesSection />
         </SectionCard>
 
         {/* ── เอกสารและใบรับรอง ── */}
         <SectionCard
-          icon={Award}
+          icon={<Award size={14} style={{ color: '#10B981' }} strokeWidth={2} />}
           title="เอกสารและใบรับรอง"
-          iconColor="#10B981"
-          iconBg="rgba(16,185,129,0.1)"
-          badge={{ label: 'ใบรับรอง', complete: requiredStatus.hasCertificates }}
-          action={
+          iconClassName="h-8 w-8 rounded-lg"
+          iconStyle={{ backgroundColor: 'rgba(16,185,129,0.1)' }}
+          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
+          headerClassName="px-6 py-4"
+          contentClassName="px-6 py-5"
+          badge={sectionBadge(requiredStatus.hasCertificates)}
+          actionButton={
             <button
               type="button"
               onClick={() => openCertAddRef.current?.()}
@@ -878,10 +852,13 @@ export function FactoryProfilePage() {
 
         {/* ── บัญชีธนาคาร ── */}
         <SectionCard
-          icon={Landmark}
+          icon={<Landmark size={14} style={{ color: '#6366F1' }} strokeWidth={2} />}
           title="บัญชีธนาคาร"
-          iconColor="#6366F1"
-          iconBg="rgba(99,102,241,0.1)"
+          iconClassName="h-8 w-8 rounded-lg"
+          iconStyle={{ backgroundColor: 'rgba(99,102,241,0.1)' }}
+          titleClassName="text-[12px] font-bold leading-none text-gray-800 truncate"
+          headerClassName="px-6 py-4"
+          contentClassName="px-6 py-5"
         >
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">Optional</span>
@@ -898,57 +875,13 @@ export function FactoryProfilePage() {
         )}
       </form>
 
-      {/* ── Sticky Save Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white/95 backdrop-blur-sm border-t border-gray-100 shadow-[0_-2px_16px_rgba(0,0,0,0.06)]">
-        <div className="px-4 sm:px-6 py-3 flex gap-3 items-center">
-          {/* Save status indicator */}
-          <div className="flex-1 min-w-0">
-            {isDirty ? (
-              <p className="text-xs text-amber-600 font-medium flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
-                มีการเปลี่ยนแปลง {changeCount} ฟิลด์ที่ยังไม่ได้บันทึก
-              </p>
-            ) : (
-              <p className="text-xs text-gray-400 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-                ข้อมูลเป็นปัจจุบัน
-              </p>
-            )}
-          </div>
-
-          {/* Cancel button (only when dirty) */}
-          {isDirty && (
-            <button
-              type="button"
-              onClick={() => form.reset(initialValues)}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
-            >
-              <RotateCcw size={14} />
-              ยกเลิก
-            </button>
-          )}
-
-          {/* Save button */}
-          <button
-            type="button"
-            onClick={() => void handleSave()}
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 shrink-0 shadow-sm"
-          >
-            {saving ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                กำลังบันทึก...
-              </>
-            ) : (
-              <>
-                <Save size={14} />
-                บันทึกข้อมูล
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      <ProfileSaveBar
+        isDirty={isDirty}
+        changeCount={changeCount}
+        saving={saving}
+        onSave={() => void handleSave()}
+        onDiscard={() => form.reset(initialValues)}
+      />
     </div>
   );
 }

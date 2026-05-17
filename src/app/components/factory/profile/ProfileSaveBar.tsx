@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
+import { Button } from '../../ui/button';
 
 interface Props {
   isDirty: boolean;
@@ -25,23 +26,24 @@ export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard
           </span>
         </p>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
+          <Button
             onClick={onDiscard}
             disabled={saving}
+            variant="outline"
+            size="sm"
             className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
             <X size={14} /> ยกเลิก
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={onSave}
             disabled={saving || !isDirty}
+            size="sm"
             className="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-white text-sm font-semibold disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #A238FF 0%, #7C3AED 100%)' }}
           >
             <Check size={14} /> {saving ? 'กำลังบันทึก…' : 'บันทึกทั้งหมด'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

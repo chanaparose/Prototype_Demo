@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSubCategoriesByCategories } from '../../../hooks/master/useSubCategoriesByCategory';
+import { BaseModal } from '../../../shared/ui';
+import { Button } from '../../ui/button';
 
 interface Props {
   open: boolean;
@@ -41,10 +43,35 @@ export function SubCategoryPickerModal({
   const selectedInScope = subs.filter((s) => working.includes(s.id)).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-4 sm:p-5 space-y-4">
+    <BaseModal
+      isOpen={open}
+      onClose={onClose}
+      title="เลือกหมวดย่อย"
+      placement="bottom"
+      size="lg"
+      className="sm:rounded-2xl max-w-lg"
+      bodyClassName="p-4 sm:p-5 space-y-4"
+      footerClassName="p-4 sm:p-5 pt-2 grid grid-cols-[1fr_auto] gap-2"
+      footer={
+        <>
+          <Button
+            onClick={() => onConfirm(working)}
+            className="py-3 rounded-xl text-white text-sm font-semibold"
+            style={{ background: 'linear-gradient(135deg, #0D9488 0%, #14B8A6 100%)' }}
+          >
+            ยืนยัน ({selectedInScope} ในหมวดนี้)
+          </Button>
+          <Button
+            onClick={onClose}
+            variant="outline"
+            className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700"
+          >
+            ยกเลิก
+          </Button>
+        </>
+      }
+    >
         <div>
-          <h3 className="text-lg font-bold text-gray-900">เลือกหมวดย่อย</h3>
           <p className="text-xs text-gray-500">ภายใต้: {categoryName}</p>
         </div>
         {isLoading ? (
@@ -70,24 +97,6 @@ export function SubCategoryPickerModal({
             ))}
           </ul>
         )}
-        <div className="flex gap-2 pt-2">
-          <button
-            type="button"
-            onClick={() => onConfirm(working)}
-            className="flex-1 py-3 rounded-xl text-white text-sm font-semibold"
-            style={{ background: 'linear-gradient(135deg, #0D9488 0%, #14B8A6 100%)' }}
-          >
-            ยืนยัน ({selectedInScope} ในหมวดนี้)
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700"
-          >
-            ยกเลิก
-          </button>
-        </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 }

@@ -6,6 +6,7 @@ import { useMasterCerts, type CertTypeOption } from '../../../hooks/master/useMa
 import { certificatesApi, mediaApi } from '../../../services/api';
 import { CertStatusBadge } from '../CertStatusBadge';
 import { CertUploadModal, type CertFormSubmitValue } from '../CertUploadModal';
+import { Button } from '../../ui/button';
 
 type Row = Record<string, unknown>;
 
@@ -145,26 +146,28 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
                       <Download size={13} /> ดาวน์โหลด
                     </a>
                   ) : null}
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => {
                       setMode('edit');
                       setEditing(c);
                       setModalOpen(true);
                     }}
+                    variant="outline"
+                    size="icon-sm"
                     className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
                     aria-label="แก้ไข"
                   >
                     <Pencil size={14} />
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
                     onClick={() => void remove(c)}
+                    variant="outline"
+                    size="icon-sm"
                     className="p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50"
                     aria-label="ลบ"
                   >
                     <Trash2 size={14} />
-                  </button>
+                  </Button>
                 </div>
               </li>
             );

@@ -21,6 +21,7 @@ import { ReviewImageAttachments } from '../../components/features/reviews/Review
 import { normalizeReviewImageUrls } from '../../utils/reviewImageUrls';
 import { OrderProductionTab } from '../../components/features/production/OrderProductionTab';
 import { useOrderDetail } from './OrderDetailContext';
+import { BaseModal } from '../../shared/ui';
 
 type OrderReviewState = {
   order_id: number;
@@ -484,9 +485,17 @@ function OrderDetailMobileBody() {
         onSuccess={refetchAll}
       />
 
-      {cancelModalOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white shadow-xl overflow-hidden">
+      <BaseModal
+        isOpen={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        showCloseButton={false}
+        placement="bottom"
+        size="sm"
+        className="max-w-sm overflow-hidden"
+        bodyClassName="p-0"
+        overlayClassName="bg-black/50"
+        closeOnBackdropClick={!cancellingOrder}
+      >
             <div className="px-5 pt-6 pb-2 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
                 <AlertTriangle size={24} className="text-red-500" />
@@ -523,24 +532,19 @@ function OrderDetailMobileBody() {
                 )}
               </button>
             </div>
-          </div>
-        </div>
-      ) : null}
+      </BaseModal>
 
-      {reviewModalOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white border border-gray-100 shadow-xl p-4">
+      <BaseModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        title={reviewState?.already_reviewed ? 'รีวิวของคุณ' : 'ให้คะแนนและรีวิว'}
+        placement="bottom"
+        size="md"
+        className="max-w-md border border-gray-100"
+        bodyClassName="p-4"
+      >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-gray-900">
-                {reviewState?.already_reviewed ? 'รีวิวของคุณ' : 'ให้คะแนนและรีวิว'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => setReviewModalOpen(false)}
-                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500"
-              >
-                <X size={16} />
-              </button>
+              <span className="sr-only">{reviewState?.already_reviewed ? 'รีวิวของคุณ' : 'ให้คะแนนและรีวิว'}</span>
             </div>
 
             {reviewStateLoading ? (
@@ -617,9 +621,7 @@ function OrderDetailMobileBody() {
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      ) : null}
+      </BaseModal>
     </div>
   );
 }

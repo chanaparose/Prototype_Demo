@@ -22,6 +22,7 @@ import {
 import { deriveStepStates } from '../../components/features/production/stepDerivedState';
 import { getStepGuide } from '../../components/features/production/stepGuideConfig';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { StatusBadge } from '../../shared/ui';
 import { FactoryPageHeader } from './components/FactoryPageHeader';
 
 function unwrapOrder(raw: Record<string, unknown>): Record<string, unknown> {
@@ -117,21 +118,18 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
 type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
 function StepStatusBadge({ state }: { state: StepState }) {
-  const map: Record<StepState, { label: string; bg: string; color: string; border: string; icon: React.ReactNode }> = {
-    completed: { label: 'เสร็จสิ้น',        bg: '#D1FAE5', color: '#065F46', border: '#A7F3D0', icon: <CheckCircle2 size={12} /> },
-    active:    { label: 'กำลังดำเนินการ',   bg: '#EDE9FE', color: '#5B21B6', border: '#DDD6FE', icon: <Clock size={12} /> },
-    blocked:   { label: 'รอดำเนินการ',      bg: '#FEF3C7', color: '#92400E', border: '#FDE68A', icon: <AlertCircle size={12} /> },
-    rejected:  { label: 'ต้องแก้ไข',        bg: '#FEE2E2', color: '#991B1B', border: '#FECACA', icon: <AlertCircle size={12} /> },
-    upcoming:  { label: 'ยังไม่เริ่ม',      bg: '#F3F4F6', color: '#6B7280', border: '#E5E7EB', icon: <Circle size={12} /> },
+  const map: Record<StepState, { label: string; variant: React.ComponentProps<typeof StatusBadge>['variant']; icon: React.ReactNode }> = {
+    completed: { label: 'เสร็จสิ้น', variant: 'success', icon: <CheckCircle2 size={12} /> },
+    active: { label: 'กำลังดำเนินการ', variant: 'active', icon: <Clock size={12} /> },
+    blocked: { label: 'รอดำเนินการ', variant: 'pending', icon: <AlertCircle size={12} /> },
+    rejected: { label: 'ต้องแก้ไข', variant: 'error', icon: <AlertCircle size={12} /> },
+    upcoming: { label: 'ยังไม่เริ่ม', variant: 'inactive', icon: <Circle size={12} /> },
   };
-  const { label, bg, color, border, icon } = map[state];
+  const { label, variant, icon } = map[state];
   return (
-    <span
-      className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border"
-      style={{ backgroundColor: bg, color, borderColor: border }}
-    >
-      {icon}{label}
-    </span>
+    <StatusBadge variant={variant} size="sm" icon={icon}>
+      {label}
+    </StatusBadge>
   );
 }
 

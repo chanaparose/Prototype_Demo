@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../components/ui/button';
 
 type Props = {
   options: string[];
@@ -12,9 +13,8 @@ export function CertificationChips({ options, value, onChange }: Props) {
       {options.map((opt, idx) => {
         const active = value.includes(opt);
         return (
-          <button
+          <Button
             key={opt}
-            type="button"
             role="option"
             aria-selected={active}
             tabIndex={0}
@@ -42,7 +42,7 @@ export function CertificationChips({ options, value, onChange }: Props) {
             }`}
           >
             {opt}
-          </button>
+          </Button>
         );
       })}
     </div>

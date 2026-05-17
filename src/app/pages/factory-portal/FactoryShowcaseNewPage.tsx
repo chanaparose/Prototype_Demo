@@ -1,26 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { ChevronLeft, Plus, X, Camera } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { showcasesApi, mediaApi } from '../../services/api';
-import { LookupSelect } from '../../components/common/LookupSelect';
 import { MarkdownEditor } from '../../components/common/MarkdownEditor';
 import { useLbiCategoriesByScope } from '../../hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '../../hooks/master/useSubCategoriesByCategory';
-
-type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 import { useAuth } from '../../stores';
 import { getFactoryEntityId } from '../../utils/factoryUser';
 import { RelatedShowcasePicker } from '../../components/features/factory-portal/RelatedShowcasePicker';
 import { mapLinkedShowcasesErrorToThai } from '../../utils/linkedShowcases';
 import { ImageCropModal } from '../../components/common/ImageCropModal';
-
-/* ── Type metadata ── */
-const TYPE_META = {
-  PD: { icon: '🏷', label: 'สินค้า', sub: 'Product Design', cls: 'bg-orange-50 text-orange-700 border-orange-200' },
-  PM: { icon: '🎁', label: 'โปรโมชัน', sub: 'Promotion', cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-  ID: { icon: '💡', label: 'ไอเดีย', sub: 'Industrial Design', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-  MT: { icon: '🧱', label: 'วัตถุดิบ', sub: 'Materials', cls: 'bg-green-50 text-green-700 border-green-200' },
-} as const;
+import { ShowcaseTypeSelector } from '../../components/factory/showcase/ShowcaseTypeSelector';
+import {
+  ShowcaseCategoryFields,
+  ShowcaseImageManager,
+  ShowcaseTypeBadge,
+  type ShowcaseType,
+} from './components/ShowcaseFormShared';
 
 type FormValues = {
   title: string;
@@ -163,7 +159,6 @@ export function FactoryShowcaseNewPage() {
     }
   };
 
-  const typeMeta = TYPE_META[contentType];
   const canPublish = form.title.trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
 
   return (
@@ -181,10 +176,7 @@ export function FactoryShowcaseNewPage() {
         </button>
 
         {/* Fixed type badge */}
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${typeMeta.cls}`}>
-          {typeMeta.icon} {typeMeta.label}
-          <span className="opacity-60 hidden sm:inline">· {typeMeta.sub}</span>
-        </span>
+        <ShowcaseTypeBadge type={contentType} />
 
         <button
           type="button"
@@ -229,74 +221,20 @@ export function FactoryShowcaseNewPage() {
         <div className="space-y-5 min-w-0">
             {/* Cover (PD/PM only) sits LEFT; title + main info sit RIGHT on xl. */}
             <div className="flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5">
-            {/* ── Cover image (hero) ── */}
             {contentType !== 'ID' ? (
-              <section className="w-full max-w-[360px] xl:shrink-0">
-                <div
-                  className="relative aspect-[4/3] rounded-xl overflow-hidden border"
-                  style={{ borderColor: '#E7E2F0', background: '#F5F5F5' }}
-                >
-                {imageUrls[0] ? (
-                  <>
-                    <img src={imageUrls[0]} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(0)}
-                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                      aria-label="ลบภาพปก"
-                    >
-                      <X size={16} />
-                    </button>
-                  </>
-                ) : (
-                  <label className="w-full h-full flex flex-col items-center justify-center gap-2 cursor-pointer text-gray-400 hover:text-orange-500 transition-colors">
-                    <Camera size={36} strokeWidth={1.5} />
-                    <span className="text-sm font-medium">
-                      {uploading ? 'กำลังอัปโหลด...' : 'คลิกเพื่ออัปโหลดภาพปก'}
-                    </span>
-                    <span className="text-xs opacity-70">PNG, JPG, WEBP · สูงสุด 5 รูป</span>
-                    <input
-                      type="file" accept="image/*" className="hidden" disabled={uploading}
-                      onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
-                    />
-                  </label>
-                )}
-                </div>
-
-                {/* Additional images */}
-                {imageUrls.length > 0 ? (
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {imageUrls.slice(1).map((url, i) => (
-                      <div key={`${url}-${i}`} className="relative w-14 h-14 rounded-lg border border-gray-200 overflow-hidden shrink-0">
-                        <img src={url} alt="" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(i + 1)}
-                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center"
-                        >
-                          <X size={10} />
-                        </button>
-                      </div>
-                    ))}
-                    {imageUrls.length < 5 ? (
-                      <label className="w-14 h-14 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:border-orange-300 hover:text-orange-500 shrink-0 transition-colors">
-                        <Plus size={16} />
-                        <span className="text-[9px] mt-0.5">เพิ่ม</span>
-                        <input
-                          type="file" accept="image/*" className="hidden" disabled={uploading}
-                          onChange={(e) => { const f = e.target.files?.[0] ?? null; e.target.value = ''; void onPickImage(f); }}
-                        />
-                      </label>
-                    ) : null}
-                  </div>
-                ) : null}
-              </section>
+              <ShowcaseImageManager
+                imageUrls={imageUrls}
+                uploading={uploading}
+                onPickImage={(file) => void onPickImage(file)}
+                onRemoveImage={(_, index) => removeImage(index)}
+              />
             ) : null}
 
             {/* Right column: title + main info (sits beside cover on xl) */}
             <div className="flex-1 min-w-0 space-y-5">
             {/* ── Title & excerpt ── */}
             <section className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4">
+              <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
               <input
                 className="w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow"
                 placeholder="ชื่อ *"
@@ -305,97 +243,28 @@ export function FactoryShowcaseNewPage() {
               />
             </section>
 
-            {/* ── Info bar ── */}
+            <ShowcaseCategoryFields
+              contentType={contentType}
+              idScope={idScope}
+              pmScope={pmScope}
+              onIdScopeChange={(scope) => {
+                setIdScope(scope);
+                setForm((prev) => ({ ...prev, category_id: '', sub_category_id: '' }));
+              }}
+              onPmScopeChange={(scope) => {
+                setPmScope(scope);
+                setForm((prev) => ({ ...prev, category_id: '', sub_category_id: '' }));
+              }}
+              categoryValue={form.category_id ? Number(form.category_id) : null}
+              subCategoryValue={form.sub_category_id ? Number(form.sub_category_id) : null}
+              onCategoryChange={(value) => setField('category_id', value != null ? String(value) : '')}
+              onSubCategoryChange={(value) => setField('sub_category_id', value != null ? String(value) : '')}
+              categoriesQ={categoriesQ}
+              subOptions={subOptions}
+              subCategoriesLoading={subsResult.isLoading}
+            />
+
             <section className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4 shadow-sm">
-          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">ข้อมูลหลัก</p>
-
-          {/* ID-type scope picker */}
-          {contentType === 'ID' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                ประเภทเนื้อหา
-              </label>
-              <div className="flex gap-2">
-                {(['PD', 'MT'] as const).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => { setIdScope(s); setForm((f) => ({ ...f, category_id: '', sub_category_id: '' })); }}
-                    className="flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all"
-                    style={{
-                      backgroundColor: idScope === s ? '#4F46E5' : '#F8FAFC',
-                      color: idScope === s ? '#fff' : '#334155',
-                      borderColor: idScope === s ? '#4F46E5' : '#E2E8F0',
-                    }}
-                  >
-                    {s === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* PM-type scope picker */}
-          {contentType === 'PM' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                ประเภทสินค้าที่โปรโมท
-              </label>
-              <div className="flex gap-2">
-                {(['PD', 'MT'] as const).map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => { setPmScope(s); setForm((f) => ({ ...f, category_id: '', sub_category_id: '' })); }}
-                    className="flex-1 py-2 px-3 rounded-xl border text-sm font-semibold transition-all"
-                    style={{
-                      backgroundColor: pmScope === s ? '#4F46E5' : '#F8FAFC',
-                      color: pmScope === s ? '#fff' : '#334155',
-                      borderColor: pmScope === s ? '#4F46E5' : '#E2E8F0',
-                    }}
-                  >
-                    {s === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {(() => {
-            const hideSubCat = contentType === 'MT' || (contentType === 'ID' && idScope === 'MT') || (contentType === 'PM' && pmScope === 'MT');
-            return (
-              <div className={`grid grid-cols-1 gap-3 ${hideSubCat ? '' : 'sm:grid-cols-2'}`}>
-                <LookupSelect
-                  label="หมวดหมู่"
-                  value={form.category_id ? Number(form.category_id) : null}
-                  onChange={(v) => { setField('category_id', v != null ? String(v) : ''); setField('sub_category_id', ''); }}
-                  queryResult={categoriesQ}
-                  getId={(o) => o.id}
-                  getLabel={(o) => o.name}
-                  placeholder="เลือกหมวดหมู่"
-                />
-                {!hideSubCat && (
-                  <label className="block">
-                    <span className="text-xs text-gray-500">หมวดหมู่ย่อย</span>
-                    <select
-                      value={form.sub_category_id}
-                      onChange={(e) => setField('sub_category_id', e.target.value)}
-                      disabled={!form.category_id || subsResult.isLoading}
-                      className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50 disabled:text-gray-400"
-                    >
-                      <option value="">
-                        {!form.category_id ? '— เลือกหมวดหมู่ก่อน —' : subsResult.isLoading ? 'กำลังโหลด…' : '— เลือกหมวดย่อย —'}
-                      </option>
-                      {subOptions.map((o) => (
-                        <option key={o.id} value={String(o.id)}>{o.name}</option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-              </div>
-            );
-          })()}
-
           {/* PD / PM fields */}
           {contentType !== 'ID' ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

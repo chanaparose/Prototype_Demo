@@ -31,6 +31,7 @@ import {
   type AdminRevenueChartResponse,
   type AdminTopCustomer,
 } from '../../services/api';
+import { StatusBadge as SharedStatusBadge } from '../../shared/ui';
 
 interface KpiCard {
   label: string;
@@ -93,8 +94,21 @@ function TableSkeleton({ cols }: { cols: number }) {
   );
 }
 
-function StatusBadge({ label, cls }: { label: string; cls: string }) {
-  return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
+function AdminStatusBadge({ label, cls }: { label: string; cls: string }) {
+  const variant = cls.includes('red')
+    ? 'error'
+    : cls.includes('emerald') || cls.includes('green')
+      ? 'success'
+      : cls.includes('blue') || cls.includes('indigo')
+        ? 'info'
+        : cls.includes('amber') || cls.includes('yellow')
+          ? 'pending'
+          : 'inactive';
+  return (
+    <SharedStatusBadge variant={variant} size="sm" className="border-transparent">
+      {label}
+    </SharedStatusBadge>
+  );
 }
 
 function TopCustomersWidget() {
@@ -368,7 +382,7 @@ export function AdminDashboardPage() {
                         <td className="px-4 py-3 text-xs text-slate-700 max-w-[120px] truncate">{order.customer_name ?? '-'}</td>
                         <td className="px-4 py-3 text-xs text-slate-900 font-semibold text-right tabular-nums">{toCurrency(Number(order.total_amount ?? 0))}</td>
                         <td className="px-4 py-3">
-                          <StatusBadge label={status.label} cls={status.cls} />
+                          <AdminStatusBadge label={status.label} cls={status.cls} />
                         </td>
                       </tr>
                     );
@@ -409,7 +423,7 @@ export function AdminDashboardPage() {
                         <td className="px-4 py-3 font-mono text-xs text-indigo-600 font-semibold">#{rfq.rfq_id}</td>
                         <td className="px-4 py-3 text-xs text-slate-700 max-w-[140px] truncate">{rfq.customer_name ?? '-'}</td>
                         <td className="px-4 py-3">
-                          <StatusBadge label={status.label} cls={status.cls} />
+                          <AdminStatusBadge label={status.label} cls={status.cls} />
                         </td>
                         <td className="px-4 py-3 text-xs text-slate-400 tabular-nums">{String(rfq.created_at ?? '-').slice(0, 10)}</td>
                       </tr>
