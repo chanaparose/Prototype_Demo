@@ -30,6 +30,22 @@ export const factoriesApi = {
 
   getAnalytics: () => httpClient.get<IFactoryAnalyticsResponse>('/factories/me/analytics'),
 
+  saveProfile: (
+    factoryId: string | number,
+    data: {
+      factory_name: string;
+      tax_id?: string;
+      description?: string;
+      factory_type_id?: number;
+      min_order?: number;
+      lead_time_desc?: string;
+      image_url?: string;
+      background_image_url?: string;
+      category_ids: number[];
+      sub_category_ids: number[];
+    },
+  ) => httpClient.put<void>(`/factories/${factoryId}/profile`, data),
+
   setCategories: (factoryId: string | number, categoryIds: number[]) =>
     httpClient.put<void>(`/factories/${factoryId}/categories`, { category_ids: categoryIds }),
 

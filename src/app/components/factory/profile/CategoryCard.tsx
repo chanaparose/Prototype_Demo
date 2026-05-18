@@ -45,10 +45,7 @@ export function CategoryCard({
       await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
 
       await factoriesApi.removeCategory(factoryId, categoryId);
-      // 3) Invalidate caches ที่เกี่ยวข้อง
-      qc.invalidateQueries({ queryKey: ['factory', String(factoryId), 'categories'] });
-      qc.invalidateQueries({ queryKey: ['factory', String(factoryId), 'sub-categories'] });
-      // 4) แจ้ง parent ให้ sync form state
+      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
       onRemove(categoryId);
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : 'ลบไม่สำเร็จ');
