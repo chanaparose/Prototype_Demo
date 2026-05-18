@@ -31,6 +31,10 @@ export function getLbiCategories(scope: 'PD' | 'MT' | 'ALL' = 'PD') {
   return httpClient.get<{ categories: ICategoryResponse[] }>(`/lbi/categories?scope=${scope}`);
 }
 
+export function getLbiSubCategories(scope: 'PD' | 'MT' | 'ALL' = 'ALL') {
+  return httpClient.get<ISubCategoryResponse[]>(`/lbi/sub-categories?scope=${scope}`);
+}
+
 export const masterApi = {
   getAll: () =>
     httpClient.get<{
@@ -49,11 +53,14 @@ export const masterApi = {
   getLbiCategories: getLbiCategories,
   lbiCategories: getLbiCategories,
 
+  getLbiSubCategories: getLbiSubCategories,
+  lbiSubCategories: getLbiSubCategories,
+
   getUnits: () => httpClient.get<IUnitResponse[]>('/master/units'),
 
-  getCertifications: () => httpClient.get<ICertificationResponse[]>('/master/certifications'),
+  getCertifications: () => httpClient.get<ICertificationResponse[]>('/master/certificates'),
 
-  certificates: () => httpClient.get<ICertificationResponse[]>('/master/certifications'),
+  certificates: () => httpClient.get<ICertificationResponse[]>('/master/certificates'),
   getShippingMethods: () => httpClient.get<IShippingMethodResponse[]>('/master/shipping-methods'),
 
   getFactoryTypes: () => httpClient.get<IFactoryTypeResponse[]>('/master/factory-types'),

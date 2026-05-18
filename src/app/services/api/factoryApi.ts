@@ -13,7 +13,7 @@ export const factoriesApi = {
   get: (id: string | number) => httpClient.get<IFactoryWithDetailsResponse>(`/factories/${id}`),
 
   create: (data: IFactoryProfileResponse) =>
-    httpClient.post<IFactoryBaseResponse>('/factories/', data),
+    httpClient.post<IFactoryBaseResponse>('/factories', data),
 
   update: (id: string | number, data: Partial<IFactoryProfileResponse>) =>
     httpClient.put<IFactoryBaseResponse>(`/factories/${id}`, data),

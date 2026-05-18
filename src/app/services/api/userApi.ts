@@ -9,10 +9,25 @@ type ProfileReviewListParams = {
   limit?: number;
 };
 
+type ProfileTransactionsParams = {
+  page?: number;
+  limit?: number;
+  type?: 'all' | 'in' | 'out' | string;
+};
+
 type ProfileReviewListResponse = {
   page: number;
   limit: number;
   total: number;
+  data: unknown[];
+};
+
+type ProfileTransactionsResponse = {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages?: number;
+  summary?: Record<string, number>;
   data: unknown[];
 };
 
@@ -24,18 +39,25 @@ function buildProfileReviewQuery(params: ProfileReviewListParams = {}) {
 }
 
 export const profileApi = {
-  getMe: () => httpClient.get<Record<string, unknown>>('/profile/me'),
+  // GET /profile/
+  get: () => httpClient.get<Record<string, unknown>>('/profile/'),
 
-  updateMe: (data: Record<string, unknown>) =>
-    httpClient.patch<Record<string, unknown>>('/profile/me', data),
+  // PUT /profile/
+  update: (data: Record<string, unknown>) =>
+    httpClient.put<Record<string, unknown>>('/profile/', data),
 
-  changePassword: (old_password: string, new_password: string) =>
-    httpClient.post<void>('/profile/change-password', { old_password, new_password }),
+  // PUT /profile/change-password  (BE uses PUT; maps current_password → old_password)
+  changePassword: (values: { current_password: string; new_password: string }) =>
+    httpClient.put<void>('/profile/change-password', {
+      old_password: values.current_password,
+      new_password: values.new_password,
+    }),
 
-  uploadAvatar: (formData: FormData) =>
-    httpClient.postForm<{
-      avatar_url: string;
-    }>('/profile/upload-avatar', formData),
+  // POST /profile/avatar  (wraps File in FormData automatically)
+  uploadAvatar: (file: File | FormData) => {
+    const fd = file instanceof FormData ? file : (() => { const f = new FormData(); f.append('file', file); return f; })();
+    return httpClient.postForm<{ avatar_url: string }>('/profile/avatar', fd);
+  },
 
   getTransactionHistory: (limit = 50, offset = 0) => {
     const params = new URLSearchParams({
@@ -62,6 +84,15 @@ export const profileApi = {
     httpClient.get<ProfileReviewListResponse>(
       `/profile/reviews/received?${buildProfileReviewQuery(params)}`,
     ),
+
+  transactions: (params: ProfileTransactionsParams = {}) => {
+    const query = new URLSearchParams({
+      page: String(params.page ?? 1),
+      limit: String(params.limit ?? 20),
+      type: String(params.type ?? 'all'),
+    });
+    return httpClient.get<ProfileTransactionsResponse>(`/profile/transactions?${query}`);
+  },
 };
 
 export const walletApi = {
@@ -168,9 +199,21 @@ export const certificatesApi = {
     return httpClient.get<unknown[]>(endpoint);
   },
 
+  create: (
+    factoryId: string | number,
+    data: { cert_id: number; document_url: string; cert_number?: string; expire_date?: string },
+  ) => httpClient.post<unknown>(`/factories/${factoryId}/certificates`, data),
+
+  update: (
+    factoryId: string | number,
+    mapId: string | number,
+    data: Partial<{ cert_id: number; document_url: string; cert_number: string; expire_date: string }>,
+  ) => httpClient.patch<unknown>(`/factories/${factoryId}/certificates/${mapId}`, data),
+
   upload: (formData: FormData) => httpClient.postForm<unknown>('/certificates/upload', formData),
 
-  delete: (certId: string | number) => httpClient.delete<void>(`/certificates/${certId}`),
+  delete: (factoryId: string | number, certId: string | number) =>
+    httpClient.delete<void>(`/factories/${factoryId}/certificates/${certId}`),
 };
 
 export const transactionsApi = {

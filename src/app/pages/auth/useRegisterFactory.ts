@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '@/stores/useAuthStore';
+import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { ApiHttpError } from '@/services/api/httpClient';
 import { masterApi } from '@/services/api/masterApi';
-import { factoriesApi } from '@/services/api/factoryApi';
+import { mediaApi } from '@/services/api/factoryApi';
 
 export interface FormState {
   factory_name: string;
   factory_type_id: number;
   tax_id: string;
+  province_id: number;
+  category_ids: number[];
+  sub_category_ids: number[];
+  cert_id: number;
+  cert_file: File | null;
+  cert_number: string;
+  cert_expire_date: string;
   email: string;
   phone: string;
   password: string;
@@ -20,6 +27,13 @@ const initial: FormState = {
   factory_name: '',
   factory_type_id: 0,
   tax_id: '',
+  province_id: 0,
+  category_ids: [],
+  sub_category_ids: [],
+  cert_id: 0,
+  cert_file: null,
+  cert_number: '',
+  cert_expire_date: '',
   email: '',
   phone: '',
   password: '',
@@ -28,24 +42,28 @@ const initial: FormState = {
 };
 
 export type FactoryTypeOption = { factory_type_id: number; name_th: string };
+export type ProvinceOption = { id: number; name: string };
+export type CategoryOption = { id: number; name: string };
+export type SubCategoryOption = { id: number; name: string };
+export type CertTypeOption = { id: number; label: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^0[6-9]\d{8}$/;
 
-/** Thai corporate tax ID: 13 digits + checksum (weights 13..2 on first 12 digits). */
-function isValidThaiTaxIdDigits(taxId: string): boolean {
-  if (!/^\d{13}$/.test(taxId)) return false;
-  const d = taxId.split('').map(Number);
-  let sum = 0;
-  for (let i = 0; i < 12; i++) sum += d[i] * (13 - i);
-  const check = (11 - (sum % 11)) % 10;
-  return check === d[12];
+// Handles both plain arrays and { data: [...] } / { categories: [...] } wrappers
+function unwrap(raw: unknown): unknown[] {
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === 'object') {
+    const o = raw as Record<string, unknown>;
+    if (Array.isArray(o.data)) return o.data;
+    if (Array.isArray(o.categories)) return o.categories;
+  }
+  return [];
 }
 
 function mapFactoryTypes(raw: unknown): FactoryTypeOption[] {
-  if (!Array.isArray(raw)) return [];
   const out: FactoryTypeOption[] = [];
-  for (const r of raw) {
+  for (const r of unwrap(raw)) {
     if (!r || typeof r !== 'object') continue;
     const o = r as Record<string, unknown>;
     const id = Number(o.factory_type_id ?? o.id);
@@ -56,34 +74,50 @@ function mapFactoryTypes(raw: unknown): FactoryTypeOption[] {
   return out.sort((a, b) => a.name_th.localeCompare(b.name_th, 'th'));
 }
 
+function mapRow(
+  raw: unknown,
+  idKeys: string[],
+  nameKeys: string[],
+): { id: number; name: string } | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const id = Number(idKeys.map((k) => o[k]).find((v) => v != null));
+  const name = String(nameKeys.map((k) => o[k]).find((v) => v != null) ?? '').trim();
+  if (!Number.isFinite(id) || id <= 0 || !name) return null;
+  return { id, name };
+}
+
 export type FormErrors = Partial<Record<keyof FormState, string>>;
 
 const FIELD_ORDER_FULL: (keyof FormState)[] = [
-  'factory_name',
-  'factory_type_id',
-  'tax_id',
-  'email',
-  'phone',
-  'password',
-  'confirmPassword',
+  'factory_name', 'factory_type_id', 'tax_id', 'province_id',
+  'category_ids',
+  'cert_id', 'cert_file', 'cert_expire_date',
+  'email', 'phone', 'password', 'confirmPassword',
   'acceptTerms',
 ];
 
-const FIELD_ORDER_LOGGED_IN: (keyof FormState)[] = [
-  'factory_name',
-  'factory_type_id',
-  'tax_id',
-  'acceptTerms',
-];
 
 export function useRegisterFactory() {
   const navigate = useNavigate();
   const { register, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  // Redirect already-authenticated FT users away from registration page
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate('/factory', { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
   const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<FormErrors>({});
   const [factoryTypes, setFactoryTypes] = useState<FactoryTypeOption[]>([]);
-  const [factoryTypesLoading, setFactoryTypesLoading] = useState(true);
-  const [factoryTypesLoadFailed, setFactoryTypesLoadFailed] = useState(false);
+  const [provinces, setProvinces] = useState<ProvinceOption[]>([]);
+  const [lbiCategories, setLbiCategories] = useState<CategoryOption[]>([]);
+  const [lbiSubCategories, setLbiSubCategories] = useState<Record<number, SubCategoryOption[]>>({});
+  const [certTypes, setCertTypes] = useState<CertTypeOption[]>([]);
+  const [masterLoading, setMasterLoading] = useState(true);
+  const [masterFailed, setMasterFailed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const fieldRefs = useRef<Partial<Record<keyof FormState, HTMLElement | null>>>({});
@@ -95,25 +129,67 @@ export function useRegisterFactory() {
     [],
   );
 
-  const fetchFactoryTypes = useCallback(() => {
-    setFactoryTypesLoading(true);
-    setFactoryTypesLoadFailed(false);
-    masterApi
-      .factoryTypes()
-      .then((res) => {
-        setFactoryTypes(mapFactoryTypes(res));
-        setFactoryTypesLoadFailed(false);
+  const fetchMaster = useCallback(() => {
+    setMasterLoading(true);
+    setMasterFailed(false);
+
+    Promise.all([
+      masterApi.factoryTypes(),
+      masterApi.provinces(),
+      masterApi.lbiCategories('ALL'),
+      masterApi.certificates(),
+    ])
+      .then(([types, provs, cats, certs]) => {
+        setFactoryTypes(mapFactoryTypes(types));
+
+        setProvinces(
+          unwrap(provs)
+            .map((r) => mapRow(r, ['province_id', 'row_id', 'id'], ['name_th', 'name']))
+            .filter((x): x is ProvinceOption => x != null),
+        );
+
+        setLbiCategories(
+          unwrap(cats)
+            .map((r) => mapRow(r, ['category_id', 'id'], ['name_th', 'name']))
+            .filter((x): x is CategoryOption => x != null),
+        );
+
+        setCertTypes(
+          unwrap(certs)
+            .map((r): CertTypeOption | null => {
+              if (!r || typeof r !== 'object') return null;
+              const o = r as Record<string, unknown>;
+              const id = Number(o.cert_id ?? o.id);
+              const label = String(o.name_th ?? o.cert_name ?? o.name ?? '').trim();
+              if (!Number.isFinite(id) || id <= 0 || !label) return null;
+              return { id, label };
+            })
+            .filter((x): x is CertTypeOption => x != null),
+        );
+
+        // Sub-categories: 1 non-blocking call, FE groups by category_id
+        masterApi.lbiSubCategories('ALL')
+          .then((subs) => {
+            const subArr = (Array.isArray(subs) ? subs : []) as unknown[];
+            const subMap: Record<number, SubCategoryOption[]> = {};
+            for (const r of subArr) {
+              const row = mapRow(r, ['sub_category_id', 'id'], ['name_th', 'name']);
+              if (!row) continue;
+              const catId = Number((r as Record<string, unknown>).category_id ?? 0);
+              if (!catId) continue;
+              (subMap[catId] ??= []).push(row);
+            }
+            setLbiSubCategories(subMap);
+          })
+          .catch(() => { /* sub-categories optional — don't block form */ });
       })
-      .catch(() => {
-        setFactoryTypes([]);
-        setFactoryTypesLoadFailed(true);
-      })
-      .finally(() => setFactoryTypesLoading(false));
+      .catch(() => setMasterFailed(true))
+      .finally(() => setMasterLoading(false));
   }, []);
 
   useEffect(() => {
-    fetchFactoryTypes();
-  }, [fetchFactoryTypes]);
+    fetchMaster();
+  }, [fetchMaster]);
 
   const setField = useCallback(<K extends keyof FormState>(k: K, v: FormState[K]) => {
     setForm((s) => ({ ...s, [k]: v }));
@@ -123,56 +199,51 @@ export function useRegisterFactory() {
 
   const validateField = useCallback(
     (k: keyof FormState, values: FormState = form): string | undefined => {
-      if (
-        isAuthenticated &&
-        (k === 'email' || k === 'phone' || k === 'password' || k === 'confirmPassword')
-      ) {
-        return undefined;
-      }
-      const t = values.factory_name.trim();
+      const authOnly = ['email', 'phone', 'password', 'confirmPassword'] as (keyof FormState)[];
+      if (isAuthenticated && authOnly.includes(k)) return undefined;
+
       switch (k) {
         case 'factory_name': {
+          const t = values.factory_name.trim();
           if (t.length < 3) return 'กรุณากรอกชื่อโรงงาน (อย่างน้อย 3 ตัวอักษร)';
           if (t.length > 150) return 'ชื่อโรงงานยาวเกิน 150 ตัวอักษร';
           return undefined;
         }
-        case 'factory_type_id': {
-          if (!values.factory_type_id) return 'กรุณาเลือกประเภทโรงงาน';
-          return undefined;
-        }
+        case 'factory_type_id':
+          return !values.factory_type_id ? 'กรุณาเลือกประเภทโรงงาน' : undefined;
         case 'tax_id': {
           const id = values.tax_id.replace(/\D/g, '');
-          if (!/^\d{13}$/.test(id)) return 'เลขภาษีต้องเป็นตัวเลข 13 หลัก';
-          // ปิดการตรวจเลขควบคุมชั่วคราว — validate เฉพาะ 13 หลักก่อน
-          // if (!isValidThaiTaxIdDigits(id)) return 'เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง (ตรวจสอบเลขควบคุม)';
-          return undefined;
+          return !/^\d{13}$/.test(id) ? 'เลขภาษีต้องเป็นตัวเลข 13 หลัก' : undefined;
         }
+        case 'province_id':
+          return !values.province_id ? 'กรุณาเลือกจังหวัดที่ตั้งโรงงาน' : undefined;
+        case 'category_ids':
+          return values.category_ids.length === 0 ? 'กรุณาเลือกหมวดหมู่ที่รับผลิตอย่างน้อย 1 หมวด' : undefined;
+        case 'cert_id':
+          return !values.cert_id ? 'กรุณาเลือกประเภทใบรับรอง' : undefined;
+        case 'cert_file':
+          return !values.cert_file ? 'กรุณาอัปโหลดไฟล์เอกสาร' : undefined;
+        case 'cert_expire_date':
+          return !values.cert_expire_date ? 'กรุณาระบุวันหมดอายุ' : undefined;
         case 'email': {
           const e = values.email.trim();
           if (!e) return 'กรุณากรอกอีเมล';
-          if (!EMAIL_RE.test(e)) return 'รูปแบบอีเมลไม่ถูกต้อง';
-          return undefined;
+          return !EMAIL_RE.test(e) ? 'รูปแบบอีเมลไม่ถูกต้อง' : undefined;
         }
         case 'phone': {
           const p = values.phone.replace(/\s/g, '');
-          if (!PHONE_RE.test(p)) return 'เบอร์โทรไม่ถูกต้อง (10 หลัก เริ่ม 06–09)';
-          return undefined;
+          return !PHONE_RE.test(p) ? 'เบอร์โทรไม่ถูกต้อง (10 หลัก เริ่ม 06–09)' : undefined;
         }
         case 'password': {
           if (values.password.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัว';
-          if (!/\d/.test(values.password) || !/[a-zA-Z]/.test(values.password)) {
-            return 'รหัสผ่านต้องมีทั้งตัวเลขและตัวอักษร';
-          }
-          return undefined;
+          return !/\d/.test(values.password) || !/[a-zA-Z]/.test(values.password)
+            ? 'รหัสผ่านต้องมีทั้งตัวเลขและตัวอักษร'
+            : undefined;
         }
-        case 'confirmPassword': {
-          if (values.password !== values.confirmPassword) return 'รหัสผ่านไม่ตรงกัน';
-          return undefined;
-        }
-        case 'acceptTerms': {
-          if (!values.acceptTerms) return 'กรุณายอมรับข้อตกลงก่อนสมัคร';
-          return undefined;
-        }
+        case 'confirmPassword':
+          return values.password !== values.confirmPassword ? 'รหัสผ่านไม่ตรงกัน' : undefined;
+        case 'acceptTerms':
+          return !values.acceptTerms ? 'กรุณายอมรับข้อตกลงก่อนสมัคร' : undefined;
         default:
           return undefined;
       }
@@ -180,7 +251,7 @@ export function useRegisterFactory() {
     [form, isAuthenticated],
   );
 
-  const activeFieldOrder = isAuthenticated ? FIELD_ORDER_LOGGED_IN : FIELD_ORDER_FULL;
+  const activeFieldOrder = FIELD_ORDER_FULL;
 
   const scrollToFirstError = useCallback(
     (err: FormErrors) => {
@@ -214,43 +285,42 @@ export function useRegisterFactory() {
       scrollToFirstError(e);
       return;
     }
+
     setSubmitting(true);
     try {
       const taxDigits = form.tax_id.replace(/\D/g, '');
-      if (isAuthenticated) {
-        // Logged-in path: JWT carries user identity — just create the factory record
-        await factoriesApi.create({
-          factory_name: form.factory_name.trim(),
-          factory_type_id: form.factory_type_id,
-          tax_id: taxDigits,
-        });
-      } else {
-        // Guest path: full registration creates user + factory together
-        await register({
-          role: 'FT',
-          email: form.email.trim(),
-          phone: form.phone.replace(/\s/g, ''),
-          password: form.password,
-          factory_name: form.factory_name.trim(),
-          factory_type_id: form.factory_type_id,
-          tax_id: taxDigits,
-        });
-      }
+
+      // Upload cert file first (same for both paths)
+      const { url: certUrl } = await mediaApi.upload(form.cert_file!);
+
+      // Guest registration: factory + cert created atomically in one TX
+      await register({
+        role: 'FT',
+        email: form.email.trim(),
+        phone: form.phone.replace(/\s/g, ''),
+        password: form.password,
+        factory_name: form.factory_name.trim(),
+        factory_type_id: form.factory_type_id,
+        tax_id: taxDigits,
+        province_id: form.province_id || undefined,
+        category_ids: form.category_ids,
+        sub_category_ids: form.sub_category_ids,
+        cert_id: form.cert_id,
+        document_url: certUrl,
+        cert_number: form.cert_number.trim() || undefined,
+        cert_expire_date: form.cert_expire_date || undefined,
+      } as Parameters<typeof register>[0]);
+
       navigate('/factory', { replace: true });
     } catch (err) {
       if (err instanceof ApiHttpError) {
         if (err.status === 409) {
-          setApiError('เลขภาษีนี้ถูกใช้แล้ว');
+          setApiError('เลขภาษีนี้ถูกใช้แล้ว หรืออีเมลนี้มีบัญชีอยู่แล้ว หรือโปรไฟล์โรงงานนี้มีอยู่แล้ว');
         } else if (err.status === 422) {
-          const pwErr = {
-            password: 'รหัสผ่านไม่ปลอดภัยหรือไม่ตรงตามเงื่อนไขของระบบ',
-          };
-          setErrors((prev) => ({ ...prev, ...pwErr }));
-          scrollToFirstError(pwErr);
-        } else if (err.status === 400) {
-          setApiError(err.message || 'ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง');
+          setErrors((prev) => ({ ...prev, password: 'รหัสผ่านไม่ตรงตามเงื่อนไขของระบบ' }));
+          scrollToFirstError({ password: 'x' });
         } else {
-          setApiError('เกิดข้อผิดพลาด กรุณาลองใหม่');
+          setApiError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
         }
       } else {
         setApiError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด กรุณาลองใหม่');
@@ -264,13 +334,15 @@ export function useRegisterFactory() {
     form,
     errors,
     factoryTypes,
-    factoryTypesLoading,
-    factoryTypesLoadFailed,
-    retryFactoryTypes: fetchFactoryTypes,
+    provinces,
+    lbiCategories,
+    lbiSubCategories,
+    certTypes,
+    masterLoading,
+    masterFailed,
+    retryMaster: fetchMaster,
     submitting,
     apiError,
-    isAuthenticated,
-    authLoading,
     setField,
     submit,
     blurField,

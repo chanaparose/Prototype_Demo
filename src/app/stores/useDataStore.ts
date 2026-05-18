@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useAuth } from '@/stores/useAuthStore';
+import { useAuthStore, useAuth } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
 import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
@@ -71,7 +71,8 @@ const STALE_MS = 60_000; // 1 minute
 
 export const useDataStore = create<DataState & DataActions>((set, get) => {
   const fetchAll = async () => {
-    const { isAuthenticated } = useAuth();
+    const rawAuthState = useAuthStore.getState();
+    const isAuthenticated = rawAuthState.isAuthenticated;
 
     if (!isAuthenticated) {
       set({ isLoading: true, error: null });
@@ -231,7 +232,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
 
     refetchWallet: async () => {
       try {
-        const w = (await walletApi.getMe()) as Record<string, unknown>;
+        const w = (await walletApi.getBalance()) as Record<string, unknown>;
         const balance = pickScalarNumber(w.good_fund, w.walletBalance) ?? 0;
         const pending = pickScalarNumber(w.pending_fund, w.pendingBalance) ?? 0;
         set((state) => {
