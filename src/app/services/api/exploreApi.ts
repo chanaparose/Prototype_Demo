@@ -18,7 +18,17 @@ export interface FrontendBootstrapResponse {
 }
 
 export const frontendApi = {
-  getMe: () => httpClient.get<Record<string, unknown>>('/frontend/me'),
+  getMe: async () => {
+    try {
+      return await httpClient.get<Record<string, unknown>>('/frontend/me');
+    } catch (error) {
+      const status = Number((error as { status?: unknown })?.status ?? 0);
+      if (status === 404) {
+        return httpClient.get<Record<string, unknown>>('/profile/me');
+      }
+      throw error;
+    }
+  },
 
   getBootstrap: () => httpClient.get<FrontendBootstrapResponse>('/frontend/bootstrap'),
 
