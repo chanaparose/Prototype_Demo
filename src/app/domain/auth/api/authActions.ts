@@ -11,9 +11,11 @@ import type {
   IRegisterCustomerRequest,
   IRegisterFactoryRequest,
 } from '@/services/api/types/auth.types';
+import { setToken } from '@/services/api/tokenManager';
 
 async function hydrateUserProfile(session: IAuthSession): Promise<IAuthSession> {
   try {
+    setToken(session.token);
     const me = await frontendApi.getMe();
     return { ...session, user: mapUserFromApi(me) };
   } catch {
