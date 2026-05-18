@@ -79,10 +79,14 @@ export function FactoryShowcasesPage() {
   })();
 
   const [activeType, setActiveType] = useState<ShowcaseType>(initialType);
-  const [rows, setRows] = useState<Row[]>([]);
+  const [allRows, setAllRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const rows = allRows.filter(
+    (r) => String(r.content_type ?? '').toUpperCase() === activeType,
+  );
 
   const changeType = (type: ShowcaseType) => {
     setActiveType(type);
@@ -97,14 +101,14 @@ export function FactoryShowcasesPage() {
     setLoading(true);
     setError('');
     try {
-      const raw = await showcasesApi.listByFactory(fid, activeType);
-      setRows(Array.isArray(raw) ? (raw as Row[]) : []);
+      const raw = await showcasesApi.listByFactory(fid);
+      setAllRows(Array.isArray(raw) ? (raw as Row[]) : []);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
     } finally {
       setLoading(false);
     }
-  }, [fid, activeType]);
+  }, [fid]);
 
   useEffect(() => {
     void load();
@@ -117,7 +121,7 @@ export function FactoryShowcasesPage() {
     setError('');
     try {
       await showcasesApi.delete(id);
-      setRows((prev) => prev.filter((row) => rowId(row) !== id));
+      setAllRows((prev) => prev.filter((row) => rowId(row) !== id));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ลบไม่สำเร็จ');
     } finally {
