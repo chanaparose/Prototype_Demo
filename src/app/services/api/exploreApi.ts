@@ -5,13 +5,23 @@
 import { httpClient } from '@/services/api/httpClient';
 import {
   type IExploreResponse,
-  type IPromoSlidesResponse,
+  type IPromoSlideResponse,
+  type IShowcasesGroupedResponse,
 } from '@/services/api/types/explore.types';
 
 export interface FrontendBootstrapResponse {
-  currentUser: Record<string, unknown>;
-  categories: unknown[];
-  factories: unknown[];
+  currentUser: {
+    id: number;
+    role: string;
+    name: string;
+    email: string;
+    phone: string;
+    memberSince: string;
+  };
+  wallet: {
+    balance: number;
+    pendingBalance: number;
+  };
   rfqs: unknown[];
   orders: unknown[];
   threads: unknown[];
@@ -66,6 +76,16 @@ export const frontendApi = {
   getPromoCodes: () => httpClient.get<unknown[]>('/frontend/promo-codes'),
 };
 
+/** GET /api/v1/showcases?types=PD,MT&limit=8 — returns grouped { PD: [...], MT: [...] } */
+export const showcasesExploreApi = {
+  listByTypes: (types: ('PD' | 'PM' | 'ID' | 'MT')[], limit: number) => {
+    const params = new URLSearchParams({ types: types.join(','), limit: String(limit) });
+    return httpClient.get<IShowcasesGroupedResponse>(`/showcases?${params}`);
+  },
+};
+
+/** GET /api/v1/promo-slides?limit=N — returns direct array (banner slides) */
 export const promoSlidesApi = {
-  list: () => httpClient.get<IPromoSlidesResponse>('/promo-slides'),
+  list: (limit = 5) =>
+    httpClient.get<IPromoSlideResponse[]>(`/promo-slides?limit=${limit}`),
 };

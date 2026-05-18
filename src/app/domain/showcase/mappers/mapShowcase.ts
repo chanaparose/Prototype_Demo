@@ -85,7 +85,7 @@ export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase 
     categoryId,
     sub_category_id,
     sub_category_name,
-    postedAt: pickScalarString(r.created_at, r.postedAt),
+    postedAt: pickScalarString(r.published_at, r.created_at, r.postedAt),
     likes: Number(r.likes_count ?? r.likes ?? 0),
     minOrder: Number(r.moq ?? r.min_order ?? r.minOrder ?? 0),
     leadTime,
