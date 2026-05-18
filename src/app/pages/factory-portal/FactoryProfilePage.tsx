@@ -782,6 +782,8 @@ export function FactoryProfilePage() {
             onRegisterAdd={(handler) => {
               openCategoryPickerRef.current = handler;
             }}
+            apiCategories={factoryQ.data?.categories}
+            apiSubCategories={factoryQ.data?.sub_categories}
           />
         </SectionCard>
 
