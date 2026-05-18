@@ -45,7 +45,7 @@ export function CategoryCard({
       await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
 
       await factoriesApi.removeCategory(factoryId, categoryId);
-      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+      await qc.invalidateQueries({ queryKey: ['factory', 'me', 'profile-init'] });
       onRemove(categoryId);
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : 'ลบไม่สำเร็จ');
