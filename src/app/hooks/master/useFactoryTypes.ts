@@ -14,7 +14,8 @@ export function useFactoryTypes() {
     queryKey: masterKeys.factoryTypes() as const,
     queryFn: async () => {
       const raw = await masterApi.factoryTypes();
-      const arr = (Array.isArray(raw) ? raw : []) as Row[];
+      const unwrapped = Array.isArray(raw) ? raw : Array.isArray((raw as Record<string, unknown>).data) ? (raw as Record<string, unknown>).data : [];
+      const arr = unwrapped as Row[];
       return arr
         .map((r): FactoryTypeOption | null => {
           const id = Number(r.factory_type_id ?? r.row_id ?? r.id);
