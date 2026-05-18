@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { frontendApi } from '@/services/api/exploreApi';
 import { useAuth } from '@/stores/useAuthStore';
 import type {
   AuthLoginFormValues,
@@ -8,14 +7,8 @@ import type {
 } from '@/domain/auth/schemas/authForm.schema';
 import { getErrorMessage } from '@/lib/apiError';
 
-async function navigateAfterAuth(navigate: ReturnType<typeof useNavigate>) {
-  try {
-    const me = (await frontendApi.getMe()) as Record<string, unknown>;
-    const role = String(me.role ?? '').toUpperCase();
-    navigate(role === 'FT' ? '/factory' : '/', { replace: true });
-  } catch {
-    navigate('/', { replace: true });
-  }
+function navigateByRole(navigate: ReturnType<typeof useNavigate>, role?: string) {
+  navigate(String(role ?? '').toUpperCase() === 'FT' ? '/factory' : '/', { replace: true });
 }
 
 export function useLoginSubmission() {
@@ -29,8 +22,8 @@ export function useLoginSubmission() {
       setIsSubmitting(true);
       setError('');
       try {
-        await login(values);
-        await navigateAfterAuth(navigate);
+        const session = await login(values);
+        navigateByRole(navigate, session?.user?.role);
         return true;
       } catch (err) {
         setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'));
@@ -47,7 +40,7 @@ export function useLoginSubmission() {
       setIsSubmitting(true);
       setError('');
       try {
-        await register({
+        const session = await register({
           role: 'CT',
           email: values.email,
           phone: values.phone,
@@ -55,7 +48,7 @@ export function useLoginSubmission() {
           first_name: values.first_name,
           last_name: values.last_name,
         });
-        await navigateAfterAuth(navigate);
+        navigateByRole(navigate, session?.user?.role);
         return true;
       } catch (err) {
         setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'));
