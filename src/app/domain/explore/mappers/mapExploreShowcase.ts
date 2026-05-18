@@ -1,10 +1,5 @@
-import { frontendApi, promoSlidesApi } from '@/services/api/exploreApi';
-import { showcasesApi } from '@/services/api/factoryApi';
-import type { IExploreShowcaseResponse } from '@/services/api/types/explore.types';
-import {
-  extractShowcaseRows,
-  mapShowcaseFromApi,
-} from '@/domain/showcase/mappers/mapShowcase';
+import { showcasesExploreApi, promoSlidesApi } from '@/services/api/exploreApi';
+import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import {
   EMPTY_EXPLORE_PAGE_DATA,
   type IExploreArticle,
@@ -12,6 +7,7 @@ import {
   type IExploreShowcase,
   type IExploreSlide,
 } from '@/domain/explore/types/explore.model';
+import type { IExploreShowcaseResponse, IPromoSlideResponse } from '@/services/api/types/explore.types';
 
 export type {
   IExploreArticle,
@@ -22,8 +18,8 @@ export type {
 
 export { EMPTY_EXPLORE_PAGE_DATA };
 
-function mapRowToExploreShowcase(row: Record<string, unknown>): IExploreShowcase {
-  const s = mapShowcaseFromApi(row);
+function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcase {
+  const s = mapShowcaseFromApi(row as unknown as Record<string, unknown>);
   return {
     id: s.id,
     factoryId: s.factoryId,
@@ -42,55 +38,52 @@ function mapRowToExploreShowcase(row: Record<string, unknown>): IExploreShowcase
   };
 }
 
-export function mapExploreShowcaseResponse(row: IExploreShowcaseResponse): IExploreShowcase {
-  return mapRowToExploreShowcase(row as unknown as Record<string, unknown>);
+function mapShowcaseList(rows: IExploreShowcaseResponse[]): IExploreShowcase[] {
+  return rows.map(mapRowToExploreShowcase).filter((s) => s.id && s.title);
 }
 
-function mapExploreShowcaseList(raw: unknown): IExploreShowcase[] {
-  return extractShowcaseRows(raw)
-    .map(mapRowToExploreShowcase)
-    .filter((s) => s.id && s.title);
-}
-
-function normSlide(r: Record<string, unknown>): IExploreSlide {
+function normSlide(r: IPromoSlideResponse | Record<string, unknown>): IExploreSlide {
   return {
-    id: String(r.slide_id ?? r.id ?? ''),
-    title: String(r.title ?? ''),
-    subtitle: String(r.subtitle ?? ''),
-    code: String(r.code ?? ''),
+    id: String((r as IPromoSlideResponse).slide_id ?? (r as Record<string, unknown>).id ?? ''),
+    title: String((r as IPromoSlideResponse).title ?? (r as Record<string, unknown>).title ?? ''),
+    subtitle: String((r as Record<string, unknown>).subtitle ?? ''),
+    code: String((r as Record<string, unknown>).code ?? ''),
+    image: String((r as IPromoSlideResponse).image_url ?? (r as Record<string, unknown>).image ?? ''),
+    linkTo: String((r as IPromoSlideResponse).link_to ?? (r as Record<string, unknown>).linkTo ?? ''),
   };
 }
 
 export async function fetchExplorePageData(): Promise<IExplorePageData> {
-  const [pdRes, pmRes, idRes, mtRes, exploreRes, slidesRes] = await Promise.allSettled([
-    showcasesApi.list('PD'),
-    showcasesApi.list('PM'),
-    showcasesApi.list('ID'),
-    showcasesApi.list('MT'),
-    frontendApi.getExplore(),
-    promoSlidesApi.list(),
+  // Phase 2 — above fold (PD+MT, PM parallel กับ phase 3)
+  // Phase 3 — below fold (PM, ID, promo-slides)
+  // รวมเป็น 4 calls parallel เพื่อให้ simple ก่อน
+  const [pdRes, mtRes, pmRes, idRes, slidesRes] = await Promise.allSettled([
+    showcasesExploreApi.listByTypes(['PD'], 15),
+    showcasesExploreApi.listByTypes(['MT'], 15),
+    showcasesExploreApi.listByTypes(['PM'], 15),
+    showcasesExploreApi.listByTypes(['ID'], 15),
+    promoSlidesApi.list(5),
   ]);
 
-  const pdShowcases = pdRes.status === 'fulfilled' ? mapExploreShowcaseList(pdRes.value) : [];
-  const pmShowcases = pmRes.status === 'fulfilled' ? mapExploreShowcaseList(pmRes.value) : [];
-  const idShowcases = idRes.status === 'fulfilled' ? mapExploreShowcaseList(idRes.value) : [];
-  const mtShowcases = mtRes.status === 'fulfilled' ? mapExploreShowcaseList(mtRes.value) : [];
+  const pdData = pdRes.status === 'fulfilled' ? pdRes.value : {};
+  const pdShowcases = mapShowcaseList(Array.isArray(pdData?.PD) ? pdData.PD! : []);
 
-  let promoCodes: IExploreSlide[] = [];
-  if (exploreRes.status === 'fulfilled') {
-    const c = (
-      Array.isArray(exploreRes.value.promo_codes) ? exploreRes.value.promo_codes : []
-    ) as Record<string, unknown>[];
-    promoCodes = c.map(normSlide).filter((v) => v.id && v.title);
-  }
+  const mtData = mtRes.status === 'fulfilled' ? mtRes.value : {};
+  const mtShowcases = mapShowcaseList(Array.isArray(mtData?.MT) ? mtData.MT! : []);
+
+  const pmData = pmRes.status === 'fulfilled' ? pmRes.value : {};
+  const pmShowcases = mapShowcaseList(Array.isArray(pmData?.PM) ? pmData.PM! : []);
+
+  const idData = idRes.status === 'fulfilled' ? idRes.value : {};
+  const idShowcases = mapShowcaseList(Array.isArray(idData?.ID) ? idData.ID! : []);
 
   let promoSlides: IExploreSlide[] = [];
   if (slidesRes.status === 'fulfilled') {
-    const arr = (Array.isArray(slidesRes.value) ? slidesRes.value : []) as Record<string, unknown>[];
+    const arr = Array.isArray(slidesRes.value) ? slidesRes.value : [];
     promoSlides = arr.map(normSlide).filter((s) => s.id && s.title);
   }
 
-  return { pdShowcases, pmShowcases, idShowcases, mtShowcases, promoSlides, promoCodes };
+  return { pdShowcases, pmShowcases, idShowcases, mtShowcases, promoSlides, promoCodes: [] };
 }
 
 export function exploreShowcaseToArticle(s: IExploreShowcase): IExploreArticle {

@@ -87,7 +87,7 @@ export type FetchExploreCategoriesResult = {
 export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCategoriesResult> {
   let res: PromiseSettledResult<unknown>;
   try {
-    const value = await categoriesApi.list();
+    const value = await categoriesApi.list(6);
     res = { status: 'fulfilled', value };
   } catch (reason) {
     res = { status: 'rejected', reason };

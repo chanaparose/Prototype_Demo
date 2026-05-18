@@ -40,6 +40,8 @@ export type IExploreSlide = {
   title: string;
   subtitle: string;
   code: string;
+  image: string;
+  linkTo: string;
 };
 
 export type IExplorePageData = {

@@ -223,7 +223,9 @@ export function ExploreDesktop({
         </div>
 
         {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) — แสดงเฉพาะเมื่อมีจาก API ═══ */}
-        {desktopPromoSlides.length > 0 && (
+        {/*
+          Disabled promo-code cards. Keep this block commented out; commented code is not rendered or used.
+          {desktopPromoSlides.length > 0 && (
           <section>
             <div className='flex items-center justify-between mb-3'>
               <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
@@ -300,7 +302,8 @@ export function ExploreDesktop({
               ))}
             </div>
           </section>
-        )}
+          )}
+        */}
 
         <div data-tour='categories'>
           <ExploreDesktopCategories

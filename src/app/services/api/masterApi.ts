@@ -11,7 +11,10 @@ import type {
 import type { IProductionStepTemplateResponse } from '@/services/api/types/production.types';
 
 export const categoriesApi = {
-  list: () => httpClient.get<ICategoryResponse[]>('/categories'),
+  list: (limit?: number) => {
+    const endpoint = limit ? `/categories?limit=${limit}` : '/categories';
+    return httpClient.get<ICategoryResponse[]>(endpoint);
+  },
 
   get: (id: string | number) => httpClient.get<ICategoryResponse>(`/categories/${id}`),
 
