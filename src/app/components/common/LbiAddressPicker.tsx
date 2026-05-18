@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useProvinces } from '@/hooks/master/useProvinces';
 import { useDistricts } from '@/hooks/master/useDistricts';
 import { useSubDistricts, type SubDistrictOption } from '@/hooks/master/useSubDistricts';
@@ -38,11 +38,17 @@ export function LbiAddressPicker({ value, onChange, onZipCodeAutoFill, disabled 
     [subDistricts, value.subDistrictId],
   );
 
+  // Keep a stable ref so the effect doesn't re-fire when the parent re-renders
+  const onZipCodeAutoFillRef = useRef(onZipCodeAutoFill);
   useEffect(() => {
-    if (selectedSub?.zipCode && onZipCodeAutoFill) {
-      onZipCodeAutoFill(selectedSub.zipCode);
+    onZipCodeAutoFillRef.current = onZipCodeAutoFill;
+  });
+
+  useEffect(() => {
+    if (selectedSub?.zipCode) {
+      onZipCodeAutoFillRef.current?.(selectedSub.zipCode);
     }
-  }, [selectedSub, onZipCodeAutoFill]);
+  }, [selectedSub]);
 
   return (
     <div className='grid gap-3 sm:grid-cols-3'>

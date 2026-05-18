@@ -12,7 +12,12 @@ export function useProvinces() {
     queryKey: masterKeys.provinces() as const,
     queryFn: async () => {
       const raw = await masterApi.provinces();
-      const arr = (Array.isArray(raw) ? raw : []) as Row[];
+      const unwrapped = Array.isArray(raw)
+        ? raw
+        : Array.isArray((raw as Record<string, unknown>).data)
+          ? (raw as Record<string, unknown>).data
+          : [];
+      const arr = unwrapped as Row[];
       return arr
         .map(mapProvinceOption)
         .filter((x): x is ProvinceOption => x != null)

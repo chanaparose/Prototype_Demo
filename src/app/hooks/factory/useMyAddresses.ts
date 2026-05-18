@@ -8,7 +8,12 @@ export function useMyAddresses() {
     queryKey: ['addresses', 'me'] as const,
     queryFn: async () => {
       const raw = await addressesApi.list();
-      return (Array.isArray(raw) ? raw : []) as Row[];
+      const unwrapped = Array.isArray(raw)
+        ? raw
+        : Array.isArray((raw as Record<string, unknown>).data)
+          ? (raw as Record<string, unknown>).data
+          : [];
+      return unwrapped as Row[];
     },
     staleTime: 0,
     refetchOnWindowFocus: false,
