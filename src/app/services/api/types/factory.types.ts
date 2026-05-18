@@ -56,6 +56,45 @@ export interface IFactorySubCategoriesRequest {
   sub_category_ids: number[];
 }
 
+export interface IFactoryPublicDetailResponse {
+  factory_id: number;
+  factory_name: string;
+  factory_type_id: number;
+  factory_type_name?: string;
+  tax_id?: string;
+  specialization?: string;
+  min_order?: number;
+  lead_time_desc?: string;
+  is_verified: boolean;
+  rating?: number;
+  review_count: number;
+  completed_orders: number;
+  image_url?: string;
+  background_image_url?: string;
+  description?: string;
+  price_range?: string;
+  province_id?: number;
+  province_name?: string;
+  categories: Array<{ category_id: number; name: string }>;
+  sub_categories: Array<{
+    sub_category_id: number;
+    category_id: number;
+    category_name: string;
+    name: string;
+    sub_category_name: string;
+  }>;
+  certificates: Array<{
+    map_id: number;
+    cert_id: number;
+    cert_name: string;
+    verify_status: string;
+    document_url?: string;
+    cert_number?: string;
+    expire_date?: string;
+  }>;
+  reviews: unknown[];
+}
+
 export interface IFactoryDashboardResponse {
   total_rfqs: number;
   pending_quotes: number;

@@ -49,7 +49,11 @@ export function LookupSelect<Option>({
         <Select
           value={selected}
           disabled={disabled || isLoading}
-          onValueChange={(next) => onChange(next === '__empty' ? null : Number(next))}
+          onValueChange={(next) => {
+            // Radix fires onValueChange("") when value doesn't match any option yet — ignore it
+            if (!next) return;
+            onChange(next === '__empty' ? null : Number(next));
+          }}
         >
           <SelectTrigger className='mt-1 w-full'>
             <SelectValue placeholder={isLoading ? 'กำลังโหลด…' : placeholder} />

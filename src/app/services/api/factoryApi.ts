@@ -4,6 +4,7 @@ import {
   type IFactoryBaseResponse,
   type IFactoryDashboardResponse,
   type IFactoryProfileResponse,
+  type IFactoryPublicDetailResponse,
   type IFactoryWithDetailsResponse,
 } from '@/services/api/types/factory.types';
 
@@ -23,7 +24,7 @@ export const factoriesApi = {
 
   delete: (id: string | number) => httpClient.delete<void>(`/factories/${id}`),
 
-  getMe: () => httpClient.get<IFactoryProfileResponse>('/factories/me'),
+  getMe: () => httpClient.get<IFactoryPublicDetailResponse>('/factories/me'),
 
   getDashboard: () => httpClient.get<IFactoryDashboardResponse>('/factories/me/dashboard'),
 

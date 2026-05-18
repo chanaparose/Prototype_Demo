@@ -7,7 +7,6 @@ import { CategoryCard } from '@/components/factory/profile/CategoryCard';
 import { CategoryPickerModal } from '@/components/factory/profile/CategoryPickerModal';
 import { SubCategoryPickerModal } from '@/components/factory/profile/SubCategoryPickerModal';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
-import { Input } from '@/components/ui/input';
 
 interface Props {
   form: UseFormReturn<ProfileFormValues>;
@@ -131,11 +130,11 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd }: Props) {
         </div>
       )}
 
-      <Controller control={control} name='category_ids' render={() => <Input type='hidden' />} />
+      <Controller control={control} name='category_ids' render={({ field }) => <input type='hidden' name={field.name} />} />
       <Controller
         control={control}
         name='sub_category_ids'
-        render={() => <Input type='hidden' />}
+        render={({ field }) => <input type='hidden' name={field.name} />}
       />
 
       <CategoryPickerModal

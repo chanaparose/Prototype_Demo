@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { profileFormSchema } from '@/domain/factory/schemas/profileForm.schema';
@@ -24,8 +24,6 @@ import { getFactoryEntityId } from '@/utils/factoryUser';
 import { factoriesApi, mediaApi } from '@/services/api/factoryApi';
 
 import { useMyFactory } from '@/hooks/factory/useMyFactory';
-import { useFactoryCategories } from '@/hooks/factory/useFactoryCategories';
-import { useFactorySubCategories } from '@/hooks/factory/useFactorySubCategories';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 
 import { FormSkeleton } from '@/components/common/FormSkeleton';
@@ -140,12 +138,6 @@ function VerificationStepper({ steps }: { steps: StepDef[] }) {
       </div>
     </div>
   );
-}
-
-function pickCoverFromFactoryRaw(raw: Record<string, unknown>): string {
-  return String(
-    raw.background_image_url ?? raw.cover_image_url ?? raw.banner_url ?? raw.hero_image_url ?? '',
-  ).trim();
 }
 
 function FactoryHeroCard({
@@ -386,53 +378,40 @@ export function FactoryProfilePage() {
   const qc = useQueryClient();
 
   const factoryQ = useMyFactory();
-  const catsQ = useFactoryCategories(fid);
-  const subsQ = useFactorySubCategories(fid);
 
-  const isLoading = factoryQ.isLoading || catsQ.isLoading || subsQ.isLoading;
+  const isLoading = factoryQ.isLoading;
   const isError = factoryQ.isError;
 
-  const factoryRaw = factoryQ.data ?? {};
-  const verifyStatus = String(
-    (factoryRaw as Record<string, unknown>).verify_status ??
-      ((factoryRaw as Record<string, unknown>).is_verified ? 'AP' : 'PD'),
-  );
+  const verifyStatus = factoryQ.data?.is_verified ? 'AP' : 'PD';
   const isVerified = verifyStatus === 'AP';
 
   const initialValues = useMemo<ProfileFormValues>(
     () => ({
-      image_url: String((factoryRaw as Record<string, unknown>).image_url ?? '').trim(),
-      cover_image_url: pickCoverFromFactoryRaw(factoryRaw as Record<string, unknown>),
-      factory_name: String(
-        (factoryRaw as Record<string, unknown>).factory_name ??
-          (factoryRaw as Record<string, unknown>).name ??
-          '',
-      ).trim(),
-      tax_id: String((factoryRaw as Record<string, unknown>).tax_id ?? '').trim(),
-      description: String((factoryRaw as Record<string, unknown>).description ?? '').trim(),
+      image_url: String(factoryQ.data?.image_url ?? '').trim(),
+      cover_image_url: String(factoryQ.data?.background_image_url ?? '').trim(),
+      factory_name: String(factoryQ.data?.factory_name ?? '').trim(),
+      tax_id: String(factoryQ.data?.tax_id ?? '').trim(),
+      description: String(factoryQ.data?.description ?? '').trim(),
       factory_type_id: (() => {
-        const v = Number((factoryRaw as Record<string, unknown>).factory_type_id);
+        const v = Number(factoryQ.data?.factory_type_id);
         return Number.isFinite(v) && v > 0 ? v : null;
       })(),
-      category_ids: normalizeIds(catsQ.data ?? []),
-      sub_category_ids: normalizeIds(subsQ.data ?? []),
+      category_ids: normalizeIds(factoryQ.categoryIds),
+      sub_category_ids: normalizeIds(factoryQ.subCategoryIds),
       min_order: (() => {
-        const r = factoryRaw as Record<string, unknown>;
-        const v = Number(r.min_order ?? r.minOrder);
+        const v = Number(factoryQ.data?.min_order);
         return Number.isFinite(v) && v > 0 ? v : null;
       })(),
-      lead_time_desc: String(
-        (factoryRaw as Record<string, unknown>).lead_time_desc ??
-          (factoryRaw as Record<string, unknown>).leadTimeDesc ??
-          '',
-      ).trim(),
+      lead_time_desc: String(factoryQ.data?.lead_time_desc ?? '').trim(),
     }),
-    [factoryRaw, catsQ.data, subsQ.data],
+    [factoryQ.data, factoryQ.categoryIds, factoryQ.subCategoryIds],
   );
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: PROFILE_FORM_DEFAULTS,
+    values: isLoading ? undefined : initialValues,
+    resetOptions: { keepDirtyValues: true },
     mode: 'onBlur',
   });
 
@@ -449,7 +428,6 @@ export function FactoryProfilePage() {
 
   const changeCount = countDirty(form.formState.dirtyFields as Record<string, unknown>);
   const isDirty = form.formState.isDirty;
-  const lastPrefillKeyRef = useRef('');
   const watched = form.watch();
   const requiredStatus = useMemo(() => {
     const hasBusiness = Boolean(watched.factory_name?.trim()) && Boolean(watched.factory_type_id);
@@ -458,16 +436,6 @@ export function FactoryProfilePage() {
     const hasCertificates = true;
     return { hasBusiness, hasCategories, hasAddress, hasCertificates };
   }, [watched]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    if (saving) return;
-    if (form.formState.isDirty) return;
-    const nextKey = JSON.stringify(initialValues);
-    if (lastPrefillKeyRef.current === nextKey) return;
-    form.reset(initialValues);
-    lastPrefillKeyRef.current = nextKey;
-  }, [form, initialValues, isLoading, saving]);
 
   useBeforeUnload(isDirty);
 
@@ -549,22 +517,13 @@ export function FactoryProfilePage() {
     if (failed === 0) {
       setOkMsg(subCategoryVerifyWarning || 'บันทึกข้อมูลเรียบร้อย');
       form.reset(saveDraftValues);
-      lastPrefillKeyRef.current = JSON.stringify(saveDraftValues);
       await refreshUser();
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: ['factory', 'me'] }),
-        qc.invalidateQueries({ queryKey: ['factory', String(fid), 'categories'] }),
-        qc.invalidateQueries({ queryKey: ['factory', String(fid), 'sub-categories'] }),
-      ]);
+      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
     } else if (failed === 3) {
       setError('บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง');
     } else {
       setError(`บันทึกสำเร็จบางส่วน (${failed} จาก 3 ล้มเหลว)`);
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: ['factory', 'me'] }),
-        qc.invalidateQueries({ queryKey: ['factory', String(fid), 'categories'] }),
-        qc.invalidateQueries({ queryKey: ['factory', String(fid), 'sub-categories'] }),
-      ]);
+      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
     }
   }, [fid, form, qc, refreshUser]);
 
@@ -580,7 +539,6 @@ export function FactoryProfilePage() {
         if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
         await factoriesApi.patch(fid, { image_url: url });
         form.setValue('image_url', url, { shouldDirty: false });
-        lastPrefillKeyRef.current = '';
         setOkMsg('อัปโหลดและบันทึกรูปโปรไฟล์โรงงานแล้ว');
         await refreshUser();
         await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
@@ -602,7 +560,6 @@ export function FactoryProfilePage() {
     try {
       await factoriesApi.patch(fid, { image_url: '' });
       form.setValue('image_url', '', { shouldDirty: false });
-      lastPrefillKeyRef.current = '';
       setOkMsg('ลบรูปโปรไฟล์แล้ว');
       await refreshUser();
       await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
@@ -625,7 +582,6 @@ export function FactoryProfilePage() {
         if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
         await factoriesApi.patch(fid, { background_image_url: url });
         form.setValue('cover_image_url', url, { shouldDirty: false });
-        lastPrefillKeyRef.current = '';
         setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
         await refreshUser();
         await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
@@ -647,7 +603,6 @@ export function FactoryProfilePage() {
     try {
       await factoriesApi.patch(fid, { background_image_url: '' });
       form.setValue('cover_image_url', '', { shouldDirty: false });
-      lastPrefillKeyRef.current = '';
       setOkMsg('ลบรูปพื้นหลังแล้ว');
       await refreshUser();
       await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
@@ -867,6 +822,7 @@ export function FactoryProfilePage() {
           <p className='text-xs text-gray-400 mb-3'>เช่น GMP, Halal, ISO, มาตรฐานอาหาร</p>
           <CertificatesSection
             factoryId={fid}
+            certs={(factoryQ.data?.certificates ?? []) as Record<string, unknown>[]}
             onRegisterAdd={(handler) => {
               openCertAddRef.current = handler;
             }}

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, Download } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useModal } from '@/hooks/ui/useModal';
-import { useFactoryCerts } from '@/hooks/factory/useFactoryCerts';
 import { useMasterCerts, type CertTypeOption } from '@/hooks/master/useMasterCerts';
 import { certificatesApi } from '@/services/api/userApi';
 import { mediaApi } from '@/services/api/factoryApi';
@@ -14,7 +13,7 @@ type Row = Record<string, unknown>;
 
 interface Props {
   factoryId: number | string;
-
+  certs?: Row[];
   onRegisterAdd?: (handler: () => void) => void;
 }
 
@@ -41,9 +40,8 @@ function toDateInputValue(raw: unknown): string {
   return s.length >= 10 ? s.slice(0, 10) : '';
 }
 
-export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
+export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Props) {
   const qc = useQueryClient();
-  const { data: certs = [] } = useFactoryCerts(factoryId);
   const { data: masterCertTypes = [] } = useMasterCerts();
 
   const modal = useModal();
@@ -63,7 +61,7 @@ export function CertificatesSection({ factoryId, onRegisterAdd }: Props) {
   }, []);
 
   const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ['factory', String(factoryId), 'certs'] });
+    qc.invalidateQueries({ queryKey: ['factory', 'me'] });
 
   const submit = async (value: CertFormSubmitValue, keepOpen: boolean) => {
     modal.setLoading(true);
