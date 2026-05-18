@@ -25,6 +25,15 @@ export const factoriesApi = {
   delete: (id: string | number) => httpClient.delete<void>(`/factories/${id}`),
 
   getMe: () => httpClient.get<IFactoryPublicDetailResponse>('/factories/me'),
+  getProfileInit: () =>
+    httpClient.get<{
+      factory: Record<string, unknown>;
+      factory_types?: Record<string, unknown>[];
+      lbi_categories?: Record<string, unknown>[];
+      addresses?: Record<string, unknown>[];
+      certificate_types?: Record<string, unknown>[];
+      sub_categories?: Record<string, unknown>[];
+    }>('/factories/me/profile-init'),
 
   getDashboard: () => httpClient.get<IFactoryDashboardResponse>('/factories/me/dashboard'),
 

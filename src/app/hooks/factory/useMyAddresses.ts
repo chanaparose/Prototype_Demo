@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { addressesApi } from '@/services/api/masterApi';
+import { httpClient } from '@/services/api/httpClient';
 
 type Row = Record<string, unknown>;
 
@@ -7,15 +7,11 @@ export function useMyAddresses() {
   return useQuery({
     queryKey: ['addresses', 'me'] as const,
     queryFn: async () => {
-      const raw = await addressesApi.list();
-      const unwrapped = Array.isArray(raw)
-        ? raw
-        : Array.isArray((raw as Record<string, unknown>).data)
-          ? (raw as Record<string, unknown>).data
-          : [];
-      return unwrapped as Row[];
+      const raw = await httpClient.get<Row[] | { data: Row[] }>('/addresses');
+      return (Array.isArray(raw) ? raw : Array.isArray((raw as { data: Row[] }).data) ? (raw as { data: Row[] }).data : []) as Row[];
     },
-    staleTime: 0,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
   });
 }
