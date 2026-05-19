@@ -496,24 +496,28 @@ export function MarkdownEditor({
                 key={tpl.id}
                 onClick={() => setActiveTemplateIndex(idx)}
                 variant='outline'
-                className={`text-left p-4 rounded-xl border transition-all duration-200 relative overflow-hidden ${
+                className={`text-left p-3 rounded-xl border transition-all duration-200 relative overflow-hidden h-auto flex-col items-start ${
                   activeTemplateIndex === idx
                     ? 'bg-orange-50 border-orange-300 ring-1 ring-orange-300 shadow-sm'
                     : 'bg-white border-gray-200 hover:border-orange-200 hover:shadow-sm'
                 }`}
               >
-                <div className='flex justify-between items-start mb-1'>
+                <div className='flex justify-between items-start w-full mb-1'>
                   <h4
-                    className={`font-medium ${activeTemplateIndex === idx ? 'text-orange-800' : 'text-gray-800'}`}
+                    className={`text-[13px] font-medium ${
+                      activeTemplateIndex === idx ? 'text-orange-800' : 'text-gray-800'
+                    }`}
                   >
                     {tpl.title}
                   </h4>
                   {activeTemplateIndex === idx && (
-                    <CheckCircle2 size={18} className='text-orange-500 shrink-0' />
+                    <CheckCircle2 size={16} className='text-orange-500 shrink-0 ml-2' />
                   )}
                 </div>
                 <p
-                  className={`text-[13px] leading-snug ${activeTemplateIndex === idx ? 'text-orange-600/80' : 'text-gray-500'}`}
+                  className={`text-[11px] font-normal leading-snug whitespace-normal ${
+                    activeTemplateIndex === idx ? 'text-orange-600/80' : 'text-gray-500'
+                  }`}
                 >
                   {tpl.description}
                 </p>

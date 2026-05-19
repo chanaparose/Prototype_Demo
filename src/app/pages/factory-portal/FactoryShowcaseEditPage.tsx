@@ -135,7 +135,9 @@ function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
   const linked = partitionLinkedShowcases(r.linked_showcases ?? r.linkedShowcases);
   const mergedImageUrls =
     image_entries.length > 0 ? image_entries.map((e) => e.url) : linked.imageUrls;
-  const image_url = mergedImageUrls[0] ?? String(r.image_url ?? '').trim();
+  const rawImageUrl = String(r.image_url ?? '').trim();
+  const image_url =
+    mergedImageUrls[0] ?? (/^https?:\/\//i.test(rawImageUrl) ? rawImageUrl : '');
   return {
     content_type: (ct === 'PM' || ct === 'ID' || ct === 'MT' ? ct : 'PD') as ShowcaseType,
     title: String(r.title ?? '').trim(),
@@ -252,6 +254,8 @@ export function FactoryShowcaseEditPage() {
           ? pmScope
           : 'PD';
   const categoriesQ = useLbiCategoriesByScope(categoryScope);
+  const pdCategoriesQ = useLbiCategoriesByScope('PD');
+  const mtCategoriesQ = useLbiCategoriesByScope('MT');
 
   const subIds = useMemo(
     () => (contentType !== 'MT' && selectedCategoryId != null ? [selectedCategoryId] : []),
@@ -260,6 +264,39 @@ export function FactoryShowcaseEditPage() {
   const subsResult = useSubCategoriesByCategories(subIds);
   const subOptions =
     selectedCategoryId != null ? (subsResult.byCategory.get(selectedCategoryId) ?? []) : [];
+
+  // Auto-adjust scope for ID/PM edit forms so existing category_id from API is visible
+  // even when it belongs to MT while default scope starts at PD.
+  React.useEffect(() => {
+    if (selectedCategoryId == null) return;
+
+    const pdIds = new Set((pdCategoriesQ.data ?? []).map((c) => c.id));
+    const mtIds = new Set((mtCategoriesQ.data ?? []).map((c) => c.id));
+
+    if (contentType === 'ID') {
+      if (mtIds.has(selectedCategoryId) && idScope !== 'MT') {
+        setIdScope('MT');
+      } else if (pdIds.has(selectedCategoryId) && idScope !== 'PD') {
+        setIdScope('PD');
+      }
+      return;
+    }
+
+    if (contentType === 'PM') {
+      if (mtIds.has(selectedCategoryId) && pmScope !== 'MT') {
+        setPmScope('MT');
+      } else if (pdIds.has(selectedCategoryId) && pmScope !== 'PD') {
+        setPmScope('PD');
+      }
+    }
+  }, [
+    selectedCategoryId,
+    contentType,
+    idScope,
+    pmScope,
+    pdCategoriesQ.data,
+    mtCategoriesQ.data,
+  ]);
 
   React.useEffect(() => {
     if (!id) return;
@@ -544,13 +581,6 @@ export function FactoryShowcaseEditPage() {
                   placeholder='ชื่อ *'
                   {...form.register('title', { required: true })}
                 />
-                {contentType !== 'ID' ? (
-                  <Input
-                    className='w-full text-sm text-gray-500 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
-                    placeholder='คำโปรย (excerpt) — ประโยคสั้นๆ บอกจุดเด่น'
-                    {...form.register('excerpt')}
-                  />
-                ) : null}
               </section>
 
               <ShowcaseCategoryFields

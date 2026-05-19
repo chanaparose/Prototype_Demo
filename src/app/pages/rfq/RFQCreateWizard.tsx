@@ -1,9 +1,8 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
-import { addressesApi, categoriesApi, masterApi } from '@/services/api/masterApi';
-import { formatAddressLabel, mapAddressFromApi } from '@/domain/shared/mappers/mapAddressFromApi';
-import { mapShippingMethodsToRecord } from '@/domain/master/mappers/mapShippingMethod';
+import { categoriesApi } from '@/services/api/masterApi';
+import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { pickScalarString } from '@/utils/pickScalarString';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { useCreateRFQ } from '@/pages/rfq/useCreateRFQ';
@@ -36,11 +35,6 @@ const step3Schema = z.object({
 const step4Schema = z.object({});
 
 const STEPS = ['กรอกข้อมูล', 'สรุปข้อมูล'];
-const INSPECTION_LABEL: Record<'self' | 'third_party' | 'buyer_onsite', string> = {
-  self: 'ตรวจสอบโดยโรงงาน',
-  third_party: 'ตรวจสอบโดยหน่วยงานภายนอก',
-  buyer_onsite: 'ผู้ซื้อเข้าตรวจที่โรงงาน',
-};
 
 export function RFQCreateWizard() {
   const navigate = useNavigate();
@@ -57,8 +51,7 @@ export function RFQCreateWizard() {
   const [acceptSampleTerms, setAcceptSampleTerms] = React.useState(false);
   const [addressMap, setAddressMap] = React.useState<Record<number, string>>({});
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
-  const [categoryMap, setCategoryMap] = React.useState<Record<number, string>>({});
-  const [modeCategories, setModeCategories] = React.useState<{ id: number; name: string }[]>([]);
+  const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
 
   React.useEffect(() => {
     const mode = (searchParams.get('mode') || '').trim();
@@ -109,45 +102,15 @@ export function RFQCreateWizard() {
     };
   }, [draft.category_id]);
 
-  React.useEffect(() => {
-    const scope: 'PD' | 'MT' = draft.request_kind === 'MS' ? 'MT' : 'PD';
-    let active = true;
-    void masterApi
-      .lbiCategories(scope)
-      .then((raw) => {
-        if (!active) return;
-        // API อาจคืน [] หรือ { categories: [...] } — normalize ผ่าน unknown
-        const u = raw as unknown;
-        const list: unknown[] = Array.isArray(u)
-          ? u
-          : u !== null &&
-              typeof u === 'object' &&
-              'categories' in u &&
-              Array.isArray((u as { categories?: unknown }).categories)
-            ? (u as { categories: unknown[] }).categories
-            : [];
-        const mapped = list
-          .map((item) => {
-            const r = item as Record<string, unknown>;
-            return {
-              id: Number(r.category_id ?? r.id ?? 0),
-              name: pickScalarString(r.category_name, r.name, r.name_th),
-            };
-          })
-          .filter((c) => Number.isFinite(c.id) && c.id > 0 && c.name);
-        setModeCategories(mapped);
-        setCategoryMap(Object.fromEntries(mapped.map((c) => [c.id, c.name])));
-      })
-      .catch(() => {
-        if (active) {
-          setModeCategories([]);
-          setCategoryMap({});
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, [draft.request_kind]);
+  const scopeFilter = (draft.request_kind === 'MS' || draft.request_kind === 'MR') ? 'MT' : 'PD';
+  const modeCategories = React.useMemo(
+    () => allCategories.filter((c) => !c.scope || c.scope === scopeFilter),
+    [allCategories, scopeFilter],
+  );
+  const categoryMap = React.useMemo(
+    () => Object.fromEntries(modeCategories.map((c) => [c.id, c.name])),
+    [modeCategories],
+  );
 
   React.useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
@@ -159,7 +122,7 @@ export function RFQCreateWizard() {
   }, [draft.category_id, modeCategories, setDraft]);
 
   React.useEffect(() => {
-    if (draft.request_kind === 'MS' && draft.sub_category_id != null) {
+    if ((draft.request_kind === 'MS' || draft.request_kind === 'MR') && draft.sub_category_id != null) {
       setDraft({ sub_category_id: undefined });
     }
   }, [draft.request_kind, draft.sub_category_id, setDraft]);
@@ -167,6 +130,11 @@ export function RFQCreateWizard() {
   React.useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
     if (!cid || !draft.request_kind) {
+      setMatchCount(null);
+      return;
+    }
+    // Skip if category doesn't belong to current scope (stale draft or mid-switch)
+    if (allCategories.length > 0 && !modeCategories.some((c) => c.id === cid)) {
       setMatchCount(null);
       return;
     }
@@ -203,39 +171,13 @@ export function RFQCreateWizard() {
     };
   }, [draft.request_kind, draft.category_id, draft.sub_category_id]);
 
-  React.useEffect(() => {
-    let active = true;
-    void addressesApi
-      .list()
-      .then((raw) => {
-        if (!active) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped: Record<number, string> = {};
-        for (const r of arr) {
-          const address = mapAddressFromApi(r);
-          if (!address) continue;
-          mapped[address.id] = formatAddressLabel(address) || `ที่อยู่ #${address.id}`;
-        }
-        setAddressMap(mapped);
-      })
-      .catch(() => {
-        if (active) setAddressMap({});
-      });
-
-    void masterApi
-      .getShippingMethods()
-      .then((raw) => {
-        if (!active) return;
-        setShippingMap(mapShippingMethodsToRecord(raw));
-      })
-      .catch(() => {
-        if (active) setShippingMap({});
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const handleStep3Loaded = React.useCallback(
+    (addrMap: Record<number, string>, shipMap: Record<number, string>) => {
+      if (Object.keys(addrMap).length > 0) setAddressMap(addrMap);
+      if (Object.keys(shipMap).length > 0) setShippingMap(shipMap);
+    },
+    [],
+  );
 
   const blockingIssues = React.useMemo(() => {
     const issues: string[] = [];
@@ -273,7 +215,7 @@ export function RFQCreateWizard() {
     if (!withinKindQty) return false;
     if ((kind === 'PS' || kind === 'MS') && (draft.description?.trim()?.length ?? 0) < 20)
       return false;
-    if (kind === 'MS' && !matchingLoading && (matchCount ?? 0) <= 0) return false;
+    if ((kind === 'MS' || kind === 'MR') && !matchingLoading && (matchCount ?? 0) <= 0) return false;
     return blockingIssues.length === 0;
   }, [blockingIssues, draft, matchingLoading, matchCount]);
 
@@ -301,22 +243,15 @@ export function RFQCreateWizard() {
     return shippingMap[id] ?? `วิธีจัดส่ง #${id}`;
   }, [shippingMap, draft.shipping_method_id]);
 
-  const inspectionTypeLabel = React.useMemo(() => {
-    if (!draft.inspection_type) return '-';
-    return INSPECTION_LABEL[draft.inspection_type] ?? draft.inspection_type;
-  }, [draft.inspection_type]);
-
-  const categoryOptions = React.useMemo(() => modeCategories, [modeCategories]);
-
   const optionalMissing = React.useMemo(() => {
     const missing: string[] = [];
-    if ((draft.request_kind ?? 'PR') !== 'MS' && !draft.sub_category_id) missing.push('หมวดย่อย');
+    const k = draft.request_kind ?? 'PR';
+    if (k !== 'MS' && k !== 'MR' && !draft.sub_category_id) missing.push('หมวดย่อย');
     if (!draft.material_grade?.trim()) missing.push('วัตถุดิบ');
     if (!draft.target_price) missing.push('งบประมาณรวม');
     if (!draft.target_lead_time_days) missing.push('ระยะเวลาผลิต');
     if (!draft.certifications_required.length) missing.push('Certification');
     if (!draft.reference_images.length) missing.push('รูปอ้างอิง');
-    if (!draft.inspection_type) missing.push('รูปแบบตรวจคุณภาพ');
     return missing;
   }, [draft]);
 
@@ -343,9 +278,15 @@ export function RFQCreateWizard() {
   };
 
   const kind = draft.request_kind ?? 'PR';
-  const kindLabel =
-    kind === 'PS' ? 'ขอตัวอย่างสินค้า' : kind === 'MS' ? 'ขอตัวอย่างวัตถุดิบ' : 'ขอราคาผลิต OEM';
+  const KIND_LABEL: Record<string, string> = {
+    PR: 'ขอราคาผลิต OEM',
+    MR: 'ขอราคาสั่งวัตถุดิบ',
+    PS: 'ขอตัวอย่างสินค้า',
+    MS: 'ขอตัวอย่างวัตถุดิบ',
+  };
+  const kindLabel = KIND_LABEL[kind] ?? kind;
   const isSampleMode = kind === 'PS' || kind === 'MS';
+  const isMaterialKind = kind === 'MS' || kind === 'MR';
 
   return (
     <div className='max-w-5xl mx-auto px-4 py-6 pb-28'>
@@ -392,44 +333,97 @@ export function RFQCreateWizard() {
               data-tour='request-kind'
               className='rounded-xl border border-gray-100 p-3 sm:p-4'
             >
-              <p className='text-sm font-semibold text-brand-navy mb-2'>ประเภทคำขอ</p>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
-                {(
-                  [
-                    { id: 'PR', label: 'ขอราคาผลิต OEM' },
-                    { id: 'PS', label: 'ขอตัวอย่างสินค้า' },
-                    { id: 'MS', label: 'ขอตัวอย่างวัตถุดิบ' },
-                  ] as const
-                ).map((opt) => {
-                  const active = kind === opt.id;
-                  return (
-                    <Button
-                      variant='unstyled'
-                      key={opt.id}
-                      type='button'
-                      onClick={() =>
-                        setDraft({
-                          request_kind: opt.id,
-                          sub_category_id: opt.id === 'MS' ? undefined : draft.sub_category_id,
-                        })
-                      }
-                      className={`rounded-xl border px-3 py-2 text-sm text-left transition ${
-                        active
-                          ? 'bg-violet-50 border-violet-500 text-violet-700 font-semibold'
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-violet-300'
-                      }`}
-                    >
-                      {opt.label}
-                    </Button>
-                  );
-                })}
+              <p className='text-sm font-semibold text-brand-navy mb-3'>ประเภทคำขอ</p>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                {/* กลุ่ม 1: ขอราคาสั่งซื้อ */}
+                <div className='rounded-xl border border-gray-100 bg-gray-50/60 p-3'>
+                  <p className='text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2'>
+                    ขอราคาสั่งซื้อ
+                  </p>
+                  <div className='flex flex-col gap-1.5'>
+                    {(
+                      [
+                        { id: 'PR', label: 'ขอราคาผลิต OEM', desc: 'สินค้าตามสเปกที่กำหนด' },
+                        { id: 'MR', label: 'ขอราคาวัตถุดิบ', desc: 'วัตถุดิบ' },
+                      ] as const
+                    ).map((opt) => {
+                      const active = kind === opt.id;
+                      return (
+                        <Button
+                          variant='unstyled'
+                          key={opt.id}
+                          type='button'
+                          onClick={() =>
+                            setDraft({
+                              request_kind: opt.id,
+                              category_id: null,
+                              sub_category_id: undefined,
+                            })
+                          }
+                          className={`w-full rounded-lg border px-3 py-2.5 text-left transition ${
+                            active
+                              ? 'bg-violet-50 border-violet-500'
+                              : 'bg-white border-gray-200 hover:border-violet-300'
+                          }`}
+                        >
+                          <p className={`text-sm font-semibold ${active ? 'text-violet-700' : 'text-gray-700'}`}>
+                            {opt.label}
+                          </p>
+                          <p className='text-[11px] text-gray-400 mt-0.5'>{opt.desc}</p>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* กลุ่ม 2: ขอสั่งซื้อตัวอย่าง */}
+                <div className='rounded-xl border border-gray-100 bg-gray-50/60 p-3'>
+                  <p className='text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2'>
+                    ขอสั่งซื้อตัวอย่าง
+                  </p>
+                  <div className='flex flex-col gap-1.5'>
+                    {(
+                      [
+                        { id: 'PS', label: 'ตัวอย่างสินค้า', desc: '1–10 ชิ้น' },
+                        { id: 'MS', label: 'ตัวอย่างวัตถุดิบ', desc: '1–5 ชิ้น' },
+                      ] as const
+                    ).map((opt) => {
+                      const active = kind === opt.id;
+                      return (
+                        <Button
+                          variant='unstyled'
+                          key={opt.id}
+                          type='button'
+                          onClick={() =>
+                            setDraft({
+                              request_kind: opt.id,
+                              category_id: null,
+                              sub_category_id: undefined,
+                            })
+                          }
+                          className={`w-full rounded-lg border px-3 py-2.5 text-left transition ${
+                            active
+                              ? 'bg-amber-50 border-amber-400'
+                              : 'bg-white border-gray-200 hover:border-amber-300'
+                          }`}
+                        >
+                          <p className={`text-sm font-semibold ${active ? 'text-amber-700' : 'text-gray-700'}`}>
+                            {opt.label}
+                          </p>
+                          <p className='text-[11px] text-gray-400 mt-0.5'>{opt.desc}</p>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-              {isSampleMode ? (
+
+              {isSampleMode && (
                 <p className='text-xs text-gray-500 mt-2'>
                   โหมดตัวอย่าง: กรุณาระบุรายละเอียดสินค้า/วัตถุดิบให้ชัดเจนในช่องรายละเอียด
                   (อย่างน้อย 20 ตัวอักษร)
                 </p>
-              ) : null}
+              )}
             </section>
 
             <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
@@ -437,7 +431,7 @@ export function RFQCreateWizard() {
               <Step1Basic
                 draft={draft}
                 setDraft={setDraft}
-                categories={categoryOptions}
+                categories={modeCategories}
                 subCategories={subCategories}
                 subCategoriesLoading={subCategoriesLoading}
                 mode={kind}
@@ -450,16 +444,16 @@ export function RFQCreateWizard() {
             </section>
 
             <section
-              className={`rounded-xl border p-3 sm:p-4 ${kind === 'MS' ? 'border-emerald-100 bg-emerald-50' : 'border-violet-100 bg-violet-50'}`}
+              className={`rounded-xl border p-3 sm:p-4 ${isMaterialKind ? 'border-emerald-100 bg-emerald-50' : 'border-violet-100 bg-violet-50'}`}
             >
               <p
-                className={`text-sm font-semibold ${kind === 'MS' ? 'text-emerald-700' : 'text-violet-700'}`}
+                className={`text-sm font-semibold ${isMaterialKind ? 'text-emerald-700' : 'text-violet-700'}`}
               >
                 {matchingLoading
                   ? 'กำลังค้นหาโรงงานที่ตรงสเปก...'
                   : `พบ ${matchCount ?? 0} โรงงานที่ตรงกับสเปก`}
               </p>
-              {!matchingLoading && kind === 'MS' && (matchCount ?? 0) <= 0 ? (
+              {!matchingLoading && isMaterialKind && (matchCount ?? 0) <= 0 ? (
                 <div className='mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2'>
                   <p className='text-xs font-semibold text-amber-800'>
                     ยังไม่มีโรงงานที่ลงทะเบียนวัตถุดิบนี้
@@ -473,7 +467,7 @@ export function RFQCreateWizard() {
 
             <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
               <p className='text-sm font-semibold text-brand-navy mb-3'>เงื่อนไขส่งมอบ</p>
-              <Step3Commercial draft={draft} setDraft={setDraft} />
+              <Step3Commercial draft={draft} setDraft={setDraft} onLoaded={handleStep3Loaded} />
             </section>
 
             {!isSampleMode ? (
@@ -544,9 +538,6 @@ export function RFQCreateWizard() {
                   <p>
                     <span className='text-gray-500'>Certifications:</span>{' '}
                     {draft.certifications_required.join(', ') || '-'}
-                  </p>
-                  <p>
-                    <span className='text-gray-500'>รูปแบบตรวจคุณภาพ:</span> {inspectionTypeLabel}
                   </p>
                 </div>
                 <p className='mt-2 text-gray-500'>

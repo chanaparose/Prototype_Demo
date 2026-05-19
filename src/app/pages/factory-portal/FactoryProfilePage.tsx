@@ -23,7 +23,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { factoriesApi, mediaApi } from '@/services/api/factoryApi';
 
-import { useMyFactory } from '@/hooks/factory/useMyFactory';
+import { useProfileInit, profileInitKey } from '@/hooks/factory/useProfileInit';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 
 import { FormSkeleton } from '@/components/common/FormSkeleton';
@@ -377,10 +377,19 @@ export function FactoryProfilePage() {
   const fid = getFactoryEntityId(user);
   const qc = useQueryClient();
 
-  const factoryQ = useMyFactory();
+  const initQ = useProfileInit();
 
-  const isLoading = factoryQ.isLoading;
-  const isError = factoryQ.isError;
+  // Adapter: expose the same shape as useMyFactory so the rest of the page doesn't change
+  const factoryQ = {
+    ...initQ,
+    data: initQ.data?.factory as Record<string, unknown> | undefined,
+    categoryIds: ((initQ.data?.factory as Record<string, unknown>)?.categories as Array<{ category_id: number }> ?? []).map((c) => c.category_id),
+    subCategoryIds: ((initQ.data?.factory as Record<string, unknown>)?.sub_categories as Array<{ sub_category_id: number }> ?? []).map((s) => s.sub_category_id),
+    refetch: initQ.refetch,
+  };
+
+  const isLoading = initQ.isLoading;
+  const isError = initQ.isError;
 
   const verifyStatus = factoryQ.data?.is_verified ? 'AP' : 'PD';
   const isVerified = verifyStatus === 'AP';
@@ -463,67 +472,28 @@ export function FactoryProfilePage() {
       sub_category_ids: normalizedSubCategoryIds,
     };
 
-    let failed = 0;
-    let subCategoryVerifyWarning = '';
-
     try {
-      await factoriesApi.patch(fid, {
-        image_url: String(v.image_url ?? ''),
-        background_image_url: String(v.cover_image_url ?? ''),
+      await factoriesApi.saveProfile(fid, {
         factory_name: v.factory_name.trim(),
         tax_id: v.tax_id.trim() || undefined,
         description: v.description.trim() || undefined,
         factory_type_id: v.factory_type_id ?? undefined,
         min_order: v.min_order != null && v.min_order > 0 ? v.min_order : undefined,
         lead_time_desc: v.lead_time_desc.trim() || undefined,
+        image_url: String(v.image_url ?? ''),
+        background_image_url: String(v.cover_image_url ?? ''),
+        category_ids: normalizedCategoryIds,
+        sub_category_ids: normalizedSubCategoryIds,
       });
-    } catch {
-      failed += 1;
-    }
 
-    try {
-      await factoriesApi.setCategories(fid, normalizedCategoryIds);
-    } catch {
-      failed += 1;
-    }
-
-    try {
-      await factoriesApi.setSubCategories(fid, normalizedSubCategoryIds);
-
-      const verifyRaw = await factoriesApi.getSubCategories(fid);
-      const verifyRows = (Array.isArray(verifyRaw) ? verifyRaw : []) as Array<
-        Record<string, unknown>
-      >;
-      if (verifyRows.length > 0 || normalizedSubCategoryIds.length === 0) {
-        const persisted = Array.from(
-          new Set(
-            verifyRows
-              .map((r) => Number(r.sub_category_id ?? r.id))
-              .filter((n) => Number.isFinite(n) && n > 0),
-          ),
-        ).sort((a, b) => a - b);
-        const persistedKey = persisted.join(',');
-        const desiredKey = normalizedSubCategoryIds.join(',');
-        if (persistedKey !== desiredKey) {
-          subCategoryVerifyWarning = 'บันทึกสำเร็จ แต่หมวดย่อยอาจอัปเดตไม่ครบ';
-        }
-      }
-    } catch {
-      failed += 1;
-    }
-
-    setSaving(false);
-
-    if (failed === 0) {
-      setOkMsg(subCategoryVerifyWarning || 'บันทึกข้อมูลเรียบร้อย');
+      setSaving(false);
+      setOkMsg('บันทึกข้อมูลเรียบร้อย');
       form.reset(saveDraftValues);
       await refreshUser();
-      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
-    } else if (failed === 3) {
-      setError('บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง');
-    } else {
-      setError(`บันทึกสำเร็จบางส่วน (${failed} จาก 3 ล้มเหลว)`);
-      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+      await qc.invalidateQueries({ queryKey: profileInitKey });
+    } catch (err) {
+      setSaving(false);
+      setError(err instanceof Error ? err.message : 'บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง');
     }
   }, [fid, form, qc, refreshUser]);
 
@@ -541,7 +511,7 @@ export function FactoryProfilePage() {
         form.setValue('image_url', url, { shouldDirty: false });
         setOkMsg('อัปโหลดและบันทึกรูปโปรไฟล์โรงงานแล้ว');
         await refreshUser();
-        await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+        await qc.invalidateQueries({ queryKey: profileInitKey });
       } catch (e) {
         setError(e instanceof Error ? e.message : 'อัปโหลดหรือบันทึกรูปไม่สำเร็จ');
       } finally {
@@ -562,7 +532,7 @@ export function FactoryProfilePage() {
       form.setValue('image_url', '', { shouldDirty: false });
       setOkMsg('ลบรูปโปรไฟล์แล้ว');
       await refreshUser();
-      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+      await qc.invalidateQueries({ queryKey: profileInitKey });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
     } finally {
@@ -584,7 +554,7 @@ export function FactoryProfilePage() {
         form.setValue('cover_image_url', url, { shouldDirty: false });
         setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
         await refreshUser();
-        await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+        await qc.invalidateQueries({ queryKey: profileInitKey });
       } catch (e) {
         setError(e instanceof Error ? e.message : 'อัปโหลดหรือบันทึกพื้นหลังไม่สำเร็จ');
       } finally {
@@ -605,7 +575,7 @@ export function FactoryProfilePage() {
       form.setValue('cover_image_url', '', { shouldDirty: false });
       setOkMsg('ลบรูปพื้นหลังแล้ว');
       await refreshUser();
-      await qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+      await qc.invalidateQueries({ queryKey: profileInitKey });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ลบพื้นหลังไม่สำเร็จ');
     } finally {
@@ -782,6 +752,8 @@ export function FactoryProfilePage() {
             onRegisterAdd={(handler) => {
               openCategoryPickerRef.current = handler;
             }}
+            apiCategories={factoryQ.data?.categories}
+            apiSubCategories={factoryQ.data?.sub_categories}
           />
         </SectionCard>
 

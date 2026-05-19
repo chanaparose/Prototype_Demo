@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { masterKeys } from '@/lib/queryKeys';
-import { useProductCategories } from '@/hooks/master/useProductCategories';
-import { categoriesApi } from '@/services/api/masterApi';
+import { masterApi, categoriesApi } from '@/services/api/masterApi';
 import { AppSheetDialog } from '@/components/ui/app-sheet-dialog';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
@@ -19,6 +18,7 @@ interface Props {
 
 type Row = Record<string, unknown>;
 type SubCategoryOption = { id: number; name: string; categoryId: number };
+type CategoryWithScope = { id: number; name: string; scope: 'PD' | 'MT' | string };
 
 function toSubCategoryOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
   const id = Number(
@@ -37,13 +37,42 @@ function toSubCategoryOption(r: Row, categoryIdHint: number): SubCategoryOption 
   return { id, name, categoryId };
 }
 
+function useLbiAllCategories() {
+  return useQuery({
+    queryKey: masterKeys.lbiCategories('ALL') as const,
+    queryFn: async (): Promise<CategoryWithScope[]> => {
+      const raw = await masterApi.getLbiCategories('ALL');
+      const obj = raw as Record<string, unknown>;
+      const arr = (
+        Array.isArray(obj.categories) ? obj.categories : Array.isArray(raw) ? raw : []
+      ) as Row[];
+      return arr
+        .map((r): CategoryWithScope | null => {
+          const id = Number(r.category_id ?? r.id);
+          const name = String(r.name ?? r.category_name ?? '').trim();
+          const scope = String(r.scope ?? 'PD');
+          if (!Number.isFinite(id) || id <= 0 || !name) return null;
+          return { id, name, scope };
+        })
+        .filter((x): x is CategoryWithScope => x != null)
+        .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+    },
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm }: Props) {
-  const { data, isLoading, isError } = useProductCategories();
+  const { data, isLoading, isError } = useLbiAllCategories();
   const categories = data ?? [];
   const [selected, setSelected] = useState<number[]>(initialSelected);
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState('');
   const qc = useQueryClient();
+
+  const pdCategories = categories.filter((c) => c.scope === 'PD');
+  const mtCategories = categories.filter((c) => c.scope === 'MT');
 
   useEffect(() => {
     if (open) {
@@ -96,6 +125,25 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
     }
   };
 
+  const renderGroup = (label: string, items: CategoryWithScope[], accentClass: string) => (
+    <div>
+      <p className={`text-[11px] font-semibold mb-1.5 ${accentClass}`}>{label}</p>
+      <ul className='space-y-0.5'>
+        {items.map((c) => (
+          <li key={c.id}>
+            <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
+              <Checkbox
+                checked={selected.includes(c.id)}
+                onCheckedChange={() => toggle(c.id)}
+              />
+              {c.name}
+            </Label>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   return (
     <AppSheetDialog
       open={open}
@@ -131,19 +179,10 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
         ) : categories.length === 0 && !isError ? (
           <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
         ) : !isError ? (
-          <ul className='space-y-1 max-h-[50vh] overflow-y-auto'>
-            {categories.map((c) => (
-              <li key={c.id}>
-                <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
-                  <Checkbox
-                    checked={selected.includes(c.id)}
-                    onCheckedChange={() => toggle(c.id)}
-                  />
-                  {c.name}
-                </Label>
-              </li>
-            ))}
-          </ul>
+          <div className='space-y-4 max-h-[55vh] overflow-y-auto'>
+            {pdCategories.length > 0 && renderGroup('หมวดสินค้า (PD)', pdCategories, 'text-indigo-600')}
+            {mtCategories.length > 0 && renderGroup('หมวดวัตถุดิบ (MT)', mtCategories, 'text-emerald-600')}
+          </div>
         ) : null}
       </FormField>
     </AppSheetDialog>

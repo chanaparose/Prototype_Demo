@@ -4,13 +4,26 @@ import { factoriesApi } from '@/services/api/factoryApi';
 export function useMyFactory() {
   const query = useQuery({
     queryKey: ['factory', 'me'] as const,
-    queryFn: () => factoriesApi.getMe(),
+    queryFn: async () => {
+      const init = await factoriesApi.getProfileInit();
+      const factory = (init?.factory ?? {}) as Record<string, unknown>;
+      return {
+        ...factory,
+        categories: Array.isArray(factory.categories) ? factory.categories : [],
+        sub_categories: Array.isArray(factory.sub_categories) ? factory.sub_categories : [],
+        certificates: Array.isArray(factory.certificates) ? factory.certificates : [],
+      };
+    },
     staleTime: 0,
     refetchOnWindowFocus: false,
   });
 
-  const categoryIds = (query.data?.categories ?? []).map((c) => c.category_id);
-  const subCategoryIds = (query.data?.sub_categories ?? []).map((s) => s.sub_category_id);
+  const categoryIds = (query.data?.categories ?? [])
+    .map((c) => Number((c as Record<string, unknown>).category_id))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const subCategoryIds = (query.data?.sub_categories ?? [])
+    .map((s) => Number((s as Record<string, unknown>).sub_category_id))
+    .filter((n) => Number.isFinite(n) && n > 0);
 
   return { ...query, categoryIds, subCategoryIds };
 }

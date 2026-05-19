@@ -18,7 +18,12 @@ export function useSubDistricts(districtId: number | string | null | undefined) 
     enabled,
     queryFn: async () => {
       const raw = await masterApi.subDistricts(did);
-      const arr = (Array.isArray(raw) ? raw : []) as Row[];
+      const unwrapped = Array.isArray(raw)
+        ? raw
+        : Array.isArray((raw as Record<string, unknown>).data)
+          ? (raw as Record<string, unknown>).data
+          : [];
+      const arr = unwrapped as Row[];
       return arr
         .map(mapSubDistrictOption)
         .filter((x): x is SubDistrictOption => x != null)

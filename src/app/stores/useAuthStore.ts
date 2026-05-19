@@ -11,6 +11,7 @@ import type {
   IRegisterFactoryRequest,
 } from '@/services/api/types/auth.types';
 import type { IUser } from '@/domain/auth/types/user.model';
+import type { IAuthSession } from '@/domain/auth/types/auth.model';
 import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
 
 export interface IAuthState {
@@ -21,8 +22,8 @@ export interface IAuthState {
 }
 
 export interface IAuthActions {
-  login: (request: ILoginRequest) => Promise<void>;
-  register: (request: IRegisterCustomerRequest | IRegisterFactoryRequest) => Promise<void>;
+  login: (request: ILoginRequest) => Promise<IAuthSession>;
+  register: (request: IRegisterCustomerRequest | IRegisterFactoryRequest) => Promise<IAuthSession>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   setLoading: (loading: boolean) => void;
@@ -82,6 +83,7 @@ export const useAuthStore = create<IAuthState & IAuthActions>((set) => {
         isAuthenticated: true,
         isLoading: false,
       });
+      return session;
     },
 
     register: async (request: IRegisterCustomerRequest | IRegisterFactoryRequest) => {
@@ -93,6 +95,7 @@ export const useAuthStore = create<IAuthState & IAuthActions>((set) => {
         isAuthenticated: true,
         isLoading: false,
       });
+      return session;
     },
 
     logout: () => {

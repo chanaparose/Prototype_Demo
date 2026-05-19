@@ -162,9 +162,6 @@ export type BootstrapRfqModel = {
   targetLeadTimeDays?: number;
   requiredDeliveryDate?: string;
   certificationsRequired?: string[];
-  sampleRequired?: boolean;
-  sampleQty?: number;
-  inspectionType?: 'self' | 'third_party' | 'buyer_onsite' | string;
 };
 
 export type OrderTimeline = {

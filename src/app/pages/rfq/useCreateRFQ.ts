@@ -52,11 +52,6 @@ export function useCreateRFQ() {
             ? payload.certifications_required.map(String).filter(Boolean)
             : [],
 
-        // → ใช้ tab "ขอซื้อตัวอย่าง" (request_kind=PS/MS) แทน
-        // ส่ง sample_required: false เสมอ และไม่ส่ง sample_qty
-        sample_required: false,
-        sample_qty: undefined,
-        inspection_type: isSample ? undefined : payload.inspection_type || undefined,
         request_kind: kind,
         source_showcase_id:
           payload.source_showcase_id != null && Number.isFinite(Number(payload.source_showcase_id))

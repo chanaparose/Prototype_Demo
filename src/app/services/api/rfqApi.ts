@@ -31,6 +31,12 @@ export const rfqsApi = {
     httpClient.get<IRfqDetailResponse & { images: Array<{ image_id: string; url: string }> }>(
       `/rfqs/${id}/with-images`,
     ),
+
+  previewFactories: (params: { kind: string; category_id: number; sub_category_id?: number }) => {
+    const qs = new URLSearchParams({ kind: params.kind, category_id: String(params.category_id) });
+    if (params.sub_category_id != null) qs.set('sub_category_id', String(params.sub_category_id));
+    return httpClient.get<Record<string, unknown>>(`/rfqs/preview-factories?${qs.toString()}`);
+  },
 };
 
 export const factoryRfqsApi = {

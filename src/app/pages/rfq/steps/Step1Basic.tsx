@@ -22,7 +22,7 @@ type Props = {
   categories: { id: number; name: string }[];
   subCategories: SubCategory[];
   subCategoriesLoading?: boolean;
-  mode?: 'PR' | 'PS' | 'MS';
+  mode?: 'PR' | 'PS' | 'MS' | 'MR';
 };
 
 export function Step1Basic({
@@ -36,10 +36,12 @@ export function Step1Basic({
   const descriptionPlaceholder =
     mode === 'MS'
       ? 'ระบุชื่อวัตถุดิบ, เกรด, แหล่งที่มา, ขนาด pack (อย่างน้อย 20 ตัวอักษร) *'
-      : mode === 'PS'
-        ? 'ระบุขนาด/สี/สูตร/มาตรฐานที่ต้องการ (อย่างน้อย 20 ตัวอักษร) *'
-        : 'รายละเอียดงาน *';
-  const showSubCategory = mode !== 'MS';
+      : mode === 'MR'
+        ? 'ระบุวัตถุดิบที่ต้องการ, ปริมาณ, สเปก, มาตรฐาน *'
+        : mode === 'PS'
+          ? 'ระบุขนาด/สี/สูตร/มาตรฐานที่ต้องการ (อย่างน้อย 20 ตัวอักษร) *'
+          : 'รายละเอียดงาน *';
+  const showSubCategory = mode !== 'MS' && mode !== 'MR';
   return (
     <div className='space-y-3'>
       <Input
@@ -57,7 +59,7 @@ export function Step1Basic({
       />
       <div className={`${showSubCategory ? 'grid grid-cols-3' : 'grid grid-cols-2'} gap-2`}>
         <Select
-          value={draft.category_id ?? ''}
+          value={draft.category_id != null ? String(draft.category_id) : ''}
           onValueChange={(next) =>
             setDraft({
               category_id: next === '__empty' ? null : Number(next),
@@ -79,7 +81,7 @@ export function Step1Basic({
         </Select>
         {showSubCategory ? (
           <Select
-            value={draft.sub_category_id ?? ''}
+            value={draft.sub_category_id != null ? String(draft.sub_category_id) : ''}
             onValueChange={(next) =>
               setDraft({ sub_category_id: next === '__empty' ? undefined : Number(next) })
             }

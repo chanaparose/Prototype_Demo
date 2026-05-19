@@ -113,7 +113,6 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
     data.delivery_deadline,
     rfq.deadline_date,
   );
-  const inspectionType = pickScalarString(data.inspection_type, data.inspectionType);
   const budgetTotal =
     pickScalarNumber(
       data.total_budget,
@@ -175,15 +174,6 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
     return Array.from(new Set(urls)).slice(0, 5);
   }, [data.image_urls, data.images, data.reference_images, rfq.images]);
 
-  const inspectionTypeLabel =
-    inspectionType === 'self'
-      ? 'ตรวจสอบโดยโรงงาน'
-      : inspectionType === 'third_party'
-        ? 'ตรวจสอบโดยหน่วยงานภายนอก'
-        : inspectionType === 'buyer_onsite'
-          ? 'ผู้ซื้อเข้าตรวจที่โรงงาน'
-          : inspectionType;
-
   const deadlineLabel =
     deadlineRaw && deadlineRaw.includes('T') ? deadlineRaw.split('T')[0] : deadlineRaw;
   const requiredDeliveryDateLabel =
@@ -222,7 +212,6 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
       ? [{ label: 'วันที่ต้องการรับสินค้า', value: requiredDeliveryDateLabel }]
       : []),
     ...(deadlineLabel ? [{ label: 'กำหนดส่ง', value: deadlineLabel }] : []),
-    ...(inspectionTypeLabel ? [{ label: 'รูปแบบตรวจคุณภาพ', value: inspectionTypeLabel }] : []),
   ];
 
   const body = (

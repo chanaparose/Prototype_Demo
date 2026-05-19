@@ -25,10 +25,35 @@ export const factoriesApi = {
   delete: (id: string | number) => httpClient.delete<void>(`/factories/${id}`),
 
   getMe: () => httpClient.get<IFactoryPublicDetailResponse>('/factories/me'),
+  getProfileInit: () =>
+    httpClient.get<{
+      factory: Record<string, unknown>;
+      factory_types?: Record<string, unknown>[];
+      lbi_categories?: Record<string, unknown>[];
+      addresses?: Record<string, unknown>[];
+      certificate_types?: Record<string, unknown>[];
+      sub_categories?: Record<string, unknown>[];
+    }>('/factories/me/profile-init'),
 
   getDashboard: () => httpClient.get<IFactoryDashboardResponse>('/factories/me/dashboard'),
 
   getAnalytics: () => httpClient.get<IFactoryAnalyticsResponse>('/factories/me/analytics'),
+
+  saveProfile: (
+    factoryId: string | number,
+    data: {
+      factory_name: string;
+      tax_id?: string;
+      description?: string;
+      factory_type_id?: number;
+      min_order?: number;
+      lead_time_desc?: string;
+      image_url?: string;
+      background_image_url?: string;
+      category_ids: number[];
+      sub_category_ids: number[];
+    },
+  ) => httpClient.put<void>(`/factories/${factoryId}/profile`, data),
 
   setCategories: (factoryId: string | number, categoryIds: number[]) =>
     httpClient.put<void>(`/factories/${factoryId}/categories`, { category_ids: categoryIds }),
@@ -82,6 +107,18 @@ export const showcasesApi = {
 
   uploadImages: (id: string | number, formData: FormData) =>
     httpClient.postForm<Record<string, unknown>>(`/showcases/${id}/upload-images`, formData),
+
+  listImages: (id: string | number) =>
+    httpClient.get<Record<string, unknown>[]>(`/showcases/${id}/images`),
+
+  addImage: (id: string | number, data: { image_url: string; sort_order?: number }) =>
+    httpClient.post<Record<string, unknown>>(`/showcases/${id}/images`, data),
+
+  updateImage: (id: string | number, imageId: string | number, data: { sort_order?: number; caption?: string }) =>
+    httpClient.patch<Record<string, unknown>>(`/showcases/${id}/images/${imageId}`, data),
+
+  deleteImage: (id: string | number, imageId: string | number) =>
+    httpClient.delete<void>(`/showcases/${id}/images/${imageId}`),
 };
 
 export const mediaApi = {

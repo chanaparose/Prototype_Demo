@@ -36,7 +36,7 @@ export const frontendApi = {
     } catch (error) {
       const status = Number((error as { status?: unknown })?.status ?? 0);
       if (status === 404) {
-        return httpClient.get<Record<string, unknown>>('/profile/me');
+        return httpClient.get<Record<string, unknown>>('/profile');
       }
       throw error;
     }

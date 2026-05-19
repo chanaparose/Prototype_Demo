@@ -3,19 +3,36 @@ import { Controller, type UseFormReturn } from 'react-hook-form';
 import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
+import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
 import { CategoryCard } from '@/components/factory/profile/CategoryCard';
 import { CategoryPickerModal } from '@/components/factory/profile/CategoryPickerModal';
 import { SubCategoryPickerModal } from '@/components/factory/profile/SubCategoryPickerModal';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
+
+interface ApiCategory {
+  category_id: number;
+  name: string;
+}
+
+interface ApiSubCategory {
+  sub_category_id: number;
+  category_id: number;
+  name?: string;
+  sub_category_name?: string;
+}
 
 interface Props {
   form: UseFormReturn<ProfileFormValues>;
   factoryId: number | string;
   /** Called by parent to register the "open category picker" handler */
   onRegisterAdd?: (handler: () => void) => void;
+  /** Raw categories from /factories/me — used as fallback when master data is unavailable */
+  apiCategories?: ApiCategory[];
+  /** Raw sub_categories from /factories/me — used as fallback when master data is unavailable */
+  apiSubCategories?: ApiSubCategory[];
 }
 
-export function CategoriesSection({ form, factoryId, onRegisterAdd }: Props) {
+export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategories = [], apiSubCategories = [] }: Props) {
   const { control } = form;
   const { data: allCategories = [] } = useProductCategories();
   const { data: pdCategories = [] } = useLbiCategoriesByScope('PD');
@@ -24,7 +41,27 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd }: Props) {
   const categoryIds = form.watch('category_ids');
   const subCategoryIds = form.watch('sub_category_ids');
 
-  const { byCategory } = useSubCategoriesByCategories(categoryIds);
+  const { byCategory: masterByCategory } = useSubCategoriesByCategories(categoryIds);
+
+  // Build fallback maps from API data for when master data is unavailable
+  const apiByCategoryMap = useMemo(() => {
+    const map = new Map<number, SubCategoryOption[]>();
+    for (const s of apiSubCategories) {
+      const id = s.sub_category_id;
+      const name = (s.sub_category_name ?? s.name ?? '').trim();
+      if (!id || !name) continue;
+      const list = map.get(s.category_id) ?? [];
+      list.push({ id, name, categoryId: s.category_id });
+      map.set(s.category_id, list);
+    }
+    return map;
+  }, [apiSubCategories]);
+
+  // Merge master + API fallback: prefer master data when available
+  const byCategory = useMemo(() => {
+    if (masterByCategory.size > 0) return masterByCategory;
+    return apiByCategoryMap;
+  }, [masterByCategory, apiByCategoryMap]);
 
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
@@ -37,14 +74,34 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Build a lookup from API categories for fallback name resolution
+  const apiCategoryMap = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const c of apiCategories) map.set(c.category_id, c.name);
+    return map;
+  }, [apiCategories]);
+
   const editingCategoryName = useMemo(() => {
     if (editingCategoryId == null) return '';
-    return allCategories.find((c) => c.id === editingCategoryId)?.name ?? '';
-  }, [editingCategoryId, allCategories]);
+    return (
+      allCategories.find((c) => c.id === editingCategoryId)?.name ??
+      apiCategoryMap.get(editingCategoryId) ??
+      ''
+    );
+  }, [editingCategoryId, allCategories, apiCategoryMap]);
 
-  const resolvedCategories = categoryIds
-    .map((cid) => allCategories.find((c) => c.id === cid))
-    .filter((c): c is { id: number; name: string } => c != null);
+  const resolvedCategories = useMemo(() => {
+    // Collect all category IDs: from form + from API (in case form hasn't been seeded yet)
+    const allIds = Array.from(new Set([...categoryIds, ...apiCategories.map((c) => c.category_id)]));
+    return allIds
+      .map((cid) => {
+        const masterName = allCategories.find((c) => c.id === cid)?.name;
+        const name = masterName ?? apiCategoryMap.get(cid) ?? '';
+        if (!name) return null;
+        return { id: cid, name };
+      })
+      .filter((c): c is { id: number; name: string } => c != null);
+  }, [categoryIds, allCategories, apiCategories, apiCategoryMap]);
 
   const pdIds = useMemo(() => new Set(pdCategories.map((c) => c.id)), [pdCategories]);
   const mtIds = useMemo(() => new Set(mtCategories.map((c) => c.id)), [mtCategories]);

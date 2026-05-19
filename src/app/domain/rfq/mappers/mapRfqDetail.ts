@@ -341,11 +341,6 @@ export async function fetchAndMapRfqDetail(
           ),
         ),
       );
-      const sampleRequired = Boolean(rExtra.sample_required ?? rExtra.sampleRequired);
-      const sampleQtyRaw = numberOrNull(rExtra.sample_qty, rExtra.sampleQty);
-      const sampleQty =
-        sampleQtyRaw != null && sampleQtyRaw > 0 ? Math.round(sampleQtyRaw) : undefined;
-      const inspectionType = firstNonEmptyString(rExtra.inspection_type, rExtra.inspectionType);
       const deliveryAddress = summarizeRfqAddress(rawRecord);
 
       const offers: RfqOffer[] = quotes.map((q) => ({
@@ -486,9 +481,6 @@ export async function fetchAndMapRfqDetail(
         requiredDeliveryDate: normalizedRequiredDeliveryDate || undefined,
         certificationsRequired:
           certificationsRequired.length > 0 ? certificationsRequired : undefined,
-        sampleRequired,
-        sampleQty,
-        inspectionType: inspectionType || undefined,
       };
 
   const shipIdNum = pickScalarNumber(shipIdRaw) ?? 0;

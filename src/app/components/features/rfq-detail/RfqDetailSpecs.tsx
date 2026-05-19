@@ -27,9 +27,6 @@ export type RfqForSpecs = {
   targetLeadTimeDays?: number;
   requiredDeliveryDate?: string;
   certificationsRequired?: string[];
-  sampleRequired?: boolean;
-  sampleQty?: number;
-  inspectionType?: 'self' | 'third_party' | 'buyer_onsite' | string;
 };
 
 type RfqDetailSpecsProps = {
@@ -42,15 +39,6 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
   const imageUrls = rfq.imageUrls?.filter(Boolean) ?? [];
   const subLabel = (rfq.subCategoryName ?? '').trim();
   const hasSubFromApi = Boolean(subLabel) || (rfq.subCategoryId != null && rfq.subCategoryId > 0);
-  const inspectionTypeLabel =
-    rfq.inspectionType === 'self'
-      ? 'ตรวจสอบโดยโรงงาน'
-      : rfq.inspectionType === 'third_party'
-        ? 'ตรวจสอบโดยหน่วยงานภายนอก'
-        : rfq.inspectionType === 'buyer_onsite'
-          ? 'ผู้ซื้อเข้าตรวจที่โรงงาน'
-          : (rfq.inspectionType ?? '').trim();
-
   const rows = [
     { label: 'ประเภทการผลิต', value: rfq.category },
     ...(hasSubFromApi ? [{ label: 'ประเภทย่อย', value: subLabel || '—' }] : []),
@@ -80,7 +68,6 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
       ? [{ label: 'วันที่ต้องการรับสินค้า', value: rfq.requiredDeliveryDate }]
       : []),
     ...(rfq.deadline ? [{ label: 'กำหนดส่ง', value: rfq.deadline }] : []),
-    ...(inspectionTypeLabel ? [{ label: 'รูปแบบตรวจคุณภาพ', value: inspectionTypeLabel }] : []),
     { label: 'วันที่สร้าง', value: rfq.createdAt },
   ];
 

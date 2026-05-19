@@ -14,7 +14,12 @@ export function useProductCategories() {
     queryKey: masterKeys.productCategories() as const,
     queryFn: async () => {
       const raw = await masterApi.getProductCategories();
-      const arr = (Array.isArray(raw) ? raw : []) as Row[];
+      const unwrapped = Array.isArray(raw)
+        ? raw
+        : Array.isArray((raw as Record<string, unknown>).data)
+          ? (raw as Record<string, unknown>).data
+          : [];
+      const arr = unwrapped as Row[];
       return arr
         .map((r): CategoryOption | null => {
           const id = Number(r.category_id ?? r.id);
