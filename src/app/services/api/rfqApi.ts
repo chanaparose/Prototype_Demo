@@ -79,7 +79,7 @@ export const factoryRfqsApi = {
 
 export const quotationsApi = {
   create: (rfqId: string | number, data: Record<string, unknown>) =>
-    httpClient.post<IQuotationResponse>(`/quotations?rfq_id=${rfqId}`, data),
+    httpClient.post<IQuotationResponse>(`/rfqs/${rfqId}/quotations`, data),
 
   update: (quoteId: string | number, data: Record<string, unknown>) =>
     httpClient.patch<IQuotationResponse>(`/quotations/${quoteId}`, data),

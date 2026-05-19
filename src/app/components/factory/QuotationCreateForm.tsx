@@ -489,25 +489,25 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             </div>
             {preview ? (
               <>
-                <Row label='ค่าสินค้ารวม' value={`฿${fmt(preview.subtotal)}`} />
+                <Row label='ค่าสินค้ารวม' value={`${fmt(preview.subtotal)}`} />
                 {preview.shipping_cost > 0 && (
-                  <Row label='ค่าขนส่ง' value={`฿${fmt(preview.shipping_cost)}`} />
+                  <Row label='ค่าขนส่ง' value={`${fmt(preview.shipping_cost)}`} />
                 )}
                 {preview.packaging_cost > 0 && (
-                  <Row label='ค่าบรรจุภัณฑ์' value={`฿${fmt(preview.packaging_cost)}`} />
+                  <Row label='ค่าบรรจุภัณฑ์' value={`${fmt(preview.packaging_cost)}`} />
                 )}
                 {preview.tooling_mold_cost > 0 && (
-                  <Row label='ค่าแม่พิมพ์' value={`฿${fmt(preview.tooling_mold_cost)}`} />
+                  <Row label='ค่าแม่พิมพ์' value={`${fmt(preview.tooling_mold_cost)}`} />
                 )}
                 <Row
                   label={`VAT ${preview.vat_rate.toFixed(0)}%`}
-                  value={`฿${fmt(preview.vat_amount)}`}
+                  value={`${fmt(preview.vat_amount)}`}
                 />
                 <div className='border-t border-violet-200 pt-1.5 mt-1.5 space-y-1'>
-                  <Row label='รวมทั้งหมด' value={`฿${fmt(preview.grand_total)}`} bold />
+                  <Row label='รวมทั้งหมด' value={`${fmt(preview.grand_total)}`} bold />
                   <Row
                     label='โรงงานได้รับ (หลังหักค่าบริการ)'
-                    value={`฿${fmt(preview.factory_net_receivable)}`}
+                    value={`${fmt(preview.factory_net_receivable)}`}
                     highlight
                   />
                   <p className='text-[10px] text-violet-500 text-right'>

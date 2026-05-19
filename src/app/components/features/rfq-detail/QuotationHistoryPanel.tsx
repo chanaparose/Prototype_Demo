@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
-import { quotationsApi } from '@/services/api/rfqApi';
+import { quotationApi } from '@/services/api/rfqApi';
 import type { IQuotationHistoryEntry } from '@/services/api/types/rfq.types';
 import { QUOTATION_STATUS_LABEL } from '@/domain/rfq/constants';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
@@ -61,8 +61,8 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
     if (!quotationId) return;
     setLoading(true);
     setFetched(false);
-    quotationsApi
-      .history(quotationId)
+    quotationApi
+      .getHistory(quotationId)
       .then((data) => {
         const arr = Array.isArray(data) ? data : [];
         const mapped = arr
