@@ -8,9 +8,10 @@ export type ShippingMethodOption = {
   label: string;
 };
 
-export function useShippingMethods() {
+export function useShippingMethods(enabled = true) {
   return useQuery({
     queryKey: masterKeys.shippingMethods() as const,
+    enabled,
     queryFn: async () => {
       const raw = await masterApi.getShippingMethods();
       return mapShippingMethodsList(raw).map((row) => ({

@@ -51,6 +51,7 @@ interface Props {
   rfqId: string;
   factoryId: number;
   lockedShippingMethodId?: number; // optional — 0 or undefined = ไม่มีวิธีจัดส่งจาก RFQ
+  lockedShippingMethodName?: string;
   rfqQuantity?: number | null; // จำนวนที่ลูกค้าขอ — ใช้คำนวณ preview
   initial?: Partial<QuotationCreateFormValues>;
   initialImageUrls?: string[]; // รูปภาพที่บันทึกไว้แล้ว (pre-fill)
@@ -75,6 +76,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       rfqId,
       factoryId,
       lockedShippingMethodId,
+      lockedShippingMethodName,
       rfqQuantity = null,
       initial,
       initialImageUrls,
@@ -91,11 +93,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     ref,
   ) {
     const qc = useQueryClient();
-    const shippingMethodsQ = useShippingMethods();
+    const shippingMethodsQ = useShippingMethods(!lockedShippingMethodName);
     const shipId = lockedShippingMethodId ?? 0;
-    const shipLabel =
-      shippingMethodsQ.data?.find((m) => m.id === shipId)?.label ??
-      (shipId > 0 ? `#${shipId}` : '—');
+    const shipLabel = String(lockedShippingMethodName ?? '').trim()
+      || shippingMethodsQ.data?.find((m) => m.id === shipId)?.label
+      || (shipId > 0 ? `#${shipId}` : '—');
 
     const form = useForm<QuotationCreateFormValues>({
       resolver: zodResolver(quotationFormSchema),

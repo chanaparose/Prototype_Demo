@@ -5,13 +5,11 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import type { IQuotationResponse } from '@/services/api/types/rfq.types';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { rfqsApi, quotationsApi, factoryRfqsApi } from '@/services/api/rfqApi';
+import { factoryRfqsApi, quotationsApi } from '@/services/api/rfqApi';
 import { conversationsApi, messagesApi } from '@/services/api/chatApi';
-import { categoriesApi } from '@/services/api/masterApi';
 import { buildSendPayload, chatRoomPath, getCurrentUserId } from '@/utils/chatContract';
 import type { ApiConversation } from '@/utils/chatContract';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
-import { useShippingMethods } from '@/hooks/master/useShippingMethods';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
@@ -95,33 +93,23 @@ export function FactoryRfqDetailPage() {
   const [subCategoryName, setSubCategoryName] = useState('');
 
   const quoteFormRef = useRef<QuotationCreateFormHandle>(null);
-  const shippingMethodsQ = useShippingMethods();
 
   const [cancelBusy, setCancelBusy] = useState(false);
   const [dismissBusy, setDismissBusy] = useState(false);
   const [chatBusy, setChatBusy] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
-  const normalizeQuoteRows = (raw: unknown): QuoteRow[] => {
-    if (Array.isArray(raw)) return raw as QuoteRow[];
-    if (raw && typeof raw === 'object') {
-      const obj = raw as Record<string, unknown>;
-      const nested = obj.quotations ?? obj.data ?? obj.items ?? obj.results;
-      if (Array.isArray(nested)) return nested as QuoteRow[];
-    }
-    return [];
-  };
-
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError('');
     try {
-      const [detail, qList] = await Promise.all([rfqsApi.get(id), rfqsApi.listQuotations(id)]);
+      const detail = await factoryRfqsApi.getRFQDetail(id);
       const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
       setRfqTitle(String(rfq.title ?? ''));
       setRfqBody(rfq);
-      setQuotes(normalizeQuoteRows(qList));
+      setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as QuoteRow[]) : []);
+      setSubCategoryName(String(rfq.sub_category_name ?? '').trim());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
     } finally {
@@ -132,28 +120,6 @@ export function FactoryRfqDetailPage() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  useEffect(() => {
-    const cid = Number(rfqBody.category_id ?? 0);
-    const sid = Number(rfqBody.sub_category_id ?? 0);
-    if (!Number.isFinite(cid) || cid <= 0 || !Number.isFinite(sid) || sid <= 0) {
-      setSubCategoryName('');
-      return;
-    }
-    let mounted = true;
-    void categoriesApi
-      .subCategories(cid)
-      .then((raw) => {
-        if (!mounted) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const hit = arr.find((r) => Number(r.sub_category_id ?? r.id ?? 0) === sid);
-        setSubCategoryName(String(hit?.name ?? '').trim());
-      })
-      .catch(() => setSubCategoryName(''));
-    return () => {
-      mounted = false;
-    };
-  }, [rfqBody.category_id, rfqBody.sub_category_id]);
 
   const myQuote = fid != null ? quotes.find((q) => quoteFid(q) === fid) : undefined;
   const myStatus = myQuote ? String(myQuote.status ?? 'PD').toUpperCase() : '';
@@ -176,13 +142,10 @@ export function FactoryRfqDetailPage() {
     return Number.isFinite(n) && n > 0 ? n : null;
   }, [rfqBody]);
 
-  const customerShipLabel = useMemo(() => {
-    const byName = String(rfqBody.shipping_method_name ?? '').trim();
-    if (byName) return byName;
-    if (rfqShipId == null) return '';
-    const row = shippingMethodsQ.data?.find((m) => m.id === rfqShipId);
-    return row?.label ?? '';
-  }, [rfqBody, rfqShipId, shippingMethodsQ.data]);
+  const customerShipLabel = useMemo(
+    () => String(rfqBody.shipping_method_name ?? '').trim(),
+    [rfqBody],
+  );
 
   const deadlineIso = useMemo(() => {
     const raw = String(rfqBody.required_delivery_date ?? '').trim();
@@ -406,11 +369,7 @@ export function FactoryRfqDetailPage() {
     setCancelBusy(true);
     setError('');
     try {
-      try {
-        await quotationsApi.delete(qid);
-      } catch {
-        await quotationsApi.updateStatus(qid, 'RJ');
-      }
+      await quotationsApi.delete(qid);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ยกเลิกใบเสนอราคาไม่สำเร็จ');
@@ -702,6 +661,7 @@ export function FactoryRfqDetailPage() {
                     rfqId={id}
                     factoryId={fid}
                     lockedShippingMethodId={rfqShipId ?? 0}
+                    lockedShippingMethodName={customerShipLabel || undefined}
                     rfqQuantity={quantity}
                     patchQuotationId={
                       myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined

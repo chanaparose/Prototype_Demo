@@ -68,6 +68,11 @@ export const factoryRfqsApi = {
       `/factory/rfq-board${query ? `?${query}` : ''}`,
     );
   },
+
+  getRFQDetail: (rfqId: string | number) =>
+    httpClient.get<{ rfq: Record<string, unknown>; quotations: Record<string, unknown>[] }>(
+      `/factory/rfqs/${rfqId}/detail`,
+    ),
 };
 
 export const quotationsApi = {
