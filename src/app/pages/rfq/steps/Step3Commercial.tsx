@@ -27,6 +27,7 @@ const SHIPPING_ICONS: Record<number, string> = {
 type Props = {
   draft: RFQDraft;
   setDraft: (next: Partial<RFQDraft>) => void;
+  onLoaded?: (addressMap: Record<number, string>, shippingMap: Record<number, string>) => void;
 };
 
 const FALLBACK_SHIPPING: ShippingMethod[] = [
@@ -36,7 +37,7 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
   { id: 4, name: 'รถบรรทุกโรงงาน' },
 ];
 
-export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
+export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) {
   /* addresses */
   const [addresses, setAddresses] = React.useState<MappedAddress[]>([]);
   const [addrLoading, setAddrLoading] = React.useState(true);
@@ -45,6 +46,9 @@ export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
   const autoSelected = React.useRef(false);
 
   const [shippingMethods, setShippingMethods] = React.useState<ShippingMethod[]>(FALLBACK_SHIPPING);
+
+  const onLoadedRef = React.useRef(onLoaded);
+  onLoadedRef.current = onLoaded;
 
   const loadAddresses = React.useCallback(async (): Promise<MappedAddress[]> => {
     setAddrLoading(true);
@@ -65,8 +69,21 @@ export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
   }, []);
 
   React.useEffect(() => {
+    let shippingMapResult: Record<number, string> = {};
+    let addressMapResult: Record<number, string> = {};
+
     // โหลด addresses + auto-select default
     void loadAddresses().then((mapped) => {
+      addressMapResult = Object.fromEntries(
+        mapped.map((a) => {
+          const label = [a.addressDetail, a.subDistrict, a.district, a.province, a.zipCode]
+            .filter(Boolean)
+            .join(', ');
+          return [a.id, label || `ที่อยู่ #${a.id}`];
+        }),
+      );
+      onLoadedRef.current?.(addressMapResult, shippingMapResult);
+
       if (autoSelected.current || draft.delivery_address_id) return;
       const def = mapped.find((a) => a.isDefault) ?? mapped[0];
       if (def) {
@@ -80,6 +97,8 @@ export function Step3Commercial({ draft, setDraft }: Readonly<Props>) {
       .then((raw) => {
         const mapped = mapShippingMethodsList(raw);
         if (mapped.length > 0) setShippingMethods(mapped);
+        shippingMapResult = Object.fromEntries(mapped.map((m) => [m.id, m.name]));
+        onLoadedRef.current?.(addressMapResult, shippingMapResult);
       })
       .catch(() => {
         setShippingMethods(FALLBACK_SHIPPING);

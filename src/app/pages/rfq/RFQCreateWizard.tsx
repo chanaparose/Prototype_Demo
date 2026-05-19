@@ -1,9 +1,8 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
-import { addressesApi, categoriesApi, masterApi } from '@/services/api/masterApi';
-import { formatAddressLabel, mapAddressFromApi } from '@/domain/shared/mappers/mapAddressFromApi';
-import { mapShippingMethodsToRecord } from '@/domain/master/mappers/mapShippingMethod';
+import { categoriesApi } from '@/services/api/masterApi';
+import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { pickScalarString } from '@/utils/pickScalarString';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { useCreateRFQ } from '@/pages/rfq/useCreateRFQ';
@@ -57,8 +56,7 @@ export function RFQCreateWizard() {
   const [acceptSampleTerms, setAcceptSampleTerms] = React.useState(false);
   const [addressMap, setAddressMap] = React.useState<Record<number, string>>({});
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
-  const [categoryMap, setCategoryMap] = React.useState<Record<number, string>>({});
-  const [modeCategories, setModeCategories] = React.useState<{ id: number; name: string }[]>([]);
+  const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
 
   React.useEffect(() => {
     const mode = (searchParams.get('mode') || '').trim();
@@ -109,45 +107,15 @@ export function RFQCreateWizard() {
     };
   }, [draft.category_id]);
 
-  React.useEffect(() => {
-    const scope: 'PD' | 'MT' = draft.request_kind === 'MS' ? 'MT' : 'PD';
-    let active = true;
-    void masterApi
-      .lbiCategories(scope)
-      .then((raw) => {
-        if (!active) return;
-        // API อาจคืน [] หรือ { categories: [...] } — normalize ผ่าน unknown
-        const u = raw as unknown;
-        const list: unknown[] = Array.isArray(u)
-          ? u
-          : u !== null &&
-              typeof u === 'object' &&
-              'categories' in u &&
-              Array.isArray((u as { categories?: unknown }).categories)
-            ? (u as { categories: unknown[] }).categories
-            : [];
-        const mapped = list
-          .map((item) => {
-            const r = item as Record<string, unknown>;
-            return {
-              id: Number(r.category_id ?? r.id ?? 0),
-              name: pickScalarString(r.category_name, r.name, r.name_th),
-            };
-          })
-          .filter((c) => Number.isFinite(c.id) && c.id > 0 && c.name);
-        setModeCategories(mapped);
-        setCategoryMap(Object.fromEntries(mapped.map((c) => [c.id, c.name])));
-      })
-      .catch(() => {
-        if (active) {
-          setModeCategories([]);
-          setCategoryMap({});
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, [draft.request_kind]);
+  const scopeFilter = draft.request_kind === 'MS' ? 'MT' : 'PD';
+  const modeCategories = React.useMemo(
+    () => allCategories.filter((c) => !c.scope || c.scope === scopeFilter),
+    [allCategories, scopeFilter],
+  );
+  const categoryMap = React.useMemo(
+    () => Object.fromEntries(modeCategories.map((c) => [c.id, c.name])),
+    [modeCategories],
+  );
 
   React.useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
@@ -203,39 +171,13 @@ export function RFQCreateWizard() {
     };
   }, [draft.request_kind, draft.category_id, draft.sub_category_id]);
 
-  React.useEffect(() => {
-    let active = true;
-    void addressesApi
-      .list()
-      .then((raw) => {
-        if (!active) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        const mapped: Record<number, string> = {};
-        for (const r of arr) {
-          const address = mapAddressFromApi(r);
-          if (!address) continue;
-          mapped[address.id] = formatAddressLabel(address) || `ที่อยู่ #${address.id}`;
-        }
-        setAddressMap(mapped);
-      })
-      .catch(() => {
-        if (active) setAddressMap({});
-      });
-
-    void masterApi
-      .getShippingMethods()
-      .then((raw) => {
-        if (!active) return;
-        setShippingMap(mapShippingMethodsToRecord(raw));
-      })
-      .catch(() => {
-        if (active) setShippingMap({});
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const handleStep3Loaded = React.useCallback(
+    (addrMap: Record<number, string>, shipMap: Record<number, string>) => {
+      if (Object.keys(addrMap).length > 0) setAddressMap(addrMap);
+      if (Object.keys(shipMap).length > 0) setShippingMap(shipMap);
+    },
+    [],
+  );
 
   const blockingIssues = React.useMemo(() => {
     const issues: string[] = [];
@@ -306,7 +248,6 @@ export function RFQCreateWizard() {
     return INSPECTION_LABEL[draft.inspection_type] ?? draft.inspection_type;
   }, [draft.inspection_type]);
 
-  const categoryOptions = React.useMemo(() => modeCategories, [modeCategories]);
 
   const optionalMissing = React.useMemo(() => {
     const missing: string[] = [];
@@ -437,7 +378,7 @@ export function RFQCreateWizard() {
               <Step1Basic
                 draft={draft}
                 setDraft={setDraft}
-                categories={categoryOptions}
+                categories={modeCategories}
                 subCategories={subCategories}
                 subCategoriesLoading={subCategoriesLoading}
                 mode={kind}
@@ -473,7 +414,7 @@ export function RFQCreateWizard() {
 
             <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
               <p className='text-sm font-semibold text-brand-navy mb-3'>เงื่อนไขส่งมอบ</p>
-              <Step3Commercial draft={draft} setDraft={setDraft} />
+              <Step3Commercial draft={draft} setDraft={setDraft} onLoaded={handleStep3Loaded} />
             </section>
 
             {!isSampleMode ? (

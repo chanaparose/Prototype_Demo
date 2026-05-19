@@ -5,9 +5,10 @@ import { masterApi } from '@/services/api/masterApi';
 export interface CategoryOption {
   id: number;
   name: string;
+  scope?: string;
 }
 
-export function useLbiCategoriesByScope(scope: 'PD' | 'MT') {
+export function useLbiCategoriesByScope(scope: 'PD' | 'MT' | 'ALL') {
   return useQuery({
     queryKey: masterKeys.lbiCategories(scope) as const,
     queryFn: async () => {
@@ -21,12 +22,13 @@ export function useLbiCategoriesByScope(scope: 'PD' | 'MT') {
           const id = Number(r.category_id ?? r.id);
           const name = String(r.name ?? r.category_name ?? '').trim();
           if (!Number.isFinite(id) || id <= 0 || !name) return null;
-          return { id, name };
+          const s = String(r.scope ?? '').trim().toUpperCase() || undefined;
+          return { id, name, scope: s };
         })
         .filter((x): x is CategoryOption => x != null)
         .sort((a, b) => a.name.localeCompare(b.name, 'th'));
     },
-    staleTime: 5 * 60_000,
+    staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
   });
