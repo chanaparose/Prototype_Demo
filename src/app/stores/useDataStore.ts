@@ -1,14 +1,13 @@
 import { create } from 'zustand';
 import { useAuthStore, useAuth } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
+import { useSessionStore } from '@/stores/useSessionStore';
 import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
 import { chatKeys, orderKeys, rfqKeys } from '@/lib/queryKeys';
-import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import { refreshConversationsCache } from '@/domain/chat/chatCache';
 import { fetchNotificationsList } from '@/domain/notifications/queries/useNotificationQueries';
 import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/mapNotification';
-import { normalizeFactoryRow } from '@/stores/utils';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
 import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
@@ -77,99 +76,54 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     const isAuthenticated = rawAuthState.isAuthenticated;
 
     if (!isAuthenticated) {
-      set({ isLoading: true, error: null });
-      try {
-        const boot = await frontendApi.getBootstrap();
-        const factoryList: Factory[] = (() => {
-          const raw = boot?.factories;
-          if (!Array.isArray(raw)) return [];
-          return (raw as Record<string, unknown>[])
-            .map((row) => normalizeFactoryRow(row))
-            .filter((f) => f.id && f.name);
-        })();
-        const categories: BootstrapCategoryModel[] = (() => {
-          const raw = boot?.categories;
-          if (!Array.isArray(raw) || raw.length === 0) return [];
-          return (raw as Record<string, unknown>[]).map((c) => {
-            const name = pickScalarString(c.name);
-            return {
-              id: pickScalarString(c.id, c.category_id),
-              name,
-              icon: pickScalarString(c.icon) || guessCategoryIcon(name),
-              color: pickScalarString(c.color) || 'var(--brand-violet)',
-            } as BootstrapCategoryModel;
-          });
-        })();
-        set({
-          ...INITIAL_STATE,
-          categories,
-          factories: factoryList,
-          isLoading: false,
-          error: null,
-        });
-      } catch {
-        set({ ...INITIAL_STATE, isLoading: false, error: null });
-      }
+      // Guest: bootstrap returns only empty shells — no categories/factories anymore
+      // (they come from GET /explore which the explore page loads on its own)
+      set({ ...INITIAL_STATE, isLoading: false, error: null });
       return;
     }
 
     set((state) => ({ ...state, isLoading: true, error: null }));
 
     try {
-      const [bootstrapRes, notifRes] = await Promise.allSettled([
+      const [sessionRes, notifRes] = await Promise.allSettled([
         frontendApi.getBootstrap(),
         fetchNotificationsList(),
       ]);
 
-      const boot = bootstrapRes.status === 'fulfilled' ? bootstrapRes.value : null;
+      const session = sessionRes.status === 'fulfilled' ? sessionRes.value : null;
       const notificationModels = notifRes.status === 'fulfilled' ? notifRes.value : [];
 
       const mappedNotifs: Notification[] = notificationModels.map(
         mapNotificationToBootstrapModel,
       );
 
-      const factoryList: Factory[] = (() => {
-        const raw = boot?.factories;
-        if (!Array.isArray(raw)) return [];
-        return (raw as Record<string, unknown>[])
-          .map((row) => normalizeFactoryRow(row))
-          .filter((f) => f.id && f.name);
-      })();
+      useSessionStore.setState({
+        data: session,
+        isLoading: false,
+        error: null,
+        lastFetchedAt: session ? Date.now() : null,
+      });
+
+      const u = session?.currentUser as unknown as Record<string, unknown> | undefined;
+      const w = session?.wallet as unknown as Record<string, unknown> | undefined;
 
       set({
-        currentUser: boot?.currentUser
-          ? (() => {
-              const u = boot.currentUser;
-              return {
-                id: pickScalarString(u.id),
-                name: pickScalarString(u.name),
-                nameEn: u.nameEn != null ? pickScalarString(u.nameEn) : undefined,
-                avatar: pickScalarString(u.avatar),
-                company: pickScalarString(u.company),
-                email: pickScalarString(u.email),
-                phone: pickScalarString(u.phone),
-                walletBalance: pickScalarNumber(u.walletBalance) ?? 0,
-                pendingBalance: pickScalarNumber(u.pendingBalance) ?? 0,
-                memberSince: pickScalarString(u.memberSince),
-              } as CurrentUser;
-            })()
+        currentUser: u
+          ? ({
+              id: pickScalarString(u.id),
+              name: pickScalarString(u.name),
+              nameEn: u.nameEn != null ? pickScalarString(u.nameEn) : undefined,
+              avatar: pickScalarString(u.avatar) || undefined,
+              company: pickScalarString(u.company) || undefined,
+              email: pickScalarString(u.email),
+              phone: pickScalarString(u.phone),
+              walletBalance: pickScalarNumber(w?.balance ?? u.walletBalance) ?? 0,
+              pendingBalance: pickScalarNumber(w?.pending_balance ?? u.pendingBalance) ?? 0,
+              memberSince: pickScalarString(u.member_since ?? u.memberSince),
+            } as CurrentUser)
           : null,
-        categories: (() => {
-          const raw = boot?.categories;
-          if (Array.isArray(raw) && raw.length > 0) {
-            return (raw as Record<string, unknown>[]).map((c) => {
-              const name = pickScalarString(c.name);
-              return {
-                id: pickScalarString(c.id, c.category_id),
-                name,
-                icon: pickScalarString(c.icon) || guessCategoryIcon(name),
-                color: pickScalarString(c.color) || 'var(--brand-violet)',
-              } as BootstrapCategoryModel;
-            });
-          }
-          return [];
-        })(),
-        factories: factoryList,
+        categories: [],
+        factories: [],
         factoryProfiles: [],
         factoryReviews: [],
         ideaArticles: [],

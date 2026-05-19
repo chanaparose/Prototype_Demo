@@ -22,8 +22,6 @@ import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
-import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
 import { useFavorites } from '@/hooks/useFavorites';
 import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
@@ -41,10 +39,8 @@ export function ProductDetailDesktop() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, isIdea, isMaterial, resolvedId, relatedProducts } =
+  const { item, loading, error, factory, reviews, isIdea, isMaterial, resolvedId, relatedProducts } =
     useProductDetailShowcase();
-  const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
-  const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
   const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {
@@ -109,11 +105,10 @@ export function ProductDetailDesktop() {
   const priceText = formatTHB(item.basePrice) ?? (item.priceRange?.trim() || null);
   const liked = item ? isLiked(item.id) : false;
   const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
-  const summary = reviewSummaryQ.data;
-  const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
-  const reviewCount = Number(summary?.review_count ?? factory?.reviews ?? 0);
-  const breakdown = summary?.rating_breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
-  const latestReviews = reviewListQ.data ?? [];
+  const avgRating = Number(reviews?.summary.average ?? factory?.rating ?? 0);
+  const reviewCount = Number(reviews?.summary.total ?? factory?.reviews ?? 0);
+  const breakdown = reviews?.summary.breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
+  const latestReviews = reviews?.items ?? [];
 
   const specRows: { label: string; value: React.ReactNode }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });

@@ -4,28 +4,13 @@
 
 import { httpClient } from '@/services/api/httpClient';
 import {
+  type IExploreApiResponse,
   type IExploreResponse,
   type IPromoSlideResponse,
+  type ISessionResponse,
+  type IShowcasePaginatedResponse,
   type IShowcasesGroupedResponse,
 } from '@/services/api/types/explore.types';
-
-export interface FrontendBootstrapResponse {
-  currentUser: {
-    id: number;
-    role: string;
-    name: string;
-    email: string;
-    phone: string;
-    memberSince: string;
-  };
-  wallet: {
-    balance: number;
-    pendingBalance: number;
-  };
-  rfqs: unknown[];
-  orders: unknown[];
-  threads: unknown[];
-}
 
 export const frontendApi = {
   getMe: async () => {
@@ -40,7 +25,7 @@ export const frontendApi = {
     }
   },
 
-  getBootstrap: () => httpClient.get<FrontendBootstrapResponse>('/frontend/bootstrap'),
+  getBootstrap: () => httpClient.get<ISessionResponse>('/frontend/bootstrap'),
 
   getMockData: () => httpClient.get<Record<string, unknown>>('/frontend/mock-data'),
 
@@ -76,7 +61,35 @@ export const frontendApi = {
   getPromoCodes: () => httpClient.get<unknown[]>('/frontend/promo-codes'),
 };
 
-/** GET /api/v1/showcases?types=PD,MT&limit=8 — returns grouped { PD: [...], MT: [...] } */
+/** GET /api/v1/explore — single call: categories + showcases (PD/MT/PM/ID) + promoSlides */
+export const exploreApi = {
+  get: () => httpClient.get<IExploreApiResponse>('/explore'),
+};
+
+/** GET /api/v1/showcases?types=...&page=N&limit=N — paginated flat showcase list */
+export const showcasesPaginatedApi = {
+  list: (params: {
+    types: ('PD' | 'PM' | 'ID' | 'MT')[];
+    limit?: number;
+    page?: number;
+    categoryId?: string | number;
+    subCategoryId?: string | number;
+    keyword?: string;
+    sort?: string;
+  }) => {
+    const p = new URLSearchParams();
+    p.set('types', params.types.join(','));
+    if (params.limit) p.set('limit', String(params.limit));
+    if (params.page) p.set('page', String(params.page));
+    if (params.categoryId) p.set('category_id', String(params.categoryId));
+    if (params.subCategoryId) p.set('sub_category_id', String(params.subCategoryId));
+    if (params.keyword) p.set('keyword', params.keyword);
+    if (params.sort) p.set('sort', params.sort);
+    return httpClient.get<IShowcasePaginatedResponse>(`/showcases?${p}`);
+  },
+};
+
+/** @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ showcases field */
 export const showcasesExploreApi = {
   listByTypes: (types: ('PD' | 'PM' | 'ID' | 'MT')[], limit: number) => {
     const params = new URLSearchParams({ types: types.join(','), limit: String(limit) });
@@ -84,7 +97,7 @@ export const showcasesExploreApi = {
   },
 };
 
-/** GET /api/v1/promo-slides?limit=N — returns direct array (banner slides) */
+/** @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ promoSlides field */
 export const promoSlidesApi = {
   list: (limit = 5) =>
     httpClient.get<IPromoSlideResponse[]>(`/promo-slides?limit=${limit}`),

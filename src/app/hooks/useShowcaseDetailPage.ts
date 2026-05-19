@@ -1,11 +1,33 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
-import { type FactoryShowcase } from '@/stores/types';
+import { type Factory, type FactoryShowcase } from '@/stores/types';
 import { useQuery } from '@tanstack/react-query';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import { showcaseKeys } from '@/lib/queryKeys';
 import { showcasesApi } from '@/services/api/factoryApi';
+import { pickScalarString } from '@/utils/pickScalarString';
+
+// ─── Embedded types returned by GET /showcases/:id ───────────────────────────
+
+export type ReviewItem = {
+  id: string;
+  reviewer: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+};
+
+export type ReviewsData = {
+  summary: {
+    average: number;
+    total: number;
+    breakdown: Record<string, number>;
+  };
+  items: ReviewItem[];
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function showcaseIdMatches(a: string, b: string): boolean {
   const sa = String(a).trim();
@@ -16,6 +38,77 @@ function showcaseIdMatches(a: string, b: string): boolean {
   if (!Number.isNaN(na) && !Number.isNaN(nb) && sa !== '' && sb !== '') return na === nb;
   return false;
 }
+
+function mapEmbeddedFactory(fRaw: Record<string, unknown>): Factory {
+  return {
+    id: pickScalarString(fRaw.factory_id),
+    name: pickScalarString(fRaw.factory_name),
+    location: pickScalarString(fRaw.province),
+    provinceName: pickScalarString(fRaw.province),
+    rating: Number(fRaw.rating ?? 0),
+    reviews: Number(fRaw.review_count ?? 0),
+    specialization: pickScalarString(fRaw.factory_type),
+    tags: [],
+    minOrder: Number(fRaw.min_order ?? 0),
+    leadTime: pickScalarString(fRaw.lead_time_desc),
+    image: pickScalarString(fRaw.image_url),
+    verified: Boolean(fRaw.verified),
+    completedOrders: Number(fRaw.completed_orders ?? 0),
+    priceRange: '',
+    factoryTypeName: pickScalarString(fRaw.factory_type),
+  };
+}
+
+function mapEmbeddedReviews(rRaw: Record<string, unknown>): ReviewsData {
+  const s = (rRaw.summary ?? {}) as Record<string, unknown>;
+  const breakdown: Record<string, number> = { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
+  const b = (s.breakdown ?? s.rating_breakdown) as Record<string, unknown> | undefined;
+  if (b && typeof b === 'object') {
+    for (const k of ['5', '4', '3', '2', '1']) {
+      const n = Number(b[k] ?? 0);
+      if (Number.isFinite(n)) breakdown[k] = n;
+    }
+  }
+  const rawItems = (Array.isArray(rRaw.items) ? rRaw.items : []) as Record<string, unknown>[];
+  return {
+    summary: {
+      average: Number(s.average ?? 0),
+      total: Number(s.total ?? 0),
+      breakdown,
+    },
+    items: rawItems
+      .map((row) => ({
+        id: String(row.review_id ?? row.id ?? ''),
+        reviewer: String(row.reviewer_name ?? row.reviewer ?? 'ลูกค้า'),
+        rating: Number(row.rating ?? 0),
+        comment: String(row.comment ?? ''),
+        createdAt: String(row.created_at ?? ''),
+      }))
+      .filter((r) => r.id),
+  };
+}
+
+function parseGroupedRelated(raw: unknown, excludeId: string): FactoryShowcase[] {
+  const buckets: FactoryShowcase[] = [];
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    for (const rows of Object.values(raw as Record<string, unknown>)) {
+      if (Array.isArray(rows)) {
+        buckets.push(...(rows as Record<string, unknown>[]).map(mapShowcaseFromApi));
+      }
+    }
+  } else if (Array.isArray(raw)) {
+    buckets.push(...(raw as Record<string, unknown>[]).map(mapShowcaseFromApi));
+  }
+  const uniq = new Map<string, FactoryShowcase>();
+  for (const row of buckets) {
+    if (!row.id || row.id === excludeId) continue;
+    if (!['product', 'promotion', 'material'].includes(row.contentType)) continue;
+    if (!uniq.has(row.id)) uniq.set(row.id, row);
+  }
+  return [...uniq.values()].slice(0, 8);
+}
+
+// ─── Page config ─────────────────────────────────────────────────────────────
 
 type ShowcaseContentType = FactoryShowcase['contentType'];
 
@@ -42,6 +135,8 @@ function hasRichSections(c: FactoryShowcase | null | undefined): boolean {
   return Boolean(c?.sections && Array.isArray(c.sections) && c.sections.length > 0);
 }
 
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
 function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const { acceptTypes } = PAGE_CONFIG[kind];
   const { id: pathId } = useParams<{ id: string }>();
@@ -63,22 +158,32 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
 
   const shouldFetchDetail = Boolean(resolvedId && !hasRichSections(fromContext));
 
+  // [1] GET /api/v1/showcases/:id — showcase + factory + reviews in one call
   const detailQ = useQuery({
     queryKey: showcaseKeys.detail(resolvedId),
     queryFn: async () => {
-      const raw = await showcasesApi.get(resolvedId);
-      const row = unwrapShowcaseDetailPayload(raw as Record<string, unknown>);
+      const raw = (await showcasesApi.get(resolvedId)) as Record<string, unknown>;
+      const row = unwrapShowcaseDetailPayload(raw);
       const s = mapShowcaseFromApi(row);
       if (!s.id || !acceptTypes.includes(s.contentType)) {
         throw new Error('ไม่พบข้อมูลโชว์เคส');
       }
-      return s;
+      const fRaw = (row.factory ?? raw.factory) as Record<string, unknown> | undefined;
+      const rRaw = (row.reviews ?? raw.reviews) as Record<string, unknown> | undefined;
+      return {
+        showcase: s,
+        factory: fRaw ? mapEmbeddedFactory(fRaw) : null,
+        reviews: rRaw ? mapEmbeddedReviews(rRaw) : null,
+      };
     },
     enabled: shouldFetchDetail,
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
-  const apiItem = detailQ.data ?? null;
+
+  const apiItem = detailQ.data?.showcase ?? null;
+  const embeddedFactory = detailQ.data?.factory ?? null;
+  const embeddedReviews = detailQ.data?.reviews ?? null;
   const fetchLoading = detailQ.isLoading;
   const fetchError =
     detailQ.error instanceof Error
@@ -95,78 +200,37 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
 
   const shouldFetchRelated = kind !== 'idea' && Boolean(resolvedId);
 
+  // [3] GET /api/v1/showcases?types=PD,PM,MT&sub_category_id=X&limit=8
+  // รอให้ item พร้อมก่อน → ใช้ sub_category_id/category_id โดยตรง ไม่ต้อง fetch ซ้ำ
   const relatedQ = useQuery({
     queryKey: [...showcaseKeys.detail(resolvedId), 'related', kind],
     queryFn: async () => {
-      const detailRaw = await showcasesApi.get(resolvedId).catch(() => ({}));
-      const detailRow = unwrapShowcaseDetailPayload((detailRaw as Record<string, unknown>) ?? {});
-      const detail = item ?? mapShowcaseFromApi(detailRow);
+      if (!item) return [] as FactoryShowcase[];
       const apiTypes: Array<'PD' | 'PM' | 'MT'> = ['PD', 'PM', 'MT'];
+      const currentId = item.id || String(resolvedId);
+      const subId = Number(item.sub_category_id ?? NaN);
+      const catId = Number(item.categoryId ?? NaN);
 
-      const subIdFromDetail = detail.sub_category_id ?? Number(detailRow.sub_category_id ?? NaN);
-      const catIdFromDetail =
-        detail.categoryId != null && String(detail.categoryId).trim() !== ''
-          ? Number(detail.categoryId)
-          : Number(detailRow.category_id ?? NaN);
-
-      const buckets: FactoryShowcase[] = [];
-
-      if (Number.isFinite(Number(subIdFromDetail)) && Number(subIdFromDetail) > 0) {
-        const subLists = await Promise.all(
-          apiTypes.map((type) =>
-            showcasesApi
-              .listFiltered({ type, sub_category_id: Number(subIdFromDetail) })
-              .catch(() => []),
-          ),
-        );
-        for (const rawSub of subLists) {
-          const subRows = (Array.isArray(rawSub) ? rawSub : []) as Record<string, unknown>[];
-          buckets.push(...subRows.map(mapShowcaseFromApi));
-        }
+      if (Number.isFinite(subId) && subId > 0) {
+        const raw = await showcasesApi
+          .listFiltered({ types: apiTypes, sub_category_id: subId, limit: 8, exclude: currentId })
+          .catch(() => []);
+        return parseGroupedRelated(raw, currentId);
       }
 
-      if (Number.isFinite(Number(catIdFromDetail)) && Number(catIdFromDetail) > 0) {
-        const catLists = await Promise.all(
-          apiTypes.map((type) =>
-            showcasesApi
-              .listFiltered({ type, category_id: Number(catIdFromDetail) })
-              .catch(() => []),
-          ),
-        );
-        for (const rawCat of catLists) {
-          const catRows = (Array.isArray(rawCat) ? rawCat : []) as Record<string, unknown>[];
-          buckets.push(...catRows.map(mapShowcaseFromApi));
-        }
+      if (Number.isFinite(catId) && catId > 0) {
+        const raw = await showcasesApi
+          .listFiltered({ types: apiTypes, category_id: catId, limit: 8, exclude: currentId })
+          .catch(() => []);
+        return parseGroupedRelated(raw, currentId);
       }
 
-      if (buckets.length === 0) {
-        const allLists = await Promise.all(
-          apiTypes.map((type) => showcasesApi.listFiltered({ type }).catch(() => [])),
-        );
-        for (const rawAll of allLists) {
-          const allRows = (Array.isArray(rawAll) ? rawAll : []) as Record<string, unknown>[];
-          buckets.push(...allRows.map(mapShowcaseFromApi));
-        }
-      }
-
-      const currentId = detail.id || String(resolvedId);
-      const uniq = new Map<string, FactoryShowcase>();
-      for (const row of buckets) {
-        if (!row.id || row.id === currentId) continue;
-        if (
-          !(
-            row.contentType === 'product' ||
-            row.contentType === 'promotion' ||
-            row.contentType === 'material'
-          )
-        ) {
-          continue;
-        }
-        if (!uniq.has(row.id)) uniq.set(row.id, row);
-      }
-      return [...uniq.values()].slice(0, 8);
+      const raw = await showcasesApi
+        .listFiltered({ types: apiTypes, limit: 8, exclude: currentId })
+        .catch(() => []);
+      return parseGroupedRelated(raw, currentId);
     },
-    enabled: shouldFetchRelated && Boolean(resolvedId),
+    enabled: shouldFetchRelated && Boolean(resolvedId) && Boolean(item),
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
@@ -198,6 +262,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     return [...uniq.values()].slice(0, 8);
   }, [data.factoryShowcases, item, kind, relatedApiShowcases]);
 
+  // [2] POST /api/v1/showcases/:id/view — fire & forget
   useEffect(() => {
     if (!resolvedId || !item) return;
     const ready = apiItem != null || hasRichSections(fromContext);
@@ -209,7 +274,11 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
 
   const loading = Boolean(resolvedId && !item && fetchLoading);
   const error = fetchError || null;
-  const factory = item ? data.factories.find((f) => showcaseIdMatches(f.id, item.factoryId)) : null;
+
+  // factory: embedded จาก API response → fallback to store
+  const factory: Factory | null =
+    embeddedFactory ??
+    (item ? (data.factories.find((f) => showcaseIdMatches(f.id, item.factoryId)) ?? null) : null);
 
   return {
     resolvedId,
@@ -217,6 +286,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
     loading,
     error,
     factory,
+    reviews: embeddedReviews,
     relatedShowcases,
     relatedProducts: kind === 'product' ? relatedShowcases : ([] as FactoryShowcase[]),
   };

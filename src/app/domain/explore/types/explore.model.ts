@@ -45,6 +45,7 @@ export type IExploreSlide = {
 };
 
 export type IExplorePageData = {
+  categories: IExploreCategory[];
   pdShowcases: IExploreShowcase[];
   pmShowcases: IExploreShowcase[];
   idShowcases: IExploreShowcase[];
@@ -54,6 +55,7 @@ export type IExplorePageData = {
 };
 
 export const EMPTY_EXPLORE_PAGE_DATA: IExplorePageData = {
+  categories: [],
   pdShowcases: [],
   pmShowcases: [],
   idShowcases: [],
