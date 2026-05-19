@@ -58,6 +58,16 @@ export const factoryRfqsApi = {
       active: IRfqListItem[];
       closed: IRfqListItem[];
     }>('/rfqs/factory/board'),
+
+  getRFQBoard: (params?: { kind?: string; show_dismissed?: boolean }) => {
+    const qs = new URLSearchParams();
+    if (params?.kind) qs.set('kind', params.kind);
+    if (params?.show_dismissed) qs.set('show_dismissed', 'true');
+    const query = qs.toString();
+    return httpClient.get<{ rfqs: Record<string, unknown>[]; factory_category_ids: number[] }>(
+      `/factory/rfq-board${query ? `?${query}` : ''}`,
+    );
+  },
 };
 
 export const quotationsApi = {
