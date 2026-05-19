@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { useAuthStore, useAuth } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
+import { useSessionStore } from '@/stores/useSessionStore';
 import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
 import { chatKeys, orderKeys, rfqKeys } from '@/lib/queryKeys';
@@ -82,35 +83,42 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     set((state) => ({ ...state, isLoading: true, error: null }));
 
     try {
-      const [bootstrapRes, notifRes] = await Promise.allSettled([
+      const [sessionRes, notifRes] = await Promise.allSettled([
         frontendApi.getBootstrap(),
         fetchNotificationsList(),
       ]);
 
-      const boot = bootstrapRes.status === 'fulfilled' ? bootstrapRes.value : null;
+      const session = sessionRes.status === 'fulfilled' ? sessionRes.value : null;
       const notificationModels = notifRes.status === 'fulfilled' ? notifRes.value : [];
 
       const mappedNotifs: Notification[] = notificationModels.map(
         mapNotificationToBootstrapModel,
       );
 
+      useSessionStore.setState({
+        data: session,
+        isLoading: false,
+        error: null,
+        lastFetchedAt: session ? Date.now() : null,
+      });
+
+      const u = session?.currentUser as unknown as Record<string, unknown> | undefined;
+      const w = session?.wallet as unknown as Record<string, unknown> | undefined;
+
       set({
-        currentUser: boot?.currentUser
-          ? (() => {
-              const u = boot.currentUser;
-              return {
-                id: pickScalarString(u.id),
-                name: pickScalarString(u.name),
-                nameEn: u.nameEn != null ? pickScalarString(u.nameEn) : undefined,
-                avatar: pickScalarString(u.avatar),
-                company: pickScalarString(u.company),
-                email: pickScalarString(u.email),
-                phone: pickScalarString(u.phone),
-                walletBalance: pickScalarNumber(u.walletBalance) ?? 0,
-                pendingBalance: pickScalarNumber(u.pendingBalance) ?? 0,
-                memberSince: pickScalarString(u.memberSince),
-              } as CurrentUser;
-            })()
+        currentUser: u
+          ? ({
+              id: pickScalarString(u.id),
+              name: pickScalarString(u.name),
+              nameEn: u.nameEn != null ? pickScalarString(u.nameEn) : undefined,
+              avatar: pickScalarString(u.avatar) || undefined,
+              company: pickScalarString(u.company) || undefined,
+              email: pickScalarString(u.email),
+              phone: pickScalarString(u.phone),
+              walletBalance: pickScalarNumber(w?.balance ?? u.walletBalance) ?? 0,
+              pendingBalance: pickScalarNumber(w?.pending_balance ?? u.pendingBalance) ?? 0,
+              memberSince: pickScalarString(u.member_since ?? u.memberSince),
+            } as CurrentUser)
           : null,
         categories: [],
         factories: [],

@@ -4,11 +4,11 @@ import { useSearchParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useFactoryIdeasCategorySelection } from '@/hooks/useFactoryIdeasCategoryFromUrl';
-import { showcaseQueryTypeFromTab, useShowcases } from '@/hooks/useShowcases';
 import {
   useFactoryIdeasCategoriesQuery,
   useFactoryIdeasFactoryListQuery,
-  useFactoryIdeasSubCategoriesQuery,
+  useFactoryIdeasShowcasesPaginatedQuery,
+  type ShowcasePaginatedParams,
 } from '@/domain/factory/queries/useFactoryIdeasQueries';
 import {
   factoryIdeasCategoryOptionSelected,
@@ -19,9 +19,20 @@ import {
   type FactoryIdeasContentType,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 
+const PAGE_LIMIT = 80;
+
 type UseFactoryIdeasPageStateOptions = {
   layout: 'desktop' | 'mobile';
 };
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
 
 export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOptions) {
   const [searchParams] = useSearchParams();
@@ -34,13 +45,16 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   const skipSubResetOnNextCategoryChangeRef = useRef(false);
   const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+
+  const debouncedSearchText = useDebounce(searchText, 400);
 
   const data = useData();
   const favorites = useFavorites();
   const isFactoryTab = selectedType === 'factory';
   const isMaterialTab = selectedType === 'material';
 
-  const categoriesQ = useFactoryIdeasCategoriesQuery(isMaterialTab);
+  const categoriesQ = useFactoryIdeasCategoriesQuery();
   const apiCategoriesAll = categoriesQ.data ?? [];
 
   const loadFactories = selectedType === 'all' || selectedType === 'factory';
@@ -48,35 +62,48 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   const factoryList = factoriesQ.data ?? [];
   const factoriesLoading = factoriesQ.isLoading;
 
-  const showcaseApiType = isFactoryTab ? undefined : showcaseQueryTypeFromTab(selectedType);
-  const { showcases: pageShowcases, loading: showcasesLoading } = useShowcases({
-    type: showcaseApiType,
-  });
   const { effectiveCategoryId, applyCategory } = useFactoryIdeasCategorySelection(
     data.categories,
     apiCategoriesAll,
   );
 
-  const selectedCategoryIdForSubs = effectiveCategoryId !== 'all' ? effectiveCategoryId : null;
+  // Sub-categories are now embedded in the categories response — no separate queries
+  const panelSubs = useMemo(() => {
+    if (!menuHighlightCategoryId || menuHighlightCategoryId === 'all' || isMaterialTab) return [];
+    return apiCategoriesAll.find((c) => c.id === menuHighlightCategoryId)?.subCategories ?? [];
+  }, [menuHighlightCategoryId, apiCategoriesAll, isMaterialTab]);
 
-  const panelSubsEnabled =
-    !isMaterialTab &&
-    categoryMenuOpen &&
-    Boolean(menuHighlightCategoryId) &&
-    menuHighlightCategoryId !== 'all';
+  const subCategories = useMemo(() => {
+    if (isMaterialTab || !effectiveCategoryId || effectiveCategoryId === 'all') return [];
+    return apiCategoriesAll.find((c) => c.id === effectiveCategoryId)?.subCategories ?? [];
+  }, [effectiveCategoryId, apiCategoriesAll, isMaterialTab]);
 
-  const panelSubsQ = useFactoryIdeasSubCategoriesQuery(menuHighlightCategoryId, {
-    enabled: panelSubsEnabled,
-  });
-  const panelSubs = panelSubsEnabled ? (panelSubsQ.data ?? []) : [];
-  const panelSubsLoading = panelSubsQ.isLoading;
+  const panelSubsLoading = false;
+  const subCategoriesLoading = false;
 
-  const subCategoriesQ = useFactoryIdeasSubCategoriesQuery(selectedCategoryIdForSubs, {
-    enabled: !isMaterialTab && Boolean(selectedCategoryIdForSubs),
-  });
-  const subCategories =
-    !isMaterialTab && selectedCategoryIdForSubs ? (subCategoriesQ.data ?? []) : [];
-  const subCategoriesLoading = subCategoriesQ.isLoading;
+  // Always fetch all types so switching tabs hits the cache instead of re-fetching
+  const showcaseTypes = useMemo((): ('PD' | 'PM' | 'ID' | 'MT')[] => {
+    if (isFactoryTab) return [];
+    return ['PD', 'PM', 'ID', 'MT'];
+  }, [isFactoryTab]);
+
+  // filter params (categoryId, subCategoryId, keyword) ถูกกรองฝั่ง client แล้ว
+  // ไม่ส่งไป API เพื่อให้ query key คงที่ → React Query cache hit ทุกครั้งที่เปลี่ยน filter
+  const showcaseParams: ShowcasePaginatedParams = {
+    types: showcaseTypes,
+    page,
+    limit: PAGE_LIMIT,
+  };
+
+  const showcasesQ = useFactoryIdeasShowcasesPaginatedQuery(showcaseParams, !isFactoryTab);
+  const pageShowcases = showcasesQ.data?.items ?? [];
+  const totalShowcases = showcasesQ.data?.total ?? 0;
+  const showcasesLoading = showcasesQ.isLoading || showcasesQ.isFetching;
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText]);
 
   useEffect(() => {
     const t = searchParams.get('type');
@@ -92,21 +119,9 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   }, [searchParams]);
 
   const categoryFilters = useMemo(() => {
-    if (isMaterialTab) {
-      const rest = [...apiCategoriesAll].sort((a, b) => a.name.localeCompare(b.name, 'th'));
-      return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
-    }
-    const byId = new Map<string, string>();
-    for (const c of apiCategoriesAll) byId.set(String(c.id), c.name);
-    for (const c of data.categories) {
-      const id = String(c.id);
-      if (!byId.has(id)) byId.set(id, c.name);
-    }
-    const rest = [...byId.entries()]
-      .map(([id, name]) => ({ id, name }))
-      .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+    const rest = [...apiCategoriesAll].sort((a, b) => a.name.localeCompare(b.name, 'th'));
     return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
-  }, [apiCategoriesAll, data.categories, isMaterialTab]);
+  }, [apiCategoriesAll]);
 
   const prevIsMaterialTabRef = useRef<boolean | null>(null);
   useEffect(() => {
@@ -151,13 +166,12 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
       setSelectedSubCategoryId(null);
       return;
     }
-
     if (skipSubResetOnNextCategoryChangeRef.current) {
       skipSubResetOnNextCategoryChangeRef.current = false;
     } else {
       setSelectedSubCategoryId(null);
     }
-  }, [selectedCategoryIdForSubs, isMaterialTab]);
+  }, [effectiveCategoryId, isMaterialTab]);
 
   const categoryMenuTriggerLabel = useMemo(() => {
     if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';
@@ -168,84 +182,65 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
   }, [effectiveCategoryId, selectedSubCategoryId, categoryFilters, subCategories, isMaterialTab]);
 
-  const categoryRowsForMatching = useMemo(
-    () => data.categories.map((c) => ({ id: String(c.id), name: c.name })),
-    [data.categories],
-  );
+  // Client-side filter fallback (in case the server doesn't honour category/keyword params)
+  const filteredShowcases = useMemo(() => {
+    let items = pageShowcases;
 
-  const filterShowcases = (mode: 'default' | 'idea' | 'material') => {
-    const q = searchText.trim().toLowerCase();
-    return pageShowcases
-      .filter((item) => {
-        const hideIdeaFromAll =
-          mode === 'default' && selectedType === 'all' && item.contentType === 'idea';
-        const byType =
-          mode === 'idea'
-            ? item.contentType === 'idea'
-            : mode === 'material'
-              ? item.contentType === 'material'
-              : selectedType === 'all' || item.contentType === selectedType;
-        const byCategory = showcaseMatchesSelectedCategoryId(
-          item.category,
+    if (effectiveCategoryId && effectiveCategoryId !== 'all') {
+      items = items.filter((s) =>
+        showcaseMatchesSelectedCategoryId(
+          s.category ?? '',
           effectiveCategoryId,
           apiCategoriesAll,
-          categoryRowsForMatching,
-          item.categoryId,
-        );
-        const bySubCategory = !(
-          selectedSubCategoryId &&
-          item.sub_category_id != null &&
-          String(item.sub_category_id) !== selectedSubCategoryId
-        );
-        if (!q) return !hideIdeaFromAll && byType && byCategory && bySubCategory;
-        const haystack = [
-          item.title,
-          item.excerpt,
-          item.factoryName,
-          item.category,
-          ...(item.tags ?? []),
-        ]
+          data.categories,
+          s.categoryId,
+        ),
+      );
+    }
+
+    if (selectedSubCategoryId) {
+      items = items.filter(
+        (s) => s.sub_category_id != null && String(s.sub_category_id) === selectedSubCategoryId,
+      );
+    }
+
+    if (debouncedSearchText.trim()) {
+      const q = debouncedSearchText.trim().toLowerCase();
+      items = items.filter((s) => {
+        const haystack = [s.title, s.excerpt, s.category, s.factoryName, ...(s.tags ?? [])]
           .join(' ')
           .toLowerCase();
-        return !hideIdeaFromAll && byType && byCategory && bySubCategory && haystack.includes(q);
-      })
-      .sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
-  };
+        return haystack.includes(q);
+      });
+    }
 
-  const visibleItems = useMemo(
-    () => (isFactoryTab ? [] : filterShowcases('default')),
-    [
-      searchText,
-      selectedType,
-      effectiveCategoryId,
-      selectedSubCategoryId,
-      pageShowcases,
-      apiCategoriesAll,
-      categoryRowsForMatching,
-      isFactoryTab,
-    ],
-  );
+    return items;
+  }, [
+    pageShowcases,
+    effectiveCategoryId,
+    selectedSubCategoryId,
+    debouncedSearchText,
+    apiCategoriesAll,
+    data.categories,
+  ]);
+
+  const visibleItems = useMemo(() => {
+    if (isFactoryTab) return [];
+    if (selectedType === 'all') return filteredShowcases.filter((s) => s.contentType !== 'idea');
+    if (selectedType === 'product') return filteredShowcases.filter((s) => s.contentType === 'product');
+    if (selectedType === 'promotion') return filteredShowcases.filter((s) => s.contentType === 'promotion');
+    if (selectedType === 'material') return filteredShowcases.filter((s) => s.contentType === 'material');
+    return filteredShowcases;
+  }, [filteredShowcases, selectedType, isFactoryTab]);
+
   const visibleIdeaItems = useMemo(
-    () => filterShowcases('idea'),
-    [
-      searchText,
-      effectiveCategoryId,
-      selectedSubCategoryId,
-      pageShowcases,
-      apiCategoriesAll,
-      categoryRowsForMatching,
-    ],
+    () => filteredShowcases.filter((s) => s.contentType === 'idea'),
+    [filteredShowcases],
   );
+
   const visibleMaterialItems = useMemo(
-    () => filterShowcases('material'),
-    [
-      searchText,
-      effectiveCategoryId,
-      selectedSubCategoryId,
-      pageShowcases,
-      apiCategoriesAll,
-      categoryRowsForMatching,
-    ],
+    () => filteredShowcases.filter((s) => s.contentType === 'material'),
+    [filteredShowcases],
   );
 
   const visibleFactories = useMemo(() => {
@@ -264,10 +259,9 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     ? visibleFactories.length
     : selectedType === 'idea'
       ? visibleIdeaItems.length
-      : selectedType === 'material'
-        ? visibleMaterialItems.length
-        : visibleItems.length +
-          (selectedType === 'all' ? visibleFactories.length + visibleIdeaItems.length : 0);
+      : selectedType === 'all'
+        ? totalShowcases + visibleFactories.length
+        : visibleItems.length;
 
   const closeCategoryMenu = () => {
     setCategoryMenuOpen(false);
@@ -324,6 +318,10 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     visibleMaterialItems,
     visibleFactories,
     totalCount,
+    totalShowcases,
+    page,
+    setPage,
+    pageLimit: PAGE_LIMIT,
     categoryMenuTriggerLabel,
     closeCategoryMenu,
     pickSubCategory,

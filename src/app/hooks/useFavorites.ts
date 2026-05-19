@@ -1,6 +1,7 @@
 import React from 'react';
 import { favoritesApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
+import { useSessionStore } from '@/stores/useSessionStore';
 
 type FavoriteRow = Record<string, unknown>;
 
@@ -12,8 +13,21 @@ function extractShowcaseId(row: FavoriteRow): string {
 
 export function useFavorites() {
   const { isAuthenticated } = useAuth();
+  const sessionData = useSessionStore((s) => s.data);
+  const sessionLoaded = sessionData !== null;
+
   const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
   const [loading, setLoading] = React.useState(false);
+  const seededFromSessionRef = React.useRef(false);
+
+  // Seed from session when it becomes available (no extra API call needed)
+  React.useEffect(() => {
+    if (sessionLoaded && !seededFromSessionRef.current) {
+      seededFromSessionRef.current = true;
+      const ids = new Set((sessionData?.favorites ?? []).map(String));
+      setLikedIds(ids);
+    }
+  }, [sessionLoaded, sessionData]);
 
   const load = React.useCallback(async () => {
     if (!isAuthenticated) {
@@ -21,6 +35,9 @@ export function useFavorites() {
       setLoading(false);
       return;
     }
+    // If session already seeded favorites, skip the separate API call
+    if (seededFromSessionRef.current) return;
+
     setLoading(true);
     try {
       const raw = await favoritesApi.list();

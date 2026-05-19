@@ -82,6 +82,25 @@ export const showcasesApi = {
     return httpClient.get<unknown[]>(endpoint);
   },
 
+  listFiltered: (params: {
+    types?: string[];
+    type?: string;
+    sub_category_id?: number;
+    category_id?: number;
+    limit?: number;
+    exclude?: string | number;
+  }) => {
+    const p = new URLSearchParams();
+    if (params.types?.length) p.set('types', params.types.join(','));
+    else if (params.type) p.set('type', params.type);
+    if (params.sub_category_id != null) p.set('sub_category_id', String(params.sub_category_id));
+    if (params.category_id != null) p.set('category_id', String(params.category_id));
+    if (params.limit != null) p.set('limit', String(params.limit));
+    if (params.exclude != null) p.set('exclude', String(params.exclude));
+    const qs = p.toString();
+    return httpClient.get<unknown>(`/showcases${qs ? `?${qs}` : ''}`);
+  },
+
   listByFactory: (factoryId: string | number, contentType?: string) => {
     const params = new URLSearchParams({ factory_id: String(factoryId) });
     if (contentType) params.set('content_type', contentType);
@@ -119,6 +138,9 @@ export const showcasesApi = {
 
   deleteImage: (id: string | number, imageId: string | number) =>
     httpClient.delete<void>(`/showcases/${id}/images/${imageId}`),
+
+  incrementView: (id: string | number) =>
+    httpClient.post<void>(`/showcases/${id}/view`, {}).catch(() => {}),
 };
 
 export const mediaApi = {

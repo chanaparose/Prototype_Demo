@@ -9,11 +9,18 @@ import type {
   IUnitResponse,
 } from '@/services/api/types/master.types';
 import type { IProductionStepTemplateResponse } from '@/services/api/types/production.types';
+import type { ICategoryWithSubsResponse } from '@/services/api/types/explore.types';
 
 export const categoriesApi = {
   list: (limit?: number) => {
     const endpoint = limit ? `/categories?limit=${limit}` : '/categories';
     return httpClient.get<ICategoryResponse[]>(endpoint);
+  },
+
+  listWithSubs: (scope?: string) => {
+    const params = new URLSearchParams({ include_sub: 'true', limit: '0' });
+    if (scope) params.set('scope', scope);
+    return httpClient.get<ICategoryWithSubsResponse[]>(`/categories?${params}`);
   },
 
   get: (id: string | number) => httpClient.get<ICategoryResponse>(`/categories/${id}`),

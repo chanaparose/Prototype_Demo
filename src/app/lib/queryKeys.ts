@@ -78,6 +78,13 @@ export const factoryIdeasKeys = {
   categories: (materialTab: boolean) =>
     [...factoryIdeasKeys.all, 'categories', materialTab ? 'MT' : 'PD'] as const,
   factoryList: () => [...factoryIdeasKeys.all, 'factories'] as const,
+  showcasesPaginated: (params: Record<string, unknown>) =>
+    [...factoryIdeasKeys.all, 'showcases-paginated', params] as const,
+};
+
+export const sessionKeys = {
+  all: ['session'] as const,
+  data: () => [...sessionKeys.all, 'data'] as const,
 };
 
 export const showcaseKeys = {

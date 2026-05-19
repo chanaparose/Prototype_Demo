@@ -79,3 +79,86 @@ export interface IExploreApiResponse {
   showcases: IShowcasesGroupedResponse;
   promoSlides: IPromoSlideResponse[];
 }
+
+/** Response shape จาก GET /api/v1/categories?include_sub=true */
+export interface ICategoryWithSubsResponse {
+  category_id: number;
+  name: string;
+  scope?: string;
+  sub_categories: IExploreSubCategoryResponse[];
+}
+
+/** Response shape จาก GET /api/v1/showcases?types=...&page=N&limit=N (paginated flat list) */
+export interface IShowcasePaginatedResponse {
+  total: number;
+  page: number;
+  limit: number;
+  items: IExploreShowcaseResponse[];
+}
+
+/** /me/session types */
+export interface ISessionOffer {
+  quote_id: number;
+  factory_id: number;
+  factory_name: string;
+  factory_image_url?: string;
+  factory_verified: boolean;
+  price_per_piece?: number;
+  grand_total?: number;
+  lead_time_days?: number;
+  status: string;
+}
+
+export interface ISessionRFQ {
+  rfq_id: number;
+  title: string;
+  status: string;
+  quantity?: number;
+  target_price?: number;
+  category_name: string;
+  created_at: string;
+  offer_count: number;
+  offers: ISessionOffer[];
+}
+
+export interface ISessionOrder {
+  order_id: number;
+  title: string;
+  factory_id: number;
+  factory_name: string;
+  factory_image_url?: string;
+  status: string;
+  total_amount?: number;
+  deposit_amount?: number;
+  estimated_delivery?: string;
+  created_at: string;
+}
+
+export interface ISessionThread {
+  conv_id: number;
+  counterpart_id: number;
+  counterpart_name: string;
+  counterpart_image_url?: string;
+  last_message: string;
+  last_message_at: string;
+  unread: number;
+}
+
+export interface ISessionResponse {
+  currentUser: {
+    id: number;
+    role: string;
+    name: string;
+    email: string;
+    phone: string;
+    member_since: string;
+  };
+  wallet: {
+    balance: number;
+    pending_balance: number;
+  };
+  rfqs: ISessionRFQ[];
+  orders: ISessionOrder[];
+  threads: ISessionThread[];
+  favorites: number[];
+}
