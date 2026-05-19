@@ -37,6 +37,18 @@ export const rfqsApi = {
     if (params.sub_category_id != null) qs.set('sub_category_id', String(params.sub_category_id));
     return httpClient.get<Record<string, unknown>>(`/rfqs/preview-factories?${qs.toString()}`);
   },
+
+  matching: (params?: { kind?: string; show_dismissed?: boolean }) => {
+    const qs = new URLSearchParams();
+    if (params?.kind) qs.set('kind', params.kind);
+    if (params?.show_dismissed) qs.set('show_dismissed', 'true');
+    const query = qs.toString();
+    return httpClient.get<Record<string, unknown>[]>(`/rfqs/matching${query ? `?${query}` : ''}`);
+  },
+
+  close: (id: string | number) => httpClient.patch<{ message: string }>(`/rfqs/${id}/close`, {}),
+
+  cancel: (id: string | number) => httpClient.patch<{ message: string }>(`/rfqs/${id}/cancel`, {}),
 };
 
 export const factoryRfqsApi = {

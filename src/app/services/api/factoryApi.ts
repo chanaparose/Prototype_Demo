@@ -64,10 +64,14 @@ export const factoriesApi = {
     }),
 
   getCategories: (factoryId: string | number) =>
-    httpClient.get<{ category_ids: number[] }>(`/factories/${factoryId}/categories`),
+    httpClient.get<{ data: { category_id: number; name: string }[]; total: number }>(
+      `/factories/${factoryId}/categories`,
+    ),
 
   getSubCategories: (factoryId: string | number) =>
-    httpClient.get<{ sub_category_ids: number[] }>(`/factories/${factoryId}/sub-categories`),
+    httpClient.get<{ data: { sub_category_id: number; category_id: number; name: string }[]; total: number }>(
+      `/factories/${factoryId}/sub-categories`,
+    ),
 
   removeCategory: (factoryId: string | number, categoryId: string | number) =>
     httpClient.delete<void>(`/factories/${factoryId}/categories/${categoryId}`),

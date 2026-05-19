@@ -10,7 +10,8 @@ export function useFactoryCategories(factoryId: number | string | null | undefin
     enabled,
     queryFn: async () => {
       const raw = await factoriesApi.getCategories(factoryId as string | number);
-      const arr = (Array.isArray(raw) ? raw : []) as Row[];
+      const rawObj = raw as Record<string, unknown>;
+      const arr = (Array.isArray(rawObj?.data) ? rawObj.data : Array.isArray(raw) ? raw : []) as Row[];
       return arr
         .map((r) => Number(r.category_id ?? r.row_id ?? r.id))
         .filter((n) => Number.isFinite(n) && n > 0);

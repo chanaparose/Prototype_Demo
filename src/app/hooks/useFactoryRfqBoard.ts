@@ -67,11 +67,21 @@ export function useFactoryRfqBoard() {
       if (fid != null) {
         try {
           const fc = await factoriesApi.getCategories(fid);
-          catIds = (Array.isArray(fc) ? fc : [])
+          const fcRaw = fc as Record<string, unknown>;
+          // BE returns { data: [{category_id, name}, ...], total: N } via WriteListResponse
+          const fcArr = Array.isArray(fcRaw?.data)
+            ? (fcRaw.data as unknown[])
+            : Array.isArray(fc)
+              ? (fc as unknown[])
+              : [];
+          catIds = fcArr
             .map((r) =>
-              Number(
-                (r as Record<string, unknown>).category_id ?? (r as Record<string, unknown>).id,
-              ),
+              typeof r === 'number'
+                ? r
+                : Number(
+                    (r as Record<string, unknown>).category_id ??
+                      (r as Record<string, unknown>).id,
+                  ),
             )
             .filter((n) => Number.isFinite(n) && n > 0);
         } catch {
