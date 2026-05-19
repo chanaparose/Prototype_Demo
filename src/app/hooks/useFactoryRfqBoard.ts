@@ -72,7 +72,7 @@ export function useFactoryRfqBoard() {
         const shippingMethodId = shipIdRaw != null && Number(shipIdRaw) > 0 ? Number(shipIdRaw) : null;
         const shippingMethodName = pickScalarString(inner.shipping_method_name, row.shipping_method_name).trim();
 
-        const urls = inner.reference_images ?? inner.image_urls;
+        const urls = inner.reference_images;
         let thumbUrl: string | null = null;
         if (Array.isArray(urls) && urls.length > 0) {
           const u0 = urls[0];

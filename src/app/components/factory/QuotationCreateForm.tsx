@@ -16,9 +16,10 @@ import {
   type QuotationFormSchemaValues,
 } from '@/domain/factory/schemas/quotationForm.schema';
 import { useQueryClient } from '@tanstack/react-query';
-import { rfqsApi, quotationsApi, quotationApi } from '@/services/api/rfqApi';
+import { quotationsApi } from '@/services/api/rfqApi';
 import { mediaApi } from '@/services/api/factoryApi';
 import type { IQuotationBreakdown } from '@/services/api/types/rfq.types';
+import { calculateQuotationBreakdown, type CommissionConfig } from '@/utils/quotationCalculator';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import { hoursUntilDeadline } from '@/utils/rfqDeadline';
@@ -64,6 +65,7 @@ interface Props {
   budgetPerPiece?: number | null;
   targetDaysCustomer?: number | null;
   deadlineIso?: string | null;
+  commissionConfig?: CommissionConfig | null;
 }
 
 function fmt(n: number): string {
@@ -89,6 +91,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       budgetPerPiece = null,
       targetDaysCustomer = null,
       deadlineIso = null,
+      commissionConfig = null,
     },
     ref,
   ) {
@@ -138,40 +141,19 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       return w;
     }, [priceWatch, leadWatch, budgetPerPiece, targetDaysCustomer, deadlineIso]);
 
-    const [preview, setPreview] = useState<IQuotationBreakdown | null>(null);
-    const [previewLoading, setPreviewLoading] = useState(false);
-    const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    useEffect(() => {
+    const preview = useMemo<IQuotationBreakdown | null>(() => {
+      if (!commissionConfig) return null;
       const priceN = Number(priceWatch);
       const qty = rfqQuantity ?? 0;
-      if (priceN <= 0 || qty <= 0) {
-        setPreview(null);
-        return;
-      }
-      if (previewTimer.current) clearTimeout(previewTimer.current);
-      previewTimer.current = setTimeout(async () => {
-        setPreviewLoading(true);
-        try {
-          const result = await quotationApi.preview({
-            rfq_id: Number(rfqId),
-            items: [{ description: 'สินค้า', qty, unit_price: priceN, discount_pct: 0 }],
-            shipping_cost: Number(shippingWatch) || 0,
-            packaging_cost: Number(packagingWatch) || 0,
-            tooling_mold_cost: Number(moldWatch) || 0,
-            discount_amount: 0,
-          });
-          setPreview(result);
-        } catch {
-          setPreview(null);
-        } finally {
-          setPreviewLoading(false);
-        }
-      }, 400);
-      return () => {
-        if (previewTimer.current) clearTimeout(previewTimer.current);
-      };
-    }, [priceWatch, shippingWatch, packagingWatch, moldWatch, rfqId, rfqQuantity]);
+      return calculateQuotationBreakdown(commissionConfig, {
+        pricePerPiece: priceN,
+        quantity: qty,
+        shippingCost: Number(shippingWatch) || 0,
+        packagingCost: Number(packagingWatch) || 0,
+        toolingMoldCost: Number(moldWatch) || 0,
+      });
+    }, [commissionConfig, priceWatch, shippingWatch, packagingWatch, moldWatch, rfqQuantity]);
+    const previewLoading = false;
 
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
     const [factoryHighlight, setFactoryHighlight] = useState<string>(initialFactoryHighlight ?? '');
@@ -266,9 +248,9 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
         body.payment_terms = LOCKED_PAYMENT_TERMS;
         if (patchQuotationId) {
-          await quotationsApi.patch(patchQuotationId, body);
+          await quotationsApi.update(patchQuotationId, body);
         } else {
-          await rfqsApi.createQuotation(rfqId, body);
+          await quotationsApi.create(rfqId, body);
         }
         form.reset(v);
         await qc.invalidateQueries({ queryKey: ['rfq', rfqId] });

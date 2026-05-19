@@ -70,9 +70,11 @@ export const factoryRfqsApi = {
   },
 
   getRFQDetail: (rfqId: string | number) =>
-    httpClient.get<{ rfq: Record<string, unknown>; quotations: Record<string, unknown>[] }>(
-      `/factory/rfqs/${rfqId}/detail`,
-    ),
+    httpClient.get<{
+      rfq: Record<string, unknown>;
+      quotations: Record<string, unknown>[];
+      commission_config: { vat_rate: number; commission_rate: number };
+    }>(`/factory/rfqs/${rfqId}/detail`),
 };
 
 export const quotationsApi = {

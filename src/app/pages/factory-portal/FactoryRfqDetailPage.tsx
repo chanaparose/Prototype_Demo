@@ -91,6 +91,7 @@ export function FactoryRfqDetailPage() {
   const [rfqBody, setRfqBody] = useState<Record<string, unknown>>({});
   const [quotes, setQuotes] = useState<QuoteRow[]>([]);
   const [subCategoryName, setSubCategoryName] = useState('');
+  const [commissionConfig, setCommissionConfig] = useState<{ vat_rate: number; commission_rate: number } | null>(null);
 
   const quoteFormRef = useRef<QuotationCreateFormHandle>(null);
 
@@ -110,6 +111,7 @@ export function FactoryRfqDetailPage() {
       setRfqBody(rfq);
       setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as QuoteRow[]) : []);
       setSubCategoryName(String(rfq.sub_category_name ?? '').trim());
+      if (detail.commission_config) setCommissionConfig(detail.commission_config);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
     } finally {
@@ -705,6 +707,7 @@ export function FactoryRfqDetailPage() {
                     budgetPerPiece={budgetPerPiece}
                     targetDaysCustomer={targetDaysCustomer}
                     deadlineIso={deadlineIso}
+                    commissionConfig={commissionConfig}
                     onSubmitted={async () => {
                       await load();
                     }}
