@@ -1,14 +1,7 @@
 import { useMemo, useState } from 'react';
-import { useData } from '@/stores/useDataStore';
-import {
-  mapStoreCategoriesToExplore,
-  mapStoreFactoriesToExplore,
-} from '@/domain/explore/mappers/mapExploreCategory';
 import { exploreShowcaseToArticle } from '@/domain/explore/mappers/mapExploreShowcase';
 import type { IExploreCategory, IExploreShowcase } from '@/domain/explore/types/explore.model';
 import { useExplorePageDataQuery } from '@/domain/explore/queries/useExplorePageDataQuery';
-import { useExploreCategoriesFromApi } from '@/hooks/useExploreCategoriesFromApi';
-import { mergeCategoryLists } from '@/utils/exploreCategoriesFromApi';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 
 type UseExploreDataOptions = { enablePageApis?: boolean };
@@ -16,36 +9,22 @@ type UseExploreDataOptions = { enablePageApis?: boolean };
 export type { IExploreCategory, IExploreShowcase, IExploreArticle, IExploreSlide } from '@/domain/explore/types/explore.model';
 
 export function useExploreData(options?: UseExploreDataOptions) {
-  const { categories, factories, isLoading: dataLoading } = useData();
   const enablePageApis = options?.enablePageApis ?? true;
 
   const [searchText, setSearchText] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const {
-    merged: exploreCategoriesFromApi,
-    loading: exploreCategoriesLoading,
-    error: exploreCategoriesError,
-    reload: reloadExploreCategories,
-  } = useExploreCategoriesFromApi({ enabled: enablePageApis });
-
   const exploreQ = useExplorePageDataQuery(enablePageApis);
   const exploreData = exploreQ.data;
 
-  const exploreBootstrapCategories = useMemo<IExploreCategory[]>(
-    () => mapStoreCategoriesToExplore(categories),
-    [categories],
+  // categories come from the /explore response — no separate API call needed
+  const exploreCategoriesMerged = useMemo<IExploreCategory[]>(
+    () => exploreData?.categories ?? [],
+    [exploreData?.categories],
   );
 
-  const exploreFactories = useMemo<FactoryItem[]>(
-    () => mapStoreFactoriesToExplore(factories),
-    [factories],
-  );
-
-  const exploreCategoriesMerged = useMemo(
-    () => mergeCategoryLists(exploreCategoriesFromApi, exploreBootstrapCategories),
-    [exploreCategoriesFromApi, exploreBootstrapCategories],
-  );
+  // factories are not part of explore anymore (heavy data — load separately if needed)
+  const exploreFactories: FactoryItem[] = [];
 
   const productShowcases = useMemo<IExploreShowcase[]>(
     () => exploreData?.pdShowcases ?? [],
@@ -78,15 +57,17 @@ export function useExploreData(options?: UseExploreDataOptions) {
 
   const promoSlides = exploreData?.promoSlides ?? [];
 
-  const isLoading =
-    dataLoading || (enablePageApis && (exploreQ.isFetching || exploreCategoriesLoading));
+  const isLoading = enablePageApis && exploreQ.isFetching;
+  const exploreCategoriesLoading = isLoading;
+  const exploreCategoriesError = exploreQ.error ? String(exploreQ.error) : null;
+  const reloadExploreCategories = () => { void exploreQ.refetch(); };
 
   return {
     searchText,
     setSearchText,
     copiedId,
     setCopiedId,
-    exploreBootstrapCategories,
+    exploreBootstrapCategories: exploreCategoriesMerged,
     exploreFactories,
     ideaArticles,
     showcases,

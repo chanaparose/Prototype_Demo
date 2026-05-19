@@ -4,11 +4,9 @@ import { frontendApi } from '@/services/api/exploreApi';
 import { walletApi } from '@/services/api/userApi';
 import { queryClient } from '@/lib/queryClient';
 import { chatKeys, orderKeys, rfqKeys } from '@/lib/queryKeys';
-import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import { refreshConversationsCache } from '@/domain/chat/chatCache';
 import { fetchNotificationsList } from '@/domain/notifications/queries/useNotificationQueries';
 import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/mapNotification';
-import { normalizeFactoryRow } from '@/stores/utils';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import type {
   BootstrapCategoryModel,
@@ -75,39 +73,9 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
     const isAuthenticated = rawAuthState.isAuthenticated;
 
     if (!isAuthenticated) {
-      set({ isLoading: true, error: null });
-      try {
-        const boot = await frontendApi.getBootstrap();
-        const factoryList: Factory[] = (() => {
-          const raw = boot?.factories;
-          if (!Array.isArray(raw)) return [];
-          return (raw as Record<string, unknown>[])
-            .map((row) => normalizeFactoryRow(row))
-            .filter((f) => f.id && f.name);
-        })();
-        const categories: BootstrapCategoryModel[] = (() => {
-          const raw = boot?.categories;
-          if (!Array.isArray(raw) || raw.length === 0) return [];
-          return (raw as Record<string, unknown>[]).map((c) => {
-            const name = pickScalarString(c.name);
-            return {
-              id: pickScalarString(c.id, c.category_id),
-              name,
-              icon: pickScalarString(c.icon) || guessCategoryIcon(name),
-              color: pickScalarString(c.color) || 'var(--brand-violet)',
-            } as BootstrapCategoryModel;
-          });
-        })();
-        set({
-          ...INITIAL_STATE,
-          categories,
-          factories: factoryList,
-          isLoading: false,
-          error: null,
-        });
-      } catch {
-        set({ ...INITIAL_STATE, isLoading: false, error: null });
-      }
+      // Guest: bootstrap returns only empty shells — no categories/factories anymore
+      // (they come from GET /explore which the explore page loads on its own)
+      set({ ...INITIAL_STATE, isLoading: false, error: null });
       return;
     }
 
@@ -125,14 +93,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
       const mappedNotifs: Notification[] = notificationModels.map(
         mapNotificationToBootstrapModel,
       );
-
-      const factoryList: Factory[] = (() => {
-        const raw = boot?.factories;
-        if (!Array.isArray(raw)) return [];
-        return (raw as Record<string, unknown>[])
-          .map((row) => normalizeFactoryRow(row))
-          .filter((f) => f.id && f.name);
-      })();
 
       set({
         currentUser: boot?.currentUser
@@ -152,22 +112,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
               } as CurrentUser;
             })()
           : null,
-        categories: (() => {
-          const raw = boot?.categories;
-          if (Array.isArray(raw) && raw.length > 0) {
-            return (raw as Record<string, unknown>[]).map((c) => {
-              const name = pickScalarString(c.name);
-              return {
-                id: pickScalarString(c.id, c.category_id),
-                name,
-                icon: pickScalarString(c.icon) || guessCategoryIcon(name),
-                color: pickScalarString(c.color) || 'var(--brand-violet)',
-              } as BootstrapCategoryModel;
-            });
-          }
-          return [];
-        })(),
-        factories: factoryList,
+        categories: [],
+        factories: [],
         factoryProfiles: [],
         factoryReviews: [],
         ideaArticles: [],

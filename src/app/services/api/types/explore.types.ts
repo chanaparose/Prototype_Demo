@@ -72,3 +72,10 @@ export interface IPromoSlideResponse {
   image_url: string;
   link_to: string;
 }
+
+/** Response shape จาก GET /api/v1/explore — single call ที่รวม categories + showcases + promoSlides */
+export interface IExploreApiResponse {
+  categories: IExploreCategoryResponse[];
+  showcases: IShowcasesGroupedResponse;
+  promoSlides: IPromoSlideResponse[];
+}

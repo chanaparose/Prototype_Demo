@@ -4,23 +4,25 @@
 
 import { httpClient } from '@/services/api/httpClient';
 import {
+  type IExploreApiResponse,
   type IExploreResponse,
   type IPromoSlideResponse,
   type IShowcasesGroupedResponse,
 } from '@/services/api/types/explore.types';
 
 export interface FrontendBootstrapResponse {
-  currentUser: {
+  currentUser?: {
     id: number;
     role: string;
     name: string;
+    company?: string;
     email: string;
     phone: string;
+    walletBalance?: number;
+    pendingBalance?: number;
     memberSince: string;
-  };
-  wallet: {
-    balance: number;
-    pendingBalance: number;
+    nameEn?: string;
+    avatar?: string;
   };
   rfqs: unknown[];
   orders: unknown[];
@@ -76,7 +78,12 @@ export const frontendApi = {
   getPromoCodes: () => httpClient.get<unknown[]>('/frontend/promo-codes'),
 };
 
-/** GET /api/v1/showcases?types=PD,MT&limit=8 — returns grouped { PD: [...], MT: [...] } */
+/** GET /api/v1/explore — single call: categories + showcases (PD/MT/PM/ID) + promoSlides */
+export const exploreApi = {
+  get: () => httpClient.get<IExploreApiResponse>('/explore'),
+};
+
+/** @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ showcases field */
 export const showcasesExploreApi = {
   listByTypes: (types: ('PD' | 'PM' | 'ID' | 'MT')[], limit: number) => {
     const params = new URLSearchParams({ types: types.join(','), limit: String(limit) });
@@ -84,7 +91,7 @@ export const showcasesExploreApi = {
   },
 };
 
-/** GET /api/v1/promo-slides?limit=N — returns direct array (banner slides) */
+/** @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ promoSlides field */
 export const promoSlidesApi = {
   list: (limit = 5) =>
     httpClient.get<IPromoSlideResponse[]>(`/promo-slides?limit=${limit}`),

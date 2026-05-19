@@ -1,4 +1,4 @@
-import { showcasesExploreApi, promoSlidesApi } from '@/services/api/exploreApi';
+import { exploreApi } from '@/services/api/exploreApi';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import {
   EMPTY_EXPLORE_PAGE_DATA,
@@ -54,36 +54,25 @@ function normSlide(r: IPromoSlideResponse | Record<string, unknown>): IExploreSl
 }
 
 export async function fetchExplorePageData(): Promise<IExplorePageData> {
-  // Phase 2 — above fold (PD+MT, PM parallel กับ phase 3)
-  // Phase 3 — below fold (PM, ID, promo-slides)
-  // รวมเป็น 4 calls parallel เพื่อให้ simple ก่อน
-  const [pdRes, mtRes, pmRes, idRes, slidesRes] = await Promise.allSettled([
-    showcasesExploreApi.listByTypes(['PD'], 15),
-    showcasesExploreApi.listByTypes(['MT'], 15),
-    showcasesExploreApi.listByTypes(['PM'], 15),
-    showcasesExploreApi.listByTypes(['ID'], 15),
-    promoSlidesApi.list(5),
-  ]);
+  // Single call to GET /api/v1/explore — replaces 6 separate calls
+  const data = await exploreApi.get();
+  const s = data.showcases ?? {};
 
-  const pdData = pdRes.status === 'fulfilled' ? pdRes.value : {};
-  const pdShowcases = mapShowcaseList(Array.isArray(pdData?.PD) ? pdData.PD! : []);
-
-  const mtData = mtRes.status === 'fulfilled' ? mtRes.value : {};
-  const mtShowcases = mapShowcaseList(Array.isArray(mtData?.MT) ? mtData.MT! : []);
-
-  const pmData = pmRes.status === 'fulfilled' ? pmRes.value : {};
-  const pmShowcases = mapShowcaseList(Array.isArray(pmData?.PM) ? pmData.PM! : []);
-
-  const idData = idRes.status === 'fulfilled' ? idRes.value : {};
-  const idShowcases = mapShowcaseList(Array.isArray(idData?.ID) ? idData.ID! : []);
-
-  let promoSlides: IExploreSlide[] = [];
-  if (slidesRes.status === 'fulfilled') {
-    const arr = Array.isArray(slidesRes.value) ? slidesRes.value : [];
-    promoSlides = arr.map(normSlide).filter((s) => s.id && s.title);
-  }
-
-  return { pdShowcases, pmShowcases, idShowcases, mtShowcases, promoSlides, promoCodes: [] };
+  return {
+    categories: (data.categories ?? []).map((c) => ({
+      id: String(c.category_id ?? c.id ?? ''),
+      name: c.name,
+      parentId: null,
+    })).filter((c) => c.id && c.name),
+    pdShowcases: mapShowcaseList(Array.isArray(s.PD) ? s.PD! : []),
+    mtShowcases: mapShowcaseList(Array.isArray(s.MT) ? s.MT! : []),
+    pmShowcases: mapShowcaseList(Array.isArray(s.PM) ? s.PM! : []),
+    idShowcases: mapShowcaseList(Array.isArray(s.ID) ? s.ID! : []),
+    promoSlides: (Array.isArray(data.promoSlides) ? data.promoSlides : [])
+      .map(normSlide)
+      .filter((sl) => sl.id && sl.title),
+    promoCodes: [],
+  };
 }
 
 export function exploreShowcaseToArticle(s: IExploreShowcase): IExploreArticle {
