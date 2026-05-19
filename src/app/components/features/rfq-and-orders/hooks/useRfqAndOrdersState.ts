@@ -1,12 +1,12 @@
 import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
+import { useData } from '@/stores/useDataStore';
 import { type Rfq, type Order } from '@/stores/types';
 import { getRfqFilterId } from '@/components/features/rfq-and-orders/utils';
 import { type RfqFilterId, type OrderFilterId } from '@/components/features/rfq-and-orders/constants';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
-import { useOrderListQuery } from '@/domain/order/queries/useOrderListQuery';
-import { rfqKeys, orderKeys } from '@/lib/queryKeys';
+import { rfqKeys } from '@/lib/queryKeys';
 
 type PrimaryTab = 'rfq' | 'orders';
 
@@ -26,18 +26,14 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     initial?.orderFilter ?? 'pending_payment',
   );
 
-  const rfqQuery = useRfqListQuery();
-  const orderQuery = useOrderListQuery();
+  const rfqListQuery = useRfqListQuery();
+  const dataCtx = useData();
 
-  const rfqs: Rfq[] = isAuthenticated ? (rfqQuery.data ?? []) : [];
-  const orders: Order[] = isAuthenticated ? (orderQuery.data ?? []) : [];
+  const rfqs: Rfq[] = isAuthenticated ? (rfqListQuery.data ?? []) : [];
+  const orders: Order[] = isAuthenticated ? dataCtx.orders : [];
 
-  const loading =
-    isAuthenticated &&
-    (rfqQuery.isLoading || (rfqQuery.isSuccess && orderQuery.isLoading && !orderQuery.data));
-  const error =
-    (rfqQuery.error instanceof Error ? rfqQuery.error.message : null) ??
-    (orderQuery.error instanceof Error ? orderQuery.error.message : null);
+  const loading = isAuthenticated && rfqListQuery.isLoading;
+  const error = rfqListQuery.error instanceof Error ? rfqListQuery.error.message : null;
 
   const filteredRfqs = React.useMemo(() => {
     return rfqs.filter((r) => {
@@ -94,10 +90,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     error,
     refetch: async () => {
       if (!isAuthenticated) return;
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: rfqKeys.list() }),
-        queryClient.invalidateQueries({ queryKey: orderKeys.list() }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: rfqKeys.list() });
     },
   };
 }

@@ -80,6 +80,12 @@ export const factoryIdeasKeys = {
   factoryList: () => [...factoryIdeasKeys.all, 'factories'] as const,
 };
 
+export const meKeys = {
+  all: ['me'] as const,
+  rfqOrders: () => [...meKeys.all, 'rfq-orders'] as const,
+  rfqOrderDetail: (id: string | number) => [...meKeys.all, 'rfq-orders', String(id)] as const,
+};
+
 export const showcaseKeys = {
   all: ['showcase'] as const,
   lists: () => [...showcaseKeys.all, 'list'] as const,

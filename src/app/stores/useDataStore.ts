@@ -10,6 +10,8 @@ import { fetchNotificationsList } from '@/domain/notifications/queries/useNotifi
 import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/mapNotification';
 import { normalizeFactoryRow } from '@/stores/utils';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { mapRfqStatusFromApi } from '@/domain/rfq/status';
+import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
 import type {
   BootstrapCategoryModel,
   Factory,
@@ -172,8 +174,55 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         factoryReviews: [],
         ideaArticles: [],
         factoryShowcases: [],
-        rfqs: [],
-        orders: [],
+        rfqs: (() => {
+          const raw = boot?.rfqs;
+          if (!Array.isArray(raw)) return [];
+          return (raw as Record<string, unknown>[]).map((r) => {
+            const category = pickScalarString(r.category);
+            const offerCount = pickScalarNumber(r.offerCount ?? r.offer_count) ?? 0;
+            const statusCode = pickScalarString(r.status);
+            const status = mapRfqStatusFromApi(statusCode, { quoteCount: offerCount });
+            return {
+              id: String(r.id ?? r.rfq_id ?? ''),
+              projectName: pickScalarString(r.projectName ?? r.project_name),
+              category,
+              categoryIcon: guessCategoryIcon(category),
+              status,
+              offerCount,
+              budget: pickScalarNumber(r.budget) ?? 0,
+              quantity: pickScalarNumber(r.quantity) ?? 0,
+              material: '',
+              deadline: '',
+              createdAt: pickScalarString(r.createdAt ?? r.created_at),
+              description: pickScalarString(r.description),
+              imageUrls: [],
+              offers: [],
+            } as Rfq;
+          });
+        })(),
+        orders: (() => {
+          const raw = boot?.orders;
+          if (!Array.isArray(raw)) return [];
+          return (raw as Record<string, unknown>[]).map((o) => {
+            const status = mapOrderStatusFromApi(pickScalarString(o.status));
+            return {
+              id: String(o.id ?? o.order_id ?? ''),
+              rfqId: String(o.rfqId ?? o.rfq_id ?? ''),
+              factoryId: String(o.factoryId ?? o.factory_id ?? ''),
+              factoryName: pickScalarString(o.factoryName ?? o.factory_name),
+              projectName: pickScalarString(o.projectName ?? o.project_name),
+              category: pickScalarString(o.category),
+              status,
+              progress: guessOrderProgress(status),
+              totalAmount: pickScalarNumber(o.totalAmount ?? o.total_amount) ?? 0,
+              depositPaid: pickScalarNumber(o.depositPaid ?? o.deposit_paid) ?? 0,
+              quantity: pickScalarNumber(o.quantity) ?? 0,
+              createdAt: pickScalarString(o.createdAt ?? o.created_at),
+              estimatedDelivery: pickScalarString(o.estimatedDelivery ?? o.estimated_delivery) || '',
+              timeline: [],
+            } as Order;
+          });
+        })(),
         notifications: mappedNotifs,
         isLoading: false,
         error: null,

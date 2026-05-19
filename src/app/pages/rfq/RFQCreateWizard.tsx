@@ -265,8 +265,7 @@ export function RFQCreateWizard() {
       description: draft.description,
       category_id: Number(draft.category_id),
       qty: Number(draft.qty),
-      unit: 'ชิ้น',
-      unit_id: undefined,
+
       sub_category_id: draft.sub_category_id,
       // Domestic only — not shown to customer
       incoterms: undefined,

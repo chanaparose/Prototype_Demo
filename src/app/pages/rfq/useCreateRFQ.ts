@@ -26,7 +26,6 @@ export function useCreateRFQ() {
         details: payload.description,
         category_id: Number(payload.category_id),
         quantity: Number(payload.qty),
-        unit: payload.unit || 'ชิ้น',
         target_price:
           payload.target_price != null && Number.isFinite(Number(payload.target_price))
             ? Number(payload.target_price)
@@ -37,7 +36,6 @@ export function useCreateRFQ() {
               .filter((u) => typeof u === 'string' && u.trim().length > 0)
               .slice(0, 5)
           : [],
-        address_id: Number(addressId),
         delivery_address_id: Number(addressId),
         shipping_method_id: Number(shippingMethodId),
         target_lead_time_days:

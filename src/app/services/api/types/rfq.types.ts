@@ -11,7 +11,6 @@ export interface IRfqListItem {
   quantity: number;
   details?: string;
   description?: string;
-  unit?: string;
   address_id: number;
   delivery_address_id?: number;
   shipping_method_id?: number;
@@ -38,7 +37,6 @@ export interface IRfqCreateRequest {
   title: string;
   quantity: number;
   details?: string;
-  unit?: string;
   address_id: number;
   target_price?: number;
   target_lead_time_days?: number;
@@ -130,7 +128,6 @@ export interface IRfqWizardCreateInput {
   category_id: number | string;
   sub_category_id?: number | string;
   qty: number;
-  unit?: string;
   target_price?: number;
   target_lead_time_days?: number;
   material_grade?: string;
