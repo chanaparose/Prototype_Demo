@@ -3,7 +3,7 @@ import React from 'react';
 const KEY = 'rfq_draft_v1';
 
 export type RFQDraft = {
-  request_kind?: 'PR' | 'PS' | 'MS';
+  request_kind?: 'PR' | 'PS' | 'MS' | 'MR';
   title: string;
   description: string;
   category_id: number | null;
@@ -23,9 +23,6 @@ export type RFQDraft = {
   delivery_address_id?: number;
   shipping_method_id?: number;
   certifications_required: string[];
-  sample_required: boolean;
-  sample_qty?: number;
-  inspection_type?: 'self' | 'third_party' | 'buyer_onsite';
   tech_drawing_url?: string;
   reference_images: string[];
   spec_sheet_url?: string;
@@ -43,7 +40,6 @@ const initialDraft: RFQDraft = {
   color_finish: '',
   packaging_spec: '',
   certifications_required: [],
-  sample_required: false,
   reference_images: [],
 };
 

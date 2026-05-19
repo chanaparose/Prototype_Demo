@@ -54,7 +54,13 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
     setAddrLoading(true);
     try {
       const raw = await addressesApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const arr = (
+        Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as Record<string, unknown>)?.data)
+            ? ((raw as Record<string, unknown>).data as unknown[])
+            : []
+      ) as Record<string, unknown>[];
       const mapped = arr
         .map(mapAddressFromApi)
         .filter((a): a is MappedAddress => a != null);
@@ -95,7 +101,12 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
     void masterApi
       .getShippingMethods()
       .then((raw) => {
-        const mapped = mapShippingMethodsList(raw);
+        const normalized = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as Record<string, unknown>)?.data)
+            ? ((raw as Record<string, unknown>).data as unknown[])
+            : [];
+        const mapped = mapShippingMethodsList(normalized);
         if (mapped.length > 0) setShippingMethods(mapped);
         shippingMapResult = Object.fromEntries(mapped.map((m) => [m.id, m.name]));
         onLoadedRef.current?.(addressMapResult, shippingMapResult);

@@ -26,9 +26,6 @@ export interface IRfqListItem {
   target_lead_time_days?: number;
   required_delivery_date?: string;
   certifications_required?: string[];
-  sample_required?: boolean;
-  sample_qty?: number;
-  inspection_type?: 'self' | 'third_party' | 'buyer_onsite';
 }
 
 export interface IRfqDetailResponse {
@@ -47,9 +44,6 @@ export interface IRfqCreateRequest {
   target_lead_time_days?: number;
   required_delivery_date?: string;
   certifications_required?: string[];
-  sample_required?: boolean;
-  sample_qty?: number;
-  inspection_type?: 'self' | 'third_party' | 'buyer_onsite';
 }
 
 export interface IQuotationResponse {
@@ -145,7 +139,6 @@ export interface IRfqWizardCreateInput {
   delivery_address_id?: number;
   shipping_method_id?: number;
   certifications_required?: string[];
-  inspection_type?: string;
   request_kind?: string;
   source_showcase_id?: number;
 }
