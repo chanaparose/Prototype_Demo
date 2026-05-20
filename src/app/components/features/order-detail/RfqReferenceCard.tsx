@@ -64,14 +64,12 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
     const load = async () => {
       try {
         const res = await quotationsApi.get(quoteId);
+        const raw = res as unknown as Record<string, unknown>;
+        const nested = raw.quotation;
         const payload =
-          res &&
-          typeof res === 'object' &&
-          !Array.isArray(res) &&
-          res.quotation &&
-          typeof res.quotation === 'object'
-            ? (res.quotation as Record<string, unknown>)
-            : (res as Record<string, unknown>);
+          nested != null && typeof nested === 'object' && !Array.isArray(nested)
+            ? (nested as Record<string, unknown>)
+            : raw;
         if (!mounted) return;
         setQuotationDetail(payload);
       } catch {

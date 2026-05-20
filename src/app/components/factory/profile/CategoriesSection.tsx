@@ -118,7 +118,7 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategorie
     return { pd, mt, unknown };
   }, [resolvedCategories, pdIds, mtIds]);
 
-  const renderCategoryGrid = (rows: { id: number; name: string }[]) => (
+  const renderCategoryGrid = (rows: { id: number; name: string }[], isMTGroup = false) => (
     <div className='grid gap-3 sm:grid-cols-2'>
       {rows.map((c) => (
         <CategoryCard
@@ -128,6 +128,7 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategorie
           categoryName={c.name}
           subCategoriesForCategory={byCategory.get(c.id) ?? []}
           selectedSubIds={subCategoryIds}
+          isMT={isMTGroup || mtIds.has(c.id)}
           onEditSubs={(cid) => setEditingCategoryId(cid)}
           onRemove={(cid) => {
             const subsInCategory = (byCategory.get(cid) ?? []).map((s) => s.id);
@@ -170,7 +171,7 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategorie
           <div>
             <p className='text-xs font-semibold text-emerald-700 mb-2'>หมวดวัตถุดิบ (MT)</p>
             {groupedCategories.mt.length > 0 ? (
-              renderCategoryGrid(groupedCategories.mt)
+              renderCategoryGrid(groupedCategories.mt, true)
             ) : (
               <div className='rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 px-3 py-2 text-xs text-emerald-600'>
                 ยังไม่ได้เลือกหมวด MT

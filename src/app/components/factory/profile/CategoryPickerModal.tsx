@@ -96,26 +96,29 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
     }
     setConfirming(true);
     setConfirmError('');
+    const mtIdSet = new Set(mtCategories.map((c) => c.id));
     try {
       await Promise.all(
-        selected.map((cid) =>
-          qc.fetchQuery({
-            queryKey: masterKeys.subCategories(cid),
-            queryFn: async () => {
-              const raw = await categoriesApi.subCategories(cid);
-              const arr = (Array.isArray(raw) ? raw : []) as Row[];
-              const normalized = arr
-                .map((r) => toSubCategoryOption(r, cid))
-                .filter((x): x is SubCategoryOption => x != null);
-              const uniq = new Map<number, SubCategoryOption>();
-              for (const item of normalized) {
-                if (!uniq.has(item.id)) uniq.set(item.id, item);
-              }
-              return [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
-            },
-            staleTime: 5 * 60_000,
-          }),
-        ),
+        selected
+          .filter((cid) => !mtIdSet.has(cid))
+          .map((cid) =>
+            qc.fetchQuery({
+              queryKey: masterKeys.subCategories(cid),
+              queryFn: async () => {
+                const raw = await categoriesApi.subCategories(cid);
+                const arr = (Array.isArray(raw) ? raw : []) as Row[];
+                const normalized = arr
+                  .map((r) => toSubCategoryOption(r, cid))
+                  .filter((x): x is SubCategoryOption => x != null);
+                const uniq = new Map<number, SubCategoryOption>();
+                for (const item of normalized) {
+                  if (!uniq.has(item.id)) uniq.set(item.id, item);
+                }
+                return [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
+              },
+              staleTime: 5 * 60_000,
+            }),
+          ),
       );
       onConfirm(selected);
     } catch (e) {

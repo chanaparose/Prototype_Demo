@@ -7,6 +7,7 @@ import {
   Factory,
   PackageSearch,
   FlaskConical,
+  Wheat,
   ChevronDown,
   Check,
   ClipboardList,
@@ -22,7 +23,7 @@ import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPage
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms';
+type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms' | 'mr';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
 
 type DropdownOption = { value: string; label: string };
@@ -154,6 +155,11 @@ function applyTab(rows: FactoryBoardRow[], tab: TabKey): FactoryBoardRow[] {
       (r) =>
         !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MS',
     );
+  if (tab === 'mr')
+    return rows.filter(
+      (r) =>
+        !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MR',
+    );
   return rows.filter(
     (r) =>
       !r.hasMyQuote &&
@@ -263,6 +269,10 @@ export function FactoryRfqBoardPage() {
         (r) =>
           !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MS',
       ).length,
+      mr: rows.filter(
+        (r) =>
+          !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MR',
+      ).length,
     }),
     [rows],
   );
@@ -356,7 +366,7 @@ export function FactoryRfqBoardPage() {
     { key: 'all', label: 'ทั้งหมด', count: counts.all },
   ];
   const kindTabs: {
-    key: Extract<TabKey, 'pr' | 'ps' | 'ms'>;
+    key: Extract<TabKey, 'pr' | 'ps' | 'ms' | 'mr'>;
     label: string;
     count: number;
     icon: React.ComponentType<{ size?: number; className?: string }>;
@@ -376,6 +386,13 @@ export function FactoryRfqBoardPage() {
       count: unansweredByKind.ms,
       icon: FlaskConical,
       hint: 'ขอวัสดุทดลอง',
+    },
+    {
+      key: 'mr',
+      label: 'สั่งวัตถุดิบ',
+      count: unansweredByKind.mr,
+      icon: Wheat,
+      hint: 'ขอวัตถุดิบ',
     },
   ];
 
@@ -445,7 +462,7 @@ export function FactoryRfqBoardPage() {
 
       {!noFactoryCategories ? (
         <>
-          <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
+          <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
             {kindTabs.map((k) => {
               const active = tab === k.key;
               const pending = unansweredByKind[k.key];

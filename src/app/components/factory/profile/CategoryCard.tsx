@@ -13,6 +13,7 @@ interface Props {
   selectedSubIds: number[];
   onEditSubs: (categoryId: number) => void;
   onRemove: (categoryId: number) => void;
+  isMT?: boolean;
 }
 
 export function CategoryCard({
@@ -23,6 +24,7 @@ export function CategoryCard({
   selectedSubIds,
   onEditSubs,
   onRemove,
+  isMT = false,
 }: Props) {
   const selectedHere = subCategoriesForCategory.filter((s) => selectedSubIds.includes(s.id));
   const [deleting, setDeleting] = useState(false);
@@ -59,17 +61,21 @@ export function CategoryCard({
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0'>
           <h3 className='text-sm font-bold text-gray-900'>{categoryName}</h3>
-          <p className='text-xs text-gray-500 mt-0.5'>{selectedHere.length} หมวดย่อยที่เลือกไว้</p>
+          {!isMT ? (
+            <p className='text-xs text-gray-500 mt-0.5'>{selectedHere.length} หมวดย่อยที่เลือกไว้</p>
+          ) : null}
         </div>
         <div className='flex items-center gap-1.5 shrink-0'>
-          <Button
-            onClick={() => onEditSubs(categoryId)}
-            variant='outline'
-            size='xs'
-            className='inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50'
-          >
-            <Pencil size={12} /> แก้ไข
-          </Button>
+          {!isMT && (
+            <Button
+              onClick={() => onEditSubs(categoryId)}
+              variant='outline'
+              size='xs'
+              className='inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50'
+            >
+              <Pencil size={12} /> แก้ไข
+            </Button>
+          )}
           <Button
             onClick={handleRemove}
             disabled={deleting}
@@ -84,19 +90,21 @@ export function CategoryCard({
       </div>
       {deleteError && <p className='text-xs text-red-600 mt-2'>{deleteError}</p>}
 
-      {selectedHere.length > 0 ? (
-        <ul className='mt-3 flex flex-wrap gap-1.5'>
-          {selectedHere.map((s) => (
-            <li
-              key={s.id}
-              className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
-            >
-              ✓ {s.name}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className='mt-3 text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย — กด [แก้ไข] เพื่อเลือก</p>
+      {!isMT && (
+        selectedHere.length > 0 ? (
+          <ul className='mt-3 flex flex-wrap gap-1.5'>
+            {selectedHere.map((s) => (
+              <li
+                key={s.id}
+                className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
+              >
+                ✓ {s.name}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className='mt-3 text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย — กด [แก้ไข] เพื่อเลือก</p>
+        )
       )}
     </div>
   );

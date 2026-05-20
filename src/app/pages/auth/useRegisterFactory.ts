@@ -43,7 +43,7 @@ const initial: FormState = {
 
 export type FactoryTypeOption = { factory_type_id: number; name_th: string };
 export type ProvinceOption = { id: number; name: string };
-export type CategoryOption = { id: number; name: string };
+export type CategoryOption = { id: number; name: string; scope?: string };
 export type SubCategoryOption = { id: number; name: string };
 export type CertTypeOption = { id: number; label: string };
 
@@ -150,7 +150,12 @@ export function useRegisterFactory() {
 
         setLbiCategories(
           unwrap(cats)
-            .map((r) => mapRow(r, ['category_id', 'id'], ['name_th', 'name']))
+            .map((r): CategoryOption | null => {
+              const base = mapRow(r, ['category_id', 'id'], ['name_th', 'name']);
+              if (!base) return null;
+              const o = r as Record<string, unknown>;
+              return { ...base, scope: String(o.scope ?? 'PD') };
+            })
             .filter((x): x is CategoryOption => x != null),
         );
 

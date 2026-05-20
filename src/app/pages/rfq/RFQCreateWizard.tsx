@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { categoriesApi } from '@/services/api/masterApi';
+import type { ISubCategoryResponse } from '@/services/api/types/master.types';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { pickScalarString } from '@/utils/pickScalarString';
 import { rfqsApi } from '@/services/api/rfqApi';
@@ -81,12 +82,12 @@ export function RFQCreateWizard() {
       .subCategories(cid)
       .then((raw) => {
         if (!active) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const arr: ISubCategoryResponse[] = Array.isArray(raw) ? raw : [];
         const mapped = arr
           .map((r) => ({
             id: Number(r.sub_category_id ?? r.id ?? 0),
-            name: pickScalarString(r.sub_category_name, r.name, r.name_th),
-            sortOrder: Number(r.sort_order ?? r.sortOrder ?? NaN),
+            name: pickScalarString(r.sub_category_name, r.name),
+            sortOrder: Number(r.sort_order ?? NaN),
           }))
           .filter((s) => Number.isFinite(s.id) && s.id > 0 && s.name);
         setSubCategories(mapped);
@@ -267,10 +268,6 @@ export function RFQCreateWizard() {
       qty: Number(draft.qty),
 
       sub_category_id: draft.sub_category_id,
-      // Domestic only — not shown to customer
-      incoterms: undefined,
-
-      payment_terms: undefined,
     });
     reset();
     navigate('/orders');

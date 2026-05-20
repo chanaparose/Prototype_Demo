@@ -402,7 +402,10 @@ export function RegisterFactoryPage() {
                   </div>
 
                   {/* Sub-category panel — appears once below grid, never shifts grid above */}
-                  {form.category_ids.some((id) => (lbiSubCategories[id] ?? []).length > 0) && (
+                  {form.category_ids.some((id) => {
+                    const cat = lbiCategories.find((c) => c.id === id);
+                    return cat?.scope !== 'MT' && (lbiSubCategories[id] ?? []).length > 0;
+                  }) && (
                     <div className='rounded-xl border border-brand-purple/15 bg-brand-lavender/40 p-4 space-y-4'>
                       <p className='text-xs font-semibold text-brand-purple/70 uppercase tracking-wide'>
                         หมวดย่อย (เลือกเพิ่มเติม)
@@ -410,6 +413,7 @@ export function RegisterFactoryPage() {
                       {lbiCategories
                         .filter(
                           (cat) =>
+                            cat.scope !== 'MT' &&
                             form.category_ids.includes(cat.id) &&
                             (lbiSubCategories[cat.id] ?? []).length > 0,
                         )
