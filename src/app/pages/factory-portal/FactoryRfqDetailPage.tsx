@@ -725,7 +725,7 @@ export function FactoryRfqDetailPage() {
                     ถอนใบเสนอราคา
                   </Button>
                 ) : null}
-                {!dismissBusy && !myQuote ? (
+                {!dismissBusy ? (
                   <DismissRfqButton
                     rfqId={Number(id)}
                     rfqCode={`#${id}`}

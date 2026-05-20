@@ -11,6 +11,7 @@ import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
 import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import type {
   BootstrapCategoryModel,
   Factory,
@@ -129,7 +130,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         ideaArticles: [],
         factoryShowcases: [],
         rfqs: (() => {
-          const raw = boot?.rfqs;
+          const raw = session?.rfqs;
           if (!Array.isArray(raw)) return [];
           return (raw as Record<string, unknown>[]).map((r) => {
             const category = pickScalarString(r.category);
@@ -155,7 +156,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           });
         })(),
         orders: (() => {
-          const raw = boot?.orders;
+          const raw = session?.orders;
           if (!Array.isArray(raw)) return [];
           return (raw as Record<string, unknown>[]).map((o) => {
             const status = mapOrderStatusFromApi(pickScalarString(o.status));

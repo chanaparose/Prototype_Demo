@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import {
   Search,
   SlidersHorizontal,
@@ -10,7 +10,9 @@ import {
   ChevronDown,
   Check,
   ClipboardList,
+  EyeOff,
 } from 'lucide-react';
+import { factoryRfqsApi } from '@/services/api/rfqApi';
 import { RfqCard, type RfqCardModel } from '@/components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '@/hooks/useFactoryRfqBoard';
 import { useDisclosure } from '@/hooks/ui/useDisclosure';
@@ -217,9 +219,22 @@ function sortRows(rows: FactoryBoardRow[], sort: SortKey): FactoryBoardRow[] {
 }
 
 export function FactoryRfqBoardPage() {
-  const { fid, rows, factoryCategoryIds, shipNameById, loading, error, reload } =
-    useFactoryRfqBoard();
+  const {
+    fid,
+    rows,
+    factoryCategoryIds,
+    shipNameById,
+    loading,
+    error,
+    reload,
+    dismissedRows,
+    dismissedLoading,
+    dismissedLoaded,
+    loadDismissed,
+    reloadDismissed,
+  } = useFactoryRfqBoard();
   const narrowTabs = useNarrowTabs(400);
+  const navigate = useNavigate();
 
   const [tab, setTab] = useState<TabKey>('open');
   const [search, setSearch] = useState('');
@@ -227,6 +242,8 @@ export function FactoryRfqBoardPage() {
   const [filterRfqStatus, setFilterRfqStatus] = useState('');
   const [filterShip, setFilterShip] = useState('');
   const [sort, setSort] = useState<SortKey>('new');
+  const [showDismissed, setShowDismissed] = useState(false);
+  const [undismissBusy, setUndismissBusy] = useState<string | null>(null);
 
   const counts = useMemo(() => tabCounts(rows), [rows]);
   // Kind counts = ยังไม่ได้เสนอ + OP เท่านั้น (ใช้ unansweredByKind แทน kindCounts)
@@ -306,6 +323,22 @@ export function FactoryRfqBoardPage() {
     setFilterCat('');
     setFilterRfqStatus('');
     setFilterShip('');
+  };
+
+  const toggleDismissed = () => {
+    const next = !showDismissed;
+    setShowDismissed(next);
+    if (next && !dismissedLoaded) void loadDismissed();
+  };
+
+  const handleUndismiss = async (rfqId: string) => {
+    setUndismissBusy(rfqId);
+    try {
+      await factoryRfqsApi.undismiss(rfqId);
+      await Promise.all([reload(), reloadDismissed()]);
+    } finally {
+      setUndismissBusy(null);
+    }
   };
 
   const boqCounts = useMemo(
@@ -507,6 +540,18 @@ export function FactoryRfqBoardPage() {
             </div>
           )}
 
+          <div className='flex justify-end -mt-1'>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={toggleDismissed}
+              className='flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 py-0.5'
+            >
+              <EyeOff size={11} />
+              {showDismissed ? 'ซ่อน RFQ ที่ข้ามไปแล้ว' : 'ดู RFQ ที่ข้ามไปแล้ว'}
+            </Button>
+          </div>
+
           <div className='sticky top-14 z-[5] bg-brand-page py-2 -my-1'>
             <div className='flex flex-col sm:flex-row gap-2'>
               <div className='relative flex-1'>
@@ -633,6 +678,46 @@ export function FactoryRfqBoardPage() {
               </div>
             ) : null}
           </div>
+
+          {showDismissed ? (
+            <div className='rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3'>
+              <div className='flex items-center gap-2'>
+                <EyeOff size={14} className='text-slate-400' />
+                <p className='text-[12px] font-semibold text-slate-500 uppercase tracking-wide'>
+                  RFQ ที่ข้ามไปแล้ว
+                </p>
+              </div>
+              {dismissedLoading ? (
+                <div className='flex justify-center py-4'>
+                  <div className='w-6 h-6 border-2 border-t-transparent border-slate-300 rounded-full animate-spin' />
+                </div>
+              ) : dismissedRows.length === 0 ? (
+                <p className='text-xs text-slate-400 text-center py-3'>ไม่มี RFQ ที่ถูกข้ามไป</p>
+              ) : (
+                <ul className='space-y-2'>
+                  {dismissedRows.map((r) => (
+                    <li
+                      key={r.id}
+                      className='flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5'
+                    >
+                      <button
+                        type='button'
+                        onClick={() => navigate(`/factory/rfqs/${r.id}`)}
+                        className='flex-1 min-w-0 text-left'
+                      >
+                        <p className='text-[13px] font-semibold text-slate-700 truncate'>{r.title}</p>
+                        <p className='text-[11px] text-slate-400'>
+                          #{r.id}
+                          {r.categoryName ? ` · ${r.categoryName}` : ''}
+                        </p>
+                      </button>
+                       
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : null}
 
           {pipeline.length === 0 ? (
             <div className='rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
