@@ -7,17 +7,21 @@ import type {
 
 export function matchTab(row: FactoryOrderRow, derived: DerivedCardState, tabId: TabId): boolean {
   if (tabId === 'all') return true;
+
+  // step_id=4 (จัดส่งแล้ว) กำลัง active → แสดงใน tab "จัดส่ง" เสมอ
+  const isShipping = row.production_summary?.current_step_id === 4;
+
   const needsAction =
     derived.flags.isOverdue ||
     derived.flags.hasRejected ||
     derived.flags.isStaleUpdate ||
-    row.status === 'SH' ||
     (row.status === 'QC' &&
       [null, 'PD'].includes(row.production_summary?.current_update_status ?? null));
-  if (tabId === 'needs_action') return needsAction;
-  if (tabId === 'in_production') return ['PR', 'QC'].includes(row.status) && !needsAction;
+
+  if (tabId === 'needs_action') return needsAction && !isShipping;
+  if (tabId === 'in_production') return ['PR', 'QC'].includes(row.status) && !needsAction && !isShipping;
   if (tabId === 'awaiting_customer') return row.status === 'PP';
-  if (tabId === 'shipped') return row.status === 'SH' && !needsAction;
+  if (tabId === 'shipped') return isShipping;
   if (tabId === 'completed') return row.status === 'CP';
   return ['CN', 'CC', 'CL', 'PE'].includes(row.status);
 }

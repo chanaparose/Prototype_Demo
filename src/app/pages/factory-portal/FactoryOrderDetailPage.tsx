@@ -616,7 +616,7 @@ export function FactoryOrderDetailPage() {
                   <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>กำหนดส่ง</p>
                     <p className='font-bold text-slate-900 text-sm mt-0.5'>
-                      {formatDate(order.estimated_delivery)}
+                      {formatDate(order.estimated_delivery as string | Date | null | undefined)}
                     </p>
                   </div>
                 </div>
@@ -627,8 +627,14 @@ export function FactoryOrderDetailPage() {
                   ข้อมูลคำสั่งซื้อ
                 </p>
                 {[
-                  { label: 'สร้างเมื่อ', value: formatDateTime(order.created_at) },
-                  { label: 'กำหนดส่ง', value: formatDateTime(order.estimated_delivery) },
+                  {
+                    label: 'สร้างเมื่อ',
+                    value: formatDateTime(order.created_at as string | Date | null | undefined),
+                  },
+                  {
+                    label: 'กำหนดส่ง',
+                    value: formatDateTime(order.estimated_delivery as string | Date | null | undefined),
+                  },
                   {
                     label: 'มูลค่ารวม',
                     value: formatCurrency(Number(order.total_amount ?? 0)),
