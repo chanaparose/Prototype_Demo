@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 
 type QuotationHistoryPanelProps = {
   quotationId: string | number;
+  preloadedHistory?: IQuotationHistoryEntry[];
 };
 
 const EVENT_LABEL: Record<string, string> = {
@@ -51,13 +52,25 @@ function normalizeHistoryRow(row: unknown): IQuotationHistoryEntry | null {
   };
 }
 
-export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProps) {
+export function QuotationHistoryPanel({ quotationId, preloadedHistory }: QuotationHistoryPanelProps) {
   const [open, setOpen] = React.useState(false);
-  const [history, setHistory] = React.useState<IQuotationHistoryEntry[]>([]);
+  const [history, setHistory] = React.useState<IQuotationHistoryEntry[]>(() =>
+    preloadedHistory
+      ? preloadedHistory.map(normalizeHistoryRow).filter((v): v is IQuotationHistoryEntry => v != null)
+      : [],
+  );
   const [loading, setLoading] = React.useState(false);
-  const [fetched, setFetched] = React.useState(false);
+  const [fetched, setFetched] = React.useState(Boolean(preloadedHistory));
 
   React.useEffect(() => {
+    if (preloadedHistory !== undefined) {
+      const mapped = preloadedHistory
+        .map(normalizeHistoryRow)
+        .filter((v): v is IQuotationHistoryEntry => v != null);
+      setHistory(mapped);
+      setFetched(true);
+      return;
+    }
     if (!quotationId) return;
     setLoading(true);
     setFetched(false);
@@ -75,7 +88,7 @@ export function QuotationHistoryPanel({ quotationId }: QuotationHistoryPanelProp
         setFetched(true);
         setLoading(false);
       });
-  }, [quotationId]);
+  }, [quotationId, preloadedHistory]);
 
   if (fetched && history.length <= 1) return null;
 

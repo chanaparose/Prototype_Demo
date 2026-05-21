@@ -2,8 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/stores/useAuthStore';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
-import { useProductionTemplate } from '@/domain/production/queries/useProductionTemplate';
-import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
 import { usePostProductionUpdate } from '@/domain/production/queries/usePostProductionUpdate';
 import { useRejectProductionUpdate } from '@/domain/production/queries/useRejectProductionUpdate';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
@@ -42,15 +40,21 @@ export function OrderProductionTab({
   onContactFactory,
 }: Props) {
   const { user } = useAuth();
-  const { effectiveProductionLocked, effectiveLockReason, lockContextMerged, production, uiMode } =
-    useOrderDetail();
+  const {
+    effectiveProductionLocked,
+    effectiveLockReason,
+    lockContextMerged,
+    production,
+    isProductionLoading,
+    isProductionError,
+    productionError,
+    uiMode,
+  } = useOrderDetail();
 
   const isFactory = isFactoryRole(user?.role);
   const isCustomer = !isFactory;
   const productionInteractive = isFactory && !uiMode.readOnly && !effectiveProductionLocked;
 
-  const tplQ = useProductionTemplate();
-  const updQ = useOrderProductionUpdates(orderId);
   const postMutation = usePostProductionUpdate(orderId);
   const rejectMutation = useRejectProductionUpdate(orderId);
 
@@ -59,17 +63,17 @@ export function OrderProductionTab({
 
   const drawerWide = useIsDesktop(768);
 
+  // Template steps come bundled in the production-updates response — no separate API call needed.
+  const templateSteps = production.template_preview ?? [];
+
   const merged = useMemo(() => {
-    if (!tplQ.data?.length || !updQ.data) return [];
-    return mergeTemplateWithUpdates(tplQ.data, updQ.data.updates);
-  }, [tplQ.data, updQ.data]);
+    if (!templateSteps.length) return [];
+    return mergeTemplateWithUpdates(templateSteps, production.updates);
+  }, [templateSteps, production.updates]);
 
-  const orderStatus = updQ.data?.order_status ?? production.order_status ?? '';
+  const orderStatus = production.order_status ?? '';
 
-  const templatePreview = useMemo(() => {
-    if (production.template_preview?.length) return production.template_preview;
-    return tplQ.data ?? [];
-  }, [production.template_preview, tplQ.data]);
+  const templatePreview = templateSteps;
 
   const handlePhoto = useCallback(
     (url: string) => {
@@ -134,7 +138,7 @@ export function OrderProductionTab({
     );
   }
 
-  if (tplQ.isLoading || updQ.isLoading) {
+  if (isProductionLoading) {
     return (
       <div className='flex flex-col items-center justify-center py-16 gap-3'>
         <div
@@ -146,19 +150,13 @@ export function OrderProductionTab({
     );
   }
 
-  if (tplQ.isError) {
+  if (isProductionError) {
     return (
-      <ErrorAlert>{productionErrorMessage(tplQ.error)}</ErrorAlert>
+      <ErrorAlert>{productionErrorMessage(productionError)}</ErrorAlert>
     );
   }
 
-  if (updQ.isError) {
-    return (
-      <ErrorAlert>{productionErrorMessage(updQ.error)}</ErrorAlert>
-    );
-  }
-
-  if (!tplQ.data?.length) {
+  if (!templateSteps.length) {
     return <p className='text-sm text-gray-500'>ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>;
   }
 

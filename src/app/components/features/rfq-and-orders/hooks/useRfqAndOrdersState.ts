@@ -1,7 +1,6 @@
 import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { type Rfq, type Order } from '@/stores/types';
 import { getRfqFilterId } from '@/components/features/rfq-and-orders/utils';
 import { type RfqFilterId, type OrderFilterId } from '@/components/features/rfq-and-orders/constants';
@@ -27,10 +26,10 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   );
 
   const rfqListQuery = useRfqListQuery();
-  const dataCtx = useData();
+  const result = rfqListQuery.data ?? { rfqs: [], orders: [] };
 
-  const rfqs: Rfq[] = isAuthenticated ? (rfqListQuery.data ?? []) : [];
-  const orders: Order[] = isAuthenticated ? dataCtx.orders : [];
+  const rfqs: Rfq[] = isAuthenticated ? result.rfqs : [];
+  const orders: Order[] = isAuthenticated ? result.orders : [];
 
   const loading = isAuthenticated && rfqListQuery.isLoading;
   const error = rfqListQuery.error instanceof Error ? rfqListQuery.error.message : null;

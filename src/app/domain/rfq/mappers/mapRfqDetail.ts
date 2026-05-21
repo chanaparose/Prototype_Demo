@@ -1,5 +1,6 @@
 import { type Rfq, type RfqOffer, type Order } from '@/stores/types';
 import { rfqsApi } from '@/services/api/rfqApi';
+import type { IQuotationHistoryEntry } from '@/services/api/types/rfq.types';
 import { ordersApi } from '@/services/api/ordersApi';
 import { masterApi, categoriesApi } from '@/services/api/masterApi';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
@@ -183,6 +184,8 @@ export type RfqDetailData = {
   relatedOrder: Order | null;
   /** quoteId → orderId สำหรับ multi-factory: แต่ละ AC quote มี order ของตัวเอง */
   quoteOrderMap: Record<string, string>;
+  /** quoteId → history entries — pre-fetched from bundle endpoint */
+  quoteHistories: Record<string, IQuotationHistoryEntry[]>;
   shippingMethodId: number | null;
   addressSummary: string;
   targetDays: number | null;
@@ -192,6 +195,7 @@ export const EMPTY_RFQ_DETAIL: RfqDetailData = {
   rfq: null,
   relatedOrder: null,
   quoteOrderMap: {},
+  quoteHistories: {},
   shippingMethodId: null,
   addressSummary: '',
   targetDays: null,
@@ -202,18 +206,16 @@ export async function fetchAndMapRfqDetail(
   categoryMap: Map<string, string>,
   factoryMap: Map<string, string>,
 ): Promise<RfqDetailData> {
-      // Fetch RFQ detail + quotations in parallel
-      const [rfqRes, quotesRes] = await Promise.allSettled([
-        rfqsApi.get(rfqId),
-        rfqsApi.getQuotations(rfqId),
-      ]);
+      // Single bundle call — replaces GET /rfqs/:id + GET /rfqs/:id/quotations + N×GET /quotations/:id/history
+      const bundle = await rfqsApi.getDetail(rfqId);
+      const bundleObj = bundle as unknown as Record<string, unknown>;
 
       let rawRfq: RawRfqDetail['rfq'] | null = null;
       let detailPayload: RawRfqDetail | null = null;
-      if (rfqRes.status === 'fulfilled' && rfqRes.value) {
-        const data = rfqRes.value as unknown as RawRfqDetail;
+      if (bundleObj.rfq) {
+        const data = { rfq: bundleObj.rfq } as unknown as RawRfqDetail;
         detailPayload = data;
-        rawRfq = data.rfq ?? (data as unknown as RawRfqDetail['rfq']);
+        rawRfq = data.rfq ?? (bundleObj.rfq as unknown as RawRfqDetail['rfq']);
       }
 
       if (!rawRfq || !rawRfq.rfq_id) {
@@ -222,18 +224,14 @@ export async function fetchAndMapRfqDetail(
 
       // Parse quotations
       let quotes: RawQuotation[] = [];
-      if (quotesRes.status === 'fulfilled') {
-        const raw = quotesRes.value as unknown;
-        if (Array.isArray(raw)) {
-          quotes = raw as RawQuotation[];
-        } else if (raw && typeof raw === 'object') {
-          const obj = raw as Record<string, unknown>;
-          const nested = obj.quotations ?? obj.data ?? obj.items ?? obj.results;
-          if (Array.isArray(nested)) {
-            quotes = nested as RawQuotation[];
-          }
-        }
+      const rawQuotes = bundleObj.quotations;
+      if (Array.isArray(rawQuotes)) {
+        quotes = rawQuotes as RawQuotation[];
       }
+
+      // Pre-fetched histories keyed by quote_id string
+      const quoteHistories: Record<string, IQuotationHistoryEntry[]> =
+        (bundleObj.quote_histories as Record<string, IQuotationHistoryEntry[]> | undefined) ?? {};
 
       // Map to FE type
       const rExtra = rawRfq as Record<string, unknown>;
@@ -543,6 +541,7 @@ export async function fetchAndMapRfqDetail(
     rfq: mappedRfq,
     relatedOrder,
     quoteOrderMap,
+    quoteHistories,
     shippingMethodId,
     addressSummary,
     targetDays,

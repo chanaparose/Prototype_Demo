@@ -27,6 +27,13 @@ export const rfqsApi = {
   getQuotationHistory: (rfqId: string | number) =>
     httpClient.get<IQuotationHistoryEntry[]>(`/rfqs/${rfqId}/quotation-history`),
 
+  getDetail: (id: string | number) =>
+    httpClient.get<{
+      rfq: IRfqDetailResponse;
+      quotations: IQuotationResponse[];
+      quote_histories: Record<string, IQuotationHistoryEntry[]>;
+    }>(`/rfqs/${id}/detail`),
+
   getWithImages: (id: string | number) =>
     httpClient.get<IRfqDetailResponse & { images: Array<{ image_id: string; url: string }> }>(
       `/rfqs/${id}/with-images`,

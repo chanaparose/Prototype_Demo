@@ -14,10 +14,15 @@ export interface IMeRFQOrderSummary {
   created_at: string;
   category_name: string | null;
   quotation_count: number;
+  target_price?: number | null;
   // Optional – only present when an order exists for this RFQ
   order_id?: number | null;
   order_status?: string | null;
   total_amount?: number | null;
+  factory_id?: number | null;
+  factory_name?: string | null;
+  estimated_delivery?: string | null;
+  order_created_at?: string | null;
 }
 
 export interface IMeQuotationSummary {

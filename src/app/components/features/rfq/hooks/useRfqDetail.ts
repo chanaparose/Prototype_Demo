@@ -23,6 +23,7 @@ export function useRfqDetail(rfqId: string | undefined) {
     rfq: detail.rfq,
     relatedOrder: detail.relatedOrder,
     quoteOrderMap: detail.quoteOrderMap,
+    quoteHistories: detail.quoteHistories,
     loading: query.isLoading,
     error,
     refetch: query.refetch,

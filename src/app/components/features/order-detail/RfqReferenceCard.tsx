@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
-import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
@@ -20,70 +19,9 @@ interface Props {
 export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   const [lightbox, setLightbox] = useState<string | null>(null);
-  const [rfqDetail, setRfqDetail] = useState<Record<string, unknown> | null>(null);
-  const [quotationDetail, setQuotationDetail] = useState<Record<string, unknown> | null>(null);
-  const [rfqLoading, setRfqLoading] = useState(false);
-  const [rfqError, setRfqError] = useState('');
 
-  useEffect(() => {
-    let mounted = true;
-    const rfqId = Number(rfq.rfq_id ?? 0);
-    if (!Number.isFinite(rfqId) || rfqId <= 0) return () => void 0;
-    const load = async () => {
-      setRfqLoading(true);
-      setRfqError('');
-      try {
-        const res = await rfqsApi.get(rfqId);
-        const payload = res.rfq;
-        const row: Record<string, unknown> =
-          payload && typeof payload === 'object'
-            ? (payload as unknown as Record<string, unknown>)
-            : (res as unknown as Record<string, unknown>);
-        if (!mounted) return;
-        setRfqDetail(row);
-      } catch (e) {
-        if (!mounted) return;
-        setRfqError(e instanceof Error ? e.message : 'โหลดข้อมูล RFQ ไม่สำเร็จ');
-      } finally {
-        if (mounted) setRfqLoading(false);
-      }
-    };
-    void load();
-    return () => {
-      mounted = false;
-    };
-  }, [rfq.rfq_id]);
-
-  useEffect(() => {
-    let mounted = true;
-    const quoteId = Number(quotation?.quote_id ?? 0);
-    if (!Number.isFinite(quoteId) || quoteId <= 0) {
-      setQuotationDetail(null);
-      return () => void 0;
-    }
-    const load = async () => {
-      try {
-        const res = await quotationsApi.get(quoteId);
-        const raw = res as unknown as Record<string, unknown>;
-        const nested = raw.quotation;
-        const payload =
-          nested != null && typeof nested === 'object' && !Array.isArray(nested)
-            ? (nested as Record<string, unknown>)
-            : raw;
-        if (!mounted) return;
-        setQuotationDetail(payload);
-      } catch {
-        if (!mounted) return;
-        setQuotationDetail(null);
-      }
-    };
-    void load();
-    return () => {
-      mounted = false;
-    };
-  }, [quotation?.quote_id]);
-
-  const data = rfqDetail ?? (rfq as unknown as Record<string, unknown>);
+  // Use enriched data from GET /orders/:id — no extra API calls needed.
+  const data = rfq as unknown as Record<string, unknown>;
   const quantity = Math.max(0, pickScalarNumber(data.quantity, rfq.quantity) ?? 0);
   const categoryName = pickScalarString(data.category_name, rfq.category_name) || '-';
   const subCategoryName = pickScalarString(data.sub_category_name, data.subCategoryName);
@@ -284,10 +222,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
             รายละเอียดใบเสนอราคา
           </p>
           {(() => {
-            const q = {
-              ...(quotation as unknown as Record<string, unknown>),
-              ...(quotationDetail ?? {}),
-            } as IQuoteNestedResponse & Record<string, unknown>;
+            const q = quotation as unknown as IQuoteNestedResponse & Record<string, unknown>;
             const pricePerPiece = Number(q.price_per_piece ?? 0);
             const qty = Math.max(0, Number(data.quantity ?? rfq.quantity ?? 0) || 0);
             const subtotalRaw = Number(q.subtotal ?? 0);
@@ -423,8 +358,6 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
           })()}
         </div>
       ) : null}
-      {rfqLoading ? <p className='text-xs text-gray-400'>กำลังโหลดสเปค RFQ...</p> : null}
-      {rfqError ? <p className='text-xs text-red-500'>{rfqError}</p> : null}
       <OrderPhotoGallery photoUrl={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );

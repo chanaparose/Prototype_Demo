@@ -65,7 +65,8 @@ export function DesktopSidebar() {
 
   const unreadMessages = useConversationUnreadCount();
   const unreadNotifications = useNotificationUnreadCount(isAuthenticated);
-  const { data: rfqList = [] } = useRfqListQuery();
+  const { data: rfqListResult } = useRfqListQuery();
+  const rfqList = rfqListResult?.rfqs ?? [];
   const activeRfqCount = rfqList.filter(
     (r) => r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired',
   ).length;

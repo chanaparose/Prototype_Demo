@@ -10,7 +10,7 @@ export function useOrderListQuery() {
   const { isAuthenticated } = useAuth();
   const dataCtx = useData();
   const rfqListQuery = useRfqListQuery();
-  const rfqs = rfqListQuery.data ?? [];
+  const rfqs = rfqListQuery.data?.rfqs ?? [];
 
   const factoryMap = useMemo(() => {
     const m = new Map<string, string>();

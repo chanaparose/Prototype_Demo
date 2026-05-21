@@ -414,12 +414,9 @@ function OrderDetailMobileBody() {
 
           {activeSection === 'overview' && (
             <>
-              <OrderBOQCard
-                rfqId={rfq?.rfq_id ?? 0}
-                quoteId={quotation?.quote_id ?? 0}
-                factoryId={order.factoryId}
-                factoryName={order.factoryName}
-              />
+              {quotation ? (
+                <OrderBOQCard quotation={quotation} factoryName={order.factoryName} />
+              ) : null}
               {rfq ? (
                 <RfqReferenceCard rfq={rfq} variant='accordion' quotation={quotation} />
               ) : null}

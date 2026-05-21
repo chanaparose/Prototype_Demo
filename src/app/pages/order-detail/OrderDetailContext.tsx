@@ -80,6 +80,9 @@ export type OrderDetailContextValue = {
   nextAction: NextAction | null;
   paymentSchedule: PaymentScheduleItem[];
   production: ProductionUpdatesBundle;
+  isProductionLoading: boolean;
+  isProductionError: boolean;
+  productionError: unknown;
   effectiveProductionLocked: boolean;
   effectiveLockReason: LockReason;
   lockContextMerged: ProductionLockContext;
@@ -204,6 +207,9 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       nextAction,
       paymentSchedule,
       production,
+      isProductionLoading: prodQ.isLoading,
+      isProductionError: prodQ.isError,
+      productionError: prodQ.error,
       effectiveProductionLocked,
       effectiveLockReason,
       lockContextMerged,

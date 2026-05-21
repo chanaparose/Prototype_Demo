@@ -36,6 +36,7 @@ export function RFQDetailMobile() {
     rfq,
     relatedOrder,
     quoteOrderMap: _quoteOrderMap,
+    quoteHistories,
     loading,
     error,
     refetch,
@@ -259,6 +260,7 @@ export function RFQDetailMobile() {
           onSelectOffer={setSelectedOffer}
           onChatWithOffer={handleChatWithOffer}
           rfqQuantity={rfq.quantity}
+          quoteHistories={quoteHistories}
           onOfferFlowComplete={async ({ orderId }) => {
             await refetch();
             if (orderId) navigate(`/orders/${orderId}`);
@@ -266,7 +268,7 @@ export function RFQDetailMobile() {
         />
         {selectedOffer ? (
           <div className='px-1'>
-            <QuotationHistoryPanel quotationId={selectedOffer} />
+            <QuotationHistoryPanel quotationId={selectedOffer} preloadedHistory={quoteHistories?.[selectedOffer]} />
           </div>
         ) : null}
       </div>

@@ -65,6 +65,8 @@ type RfqDetailOffersSectionProps = {
   onOfferFlowComplete?: (result: { quoteId: string; orderId?: string }) => void;
   /** จำนวนชิ้นจาก RFQ — ใช้ประมาณราคา/ชิ้นใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
   rfqQuantity?: number;
+  /** quoteId → history entries pre-fetched from bundle endpoint */
+  quoteHistories?: Record<string, import('@/services/api/types/rfq.types').IQuotationHistoryEntry[]>;
 };
 
 function formatTHB(n: number): string {
@@ -86,6 +88,7 @@ export function RfqDetailOffersSection({
   onChatWithOffer,
   onOfferFlowComplete,
   rfqQuantity = 0,
+  quoteHistories,
 }: RfqDetailOffersSectionProps) {
   const isRequestClosed =
     rfqStatus === 'completed' || rfqStatus === 'cancelled' || rfqStatus === 'expired';
@@ -648,7 +651,10 @@ export function RfqDetailOffersSection({
                     </div>
                   </div>
                   <div onClick={(e) => e.stopPropagation()} className='mb-3'>
-                    <QuotationHistoryPanel quotationId={offer.id} />
+                    <QuotationHistoryPanel
+                      quotationId={offer.id}
+                      preloadedHistory={quoteHistories?.[offer.id]}
+                    />
                   </div>
                   <div className='flex gap-2'>
                     {onChatWithOffer ? (

@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { CheckCircle, Send } from 'lucide-react';
-import { rfqsApi } from '@/services/api/rfqApi';
-import type { IQuotationResponse } from '@/services/api/types/rfq.types';
+import React, { useState } from 'react';
+import { CheckCircle } from 'lucide-react';
+import type { IQuoteNestedResponse } from '@/types/api';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { CollapsibleCard } from '@/shared/ui/cards/CollapsibleCard';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Image } from '@/components/ui/image';
 
 interface Props {
-  rfqId: number | string;
-  quoteId: number | string;
-  factoryId: number | string;
+  quotation: IQuoteNestedResponse;
   factoryName?: string;
 }
 
@@ -24,59 +21,12 @@ const paymentTermsLabel: Record<string, string> = {
   net_30: 'Net 30 วัน',
 };
 
-export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) {
+export function OrderBOQCard({ quotation, factoryName }: Props) {
   const [open, setOpen] = useState(true);
-  const [quotation, setQuotation] = useState<IQuotationResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    let mounted = true;
-    const rid = Number(rfqId);
-    const qid = Number(quoteId);
-    const fid = Number(factoryId);
-    if (!Number.isFinite(rid) || rid <= 0) {
-      setLoading(false);
-      return () => void 0;
-    }
+  if (!quotation) return null;
 
-    const load = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const list = await rfqsApi.listQuotations(rid);
-        const rows = Array.isArray(list) ? list : [];
-        // Match by quote_id first, fall back to factory_id
-        const found =
-          rows.find((q) => Number(q.quote_id) === qid) ??
-          rows.find((q) => Number(q.factory_id) === fid) ??
-          null;
-        if (mounted) setQuotation(found);
-      } catch (e) {
-        if (mounted) setError(e instanceof Error ? e.message : 'โหลดข้อมูลไม่สำเร็จ');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-    void load();
-    return () => {
-      mounted = false;
-    };
-  }, [rfqId, quoteId, factoryId]);
-
-  if (loading) {
-    return (
-      <div className='rounded-2xl border border-gray-100 bg-white px-4 py-4'>
-        <div className='flex items-center gap-2 text-sm text-gray-400'>
-          <div className='w-4 h-4 border-2 border-gray-200 border-t-violet-400 rounded-full animate-spin' />
-          กำลังโหลดใบเสนอราคา...
-        </div>
-      </div>
-    );
-  }
-  if (error || !quotation) return null;
-
-  const q = quotation;
+  const q = quotation as IQuoteNestedResponse & Record<string, unknown>;
   const subtotal = Number(q.subtotal ?? 0);
   const shippingCost = Number(q.shipping_cost ?? 0);
   const packagingCost = Number(q.packaging_cost ?? 0);
@@ -115,9 +65,9 @@ export function OrderBOQCard({ rfqId, quoteId, factoryId, factoryName }: Props) 
           </div>
           <div className='min-w-0'>
             <p className='text-sm font-semibold text-gray-900 truncate'>
-              {factoryName ?? `โรงงาน #${q.factory_id}`}
+              {factoryName ?? 'โรงงาน'}
             </p>
-            <p className='text-[10px] text-gray-400'>ผู้รับผลิต · #{q.quote_id}</p>
+            <p className='text-[10px] text-gray-400'>ผู้รับผลิต · #{quotation.quote_id}</p>
           </div>
         </div>
 
