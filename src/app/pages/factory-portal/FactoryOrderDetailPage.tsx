@@ -20,7 +20,6 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
 import { ordersApi } from '@/services/api/ordersApi';
 import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
-import { useProductionTemplate } from '@/domain/production/queries/useProductionTemplate';
 import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
 import { ProductionHeader } from '@/components/features/production/ProductionHeader';
 import { ProductionTimeline } from '@/components/features/production/ProductionTimeline';
@@ -78,7 +77,11 @@ function getStepId(step: MergedProductionStep | null): number {
 
 function factoryCanUpdateStep(step: MergedProductionStep | null): boolean {
   const n = getStepId(step);
-  return n > 0 && n <= 5;
+  return n >= 0 && n <= 5;
+}
+
+function isAcceptStep(step: MergedProductionStep | null): boolean {
+  return getStepId(step) === 0;
 }
 
 function extractShippingInfo(order: Record<string, unknown>): CustomerShippingInfo {
@@ -108,7 +111,7 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
 
 type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
-function StepStatusBadge({ state }: { state: StepState }) {
+function StepStatusBadge({ state, overrideLabel }: { state: StepState; overrideLabel?: string }) {
   const map: Record<
     StepState,
     {
@@ -126,7 +129,7 @@ function StepStatusBadge({ state }: { state: StepState }) {
   const { label, variant, icon } = map[state];
   return (
     <StatusBadge variant={variant} size='sm' icon={icon}>
-      {label}
+      {overrideLabel ?? label}
     </StatusBadge>
   );
 }
@@ -138,6 +141,8 @@ interface NextActionCardProps {
   state: StepState;
   customerShipping: CustomerShippingInfo;
   onUpdate: () => void;
+  /** เฉพาะ step_id=0: กดยืนยันรับงานโดยไม่ต้องเปิด drawer */
+  onAcceptOrder?: () => Promise<void>;
 }
 
 function NextActionCard({
@@ -147,10 +152,13 @@ function NextActionCard({
   state,
   customerShipping,
   onUpdate,
+  onAcceptOrder,
 }: NextActionCardProps) {
+  const [accepting, setAccepting] = React.useState(false);
   const guide = getStepGuide(getStepId(step));
   const canUpdate = factoryCanUpdateStep(step);
   const stepId = getStepId(step);
+  const isAccept = isAcceptStep(step);
   const isShipping = stepId === 5;
   const isQC = Boolean(step.template.is_payment_trigger);
 
@@ -171,7 +179,8 @@ function NextActionCard({
             </p>
           </div>
         </div>
-        <StepStatusBadge state={state} />
+        {/* step_id=0: แสดง "ยืนยันรับงาน" แทน "กำลังดำเนินการ" */}
+        <StepStatusBadge state={state} overrideLabel={isAccept ? 'ยืนยันรับงาน' : undefined} />
       </div>
 
       <div className='bg-white p-4 space-y-3'>
@@ -246,6 +255,27 @@ function NextActionCard({
         </div>
 
         {canUpdate ? (
+          isAccept ? (
+            // step_id=0: ยืนยันรับงาน — ไม่ต้องแนบรูป กดปุ่มเลย
+            <Button
+              variant='unstyled'
+              type='button'
+              disabled={accepting}
+              onClick={async () => {
+                if (!onAcceptOrder) return;
+                setAccepting(true);
+                try {
+                  await onAcceptOrder();
+                } finally {
+                  setAccepting(false);
+                }
+              }}
+              className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)] disabled:opacity-60'
+            >
+              <Package size={16} />
+              {accepting ? 'กำลังบันทึก…' : guide.confirmLabel}
+            </Button>
+          ) : (
           <Button
             variant='unstyled'
             type='button'
@@ -259,6 +289,7 @@ function NextActionCard({
                 ? 'ส่งหลักฐานใหม่'
                 : guide.confirmLabel}
           </Button>
+          )
         ) : (
           <div className='rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-center'>
             <p className='text-xs text-emerald-700 font-medium'>
@@ -302,13 +333,13 @@ export function FactoryOrderDetailPage() {
     void loadOrder();
   }, [loadOrder]);
 
-  const tplQ = useProductionTemplate();
   const updQ = useOrderProductionUpdates(id);
 
   const merged = useMemo<MergedProductionStep[]>(() => {
-    if (!tplQ.data?.length || !updQ.data) return [];
-    return mergeTemplateWithUpdates(tplQ.data, updQ.data.updates);
-  }, [tplQ.data, updQ.data]);
+    const templateSteps = updQ.data?.template_preview ?? [];
+    if (!templateSteps.length || !updQ.data) return [];
+    return mergeTemplateWithUpdates(templateSteps, updQ.data.updates);
+  }, [updQ.data]);
 
   const displayMerged = useMemo<MergedProductionStep[]>(
     () =>
@@ -382,6 +413,11 @@ export function FactoryOrderDetailPage() {
     },
     [id, qc, loadOrder],
   );
+
+  /** step_id=0: ยืนยันรับงาน — ส่ง CD โดยตรง ไม่ต้องรูป */
+  const handleAcceptOrder = useCallback(async () => {
+    await handleStepSubmit({ step_id: 0, status: 'CD', description: '', image_urls: [] });
+  }, [handleStepSubmit]);
 
   const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as IRfqNestedResponse) : null;
   const quotation =
@@ -533,8 +569,10 @@ export function FactoryOrderDetailPage() {
                   totalSteps={totalSteps}
                   state={activeState ?? 'upcoming'}
                   customerShipping={customerShipping}
+                  onAcceptOrder={handleAcceptOrder}
                   onUpdate={() => {
-                    if (factoryCanUpdateStep(activeStep)) setDrawerStep(activeStep);
+                    if (factoryCanUpdateStep(activeStep) && !isAcceptStep(activeStep))
+                      setDrawerStep(activeStep);
                   }}
                 />
               ) : totalSteps > 0 ? (
@@ -553,7 +591,7 @@ export function FactoryOrderDetailPage() {
                   <h2 className='text-sm font-bold text-slate-900'>ความคืบหน้าการผลิต</h2>
                 </div>
 
-                {tplQ.isLoading || updQ.isLoading ? (
+                {updQ.isLoading ? (
                   <div className='flex items-center gap-2 py-6 justify-center text-gray-500 text-sm'>
                     <div className='w-5 h-5 border-2 border-brand-indigo border-t-transparent rounded-full animate-spin' />
                     กำลังโหลด…

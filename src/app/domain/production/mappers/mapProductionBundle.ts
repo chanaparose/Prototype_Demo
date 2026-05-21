@@ -30,7 +30,8 @@ export function mapStepTemplatesFromApi(raw: unknown): IProductionStepTemplate[]
     if (!row || typeof row !== 'object') continue;
     const r = row as Record<string, unknown>;
     const step_id = pickScalarNumber(r.step_id, r.id);
-    if (step_id == null || step_id <= 0) continue;
+    // step_id=0 คือขั้น "ยืนยันรับงาน" พิเศษ — อนุญาต 0 แต่ยังคง reject ค่า null/negative
+    if (step_id == null || step_id < 0) continue;
     out.push({
       step_id,
       step_code: pickScalarString(r.step_code),
@@ -100,7 +101,7 @@ export function mergeTemplateWithUpdates(
 ): IMergedProductionStep[] {
   const byStep = new Map<number, IProductionUpdateRow>();
   for (const u of updates) {
-    if (Number.isFinite(u.step_id) && u.step_id > 0) byStep.set(u.step_id, u);
+    if (Number.isFinite(u.step_id) && u.step_id >= 0) byStep.set(u.step_id, u);
   }
   return templates.map((t) => {
     const existing = byStep.get(t.step_id);

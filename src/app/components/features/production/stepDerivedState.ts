@@ -2,7 +2,8 @@ import type { MergedProductionStep } from '@/components/features/production/type
 
 export type StepDerivedState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
-const ACTIVE_ORDER_STATUSES = new Set(['PR', 'QC', 'SH']);
+// PD = ชำระแล้ว รอโรงงานยืนยันรับงาน (step_id=0 จะเป็น active)
+const ACTIVE_ORDER_STATUSES = new Set(['PD', 'PR', 'QC', 'SH']);
 const BLOCKING_ORDER_STATUSES = new Set(['PP', 'PE', 'WF']);
 
 export function deriveStepStates(
