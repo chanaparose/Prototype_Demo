@@ -11,6 +11,8 @@ import {
   AlertCircle,
   Clock,
   Package,
+  CalendarClock,
+  Handshake,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
@@ -68,6 +70,17 @@ function statusVariant(code: string): React.ComponentProps<typeof StatusBadge>['
   if (s === 'SH') return 'info';
   if (s === 'QC' || s === 'PR') return 'active';
   return 'pending';
+}
+
+/** คืนจำนวนวันนับจากวันนี้ถึง isoDate (ลบ = เกินกำหนด) */
+function daysUntil(isoDate: unknown): number | null {
+  if (!isoDate || typeof isoDate !== 'string') return null;
+  const d = new Date(isoDate);
+  if (Number.isNaN(d.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  d.setHours(0, 0, 0, 0);
+  return Math.round((d.getTime() - today.getTime()) / 86400000);
 }
 
 function getStepId(step: MergedProductionStep | null): number {
@@ -369,6 +382,14 @@ export function FactoryOrderDetailPage() {
   );
 
   const orderStatus = updQ.data?.order_status ?? String(order.status ?? '').toUpperCase();
+  const timelineMerged = useMemo(
+    () =>
+      displayMerged.filter((m) => {
+        const sid = Number(m.template.step_id ?? 0);
+        return Number.isFinite(sid) && sid > 0;
+      }),
+    [displayMerged],
+  );
   const derivedStates = useMemo(
     () => deriveStepStates(displayMerged, orderStatus),
     [displayMerged, orderStatus],
@@ -432,6 +453,15 @@ export function FactoryOrderDetailPage() {
   const isCompleted = status === 'CP' || status === 'CN';
   const totalSteps = displayMerged.length;
   const badgeVariant = statusVariant(status);
+
+  /** step_id=0 "ยืนยันรับงาน" — ดึงจาก displayMerged สำหรับแสดง info card */
+  const step0 = useMemo(
+    () => displayMerged.find((m) => Number(m.template.step_id) === 0) ?? null,
+    [displayMerged],
+  );
+  const step0Accepted = step0?.update.status === 'CD';
+  const step0StartDate = step0?.update.completed_at ?? step0?.update.last_updated_at ?? null;
+  const deliveryDays = daysUntil(order.estimated_delivery);
 
   const customerShipping = useMemo(() => extractShippingInfo(order), [order]);
   const completedCount = derivedStates.filter((s) => s === 'completed').length;
@@ -600,18 +630,99 @@ export function FactoryOrderDetailPage() {
                   <p className='text-sm text-gray-400 px-1'>ยังไม่มีเทมเพลตขั้นตอนการผลิต</p>
                 ) : (
                   <>
-                    <ProductionHeader merged={displayMerged} orderStatus={orderStatus} />
-                    <ProductionTimeline
-                      merged={displayMerged}
-                      orderStatus={orderStatus}
-                      isFactory={!isCompleted}
-                      isCustomer={false}
-                      onOpenDrawer={(m) => {
-                        if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
-                      }}
-                      onOpenReject={() => undefined}
-                      onPhotoClick={() => undefined}
-                    />
+                    {/* step_id=0: แสดง info card แทน StepRow */}
+                    {step0Accepted ? (
+                      <div className='rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 flex items-center justify-between gap-2'>
+                        <div className='flex items-center gap-2 min-w-0'>
+                          <Handshake size={16} className='shrink-0 text-emerald-600' />
+                          <div className='min-w-0'>
+                            <p className='text-[11px] font-bold text-emerald-800'>รับงานแล้ว</p>
+                            {step0StartDate ? (
+                              <p className='text-[11px] text-emerald-700 mt-0.5'>
+                                เริ่ม {formatDate(step0StartDate)}
+                              </p>
+                            ) : null}
+                          </div>
+                        </div>
+                        {order.estimated_delivery ? (
+                          <div className='text-right shrink-0'>
+                            <div className='flex items-center gap-1 justify-end'>
+                              <CalendarClock size={11} className='text-slate-500' />
+                              <p className='text-[10px] text-slate-500'>กำหนดส่ง</p>
+                            </div>
+                            <p className='text-xs font-bold text-slate-800'>
+                              {formatDate(order.estimated_delivery as string)}
+                            </p>
+                            {deliveryDays !== null ? (
+                              <p
+                                className={`text-[10px] font-bold ${
+                                  deliveryDays > 7
+                                    ? 'text-emerald-700'
+                                    : deliveryDays >= 0
+                                      ? 'text-amber-600'
+                                      : 'text-red-600'
+                                }`}
+                              >
+                                {deliveryDays > 0
+                                  ? `เหลืออีก ${deliveryDays} วัน`
+                                  : deliveryDays === 0
+                                    ? 'วันนี้!'
+                                    : `เกินกำหนด ${Math.abs(deliveryDays)} วัน`}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : !step0Accepted && order.estimated_delivery ? (
+                      /* ยังไม่รับงาน: แสดง estimated_delivery อย่างเดียว */
+                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 flex items-center justify-between gap-2'>
+                        <div className='flex items-center gap-1.5'>
+                          <CalendarClock size={14} className='text-slate-500' />
+                          <p className='text-xs text-slate-600'>กำหนดส่ง</p>
+                        </div>
+                        <div className='text-right'>
+                          <p className='text-xs font-bold text-slate-800'>
+                            {formatDate(order.estimated_delivery as string)}
+                          </p>
+                          {deliveryDays !== null ? (
+                            <p
+                              className={`text-[10px] font-semibold ${
+                                deliveryDays > 7
+                                  ? 'text-slate-500'
+                                  : deliveryDays >= 0
+                                    ? 'text-amber-600'
+                                    : 'text-red-600'
+                              }`}
+                            >
+                              {deliveryDays > 0
+                                ? `เหลืออีก ${deliveryDays} วัน`
+                                : deliveryDays === 0
+                                  ? 'วันนี้!'
+                                  : `เกินกำหนด ${Math.abs(deliveryDays)} วัน`}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {timelineMerged.length === 0 ? (
+                      <p className='text-sm text-gray-400 px-1'>รอยืนยันรับงานเพื่อเริ่มขั้นตอนการผลิต</p>
+                    ) : (
+                      <>
+                        <ProductionHeader merged={timelineMerged} orderStatus={orderStatus} />
+                        <ProductionTimeline
+                          merged={timelineMerged}
+                          orderStatus={orderStatus}
+                          isFactory={!isCompleted}
+                          isCustomer={false}
+                          onOpenDrawer={(m) => {
+                            if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
+                          }}
+                          onOpenReject={() => undefined}
+                          onPhotoClick={() => undefined}
+                        />
+                      </>
+                    )}
                   </>
                 )}
               </section>
