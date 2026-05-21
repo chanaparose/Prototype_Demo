@@ -44,6 +44,17 @@ export const ordersApi = {
     data: IProductionUpdateRequest,
     headers?: Record<string, string>,
   ) => httpClient.post<unknown>(`/orders/${orderId}/production-updates`, data, headers),
+
+  /** POST /orders/:id/payments — pay deposit or full payment */
+  createPayment: (
+    orderId: string | number,
+    data: {
+      type: string;
+      amount: number;
+      payment_method: string;
+      idempotency_key?: string;
+    },
+  ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/payments`, data),
 };
 
 export const productionUpdatesApi = {

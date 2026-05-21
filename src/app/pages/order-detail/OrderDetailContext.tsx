@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { Link } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useData } from '@/stores/useDataStore';
+import { walletApi } from '@/services/api/userApi';
 import { type Order } from '@/stores/types';
 import type {
   ProductionLockContext,
@@ -128,6 +129,15 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
   const orderQ = useOrderDetailQuery(orderId);
   const prodQ = useOrderProductionUpdates(orderId);
   const qc = useQueryClient();
+
+  // Prefetch wallet so DepositPaymentModal shows balance immediately (no loading flash)
+  useQuery({
+    queryKey: ['wallet', 'me'],
+    queryFn: () => walletApi.getMe(),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
   const { refetchWallet } = useData();
 
   const refetchAll = useCallback(async () => {

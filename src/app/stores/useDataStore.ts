@@ -236,9 +236,9 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
 
     refetchWallet: async () => {
       try {
-        const w = (await walletApi.getBalance()) as Record<string, unknown>;
-        const balance = pickScalarNumber(w.good_fund, w.walletBalance) ?? 0;
-        const pending = pickScalarNumber(w.pending_fund, w.pendingBalance) ?? 0;
+        const w = await walletApi.getMe();
+        const balance = w.good_fund ?? 0;
+        const pending = w.pending_fund ?? 0;
         set((state) => {
           if (!state.currentUser) return state;
           return {

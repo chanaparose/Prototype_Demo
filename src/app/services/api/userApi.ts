@@ -95,19 +95,26 @@ export const profileApi = {
   },
 };
 
+export type WalletResponse = {
+  wallet_id: number;
+  user_id: number;
+  good_fund: number;
+  pending_fund: number;
+};
+
 export const walletApi = {
-  getBalance: () =>
-    httpClient.get<{
-      balance: number;
-      currency: string;
-    }>('/wallet/balance'),
+  /** GET /wallets/me — full wallet object with good_fund / pending_fund */
+  getMe: () => httpClient.get<WalletResponse>('/wallets/me'),
+
+  /** @deprecated use getMe() */
+  getBalance: () => httpClient.get<WalletResponse>('/wallets/me'),
 
   getTransactions: (limit = 50, offset = 0) => {
     const params = new URLSearchParams({
       limit: String(limit),
       offset: String(offset),
     });
-    return httpClient.get<unknown[]>(`/wallet/transactions?${params}`);
+    return httpClient.get<unknown[]>(`/wallets/me/transactions?${params}`);
   },
 
   deposit: (amount: number, payment_method: string) =>
