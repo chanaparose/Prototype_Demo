@@ -41,35 +41,25 @@ export const messagesApi = {
 };
 
 export const notificationsApi = {
-  list: (params?: { page?: number; limit?: number; unread?: boolean }) => {
+  list: (params?: { filter?: 'all' | 'rfq' | 'order'; limit?: number; offset?: number }) => {
     const search = new URLSearchParams();
-    if (params?.page != null) search.set('page', String(params.page));
+    if (params?.filter && params.filter !== 'all') search.set('filter', params.filter);
     if (params?.limit != null) search.set('limit', String(params.limit));
-    if (params?.unread != null) search.set('unread', String(params.unread));
+    if (params?.offset != null) search.set('offset', String(params.offset));
     const query = search.toString();
-    return httpClient.get<unknown[]>(`/notifications${query ? `?${query}` : ''}`);
+    return httpClient.get<unknown>(`/notifications${query ? `?${query}` : ''}`);
   },
 
-  get: (id: string | number) => httpClient.get<unknown>(`/notifications/${id}`),
+  markAsRead: (id: string | number) =>
+    httpClient.post<{ ok: boolean; unread_count: number }>(`/notifications/${id}/read`, {}),
 
-  markAsRead: (id: string | number) => httpClient.post<void>(`/notifications/${id}/mark-read`, {}),
-
-  markAllAsRead: () => httpClient.post<void>('/notifications/mark-all-read', {}),
+  markAllAsRead: (filter?: 'all' | 'rfq' | 'order') =>
+    httpClient.post<{ ok: boolean; updated_count: number; unread_count: number }>(
+      '/notifications/read-all',
+      filter && filter !== 'all' ? { filter } : {},
+    ),
 
   delete: (id: string | number) => httpClient.delete<void>(`/notifications/${id}`),
 
-  deleteAll: () => httpClient.delete<void>('/notifications'),
-
-  /** Get unread count */
-  getUnreadCount: () =>
-    httpClient.get<{
-      total: number;
-      count?: number;
-    }>('/notifications/unread-count'),
-
-  unreadCount: () =>
-    httpClient.get<{
-      total: number;
-      count?: number;
-    }>('/notifications/unread-count'),
+  unreadCount: () => httpClient.get<{ count: number }>('/notifications/unread-count'),
 };

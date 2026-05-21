@@ -7,17 +7,19 @@ import {
 } from '@/domain/notifications/mappers/mapNotification';
 import { pickScalarNumber } from '@/utils/pickScalarString';
 
-export async function fetchNotificationsPage(page = 1, limit = 20, unread = false) {
-  const raw = await notificationsApi.list({ page, limit, unread });
+export async function fetchNotificationsPage(
+  filter: 'all' | 'rfq' | 'order' = 'all',
+  limit = 20,
+  offset = 0,
+) {
+  const raw = await notificationsApi.list({ filter, limit, offset });
+  const page = Math.floor(offset / limit) + 1;
   return mapNotificationsPageFromApi(raw, page);
 }
 
 export async function fetchNotificationUnreadCount(): Promise<number> {
   const raw = await notificationsApi.unreadCount();
-  return pickScalarNumber(
-    (raw as { count?: unknown })?.count,
-    (raw as { total?: unknown })?.total,
-  ) ?? 0;
+  return pickScalarNumber((raw as { count?: unknown })?.count) ?? 0;
 }
 
 export async function fetchNotificationsList() {
