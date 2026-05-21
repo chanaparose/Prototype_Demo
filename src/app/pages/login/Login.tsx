@@ -218,7 +218,7 @@ export function Login() {
           {rootError ? <ErrorAlert size='sm'>{rootError}</ErrorAlert> : null}
 
           {mode === 'login' ? (
-            <Form {...loginForm}>
+            <Form key='login' {...loginForm}>
               <form
                 onSubmit={(e) => void loginForm.handleSubmit(submitLogin)(e)}
                 className='space-y-4'
@@ -233,6 +233,7 @@ export function Login() {
                         <Input
                           type='email'
                           placeholder='email@example.com'
+                          autoComplete='username email'
                           className={inputClassName}
                           {...field}
                         />
@@ -252,6 +253,7 @@ export function Login() {
                           <Input
                             type={showPassword ? 'text' : 'password'}
                             placeholder='รหัสผ่าน'
+                            autoComplete='current-password'
                             className={`${inputClassName} pr-12`}
                             {...field}
                           />
@@ -280,7 +282,7 @@ export function Login() {
               </form>
             </Form>
           ) : (
-            <Form {...registerForm}>
+            <Form key='register' {...registerForm}>
               <form
                 onSubmit={(e) => void registerForm.handleSubmit(submitRegister)(e)}
                 className='space-y-4'
@@ -293,7 +295,7 @@ export function Login() {
                       <FormItem>
                         <FormLabel className='text-xs text-gray-500'>ชื่อ</FormLabel>
                         <FormControl>
-                          <Input type='text' placeholder='ชื่อ' className={inputClassName} {...field} />
+                          <Input type='text' placeholder='ชื่อ' autoComplete='given-name' className={inputClassName} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -309,6 +311,7 @@ export function Login() {
                           <Input
                             type='text'
                             placeholder='นามสกุล'
+                            autoComplete='family-name'
                             className={inputClassName}
                             {...field}
                           />
@@ -328,6 +331,7 @@ export function Login() {
                         <Input
                           type='email'
                           placeholder='email@example.com'
+                          autoComplete='email'
                           className={inputClassName}
                           {...field}
                         />
@@ -346,6 +350,7 @@ export function Login() {
                         <Input
                           type='tel'
                           placeholder='08x-xxx-xxxx'
+                          autoComplete='tel'
                           className={inputClassName}
                           {...field}
                         />
@@ -365,6 +370,7 @@ export function Login() {
                           <Input
                             type={showPassword ? 'text' : 'password'}
                             placeholder='อย่างน้อย 8 ตัวอักษร'
+                            autoComplete='new-password'
                             className={`${inputClassName} pr-12`}
                             {...field}
                           />
