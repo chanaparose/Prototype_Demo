@@ -89,9 +89,8 @@ export function StepRow({
 }: Props) {
   const { template, update } = merged;
   const stepId = Number(template.step_id ?? 0);
-  // Business rule: step 6 is customer/system completion (confirm receive / auto-close),
-  // so factory should not manually update it from FE.
-  const factoryCanUpdateThisStep = Number.isFinite(stepId) && stepId > 0 && stepId <= 5;
+  // Business rule: step 5 "จัดส่งสำเร็จ" รอลูกค้ายืนยัน/14 วัน auto — factory ไม่แก้ได้
+  const factoryCanUpdateThisStep = Number.isFinite(stepId) && stepId > 0 && stepId <= 4;
   const st = update.status;
   const visual = STEP_VISUAL[derivedState];
   const isActive = derivedState === 'active';

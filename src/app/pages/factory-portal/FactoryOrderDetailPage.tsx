@@ -13,7 +13,10 @@ import {
   Package,
   CalendarClock,
   Handshake,
+  Printer,
+  ExternalLink,
 } from 'lucide-react';
+import { openShippingLabel } from '@/utils/printShippingLabel';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { useAuth } from '@/stores/useAuthStore';
@@ -90,7 +93,8 @@ function getStepId(step: MergedProductionStep | null): number {
 
 function factoryCanUpdateStep(step: MergedProductionStep | null): boolean {
   const n = getStepId(step);
-  return n >= 0 && n <= 5;
+  // step_id=5 "จัดส่งสำเร็จ" รอลูกค้ายืนยัน/14 วัน auto — factory ไม่สามารถแก้ไขได้
+  return n >= 0 && n <= 4;
 }
 
 function isAcceptStep(step: MergedProductionStep | null): boolean {
@@ -109,16 +113,21 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
 
   return {
     recipientName:
-      String(addr.recipient_name ?? addr.name ?? buyer.name ?? order.buyer_name ?? '').trim() ||
+      String(order.customer_name ?? addr.recipient_name ?? addr.name ?? buyer.name ?? order.buyer_name ?? '').trim() ||
       undefined,
     phone:
-      String(addr.phone ?? addr.tel ?? buyer.phone ?? order.buyer_phone ?? '').trim() || undefined,
+      String(order.customer_phone ?? addr.phone ?? addr.tel ?? buyer.phone ?? order.buyer_phone ?? '').trim() || undefined,
     addressLine:
       String(addr.address_detail ?? addr.address_line ?? addr.detail ?? '').trim() || undefined,
-    subDistrict: String(addr.sub_district ?? addr.subdistrict ?? '').trim() || undefined,
-    district: String(addr.district ?? '').trim() || undefined,
-    province: String(addr.province ?? '').trim() || undefined,
-    postalCode: String(addr.postal_code ?? addr.zip_code ?? '').trim() || undefined,
+    subDistrict:
+      String(addr.sub_district_name ?? addr.sub_district ?? addr.subdistrict ?? '').trim() ||
+      undefined,
+    district:
+      String(addr.district_name ?? addr.district ?? '').trim() || undefined,
+    province:
+      String(addr.province_name ?? addr.province ?? '').trim() || undefined,
+    postalCode:
+      String(addr.zip_code ?? addr.postal_code ?? '').trim() || undefined,
   };
 }
 
@@ -172,7 +181,7 @@ function NextActionCard({
   const canUpdate = factoryCanUpdateStep(step);
   const stepId = getStepId(step);
   const isAccept = isAcceptStep(step);
-  const isShipping = stepId === 5;
+  const isShipping = stepId === 4; // step 4 = จัดส่งแล้ว (factory ships)
   const isQC = Boolean(step.template.is_payment_trigger);
 
   const hasAddr =
@@ -358,22 +367,22 @@ export function FactoryOrderDetailPage() {
     () =>
       merged.map((m) => {
         const stepId = Number(m.template.step_id ?? 0);
+        if (stepId === 4)
+          return {
+            ...m,
+            template: {
+              ...m.template,
+              step_name_th: 'จัดส่งแล้ว',
+              description: 'จัดส่งสินค้าไปยังลูกค้าและบันทึกหลักฐานการจัดส่ง',
+            },
+          };
         if (stepId === 5)
           return {
             ...m,
             template: {
               ...m.template,
-              step_name_th: 'บรรจุและจัดส่งสินค้า',
-              description: 'ทำใบปะหน้าพัสดุ บรรจุสินค้า และบันทึกหลักฐานการจัดส่ง',
-            },
-          };
-        if (stepId === 6)
-          return {
-            ...m,
-            template: {
-              ...m.template,
-              step_name_th: 'รอลูกค้ายืนยันรับสินค้า',
-              description: 'ลูกค้ายืนยันรับสินค้า หรือระบบปิดอัตโนมัติหลัง 20 วัน',
+              step_name_th: 'จัดส่งสำเร็จ',
+              description: 'รอลูกค้ายืนยันรับสินค้า หรือระบบปิดอัตโนมัติหลัง 14 วัน',
             },
           };
         return m;
@@ -417,6 +426,8 @@ export function FactoryOrderDetailPage() {
         description?: string;
         image_urls: string[];
         confirm_payment_trigger?: boolean;
+        tracking_no?: string;
+        courier?: string;
       },
       opts?: { confirmPaymentTriggerHeader?: boolean },
     ) => {
@@ -463,9 +474,59 @@ export function FactoryOrderDetailPage() {
   const step0StartDate = step0?.update.completed_at ?? step0?.update.last_updated_at ?? null;
   const deliveryDays = daysUntil(order.estimated_delivery);
 
+  /** step_id=4 "จัดส่งแล้ว" — ใช้แสดงใบปะหน้าพัสดุ */
+  const step4 = useMemo(
+    () => displayMerged.find((m) => Number(m.template.step_id) === 4) ?? null,
+    [displayMerged],
+  );
+  /** แสดงการ์ดใบปะหน้าเมื่อออเดอร์ถึง step 4 แล้ว (active/completed) */
+  const showLabelCard =
+    step4 !== null &&
+    (step4.update.status === 'IP' || step4.update.status === 'CD' || getStepId(activeStep) === 4);
+
+  /** ชื่อโรงงาน (ผู้ส่ง) */
+  const senderName = String(
+    (order.factory as Record<string, unknown>)?.factory_name ??
+    (order.factory as Record<string, unknown>)?.name ??
+    user?.company ??
+    user?.name ??
+    'โรงงาน Tryly',
+  ).trim();
+
+  /** เบอร์โทรโรงงาน (ผู้ส่ง) จาก factory.phone ที่ API ส่งมา */
+  const senderPhone =
+    String((order.factory as Record<string, unknown>)?.phone ?? '').trim() || undefined;
+
+  /** ที่อยู่โรงงาน (จังหวัด) */
+  const senderAddress =
+    String((order.factory as Record<string, unknown>)?.address ?? '').trim() || undefined;
+
+  /** Tracking number จาก description ของ step 4 (ถ้ามี) */
+  const trackingNumber = step4?.update.description
+    ? (step4.update.description.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i)?.[1] ?? undefined)
+    : undefined;
+
   const customerShipping = useMemo(() => extractShippingInfo(order), [order]);
   const completedCount = derivedStates.filter((s) => s === 'completed').length;
   const progressPct = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+
+  const handleOpenLabel = useCallback(() => {
+    openShippingLabel({
+      recipientName: customerShipping.recipientName,
+      recipientPhone: customerShipping.phone,
+      addressLine: customerShipping.addressLine,
+      subDistrict: customerShipping.subDistrict,
+      district: customerShipping.district,
+      province: customerShipping.province,
+      postalCode: customerShipping.postalCode,
+      senderName,
+      senderPhone,
+      senderAddress,
+      orderCode,
+      orderTitle: title,
+      trackingNumber,
+    });
+  }, [customerShipping, senderName, senderPhone, senderAddress, orderCode, title, trackingNumber]);
 
   if (!id) return null;
 
@@ -614,6 +675,84 @@ export function FactoryOrderDetailPage() {
                   <p className='text-sm text-gray-400'>กำลังโหลดขั้นตอน…</p>
                 </section>
               )}
+
+              {/* ── ใบปะหน้าพัสดุ (แสดงเมื่อถึง step 4) ── */}
+              {showLabelCard ? (
+                <section className='rounded-2xl overflow-hidden border border-orange-200 shadow-sm'>
+                  {/* header */}
+                  <div className='px-4 py-2.5 flex items-center gap-2 bg-[#ee4d2d]'>
+                    <Printer size={15} className='text-white' />
+                    <p className='text-sm font-bold text-white flex-1'>ใบปะหน้าพัสดุ</p>
+                    {step4?.update.status === 'CD' ? (
+                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
+                        จัดส่งแล้ว
+                      </span>
+                    ) : (
+                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
+                        พร้อมพิมพ์
+                      </span>
+                    )}
+                  </div>
+
+                  {/* body */}
+                  <div className='bg-white px-4 py-3 space-y-3'>
+                    {/* recipient preview */}
+                    <div className='rounded-xl border border-orange-100 bg-orange-50 px-3 py-2.5'>
+                      <p className='text-[9px] font-bold text-orange-600 uppercase tracking-wide mb-1.5'>
+                        ผู้รับ
+                      </p>
+                      <p className='text-sm font-bold text-slate-900 leading-tight'>
+                        {customerShipping.recipientName || (
+                          <span className='text-slate-400 font-normal'>ไม่ระบุชื่อ</span>
+                        )}
+                      </p>
+                      {customerShipping.phone ? (
+                        <p className='text-xs text-slate-700 mt-0.5'>📞 {customerShipping.phone}</p>
+                      ) : null}
+                      {customerShipping.addressLine ? (
+                        <p className='text-[11px] text-slate-600 mt-1 leading-relaxed'>
+                          {[
+                            customerShipping.addressLine,
+                            customerShipping.subDistrict,
+                            customerShipping.district,
+                            customerShipping.province,
+                            customerShipping.postalCode,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </p>
+                      ) : (
+                        <p className='text-[11px] text-slate-400 mt-1'>ยังไม่มีที่อยู่จัดส่ง</p>
+                      )}
+                    </div>
+
+                    {/* tracking chip if exists */}
+                    {trackingNumber ? (
+                      <div className='flex items-center gap-1.5'>
+                        <span className='text-xs'>📦</span>
+                        <span className='text-xs font-semibold text-slate-700 bg-slate-100 rounded px-2 py-0.5'>
+                          {trackingNumber}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {/* print button */}
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      onClick={handleOpenLabel}
+                      className='w-full rounded-xl py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-[#ee4d2d] hover:opacity-90 transition-opacity'
+                    >
+                      <Printer size={15} />
+                      ทำใบปะหน้าพัสดุ
+                      <ExternalLink size={13} className='opacity-70' />
+                    </Button>
+                    <p className='text-[10px] text-slate-400 text-center'>
+                      เปิด tab ใหม่ • พิมพ์หรือบันทึก PDF ได้เลย
+                    </p>
+                  </div>
+                </section>
+              ) : null}
 
               <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
                 <div className='flex items-center gap-2'>

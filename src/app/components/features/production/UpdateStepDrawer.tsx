@@ -37,6 +37,8 @@ type Props = {
       description?: string;
       image_urls: string[];
       confirm_payment_trigger?: boolean;
+      tracking_no?: string;
+      courier?: string;
     },
     opts?: { confirmPaymentTriggerHeader?: boolean },
   ) => Promise<void>;
@@ -105,17 +107,26 @@ export function UpdateStepDrawer({
   customerShipping,
 }: Props) {
   const [notes, setNotes] = useState('');
+  const [trackingNo, setTrackingNo] = useState('');
+  const [courier, setCourier] = useState('');
   const [urls, setUrls] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState('');
   const guide = step ? getStepGuide(Number(step.template.step_id ?? 0)) : null;
+  const stepId = step ? Number(step.template.step_id ?? -1) : -1;
+  const isShippingStep = stepId === 4;
 
   useEffect(() => {
     if (!open || !step) return;
     setNotes(String(step.update.description ?? '').slice(0, 500));
     setUrls([...(step.update.image_urls ?? [])].slice(0, 5));
     setErr('');
+    // pre-fill tracking fields if already saved
+    const desc = String(step.update.description ?? '');
+    const match = desc.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i);
+    setTrackingNo(match?.[1] ?? '');
+    setCourier('');
   }, [open, step]);
 
   useEffect(() => {
@@ -174,6 +185,8 @@ export function UpdateStepDrawer({
         status: 'IP',
         description: notes.trim() || undefined,
         image_urls: urls,
+        ...(isShippingStep && trackingNo.trim() ? { tracking_no: trackingNo.trim() } : {}),
+        ...(isShippingStep && courier.trim() ? { courier: courier.trim() } : {}),
       });
       onClose();
     } catch (e) {
@@ -199,6 +212,8 @@ export function UpdateStepDrawer({
           description: notes.trim() || undefined,
           image_urls: urls,
           confirm_payment_trigger: isPayment ? true : undefined,
+          ...(isShippingStep && trackingNo.trim() ? { tracking_no: trackingNo.trim() } : {}),
+          ...(isShippingStep && courier.trim() ? { courier: courier.trim() } : {}),
         },
         { confirmPaymentTriggerHeader: isPayment },
       );
@@ -290,6 +305,35 @@ export function UpdateStepDrawer({
                   </li>
                 ))}
               </ul>
+            </div>
+          ) : null}
+
+          {/* ── Step 4: Tracking No + Courier ── */}
+          {isShippingStep ? (
+            <div className='rounded-xl border border-orange-100 bg-orange-50 p-3.5 space-y-3'>
+              <p className='text-xs font-bold text-orange-700 uppercase tracking-wide'>
+                📦 ข้อมูลการจัดส่ง
+              </p>
+              <Label className='block'>
+                <span className='text-xs font-medium text-gray-700'>Tracking Number</span>
+                <Input
+                  className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100'
+                  value={trackingNo}
+                  onChange={(e) => setTrackingNo(e.target.value)}
+                  placeholder='เช่น TH123456789'
+                  maxLength={100}
+                />
+              </Label>
+              <Label className='block'>
+                <span className='text-xs font-medium text-gray-700'>บริษัทขนส่ง</span>
+                <Input
+                  className='mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100'
+                  value={courier}
+                  onChange={(e) => setCourier(e.target.value)}
+                  placeholder='เช่น Kerry, J&T, Flash Express, ไปรษณีย์ไทย'
+                  maxLength={100}
+                />
+              </Label>
             </div>
           ) : null}
 
