@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { X, Plus, MapPin, Phone, User, ChevronRight } from 'lucide-react';
+import { X, Plus, ChevronRight } from 'lucide-react';
 import { mediaApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { InfoBox } from '@/shared/ui/cards/InfoBox';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
 import { getStepGuide } from '@/components/features/production/stepGuideConfig';
@@ -44,67 +43,12 @@ type Props = {
   ) => Promise<void>;
 };
 
-function ShippingAddressBox({ info }: { info: CustomerShippingInfo }) {
-  const lines = [
-    info.addressLine,
-    [info.subDistrict, info.district].filter(Boolean).join(' '),
-    [info.province, info.postalCode].filter(Boolean).join(' '),
-  ].filter(Boolean);
-
-  const content = (
-    <div className='space-y-2'>
-      {info.recipientName ? (
-        <div className='flex items-center gap-2'>
-          <User size={13} className='shrink-0' />
-          <span className='text-sm font-semibold'>{info.recipientName}</span>
-        </div>
-      ) : null}
-
-      {info.phone ? (
-        <div className='flex items-center gap-2'>
-          <Phone size={13} className='shrink-0' />
-          <span className='text-sm font-semibold tracking-wide'>{info.phone}</span>
-        </div>
-      ) : null}
-
-      {lines.length > 0 ? (
-        <div className='flex items-start gap-2'>
-          <MapPin size={13} className='shrink-0 mt-0.5' />
-          <address className='text-xs not-italic leading-relaxed'>
-            {lines.map((l, i) => (
-              <span key={i}>
-                {l}
-                {i < lines.length - 1 ? ', ' : ''}
-              </span>
-            ))}
-          </address>
-        </div>
-      ) : null}
-
-      {!info.recipientName && !info.phone && lines.length === 0 ? (
-        <p className='text-xs'>ไม่พบข้อมูลที่อยู่ — ติดต่อลูกค้าผ่านแชทโดยตรง</p>
-      ) : null}
-    </div>
-  );
-
-  return (
-    <InfoBox
-      icon={<MapPin size={14} />}
-      title='ที่อยู่จัดส่งลูกค้า — ใช้ทำใบปะหน้าพัสดุ'
-      variant='warning'
-    >
-      {content}
-    </InfoBox>
-  );
-}
-
 export function UpdateStepDrawer({
   open,
   placement,
   step,
   onClose,
   onSubmit,
-  customerShipping,
 }: Props) {
   const [notes, setNotes] = useState('');
   const [trackingNo, setTrackingNo] = useState('');
@@ -232,8 +176,6 @@ export function UpdateStepDrawer({
       ? 'fixed inset-x-0 bottom-0 max-h-[92vh] rounded-t-2xl'
       : 'fixed right-0 top-0 h-full w-full max-w-[520px] rounded-none sm:rounded-l-2xl';
 
-  const showShipping = guide?.requiresShippingInfo && customerShipping;
-
   return (
     <div className='fixed inset-0 z-[70]'>
       <Button
@@ -286,8 +228,6 @@ export function UpdateStepDrawer({
               <p className='text-xs text-indigo-800 leading-relaxed'>{guide.guidance}</p>
             </div>
           ) : null}
-
-          {showShipping ? <ShippingAddressBox info={customerShipping!} /> : null}
 
           {guide && guide.bulletPoints.length > 0 ? (
             <div className='rounded-xl border border-gray-100 bg-gray-50 px-3.5 py-3'>

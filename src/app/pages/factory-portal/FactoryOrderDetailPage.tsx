@@ -479,10 +479,14 @@ export function FactoryOrderDetailPage() {
     () => displayMerged.find((m) => Number(m.template.step_id) === 4) ?? null,
     [displayMerged],
   );
-  /** แสดงการ์ดใบปะหน้าเมื่อออเดอร์ถึง step 4 แล้ว (active/completed) */
-  const showLabelCard =
-    step4 !== null &&
-    (step4.update.status === 'IP' || step4.update.status === 'CD' || getStepId(activeStep) === 4);
+  /**
+   * แสดงการ์ดใบปะหน้าเมื่อ step 4 อยู่ในสถานะ "กำลังดำเนินการ" (IP) เท่านั้น
+   * เมื่อขั้นจัดส่งถูกยืนยันเสร็จสิ้น (CD) จะซ่อนการ์ดใบปะหน้า
+   */
+  const showLabelCard = useMemo(() => {
+    if (step4 === null) return false;
+    return step4.update.status === 'IP';
+  }, [step4]);
 
   /** ชื่อโรงงาน (ผู้ส่ง) */
   const senderName = String(
