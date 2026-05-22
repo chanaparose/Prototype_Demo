@@ -22,6 +22,7 @@ import { showcasesApi } from '@/services/api/factoryApi';
 import { mapShowcaseFromApi } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const CARD = {
   purple: 'var(--brand-mauve)',
@@ -30,6 +31,7 @@ const CARD = {
 
 export function IdeaDetailDesktop() {
   const navigate = useNavigate();
+  const { isLiked, toggleFavorite } = useFavorites();
   const { user } = useAuth();
   const data = useData();
   const { startChat, starting } = useStartChatWithFactory();
@@ -306,10 +308,14 @@ export function IdeaDetailDesktop() {
                           {next.minOrder}
                         </span>
                       </span>
-                      <span className='flex items-center gap-0.5 shrink-0 tabular-nums'>
-                        <Heart className='w-2.5 h-2.5 shrink-0' />
-                        {next.likes}
-                      </span>
+                      <button
+                        type='button'
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(next.id); }}
+                        className='flex items-center gap-0.5 shrink-0 tabular-nums'
+                      >
+                        <Heart className={`w-2.5 h-2.5 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
+                        {next.likes + (isLiked(next.id) ? 1 : 0)}
+                      </button>
                     </div>
                   </div>
                 </article>

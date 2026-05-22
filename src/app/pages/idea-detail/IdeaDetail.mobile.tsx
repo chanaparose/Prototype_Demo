@@ -22,6 +22,7 @@ import { showcasesApi } from '@/services/api/factoryApi';
 import { mapShowcaseFromApi } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const CARD = {
   purple: 'var(--brand-mauve)',
@@ -30,6 +31,7 @@ const CARD = {
 
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
+  const { isLiked, toggleFavorite } = useFavorites();
   const { user } = useAuth();
   const data = useData();
   const { startChat, starting } = useStartChatWithFactory();
@@ -200,10 +202,14 @@ export function IdeaDetailMobile() {
                 <MapPin className='w-3 h-3' /> {factory?.location ?? '-'}
               </p>
             </div>
-            <span className='inline-flex items-center gap-1 text-[11px] text-gray-500'>
-              <Heart className='w-3 h-3' style={{ color: BRAND.orange }} />
-              {item.likes}
-            </span>
+            <button
+              type='button'
+              onClick={() => void toggleFavorite(item.id)}
+              className='inline-flex items-center gap-1 text-[11px] text-gray-500'
+            >
+              <Heart className={`w-3 h-3 ${isLiked(item.id) ? 'text-red-500 fill-red-500' : ''}`} style={isLiked(item.id) ? undefined : { color: BRAND.orange }} />
+              {item.likes + (isLiked(item.id) ? 1 : 0)}
+            </button>
           </div>
           <div className='mt-3 flex gap-2'>
             {canChat ? (
@@ -319,10 +325,14 @@ export function IdeaDetailMobile() {
                           {next.minOrder}
                         </span>
                       </span>
-                      <span className='flex items-center gap-1 shrink-0 text-[10px] text-gray-400'>
-                        <Heart className='w-3 h-3 shrink-0' />
-                        <span className='tabular-nums font-medium text-gray-500'>{next.likes}</span>
-                      </span>
+                      <button
+                        type='button'
+                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(next.id); }}
+                        className='flex items-center gap-1 shrink-0 text-[10px] text-gray-400'
+                      >
+                        <Heart className={`w-3 h-3 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
+                        <span className='tabular-nums font-medium text-gray-500'>{next.likes + (isLiked(next.id) ? 1 : 0)}</span>
+                      </button>
                     </div>
                   </div>
                 </article>

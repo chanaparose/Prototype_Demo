@@ -11,7 +11,6 @@ import {
   Plus,
   Sparkles,
   Tag,
-  Heart,
 } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,12 +20,14 @@ import { ExploreFactoryShowcase } from '@/components/features/explore/ExploreFac
 import { ExploreDesktopCategories } from '@/components/features/explore/ExploreDesktopCategories';
 import { ExploreProductCarouselSection } from '@/components/features/explore/ExploreProductCarouselSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
+import { useFavorites } from '@/hooks/useFavorites';
 
 type ExploreDesktopProps = {
   searchText: string;
@@ -129,6 +130,7 @@ export function ExploreDesktop({
   promoSlides,
 }: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
   const navigate = useNavigate();
+  const { isLiked, toggleFavorite } = useFavorites();
   const ideaArticlesList = ideaArticles ?? [];
   const recommendedFactories = useMemo(() => (factories ?? []).slice(0, 10), [factories]);
 
@@ -323,6 +325,8 @@ export function ExploreDesktop({
             bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
             onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
             getFactoryMeta={(factoryId) => getFactoryMeta(factoryId, factories)}
+            isLiked={isLiked}
+            onToggleFavorite={toggleFavorite}
           />
         </div>
 
@@ -335,6 +339,8 @@ export function ExploreDesktop({
           bannerText='วัตถุดิบคุณภาพสูง'
           onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
           getFactoryMeta={(factoryId) => getFactoryMeta(factoryId, factories)}
+          isLiked={isLiked}
+          onToggleFavorite={toggleFavorite}
         />
 
         <HowToOrderSection className='mx-0' />
@@ -395,6 +401,12 @@ export function ExploreDesktop({
                       <div className='absolute top-1 left-1 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
                         โปรโมชัน
                       </div>
+                      <ShowcaseHeartButton
+                        showcaseId={item.id}
+                        isLiked={isLiked(item.id)}
+                        onToggle={toggleFavorite}
+                        className='absolute top-1 right-1'
+                      />
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                       <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
@@ -464,8 +476,14 @@ export function ExploreDesktop({
                   <div
                     key={article.id}
                     onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
-                    className='bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]'
+                    className='relative bg-white rounded-xl border border-gray-100 p-3 pr-10 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]'
                   >
+                    <ShowcaseHeartButton
+                      showcaseId={article.id}
+                      isLiked={isLiked(article.id)}
+                      onToggle={toggleFavorite}
+                      className='absolute top-2 right-2 z-[1]'
+                    />
                     <div className='flex items-center gap-2 mb-1.5'>
                       <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
                         {article.tag || 'Idea'}
@@ -478,20 +496,8 @@ export function ExploreDesktop({
                       {article.title}
                     </h3>
                     <p className='text-[12px] text-gray-500 line-clamp-2'>{article.excerpt}</p>
-                    <div className='mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between'>
+                    <div className='mt-2 pt-1.5 border-t border-gray-100'>
                       <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        onClick={(e) => e.stopPropagation()}
-                        className='flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70'
-                        aria-label='ถูกใจ'
-                      >
-                        <Heart className='w-2.5 h-2.5 shrink-0' />
-                        <span className='text-[10px] leading-none'>
-                          {Number(article.likes ?? 0)}
-                        </span>
-                      </Button>
                     </div>
                   </div>
                 ))}

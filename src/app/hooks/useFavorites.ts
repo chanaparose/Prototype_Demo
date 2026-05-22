@@ -82,6 +82,17 @@ export function useFavorites() {
       try {
         if (wasLiked) await favoritesApi.remove(numId);
         else await favoritesApi.add(numId);
+
+        // Sync back to session store so favorites persist across page navigations
+        useSessionStore.setState((prev) => {
+          if (!prev.data) return prev;
+          const old = prev.data.favorites ?? [];
+          const updated = wasLiked
+            ? old.filter((id) => String(id) !== key)
+            : [...old, numId];
+          return { ...prev, data: { ...prev.data, favorites: updated } };
+        });
+
         return true;
       } catch {
         setLikedIds((prev) => {

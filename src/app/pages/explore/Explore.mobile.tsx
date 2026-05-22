@@ -20,12 +20,14 @@ import { ExploreIdeaArticles } from '@/components/features/explore/ExploreIdeaAr
 import { ExploreFooter } from '@/components/features/explore/ExploreFooter';
 import { HowToOrderSection } from '@/components/features/explore/HowToOrderSection';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
+import { useFavorites } from '@/hooks/useFavorites';
 
 type ExploreMobileProps = {
   searchText: string;
@@ -62,6 +64,7 @@ export function ExploreMobile({
   promoSlides,
 }: ExploreMobileProps) {
   const navigate = useNavigate();
+  const { isLiked, toggleFavorite } = useFavorites();
 
   const productShowcases = (exploreProducts ?? []).slice(0, 8);
   const promoShowcases = (explorePromotions ?? []).slice(0, 4);
@@ -158,6 +161,12 @@ export function ExploreMobile({
                   <div className='absolute top-1 left-1 bg-brand-sky px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
                     สินค้า
                   </div>
+                  <ShowcaseHeartButton
+                    showcaseId={item.id}
+                    isLiked={isLiked(item.id)}
+                    onToggle={toggleFavorite}
+                    className='absolute top-1 right-1'
+                  />
                 </div>
                 <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                   <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
@@ -269,6 +278,12 @@ export function ExploreMobile({
                   <div className='absolute top-1.5 left-1.5 bg-status-success px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide'>
                     วัตถุดิบ
                   </div>
+                  <ShowcaseHeartButton
+                    showcaseId={item.id}
+                    isLiked={isLiked(item.id)}
+                    onToggle={toggleFavorite}
+                    className='absolute top-1 right-1'
+                  />
                 </div>
                 <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                   <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
@@ -346,6 +361,8 @@ export function ExploreMobile({
       <div className='mt-[20px]'>
         <ExploreIdeaArticles
           articles={(ideaArticles ?? []).slice(0, 3)}
+          isLiked={isLiked}
+          onToggleFavorite={toggleFavorite}
           onSeeAll={() => navigate('/factory-ideas?type=idea')}
           onArticleClick={(id) => navigate(`/idea-detail?showcase_id=${id}`)}
         />
@@ -394,6 +411,12 @@ export function ExploreMobile({
                     <div className='absolute top-1.5 left-1.5 bg-brand-orange px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide'>
                       โปรโมชัน
                     </div>
+                    <ShowcaseHeartButton
+                      showcaseId={item.id}
+                      isLiked={isLiked(item.id)}
+                      onToggle={toggleFavorite}
+                      className='absolute top-1 right-1'
+                    />
                   </div>
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                     <h4 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>

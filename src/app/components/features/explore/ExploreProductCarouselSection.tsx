@@ -3,6 +3,7 @@ import { ChevronRight, Leaf, MapPin, ShoppingBag, Star } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import {
   Carousel,
   CarouselContent,
@@ -37,6 +38,8 @@ type ExploreProductCarouselSectionProps = {
   seeMoreHref?: string;
   theme?: 'product' | 'material';
   getFactoryMeta?: (factoryId?: string) => { location: string; rating: number; reviews: number };
+  isLiked?: (id: string | number) => boolean;
+  onToggleFavorite?: (id: string | number) => void;
 };
 
 export function ExploreProductCarouselSection({
@@ -47,6 +50,8 @@ export function ExploreProductCarouselSection({
   seeMoreHref = '/factory-ideas?type=product',
   theme = 'product',
   getFactoryMeta,
+  isLiked,
+  onToggleFavorite,
 }: ExploreProductCarouselSectionProps) {
   const navigate = useNavigate();
   const isMaterial = theme === 'material';
@@ -148,6 +153,14 @@ export function ExploreProductCarouselSection({
                             >
                               {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                             </span>
+                            {isLiked && onToggleFavorite && (
+                              <ShowcaseHeartButton
+                                showcaseId={product.id}
+                                isLiked={isLiked(product.id)}
+                                onToggle={onToggleFavorite}
+                                className='absolute top-1 right-1'
+                              />
+                            )}
                           </div>
                           <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                             <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>

@@ -1,7 +1,8 @@
 import React from 'react';
-import { ChevronRight, Heart } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 
 import type { IExploreArticle } from '@/domain/explore/types/explore.model';
 
@@ -9,13 +10,16 @@ export type IdeaArticleItem = IExploreArticle;
 
 type ExploreIdeaArticlesProps = {
   articles: IdeaArticleItem[];
-
+  isLiked?: (id: string | number) => boolean;
+  onToggleFavorite?: (id: string | number) => void;
   onSeeAll?: () => void;
   onArticleClick?: (id: string) => void;
 };
 
 export function ExploreIdeaArticles({
   articles,
+  isLiked,
+  onToggleFavorite,
   onSeeAll,
   onArticleClick,
 }: ExploreIdeaArticlesProps) {
@@ -55,16 +59,17 @@ export function ExploreIdeaArticles({
             <p className='text-[12px] text-gray-500 line-clamp-2'>{article.excerpt || ' '}</p>
             <div className='mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between'>
               <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={(e) => e.stopPropagation()}
-                className='flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70'
-                aria-label='ถูกใจ'
-              >
-                <Heart className='w-2.5 h-2.5 shrink-0' />
-                <span className='text-[10px] leading-none'>{Number(article.likes ?? 0)}</span>
-              </Button>
+              {isLiked && onToggleFavorite ? (
+                <ShowcaseHeartButton
+                  showcaseId={article.id}
+                  isLiked={isLiked(article.id)}
+                  onToggle={onToggleFavorite}
+                />
+              ) : (
+                <span className='text-[10px] text-gray-400 tabular-nums'>
+                  {Number(article.likes ?? 0)} likes
+                </span>
+              )}
             </div>
           </article>
         ))}
