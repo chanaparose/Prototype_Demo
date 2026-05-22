@@ -14,6 +14,7 @@ import {
   deriveCurrentStepIdFromProductionUpdates,
   parseCurrentStepId,
 } from '@/domain/order/status';
+import { orderKeys } from '@/lib/queryKeys';
 import { useOrderDetailQuery } from '@/hooks/order-detail/useOrderDetailQuery';
 import { mapProductionUpdatesBundleFromApi } from '@/domain/production/mappers/mapProductionBundle';
 import type { IProductionUpdatesBundleResponse } from '@/services/api/types/production.types';
@@ -170,14 +171,15 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
     gcTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });
-  const { refetchWallet } = useData();
+  const { refetchWallet, refetchRfqs } = useData();
 
   const refetchAll = useCallback(async () => {
     await Promise.all([
-      qc.invalidateQueries({ queryKey: ['order', orderId] }),
+      qc.refetchQueries({ queryKey: orderKeys.detail(orderId) }),
+      refetchRfqs(),
       refetchWallet(),
     ]);
-  }, [qc, orderId, refetchWallet]);
+  }, [qc, orderId, refetchRfqs, refetchWallet]);
 
   const value = useMemo((): OrderDetailContextValue | null => {
     if (!orderQ.data) return null;

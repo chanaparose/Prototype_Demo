@@ -51,7 +51,9 @@ export function useRfqAndOrdersState(initial?: InitialState) {
    * 2. currentStepId >= 4 (step จัดส่ง CD แล้ว — BE ส่ง 4 แม้ step 5 = IP รอยืนยัน)
    */
   const isShippingOrder = React.useCallback(
-    (o: Order) => o.status === 'shipped' || (o.currentStepId != null && o.currentStepId >= 4),
+    (o: Order) =>
+      o.status !== 'completed' &&
+      (o.status === 'shipped' || (o.currentStepId != null && o.currentStepId >= 4)),
     [],
   );
 

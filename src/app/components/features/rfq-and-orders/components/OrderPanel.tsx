@@ -15,8 +15,8 @@ const ORDER_TABS: {
 }[] = [
   { id: 'pending_payment', shortLabel: 'รอชำระ', fullLabel: 'รอชำระมัดจำ', icon: Banknote },
   { id: 'in_production', shortLabel: 'กำลังผลิต', fullLabel: 'กำลังผลิต', icon: Package },
-  { id: 'shipped', shortLabel: 'จัดส่ง', fullLabel: 'จัดส่งแล้ว', icon: Truck },
-  { id: 'completed', shortLabel: 'เสร็จ', fullLabel: 'เสร็จสิ้น', icon: CheckCircle2 },
+  { id: 'shipped', shortLabel: 'จัดส่งแล้ว', fullLabel: 'จัดส่งแล้ว', icon: Truck },
+  { id: 'completed', shortLabel: 'เสร็จสิ้น', fullLabel: 'เสร็จสิ้น', icon: CheckCircle2 },
   { id: 'cancelled_expired', shortLabel: 'ยกเลิก', fullLabel: 'ยกเลิก/หมดอายุ', icon: OctagonX },
 ];
 
