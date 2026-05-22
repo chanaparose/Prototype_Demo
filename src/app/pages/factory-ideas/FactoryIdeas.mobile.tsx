@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import {
   Search,
   BadgeCheck,
-  Heart,
   Sparkles,
   X,
   Loader2,
@@ -21,6 +20,7 @@ import {
   factoryIdeasContentTypes as CONTENT_TYPES,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
+import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { Input } from '@/components/ui/input';
 
 export function FactoryIdeasMobile() {
@@ -276,9 +276,15 @@ export function FactoryIdeasMobile() {
               return (
                 <article
                   key={item.id}
-                  className='bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3'
+                  className='relative bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3 pr-10'
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
+                  <ShowcaseHeartButton
+                    showcaseId={item.id}
+                    isLiked={isLiked(item.id)}
+                    onToggle={toggleFavorite}
+                    className='absolute top-2 right-2 z-[1]'
+                  />
                   <div className='flex items-center gap-2 mb-1.5'>
                     <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
                       ไอเดีย
@@ -289,30 +295,8 @@ export function FactoryIdeasMobile() {
                     {item.title}
                   </h3>
                   <p className='text-[12px] text-gray-500 line-clamp-2'>{item.excerpt || ' '}</p>
-                  <div className='mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between'>
+                  <div className='mt-2 pt-1.5 border-t border-gray-100'>
                     <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        void toggleFavorite(item.id);
-                      }}
-                      className='flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70'
-                      aria-label='ถูกใจ'
-                    >
-                      <Heart
-                        className='w-2.5 h-2.5 shrink-0'
-                        style={
-                          isLiked(item.id)
-                            ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
-                            : {}
-                        }
-                      />
-                      <span className='text-[10px] leading-none'>
-                        {item.likes + (isLiked(item.id) ? 1 : 0)}
-                      </span>
-                    </Button>
                   </div>
                 </article>
               );
@@ -341,6 +325,12 @@ export function FactoryIdeasMobile() {
                     >
                       {contentTypeLabel[item.contentType]}
                     </span>
+                    <ShowcaseHeartButton
+                      showcaseId={item.id}
+                      isLiked={isLiked(item.id)}
+                      onToggle={toggleFavorite}
+                      className='absolute top-1 right-1 z-[1]'
+                    />
                   </div>
 
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
@@ -388,7 +378,7 @@ export function FactoryIdeasMobile() {
                   onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                 >
                   <div className='flex h-full p-3 gap-3'>
-                    <div className='w-[100px] shrink-0 rounded-xl overflow-hidden bg-gray-100 relative'>
+                    <div className='relative w-[100px] shrink-0 rounded-xl overflow-hidden bg-gray-100'>
                       <ImageWithFallback
                         src={item.image}
                         alt={item.title}
@@ -400,6 +390,12 @@ export function FactoryIdeasMobile() {
                       >
                         {contentTypeLabel[item.contentType]}
                       </span>
+                      <ShowcaseHeartButton
+                        showcaseId={item.id}
+                        isLiked={isLiked(item.id)}
+                        onToggle={toggleFavorite}
+                        className='absolute top-1 right-1 z-[1]'
+                      />
                     </div>
 
                     <div className='flex flex-col flex-1 min-w-0 justify-between'>
@@ -441,30 +437,6 @@ export function FactoryIdeasMobile() {
                       </div>
                     </div>
 
-                    <div className='w-[40px] shrink-0 flex flex-col items-center justify-center border-l border-gray-100 pl-2'>
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void toggleFavorite(item.id);
-                        }}
-                        className='flex flex-col items-center gap-0.5 p-1.5 rounded-lg text-gray-400 active:opacity-70'
-                        aria-label='ถูกใจ'
-                      >
-                        <Heart
-                          className='w-4 h-4 shrink-0'
-                          style={
-                            isLiked(item.id)
-                              ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
-                              : {}
-                          }
-                        />
-                        <span className='text-[9px] font-medium tabular-nums leading-none'>
-                          {item.likes + (isLiked(item.id) ? 1 : 0)}
-                        </span>
-                      </Button>
-                    </div>
                   </div>
                 </article>
               );
@@ -506,6 +478,12 @@ export function FactoryIdeasMobile() {
                       <span className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--brand-teal-light)] px-1.5 py-0.5 text-[8px] font-bold text-white'>
                         วัตถุดิบ
                       </span>
+                      <ShowcaseHeartButton
+                        showcaseId={item.id}
+                        isLiked={isLiked(item.id)}
+                        onToggle={toggleFavorite}
+                        className='absolute top-1 right-1 z-[1]'
+                      />
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                       <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
@@ -633,9 +611,15 @@ export function FactoryIdeasMobile() {
                 return (
                   <article
                     key={`idea-${item.id}`}
-                    className='bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3'
+                    className='relative bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3 pr-10'
                     onClick={() => navigate(getDetailPath(item.contentType, item.id))}
                   >
+                    <ShowcaseHeartButton
+                      showcaseId={item.id}
+                      isLiked={isLiked(item.id)}
+                      onToggle={toggleFavorite}
+                      className='absolute top-2 right-2 z-[1]'
+                    />
                     <div className='flex items-center gap-2 mb-1.5'>
                       <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
                         ไอเดีย
@@ -646,30 +630,8 @@ export function FactoryIdeasMobile() {
                       {item.title}
                     </h3>
                     <p className='text-[12px] text-gray-500 line-clamp-2'>{item.excerpt || ' '}</p>
-                    <div className='mt-2 pt-1.5 border-t border-gray-100 flex items-center justify-between'>
+                    <div className='mt-2 pt-1.5 border-t border-gray-100'>
                       <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void toggleFavorite(item.id);
-                        }}
-                        className='flex items-center gap-0 shrink-0 tabular-nums text-[9px] active:opacity-70'
-                        aria-label='ถูกใจ'
-                      >
-                        <Heart
-                          className='w-2.5 h-2.5 shrink-0'
-                          style={
-                            isLiked(item.id)
-                              ? { color: 'var(--status-danger)', fill: 'var(--status-danger)' }
-                              : {}
-                          }
-                        />
-                        <span className='text-[10px] leading-none'>
-                          {item.likes + (isLiked(item.id) ? 1 : 0)}
-                        </span>
-                      </Button>
                     </div>
                   </article>
                 );
