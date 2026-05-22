@@ -9,7 +9,7 @@ type SubCategoryRow = { id: string; name: string; sortOrder: number };
 
 type FactoryIdeasCategoryDropdownProps = {
   variant: 'desktop' | 'mobile';
-  categoryMenuRef: RefObject<HTMLDivElement>;
+  categoryMenuRef: RefObject<HTMLDivElement | null>;
   categoryMenuOpen: boolean;
   setCategoryMenuOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
   categoryMenuStep?: 'categories' | 'subs';
