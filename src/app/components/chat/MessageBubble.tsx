@@ -224,7 +224,7 @@ export function MessageBubble({
           <p className='text-[10px] font-semibold text-brand-mauve uppercase tracking-wide mb-1'>
             คำขอ RFQ
           </p>
-          <p className='text-sm font-bold text-gray-900'>{msg.content || `RFQ #${rfqId}`}</p>
+          <p className='text-sm font-bold text-gray-900'>{msg.reference_title || msg.content || `RFQ #${rfqId}`}</p>
           <div className='border-t border-gray-100 my-3' />
           <Button
             variant='unstyled'

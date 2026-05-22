@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Plus } from 'lucide-react';
-import { conversationsApi } from '@/services/api/chatApi';
+import { messagesApi } from '@/services/api/chatApi';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 
 type Props = {
   conversationId: number;
+  receiverId: number;
   onSelect: (sharedMessage?: Record<string, unknown>) => void;
   onCancel: () => void;
 };
@@ -44,7 +45,7 @@ function toOpenRfqItem(row: Record<string, unknown>): OpenRfqItem | null {
   };
 }
 
-export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
+export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Props) {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
   const [selectedRfqId, setSelectedRfqId] = useState<number | null>(null);
@@ -52,18 +53,13 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
   const q = useQuery({
     queryKey: ['rfqs', 'open', 'picker'],
     queryFn: async () => {
-      const [opRows, pdRows] = await Promise.all([rfqsApi.list('OP'), rfqsApi.list('PD')]);
-      const op = (Array.isArray(opRows) ? opRows : []) as Record<string, unknown>[];
-      const pd = (Array.isArray(pdRows) ? pdRows : []) as Record<string, unknown>[];
-      const merged = [...op, ...pd];
-      const mapped = merged.map(toOpenRfqItem).filter((x): x is OpenRfqItem => x !== null);
-      const seen = new Set<number>();
-      return mapped.filter((item) => {
-        if (seen.has(item.rfq_id)) return false;
-        seen.add(item.rfq_id);
-        return true;
-      });
+      const rows = (await rfqsApi.list()) as Record<string, unknown>[];
+      const all = Array.isArray(rows) ? rows : [];
+      return all
+        .map(toOpenRfqItem)
+        .filter((x): x is OpenRfqItem => x !== null);
     },
+    staleTime: 60_000,
   });
 
   const filtered = useMemo(() => {
@@ -82,16 +78,14 @@ export function RFQPicker({ conversationId, onSelect, onCancel }: Props) {
   const handleShare = async (rfqId: number) => {
     setSelectedRfqId(rfqId);
     try {
-      const res = await conversationsApi.shareRfq(conversationId, rfqId);
-      const message =
-        (res.message && typeof res.message === 'object'
-          ? (res.message as Record<string, unknown>)
-          : undefined) ??
-        ((res.data as Record<string, unknown> | undefined)?.message &&
-        typeof (res.data as Record<string, unknown>).message === 'object'
-          ? ((res.data as Record<string, unknown>).message as Record<string, unknown>)
-          : undefined);
-      onSelect(message);
+      const res = await messagesApi.send(conversationId, {
+        content: '',
+        receiver_id: receiverId,
+        message_type: 'rfq_card',
+        reference_type: 'RQ',
+        reference_id: rfqId,
+      });
+      onSelect(res as unknown as Record<string, unknown>);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'แนบ RFQ ไม่สำเร็จ');
       setSelectedRfqId(null);

@@ -35,7 +35,7 @@ export function useConversations() {
 
   const reload = useCallback(async () => {
     await conversationsQ.refetch();
-  }, [conversationsQ]);
+  }, [conversationsQ.refetch]);
 
   return {
     items,

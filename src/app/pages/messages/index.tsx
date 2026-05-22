@@ -3,14 +3,12 @@ import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { MessagesMobile } from '@/pages/messages/Messages.mobile';
 import { MessagesDesktop } from '@/pages/messages/Messages.desktop';
 import { useConversations } from '@/pages/messages/useConversations';
-import { useMarkAsRead } from '@/pages/messages/useMarkAsRead';
 import { sortConversations } from '@/pages/messages/selectors';
 import type { UiConversation } from '@/pages/messages/types';
 
 export function Messages() {
   const isDesktop = useIsDesktop();
   const { items, loading, error, reload } = useConversations();
-  const markAsRead = useMarkAsRead();
   const [searchText, setSearchText] = React.useState('');
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
@@ -23,14 +21,6 @@ export function Messages() {
       setSelectedId(items[0]?.id ?? null);
     }
   }, [items, selectedId]);
-
-  React.useEffect(() => {
-    if (!isDesktop || !selectedId) return;
-    void (async () => {
-      await markAsRead(selectedId);
-      void reload();
-    })();
-  }, [isDesktop, selectedId, markAsRead, reload]);
 
   const filtered = React.useMemo(() => {
     const q = searchText.toLowerCase().trim();

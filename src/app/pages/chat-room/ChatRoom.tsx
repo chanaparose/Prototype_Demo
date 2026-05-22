@@ -697,6 +697,7 @@ function ChatRoomBody({
       {showRFQPicker && apiConv ? (
         <RFQPicker
           conversationId={apiConv.conv_id}
+          receiverId={currentUserId != null ? resolveReceiverId(apiConv, currentUserId) : 0}
           onCancel={() => setShowRFQPicker(false)}
           onSelect={(sharedMessage) => {
             if (sharedMessage) {
@@ -711,7 +712,9 @@ function ChatRoomBody({
                 ? { ...sharedMessage, created_at: chatNowIso() }
                 : sharedMessage;
               const row = rowToRoomMessage(enriched);
-              if (row) setMessages((prev) => insertMessageSorted(prev, row));
+              if (row) setMessages((prev) =>
+                prev.some((m) => m.key === row.key) ? prev : insertMessageSorted(prev, row),
+              );
             }
             setShowRFQPicker(false);
             void refreshThread();
