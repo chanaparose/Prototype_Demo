@@ -10,17 +10,12 @@ import {
   CheckCircle,
   XCircle,
   CreditCard,
-  Star,
   FileText,
   FileCheck,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { notificationsApi } from '@/services/api/chatApi';
-import { NOTIFICATIONS_CHANGED_EVENT } from '@/hooks/useNotificationUnreadCount';
-import {
-  fetchNotificationUnreadCount,
-  fetchNotificationsPage,
-} from '@/domain/notifications/queries/useNotificationQueries';
+import { fetchNotificationsPage } from '@/domain/notifications/queries/useNotificationQueries';
 import type { INotificationModel } from '@/domain/notifications/types/notification.model';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +25,7 @@ export function NotificationsMobile() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
   const [notifications, setNotifications] = useState<INotificationModel[]>([]);
-  const [page, setPage] = useState(1);
+  const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -40,41 +35,37 @@ export function NotificationsMobile() {
   const [tab, setTab] = useState<'all' | 'rfq' | 'order'>('all');
   const [onlyUnread, setOnlyUnread] = useState(false);
 
-  const load = useCallback(async (nextPage: number, append: boolean) => {
+  const LIMIT = 20;
+
+  const load = useCallback(async (nextOffset: number, append: boolean) => {
     if (append) setLoadingMore(true);
     else setLoading(true);
     setError('');
     try {
-      const [pageRes, unread] = await Promise.all([
-        fetchNotificationsPage(nextPage, 20, false),
-        fetchNotificationUnreadCount(),
-      ]);
-      setPage(pageRes.page);
+      const pageRes = await fetchNotificationsPage(tab, LIMIT, nextOffset);
+      setOffset(nextOffset);
       setTotal(pageRes.total);
       setNotifications((prev) => (append ? [...prev, ...pageRes.items] : pageRes.items));
-      setUnreadCount(unread || pageRes.unreadCount);
+      setUnreadCount(pageRes.unreadCount);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดการแจ้งเตือนไม่สำเร็จ');
     } finally {
       if (append) setLoadingMore(false);
       else setLoading(false);
     }
-  }, []);
+  }, [tab]);
 
+  // Reload from beginning when tab changes
   useEffect(() => {
-    void load(1, false);
-  }, [load]);
+    setNotifications([]);
+    void load(0, false);
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
+
+  // Tab filtering is server-side; only apply local search and unread filter
   const filtered = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
-    const byTab = notifications.filter((n) => {
-      const t = String(n.type).toUpperCase();
-      if (tab === 'rfq') return t.includes('RFQ') || t.includes('QUOTATION');
-      if (tab === 'order')
-        return t.includes('ORDER') || t.includes('PAYMENT') || t.includes('REVIEW');
-      return true;
-    });
-    const byUnread = onlyUnread ? byTab.filter((n) => !n.is_read) : byTab;
+    const byUnread = onlyUnread ? notifications.filter((n) => !n.is_read) : notifications;
     if (!keyword) return byUnread;
     return byUnread.filter(
       (n) =>
@@ -82,14 +73,14 @@ export function NotificationsMobile() {
         n.message.toLowerCase().includes(keyword) ||
         n.type.toLowerCase().includes(keyword),
     );
-  }, [notifications, searchText, tab, onlyUnread]);
+  }, [notifications, searchText, onlyUnread]);
 
   const markRead = useCallback(async (id: number) => {
     setNotifications((prev) => prev.map((n) => (n.noti_id === id ? { ...n, is_read: true } : n)));
     setUnreadCount((prev) => Math.max(0, prev - 1));
     try {
-      await notificationsApi.markAsRead(id);
-      window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));
+      const res = await notificationsApi.markAsRead(id);
+      setUnreadCount(res.unread_count);
     } catch {
       setNotifications((prev) =>
         prev.map((n) => (n.noti_id === id ? { ...n, is_read: false } : n)),
@@ -104,15 +95,15 @@ export function NotificationsMobile() {
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     setUnreadCount(0);
     try {
-      await notificationsApi.markAllAsRead();
-      window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));
+      const res = await notificationsApi.markAllAsRead(tab);
+      setUnreadCount(res.unread_count);
     } catch {
       setNotifications(backup);
       setUnreadCount(backup.filter((n) => !n.is_read).length);
     } finally {
       setMarkingAll(false);
     }
-  }, [notifications]);
+  }, [notifications, tab]);
 
   const removeNotification = useCallback(
     async (id: number) => {
@@ -122,7 +113,6 @@ export function NotificationsMobile() {
       if (target && !target.is_read) setUnreadCount((prev) => Math.max(0, prev - 1));
       try {
         await notificationsApi.delete(id);
-        window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));
       } catch {
         setNotifications(backup);
         setUnreadCount(backup.filter((n) => !n.is_read).length);
@@ -243,51 +233,54 @@ export function NotificationsMobile() {
           ) : filtered.length === 0 ? (
             <div className='text-center py-12 text-slate-500 text-sm'>ไม่พบการแจ้งเตือน</div>
           ) : (
-            filtered.map((notif, i) => (
-              <motion.div
-                key={notif.noti_id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-              >
-                {notif.link_to ? (
-                  <Link
-                    to={notif.link_to}
-                    className='block'
-                    onClick={() => {
-                      if (!notif.is_read) void markRead(notif.noti_id);
-                    }}
-                  >
-                    <NotificationCard
-                      notif={notif}
-                      onDelete={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        void removeNotification(notif.noti_id);
+            filtered.map((notif, i) => {
+              const dest = resolveNotificationPath(notif);
+              return (
+                <motion.div
+                  key={notif.noti_id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                >
+                  {dest ? (
+                    <Link
+                      to={dest}
+                      className='block'
+                      onClick={() => {
+                        if (!notif.is_read) void markRead(notif.noti_id);
                       }}
-                    />
-                  </Link>
-                ) : (
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    className='block w-full text-left'
-                    onClick={() => {
-                      if (!notif.is_read) void markRead(notif.noti_id);
-                    }}
-                  >
-                    <NotificationCard
-                      notif={notif}
-                      onDelete={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        void removeNotification(notif.noti_id);
+                    >
+                      <NotificationCard
+                        notif={notif}
+                        onDelete={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          void removeNotification(notif.noti_id);
+                        }}
+                      />
+                    </Link>
+                  ) : (
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      className='block w-full text-left'
+                      onClick={() => {
+                        if (!notif.is_read) void markRead(notif.noti_id);
                       }}
-                    />
-                  </Button>
-                )}
-              </motion.div>
-            ))
+                    >
+                      <NotificationCard
+                        notif={notif}
+                        onDelete={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          void removeNotification(notif.noti_id);
+                        }}
+                      />
+                    </Button>
+                  )}
+                </motion.div>
+              );
+            })
           )}
         </div>
 
@@ -296,7 +289,7 @@ export function NotificationsMobile() {
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => void load(page + 1, true)}
+              onClick={() => void load(offset + LIMIT, true)}
               disabled={loadingMore}
               className='px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 disabled:opacity-50'
             >
@@ -366,26 +359,54 @@ function NotificationCard({
   );
 }
 
+function resolveNotificationPath(notif: INotificationModel): string | null {
+  const explicitPath = normalizeInternalPath(notif.link_to);
+  if (explicitPath) return explicitPath;
+
+  if (notif.conversation_id) return `/messages/${notif.conversation_id}`;
+
+  switch (notif.type) {
+    case 'quote_received':
+    case 'rfq_expired':
+    case 'rfq_closed':
+      return notif.rfq_id ? `/rfqs/${notif.rfq_id}` : null;
+    case 'order_confirmed':
+    case 'order_status_changed':
+    case 'production_updated':
+    case 'order_completed':
+    case 'payment_due':
+      return notif.order_id ? `/orders/${notif.order_id}` : null;
+    default:
+      if (notif.order_id) return `/orders/${notif.order_id}`;
+      if (notif.rfq_id) return `/rfqs/${notif.rfq_id}`;
+      return null;
+  }
+}
+
+function normalizeInternalPath(path?: string): string | null {
+  const trimmed = path?.trim();
+  if (!trimmed || !trimmed.startsWith('/') || trimmed.startsWith('//')) return null;
+  if (/^\/qu[ao]tations?\//.test(trimmed)) return trimmed.replace(/^\/qu[ao]tations?\//, '/rfqs/');
+  return trimmed;
+}
+
 function getNotificationIcon(type: string) {
-  switch (String(type).toUpperCase()) {
-    case 'ORDER_PLACED':
-      return <ShoppingBag className='text-brand-purple' size={20} />;
-    case 'ORDER_SHIPPED':
-      return <Truck className='text-brand-purple' size={20} />;
-    case 'ORDER_COMPLETED':
-      return <CheckCircle className='text-green-500' size={20} />;
-    case 'ORDER_CANCELLED':
-      return <XCircle className='text-red-400' size={20} />;
-    case 'PAYMENT_RECEIVED':
-      return <CreditCard className='text-brand-purple' size={20} />;
-    case 'REVIEW_RECEIVED':
-      return <Star className='text-amber-500' size={20} />;
-    case 'QUOTATION_ACCEPTED':
-      return <FileCheck className='text-green-500' size={20} />;
-    case 'QUOTATION_RECEIVED':
+  switch (type) {
+    case 'quote_received':
       return <FileText className='text-brand-purple' size={20} />;
-    case 'RFQ_RECEIVED':
-      return <Bell className='text-brand-purple' size={20} />;
+    case 'rfq_expired':
+    case 'rfq_closed':
+      return <XCircle className='text-red-400' size={20} />;
+    case 'order_confirmed':
+      return <FileCheck className='text-green-500' size={20} />;
+    case 'order_status_changed':
+      return <ShoppingBag className='text-brand-purple' size={20} />;
+    case 'production_updated':
+      return <Truck className='text-brand-purple' size={20} />;
+    case 'order_completed':
+      return <CheckCircle className='text-green-500' size={20} />;
+    case 'payment_due':
+      return <CreditCard className='text-brand-purple' size={20} />;
     default:
       return <Bell className='text-brand-purple' size={20} />;
   }

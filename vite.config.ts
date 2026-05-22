@@ -28,6 +28,18 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: BE_URL,
           changeOrigin: true,
+          // SSE: disable response buffering so event-stream chunks are forwarded immediately
+          configure: (proxy) => {
+            proxy.on('proxyRes', (proxyRes, req) => {
+              if (
+                req.url?.includes('/notifications/stream') &&
+                proxyRes.headers['content-type']?.includes('text/event-stream')
+              ) {
+                proxyRes.socket?.setNoDelay(true);
+                proxyRes.socket?.setTimeout(0);
+              }
+            });
+          },
         },
         '/health': {
           target: BE_URL,
