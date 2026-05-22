@@ -5,7 +5,7 @@ import { ordersApi } from '@/services/api/ordersApi';
 import { masterApi, categoriesApi } from '@/services/api/masterApi';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import { mapOrderStatusFromApi, guessOrderProgressFromStep } from '@/domain/order/status';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
@@ -517,7 +517,7 @@ export async function fetchAndMapRfqDetail(
           projectName: rawRfq.title,
           category: catName,
           status: oStatus,
-          progress: guessOrderProgress(oStatus),
+          progress: guessOrderProgressFromStep(undefined, oStatus),
           totalAmount: matchingOrder.total_amount,
           depositPaid: matchingOrder.deposit_amount,
           quantity: rawRfq.quantity,

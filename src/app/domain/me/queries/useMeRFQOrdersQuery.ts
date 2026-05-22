@@ -11,7 +11,11 @@ import { useData } from '@/stores/useDataStore';
 import { meKeys } from '@/lib/queryKeys';
 import { meApi, type IMeRFQOrderSummary } from '@/services/api/meApi';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import {
+  mapOrderStatusFromApi,
+  guessOrderProgressFromStep,
+  parseCurrentStepId,
+} from '@/domain/order/status';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import type { Rfq, Order } from '@/stores/types';
 
@@ -55,21 +59,28 @@ function mapSummaryList(
 
     if (hasOrder && item.order_id != null && item.order_status != null) {
       const orderStatus = mapOrderStatusFromApi(item.order_status);
+      const currentStepId = parseCurrentStepId(
+        item.production_current_step_id ?? item.current_step_id,
+      );
       orders.push({
         id: String(item.order_id),
         rfqId: String(item.rfq_id),
-        factoryId: '',
-        factoryName: factoryMap.get('') ?? '',
+        factoryId: String(item.factory_id ?? ''),
+        factoryName:
+          item.factory_name ??
+          (item.factory_id != null ? factoryMap.get(String(item.factory_id)) : undefined) ??
+          '',
         projectName: item.title,
         category: catName,
         status: orderStatus,
-        progress: guessOrderProgress(orderStatus),
+        progress: guessOrderProgressFromStep(currentStepId, orderStatus),
         totalAmount: item.total_amount ?? 0,
         depositPaid: 0,
         quantity: 0,
-        createdAt,
-        estimatedDelivery: '',
+        createdAt: item.order_created_at?.split('T')[0] ?? createdAt,
+        estimatedDelivery: item.estimated_delivery?.split('T')[0] ?? '',
         timeline: [],
+        currentStepId,
       });
     }
   }

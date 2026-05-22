@@ -45,10 +45,22 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     });
   }, [rfqFilter, rfqs]);
 
-  const filteredOrders = React.useMemo(
-    () => orders.filter((o) => o.status === orderFilter),
-    [orderFilter, orders],
+  /**
+   * order อยู่ใน tab "จัดส่ง" เมื่อ:
+   * 1. status === 'shipped' (order status = SH) หรือ
+   * 2. currentStepId >= 4 (step จัดส่ง CD แล้ว — BE ส่ง 4 แม้ step 5 = IP รอยืนยัน)
+   */
+  const isShippingOrder = React.useCallback(
+    (o: Order) => o.status === 'shipped' || (o.currentStepId != null && o.currentStepId >= 4),
+    [],
   );
+
+  const filteredOrders = React.useMemo(() => {
+    if (orderFilter === 'shipped') return orders.filter(isShippingOrder);
+    if (orderFilter === 'in_production')
+      return orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o));
+    return orders.filter((o) => o.status === orderFilter);
+  }, [orderFilter, orders, isShippingOrder]);
 
   const rfqTagCounts = React.useMemo(
     () => ({
@@ -64,12 +76,12 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const orderTagCounts = React.useMemo(
     () => ({
       pendingPayment: orders.filter((o) => o.status === 'pending_payment').length,
-      inProduction: orders.filter((o) => o.status === 'in_production').length,
-      shipped: orders.filter((o) => o.status === 'shipped').length,
+      inProduction: orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o)).length,
+      shipped: orders.filter(isShippingOrder).length,
       completed: orders.filter((o) => o.status === 'completed').length,
       cancelledExpired: orders.filter((o) => o.status === 'cancelled_expired').length,
     }),
-    [orders],
+    [orders, isShippingOrder],
   );
 
   return {

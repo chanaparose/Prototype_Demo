@@ -2,7 +2,11 @@ import { type Rfq, type Order } from '@/stores/types';
 import { frontendApi } from '@/services/api/exploreApi';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import {
+  mapOrderStatusFromApi,
+  guessOrderProgressFromStep,
+  parseCurrentStepId,
+} from '@/domain/order/status';
 
 export type RfqListResult = { rfqs: Rfq[]; orders: Order[] };
 
@@ -53,6 +57,7 @@ export async function fetchAndMapRfqList(): Promise<RfqListResult> {
     //   PR/QC → 'in_production', SH → 'shipped', CP → 'completed', PP → 'pp', ...
     // mapOrderStatusFromApi รับได้ทั้ง raw ('PP') และ pre-mapped ('pp','in_production',...)
     const status = mapOrderStatusFromApi(String(o.status ?? ''));
+    const currentStepId = parseCurrentStepId(o.currentStepId ?? o.current_step_id);
     return {
       id: String(o.id ?? o.order_id ?? ''),
       rfqId: String(o.rfqId ?? o.rfq_id ?? ''),
@@ -61,13 +66,14 @@ export async function fetchAndMapRfqList(): Promise<RfqListResult> {
       projectName: String(o.projectName ?? o.project_name ?? o.title ?? ''),
       category: String(o.category ?? ''),
       status,
-      progress: guessOrderProgress(status),
+      progress: guessOrderProgressFromStep(currentStepId, status),
       totalAmount: Number(o.totalAmount ?? o.total_amount ?? 0),
       depositPaid: Number(o.depositPaid ?? o.deposit_paid ?? 0),
       quantity: Number(o.quantity ?? 0),
       createdAt: String(o.createdAt ?? o.created_at ?? '').split('T')[0],
       estimatedDelivery: String(o.estimatedDelivery ?? o.estimated_delivery ?? ''),
       timeline: [],
+      currentStepId,
     } as Order;
   });
 

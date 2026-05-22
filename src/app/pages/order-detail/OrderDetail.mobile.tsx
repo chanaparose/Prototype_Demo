@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, MessageCircle, Star, X, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, MessageCircle, Star, X, AlertTriangle, PackageCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
@@ -25,23 +25,6 @@ import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
 import { AppDialog } from '@/components/ui/app-dialog';
 import { Textarea } from '@/components/ui/textarea';
 
-type OrderReviewState = {
-  order_id: number;
-  factory_id: number;
-  factory_name?: string;
-  eligible: boolean;
-  already_reviewed: boolean;
-  reason?: string;
-  review?: {
-    review_id: number;
-    rating: number;
-    comment: string;
-    image_urls?: string[];
-    created_at?: string;
-    updated_at?: string;
-  } | null;
-};
-
 function OrderDetailMobileBody() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -54,6 +37,8 @@ function OrderDetailMobileBody() {
     paymentSchedule,
     statusLabelTh,
     lockContextMerged,
+    production,
+    reviewState,
     rfqSummary,
     rfq,
     quotation,
@@ -65,8 +50,6 @@ function OrderDetailMobileBody() {
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [confirmingReceive, setConfirmingReceive] = useState(false);
   const [receiveForbidden, setReceiveForbidden] = useState(false);
-  const [reviewState, setReviewState] = useState<OrderReviewState | null>(null);
-  const [reviewStateLoading, setReviewStateLoading] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
@@ -76,6 +59,17 @@ function OrderDetailMobileBody() {
   const [cancellingOrder, setCancellingOrder] = useState(false);
 
   const canShowCancelButton = apiStatus === 'PP';
+
+  // Show acceptance banner when production step 5 = IP (step 4 CD → awaiting customer confirmation)
+  const step5IsIP = React.useMemo(
+    () =>
+      production.updates?.some(
+        (u) => Number(u.step_id) === 5 && String(u.status).toUpperCase() === 'IP',
+      ) ?? false,
+    [production.updates],
+  );
+  const showAcceptDeliveryBanner =
+    step5IsIP && order.status !== 'completed' && order.status !== 'shipped';
 
   const depositAmount =
     nextAction?.amount ??
@@ -111,50 +105,13 @@ function OrderDetailMobileBody() {
     });
   };
 
-  const showFloatingAction = order.status === 'shipped' || order.status === 'completed';
-
-  const loadReviewState = React.useCallback(async () => {
-    setReviewStateLoading(true);
-    try {
-      const raw = (await ordersApi.getReviewState(order.id)) as Record<string, unknown>;
-      setReviewState({
-        order_id: Number(raw.order_id ?? order.id),
-        factory_id: Number(raw.factory_id ?? order.factoryId ?? 0),
-        factory_name: String(raw.factory_name ?? order.factoryName ?? ''),
-        eligible: Boolean(raw.eligible),
-        already_reviewed: Boolean(raw.already_reviewed),
-        reason: String(raw.reason ?? '').trim() || undefined,
-        review:
-          raw.review && typeof raw.review === 'object'
-            ? ({
-                review_id: Number((raw.review as Record<string, unknown>).review_id ?? 0),
-                rating: Number((raw.review as Record<string, unknown>).rating ?? 0),
-                comment: String((raw.review as Record<string, unknown>).comment ?? ''),
-                image_urls: normalizeReviewImageUrls(
-                  (raw.review as Record<string, unknown>).image_urls,
-                ),
-                created_at: String((raw.review as Record<string, unknown>).created_at ?? ''),
-                updated_at: String((raw.review as Record<string, unknown>).updated_at ?? ''),
-              } as OrderReviewState['review'])
-            : null,
-      });
-    } catch {
-      setReviewState(null);
-    } finally {
-      setReviewStateLoading(false);
-    }
-  }, [order.status, order.id, order.factoryId, order.factoryName]);
-
-  React.useEffect(() => {
-    void loadReviewState();
-  }, [loadReviewState]);
+  // Floating action: show for shipped/completed, but NOT for step-5-IP (that uses the inline banner)
+  const showFloatingAction =
+    (order.status === 'shipped' && !showAcceptDeliveryBanner) || order.status === 'completed';
 
   const onConfirmReceive = async () => {
     if (confirmingReceive) return;
-    if (order.status !== 'shipped') return;
     setReceiveForbidden(false);
-    const ok = window.confirm('ยืนยันว่าได้รับสินค้าเรียบร้อยแล้ว?');
-    if (!ok) return;
     setConfirmingReceive(true);
     try {
       await ordersApi.confirmReceipt(order.id, {
@@ -171,7 +128,6 @@ function OrderDetailMobileBody() {
         } else if (e.status === 404) {
           toast.error('ไม่พบคำสั่งซื้อนี้ในระบบ');
         } else {
-          // 409/422 and other business errors: backend message is already normalized in ApiHttpError.
           toast.error(e.message || 'ยืนยันรับสินค้าไม่สำเร็จ');
         }
       } else {
@@ -252,7 +208,7 @@ function OrderDetailMobileBody() {
       setReviewModalOpen(false);
       setReviewComment('');
       setReviewImageUrls([]);
-      await Promise.all([loadReviewState(), refetchAll()]);
+      await refetchAll();
     } catch (e) {
       if (e instanceof ApiHttpError) {
         const m = String(e.message ?? '').toLowerCase();
@@ -379,6 +335,43 @@ function OrderDetailMobileBody() {
                 className='w-full mt-1 py-2.5 rounded-xl border border-red-200 text-xs font-semibold text-red-600 bg-white'
               >
                 กลับไปหน้าใบเสนอราคา
+              </Button>
+            </div>
+          ) : null}
+
+          {/* ยืนยันรับสินค้า — แสดงเมื่อ step 5 = IP (โรงงานส่งแล้ว รอลูกค้ายืนยัน) */}
+          {showAcceptDeliveryBanner ? (
+            <div className='rounded-2xl border border-violet-200 bg-violet-50 px-4 py-4 space-y-3'>
+              <div className='flex items-start gap-3'>
+                <div className='w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center shrink-0 mt-0.5'>
+                  <PackageCheck size={18} style={{ color: 'var(--brand-purple)' }} />
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <p className='text-sm font-bold text-violet-900'>สินค้าอยู่ระหว่างการจัดส่ง</p>
+                  <p className='text-xs text-violet-700 mt-1 leading-relaxed'>
+                    กรุณาตรวจสอบสินค้าและกดยืนยันรับสินค้า เพื่อโอนเงินให้โรงงาน
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => void onConfirmReceive()}
+                disabled={confirmingReceive}
+                className='w-full py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-60 flex items-center justify-center gap-2'
+                style={{ background: confirmingReceive ? '#7C3AED99' : 'var(--brand-purple)' }}
+              >
+                {confirmingReceive ? (
+                  <>
+                    <div className='w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin' />
+                    กำลังยืนยัน...
+                  </>
+                ) : (
+                  <>
+                    <PackageCheck size={16} />
+                    ยืนยันรับสินค้า
+                  </>
+                )}
               </Button>
             </div>
           ) : null}
@@ -577,9 +570,7 @@ function OrderDetailMobileBody() {
           </span>
         </div>
 
-        {reviewStateLoading ? (
-          <p className='text-sm text-gray-500 py-4'>กำลังโหลด...</p>
-        ) : reviewState?.already_reviewed && reviewState.review ? (
+        {reviewState?.already_reviewed && reviewState.review ? (
           <div className='space-y-3'>
             <div className='flex items-center gap-1'>
               {[1, 2, 3, 4, 5].map((s) => (

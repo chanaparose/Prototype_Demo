@@ -1,6 +1,10 @@
 import { type Order, type Rfq } from '@/stores/types';
 import { ordersApi } from '@/services/api/ordersApi';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import {
+  mapOrderStatusFromApi,
+  guessOrderProgressFromStep,
+  parseCurrentStepId,
+} from '@/domain/order/status';
 
 type RawOrder = {
   order_id: number;
@@ -11,6 +15,8 @@ type RawOrder = {
   status: string;
   estimated_delivery?: string;
   created_at: string;
+  current_step_id?: number;
+  currentStepId?: number;
 };
 
 export async function fetchAndMapOrderList(
@@ -43,6 +49,8 @@ export async function fetchAndMapOrderList(
       }
     }
 
+    const currentStepId = parseCurrentStepId(raw.currentStepId ?? raw.current_step_id);
+
     return {
       id: String(raw.order_id),
       rfqId,
@@ -51,13 +59,14 @@ export async function fetchAndMapOrderList(
       projectName: projectName || `คำสั่งซื้อ #${raw.order_id}`,
       category,
       status,
-      progress: guessOrderProgress(status),
+      progress: guessOrderProgressFromStep(currentStepId, status),
       totalAmount: raw.total_amount ?? 0,
       depositPaid: raw.deposit_amount ?? 0,
       quantity,
       createdAt: createdDate,
       estimatedDelivery: deliveryDate,
       timeline: [],
+      currentStepId,
     };
   });
 }

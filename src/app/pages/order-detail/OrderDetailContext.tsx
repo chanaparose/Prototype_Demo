@@ -8,9 +8,15 @@ import type {
   ProductionLockContext,
   ProductionUpdatesBundle,
 } from '@/components/features/production/types';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import {
+  mapOrderStatusFromApi,
+  guessOrderProgressFromStep,
+  deriveCurrentStepIdFromProductionUpdates,
+  parseCurrentStepId,
+} from '@/domain/order/status';
 import { useOrderDetailQuery } from '@/hooks/order-detail/useOrderDetailQuery';
-import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
+import { mapProductionUpdatesBundleFromApi } from '@/domain/production/mappers/mapProductionBundle';
+import type { IProductionUpdatesBundleResponse } from '@/services/api/types/production.types';
 import {
   getOrderUiMode,
   type LockReason,
@@ -39,6 +45,10 @@ function unwrapOrderPayload(raw: unknown): Record<string, unknown> {
 function mapApiOrderToOrder(
   row: Record<string, unknown>,
   factories: { id: string; name: string }[],
+  opts?: {
+    currentStepId?: number;
+    productionUpdates?: { step_id: number; status: string }[];
+  },
 ): Order {
   const fid = String(row.factory_id ?? '');
   const st = mapOrderStatusFromApi(String(row.status ?? ''));
@@ -47,6 +57,10 @@ function mapApiOrderToOrder(
     row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
       ? (row.rfq as Record<string, unknown>)
       : null;
+  const currentStepId =
+    opts?.currentStepId ??
+    parseCurrentStepId(row.current_step_id ?? row.currentStepId) ??
+    deriveCurrentStepIdFromProductionUpdates(opts?.productionUpdates);
   return {
     id: String(row.order_id ?? row.id ?? ''),
     rfqId: String(row.rfq_id ?? ''),
@@ -57,19 +71,37 @@ function mapApiOrderToOrder(
     ),
     category: '',
     status: st,
-    progress: guessOrderProgress(st),
+    progress: guessOrderProgressFromStep(currentStepId, st),
     totalAmount: Number(row.total_amount ?? 0),
     depositPaid: Number(row.total_amount ?? row.deposit_amount ?? 0),
     quantity: Number(row.quantity ?? 0),
     createdAt: String(row.created_at ?? '').split('T')[0] ?? '',
     estimatedDelivery: String(row.estimated_delivery ?? '').split('T')[0] ?? '',
     timeline: [],
+    currentStepId,
   };
 }
 
 export type RfqSummaryInfo = {
   quantity: number;
   unit_name: string;
+};
+
+export type ReviewStateData = {
+  order_id: number;
+  factory_id: number;
+  factory_name: string;
+  eligible: boolean;
+  already_reviewed: boolean;
+  reason?: string;
+  review?: {
+    review_id: number;
+    rating: number;
+    comment: string;
+    image_urls?: string[];
+    created_at?: string;
+    updated_at?: string;
+  } | null;
 };
 
 export type OrderDetailContextValue = {
@@ -87,6 +119,7 @@ export type OrderDetailContextValue = {
   effectiveProductionLocked: boolean;
   effectiveLockReason: LockReason;
   lockContextMerged: ProductionLockContext;
+  reviewState: ReviewStateData | null;
 
   rfqSummary: RfqSummaryInfo | null;
   rfq: IRfqNestedResponse | null;
@@ -127,7 +160,6 @@ type ProviderProps = {
 
 export function OrderDetailProvider({ orderId, factories, children }: ProviderProps) {
   const orderQ = useOrderDetailQuery(orderId);
-  const prodQ = useOrderProductionUpdates(orderId);
   const qc = useQueryClient();
 
   // Prefetch wallet so DepositPaymentModal shows balance immediately (no loading flash)
@@ -143,7 +175,6 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
   const refetchAll = useCallback(async () => {
     await Promise.all([
       qc.invalidateQueries({ queryKey: ['order', orderId] }),
-      qc.invalidateQueries({ queryKey: ['order', orderId, 'production-updates'] }),
       refetchWallet(),
     ]);
   }, [qc, orderId, refetchWallet]);
@@ -159,7 +190,28 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       apiStatus,
       row.status_label_th != null ? String(row.status_label_th) : undefined,
     );
-    const mappedOrder = mapApiOrderToOrder(row, factories);
+
+    // Extract production from embedded response (GET /orders/:id now includes it).
+    const rawProd = row.production;
+    const production: ProductionUpdatesBundle =
+      rawProd && typeof rawProd === 'object'
+        ? mapProductionUpdatesBundleFromApi(rawProd as IProductionUpdatesBundleResponse)
+        : ({
+            order_id: Number(orderId) || 0,
+            order_status: apiStatus,
+            updates: [],
+          } as ProductionUpdatesBundle);
+
+    // Extract review_state from embedded response.
+    const rawReview = row.review_state;
+    const reviewState: ReviewStateData | null =
+      rawReview && typeof rawReview === 'object'
+        ? (rawReview as ReviewStateData)
+        : null;
+
+    const mappedOrder = mapApiOrderToOrder(row, factories, {
+      productionUpdates: production.updates,
+    });
     const payableAmount = (() => {
       const staged = paymentSchedule.find(
         (s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT',
@@ -174,14 +226,6 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       }
       return mappedOrder.totalAmount;
     })();
-    const production: ProductionUpdatesBundle =
-      prodQ.data ??
-      ({
-        order_id: Number(orderId) || 0,
-        order_status: apiStatus,
-        updates: [],
-      } as ProductionUpdatesBundle);
-
     const apiLocked =
       production.production_locked === true
         ? true
@@ -217,12 +261,13 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       nextAction,
       paymentSchedule,
       production,
-      isProductionLoading: prodQ.isLoading,
-      isProductionError: prodQ.isError,
-      productionError: prodQ.error,
+      isProductionLoading: orderQ.isLoading,
+      isProductionError: orderQ.isError,
+      productionError: orderQ.error,
       effectiveProductionLocked,
       effectiveLockReason,
       lockContextMerged,
+      reviewState,
       rfqSummary: extractRfqSummary(row),
       rfq:
         row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
@@ -234,7 +279,7 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
           : null,
       refetchAll,
     };
-  }, [orderQ.data, prodQ.data, factories, orderId]);
+  }, [orderQ.data, factories, orderId]);
 
   if (orderQ.isPending && !orderQ.data) {
     return (

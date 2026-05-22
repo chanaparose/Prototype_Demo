@@ -188,6 +188,8 @@ export type BootstrapOrderModel = {
   createdAt: string;
   estimatedDelivery: string;
   timeline: OrderTimeline[];
+  /** step_id ของขั้นตอนที่ active ล่าสุด (มาจาก production_updates) — ใช้แยก tab เช่น 4 = จัดส่ง */
+  currentStepId?: number;
 };
 
 export type Message = {

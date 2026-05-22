@@ -23,6 +23,9 @@ export interface IMeRFQOrderSummary {
   factory_name?: string | null;
   estimated_delivery?: string | null;
   order_created_at?: string | null;
+  /** ขั้นที่กำลัง active 0–5 (step 4 CD + step 5 IP → ส่ง 4) */
+  production_current_step_id?: number | null;
+  current_step_id?: number | null;
 }
 
 export interface IMeQuotationSummary {

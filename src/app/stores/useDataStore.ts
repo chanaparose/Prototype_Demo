@@ -10,7 +10,11 @@ import { fetchNotificationsList } from '@/domain/notifications/queries/useNotifi
 import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/mapNotification';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
-import { mapOrderStatusFromApi, guessOrderProgress } from '@/domain/order/status';
+import {
+  mapOrderStatusFromApi,
+  guessOrderProgressFromStep,
+  parseCurrentStepId,
+} from '@/domain/order/status';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import type {
   BootstrapCategoryModel,
@@ -160,6 +164,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
           if (!Array.isArray(raw)) return [];
           return (raw as Record<string, unknown>[]).map((o) => {
             const status = mapOrderStatusFromApi(pickScalarString(o.status));
+            const currentStepId = parseCurrentStepId(o.currentStepId ?? o.current_step_id);
             return {
               id: String(o.id ?? o.order_id ?? ''),
               rfqId: String(o.rfqId ?? o.rfq_id ?? ''),
@@ -168,13 +173,14 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
               projectName: pickScalarString(o.projectName ?? o.project_name),
               category: pickScalarString(o.category),
               status,
-              progress: guessOrderProgress(status),
+              progress: guessOrderProgressFromStep(currentStepId, status),
               totalAmount: pickScalarNumber(o.totalAmount ?? o.total_amount) ?? 0,
               depositPaid: pickScalarNumber(o.depositPaid ?? o.deposit_paid) ?? 0,
               quantity: pickScalarNumber(o.quantity) ?? 0,
               createdAt: pickScalarString(o.createdAt ?? o.created_at),
               estimatedDelivery: pickScalarString(o.estimatedDelivery ?? o.estimated_delivery) || '',
               timeline: [],
+              currentStepId,
             } as Order;
           });
         })(),

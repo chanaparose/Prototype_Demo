@@ -123,6 +123,7 @@ export interface ISessionRFQ {
 
 export interface ISessionOrder {
   order_id: number;
+  rfq_id?: number;
   title: string;
   factory_id: number;
   factory_name: string;
@@ -132,6 +133,10 @@ export interface ISessionOrder {
   deposit_amount?: number;
   estimated_delivery?: string;
   created_at: string;
+  /**
+   * ขั้นที่กำลัง active 0–5 (เช่น step 4 = CD + step 5 = IP → ส่ง 4)
+   */
+  current_step_id?: number | null;
 }
 
 export interface ISessionThread {
