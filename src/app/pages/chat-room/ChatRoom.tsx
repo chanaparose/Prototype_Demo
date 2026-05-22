@@ -55,6 +55,7 @@ import type { IConversationResponse } from '@/types/api';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { mediaApi } from '@/services/api/factoryApi';
 
 function referenceLabel(ref: ChatReference): string {
   const t = ref.title?.trim();
@@ -179,6 +180,8 @@ function ChatRoomBody({
   const [pendingRef, setPendingRef] = useState<ChatReference | null>(seedReference ?? null);
   const [showRFQPicker, setShowRFQPicker] = useState(false);
   const [quotationLoadingId, setQuotationLoadingId] = useState<number | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const seedConsumedRef = useRef(false);
@@ -354,6 +357,66 @@ function ChatRoomBody({
       prev.map((m) => (m.key === key ? { ...m, status: 'sending' as const } : m)),
     );
     void sendWithText(row.content, key, null);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !apiConv || currentUserId == null) return;
+    e.target.value = '';
+
+    setUploadingImage(true);
+    const tempKey = `tmp-img-${Date.now()}`;
+    const nowIso = chatNowIso();
+    const localUrl = URL.createObjectURL(file);
+    const optimistic: RoomMessage = {
+      key: tempKey,
+      sender_id: currentUserId,
+      receiver_id: resolveReceiverId(apiConv, currentUserId),
+      content: '',
+      created_at: nowIso,
+      display_time: formatDisplayTimeFromIso(nowIso),
+      message_type: 'IM',
+      reference_type: '',
+      reference_id: 0,
+      is_read: false,
+      status: 'sending',
+      imageUrl: localUrl,
+    };
+    setMessages((prev) => insertMessageSorted(prev, optimistic));
+
+    try {
+      const uploaded = await mediaApi.upload(file);
+      const imageUrl = String(uploaded?.url ?? '');
+      if (!imageUrl) throw new Error('ไม่ได้รับ URL รูปภาพ');
+
+      const res = (await messagesApi.send(apiConv.conv_id, {
+        content: '',
+        receiver_id: resolveReceiverId(apiConv, currentUserId),
+        message_type: 'IM',
+        attachment_url: imageUrl,
+      })) as unknown as Record<string, unknown>;
+
+      const serverRow = rowToRoomMessage(res);
+      setMessages((prev) => {
+        const withImage = serverRow
+          ? { ...serverRow, imageUrl, status: 'ok' as const }
+          : null;
+        const filtered = prev.filter((m) => m.key !== tempKey && m.key !== serverRow?.key);
+        return withImage
+          ? sortMessagesByCreatedAt(dedupeByKey([...filtered, withImage]))
+          : sortMessagesByCreatedAt(
+              dedupeByKey(prev.map((m) => (m.key === tempKey ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const } : m))),
+            );
+      });
+      URL.revokeObjectURL(localUrl);
+    } catch (err) {
+      setMessages((prev) =>
+        prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
+      );
+      toast.error(err instanceof Error ? err.message : 'อัปโหลดรูปไม่สำเร็จ');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -644,13 +707,26 @@ function ChatRoomBody({
           </p>
         ) : null}
         <div className='flex items-end gap-2'>
+          <input
+            ref={fileInputRef}
+            type='file'
+            accept='image/*'
+            className='hidden'
+            onChange={(e) => void handleImageUpload(e)}
+          />
           <Button
             variant='unstyled'
             type='button'
-            aria-label='แนบไฟล์'
-            className='w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0'
+            aria-label='แนบรูปภาพ'
+            disabled={!apiConv || uploadingImage}
+            onClick={() => fileInputRef.current?.click()}
+            className='w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 disabled:opacity-50'
           >
-            <Paperclip size={18} className='text-gray-500' />
+            {uploadingImage ? (
+              <span className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin' />
+            ) : (
+              <Paperclip size={18} className='text-gray-500' />
+            )}
           </Button>
           <div className='flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 flex items-center gap-2'>
             <Input
