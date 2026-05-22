@@ -26,7 +26,7 @@ function hrefFor(ref: ChatReference): string {
   }
 }
 
-function labelFor(ref: ChatReference, titleFallback?: string): string {
+export function labelFor(ref: ChatReference, titleFallback?: string): string {
   const t = ref.title?.trim() || titleFallback?.trim() || 'รายการอ้างอิง';
   switch (ref.type) {
     case 'PD':

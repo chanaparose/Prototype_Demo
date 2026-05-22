@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAuth } from '@/stores/useAuthStore';
 import { type Conversation } from '@/stores/types';
@@ -11,6 +11,7 @@ import { pickScalarString } from '@/utils/pickScalarString';
 import { rowToRoomMessage, type RoomMessage } from '@/components/chat/MessageBubble';
 import { dedupeByKey, sortMessagesByCreatedAt } from '@/pages/messages/selectors';
 import { useMarkAsRead } from '@/pages/messages/useMarkAsRead';
+import { setSSECallbacks } from '@/hooks/useNotificationSSE';
 
 export type ChatRoomPreview = {
   factoryId?: string;
@@ -147,60 +148,45 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     };
   }, [conversationId, markAsRead, refreshConversations]);
 
+  // Use SSE for real-time message updates instead of polling
+  const convIdRef = useRef(conversationId);
+  convIdRef.current = conversationId;
+  const currentUserIdRef = useRef(currentUserId);
+  currentUserIdRef.current = currentUserId;
+
   useEffect(() => {
     if (!conversationId) return;
-    let stop = false;
-    const timer = window.setInterval(() => {
-      if (stop || document.hidden) return;
-      void messagesApi
-        .list(conversationId)
-        .then((raw) => {
-          if (stop) return;
-          const serverRows = messagesFromApi(raw);
-          const hasUnreadForMe =
-            currentUserId != null &&
-            serverRows.some(
-              (m) =>
-                m.receiver_id === currentUserId &&
-                m.sender_id !== currentUserId &&
-                m.is_read === false,
-            );
-          setMessages((prev) => {
-            const pending = prev.filter((m) => m.status === 'sending' || m.status === 'error');
-            const next = sortMessagesByCreatedAt(dedupeByKey([...serverRows, ...pending]));
-            if (next.length === prev.length) {
-              let same = true;
-              for (let i = 0; i < next.length; i++) {
-                const a = next[i];
-                const b = prev[i];
-                if (
-                  a.key !== b.key ||
-                  a.created_at !== b.created_at ||
-                  a.status !== b.status ||
-                  a.is_read !== b.is_read
-                ) {
-                  same = false;
-                  break;
-                }
-              }
-              if (same) return prev;
-            }
-            return next;
-          });
-          if (hasUnreadForMe) {
-            void (async () => {
-              await markAsRead(conversationId, { force: true });
-              await refreshConversations();
-            })();
-          }
-        })
-        .catch(() => {});
-    }, 4000);
-    return () => {
-      stop = true;
-      window.clearInterval(timer);
+
+    const handleNewMessage = (raw: unknown) => {
+      if (!raw || typeof raw !== 'object') return;
+      const msgObj = raw as Record<string, unknown>;
+      // Only process messages belonging to the current conversation
+      const msgConvId = String(msgObj.conv_id ?? '');
+      if (msgConvId !== String(convIdRef.current)) return;
+
+      const incoming = rowToRoomMessage(msgObj);
+      if (!incoming) return;
+
+      setMessages((prev) => {
+        const merged = dedupeByKey([...prev, incoming]);
+        return sortMessagesByCreatedAt(merged);
+      });
+
+      // If the message is for me, mark as read
+      const uid = currentUserIdRef.current;
+      if (uid != null && incoming.receiver_id === uid && incoming.sender_id !== uid) {
+        void (async () => {
+          await markAsRead(conversationId, { force: true });
+          await refreshConversations();
+        })();
+      }
     };
-  }, [conversationId, currentUserId, markAsRead, refreshConversations]);
+
+    setSSECallbacks({ onNewMessage: handleNewMessage });
+    return () => {
+      setSSECallbacks({});
+    };
+  }, [conversationId, markAsRead, refreshConversations]);
 
   const conv: Conversation = useMemo(
     () => ({

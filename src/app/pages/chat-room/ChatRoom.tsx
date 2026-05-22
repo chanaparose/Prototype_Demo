@@ -32,7 +32,7 @@ import {
   type RoomMessage,
 } from '@/components/chat/MessageBubble';
 import { RFQPicker } from '@/components/chat/RFQPicker';
-import { ReferenceChip } from '@/components/chat/ReferenceChip';
+import { labelFor, ReferenceChip } from '@/components/chat/ReferenceChip';
 import {
   dedupeByKey,
   insertMessageSorted,
@@ -253,8 +253,7 @@ function ChatRoomBody({
     if (!seedReference || seedConsumedRef.current) return;
     setPendingRef(seedReference);
     if (!message.trim()) {
-      const seedTitle = seedReference.title?.trim() || 'รายการนี้';
-      setMessage(`สนใจสอบถามเกี่ยวกับ "${seedTitle}"`);
+      setMessage(`สนใจสอบถามเกี่ยวกับ ${labelFor(seedReference)}`);
     }
     clearSeedReference?.();
     seedConsumedRef.current = true;

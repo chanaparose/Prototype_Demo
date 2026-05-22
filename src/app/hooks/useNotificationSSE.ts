@@ -2,20 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { getToken } from '@/services/api/tokenManager';
 
 function resolveStreamURL(): string {
-  // In dev, VITE_BE_URL points directly to the Go server (e.g. http://localhost:3000).
-  // Connect EventSource directly to avoid the Vite proxy buffering chunked SSE responses.
-  const directBE = (import.meta.env.VITE_BE_URL as string | undefined)?.replace(/\/$/, '');
-  if (directBE) return `${directBE}/api/v1/notifications/stream`;
-
-  // Production: use VITE_API_BASE_URL (absolute or relative)
-  const raw = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '');
-  const base =
-    raw
-      ? raw.startsWith('http') && !/\/api\/v\d+(\/|$)/.test(raw)
-        ? `${raw}/api/v1`
-        : raw
-      : '/api/v1';
-  return `${base}/notifications/stream`;
+  // Always use the relative path so the request goes through the Vite dev-server
+  // proxy (same origin → no CORS issues). The proxy config already disables
+  // response buffering for SSE streams.
+  return '/api/v1/notifications/stream';
 }
 
 type SSECallbacks = {
