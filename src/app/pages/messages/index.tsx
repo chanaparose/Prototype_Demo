@@ -4,6 +4,7 @@ import { MessagesMobile } from '@/pages/messages/Messages.mobile';
 import { MessagesDesktop } from '@/pages/messages/Messages.desktop';
 import { useConversations } from '@/pages/messages/useConversations';
 import { sortConversations } from '@/pages/messages/selectors';
+import { setConversationReadInCache } from '@/domain/chat/chatCache';
 import type { UiConversation } from '@/pages/messages/types';
 
 export function Messages() {
@@ -12,15 +13,21 @@ export function Messages() {
   const [searchText, setSearchText] = React.useState('');
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
 
+  // Optimistically zero unread badge as soon as user opens a conversation.
+  const handleSelectId = React.useCallback((id: string) => {
+    setConversationReadInCache(id);
+    setSelectedId(id);
+  }, []);
+
   React.useEffect(() => {
-    if (!selectedId && items.length > 0) setSelectedId(items[0].id);
-  }, [items, selectedId]);
+    if (!selectedId && items.length > 0) handleSelectId(items[0].id);
+  }, [items, selectedId, handleSelectId]);
 
   React.useEffect(() => {
     if (selectedId && items.length > 0 && !items.some((c) => c.id === selectedId)) {
-      setSelectedId(items[0]?.id ?? null);
+      handleSelectId(items[0]?.id ?? '');
     }
-  }, [items, selectedId]);
+  }, [items, selectedId, handleSelectId]);
 
   const filtered = React.useMemo(() => {
     const q = searchText.toLowerCase().trim();
@@ -54,7 +61,7 @@ export function Messages() {
       <MessagesDesktop
         {...commonProps}
         selectedId={selectedId}
-        setSelectedId={setSelectedId}
+        setSelectedId={handleSelectId}
         selectedConversation={selectedConversation}
       />
     );

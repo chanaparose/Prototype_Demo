@@ -118,7 +118,7 @@ export function AdminConfigPage() {
     defaultValues: {
       platform_name: 'baowu Manufacturing',
       contact_email: 'support@baowu.co.th',
-      support_phone: '-',
+    support_phone: '-',
     },
   });
   const [savingGeneral, setSavingGeneral] = useState(false);
@@ -394,7 +394,7 @@ export function AdminConfigPage() {
                         <div className='relative'>
                           <Input {...field} type='number' min={0} max={100} step={0.1} disabled={!isSA} className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50' />
                           <Percent size={12} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400' />
-                        </div>
+                      </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -410,7 +410,7 @@ export function AdminConfigPage() {
                         <div className='relative'>
                           <Input {...field} type='number' min={0} max={100} step={0.1} disabled={!isSA} className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50' />
                           <Percent size={12} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400' />
-                        </div>
+                    </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -563,21 +563,21 @@ export function AdminConfigPage() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-                  </div>
+                          />
+                        </div>
                   <Button
                     variant='unstyled'
                     type='button'
                     onClick={() => void handleCreateConfig()}
                     disabled={savingConfig}
                     className='mt-3 flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
-                  >
-                    <Plus size={14} />
+                          >
+                            <Plus size={14} />
                     {savingConfig ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
                   </Button>
-                </div>
+                        </div>
                 </Form>
-              ) : null}
+                ) : null}
             </div>
           ) : null}
 

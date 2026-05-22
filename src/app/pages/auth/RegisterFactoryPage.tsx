@@ -203,9 +203,9 @@ export function RegisterFactoryPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='__empty'>— เลือกประเภท —</SelectItem>
-                      {factoryTypes.map((t) => (
+                    {factoryTypes.map((t) => (
                         <SelectItem key={t.factory_type_id} value={String(t.factory_type_id)}>
-                          {t.name_th}
+                        {t.name_th}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -267,78 +267,78 @@ export function RegisterFactoryPage() {
             <div className='h-px bg-gray-100' />
 
             {/* ── Section 2: บัญชีผู้ดูแลระบบ ── */}
-            <div>
+                <div>
               <SectionHeading num={accountSection} label='บัญชีผู้ดูแลระบบ' />
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5'>
                 <FieldBlock label='อีเมล' error={errors.email} fieldKey='email' setFieldRef={setFieldRef} required>
                   <Input
                     type='email'
                     autoComplete='email'
-                    value={form.email}
-                    onChange={(e) => setField('email', e.target.value)}
-                    onBlur={() => blurField('email')}
-                    className={inClass(errors.email)}
+                        value={form.email}
+                        onChange={(e) => setField('email', e.target.value)}
+                        onBlur={() => blurField('email')}
+                        className={inClass(errors.email)}
                     placeholder='owner@factory.com'
-                  />
-                </FieldBlock>
+                      />
+                    </FieldBlock>
 
                 <FieldBlock label='เบอร์โทรศัพท์' error={errors.phone} fieldKey='phone' setFieldRef={setFieldRef} required>
                   <Input
                     type='tel'
                     autoComplete='tel'
-                    value={form.phone}
-                    onChange={(e) => setField('phone', e.target.value)}
-                    onBlur={() => blurField('phone')}
-                    className={inClass(errors.phone)}
+                        value={form.phone}
+                        onChange={(e) => setField('phone', e.target.value)}
+                        onBlur={() => blurField('phone')}
+                        className={inClass(errors.phone)}
                     placeholder='081-234-5678'
-                  />
-                </FieldBlock>
+                      />
+                    </FieldBlock>
 
                 <FieldBlock label='รหัสผ่าน' error={errors.password} fieldKey='password' setFieldRef={setFieldRef} required>
                   <div className='relative'>
                     <Input
-                      type={showPassword ? 'text' : 'password'}
+                          type={showPassword ? 'text' : 'password'}
                       autoComplete='new-password'
-                      value={form.password}
-                      onChange={(e) => setField('password', e.target.value)}
-                      onBlur={() => blurField('password')}
-                      className={`${inClass(errors.password)} pr-10`}
+                          value={form.password}
+                          onChange={(e) => setField('password', e.target.value)}
+                          onBlur={() => blurField('password')}
+                          className={`${inClass(errors.password)} pr-10`}
                       placeholder='8 ตัวอักษรขึ้นไป'
-                    />
+                        />
                     <Button
                       variant='unstyled'
                       type='button'
-                      tabIndex={-1}
-                      onClick={() => setShowPassword((v) => !v)}
+                          tabIndex={-1}
+                          onClick={() => setShowPassword((v) => !v)}
                       className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple'
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </Button>
-                  </div>
-                </FieldBlock>
+                      </div>
+                    </FieldBlock>
 
                 <FieldBlock label='ยืนยันรหัสผ่าน' error={errors.confirmPassword} fieldKey='confirmPassword' setFieldRef={setFieldRef} required>
                   <div className='relative'>
                     <Input
-                      type={showConfirm ? 'text' : 'password'}
+                          type={showConfirm ? 'text' : 'password'}
                       autoComplete='new-password'
-                      value={form.confirmPassword}
-                      onChange={(e) => setField('confirmPassword', e.target.value)}
-                      onBlur={() => blurField('confirmPassword')}
-                      className={`${inClass(errors.confirmPassword)} pr-10`}
+                          value={form.confirmPassword}
+                          onChange={(e) => setField('confirmPassword', e.target.value)}
+                          onBlur={() => blurField('confirmPassword')}
+                          className={`${inClass(errors.confirmPassword)} pr-10`}
                       placeholder='กรอกอีกครั้ง'
-                    />
+                        />
                     <Button
                       variant='unstyled'
                       type='button'
-                      tabIndex={-1}
-                      onClick={() => setShowConfirm((v) => !v)}
+                          tabIndex={-1}
+                          onClick={() => setShowConfirm((v) => !v)}
                       className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple'
-                    >
-                      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                        >
+                          {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                     </Button>
-                  </div>
-                </FieldBlock>
+                      </div>
+                    </FieldBlock>
               </div>
             </div>
 

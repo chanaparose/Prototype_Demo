@@ -332,7 +332,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                         -{formatTHB(discountAmount)}
                       </span>
                     </div>
-                  ) : null}
+            ) : null}
                   <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                     <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
                     <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>

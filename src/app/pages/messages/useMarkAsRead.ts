@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { conversationsApi } from '@/services/api/chatApi';
+import { setConversationReadInCache } from '@/domain/chat/chatCache';
 
 export function useMarkAsRead() {
   const calledRef = useRef<Set<string>>(new Set());
@@ -17,6 +18,7 @@ export function useMarkAsRead() {
     }
     if (calledRef.current.has(key)) return;
     calledRef.current.add(key);
+    setConversationReadInCache(convId);
     try {
       await conversationsApi.markAsRead(convId);
     } catch {

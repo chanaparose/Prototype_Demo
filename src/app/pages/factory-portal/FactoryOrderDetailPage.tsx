@@ -647,7 +647,7 @@ export function FactoryOrderDetailPage() {
                   <div key={label} className='flex items-center justify-between gap-2'>
                     <span className='text-xs text-gray-500'>{label}</span>
                     <span className='text-sm font-medium text-right text-brand-navy'>{value}</span>
-                  </div>
+                </div>
                 ))}
               </section>
 
@@ -859,18 +859,18 @@ export function FactoryOrderDetailPage() {
                     ) : (
                       <>
                         <ProductionHeader merged={timelineMerged} orderStatus={orderStatus} />
-                        <ProductionTimeline
+                    <ProductionTimeline
                           merged={timelineMerged}
-                          orderStatus={orderStatus}
-                          isFactory={!isCompleted}
-                          isCustomer={false}
-                          onOpenDrawer={(m) => {
-                            if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
-                          }}
+                      orderStatus={orderStatus}
+                      isFactory={!isCompleted}
+                      isCustomer={false}
+                      onOpenDrawer={(m) => {
+                        if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
+                      }}
                           onOpenReject={() => undefined}
                           onPhotoClick={() => undefined}
-                        />
-                      </>
+                    />
+                  </>
                     )}
                   </>
                 )}

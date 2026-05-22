@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { getToken } from '@/services/api/tokenManager';
+import { setConversationReadInCache, incrementConversationUnreadInCache } from '@/domain/chat/chatCache';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { getCurrentUserId } from '@/utils/chatContract';
 
 function resolveStreamURL(): string {
   // Always use the relative path so the request goes through the Vite dev-server
@@ -56,7 +59,13 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
 
     es.addEventListener('new_message', (e: MessageEvent) => {
       try {
-        const msg = JSON.parse(e.data as string);
+        const msg = JSON.parse(e.data as string) as Record<string, unknown>;
+        // Update conversations list unread badge instantly, before any refetch.
+        const convId = Number(msg.conv_id ?? 0);
+        const senderId = Number(msg.sender_id ?? 0);
+        if (convId > 0 && senderId > 0) {
+          incrementConversationUnreadInCache(convId, senderId);
+        }
         sseCallbacks.onNewMessage?.(msg);
       } catch { /* ignore */ }
     });
@@ -64,6 +73,11 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
     es.addEventListener('messages_read', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data as string) as { conv_id: number; reader_id: number };
+        // Only zero OUR unread when we are the reader.
+        const uid = getCurrentUserId(useAuthStore.getState().user);
+        if (uid != null && data.reader_id === uid) {
+          setConversationReadInCache(data.conv_id);
+        }
         sseCallbacks.onMessagesRead?.(data);
       } catch { /* ignore */ }
     });

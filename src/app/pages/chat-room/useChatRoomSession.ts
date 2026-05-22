@@ -25,16 +25,10 @@ export function messagesFromApi(raw: unknown): RoomMessage[] {
   const arr = Array.isArray(raw) ? raw : [];
   const msgs = (arr as Record<string, unknown>[])
     .map(rowToRoomMessage)
-    .filter(
-      (m): m is RoomMessage =>
-        m != null &&
-        (m.content.trim() !== '' ||
-          m.message_type === 'QT' ||
-          m.message_type === 'quotation_card' ||
-          m.message_type === 'rfq_card' ||
-          m.message_type === 'system' ||
-          m.message_type === 'IM'),
-    );
+    // rowToRoomMessage already returns null for messages with no renderable body,
+    // so a simple null-check here is sufficient. We use message_type (not reference_type)
+    // to determine renderability — that logic lives inside rowToRoomMessage.
+    .filter((m): m is RoomMessage => m != null);
   return sortMessagesByCreatedAt(msgs);
 }
 

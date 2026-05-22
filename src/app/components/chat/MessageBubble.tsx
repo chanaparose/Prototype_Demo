@@ -244,10 +244,10 @@ export function MessageBubble({
 
   if ((msg.message_type === 'quotation_card' || msg.message_type === 'QT') && msg.quoteData) {
     const q = msg.quoteData;
-    const qId = Number(q.quotationId ?? msg.reference_id ?? 0);
-    const rfqId =
-      Number((msg.reference_type === 'RQ' ? msg.reference_id : 0) ?? q.rfqId ?? 0) ||
-      Number(q.rfqId ?? 0);
+    // For message_type 'QT', reference_id is always the RFQ id — derive navigation
+    // targets from message_type alone, not from reference_type.
+    const qId = Number(q.quotationId ?? 0);
+    const rfqId = Number(q.rfqId ?? msg.reference_id ?? 0);
     const factoryId = Number(q.factoryId ?? 0);
     const qStatus = String(q.status ?? 'pending').toLowerCase();
     const canOpen = qId > 0;
