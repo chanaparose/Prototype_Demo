@@ -18,6 +18,16 @@ function resolveStreamURL(): string {
   return `${base}/notifications/stream`;
 }
 
+type SSECallbacks = {
+  onNewMessage?: (msg: unknown) => void;
+};
+
+let sseCallbacks: SSECallbacks = {};
+
+export function setSSECallbacks(cbs: SSECallbacks) {
+  sseCallbacks = cbs;
+}
+
 export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
   const [unreadCount, setUnreadCount] = useState(0);
   const esRef = useRef<EventSource | null>(null);
@@ -50,6 +60,13 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
       try {
         const data = JSON.parse(e.data as string) as { unread_count: number };
         setUnreadCount(data.unread_count);
+      } catch { /* ignore */ }
+    });
+
+    es.addEventListener('new_message', (e: MessageEvent) => {
+      try {
+        const msg = JSON.parse(e.data as string);
+        sseCallbacks.onNewMessage?.(msg);
       } catch { /* ignore */ }
     });
 
