@@ -388,8 +388,15 @@ export function MessageBubble({
               ) : null}
               <span>{msg.display_time}</span>
               {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}
-              {isMine && msg.status === 'ok' && msg.is_read ? (
-                <span className='ml-1'>อ่านแล้ว</span>
+              {isMine && msg.status === 'ok' ? (
+                <span
+                  className='ml-1 inline-flex items-center'
+                  aria-label={msg.is_read ? 'read' : 'unread'}
+                  title={msg.is_read ? 'Read' : 'Unread'}
+                >
+                  <Check className='w-3 h-3' strokeWidth={2.5} />
+                  {msg.is_read ? <Check className='w-3 h-3 -ml-1.5' strokeWidth={2.5} /> : null}
+                </span>
               ) : null}
             </p>
           </div>
@@ -404,7 +411,7 @@ export function MessageBubble({
     msg.reference_id > 0 ? (
       <ReferenceChip
         reference={{ type: msg.reference_type, id: msg.reference_id } as ChatReference}
-        titleFallback={msg.reference_title || msg.content || undefined}
+        titleFallback={msg.reference_title}
       />
     ) : null;
 
@@ -442,8 +449,15 @@ export function MessageBubble({
             ) : null}
             <span>{msg.display_time}</span>
             {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}
-            {isMine && msg.status === 'ok' && msg.is_read ? (
-              <span className='ml-1'>อ่านแล้ว</span>
+            {isMine && msg.status === 'ok' ? (
+              <span
+                className='ml-1 inline-flex items-center'
+                aria-label={msg.is_read ? 'read' : 'unread'}
+                title={msg.is_read ? 'Read' : 'Unread'}
+              >
+                <Check className='w-3 h-3' strokeWidth={2.5} />
+                {msg.is_read ? <Check className='w-3 h-3 -ml-1.5' strokeWidth={2.5} /> : null}
+              </span>
             ) : null}
           </p>
         </div>

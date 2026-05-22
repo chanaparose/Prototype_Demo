@@ -253,7 +253,7 @@ function ChatRoomBody({
     if (!seedReference || seedConsumedRef.current) return;
     setPendingRef(seedReference);
     if (!message.trim()) {
-      setMessage(`สนใจสอบถามเกี่ยวกับ ${labelFor(seedReference)}`);
+      setMessage(`สนใจสอบถามเกี่ยวกับ "${labelFor(seedReference)}"`);
     }
     clearSeedReference?.();
     seedConsumedRef.current = true;
@@ -276,12 +276,20 @@ function ChatRoomBody({
         const serverRow = rowToRoomMessage(res);
         if (serverRow && serverRow.key) {
           setMessages((prev) =>
-            sortMessagesByCreatedAt(
-              dedupeByKey([
-                ...prev.filter((m) => m.key !== tempKey && m.key !== serverRow.key),
-                { ...serverRow, status: 'ok' as const },
-              ]),
-            ),
+            {
+              const optimistic = prev.find((m) => m.key === tempKey);
+              const mergedServerRow: RoomMessage = {
+                ...serverRow,
+                reference_title: serverRow.reference_title ?? optimistic?.reference_title,
+                status: 'ok' as const,
+              };
+              return sortMessagesByCreatedAt(
+                dedupeByKey([
+                  ...prev.filter((m) => m.key !== tempKey && m.key !== serverRow.key),
+                  mergedServerRow,
+                ]),
+              );
+            },
           );
         } else {
           const mid = String(res.message_id ?? res.id ?? tempKey);

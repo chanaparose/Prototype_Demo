@@ -27,20 +27,30 @@ function hrefFor(ref: ChatReference): string {
 }
 
 export function labelFor(ref: ChatReference, titleFallback?: string): string {
-  const t = ref.title?.trim() || titleFallback?.trim() || 'รายการอ้างอิง';
+  const idText = Number.isFinite(ref.id) && ref.id > 0 ? `#${ref.id}` : 'รายการอ้างอิง';
   switch (ref.type) {
-    case 'PD':
+    case 'PD': {
+      const t = ref.title?.trim() || titleFallback?.trim() || `สินค้า ${idText}`;
       return `สินค้า: ${t}`;
-    case 'PM':
+    }
+    case 'PM': {
+      const t = ref.title?.trim() || titleFallback?.trim() || `โปรโมชัน ${idText}`;
       return `โปรโมชัน: ${t}`;
-    case 'ID':
+    }
+    case 'ID': {
+      const t = ref.title?.trim() || titleFallback?.trim() || `ไอเดีย ${idText}`;
       return `ไอเดีย: ${t}`;
-    case 'RQ':
+    }
+    case 'RQ': {
+      const t = ref.title?.trim() || titleFallback?.trim() || `RFQ ${idText}`;
       return `RFQ: ${t}`;
-    case 'OD':
+    }
+    case 'OD': {
+      const t = ref.title?.trim() || titleFallback?.trim() || `Order ${idText}`;
       return `Order: ${t}`;
+    }
     default:
-      return t;
+      return ref.title?.trim() || titleFallback?.trim() || idText;
   }
 }
 

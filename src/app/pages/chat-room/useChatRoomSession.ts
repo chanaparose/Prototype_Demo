@@ -182,7 +182,20 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
       }
     };
 
-    setSSECallbacks({ onNewMessage: handleNewMessage });
+    const handleMessagesRead = (data: { conv_id: number; reader_id: number }) => {
+      // Only process if this event belongs to current conversation
+      if (String(data.conv_id) !== String(convIdRef.current)) return;
+      // Flip all MY sent messages (where receiver = reader) to is_read = true
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.receiver_id === data.reader_id && m.sender_id !== data.reader_id
+            ? { ...m, is_read: true }
+            : m,
+        ),
+      );
+    };
+
+    setSSECallbacks({ onNewMessage: handleNewMessage, onMessagesRead: handleMessagesRead });
     return () => {
       setSSECallbacks({});
     };

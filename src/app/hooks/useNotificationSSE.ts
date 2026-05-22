@@ -10,6 +10,7 @@ function resolveStreamURL(): string {
 
 type SSECallbacks = {
   onNewMessage?: (msg: unknown) => void;
+  onMessagesRead?: (data: { conv_id: number; reader_id: number }) => void;
 };
 
 let sseCallbacks: SSECallbacks = {};
@@ -57,6 +58,13 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
       try {
         const msg = JSON.parse(e.data as string);
         sseCallbacks.onNewMessage?.(msg);
+      } catch { /* ignore */ }
+    });
+
+    es.addEventListener('messages_read', (e: MessageEvent) => {
+      try {
+        const data = JSON.parse(e.data as string) as { conv_id: number; reader_id: number };
+        sseCallbacks.onMessagesRead?.(data);
       } catch { /* ignore */ }
     });
 
