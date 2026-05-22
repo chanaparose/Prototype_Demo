@@ -23,6 +23,7 @@ export type IExploreShowcase = {
   minOrder: number;
   leadTime: string;
   tags: string[];
+  factoryRating?: number;
 };
 
 export type IExploreArticle = {

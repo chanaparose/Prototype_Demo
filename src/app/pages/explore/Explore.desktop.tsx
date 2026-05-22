@@ -107,8 +107,6 @@ function getFactoryMeta(
   const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
   return {
     location: (f?.location ?? '').trim() || '—',
-    rating: Number(f?.rating ?? 0),
-    reviews: Number(f?.reviews ?? 0),
   };
 }
 
@@ -146,6 +144,7 @@ export function ExploreDesktop({
         factoryId: s.factoryId,
         factoryName: s.factoryName,
         minOrder: s.minOrder,
+        factoryRating: s.factoryRating,
       })),
     [exploreProducts],
   );
@@ -164,6 +163,7 @@ export function ExploreDesktop({
         factoryId: s.factoryId,
         factoryName: s.factoryName,
         minOrder: s.minOrder,
+        factoryRating: s.factoryRating,
       })),
     [exploreMatrials],
   );
@@ -423,10 +423,7 @@ export function ExploreDesktop({
                           <div className='flex items-center gap-0.5 min-w-0'>
                             <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
                             <span className='text-gray-700 text-[10px] font-semibold'>
-                              {meta.rating}
-                            </span>
-                            <span className='text-gray-400 text-[9px] truncate'>
-                              ({meta.reviews})
+                              {item.factoryRating ?? 0}
                             </span>
                           </div>
                           <span className='text-gray-400 text-[8px] shrink-0'>

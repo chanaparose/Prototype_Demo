@@ -350,10 +350,7 @@ export function FactoryIdeasMobile() {
                         <div className='flex items-center gap-0.5 min-w-0'>
                           <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
                           <span className='text-gray-700 text-[10px] font-semibold'>
-                            {factory?.rating ?? 0}
-                          </span>
-                          <span className='text-gray-400 text-[9px] truncate'>
-                            ({factory?.reviews ?? 0})
+                            {item.factoryRating ?? 0}
                           </span>
                         </div>
                         <span className='text-gray-400 text-[8px] shrink-0'>
@@ -500,10 +497,7 @@ export function FactoryIdeasMobile() {
                           <div className='flex items-center gap-0.5 min-w-0'>
                             <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
                             <span className='text-gray-700 text-[10px] font-semibold'>
-                              {factory?.rating ?? 0}
-                            </span>
-                            <span className='text-gray-400 text-[9px] truncate'>
-                              ({factory?.reviews ?? 0})
+                              {item.factoryRating ?? 0}
                             </span>
                           </div>
                           <span className='text-gray-400 text-[8px] shrink-0'>

@@ -25,6 +25,7 @@ export type ExploreProductCarouselItem = {
   factoryName?: string;
   likes?: number;
   minOrder?: number;
+  factoryRating?: number;
 };
 
 const AUTO_SCROLL_INTERVAL = 3500;
@@ -37,7 +38,7 @@ type ExploreProductCarouselSectionProps = {
   onItemClick?: (id: string) => void;
   seeMoreHref?: string;
   theme?: 'product' | 'material';
-  getFactoryMeta?: (factoryId?: string) => { location: string; rating: number; reviews: number };
+  getFactoryMeta?: (factoryId?: string) => { location: string };
   isLiked?: (id: string | number) => boolean;
   onToggleFavorite?: (id: string | number) => void;
 };
@@ -121,11 +122,7 @@ export function ExploreProductCarouselSection({
                 <CarouselPrevious className='top-[calc(50%-28px)]' />
                 <CarouselContent className='gap-3 pb-1'>
                   {items.map((product) => {
-                    const meta = getFactoryMeta?.(product.factoryId) ?? {
-                      location: '—',
-                      rating: 0,
-                      reviews: 0,
-                    };
+                    const meta = getFactoryMeta?.(product.factoryId) ?? { location: '—' };
                     return (
                       <CarouselItem key={product.id} className='basis-[180px]'>
                         <div
@@ -177,10 +174,7 @@ export function ExploreProductCarouselSection({
                                 <div className='flex items-center gap-0.5 min-w-0'>
                                   <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
                                   <span className='text-gray-700 text-[10px] font-semibold'>
-                                    {meta.rating}
-                                  </span>
-                                  <span className='text-gray-400 text-[9px] truncate'>
-                                    ({meta.reviews})
+                                    {product.factoryRating ?? 0}
                                   </span>
                                 </div>
                                 <span className='text-gray-400 text-[8px] shrink-0'>

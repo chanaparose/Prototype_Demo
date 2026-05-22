@@ -35,6 +35,7 @@ function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcas
     minOrder: s.minOrder,
     leadTime: s.leadTime,
     tags: s.tags,
+    ...(s.factoryRating != null ? { factoryRating: s.factoryRating } : {}),
   };
 }
 
