@@ -39,6 +39,9 @@ export const factoriesApi = {
 
   getAnalytics: () => httpClient.get<IFactoryAnalyticsResponse>('/factories/me/analytics'),
 
+  /** Single-endpoint replacement for dashboard + analytics + orders + quotations + matching RFQs + wallet. */
+  getPortal: () => httpClient.get<Record<string, unknown>>('/factories/me/portal'),
+
   saveProfile: (
     factoryId: string | number,
     data: {

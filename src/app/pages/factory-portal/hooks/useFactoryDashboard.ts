@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
-import { ordersApi } from '@/services/api/ordersApi';
-import { walletApi } from '@/services/api/userApi';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
@@ -217,64 +214,34 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
     setLoading(true);
     setError(null);
     try {
-      const [rfqRes, ordRes, qRes, wRes, aRes, dRes] = await Promise.allSettled([
-        rfqsApi.matching(),
-        ordersApi.list(),
-        quotationsApi.listMine(),
-        walletApi.getMe(),
-        factoriesApi.getAnalytics(),
-        factoriesApi.getDashboard(),
-      ]);
+      // Single portal endpoint replaces 6 separate API calls.
+      const portal = await factoriesApi.getPortal();
 
-      if (rfqRes.status === 'fulfilled') {
-        const arr = Array.isArray(rfqRes.value) ? rfqRes.value : [];
-        setOpRfqs(arr as Record<string, unknown>[]);
+      if (portal && typeof portal === 'object') {
+        const p = portal as Record<string, unknown>;
+
+        // matching_rfqs → opRfqs (used for chart series + rfq_received_total)
+        setOpRfqs(Array.isArray(p.matching_rfqs) ? (p.matching_rfqs as Record<string, unknown>[]) : []);
+
+        // orders → allOrders (used for chart series + revenue/closed_orders)
+        setAllOrders(Array.isArray(p.orders) ? (p.orders as Record<string, unknown>[]) : []);
+
+        // quotations → myQuotes (used for chart series + pending_quotations)
+        setMyQuotes(Array.isArray(p.quotations) ? (p.quotations as Record<string, unknown>[]) : []);
+
+        // wallet object (good_fund / pending_fund)
+        setWallet(p.wallet && typeof p.wallet === 'object' ? (p.wallet as Record<string, unknown>) : null);
+
+        // analytics object (total_orders, completed_orders, total_revenue, etc.)
+        setAnalyticsApi(p.analytics && typeof p.analytics === 'object' ? (p.analytics as Record<string, unknown>) : null);
+
+        // counts + recent items — pack into dashboardApi shape the summary useMemo already reads
+        setDashboardApi(p);
       } else {
-        setOpRfqs([]);
-      }
-
-      if (ordRes.status === 'fulfilled') {
-        const arr = Array.isArray(ordRes.value) ? ordRes.value : [];
-        setAllOrders(arr as Record<string, unknown>[]);
-      } else {
-        setAllOrders([]);
-      }
-
-      if (qRes.status === 'fulfilled') {
-        const arr = Array.isArray(qRes.value) ? qRes.value : [];
-        setMyQuotes(arr as Record<string, unknown>[]);
-      } else {
-        setMyQuotes([]);
-      }
-
-      if (wRes.status === 'fulfilled' && wRes.value && typeof wRes.value === 'object') {
-        setWallet(wRes.value as Record<string, unknown>);
-      } else {
-        setWallet(null);
-      }
-
-      if (aRes.status === 'fulfilled' && aRes.value && typeof aRes.value === 'object') {
-        setAnalyticsApi(aRes.value as Record<string, unknown>);
-      } else {
-        setAnalyticsApi(null);
-      }
-
-      if (dRes.status === 'fulfilled' && dRes.value && typeof dRes.value === 'object') {
-        setDashboardApi(dRes.value as Record<string, unknown>);
-      } else {
-        setDashboardApi(null);
-      }
-
-      if (
-        rfqRes.status === 'rejected' &&
-        ordRes.status === 'rejected' &&
-        qRes.status === 'rejected' &&
-        wRes.status === 'rejected' &&
-        aRes.status === 'rejected' &&
-        dRes.status === 'rejected'
-      ) {
         setError('โหลดข้อมูลแดชบอร์ดไม่สำเร็จ');
       }
+    } catch {
+      setError('โหลดข้อมูลแดชบอร์ดไม่สำเร็จ');
     } finally {
       setLoading(false);
     }
@@ -334,9 +301,10 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
       ? (pickScalarNumber(A.accepted_quotes, A.accepted_quotes_count, A.rfq_replies_total) ??
         rfq_replies_client)
       : rfq_replies_client;
-    const pending_quotations_total = hasD
-      ? (pickScalarNumber(D.pending_quotations_total, D.pending_quotations) ??
-        pending_quotations_client)
+    // pending_quotations comes from analytics.pending_quotes (portal) or legacy dashboard fields.
+    const pending_quotations_total = hasA
+      ? (pickScalarNumber(A.pending_quotes, A.pending_quotations) ??
+          (hasD ? (pickScalarNumber(D.pending_quotations_total, D.pending_quotations) ?? pending_quotations_client) : pending_quotations_client))
       : pending_quotations_client;
 
     return {
