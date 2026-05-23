@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type CollapsibleCardProps = {
   defaultOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
-  header: React.ReactNode;
-  children: React.ReactNode;
+  header: ReactNode;
+  children: ReactNode;
   className?: string;
   headerClassName?: string;
   contentClassName?: string;

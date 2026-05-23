@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 const KEY = 'rfq_draft_v1';
 
@@ -50,7 +50,7 @@ type UseRFQDraft = {
 };
 
 export function useRFQDraft(): UseRFQDraft {
-  const [draft, setDraftState] = React.useState<RFQDraft>(initialDraft);
+  const [draft, setDraftState] = useState<RFQDraft>(initialDraft);
 
   useEffect(() => {
     const raw = localStorage.getItem(KEY);
@@ -63,7 +63,7 @@ export function useRFQDraft(): UseRFQDraft {
     }
   }, []);
 
-  const setDraft = React.useCallback((next: Partial<RFQDraft>) => {
+  const setDraft = useCallback((next: Partial<RFQDraft>) => {
     setDraftState((prev) => {
       const merged = { ...prev, ...next };
       localStorage.setItem(KEY, JSON.stringify(merged));
@@ -71,7 +71,7 @@ export function useRFQDraft(): UseRFQDraft {
     });
   }, []);
 
-  const reset = React.useCallback(() => {
+  const reset = useCallback(() => {
     localStorage.removeItem(KEY);
     setDraftState(initialDraft);
   }, []);

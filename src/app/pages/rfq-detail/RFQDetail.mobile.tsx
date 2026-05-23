@@ -20,6 +20,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
+import { APP_ROUTES } from '@/constants/routes';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 const COLORS = {
   purple: appColors.brand.mauve,
@@ -88,7 +90,7 @@ export function RFQDetailMobile() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/orders')}
+            onClick={() => navigate(APP_ROUTES.orders)}
             className='w-10 h-10 rounded-xl shadow-sm flex items-center justify-center'
             style={{ backgroundColor: COLORS.lightPurpleBg }}
           >
@@ -129,7 +131,7 @@ export function RFQDetailMobile() {
                 type='button'
                 className='mt-4 text-sm font-semibold underline'
                 style={{ color: COLORS.purple }}
-                onClick={() => navigate('/orders')}
+                onClick={() => navigate(APP_ROUTES.orders)}
               >
                 กลับไป คำขอราคา & คำสั่งซื้อ
               </Button>
@@ -171,7 +173,7 @@ export function RFQDetailMobile() {
       <div className='flex items-center justify-between px-4 pt-5 pb-4 bg-white border-b border-gray-100'>
         <Button
           variant='unstyled'
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate(APP_ROUTES.orders)}
           className='w-10 h-10 rounded-xl shadow-sm flex items-center justify-center'
           style={{ backgroundColor: COLORS.lightPurpleBg }}
         >
@@ -208,16 +210,16 @@ export function RFQDetailMobile() {
                     destructive: true,
                   });
                   if (!ok) return;
-                  setClosing(true);
-                  try {
+                  void runAsyncAction(async () => {
                     await rfqsApi.close(rfq.id);
                     toast.success('ปิดรับคำขอราคาเรียบร้อย');
                     await refetch();
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
-                  } finally {
-                    setClosing(false);
-                  }
+                  }, {
+                    onStart: () => setClosing(true),
+                    onError: (message) => toast.error(message),
+                    onSettled: () => setClosing(false),
+                    fallbackMessage: 'ไม่สามารถปิดคำขอได้',
+                  });
                 }}
                 className='flex-1 rounded-xl border text-sm font-semibold py-2.5 disabled:opacity-60'
                 style={{

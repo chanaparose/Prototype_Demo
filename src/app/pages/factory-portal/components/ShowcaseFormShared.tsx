@@ -13,40 +13,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
+import {
+  SHOWCASE_TYPE_META,
+  type ShowcaseScope,
+  type ShowcaseStatus,
+  type ShowcaseType,
+} from '@/constants/showcase';
 
-export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
-export type ShowcaseScope = 'PD' | 'MT';
-export type ShowcaseStatus = 'DR' | 'AC' | 'HI' | 'AR';
-
-const SHOWCASE_TYPE_META: Record<
-  ShowcaseType,
-  { icon: string; label: string; sub: string; cls: string }
-> = {
-  PD: {
-    icon: '🏷',
-    label: 'สินค้า',
-    sub: 'Product Design',
-    cls: 'bg-orange-50 text-orange-700 border-orange-200',
-  },
-  PM: {
-    icon: '🎁',
-    label: 'โปรโมชัน',
-    sub: 'Promotion',
-    cls: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  },
-  ID: {
-    icon: '💡',
-    label: 'ไอเดีย',
-    sub: 'Industrial Design',
-    cls: 'bg-amber-50 text-amber-700 border-amber-200',
-  },
-  MT: {
-    icon: '🧱',
-    label: 'วัตถุดิบ',
-    sub: 'Materials',
-    cls: 'bg-green-50 text-green-700 border-green-200',
-  },
-};
+export type { ShowcaseScope, ShowcaseStatus, ShowcaseType };
 
 type Option = { id: number; name: string };
 
@@ -54,10 +28,10 @@ export function ShowcaseTypeBadge({ type }: { type: ShowcaseType }) {
   const meta = SHOWCASE_TYPE_META[type] ?? SHOWCASE_TYPE_META.PD;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${meta.cls}`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${meta.badgeClass}`}
     >
       {meta.icon} {meta.label}
-      <span className='opacity-60 hidden sm:inline'>· {meta.sub}</span>
+      <span className='opacity-60 hidden sm:inline'>· {meta.sublabel}</span>
     </span>
   );
 }

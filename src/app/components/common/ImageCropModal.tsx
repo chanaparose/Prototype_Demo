@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -195,19 +195,18 @@ export function ImageCropModal({
     return { width: w, height: h };
   }, [baseDisplayed.width, baseDisplayed.height, zoom]);
 
-  const clampOffset = (p: CropPoint): CropPoint => {
+  const clampOffset = useCallback((p: CropPoint): CropPoint => {
     const maxX = Math.max(0, (displayed.width - viewport.width) / 2);
     const maxY = Math.max(0, (displayed.height - viewport.height) / 2);
     return {
       x: clamp(p.x, -maxX, maxX),
       y: clamp(p.y, -maxY, maxY),
     };
-  };
+  }, [displayed.width, displayed.height, viewport.width, viewport.height]);
 
   useEffect(() => {
     setOffset((prev) => clampOffset(prev));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoom, displayed.width, displayed.height, viewport.width, viewport.height]);
+  }, [clampOffset, zoom]);
 
   if (!open || !file) return null;
 

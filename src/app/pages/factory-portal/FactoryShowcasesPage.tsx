@@ -12,25 +12,19 @@ import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 import {
   mapFactoryShowcaseList,
   type FactoryShowcaseListItem,
-  type FactoryShowcaseStatus,
   type FactoryShowcaseType,
 } from '@/domain/showcase/mappers/mapFactoryShowcaseListItem';
+import {
+  SHOWCASE_LIST_TAB_META,
+  SHOWCASE_STATUS_META,
+  SHOWCASE_TYPES,
+  normalizeShowcaseType,
+} from '@/constants/showcase';
+import { COMMON_COPY } from '@/constants/uiText';
+import { factoryShowcaseEditRoute, factoryShowcaseNewRoute } from '@/constants/routes';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 type ShowcaseType = FactoryShowcaseType;
-
-const TAB_META = {
-  PD: { icon: '🏷', label: 'สินค้า', btnLabel: 'เพิ่มสินค้า', empty: 'ยังไม่มีสินค้า' },
-  PM: { icon: '🎁', label: 'โปรโมชัน', btnLabel: 'เพิ่มโปรโมชัน', empty: 'ยังไม่มีโปรโมชัน' },
-  ID: { icon: '💡', label: 'ไอเดีย', btnLabel: 'เพิ่มไอเดีย', empty: 'ยังไม่มีไอเดีย' },
-  MT: { icon: '🧱', label: 'วัตถุดิบ', btnLabel: 'เพิ่มวัตถุดิบ', empty: 'ยังไม่มีวัตถุดิบ' },
-} as const;
-
-const STATUS_META: Record<FactoryShowcaseStatus, { label: string; bg: string; color: string }> = {
-  DR: { label: 'ร่าง', bg: 'rgba(107,114,128,0.12)', color: 'var(--neutral-subtle)' },
-  AC: { label: 'Active', bg: 'rgba(16,185,129,0.12)', color: 'var(--status-success)' },
-  HI: { label: 'ซ่อน', bg: 'rgba(245,158,11,0.12)', color: 'var(--status-warning-deep)' },
-  AR: { label: 'Archived', bg: 'rgba(107,114,128,0.10)', color: 'var(--neutral-placeholder)' },
-};
 
 export function FactoryShowcasesPage() {
   const { user } = useAuth();
@@ -41,8 +35,7 @@ export function FactoryShowcasesPage() {
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const initialType = ((): ShowcaseType => {
-    const t = searchParams.get('type');
-    return t === 'PM' || t === 'ID' || t === 'MT' ? t : 'PD';
+    return normalizeShowcaseType(searchParams.get('type'));
   })();
 
   const [activeType, setActiveType] = useState<ShowcaseType>(initialType);
@@ -63,16 +56,18 @@ export function FactoryShowcasesPage() {
       setLoading(false);
       return;
     }
-    setLoading(true);
-    setError('');
-    try {
+    void runAsyncAction(async () => {
       const raw = await showcasesApi.listByFactory(fid);
       setAllRows(mapFactoryShowcaseList(raw));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
+    }, {
+      onStart: () => {
+        setLoading(true);
+        setError('');
+      },
+      onError: (message) => setError(message),
+      onSettled: () => setLoading(false),
+      fallbackMessage: COMMON_COPY.loadFailed,
+    });
   }, [fid]);
 
   useEffect(() => {
@@ -89,16 +84,18 @@ export function FactoryShowcasesPage() {
       destructive: true,
     });
     if (!ok) return;
-    setDeletingId(id);
-    setError('');
-    try {
+    void runAsyncAction(async () => {
       await showcasesApi.delete(id);
       setAllRows((prev) => prev.filter((row) => row.id !== id));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ลบไม่สำเร็จ');
-    } finally {
-      setDeletingId(null);
-    }
+    }, {
+      onStart: () => {
+        setDeletingId(id);
+        setError('');
+      },
+      onError: (message) => setError(message),
+      onSettled: () => setDeletingId(null),
+      fallbackMessage: COMMON_COPY.deleteFailed,
+    });
   };
 
   if (fid == null) {
@@ -107,22 +104,22 @@ export function FactoryShowcasesPage() {
     );
   }
 
-  const { btnLabel, empty, icon } = TAB_META[activeType];
+  const { btnLabel, empty, icon } = SHOWCASE_LIST_TAB_META[activeType];
 
   return (
     <div className='space-y-4'>
       <ConfirmDialog />
       <FactoryPageHeader
         title='โชว์เคสของฉัน'
-        subtitle='Factory Portal'
+        subtitle={COMMON_COPY.factoryPortal}
         icon={Sparkles}
         count={`${rows.length} รายการ`}
-        action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
+        action={{ label: btnLabel, to: factoryShowcaseNewRoute(activeType) }}
       />
 
       <div className='flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200'>
-        {(['PD', 'PM', 'ID', 'MT'] as ShowcaseType[]).map((type) => {
-          const meta = TAB_META[type];
+        {SHOWCASE_TYPES.map((type) => {
+          const meta = SHOWCASE_LIST_TAB_META[type];
           const active = activeType === type;
           return (
             <Button
@@ -170,7 +167,7 @@ export function FactoryShowcasesPage() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate(`/factory/showcases/new?type=${activeType}`)}
+            onClick={() => navigate(factoryShowcaseNewRoute(activeType))}
             className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors'
           >
             <Plus size={15} />
@@ -186,7 +183,7 @@ export function FactoryShowcasesPage() {
               label: statusLabel,
               bg: statusBg,
               color: statusColor,
-            } = STATUS_META[statusKey] ?? STATUS_META.DR;
+            } = SHOWCASE_STATUS_META[statusKey] ?? SHOWCASE_STATUS_META.DR;
             const isDeleting = deletingId === id;
             const isIdea = activeType === 'ID';
             const locationLine = r.locationLine || r.categoryLine || '—';
@@ -274,7 +271,7 @@ export function FactoryShowcasesPage() {
                     <div className='border-t border-gray-100 mt-3 pt-2'>
                       <div className='flex items-center justify-between gap-2 text-[11px] text-gray-500'>
                         <p className='min-w-0 flex-1 text-xs font-semibold text-brand-navy line-clamp-1'>
-                          {r.factoryName || user?.name || 'โรงงานของคุณ'}
+                          {r.factoryName || user?.name || COMMON_COPY.defaultFactoryName}
                         </p>
                       </div>
                     </div>
@@ -286,7 +283,7 @@ export function FactoryShowcasesPage() {
                     variant='unstyled'
                     type='button'
                     onClick={() =>
-                      navigate(`/factory/showcases/${id}/edit`, {
+                      navigate(factoryShowcaseEditRoute(id), {
                         state: { from: `${location.pathname}${location.search}` },
                       })
                     }

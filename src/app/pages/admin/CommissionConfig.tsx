@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { platformConfigApi } from '@/services/api/adminApi';
 import type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
@@ -30,10 +30,10 @@ function fromConfig(c: IPlatformConfigResponse): FormState {
 }
 
 export function CommissionConfig() {
-  const [active, setActive] = React.useState<IPlatformConfigResponse | null>(null);
-  const [history, setHistory] = React.useState<IPlatformConfigResponse[]>([]);
-  const [form, setForm] = React.useState<FormState | null>(null);
-  const [saving, setSaving] = React.useState(false);
+  const [active, setActive] = useState<IPlatformConfigResponse | null>(null);
+  const [history, setHistory] = useState<IPlatformConfigResponse[]>([]);
+  const [form, setForm] = useState<FormState | null>(null);
+  const [saving, setSaving] = useState(false);
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
   useEffect(() => {

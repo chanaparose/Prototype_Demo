@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Pencil, Trash2, Download } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { factoryKeys } from '@/lib/queryKeys';
@@ -48,20 +48,19 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const modal = useModal();
+  const { openModal } = modal;
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editing, setEditing] = useState<Row | null>(null);
 
-  const openAdd = () => {
+  const openAdd = useCallback(() => {
     setMode('create');
     setEditing(null);
-    modal.openModal();
-  };
+    openModal();
+  }, [openModal]);
 
-  // Register the add handler with parent once on mount
   useEffect(() => {
     onRegisterAdd?.(openAdd);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [onRegisterAdd, openAdd]);
 
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: factoryKeys.me() });

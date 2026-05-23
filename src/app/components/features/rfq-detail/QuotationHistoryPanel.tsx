@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { quotationApi } from '@/services/api/rfqApi';
 import type { IQuotationHistoryEntry } from '@/services/api/types/rfq.types';
@@ -53,14 +53,14 @@ function normalizeHistoryRow(row: unknown): IQuotationHistoryEntry | null {
 }
 
 export function QuotationHistoryPanel({ quotationId, preloadedHistory }: QuotationHistoryPanelProps) {
-  const [open, setOpen] = React.useState(false);
-  const [history, setHistory] = React.useState<IQuotationHistoryEntry[]>(() =>
+  const [open, setOpen] = useState(false);
+  const [history, setHistory] = useState<IQuotationHistoryEntry[]>(() =>
     preloadedHistory
       ? preloadedHistory.map(normalizeHistoryRow).filter((v): v is IQuotationHistoryEntry => v != null)
       : [],
   );
-  const [loading, setLoading] = React.useState(false);
-  const [fetched, setFetched] = React.useState(Boolean(preloadedHistory));
+  const [loading, setLoading] = useState(false);
+  const [fetched, setFetched] = useState(Boolean(preloadedHistory));
 
   useEffect(() => {
     if (preloadedHistory !== undefined) {

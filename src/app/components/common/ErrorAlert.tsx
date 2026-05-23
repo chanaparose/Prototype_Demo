@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { type ReactNode } from 'react';
 
 import { Alert, alertVariants } from '@/components/ui/alert';
 import { cn } from '@lib/utils';
@@ -7,9 +8,9 @@ import type { VariantProps } from 'class-variance-authority';
 type ErrorAlertSize = NonNullable<VariantProps<typeof alertVariants>['size']>;
 
 type ErrorAlertProps = Omit<React.ComponentProps<'div'>, 'children'> & {
-  children: React.ReactNode;
+  children: ReactNode;
   size?: ErrorAlertSize;
-  action?: React.ReactNode;
+  action?: ReactNode;
   variant?: NonNullable<VariantProps<typeof alertVariants>['variant']>;
 };
 

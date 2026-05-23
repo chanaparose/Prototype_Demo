@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Search, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,15 +24,15 @@ export function RelatedShowcasePicker({
   disabled = false,
   errorText = '',
 }: RelatedShowcasePickerProps) {
-  const [open, setOpen] = React.useState(false);
-  const [search, setSearch] = React.useState('');
-  const [typeFilter, setTypeFilter] = React.useState<'all' | 'product' | 'promotion'>('all');
-  const [draft, setDraft] = React.useState<number[]>([]);
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'product' | 'promotion'>('all');
+  const [draft, setDraft] = useState<number[]>([]);
 
   const showcasesQ = useFactoryShowcasesQuery(factoryId);
   const items = showcasesQ.data ?? [];
 
-  const selected = React.useMemo(() => {
+  const selected = useMemo(() => {
     const set = new Set<number>();
     for (const id of value) {
       const n = Number(id);
@@ -46,7 +46,7 @@ export function RelatedShowcasePicker({
     setDraft([...selected]);
   }, [open, selected]);
 
-  const draftSet = React.useMemo(() => new Set(draft), [draft]);
+  const draftSet = useMemo(() => new Set(draft), [draft]);
   const draftAtLimit = draftSet.size >= max;
 
   const toggleDraft = (id: string) => {
@@ -58,7 +58,7 @@ export function RelatedShowcasePicker({
     setDraft(next.slice(0, max));
   };
 
-  const filteredItems = React.useMemo(() => {
+  const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
     return items.filter((item) => {
       if (typeFilter !== 'all' && item.contentType !== typeFilter) return false;

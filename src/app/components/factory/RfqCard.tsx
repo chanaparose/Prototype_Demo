@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send } from 'lucide-react';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
@@ -30,7 +30,7 @@ type BoqStatusInfo = {
   bg: string;
   text: string;
   border: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 };
 
 function boqStatusInfo(status: string | null): BoqStatusInfo {

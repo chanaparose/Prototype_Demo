@@ -11,6 +11,7 @@ import {
   type QuoteDetailModel,
   type QuoteHistoryEntry,
 } from '@/domain/quote/mappers/mapQuoteDetail';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 export function QuoteDetailCustomer() {
   const { id } = useParams<{ id: string }>();
@@ -26,16 +27,16 @@ export function QuoteDetailCustomer() {
 
   useEffect(() => {
     let mounted = true;
-    void (async () => {
-      try {
-        const [q, h] = await Promise.all([quotationApi.get(qid), quotationApi.history(qid)]);
-        if (!mounted) return;
-        setQuote(mapQuoteDetail(q));
-        setHistory(mapQuoteHistory(h));
-      } finally {
+    void runAsyncAction(async () => {
+      const [q, h] = await Promise.all([quotationApi.get(qid), quotationApi.history(qid)]);
+      if (!mounted) return;
+      setQuote(mapQuoteDetail(q));
+      setHistory(mapQuoteHistory(h));
+    }, {
+      onSettled: () => {
         if (mounted) setLoading(false);
-      }
-    })();
+      },
+    });
     return () => {
       mounted = false;
     };
@@ -171,12 +172,13 @@ export function QuoteDetailCustomer() {
               confirmText: 'ส่งคำขอแก้ไข',
             });
             if (!reason) return;
-            setRequesting(true);
-            try {
-              await quotationApi.requestRevision(qid, { reason });
-            } finally {
-              setRequesting(false);
-            }
+            void runAsyncAction(
+              () => quotationApi.requestRevision(qid, { reason }),
+              {
+              onStart: () => setRequesting(true),
+              onSettled: () => setRequesting(false),
+              },
+            );
           }}
           className='py-2 rounded-xl border border-gray-200 text-sm disabled:opacity-50'
         >
@@ -195,13 +197,13 @@ export function QuoteDetailCustomer() {
               required: false,
             });
             if (reason == null) return;
-            setRejecting(true);
-            try {
+            void runAsyncAction(async () => {
               await quotationApi.reject(qid, { reason });
               navigate(-1);
-            } finally {
-              setRejecting(false);
-            }
+            }, {
+              onStart: () => setRejecting(true),
+              onSettled: () => setRejecting(false),
+            });
           }}
           className='py-2 rounded-xl border border-rose-200 text-rose-600 text-sm disabled:opacity-50'
         >

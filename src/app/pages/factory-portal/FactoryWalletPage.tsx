@@ -23,49 +23,38 @@ import {
   mapWalletTransactions,
   type WalletTransaction,
 } from '@/domain/wallet/mappers/mapWallet';
+import {
+  WALLET_FAILED_STATUSES,
+  WALLET_PENDING_STATUSES,
+  WALLET_STATUS_LABELS,
+  WALLET_SUCCESS_STATUSES,
+  WALLET_TRANSACTION_TYPE_LABELS,
+  isWalletCreditType,
+  isWalletPendingStatus,
+} from '@/constants/wallet';
+import { COMMON_COPY } from '@/constants/uiText';
+import { fallbackAsync, runAsyncAction } from '@/utils/asyncAction';
 
 const NAVY = appColors.brand.navy;
 const ORANGE = appColors.brand.indigo;
 const TEAL = appColors.brand.teal;
 
-function isCredit(type: string): boolean {
-  const t = String(type ?? '').toUpperCase();
-  // Business mapping:
-  // DP=Deposit(out), WD=Withdraw(out), BU=Buy(in), SC=Settlement/Receive(in), RF=Refund(in)
-  if (t === 'BU' || t === 'SC' || t === 'RF') return true;
-  if (t === 'DP' || t === 'WD') return false;
-  return true;
-}
-
 function txLabel(type: string): string {
   const t = String(type ?? '').toUpperCase();
-  if (t === 'DP') return 'ชำระมัดจำ';
-  if (t === 'WD') return 'ถอนเงิน';
-  if (t === 'BU') return 'รับชำระจากออเดอร์';
-  if (t === 'SC') return 'รับโอนจากระบบ (Settlement)';
-  if (t === 'RF') return 'คืนเงิน';
-  if (t) return t;
-  return 'ธุรกรรม';
+  return WALLET_TRANSACTION_TYPE_LABELS[t] ?? t ?? 'ธุรกรรม';
 }
 
 function statusBadgeCls(status: string) {
   const s = String(status ?? '').toUpperCase();
-  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED')
-    return 'bg-emerald-100 text-emerald-700';
-  if (s === 'PT' || s === 'PENDING' || s === 'PROCESSING') return 'bg-amber-100 text-amber-700';
-  if (s === 'RJ' || s === 'FL' || s === 'FAILED' || s === 'CN' || s === 'CANCELLED')
-    return 'bg-red-100 text-red-600';
+  if (WALLET_SUCCESS_STATUSES.includes(s as (typeof WALLET_SUCCESS_STATUSES)[number])) return 'bg-emerald-100 text-emerald-700';
+  if (WALLET_PENDING_STATUSES.includes(s as (typeof WALLET_PENDING_STATUSES)[number])) return 'bg-amber-100 text-amber-700';
+  if (WALLET_FAILED_STATUSES.includes(s as (typeof WALLET_FAILED_STATUSES)[number])) return 'bg-red-100 text-red-600';
   return 'bg-gray-100 text-gray-500';
 }
 
 function statusLabel(status: string) {
   const s = String(status ?? '').toUpperCase();
-  if (s === 'ST' || s === 'CM' || s === 'SUCCESS' || s === 'COMPLETED') return 'สำเร็จ';
-  if (s === 'PT' || s === 'PENDING') return 'รอดำเนินการ';
-  if (s === 'PROCESSING') return 'กำลังดำเนินการ';
-  if (s === 'RJ') return 'ถูกปฏิเสธ';
-  if (s === 'FL' || s === 'FAILED') return 'ล้มเหลว';
-  if (s === 'CN' || s === 'CANCELLED') return 'ยกเลิก';
+  if (WALLET_STATUS_LABELS[s]) return WALLET_STATUS_LABELS[s];
   return status || '-';
 }
 
@@ -97,7 +86,7 @@ function StatCard({
 }
 
 function TxRow({ t }: { t: WalletTransaction }) {
-  const credit = isCredit(t.type);
+  const credit = isWalletCreditType(t.type);
   const desc = txLabel(t.type);
   const dateStr = t.date
     ? new Date(t.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
@@ -154,30 +143,30 @@ export function FactoryWalletPage() {
   const withdraw = useModal();
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
-  const load = async () => {
-    setLoading(true);
-    setError('');
-    try {
+  const load = () =>
+    runAsyncAction(async () => {
       const wallet = mapWalletSummary(await walletApi.getMe());
       setGood(wallet.goodFund);
       setPending(wallet.pendingFund);
 
-      let raw: unknown;
-      try {
-        raw = await walletApi.transactions();
-      } catch {
-        raw = await transactionsApi.list().catch(() => []);
-      }
+      const raw = await walletApi
+        .transactions()
+        .catch(() => fallbackAsync(transactionsApi.list(), []));
       const apiTx = mapWalletTransactions(raw).slice(0, 30);
       setTx(apiTx);
       setLastRefreshedAt(new Date());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดกระเป๋าไม่สำเร็จ');
-      setTx([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, {
+      onStart: () => {
+        setLoading(true);
+        setError('');
+      },
+      onError: (message) => {
+        setError(message);
+        setTx([]);
+      },
+      onSettled: () => setLoading(false),
+      fallbackMessage: 'โหลดกระเป๋าไม่สำเร็จ',
+    });
 
   useEffect(() => {
     void load();
@@ -187,26 +176,25 @@ export function FactoryWalletPage() {
     () =>
       tx.filter((t) => {
         if (filterType === 'all') return true;
-        if (filterType === 'credit') return isCredit(t.type);
-        return !isCredit(t.type);
+        if (filterType === 'credit') return isWalletCreditType(t.type);
+        return !isWalletCreditType(t.type);
       }),
     [tx, filterType],
   );
 
   const totalEarned = useMemo(
-    () => tx.filter((t) => isCredit(t.type)).reduce((s, t) => s + t.amount, 0),
+    () => tx.filter((t) => isWalletCreditType(t.type)).reduce((s, t) => s + t.amount, 0),
     [tx],
   );
   const totalWithdrawn = useMemo(
-    () => tx.filter((t) => !isCredit(t.type)).reduce((s, t) => s + t.amount, 0),
+    () => tx.filter((t) => !isWalletCreditType(t.type)).reduce((s, t) => s + t.amount, 0),
     [tx],
   );
   const pendingWithdrawals = useMemo(
     () =>
       tx.filter(
         (t) =>
-          !isCredit(t.type) &&
-          (String(t.status).toUpperCase() === 'PT' || String(t.status).toUpperCase() === 'PENDING'),
+          !isWalletCreditType(t.type) && isWalletPendingStatus(t.status),
       ),
     [tx],
   );
@@ -216,7 +204,7 @@ export function FactoryWalletPage() {
   if (loading) {
     return (
       <div className='space-y-4'>
-        <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
+        <FactoryPageHeader title='กระเป๋าเงิน' subtitle={COMMON_COPY.factoryWallet} icon={Wallet} />
         <div className='space-y-4'>
           <div className='h-48 rounded-2xl bg-white animate-pulse' />
           <div className='grid grid-cols-3 gap-3'>
@@ -234,7 +222,7 @@ export function FactoryWalletPage() {
 
   return (
     <div className='space-y-4 pb-8'>
-      <FactoryPageHeader title='กระเป๋าเงิน' subtitle='Factory / Wallet' icon={Wallet} />
+      <FactoryPageHeader title='กระเป๋าเงิน' subtitle={COMMON_COPY.factoryWallet} icon={Wallet} />
 
       <div className='space-y-5'>
         <div className='flex items-center justify-between text-xs text-gray-500'>

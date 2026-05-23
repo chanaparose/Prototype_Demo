@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useData } from '@/stores/useDataStore';
 import { type Factory } from '@/stores/types';
 import { factoriesApi } from '@/services/api/factoryApi';
@@ -12,9 +12,9 @@ export type FactoryFilterState = {
 
 export function useFactoriesList() {
   const data = useData();
-  const [apiFactories, setApiFactories] = React.useState<Factory[] | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [apiFactories, setApiFactories] = useState<Factory[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,13 +44,13 @@ export function useFactoriesList() {
 
   const allFactories = apiFactories ?? data.factories;
 
-  const [filters, setFilters] = React.useState<FactoryFilterState>({
+  const [filters, setFilters] = useState<FactoryFilterState>({
     searchText: '',
     location: '',
     verifiedOnly: false,
   });
 
-  const uniqueLocations = React.useMemo(
+  const uniqueLocations = useMemo(
     () =>
       Array.from(new Set(allFactories.map((f) => f.location)))
         .filter(Boolean)
@@ -65,7 +65,7 @@ export function useFactoriesList() {
   const setVerifiedOnly = (value: boolean) =>
     setFilters((prev) => ({ ...prev, verifiedOnly: value }));
 
-  const filteredFactories = React.useMemo(() => {
+  const filteredFactories = useMemo(() => {
     return allFactories.filter((f) => {
       if (filters.location && f.location !== filters.location) return false;
       if (filters.verifiedOnly && !f.verified) return false;

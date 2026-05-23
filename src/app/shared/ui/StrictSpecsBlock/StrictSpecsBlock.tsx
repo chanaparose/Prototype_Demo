@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { Boxes, Clock3 } from 'lucide-react';
 import { appColors } from '@/styles/colors';
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
@@ -20,9 +20,9 @@ function Row({
   label,
   value,
 }: Readonly<{
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
-  value: React.ReactNode;
+  value: ReactNode;
 }>) {
   return (
     <div className='flex items-center justify-between gap-3 py-2'>

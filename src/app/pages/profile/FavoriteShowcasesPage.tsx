@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, Heart, Package, Lightbulb, Tag } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -40,14 +40,14 @@ export function FavoriteShowcasesPage() {
   const navigate = useNavigate();
   const { likedIds, loading: favoritesLoading } = useFavorites();
   const { showcases, loading: showcasesLoading } = useShowcases();
-  const [tab, setTab] = React.useState<FavoritesTab>('all');
+  const [tab, setTab] = useState<FavoritesTab>('all');
 
-  const allFavorites = React.useMemo(() => {
+  const allFavorites = useMemo(() => {
     if (!showcases.length || likedIds.size === 0) return [] as FactoryShowcase[];
     return showcases.filter((s) => likedIds.has(String(s.id)));
   }, [showcases, likedIds]);
 
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     if (tab === 'all') return allFavorites;
     return allFavorites.filter((s) => s.contentType === tab);
   }, [allFavorites, tab]);

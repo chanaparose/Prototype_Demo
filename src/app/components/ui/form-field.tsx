@@ -1,12 +1,13 @@
 import * as React from 'react';
+import { type ReactNode } from 'react';
 
 import { cn } from '@lib/utils';
 import { Label } from '@/components/ui/label';
 
 type FormFieldProps = React.ComponentProps<'div'> & {
-  label?: React.ReactNode;
-  error?: React.ReactNode;
-  helperText?: React.ReactNode;
+  label?: ReactNode;
+  error?: ReactNode;
+  helperText?: ReactNode;
   required?: boolean;
   labelClassName?: string;
   contentClassName?: string;

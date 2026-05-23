@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useCallback } from 'react';
 import type { IQuotationCreateRequest } from '@/services/api/types/rfq.types';
 
 export type QuoteBuilderState = IQuotationCreateRequest;
@@ -14,8 +14,8 @@ const initialState: QuoteBuilderState = {
 };
 
 export function useQuoteBuilder(rfqId: number) {
-  const [state, setState] = React.useState<QuoteBuilderState>({ ...initialState, rfq_id: rfqId });
-  const setPartial = React.useCallback((next: Partial<QuoteBuilderState>) => {
+  const [state, setState] = useState<QuoteBuilderState>({ ...initialState, rfq_id: rfqId });
+  const setPartial = useCallback((next: Partial<QuoteBuilderState>) => {
     setState((prev) => ({ ...prev, ...next }));
   }, []);
   return { state, setState, setPartial };

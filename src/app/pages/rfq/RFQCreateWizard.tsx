@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { categoriesApi } from '@/services/api/masterApi';
@@ -30,16 +30,16 @@ export function RFQCreateWizard() {
   const [searchParams] = useSearchParams();
   const { draft, setDraft, reset } = useRFQDraft();
   const create = useCreateRFQ();
-  const [step, setStep] = React.useState(0);
-  const [subCategoriesLoading, setSubCategoriesLoading] = React.useState(false);
-  const [subCategories, setSubCategories] = React.useState<
+  const [step, setStep] = useState(0);
+  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
+  const [subCategories, setSubCategories] = useState<
     { id: number; name: string; sortOrder?: number }[]
   >([]);
-  const [matchCount, setMatchCount] = React.useState<number | null>(null);
-  const [matchingLoading, setMatchingLoading] = React.useState(false);
-  const [acceptSampleTerms, setAcceptSampleTerms] = React.useState(false);
-  const [addressMap, setAddressMap] = React.useState<Record<number, string>>({});
-  const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+  const [matchingLoading, setMatchingLoading] = useState(false);
+  const [acceptSampleTerms, setAcceptSampleTerms] = useState(false);
+  const [addressMap, setAddressMap] = useState<Record<number, string>>({});
+  const [shippingMap, setShippingMap] = useState<Record<number, string>>({});
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
 
   useEffect(() => {
@@ -55,8 +55,7 @@ export function RFQCreateWizard() {
     if (Number.isFinite(showcaseId) && showcaseId > 0) {
       setDraft({ source_showcase_id: showcaseId });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams, setDraft]);
 
   useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
@@ -92,11 +91,11 @@ export function RFQCreateWizard() {
   }, [draft.category_id]);
 
   const scopeFilter = (draft.request_kind === 'MS' || draft.request_kind === 'MR') ? 'MT' : 'PD';
-  const modeCategories = React.useMemo(
+  const modeCategories = useMemo(
     () => allCategories.filter((c) => !c.scope || c.scope === scopeFilter),
     [allCategories, scopeFilter],
   );
-  const categoryMap = React.useMemo(
+  const categoryMap = useMemo(
     () => Object.fromEntries(modeCategories.map((c) => [c.id, c.name])),
     [modeCategories],
   );
@@ -160,7 +159,7 @@ export function RFQCreateWizard() {
     };
   }, [draft.request_kind, draft.category_id, draft.sub_category_id]);
 
-  const handleStep3Loaded = React.useCallback(
+  const handleStep3Loaded = useCallback(
     (addrMap: Record<number, string>, shipMap: Record<number, string>) => {
       if (Object.keys(addrMap).length > 0) setAddressMap(addrMap);
       if (Object.keys(shipMap).length > 0) setShippingMap(shipMap);
@@ -168,7 +167,7 @@ export function RFQCreateWizard() {
     [],
   );
 
-  const blockingIssues = React.useMemo(() => {
+  const blockingIssues = useMemo(() => {
     const issues: string[] = [];
     const kind = draft.request_kind ?? 'PR';
     const qty = Number(draft.qty ?? 0);
@@ -196,7 +195,7 @@ export function RFQCreateWizard() {
     return issues;
   }, [draft]);
 
-  const isFormValid = React.useMemo(() => {
+  const isFormValid = useMemo(() => {
     const qty = Number(draft.qty ?? 0);
     const kind = draft.request_kind ?? 'PR';
     const withinKindQty =
@@ -208,25 +207,25 @@ export function RFQCreateWizard() {
     return blockingIssues.length === 0;
   }, [blockingIssues, draft, matchingLoading, matchCount]);
 
-  const categoryName = React.useMemo(() => {
+  const categoryName = useMemo(() => {
     const id = Number(draft.category_id ?? 0);
     if (!id) return '-';
     return categoryMap[id] ?? String(id);
   }, [categoryMap, draft.category_id]);
 
-  const subCategoryName = React.useMemo(() => {
+  const subCategoryName = useMemo(() => {
     const id = Number(draft.sub_category_id ?? 0);
     if (!id) return '-';
     return subCategories.find((s) => s.id === id)?.name ?? String(id);
   }, [subCategories, draft.sub_category_id]);
 
-  const deliveryAddressLabel = React.useMemo(() => {
+  const deliveryAddressLabel = useMemo(() => {
     const id = Number(draft.delivery_address_id ?? 0);
     if (!id) return '-';
     return addressMap[id] ?? `ที่อยู่ #${id}`;
   }, [addressMap, draft.delivery_address_id]);
 
-  const shippingMethodLabel = React.useMemo(() => {
+  const shippingMethodLabel = useMemo(() => {
     const id = Number(draft.shipping_method_id ?? 0);
     if (!id) return '-';
     return shippingMap[id] ?? `วิธีจัดส่ง #${id}`;

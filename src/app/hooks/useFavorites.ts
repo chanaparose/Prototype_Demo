@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { favoritesApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
 import { useSessionStore } from '@/stores/useSessionStore';
@@ -16,9 +16,9 @@ export function useFavorites() {
   const sessionData = useSessionStore((s) => s.data);
   const sessionLoaded = sessionData !== null;
 
-  const [likedIds, setLikedIds] = React.useState<Set<string>>(new Set());
-  const [loading, setLoading] = React.useState(false);
-  const seededFromSessionRef = React.useRef(false);
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const seededFromSessionRef = useRef(false);
 
   // Seed from session when it becomes available (no extra API call needed)
   useEffect(() => {
@@ -29,7 +29,7 @@ export function useFavorites() {
     }
   }, [sessionLoaded, sessionData]);
 
-  const load = React.useCallback(async () => {
+  const load = useCallback(async () => {
     if (!isAuthenticated) {
       setLikedIds(new Set());
       setLoading(false);
@@ -59,12 +59,12 @@ export function useFavorites() {
     void load();
   }, [load]);
 
-  const isLiked = React.useCallback(
+  const isLiked = useCallback(
     (showcaseId: string | number) => likedIds.has(String(showcaseId)),
     [likedIds],
   );
 
-  const toggleFavorite = React.useCallback(
+  const toggleFavorite = useCallback(
     async (showcaseId: string | number) => {
       if (!isAuthenticated) return false;
       const key = String(showcaseId);

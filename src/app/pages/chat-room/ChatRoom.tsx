@@ -85,7 +85,7 @@ export function ChatRoom() {
   const { isAuthenticated } = useAuth();
   const conversationsQ = useConversationsQuery(Boolean(id) && isAuthenticated);
   const seedReference = (location.state as { reference?: ChatReference } | null)?.reference ?? null;
-  const fromCtx = React.useMemo(() => {
+  const fromCtx = useMemo(() => {
     const raw = id ? conversationsQ.data?.find((c) => String(c.conv_id) === id) : undefined;
     return raw ? mapConversationToStoreModel(raw, raw.viewer_role) : undefined;
   }, [conversationsQ.data, id]);
@@ -186,7 +186,9 @@ function ChatRoomBody({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const seedConsumedRef = useRef(false);
   const prevMessagesCountRef = useRef(0);
+  const latestMessagesCountRef = useRef(0);
   const justSentRef = useRef(false);
+  latestMessagesCountRef.current = messages.length;
   const [unseenNewCount, setUnseenNewCount] = useState(0);
   const [isNearBottom, setIsNearBottom] = useState(true);
 
@@ -219,9 +221,8 @@ function ChatRoomBody({
   // Initial mount: snap to bottom (no animation), reset counters.
   useEffect(() => {
     scrollToBottom(false);
-    prevMessagesCountRef.current = messages.length;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conv.id]);
+    prevMessagesCountRef.current = latestMessagesCountRef.current;
+  }, [conv.id, scrollToBottom]);
 
   useEffect(() => {
     const prevCount = prevMessagesCountRef.current;

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { MessagesMobile } from '@/pages/messages/Messages.mobile';
 import { MessagesDesktop } from '@/pages/messages/Messages.desktop';
@@ -10,11 +10,11 @@ import type { UiConversation } from '@/pages/messages/types';
 export function Messages() {
   const isDesktop = useIsDesktop();
   const { items, loading, error, reload } = useConversations();
-  const [searchText, setSearchText] = React.useState('');
-  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Optimistically zero unread badge as soon as user opens a conversation.
-  const handleSelectId = React.useCallback((id: string) => {
+  const handleSelectId = useCallback((id: string) => {
     setConversationReadInCache(id);
     setSelectedId(id);
   }, []);
@@ -29,7 +29,7 @@ export function Messages() {
     }
   }, [items, selectedId, handleSelectId]);
 
-  const filtered = React.useMemo(() => {
+  const filtered = useMemo(() => {
     const q = searchText.toLowerCase().trim();
     const list = !q
       ? items
@@ -39,9 +39,9 @@ export function Messages() {
     return sortConversations(list);
   }, [searchText, items]);
 
-  const totalUnread = React.useMemo(() => items.reduce((s, c) => s + c.unread, 0), [items]);
+  const totalUnread = useMemo(() => items.reduce((s, c) => s + c.unread, 0), [items]);
 
-  const selectedConversation = React.useMemo((): UiConversation | null => {
+  const selectedConversation = useMemo((): UiConversation | null => {
     if (!selectedId) return null;
     return items.find((c) => c.id === selectedId) ?? null;
   }, [items, selectedId]);

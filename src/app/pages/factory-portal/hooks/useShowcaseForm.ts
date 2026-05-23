@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
-import type { ShowcaseType } from '@/pages/factory-portal/components/ShowcaseFormShared';
+import type { ShowcaseSubmitStatus, ShowcaseType } from '@/constants/showcase';
 
-export type ShowcaseSubmitStatus = 'DR' | 'AC';
+export type { ShowcaseSubmitStatus };
 
 type MaybeNumber = number | string | null | undefined;
 

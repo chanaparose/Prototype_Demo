@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -140,7 +140,7 @@ function StepStatusBadge({ state, overrideLabel }: { state: StepState; overrideL
     {
       label: string;
       variant: React.ComponentProps<typeof StatusBadge>['variant'];
-      icon: React.ReactNode;
+      icon: ReactNode;
     }
   > = {
     completed: { label: 'เสร็จสิ้น', variant: 'success', icon: <CheckCircle2 size={12} /> },
@@ -177,7 +177,7 @@ function NextActionCard({
   onUpdate,
   onAcceptOrder,
 }: NextActionCardProps) {
-  const [accepting, setAccepting] = React.useState(false);
+  const [accepting, setAccepting] = useState(false);
   const guide = getStepGuide(getStepId(step));
   const canUpdate = factoryCanUpdateStep(step);
   const stepId = getStepId(step);

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface DismissRfqButtonProps {
@@ -20,9 +20,9 @@ export function DismissRfqButton({
   onUndismiss,
   disabledReason,
 }: DismissRfqButtonProps) {
-  const [confirmOpen, setConfirmOpen] = React.useState(false);
-  const [busy, setBusy] = React.useState(false);
-  const [toast, setToast] = React.useState<{ sec: number } | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState<{ sec: number } | null>(null);
 
   useEffect(() => {
     if (!toast) return;

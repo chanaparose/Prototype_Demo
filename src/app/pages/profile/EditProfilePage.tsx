@@ -12,6 +12,8 @@ import {
   type ProfileEditFormValues,
 } from '@/domain/profile/schemas/profileEditForm.schema';
 import { getErrorMessage } from '@/lib/apiError';
+import { runAsyncAction } from '@/utils/asyncAction';
+import { APP_ROUTES } from '@/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -101,13 +103,14 @@ export function EditProfilePage() {
       return;
     }
     setRootError('');
-    try {
+    await runAsyncAction(async () => {
       if (avatarFile) await profileApi.uploadAvatar(avatarFile);
       await profileApi.update({ ...values, bio: values.bio.slice(0, 300) });
-      navigate('/profile');
-    } catch (e) {
-      setRootError(getErrorMessage(e, 'บันทึกไม่สำเร็จ'));
-    }
+      navigate(APP_ROUTES.profile);
+    }, {
+      onError: (message) => setRootError(message),
+      fallbackMessage: 'บันทึกไม่สำเร็จ',
+    });
   };
 
   const fieldRows: Array<{ label: string; name: keyof ProfileEditFormValues }> = isFactory

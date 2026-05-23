@@ -1,25 +1,33 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { quotationApi } from '@/services/api/rfqApi';
 import type { IQuotationBreakdown, IQuotationCreateRequest } from '@/services/api/types/rfq.types';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 export function usePreviewBreakdown(state: Partial<IQuotationCreateRequest>) {
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState('');
-  const [breakdown, setBreakdown] = React.useState<IQuotationBreakdown | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [breakdown, setBreakdown] = useState<IQuotationBreakdown | null>(null);
 
   useEffect(() => {
     let mounted = true;
     const timer = setTimeout(async () => {
-      setLoading(true);
-      setError('');
-      try {
+      void runAsyncAction(async () => {
         const next = await quotationApi.preview(state);
         if (mounted) setBreakdown(next);
-      } catch (e) {
-        if (mounted) setError(e instanceof Error ? e.message : 'preview failed');
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      }, {
+        onStart: () => {
+          if (!mounted) return;
+          setLoading(true);
+          setError('');
+        },
+        onError: (message) => {
+          if (mounted) setError(message);
+        },
+        onSettled: () => {
+          if (mounted) setLoading(false);
+        },
+        fallbackMessage: 'preview failed',
+      });
     }, 400);
     return () => {
       mounted = false;

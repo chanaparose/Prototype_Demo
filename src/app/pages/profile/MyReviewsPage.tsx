@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 import { mapReviewItems, type ReviewItem } from '@/domain/review/mappers/mapReview';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 export function MyReviewsPage() {
   const navigate = useNavigate();
@@ -25,19 +26,18 @@ export function MyReviewsPage() {
   const [editSaving, setEditSaving] = useState(false);
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  const load = async () => {
-    setLoading(true);
-    try {
+  const load = () =>
+    runAsyncAction(async () => {
       const role = String(user?.role ?? '').toUpperCase();
       const raw =
         role === 'FT'
           ? await profileApi.receivedReviews({ page: 1, limit: 20 })
           : await profileApi.myReviews({ page: 1, limit: 20 });
       setItems(mapReviewItems(raw));
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, {
+      onStart: () => setLoading(true),
+      onSettled: () => setLoading(false),
+    });
 
   useEffect(() => {
     void load();
@@ -61,8 +61,7 @@ export function MyReviewsPage() {
       toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
       return;
     }
-    setEditSaving(true);
-    try {
+    void runAsyncAction(async () => {
       await reviewsApi.update(editReviewId, {
         rating: editRating,
         comment: text,
@@ -71,14 +70,16 @@ export function MyReviewsPage() {
       toast.success('บันทึกรีวิวแล้ว');
       setEditOpen(false);
       await load();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
-      const m = msg.toLowerCase();
-      if (m.includes('image_urls') && m.includes('5')) toast.error('แนบรูปได้ไม่เกิน 5 รูป');
-      else toast.error(msg);
-    } finally {
-      setEditSaving(false);
-    }
+    }, {
+      onStart: () => setEditSaving(true),
+      onError: (message) => {
+        const m = message.toLowerCase();
+        if (m.includes('image_urls') && m.includes('5')) toast.error('แนบรูปได้ไม่เกิน 5 รูป');
+        else toast.error(message);
+      },
+      onSettled: () => setEditSaving(false),
+      fallbackMessage: 'บันทึกไม่สำเร็จ',
+    });
   };
 
   return (

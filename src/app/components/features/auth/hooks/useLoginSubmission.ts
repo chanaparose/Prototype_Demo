@@ -5,7 +5,7 @@ import type {
   AuthLoginFormValues,
   AuthRegisterFormValues,
 } from '@/domain/auth/schemas/authForm.schema';
-import { getErrorMessage } from '@/lib/apiError';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 function navigateByRole(navigate: ReturnType<typeof useNavigate>, role?: string) {
   navigate(String(role ?? '').toUpperCase() === 'FT' ? '/factory' : '/', { replace: true });
@@ -19,27 +19,27 @@ export function useLoginSubmission() {
 
   const submitLogin = useCallback(
     async (values: AuthLoginFormValues): Promise<boolean> => {
-      setIsSubmitting(true);
-      setError('');
-      try {
+      const result = await runAsyncAction(async () => {
         const session = await login(values);
         navigateByRole(navigate, session?.user?.role);
         return true;
-      } catch (err) {
-        setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'));
-        return false;
-      } finally {
-        setIsSubmitting(false);
-      }
+      }, {
+        onStart: () => {
+          setIsSubmitting(true);
+          setError('');
+        },
+        onError: (message) => setError(message),
+        onSettled: () => setIsSubmitting(false),
+        fallbackMessage: 'เข้าสู่ระบบไม่สำเร็จ',
+      });
+      return result ?? false;
     },
     [login, navigate],
   );
 
   const submitRegister = useCallback(
     async (values: AuthRegisterFormValues): Promise<boolean> => {
-      setIsSubmitting(true);
-      setError('');
-      try {
+      const result = await runAsyncAction(async () => {
         const session = await register({
           role: 'CT',
           email: values.email,
@@ -50,12 +50,16 @@ export function useLoginSubmission() {
         });
         navigateByRole(navigate, session?.user?.role);
         return true;
-      } catch (err) {
-        setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'));
-        return false;
-      } finally {
-        setIsSubmitting(false);
-      }
+      }, {
+        onStart: () => {
+          setIsSubmitting(true);
+          setError('');
+        },
+        onError: (message) => setError(message),
+        onSettled: () => setIsSubmitting(false),
+        fallbackMessage: 'สมัครสมาชิกไม่สำเร็จ',
+      });
+      return result ?? false;
     },
     [register, navigate],
   );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { SectionCard } from '@/shared/ui/cards/SectionCard';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
@@ -16,7 +16,7 @@ export type OrderForOverview = {
 
 export type RfqForOverview = {
   category: string;
-  categoryIcon?: string | React.ReactNode;
+  categoryIcon?: string | ReactNode;
   projectName: string;
   description?: string;
   budget: number;
@@ -46,7 +46,7 @@ type OrderOverviewSectionProps = {
 export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOverviewSectionProps) {
   const { paymentSchedule, mappedOrder, refetchAll } = useOrderDetail();
   const showDepositPayment = mappedOrder.status === 'pending_payment';
-  const payableAmount = React.useMemo(() => {
+  const payableAmount = useMemo(() => {
     const stagedAmount = paymentSchedule.find(
       (s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT',
     )?.amount;

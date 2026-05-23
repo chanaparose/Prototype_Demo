@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import {
@@ -39,18 +39,18 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
 
 export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) {
   /* addresses */
-  const [addresses, setAddresses] = React.useState<MappedAddress[]>([]);
-  const [addrLoading, setAddrLoading] = React.useState(true);
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
-  const autoSelected = React.useRef(false);
+  const [addresses, setAddresses] = useState<MappedAddress[]>([]);
+  const [addrLoading, setAddrLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const autoSelected = useRef(false);
 
-  const [shippingMethods, setShippingMethods] = React.useState<ShippingMethod[]>(FALLBACK_SHIPPING);
+  const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>(FALLBACK_SHIPPING);
 
-  const onLoadedRef = React.useRef(onLoaded);
+  const onLoadedRef = useRef(onLoaded);
   onLoadedRef.current = onLoaded;
 
-  const loadAddresses = React.useCallback(async (): Promise<MappedAddress[]> => {
+  const loadAddresses = useCallback(async (): Promise<MappedAddress[]> => {
     setAddrLoading(true);
     try {
       const raw = await addressesApi.list();
@@ -116,7 +116,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
       });
   }, [loadAddresses, setDraft]);
 
-  const handleAddAddress = React.useCallback(
+  const handleAddAddress = useCallback(
     async (payload: AddressFormPayload) => {
       setSaving(true);
       try {

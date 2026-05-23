@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
@@ -168,17 +168,17 @@ export function FactoryShowcaseEditPage() {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
   const { confirm, ConfirmDialog } = useConfirmDialog();
-  const [saving, setSaving] = React.useState(false);
-  const [error, setError] = React.useState('');
-  const [uploading, setUploading] = React.useState(false);
-  const [cropFile, setCropFile] = React.useState<File | null>(null);
-  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
-  const [persistedImageIdByUrl, setPersistedImageIdByUrl] = React.useState<Record<string, number>>(
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [persistedImageIdByUrl, setPersistedImageIdByUrl] = useState<Record<string, number>>(
     {},
   );
-  const [selectedShowcaseIds, setSelectedShowcaseIds] = React.useState<number[]>([]);
-  const [linkedShowcaseError, setLinkedShowcaseError] = React.useState('');
-  const didHydrateFromServerRef = React.useRef(false);
+  const [selectedShowcaseIds, setSelectedShowcaseIds] = useState<number[]>([]);
+  const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
+  const didHydrateFromServerRef = useRef(false);
 
   useEffect(() => {
     didHydrateFromServerRef.current = false;

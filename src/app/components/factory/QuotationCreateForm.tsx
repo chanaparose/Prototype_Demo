@@ -1,12 +1,4 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -274,7 +266,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       imageUrls,
       factoryHighlight,
       highlightError,
-    ]); // eslint-disable-line react-hooks/exhaustive-deps
+    ]);
 
     return (
       <form

@@ -1,7 +1,14 @@
+import {
+  DEFAULT_SHOWCASE_STATUS,
+  normalizeShowcaseStatus,
+  type ShowcaseStatus,
+  type ShowcaseType,
+} from '@/constants/showcase';
+
 type ApiRecord = Record<string, unknown>;
 
-export type FactoryShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
-export type FactoryShowcaseStatus = 'DR' | 'AC' | 'HI' | 'AR';
+export type FactoryShowcaseType = ShowcaseType;
+export type FactoryShowcaseStatus = ShowcaseStatus;
 
 export type FactoryShowcaseListItem = {
   id: string;
@@ -45,7 +52,7 @@ export function mapFactoryShowcaseListItem(raw: unknown): FactoryShowcaseListIte
     id: String(row.showcase_id ?? row.id ?? ''),
     title: String(row.title ?? 'Untitled'),
     contentType: String(row.content_type ?? '').toUpperCase(),
-    status: String(row.status ?? 'DR').toUpperCase() as FactoryShowcaseStatus,
+    status: normalizeShowcaseStatus(row.status ?? DEFAULT_SHOWCASE_STATUS),
     imageUrl: firstImage(row),
     price: Number(row.price_min ?? row.price ?? 0),
     moq: asPositiveInt(row.moq),

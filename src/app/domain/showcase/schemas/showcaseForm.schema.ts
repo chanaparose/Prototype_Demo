@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ShowcaseSubmitStatus, ShowcaseType } from '@/constants/showcase';
 
 export const showcaseFormSchema = z.object({
   title: z.string().trim().min(1, 'กรุณากรอกชื่อ'),
@@ -30,13 +31,13 @@ export const showcaseFormEmptyValues: ShowcaseFormValues = {
   end_date: '',
 };
 
-export type ShowcaseContentType = 'PD' | 'PM' | 'ID' | 'MT';
+export type ShowcaseContentType = ShowcaseType;
 
 export function validateShowcasePublish(
   values: ShowcaseFormValues,
   opts: {
     contentType: ShowcaseContentType;
-    status: 'DR' | 'AC';
+    status: ShowcaseSubmitStatus;
     imageCount: number;
   },
 ): string | null {

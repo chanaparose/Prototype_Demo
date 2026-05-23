@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { type ReactNode } from 'react';
 
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ type ModalFooterAccent = 'success' | 'teal' | 'purple';
 type ModalFooterLayout = 'flex' | 'grid' | 'grid-compact' | 'stack';
 
 type ModalFooterAction = {
-  label: React.ReactNode;
+  label: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   type?: 'button' | 'submit';
@@ -17,7 +18,7 @@ type ModalFooterAction = {
 
 type ModalFooterPrimaryAction = ModalFooterAction & {
   loading?: boolean;
-  loadingLabel?: React.ReactNode;
+  loadingLabel?: ReactNode;
   accent?: ModalFooterAccent;
   /** Override gradient (e.g. CTA_GRADIENT) */
   style?: React.CSSProperties;
@@ -33,7 +34,7 @@ type ModalFooterProps = {
   className?: string;
   /** Default accent for primary when not set on `primary.accent` */
   accent?: ModalFooterAccent;
-  leading?: React.ReactNode;
+  leading?: ReactNode;
   primary: ModalFooterPrimaryAction;
   /** Second action in grid layouts (outline style) */
   alternatePrimary?: ModalFooterSecondaryAction;

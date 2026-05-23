@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { BadgeCheck, Calendar, Package, Shield, Truck } from 'lucide-react';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
@@ -200,7 +200,7 @@ function DetailRow({
   label,
   value,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string;
 }) {

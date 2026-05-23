@@ -133,7 +133,7 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     prevIsMaterialTabRef.current = isMaterialTab;
     applyCategory('all');
     setSelectedSubCategoryId(null);
-  }, [isMaterialTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isMaterialTab, applyCategory]);
 
   useEffect(() => {
     if (!categoryMenuOpen) return;

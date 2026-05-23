@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { Controller, type UseFormReturn } from 'react-hook-form';
 import { useProductCategories } from '@/hooks/master/useProductCategories';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
@@ -66,13 +66,11 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategorie
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
 
-  const openCategoryPicker = () => setCategoryPickerOpen(true);
+  const openCategoryPicker = useCallback(() => setCategoryPickerOpen(true), []);
 
-  // Register the add handler with parent once on mount
   useEffect(() => {
     onRegisterAdd?.(openCategoryPicker);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [onRegisterAdd, openCategoryPicker]);
 
   // Build a lookup from API categories for fallback name resolution
   const apiCategoryMap = useMemo(() => {

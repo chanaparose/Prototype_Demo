@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseTHB as formatTHB, formatShowcaseThaiDate as formatThaiDate, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { ShowcaseHeroGallery } from '@/components/features/showcase-detail/ShowcaseHeroGallery';
 import { useNavigate } from 'react-router';
@@ -109,7 +109,7 @@ export function ProductDetailDesktop() {
   const breakdown = reviews?.summary.breakdown ?? { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
   const latestReviews = reviews?.items ?? [];
 
-  const specRows: { label: string; value: React.ReactNode }[] = [];
+  const specRows: { label: string; value: ReactNode }[] = [];
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
   if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
   const leadTimeDays = Number(String(item.leadTime ?? '').replace(/[^\d.]/g, ''));

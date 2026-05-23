@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useData } from '@/stores/useDataStore';
@@ -156,7 +156,7 @@ export function useOrderDetail(): OrderDetailContextValue {
 type ProviderProps = {
   orderId: string;
   factories: { id: string; name: string }[];
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export function OrderDetailProvider({ orderId, factories, children }: ProviderProps) {

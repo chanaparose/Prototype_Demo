@@ -38,6 +38,7 @@ import { ProfileSaveBar } from '@/components/factory/profile/ProfileSaveBar';
 import { SectionCard } from '@/shared/ui/cards/SectionCard';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
+import { COMMON_COPY } from '@/constants/uiText';
 
 import {
   PROFILE_FORM_DEFAULTS,
@@ -336,7 +337,7 @@ function FactoryHeroCard({
 
           <div className='min-w-0 flex-1 pt-1 sm:pb-0.5'>
             <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
-              โรงงานของคุณ
+              {COMMON_COPY.defaultFactoryName}
             </p>
             <h1
               className='text-lg sm:text-xl font-bold mt-0.5 leading-snug truncate'
@@ -603,7 +604,7 @@ export function FactoryProfilePage() {
   if (isLoading) {
     return (
       <div className='space-y-4'>
-        <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory Portal' icon={Building2} />
+        <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle={COMMON_COPY.factoryPortal} icon={Building2} />
         <FormSkeleton sections={5} />
       </div>
     );
@@ -641,7 +642,7 @@ export function FactoryProfilePage() {
       />
 
       <FactoryHeroCard
-        factoryName={String(watched.factory_name || initialValues.factory_name || 'โรงงานของคุณ')}
+        factoryName={String(watched.factory_name || initialValues.factory_name || COMMON_COPY.defaultFactoryName)}
         verifyStatus={verifyStatus}
         imageUrl={String(watched.image_url ?? '').trim()}
         coverImageUrl={String(watched.cover_image_url ?? '').trim()}

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
 import { type IdeaArticle } from '@/stores/types';
@@ -16,17 +16,17 @@ export type { FactoryProfileDetail };
 
 export function useFactoryProfile() {
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = React.useState<TabId>('products');
-  const [startingConversation, setStartingConversation] = React.useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('products');
+  const [startingConversation, setStartingConversation] = useState(false);
   const data = useData();
   const { isAuthenticated } = useAuth();
   const conversationsQ = useConversationsQuery(Boolean(id) && isAuthenticated);
 
-  const factoryFallback = React.useMemo(
+  const factoryFallback = useMemo(
     () => data.factories.find((f) => String(f.id) === String(id)),
     [data.factories, id],
   );
-  const profileFallback = React.useMemo(
+  const profileFallback = useMemo(
     () => data.factoryProfiles.find((p) => String(p.factoryId) === String(id)),
     [data.factoryProfiles, id],
   );
@@ -37,7 +37,7 @@ export function useFactoryProfile() {
   });
 
   const detail = detailQuery.data;
-  const conversation = React.useMemo(() => {
+  const conversation = useMemo(() => {
     const raw = conversationsQ.data?.find((c) => String(c.factory_id) === String(id));
     return raw ? mapConversationToStoreModel(raw, raw.viewer_role) : undefined;
   }, [conversationsQ.data, id]);
@@ -52,19 +52,19 @@ export function useFactoryProfile() {
   const factorySubCategoryPairs = detail?.factorySubCategoryPairs ?? [];
   const apiCertificates = detail?.apiCertificates ?? [];
 
-  const productItems = React.useMemo(
+  const productItems = useMemo(
     () => factoryShowcases.filter((item) => item.contentType === 'product'),
     [factoryShowcases],
   );
-  const promotionItems = React.useMemo(
+  const promotionItems = useMemo(
     () => factoryShowcases.filter((item) => item.contentType === 'promotion'),
     [factoryShowcases],
   );
-  const materialItems = React.useMemo(
+  const materialItems = useMemo(
     () => factoryShowcases.filter((item) => item.contentType === 'material'),
     [factoryShowcases],
   );
-  const articleItems = React.useMemo(() => {
+  const articleItems = useMemo(() => {
     const showcaseIdeas = factoryShowcases.filter((item) => item.contentType === 'idea');
     const ideas: IdeaArticle[] = showcaseIdeas.map((s) => ({
       id: s.id,
@@ -79,7 +79,7 @@ export function useFactoryProfile() {
     return { showcaseIdeas, ideas };
   }, [factoryShowcases]);
 
-  const startConversation = React.useCallback(
+  const startConversation = useCallback(
     async (customerId: number | string): Promise<string | null> => {
       if (!id || startingConversation) return null;
       if (conversation) return String(conversation.id);

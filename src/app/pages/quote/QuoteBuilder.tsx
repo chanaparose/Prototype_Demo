@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { quotationApi } from '@/services/api/rfqApi';
@@ -10,6 +10,7 @@ import { ExtraChargesForm } from '@/pages/quote/components/ExtraChargesForm';
 import { CommercialTermsForm } from '@/pages/quote/components/CommercialTermsForm';
 import { BreakdownCard } from '@/pages/quote/components/BreakdownCard';
 import { Button } from '@/components/ui/button';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 export function QuoteBuilder() {
   const { rfqId } = useParams<{ rfqId: string }>();
@@ -17,7 +18,7 @@ export function QuoteBuilder() {
   const rid = Number(rfqId ?? 0);
   const { state, setPartial } = useQuoteBuilder(rid);
   const { loading, error, breakdown } = usePreviewBreakdown(state);
-  const [submitting, setSubmitting] = React.useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (error) toast.error(error);
@@ -51,14 +52,14 @@ export function QuoteBuilder() {
             type='button'
             disabled={submitting}
             onClick={async () => {
-              setSubmitting(true);
-              try {
+              void runAsyncAction(async () => {
                 const q = await quotationApi.create(state);
                 const id = Number(q.quote_id ?? 0);
                 if (id > 0) navigate(`/factory/quotations/${id}`);
-              } finally {
-                setSubmitting(false);
-              }
+              }, {
+                onStart: () => setSubmitting(true),
+                onSettled: () => setSubmitting(false),
+              });
             }}
             className='w-full py-3 rounded-xl text-sm font-semibold text-white bg-violet-600 disabled:opacity-50'
           >

@@ -9,7 +9,9 @@ import {
   authChangePasswordSchema,
   type AuthChangePasswordFormValues,
 } from '@/domain/auth/schemas/authForm.schema';
-import { getErrorMessage, toFormErrors } from '@/lib/apiError';
+import { toFormErrors } from '@/lib/apiError';
+import { runAsyncAction } from '@/utils/asyncAction';
+import { APP_ROUTES } from '@/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -59,24 +61,28 @@ export function ChangePasswordPage() {
   }, [newPassword]);
 
   const onSubmit = async (values: AuthChangePasswordFormValues) => {
-    setSaving(true);
-    setRootError('');
-    try {
+    await runAsyncAction(async () => {
       await profileApi.changePassword(values);
-      navigate('/profile');
-    } catch (e) {
-      const { root, fields } = toFormErrors(e);
-      if (root) setRootError(root);
-      const fieldErrors = fields ?? {};
-      for (const [key, message] of Object.entries(fieldErrors)) {
-        form.setError(key as keyof AuthChangePasswordFormValues, { message });
-      }
-      if (!root && Object.keys(fieldErrors).length === 0) {
-        setRootError(getErrorMessage(e, 'เปลี่ยนรหัสผ่านไม่สำเร็จ'));
-      }
-    } finally {
-      setSaving(false);
-    }
+      navigate(APP_ROUTES.profile);
+    }, {
+      onStart: () => {
+        setSaving(true);
+        setRootError('');
+      },
+      onError: (_message, error) => {
+        const { root, fields } = toFormErrors(error);
+        if (root) setRootError(root);
+        const fieldErrors = fields ?? {};
+        for (const [key, message] of Object.entries(fieldErrors)) {
+          form.setError(key as keyof AuthChangePasswordFormValues, { message });
+        }
+        if (!root && Object.keys(fieldErrors).length === 0) {
+          setRootError(_message);
+        }
+      },
+      onSettled: () => setSaving(false),
+      fallbackMessage: 'เปลี่ยนรหัสผ่านไม่สำเร็จ',
+    });
   };
 
   return (

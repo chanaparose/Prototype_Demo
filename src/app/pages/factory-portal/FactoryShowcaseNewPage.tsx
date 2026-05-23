@@ -31,6 +31,11 @@ import {
   useShowcaseCategoryOptions,
   validateShowcaseSubmission,
 } from '@/pages/factory-portal/hooks/useShowcaseForm';
+import {
+  normalizeShowcaseType,
+  type ShowcaseSubmitStatus,
+} from '@/constants/showcase';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 export function FactoryShowcaseNewPage() {
   const navigate = useNavigate();
@@ -38,10 +43,7 @@ export function FactoryShowcaseNewPage() {
   const { user } = useAuth();
   const myFactoryId = getFactoryEntityId(user);
 
-  const contentType: ShowcaseType = (() => {
-    const t = searchParams.get('type');
-    return t === 'PM' || t === 'ID' || t === 'MT' ? t : 'PD';
-  })();
+  const contentType: ShowcaseType = normalizeShowcaseType(searchParams.get('type'));
 
   const { watch, setValue, getValues } = useForm<ShowcaseFormValues>({
     resolver: zodResolver(showcaseFormSchema),
@@ -82,7 +84,7 @@ export function FactoryShowcaseNewPage() {
   const removeImage = (idx: number) => setImageUrls((prev) => prev.filter((_, i) => i !== idx));
 
   const buildPayload = (
-    status: 'DR' | 'AC',
+    status: ShowcaseSubmitStatus,
     values: ShowcaseFormValues = getValues(),
   ): Record<string, unknown> =>
     buildShowcasePayload({
@@ -93,7 +95,7 @@ export function FactoryShowcaseNewPage() {
       selectedShowcaseIds,
     });
 
-  const onSubmit = async (status: 'DR' | 'AC') => {
+  const onSubmit = async (status: ShowcaseSubmitStatus) => {
     const values = getValues();
     const publishError = validateShowcaseSubmission(values, {
       contentType,
@@ -104,23 +106,26 @@ export function FactoryShowcaseNewPage() {
       setError(publishError);
       return;
     }
-    setSaving(true);
-    setError('');
-    setLinkedShowcaseError('');
-    try {
+    void runAsyncAction(async () => {
       await showcasesApi.create(
         buildPayload(status, values) as Parameters<typeof showcasesApi.create>[0],
       );
 
       navigate('/factory/showcases', { replace: true });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'สร้างไม่สำเร็จ';
-      const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
-      if (linkedMsg) setLinkedShowcaseError(linkedMsg);
-      setError(msg);
-    } finally {
-      setSaving(false);
-    }
+    }, {
+      onStart: () => {
+        setSaving(true);
+        setError('');
+        setLinkedShowcaseError('');
+      },
+      onError: (message) => {
+        const linkedMsg = mapLinkedShowcasesErrorToThai(message);
+        if (linkedMsg) setLinkedShowcaseError(linkedMsg);
+        setError(message);
+      },
+      onSettled: () => setSaving(false),
+      fallbackMessage: 'สร้างไม่สำเร็จ',
+    });
   };
 
   const canPublish = form.title.trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
@@ -161,19 +166,23 @@ export function FactoryShowcaseNewPage() {
           outputWidth={1600}
           onCancel={() => setCropFile(null)}
           onConfirm={async (file) => {
-            setUploading(true);
-            setError('');
-            setLinkedShowcaseError('');
-            try {
+            void runAsyncAction(async () => {
               const up = await mediaApi.upload(file);
               const url = String(up.url ?? '').trim();
               if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));
-            } catch (e) {
-              setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
-            } finally {
-              setUploading(false);
-              setCropFile(null);
-            }
+            }, {
+              onStart: () => {
+                setUploading(true);
+                setError('');
+                setLinkedShowcaseError('');
+              },
+              onError: (message) => setError(message),
+              onSettled: () => {
+                setUploading(false);
+                setCropFile(null);
+              },
+              fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
+            });
           }}
         />
 

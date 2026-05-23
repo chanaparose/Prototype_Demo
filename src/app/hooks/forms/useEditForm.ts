@@ -23,28 +23,28 @@ export interface UseEditFormResult<T extends FieldValues> {
 export function useEditForm<T extends FieldValues, Raw = unknown>(
   options: UseEditFormOptions<T, Raw>,
 ): UseEditFormResult<T> {
+  const { queryKey, queryFn, enabled, mapper, defaults, onReady } = options;
   const query = useQuery({
-    queryKey: options.queryKey,
-    queryFn: options.queryFn,
-    enabled: options.enabled ?? true,
+    queryKey,
+    queryFn,
+    enabled: enabled ?? true,
     refetchOnWindowFocus: false,
   });
 
   const values = useMemo(
-    () => (query.data !== undefined ? options.mapper(query.data) : undefined),
-    [query.data, options.mapper],
+    () => (query.data !== undefined ? mapper(query.data) : undefined),
+    [query.data, mapper],
   );
 
   const form = useForm<T>({
-    defaultValues: options.defaults,
+    defaultValues: defaults,
     values,
     mode: 'onBlur',
   });
 
   useEffect(() => {
-    if (values !== undefined && options.onReady) options.onReady(values);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values]);
+    if (values !== undefined && onReady) onReady(values);
+  }, [values, onReady]);
 
   return {
     form,

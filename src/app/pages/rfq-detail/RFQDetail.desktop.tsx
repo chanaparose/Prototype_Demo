@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,6 +20,8 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
+import { APP_ROUTES } from '@/constants/routes';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 const COLORS = {
   purple: appColors.brand.mauve,
@@ -38,9 +40,9 @@ export function RFQDetailDesktop() {
   const { rfq, relatedOrder, quoteHistories, loading, error, refetch } = useRfqDetail(id);
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  const [specsOpen, setSpecsOpen] = React.useState(true);
-  const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
-  const [closing, setClosing] = React.useState(false);
+  const [specsOpen, setSpecsOpen] = useState(true);
+  const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
@@ -86,7 +88,7 @@ export function RFQDetailDesktop() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/orders')}
+            onClick={() => navigate(APP_ROUTES.orders)}
             className='w-10 h-10 rounded-xl flex items-center justify-center border border-gray-200 bg-white self-start'
           >
             <ArrowLeft size={18} style={{ color: COLORS.blue }} />
@@ -124,7 +126,7 @@ export function RFQDetailDesktop() {
                 type='button'
                 className='text-sm font-semibold underline'
                 style={{ color: COLORS.purple }}
-                onClick={() => navigate('/orders')}
+                onClick={() => navigate(APP_ROUTES.orders)}
               >
                 กลับไป คำขอราคา & คำสั่งซื้อ
               </Button>
@@ -170,7 +172,7 @@ export function RFQDetailDesktop() {
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() => navigate('/orders')}
+                onClick={() => navigate(APP_ROUTES.orders)}
                 className='w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-gray-200 hover:border-gray-300 transition-colors'
                 style={{ backgroundColor: COLORS.white }}
               >
@@ -216,16 +218,16 @@ export function RFQDetailDesktop() {
                     destructive: true,
                   });
                   if (!ok) return;
-                  setClosing(true);
-                  try {
+                  void runAsyncAction(async () => {
                     await rfqsApi.close(rfq.id);
                     toast.success('ปิดรับคำขอราคาเรียบร้อย');
                     await refetch();
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : 'ไม่สามารถปิดคำขอได้');
-                  } finally {
-                    setClosing(false);
-                  }
+                  }, {
+                    onStart: () => setClosing(true),
+                    onError: (message) => toast.error(message),
+                    onSettled: () => setClosing(false),
+                    fallbackMessage: 'ไม่สามารถปิดคำขอได้',
+                  });
                 }}
                 className='px-4 py-2 rounded-xl border text-sm font-semibold disabled:opacity-60'
                 style={{

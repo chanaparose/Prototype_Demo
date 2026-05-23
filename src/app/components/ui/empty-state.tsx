@@ -1,12 +1,13 @@
 import * as React from 'react';
+import { type ReactNode } from 'react';
 
 import { cn } from '@lib/utils';
 
 type EmptyStateProps = React.ComponentProps<'div'> & {
-  icon?: React.ReactNode;
-  title: React.ReactNode;
-  description?: React.ReactNode;
-  action?: React.ReactNode;
+  icon?: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  action?: ReactNode;
 };
 
 function EmptyState({ className, icon, title, description, action, ...props }: EmptyStateProps) {

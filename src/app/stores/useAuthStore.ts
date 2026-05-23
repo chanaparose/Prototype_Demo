@@ -14,6 +14,7 @@ import type { IUser } from '@/domain/auth/types/user.model';
 import type { IAuthSession } from '@/domain/auth/types/auth.model';
 import { isTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
 import { redirectToLogin } from '@/utils/navigation/redirect';
+import { APP_ROUTES } from '@/constants/routes';
 
 export interface IAuthState {
   user: IUser | null;
@@ -56,7 +57,7 @@ export const useAuthStore = create<IAuthState & IAuthActions>((set) => {
     try {
       if (
         sessionStorage.getItem('auth_token_expired') === '1' &&
-        window.location.pathname !== '/login'
+        window.location.pathname !== APP_ROUTES.login
       ) {
         sessionStorage.removeItem('auth_token_expired');
         redirectToLogin();

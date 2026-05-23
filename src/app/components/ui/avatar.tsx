@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { type ReactNode } from 'react';
 
 import { Image } from '@/components/ui/image';
 import { cn } from '@lib/utils';
@@ -7,7 +8,7 @@ type AvatarProps = React.ComponentProps<'div'> & {
   src?: string;
   alt?: string;
   fallbackSrc?: string;
-  fallback?: React.ReactNode;
+  fallback?: ReactNode;
   imageClassName?: string;
 };
 

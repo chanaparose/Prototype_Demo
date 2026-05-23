@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
 type Props = {
   label: string;
-  before: React.ReactNode;
-  after: React.ReactNode;
+  before: ReactNode;
+  after: ReactNode;
   changed?: boolean;
 };
 

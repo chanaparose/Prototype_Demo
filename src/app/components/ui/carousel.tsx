@@ -1,7 +1,7 @@
 import useEmblaCarousel, { type UseEmblaCarouselType } from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -49,13 +49,13 @@ function Carousel({
   ...props
 }: CarouselProps) {
   const [viewportRef, api] = useEmblaCarousel(options);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-  const [scrollSnaps, setScrollSnaps] = React.useState<number[]>([]);
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
-  const [canScrollNext, setCanScrollNext] = React.useState(false);
-  const hoveredRef = React.useRef(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+  const hoveredRef = useRef(false);
 
-  const updateState = React.useCallback((carouselApi: CarouselApi) => {
+  const updateState = useCallback((carouselApi: CarouselApi) => {
     if (!carouselApi) return;
     setSelectedIndex(carouselApi.selectedScrollSnap());
     setScrollSnaps(carouselApi.scrollSnapList());
@@ -88,7 +88,7 @@ function Carousel({
     return () => window.clearInterval(timer);
   }, [api, autoPlayMs, pauseOnHover, scrollSnaps.length]);
 
-  const value = React.useMemo<CarouselContextValue>(
+  const value = useMemo<CarouselContextValue>(
     () => ({
       viewportRef,
       api,
@@ -217,7 +217,7 @@ type CarouselLightboxProps = {
 };
 
 function CarouselLightbox({ images, openIndex, alt = '', onClose }: CarouselLightboxProps) {
-  const [api, setApi] = React.useState<CarouselApi>();
+  const [api, setApi] = useState<CarouselApi>();
 
   useEffect(() => {
     if (!api || openIndex == null) return;

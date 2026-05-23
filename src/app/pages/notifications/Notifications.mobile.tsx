@@ -59,7 +59,7 @@ export function NotificationsMobile() {
   useEffect(() => {
     setNotifications([]);
     void load(0, false);
-  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load]);
 
 
   // Tab filtering is server-side; only apply local search and unread filter

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, MessageCircle, Star, X, AlertTriangle, PackageCheck } from 'lucide-react';
 import { toast } from 'sonner';
@@ -61,7 +61,7 @@ function OrderDetailMobileBody() {
   const canShowCancelButton = apiStatus === 'PP';
 
   // Show acceptance banner when production step 5 = IP (step 4 CD → awaiting customer confirmation)
-  const step5IsIP = React.useMemo(
+  const step5IsIP = useMemo(
     () =>
       production.updates?.some(
         (u) => Number(u.step_id) === 5 && String(u.status).toUpperCase() === 'IP',

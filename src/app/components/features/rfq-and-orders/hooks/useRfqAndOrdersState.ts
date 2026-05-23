@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
 import { type Rfq, type Order } from '@/stores/types';
@@ -19,9 +19,9 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
-  const [primaryTab, setPrimaryTab] = React.useState<PrimaryTab>(initial?.primaryTab ?? 'rfq');
-  const [rfqFilter, setRfqFilter] = React.useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
-  const [orderFilter, setOrderFilter] = React.useState<OrderFilterId>(
+  const [primaryTab, setPrimaryTab] = useState<PrimaryTab>(initial?.primaryTab ?? 'rfq');
+  const [rfqFilter, setRfqFilter] = useState<RfqFilterId>(initial?.rfqFilter ?? 'pending');
+  const [orderFilter, setOrderFilter] = useState<OrderFilterId>(
     initial?.orderFilter ?? 'pending_payment',
   );
 
@@ -34,7 +34,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const loading = isAuthenticated && rfqListQuery.isLoading;
   const error = rfqListQuery.error instanceof Error ? rfqListQuery.error.message : null;
 
-  const filteredRfqs = React.useMemo(() => {
+  const filteredRfqs = useMemo(() => {
     return rfqs.filter((r) => {
       if (r.status === 'completed') return false;
       if (rfqFilter === 'cancelled_expired') {
@@ -50,21 +50,21 @@ export function useRfqAndOrdersState(initial?: InitialState) {
    * 1. status === 'shipped' (order status = SH) หรือ
    * 2. currentStepId >= 4 (step จัดส่ง CD แล้ว — BE ส่ง 4 แม้ step 5 = IP รอยืนยัน)
    */
-  const isShippingOrder = React.useCallback(
+  const isShippingOrder = useCallback(
     (o: Order) =>
       o.status !== 'completed' &&
       (o.status === 'shipped' || (o.currentStepId != null && o.currentStepId >= 4)),
     [],
   );
 
-  const filteredOrders = React.useMemo(() => {
+  const filteredOrders = useMemo(() => {
     if (orderFilter === 'shipped') return orders.filter(isShippingOrder);
     if (orderFilter === 'in_production')
       return orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o));
     return orders.filter((o) => o.status === orderFilter);
   }, [orderFilter, orders, isShippingOrder]);
 
-  const rfqTagCounts = React.useMemo(
+  const rfqTagCounts = useMemo(
     () => ({
       pending: rfqs.filter((r) => r.status === 'pending').length,
       has_quote: rfqs.filter((r) => r.status === 'offers_received' || r.status === 'reviewing')
@@ -75,7 +75,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     [rfqs],
   );
 
-  const orderTagCounts = React.useMemo(
+  const orderTagCounts = useMemo(
     () => ({
       pendingPayment: orders.filter((o) => o.status === 'pending_payment').length,
       inProduction: orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o)).length,

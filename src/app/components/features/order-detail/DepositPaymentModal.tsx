@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef, type ReactNode } from 'react';
 import { Wallet, QrCode, Landmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -19,6 +19,7 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { walletKeys } from '@/lib/queryKeys';
 import { redirectTo } from '@/utils/navigation/redirect';
 import { mapWalletSummary } from '@/domain/wallet/mappers/mapWallet';
+import { APP_ROUTES } from '@/constants/routes';
 
 export type DepositPaymentMethod = 'WALLET' | 'PROMPTPAY' | 'BANK';
 
@@ -58,9 +59,9 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
   const wallet = useMyWallet(open);
   const good = wallet.data?.good_fund ?? 0;
   const insufficient = good < amount;
-  const [method, setMethod] = React.useState<DepositPaymentMethod>('WALLET');
-  const [submitting, setSubmitting] = React.useState(false);
-  const idemRef = React.useRef<string>('');
+  const [method, setMethod] = useState<DepositPaymentMethod>('WALLET');
+  const [submitting, setSubmitting] = useState(false);
+  const idemRef = useRef<string>('');
 
   useEffect(() => {
     if (open) {
@@ -139,7 +140,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
                 type='button'
                 onClick={() => {
                   onClose();
-                  redirectTo('/wallet/topup');
+                  redirectTo(APP_ROUTES.walletTopup);
                 }}
                 className='w-full rounded-xl py-3 text-sm font-semibold text-white'
                 style={{ background: PLUM }}
@@ -223,7 +224,7 @@ function MethodRow({
 }: {
   selected: boolean;
   onSelect: () => void;
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   subtitle: string;
   warning?: string | null;

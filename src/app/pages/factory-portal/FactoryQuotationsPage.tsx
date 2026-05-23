@@ -8,6 +8,7 @@ import {
   QUOTATION_STATUS_BADGE_FACTORY,
   QUOTATION_STATUS_LABEL_FACTORY,
 } from '@/domain/rfq/constants';
+import { COMMON_COPY } from '@/constants/uiText';
 
 function quoteId(r: IQuotationResponse): string {
   return String(r.quote_id);
@@ -26,7 +27,7 @@ export function FactoryQuotationsPage() {
   if (loading) {
     return (
       <div className='space-y-4'>
-        <FactoryPageHeader title='ใบเสนอราคา' subtitle='Factory Portal' icon={FileCheck} />
+        <FactoryPageHeader title='ใบเสนอราคา' subtitle={COMMON_COPY.factoryPortal} icon={FileCheck} />
         <div className='flex justify-center items-start pt-8'>
           <div
             className='w-10 h-10 border-3 border-t-transparent rounded-full animate-spin'
@@ -41,7 +42,7 @@ export function FactoryQuotationsPage() {
     <div className='space-y-4'>
       <FactoryPageHeader
         title='ใบเสนอราคา'
-        subtitle='Factory Portal'
+        subtitle={COMMON_COPY.factoryPortal}
         icon={FileCheck}
         count={`${rows.length} รายการ`}
       />

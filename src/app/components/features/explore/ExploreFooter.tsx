@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, type ReactNode } from 'react';
 import { Facebook, Instagram, Youtube, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function ExploreFooter() {
-  const [open, setOpen] = React.useState<null | 'support' | 'categories' | 'knowledge' | 'apps'>(
+  const [open, setOpen] = useState<null | 'support' | 'categories' | 'knowledge' | 'apps'>(
     null,
   );
   const toggle = (key: 'support' | 'categories' | 'knowledge' | 'apps') =>
@@ -431,7 +431,7 @@ function AccordionItem({
   title: string;
   open: boolean;
   onToggle: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className='rounded-xl border border-gray-200 bg-white overflow-hidden'>

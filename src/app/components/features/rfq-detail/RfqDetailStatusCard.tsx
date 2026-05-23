@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 
 export type RfqForStatusCard = {
   category: string;
-  categoryIcon?: string | React.ReactNode;
+  categoryIcon?: string | ReactNode;
   projectName: string;
   budget: number;
   quantity: number;

@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type SectionCardProps = {
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   title: string;
   subtitle?: string;
-  badge?: React.ReactNode;
-  children: React.ReactNode;
+  badge?: ReactNode;
+  children: ReactNode;
   className?: string;
   headerClassName?: string;
   contentClassName?: string;
-  actionButton?: React.ReactNode;
+  actionButton?: ReactNode;
   iconClassName?: string;
   iconStyle?: React.CSSProperties;
   titleClassName?: string;

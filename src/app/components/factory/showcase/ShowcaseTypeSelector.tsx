@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { SHOWCASE_TYPES, SHOWCASE_TYPE_META, type ShowcaseType } from '@/constants/showcase';
 
-export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
+export type { ShowcaseType };
 
 interface ShowcaseTypeSelectorProps {
   value: ShowcaseType;
@@ -9,24 +10,18 @@ interface ShowcaseTypeSelectorProps {
   disabled?: boolean;
 }
 
-const OPTIONS = [
-  { type: 'PD', icon: '🏷', label: 'สินค้า', sublabel: 'Product Design' },
-  { type: 'PM', icon: '🎁', label: 'โปรโมชัน', sublabel: 'Promotion' },
-  { type: 'ID', icon: '💡', label: 'ไอเดีย', sublabel: 'Industrial Design' },
-  { type: 'MT', icon: '🧱', label: 'วัตถุดิบ', sublabel: 'Material' },
-] as const;
-
 export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseTypeSelectorProps) {
   return (
     <div className='grid grid-cols-2 sm:grid-cols-4 gap-2 rounded-xl bg-gray-50 p-1 border border-gray-200'>
-      {OPTIONS.map((opt) => {
-        const active = value === opt.type;
+      {SHOWCASE_TYPES.map((type) => {
+        const opt = SHOWCASE_TYPE_META[type];
+        const active = value === type;
         return (
           <Button
             variant='unstyled'
-            key={opt.type}
+            key={type}
             type='button'
-            onClick={() => onChange(opt.type)}
+            onClick={() => onChange(type)}
             disabled={disabled}
             className={`rounded-xl px-3 py-2 text-left transition-colors border ${
               active

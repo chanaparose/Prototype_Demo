@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 /** ข้อมูลที่อยู่จัดส่งลูกค้า — ส่งมาจาก order API */
 export interface CustomerShippingInfo {
@@ -88,9 +89,7 @@ export function UpdateStepDrawer({
   const addFiles = useCallback(
     async (files: FileList | null) => {
       if (!files?.length) return;
-      setUploading(true);
-      setErr('');
-      try {
+      void runAsyncAction(async () => {
         const next = [...urls];
         for (let i = 0; i < files.length && next.length < 5; i++) {
           const up = await mediaApi.upload(files[i]);
@@ -98,11 +97,15 @@ export function UpdateStepDrawer({
           if (/^https?:\/\//i.test(raw)) next.push(raw);
         }
         setUrls(next.slice(0, 5));
-      } catch (e) {
-        setErr(e instanceof Error ? e.message : 'อัปโหลดไม่สำเร็จ');
-      } finally {
-        setUploading(false);
-      }
+      }, {
+        onStart: () => {
+          setUploading(true);
+          setErr('');
+        },
+        onError: (message) => setErr(message),
+        onSettled: () => setUploading(false),
+        fallbackMessage: 'อัปโหลดไม่สำเร็จ',
+      });
     },
     [urls],
   );
@@ -121,9 +124,7 @@ export function UpdateStepDrawer({
 
   const saveDraft = async () => {
     if (!step) return;
-    setBusy(true);
-    setErr('');
-    try {
+    void runAsyncAction(async () => {
       await onSubmit({
         step_id: step.template.step_id,
         status: 'IP',
@@ -133,11 +134,14 @@ export function UpdateStepDrawer({
         ...(isShippingStep && courier.trim() ? { courier: courier.trim() } : {}),
       });
       onClose();
-    } catch (e) {
-      setErr(productionErrorMessage(e));
-    } finally {
-      setBusy(false);
-    }
+    }, {
+      onStart: () => {
+        setBusy(true);
+        setErr('');
+      },
+      onError: (_message, error) => setErr(productionErrorMessage(error)),
+      onSettled: () => setBusy(false),
+    });
   };
 
   const confirmDone = async () => {
@@ -146,9 +150,7 @@ export function UpdateStepDrawer({
       setErr(`ต้องแนบภาพอย่างน้อย ${minPhotos} ภาพ`);
       return;
     }
-    setBusy(true);
-    setErr('');
-    try {
+    void runAsyncAction(async () => {
       await onSubmit(
         {
           step_id: step.template.step_id,
@@ -162,11 +164,14 @@ export function UpdateStepDrawer({
         { confirmPaymentTriggerHeader: isPayment },
       );
       onClose();
-    } catch (e) {
-      setErr(productionErrorMessage(e));
-    } finally {
-      setBusy(false);
-    }
+    }, {
+      onStart: () => {
+        setBusy(true);
+        setErr('');
+      },
+      onError: (_message, error) => setErr(productionErrorMessage(error)),
+      onSettled: () => setBusy(false),
+    });
   };
 
   if (!open || !step) return null;

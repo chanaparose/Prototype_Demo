@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Eye, EyeOff, Factory, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useRegisterFactory } from '@/pages/auth/useRegisterFactory';
@@ -48,7 +48,7 @@ function FieldBlock({
   error?: string;
   fieldKey: keyof FormState;
   setFieldRef: (key: keyof FormState) => (el: HTMLElement | null) => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   required?: boolean;
 }) {

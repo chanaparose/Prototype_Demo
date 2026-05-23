@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
 type InfoBoxVariant = 'info' | 'warning' | 'success' | 'error' | 'neutral';
 
@@ -11,10 +11,10 @@ const variantStyles: Record<InfoBoxVariant, string> = {
 };
 
 type InfoBoxProps = {
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   title?: string;
   variant?: InfoBoxVariant;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 };
 

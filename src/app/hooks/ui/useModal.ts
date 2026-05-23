@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { getErrorMessage } from '@/lib/apiError';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 export type UseModalReturn = {
   isOpen: boolean;
@@ -48,18 +48,18 @@ export function useModal(initialIsOpen = false): UseModalReturn {
     setError('');
   }, []);
 
-  const runAsync = useCallback(async <T,>(fn: () => Promise<T>) => {
-    setIsLoading(true);
-    setError('');
-    try {
-      return await fn();
-    } catch (err) {
-      setError(getErrorMessage(err));
-      return undefined;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const runAsync = useCallback(
+    <T,>(fn: () => Promise<T>) =>
+      runAsyncAction(fn, {
+        onStart: () => {
+          setIsLoading(true);
+          setError('');
+        },
+        onError: (message) => setError(message),
+        onSettled: () => setIsLoading(false),
+      }),
+    [],
+  );
 
   return {
     isOpen,

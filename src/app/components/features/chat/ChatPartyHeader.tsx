@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { BadgeCheck } from 'lucide-react';
 import type { CounterpartyView } from '@/utils/counterparty';
 import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
@@ -8,7 +8,7 @@ import { Avatar } from '@/components/ui/avatar';
 interface Props {
   view: CounterpartyView;
   density?: 'row' | 'header';
-  trailing?: React.ReactNode;
+  trailing?: ReactNode;
   onClick?: () => void;
 }
 

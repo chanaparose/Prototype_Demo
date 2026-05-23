@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router";
 import { Plus, FileText, AlertCircle, ChevronDown, History } from "lucide-react";
 import { BORDER_WARM, DEEP_PURPLE } from "@/components/features/rfq-and-orders/constants";
@@ -17,7 +17,7 @@ export function RfqPanel({
   isDesktop?: boolean;
 }) {
   const navigate = useNavigate();
-  const [historyOpen, setHistoryOpen] = React.useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const activeRfqs = rfqs.filter(
     (r) => r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'completed',

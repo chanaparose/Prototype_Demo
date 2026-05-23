@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { type FactoryShowcase } from '@/stores/types';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
 import { useRelatedShowcases } from '@/hooks/useRelatedShowcases';
@@ -13,7 +13,7 @@ export function RelatedShowcasesSection({
   linkedShowcases,
   onItemClick,
 }: RelatedShowcasesSectionProps) {
-  const { showcaseIds } = React.useMemo(
+  const { showcaseIds } = useMemo(
     () => partitionLinkedShowcases(linkedShowcases),
     [linkedShowcases],
   );

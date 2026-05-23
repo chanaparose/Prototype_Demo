@@ -47,6 +47,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { COMMON_COPY } from '@/constants/uiText';
 
 const COLORS = {
   purple: appColors.brand.indigo,
@@ -315,8 +316,8 @@ export function FactoryDashboardPage() {
     String(
       (user as Record<string, unknown> | null)?.factory_name ??
         (user as Record<string, unknown> | null)?.name ??
-        'โรงงานของคุณ',
-    ).trim() || 'โรงงานของคุณ';
+        COMMON_COPY.defaultFactoryName,
+    ).trim() || COMMON_COPY.defaultFactoryName;
 
   const isDesktop = useIsDesktop();
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('daily');

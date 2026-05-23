@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 
 type TabItem = {
   id: string;
   label: string;
   count?: number;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 };
 
 type TabNavigationProps = {
