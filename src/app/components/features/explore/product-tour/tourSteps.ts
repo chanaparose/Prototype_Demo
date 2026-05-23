@@ -73,6 +73,7 @@ export const TOUR_STEPS: TourStepDef[] = [
   {
     route: '/rfqs/28',
     mockScenario: 'rfq',
+    targetSelector: '[data-tour="offers-compare"]',
     targetTexts: ['ยอมรับข้อเสนอ', 'ยอมรับ', 'ข้อเสนอ', 'AI แนะนำ', 'ใบเสนอราคา'],
     spotlightRadius: 12,
     badgeColor: 'var(--brand-violet)',
@@ -85,8 +86,9 @@ export const TOUR_STEPS: TourStepDef[] = [
   {
     route: '/orders/17',
     mockScenario: 'order',
+    targetSelector: '[data-tour="order-tabs"]',
     targetTexts: ['การผลิต', 'ภาพรวม', 'กำลังผลิต', 'ชำระ'],
-    spotlightRadius: 12,
+    spotlightRadius: 14,
     badgeColor: 'var(--status-success-bright)',
     icon: '✅',
     badge: 'ขั้นตอนที่ 7 / 7',

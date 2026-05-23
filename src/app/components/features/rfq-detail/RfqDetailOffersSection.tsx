@@ -344,7 +344,7 @@ export function RfqDetailOffersSection({
             ))}
           </div>
         </div>
-        <div>
+        <div data-tour='offers-compare'>
           <div className='mb-4 lg:mb-8 lg:mt-2 flex items-start gap-3 lg:gap-4'>
             <div
               className='mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm'

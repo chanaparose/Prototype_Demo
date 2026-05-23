@@ -101,8 +101,9 @@ export function ProductTour() {
         setTargetRect(null);
         return;
       }
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => setTargetRect(el.getBoundingClientRect()), 350);
+      // Use non-animated scroll so the measured rect matches final position.
+      el.scrollIntoView({ behavior: 'auto', block: 'center' });
+      setTimeout(() => setTargetRect(el.getBoundingClientRect()), 120);
     }, 700);
     return () => clearTimeout(t);
   }, [open, step, location.pathname, location.search]);

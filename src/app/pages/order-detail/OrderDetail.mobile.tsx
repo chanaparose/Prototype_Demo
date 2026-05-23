@@ -391,6 +391,7 @@ function OrderDetailMobileBody() {
               ภาพรวม
             </Button>
             <Button
+              data-tour='order-tabs' 
               variant='unstyled'
               type='button'
               onClick={() => setActiveSection('production')}
@@ -406,7 +407,7 @@ function OrderDetailMobileBody() {
           </div>
 
           {activeSection === 'overview' && (
-            <>
+            <div data-tour='order-overview'>
               {quotation ? (
                 <OrderBOQCard quotation={quotation} factoryName={order.factoryName} />
               ) : null}
@@ -442,7 +443,7 @@ function OrderDetailMobileBody() {
                   </Button>
                 </div>
               ) : null}
-            </>
+            </div>
           )}
 
           {activeSection === 'production' && (
