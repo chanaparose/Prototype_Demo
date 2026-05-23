@@ -447,7 +447,6 @@ export function FactoryDashboardPage() {
           className='flex p-1 rounded-xl shrink-0'
           style={{ backgroundColor: 'rgba(46,34,82,0.07)' }}
           role='tablist'
-          aria
           aria-label='ช่วงเวลา'
         >
           {TIMEFRAMES.map(({ id, label }) => {

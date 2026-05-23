@@ -2,6 +2,7 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
+import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
 
 function MockStatusBar() {
   return (
@@ -1171,7 +1172,7 @@ function isVisible(el: Element): boolean {
   return r.width > 1 && r.height > 1;
 }
 
-function findTarget(def: TourStepDef): Element | null {
+export function findTarget(def: TourStepDef): Element | null {
   if (def.targetSelector) {
     const candidates = Array.from(document.querySelectorAll(def.targetSelector));
     const visible = candidates.find(isVisible);

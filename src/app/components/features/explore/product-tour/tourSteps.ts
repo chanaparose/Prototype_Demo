@@ -4,6 +4,7 @@ import type { TourStepDef } from '@/components/features/explore/product-tour/tou
 export const TOUR_STEPS: TourStepDef[] = [
   {
     route: '/factory-ideas',
+    mockScenario: 'browse',
     targetSelector: '[data-tour="tab-product"]',
     targetTexts: ['สินค้า', 'ทั้งหมด'],
     spotlightRadius: 24,
@@ -31,6 +32,7 @@ export const TOUR_STEPS: TourStepDef[] = [
   },
   {
     route: '/create-rfq',
+    mockScenario: 'createRfq',
     targetSelector: '[data-tour="request-kind"]',
     targetTexts: ['ประเภทคำขอ', 'ขอตัวอย่างสินค้า', 'ขอราคาผลิต'],
     spotlightRadius: 14,

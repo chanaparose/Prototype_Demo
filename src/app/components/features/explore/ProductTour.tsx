@@ -14,6 +14,7 @@ import {
   MockOrderDetail,
   MockProductDetail,
   MockRfqDetail,
+  findTarget,
 } from '@/components/features/explore/product-tour/TourMockScreens';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
 
