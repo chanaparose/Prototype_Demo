@@ -3,7 +3,7 @@ import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getErrorMessage } from '@/lib/apiError';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import {
   quotationFormSchema,
   type QuotationFormSchemaValues,
@@ -151,8 +151,56 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
     const [factoryHighlight, setFactoryHighlight] = useState<string>(initialFactoryHighlight ?? '');
-    const [uploadingImage, setUploadingImage] = useState(false);
+    const [error, setError] = useState('');
     const imageInputRef = useRef<HTMLInputElement>(null);
+
+    const uploadImagesMutation = useAppMutation({
+      mutationFn: async (files: FileList) => {
+        const uploaded = await Promise.all(
+          Array.from(files).map((f) => mediaApi.upload(f).then((r) => r.url as string)),
+        );
+        setImageUrls((prev) => [...prev, ...uploaded]);
+        form.setValue('price_per_piece', form.getValues('price_per_piece'), { shouldDirty: true });
+      },
+      onSettled: () => {
+        if (imageInputRef.current) imageInputRef.current.value = '';
+      },
+    });
+
+    const submitMutation = useAppMutation({
+      mutationFn: async () => {
+        const v = form.getValues();
+        const priceN = Number(v.price_per_piece);
+        const leadN = Number(v.lead_time_days);
+        const shipId = lockedShippingMethodId ?? 0;
+        const body: Record<string, unknown> = {
+          factory_id: factoryId,
+          price_per_piece: priceN,
+          tooling_mold_cost: Number(v.tooling_mold_cost) || 0,
+          shipping_cost: Number(v.shipping_cost) || 0,
+          packaging_cost: Number(v.packaging_cost) || 0,
+          lead_time_days: leadN,
+          validity_days: Number(v.validity_days) || 14,
+          image_urls: imageUrls,
+          factory_highlight: factoryHighlight.trim() || undefined,
+          reason: 'อัปเดตใบเสนอราคา',
+        };
+        if (shipId > 0) body.shipping_method_id = shipId;
+        body.payment_terms = LOCKED_PAYMENT_TERMS;
+        if (patchQuotationId) {
+          await quotationsApi.update(patchQuotationId, body);
+        } else {
+          await quotationsApi.create(rfqId, body);
+        }
+        form.reset(v);
+        await qc.invalidateQueries({ queryKey: rfqKeys.detail(rfqId) });
+        await qc.invalidateQueries({ queryKey: rfqKeys.quotations(rfqId) });
+        await onSubmitted?.();
+      },
+      fallbackMessage: 'ส่งไม่สำเร็จ',
+      onMutate: () => setError(''),
+      onErrorMessage: setError,
+    });
 
     useEffect(() => {
       setImageUrls(initialImageUrls ?? []);
@@ -169,27 +217,9 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const handleImageFiles = useCallback(
       async (files: FileList | null) => {
         if (!files || files.length === 0) return;
-        await runAsyncAction(
-          async () => {
-            const uploaded = await Promise.all(
-              Array.from(files).map((f) => mediaApi.upload(f).then((r) => r.url as string)),
-            );
-            setImageUrls((prev) => [...prev, ...uploaded]);
-
-            form.setValue('price_per_piece', form.getValues('price_per_piece'), {
-              shouldDirty: true,
-            });
-          },
-          {
-            onStart: () => setUploadingImage(true),
-            onSettled: () => {
-              setUploadingImage(false);
-              if (imageInputRef.current) imageInputRef.current.value = '';
-            },
-          },
-        );
+        await uploadImagesMutation.mutateAsync(files);
       },
-      [form],
+      [uploadImagesMutation],
     );
 
     const removeImage = useCallback(
@@ -200,8 +230,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       [form],
     );
 
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState('');
+    const saving = submitMutation.isPending;
 
     const submit = useCallback(async () => {
       if (readOnly) return;
@@ -221,60 +250,8 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         return;
       }
 
-      const v = form.getValues();
-      const priceN = Number(v.price_per_piece);
-      const leadN = Number(v.lead_time_days);
-
-      setError('');
-      await runAsyncAction(
-        async () => {
-          const shipId = lockedShippingMethodId ?? 0;
-          const body: Record<string, unknown> = {
-            factory_id: factoryId,
-            price_per_piece: priceN,
-            tooling_mold_cost: Number(v.tooling_mold_cost) || 0,
-            shipping_cost: Number(v.shipping_cost) || 0,
-            packaging_cost: Number(v.packaging_cost) || 0,
-            lead_time_days: leadN,
-            validity_days: Number(v.validity_days) || 14,
-            image_urls: imageUrls,
-            factory_highlight: factoryHighlight.trim() || undefined,
-            reason: 'อัปเดตใบเสนอราคา',
-          };
-
-          if (shipId > 0) body.shipping_method_id = shipId;
-
-          body.payment_terms = LOCKED_PAYMENT_TERMS;
-          if (patchQuotationId) {
-            await quotationsApi.update(patchQuotationId, body);
-          } else {
-            await quotationsApi.create(rfqId, body);
-          }
-          form.reset(v);
-          await qc.invalidateQueries({ queryKey: rfqKeys.detail(rfqId) });
-          await qc.invalidateQueries({ queryKey: rfqKeys.quotations(rfqId) });
-          await onSubmitted?.();
-        },
-        {
-          onStart: () => setSaving(true),
-          onSettled: () => setSaving(false),
-          onError: (message) => setError(message),
-          fallbackMessage: 'ส่งไม่สำเร็จ',
-        },
-      );
-    }, [
-      readOnly,
-      form,
-      rfqId,
-      factoryId,
-      lockedShippingMethodId,
-      patchQuotationId,
-      qc,
-      onSubmitted,
-      imageUrls,
-      factoryHighlight,
-      highlightError,
-    ]);
+      await submitMutation.mutateAsync();
+    }, [readOnly, form, highlightError, submitMutation]);
 
     return (
       <form
@@ -445,11 +422,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             <Button
               variant='unstyled'
               type='button'
-              disabled={uploadingImage}
+              disabled={uploadImagesMutation.isPending}
               onClick={() => imageInputRef.current?.click()}
               className='inline-flex items-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 hover:border-violet-400 hover:text-violet-600 disabled:opacity-50'
             >
-              {uploadingImage ? (
+              {uploadImagesMutation.isPending ? (
                 <>
                   <Loader2 size={13} className='animate-spin' />
                   กำลังอัปโหลด…

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useEffect, useMemo } from 'react';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -53,8 +53,6 @@ export function CertUploadModal({
   onClose,
   onSubmit,
 }: Props) {
-  const [submitting, setSubmitting] = useState(false);
-  const isSubmitting = submittingProp ?? submitting;
   const fallbackCertId = useMemo(() => certTypes[0]?.id ?? 1, [certTypes]);
 
   const form = useForm<CertFormInput, unknown, CertFormValues>({
@@ -72,6 +70,17 @@ export function CertUploadModal({
     setError,
     formState: { errors },
   } = form;
+
+  const saveMutation = useAppMutation({
+    mutationFn: ({ values, keepOpen }: { values: CertFormValues; keepOpen: boolean }) =>
+      onSubmit(toCertSubmitValue(values), keepOpen).then(() => {
+        if (mode === 'create' && keepOpen) {
+          reset(certFormValuesFromRow(null, fallbackCertId));
+        }
+      }),
+    onError: (err) => applyFormErrorsFromApi(err, setError, CERT_FORM_FIELDS),
+  });
+  const isSubmitting = submittingProp ?? saveMutation.isPending;
 
   useEffect(() => {
     if (!open) return;
@@ -99,19 +108,7 @@ export function CertUploadModal({
       return;
     }
 
-    await runAsyncAction(
-      async () => {
-        await onSubmit(toCertSubmitValue(values), keepOpen);
-        if (mode === 'create' && keepOpen) {
-          reset(certFormValuesFromRow(null, fallbackCertId));
-        }
-      },
-      {
-        onStart: () => setSubmitting(true),
-        onSettled: () => setSubmitting(false),
-        onError: (_message, err) => applyFormErrorsFromApi(err, setError, CERT_FORM_FIELDS),
-      },
-    );
+    await saveMutation.mutateAsync({ values, keepOpen });
   };
 
   return (

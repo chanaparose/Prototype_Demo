@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -29,6 +29,7 @@ import { getErrorMessage } from '@/lib/apiError';
 import { useAppMutation } from '@/hooks/useAppMutation';
 import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
 import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
+import { usePostProductionUpdate } from '@/domain/production/queries/usePostProductionUpdate';
 import { ProductionHeader } from '@/components/features/production/ProductionHeader';
 import { ProductionTimeline } from '@/components/features/production/ProductionTimeline';
 import {
@@ -319,7 +320,6 @@ export function FactoryOrderDetailPage() {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
   void fid;
-  const qc = useQueryClient();
   const drawerWide = useIsDesktop(768);
 
   const [actionError, setActionError] = useState('');
@@ -403,6 +403,8 @@ export function FactoryOrderDetailPage() {
 
   const [drawerStep, setDrawerStep] = useState<MergedProductionStep | null>(null);
 
+  const postProductionUpdate = usePostProductionUpdate(id);
+
   const handleStepSubmit = useCallback(
     async (
       body: {
@@ -419,21 +421,20 @@ export function FactoryOrderDetailPage() {
       if (!id) return;
       if (Number(body.step_id) > 5)
         throw new Error('ขั้นที่ 6 เป็นขั้นยืนยันรับสินค้าฝั่งลูกค้า/ระบบอัตโนมัติ');
-      const headers =
-        opts?.confirmPaymentTriggerHeader && body.status === 'CD' && body.confirm_payment_trigger
-          ? { 'X-Confirm-Payment-Trigger': 'true' }
-          : undefined;
-      await ordersApi.postProductionUpdate(id, body, headers);
-      await qc.invalidateQueries({ queryKey: orderKeys.productionUpdates(id) });
-      await qc.invalidateQueries({ queryKey: orderKeys.detail(id) });
+      await postProductionUpdate.mutateAsync({
+        body,
+        confirmHeader: opts?.confirmPaymentTriggerHeader,
+      });
       await reloadOrder();
     },
-    [id, qc, reloadOrder],
+    [id, postProductionUpdate, reloadOrder],
   );
 
   const acceptOrder = useAppMutation({
     mutationFn: () =>
-      handleStepSubmit({ step_id: 0, status: 'CD', description: '', image_urls: [] }),
+      postProductionUpdate.mutateAsync({
+        body: { step_id: 0, status: 'CD', description: '', image_urls: [] },
+      }),
     onMutate: () => setActionError(''),
     onError: (err) =>
       setActionError(err instanceof Error ? err.message : 'ยืนยันรับงานไม่สำเร็จ'),

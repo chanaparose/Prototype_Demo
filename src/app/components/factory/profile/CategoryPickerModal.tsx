@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { parseCategorySelection } from '@/domain/factory/schemas/categoryPicker.schema';
 import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 
 interface Props {
   open: boolean;
@@ -64,12 +64,42 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
   const { data, isLoading, isError } = useLbiAllCategories();
   const categories = data ?? [];
   const [selected, setSelected] = useState<number[]>(initialSelected);
-  const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState('');
   const qc = useQueryClient();
 
   const pdCategories = categories.filter((c) => c.scope === 'PD');
   const mtCategories = categories.filter((c) => c.scope === 'MT');
+
+  const confirmMutation = useAppMutation({
+    mutationFn: async (ids: number[]) => {
+      const mtIdSet = new Set(mtCategories.map((c) => c.id));
+      await Promise.all(
+        ids
+          .filter((cid) => !mtIdSet.has(cid))
+          .map((cid) =>
+            qc.fetchQuery({
+              queryKey: masterKeys.subCategories(cid),
+              queryFn: async () => {
+                const raw = await categoriesApi.subCategories(cid);
+                const normalized = apiListAsRecords(raw)
+                  .map((r) => toSubCategoryOption(r, cid))
+                  .filter((x): x is SubCategoryOption => x != null);
+                const uniq = new Map<number, SubCategoryOption>();
+                for (const item of normalized) {
+                  if (!uniq.has(item.id)) uniq.set(item.id, item);
+                }
+                return [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
+              },
+              staleTime: 5 * 60_000,
+            }),
+          ),
+      );
+      onConfirm(ids);
+    },
+    fallbackMessage: 'โหลดหมวดย่อยไม่สำเร็จ',
+    onMutate: () => setConfirmError(''),
+    onErrorMessage: setConfirmError,
+  });
 
   useEffect(() => {
     if (open) {
@@ -85,48 +115,13 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
   };
 
   const handleConfirm = async () => {
-    if (confirming) return;
+    if (confirmMutation.isPending) return;
     const parsed = parseCategorySelection(selected);
     if (!parsed.success) {
       setConfirmError(parsed.error.issues[0]?.message ?? 'เลือกอย่างน้อย 1 หมวดหมู่');
       return;
     }
-    const mtIdSet = new Set(mtCategories.map((c) => c.id));
-    void runAsyncAction(
-      async () => {
-        await Promise.all(
-          selected
-            .filter((cid) => !mtIdSet.has(cid))
-            .map((cid) =>
-              qc.fetchQuery({
-                queryKey: masterKeys.subCategories(cid),
-                queryFn: async () => {
-                  const raw = await categoriesApi.subCategories(cid);
-                  const normalized = apiListAsRecords(raw)
-                    .map((r) => toSubCategoryOption(r, cid))
-                    .filter((x): x is SubCategoryOption => x != null);
-                  const uniq = new Map<number, SubCategoryOption>();
-                  for (const item of normalized) {
-                    if (!uniq.has(item.id)) uniq.set(item.id, item);
-                  }
-                  return [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
-                },
-                staleTime: 5 * 60_000,
-              }),
-            ),
-        );
-        onConfirm(selected);
-      },
-      {
-        onStart: () => {
-          setConfirming(true);
-          setConfirmError('');
-        },
-        onSettled: () => setConfirming(false),
-        onError: (message) => setConfirmError(message),
-        fallbackMessage: 'โหลดหมวดย่อยไม่สำเร็จ',
-      },
-    );
+    void confirmMutation.mutate(selected);
   };
 
   const renderGroup = (label: string, items: CategoryWithScope[], accentClass: string) => (
@@ -164,14 +159,14 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
           primary={{
             label: `ยืนยัน (${selected.length})`,
             loadingLabel: 'กำลังโหลด…',
-            loading: confirming,
-            disabled: confirming,
+            loading: confirmMutation.isPending,
+            disabled: confirmMutation.isPending,
             onClick: handleConfirm,
           }}
           secondary={{
             label: 'ยกเลิก',
             onClick: onClose,
-            disabled: confirming,
+            disabled: confirmMutation.isPending,
             tone: 'muted',
           }}
         />

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useEffect } from 'react';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AppDialog } from '@/components/ui/app-dialog';
@@ -47,8 +47,6 @@ const ADDRESS_FORM_FIELDS = [
 ] as const;
 
 export function AddressFormModal({ open, mode, initial, saving: savingProp, onClose, onSubmit }: Readonly<Props>) {
-  const [submitting, setSubmitting] = useState(false);
-  const saving = savingProp ?? submitting;
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
     defaultValues: defaultAddressFormValues,
@@ -65,6 +63,18 @@ export function AddressFormModal({ open, mode, initial, saving: savingProp, onCl
     formState: { errors },
   } = form;
 
+  const saveMutation = useAppMutation({
+    mutationFn: ({
+      values,
+      editingId,
+    }: {
+      values: AddressFormValues;
+      editingId?: string | number;
+    }) => onSubmit(toAddressFormPayload(values), editingId),
+    onError: (err) => applyFormErrorsFromApi(err, setError, ADDRESS_FORM_FIELDS),
+  });
+  const saving = savingProp ?? saveMutation.isPending;
+
   useEffect(() => {
     if (!open) return;
     reset(initial ? addressFormValuesFromRow(initial) : defaultAddressFormValues);
@@ -80,15 +90,10 @@ export function AddressFormModal({ open, mode, initial, saving: savingProp, onCl
 
   const onValid = async (values: AddressFormValues) => {
     const editingId = initial?.address_id ?? initial?.id;
-    await runAsyncAction(
-      () => onSubmit(toAddressFormPayload(values), editingId as string | number | undefined),
-      {
-        onStart: () => setSubmitting(true),
-        onSettled: () => setSubmitting(false),
-        onError: (_message, err) =>
-          applyFormErrorsFromApi(err, setError, ADDRESS_FORM_FIELDS),
-      },
-    );
+    await saveMutation.mutateAsync({
+      values,
+      editingId: editingId as string | number | undefined,
+    });
   };
 
   return (

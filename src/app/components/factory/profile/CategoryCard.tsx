@@ -6,7 +6,7 @@ import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategor
 import { factoriesApi } from '@/services/api/factoryApi';
 import { Button } from '@/components/ui/button';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 
 interface Props {
   factoryId: number | string;
@@ -30,13 +30,24 @@ export function CategoryCard({
   isMT = false,
 }: Props) {
   const selectedHere = subCategoriesForCategory.filter((s) => selectedSubIds.includes(s.id));
-  const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const qc = useQueryClient();
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
+  const removeMutation = useAppMutation({
+    mutationFn: async () => {
+      await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
+      await factoriesApi.removeCategory(factoryId, categoryId);
+      await qc.invalidateQueries({ queryKey: factoryKeys.profileInit() });
+      onRemove(categoryId);
+    },
+    fallbackMessage: 'ลบไม่สำเร็จ',
+    onMutate: () => setDeleteError(''),
+    onErrorMessage: setDeleteError,
+  });
+
   const handleRemove = async () => {
-    if (deleting) return;
+    if (removeMutation.isPending) return;
     if (!factoryId) {
       setDeleteError('ไม่พบรหัสโรงงาน');
       return;
@@ -48,23 +59,7 @@ export function CategoryCard({
       destructive: true,
     });
     if (!confirmed) return;
-    void runAsyncAction(
-      async () => {
-        await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
-        await factoriesApi.removeCategory(factoryId, categoryId);
-        await qc.invalidateQueries({ queryKey: factoryKeys.profileInit() });
-        onRemove(categoryId);
-      },
-      {
-        onStart: () => {
-          setDeleting(true);
-          setDeleteError('');
-        },
-        onSettled: () => setDeleting(false),
-        onError: (message) => setDeleteError(message),
-        fallbackMessage: 'ลบไม่สำเร็จ',
-      },
-    );
+    void removeMutation.mutate();
   };
 
   return (
@@ -90,7 +85,7 @@ export function CategoryCard({
           )}
           <Button
             onClick={handleRemove}
-            disabled={deleting}
+            disabled={removeMutation.isPending}
             variant='outline'
             size='icon-xs'
             className='p-1.5 rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-60'
