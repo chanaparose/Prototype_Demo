@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailS
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 const COLORS = {
   purple: appColors.brand.mauve,
@@ -35,6 +36,7 @@ export function RFQDetailDesktop() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { rfq, relatedOrder, quoteHistories, loading, error, refetch } = useRfqDetail(id);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
@@ -42,7 +44,7 @@ export function RFQDetailDesktop() {
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!rfq?.offers?.length) return;
     if (selectedOffer) return;
     const byQuote = requestedQuoteId
@@ -160,6 +162,7 @@ export function RFQDetailDesktop() {
 
   return (
     <div className='hidden lg:block' style={{ backgroundColor: COLORS.lightPurpleBg }}>
+      <ConfirmDialog />
       <div className='max-w-6xl mx-auto px-8 py-7'>
         <div className='flex items-start justify-between gap-6 mb-6'>
           <div className='min-w-0'>
@@ -205,9 +208,13 @@ export function RFQDetailDesktop() {
                 type='button'
                 disabled={closing}
                 onClick={async () => {
-                  const ok = window.confirm(
-                    'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
-                  );
+                  const ok = await confirm({
+                    title: 'ปิดรับคำขอราคา?',
+                    description:
+                      'โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
+                    confirmText: 'ปิดรับคำขอ',
+                    destructive: true,
+                  });
                   if (!ok) return;
                   setClosing(true);
                   try {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '@/stores/useAuthStore';
@@ -19,6 +19,7 @@ import {
 } from '@/domain/rfq/constants';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 const COLORS = {
   purple: appColors.brand.mauve,
@@ -41,13 +42,14 @@ export function RFQDetailMobile() {
     error,
     refetch,
   } = useRfqDetail(id);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [specsOpen, setSpecsOpen] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!rfq?.offers?.length) return;
     if (selectedOffer) return;
     const byQuote = requestedQuoteId
@@ -165,6 +167,7 @@ export function RFQDetailMobile() {
 
   return (
     <div className='min-h-screen flex flex-col' style={{ backgroundColor: COLORS.lightPurpleBg }}>
+      <ConfirmDialog />
       <div className='flex items-center justify-between px-4 pt-5 pb-4 bg-white border-b border-gray-100'>
         <Button
           variant='unstyled'
@@ -197,9 +200,13 @@ export function RFQDetailMobile() {
                 type='button'
                 disabled={closing}
                 onClick={async () => {
-                  const ok = window.confirm(
-                    'ปิดรับคำขอราคานี้? โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
-                  );
+                  const ok = await confirm({
+                    title: 'ปิดรับคำขอราคา?',
+                    description:
+                      'โรงงานจะไม่สามารถส่งใบเสนอราคาใหม่ได้ แต่คำสั่งซื้อที่ยืนยันแล้วยังคงดำเนินต่อไป',
+                    confirmText: 'ปิดรับคำขอ',
+                    destructive: true,
+                  });
                   if (!ok) return;
                   setClosing(true);
                   try {

@@ -18,28 +18,15 @@ import { appColors } from '@/styles/colors';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import {
+  mapWalletSummary,
+  mapWalletTransactions,
+  type WalletTransaction,
+} from '@/domain/wallet/mappers/mapWallet';
 
 const NAVY = appColors.brand.navy;
 const ORANGE = appColors.brand.indigo;
 const TEAL = appColors.brand.teal;
-
-type TxRow = Record<string, unknown>;
-
-function normTx(r: TxRow) {
-  const rawAmount = Number(r.amount ?? 0);
-  const normalizedAmount = Number.isFinite(rawAmount) ? Math.abs(rawAmount) : 0;
-  return {
-    id: String(r.tx_id ?? r.transaction_id ?? r.id ?? ''),
-    type: String(r.type ?? r.transaction_type ?? '').toUpperCase(),
-    amount: normalizedAmount,
-    status: String(r.status ?? '').toUpperCase(),
-    date: String(r.created_at ?? r.uploaded_at ?? r.date ?? ''),
-    description: String(r.description ?? ''),
-    reference: String(r.reference ?? r.order_id ?? r.rfq_id ?? ''),
-  };
-}
-
-type NormTx = ReturnType<typeof normTx>;
 
 function isCredit(type: string): boolean {
   const t = String(type ?? '').toUpperCase();
@@ -109,7 +96,7 @@ function StatCard({
   );
 }
 
-function TxRow({ t }: { t: NormTx }) {
+function TxRow({ t }: { t: WalletTransaction }) {
   const credit = isCredit(t.type);
   const desc = txLabel(t.type);
   const dateStr = t.date
@@ -158,7 +145,7 @@ function TxRow({ t }: { t: NormTx }) {
 export function FactoryWalletPage() {
   const [good, setGood] = useState<number | null>(null);
   const [pending, setPending] = useState<number | null>(null);
-  const [tx, setTx] = useState<NormTx[]>([]);
+  const [tx, setTx] = useState<WalletTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
@@ -171,9 +158,9 @@ export function FactoryWalletPage() {
     setLoading(true);
     setError('');
     try {
-      const w = (await walletApi.getMe()) as Record<string, unknown>;
-      setGood(Number(w.good_fund ?? w.walletBalance ?? 0));
-      setPending(Number(w.pending_fund ?? w.pendingBalance ?? 0));
+      const wallet = mapWalletSummary(await walletApi.getMe());
+      setGood(wallet.goodFund);
+      setPending(wallet.pendingFund);
 
       let raw: unknown;
       try {
@@ -181,11 +168,7 @@ export function FactoryWalletPage() {
       } catch {
         raw = await transactionsApi.list().catch(() => []);
       }
-      const arr = (Array.isArray(raw) ? raw : []) as TxRow[];
-      const apiTx = arr
-        .map(normTx)
-        .filter((t) => t.id)
-        .slice(0, 30);
+      const apiTx = mapWalletTransactions(raw).slice(0, 30);
       setTx(apiTx);
       setLastRefreshedAt(new Date());
     } catch (e) {

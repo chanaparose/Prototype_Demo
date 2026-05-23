@@ -1,6 +1,7 @@
 import useEmblaCarousel, { type UseEmblaCarouselType } from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import * as React from 'react';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -62,7 +63,7 @@ function Carousel({
     setCanScrollNext(carouselApi.canScrollNext());
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!api) return;
     setApi?.(api);
     updateState(api);
@@ -74,7 +75,7 @@ function Carousel({
     };
   }, [api, setApi, updateState]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!api || !autoPlayMs || autoPlayMs <= 0 || scrollSnaps.length <= 1) return;
     const timer = window.setInterval(() => {
       if (pauseOnHover && hoveredRef.current) return;
@@ -218,7 +219,7 @@ type CarouselLightboxProps = {
 function CarouselLightbox({ images, openIndex, alt = '', onClose }: CarouselLightboxProps) {
   const [api, setApi] = React.useState<CarouselApi>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!api || openIndex == null) return;
     api.scrollTo(openIndex);
   }, [api, openIndex]);

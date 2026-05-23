@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { quotationApi } from '@/services/api/rfqApi';
@@ -19,7 +19,7 @@ export function QuoteBuilder() {
   const { loading, error, breakdown } = usePreviewBreakdown(state);
   const [submitting, setSubmitting] = React.useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) toast.error(error);
   }, [error]);
 

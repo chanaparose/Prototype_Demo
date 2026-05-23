@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { quotationApi } from '@/services/api/rfqApi';
 import type { IQuotationBreakdown, IQuotationCreateRequest } from '@/services/api/types/rfq.types';
 
@@ -7,7 +7,7 @@ export function usePreviewBreakdown(state: Partial<IQuotationCreateRequest>) {
   const [error, setError] = React.useState('');
   const [breakdown, setBreakdown] = React.useState<IQuotationBreakdown | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     const timer = setTimeout(async () => {
       setLoading(true);

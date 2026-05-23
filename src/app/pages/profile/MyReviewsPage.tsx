@@ -8,16 +8,8 @@ import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImag
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-
-type ReviewItem = {
-  review_id: number;
-  factory_name?: string;
-  rating: number;
-  comment: string;
-  created_at: string;
-  is_editable?: boolean;
-  image_urls: string[];
-};
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
+import { mapReviewItems, type ReviewItem } from '@/domain/review/mappers/mapReview';
 
 export function MyReviewsPage() {
   const navigate = useNavigate();
@@ -31,6 +23,7 @@ export function MyReviewsPage() {
   const [editComment, setEditComment] = useState('');
   const [editImages, setEditImages] = useState<string[]>([]);
   const [editSaving, setEditSaving] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const load = async () => {
     setLoading(true);
@@ -40,20 +33,7 @@ export function MyReviewsPage() {
         role === 'FT'
           ? await profileApi.receivedReviews({ page: 1, limit: 20 })
           : await profileApi.myReviews({ page: 1, limit: 20 });
-      const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
-      setItems(
-        data
-          .map((row) => ({
-            review_id: Number(row.review_id ?? row.id ?? 0),
-            factory_name: String(row.factory_name ?? row.factory ?? ''),
-            rating: Number(row.rating ?? 0),
-            comment: String(row.comment ?? ''),
-            created_at: String(row.created_at ?? ''),
-            is_editable: Boolean(row.is_editable),
-            image_urls: normalizeReviewImageUrls(row.image_urls),
-          }))
-          .filter((r) => Number.isFinite(r.review_id) && r.review_id > 0),
-      );
+      setItems(mapReviewItems(raw));
     } finally {
       setLoading(false);
     }
@@ -64,10 +44,10 @@ export function MyReviewsPage() {
   }, [user?.role]);
 
   const openEdit = (r: ReviewItem) => {
-    setEditReviewId(r.review_id);
+    setEditReviewId(r.reviewId);
     setEditRating(r.rating);
     setEditComment(r.comment);
-    setEditImages([...r.image_urls]);
+    setEditImages([...r.imageUrls]);
     setEditOpen(true);
   };
 
@@ -103,6 +83,7 @@ export function MyReviewsPage() {
 
   return (
     <div className='space-y-4 pb-24'>
+      <ConfirmDialog />
       <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2'>
         <Button
           variant='unstyled'
@@ -125,15 +106,15 @@ export function MyReviewsPage() {
           <ul className='space-y-3'>
             {items.map((r) => (
               <li
-                key={r.review_id}
+                key={r.reviewId}
                 className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-3'
               >
                 <div className='flex items-center justify-between gap-2'>
                   <p className='text-sm font-semibold text-slate-900'>
-                    {r.factory_name || 'โรงงาน'}
+                    {r.factoryName || 'โรงงาน'}
                   </p>
                   <p className='text-[11px] text-slate-500'>
-                    {r.created_at ? new Date(r.created_at).toLocaleDateString('th-TH') : '-'}
+                    {r.createdAt ? new Date(r.createdAt).toLocaleDateString('th-TH') : '-'}
                   </p>
                 </div>
                 <p className='text-[12px] text-amber-500'>
@@ -141,10 +122,10 @@ export function MyReviewsPage() {
                 </p>
                 <p className='text-sm text-slate-700'>{r.comment || '-'}</p>
                 <ReviewImageAttachments
-                  urls={r.image_urls}
+                  urls={r.imageUrls}
                   onPreviewUrl={(u) => window.open(u, '_blank', 'noopener,noreferrer')}
                 />
-                {r.is_editable ? (
+                {r.isEditable ? (
                   <div className='mt-2 flex gap-2'>
                     <Button
                       variant='unstyled'
@@ -158,8 +139,14 @@ export function MyReviewsPage() {
                       variant='unstyled'
                       type='button'
                       onClick={async () => {
-                        if (!window.confirm('ลบรีวิวนี้?')) return;
-                        await reviewsApi.delete(r.review_id);
+                        const ok = await confirm({
+                          title: 'ลบรีวิวนี้?',
+                          description: 'รีวิวนี้จะถูกลบออกจากรายการของคุณ',
+                          confirmText: 'ลบรีวิว',
+                          destructive: true,
+                        });
+                        if (!ok) return;
+                        await reviewsApi.delete(r.reviewId);
                         await load();
                       }}
                       className='px-2.5 py-1 rounded-lg border border-red-200 text-xs text-red-600'

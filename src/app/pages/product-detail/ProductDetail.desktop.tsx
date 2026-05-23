@@ -23,6 +23,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFavorites } from '@/hooks/useFavorites';
+import { getCurrentHref } from '@/utils/navigation/redirect';
 import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
 import {
@@ -168,10 +169,11 @@ export function ProductDetailDesktop() {
                   type='button'
                   className='inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors'
                   onClick={() => {
+                    const url = getCurrentHref();
                     if (typeof navigator !== 'undefined' && navigator.share) {
-                      void navigator.share({ title: item.title, url: window.location.href });
+                      void navigator.share({ title: item.title, url });
                     } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                      void navigator.clipboard.writeText(window.location.href);
+                      void navigator.clipboard.writeText(url);
                     }
                   }}
                 >

@@ -9,6 +9,7 @@ import { mediaApi } from '@/services/api/factoryApi';
 import { CertStatusBadge } from '@/components/factory/CertStatusBadge';
 import { CertUploadModal, type CertFormSubmitValue } from '@/components/factory/CertUploadModal';
 import { Button } from '@/components/ui/button';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 type Row = Record<string, unknown>;
 
@@ -44,6 +45,7 @@ function toDateInputValue(raw: unknown): string {
 export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Props) {
   const qc = useQueryClient();
   const { data: masterCertTypes = [] } = useMasterCerts();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const modal = useModal();
   const [mode, setMode] = useState<'create' | 'edit'>('create');
@@ -106,13 +108,20 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
   const remove = async (c: Row) => {
     const id = certRowId(c);
     if (id == null) return;
-    if (!window.confirm('ลบใบรับรองนี้?')) return;
+    const ok = await confirm({
+      title: 'ลบใบรับรองนี้?',
+      description: 'ข้อมูลใบรับรองและเอกสารที่ผูกไว้จะถูกลบออกจากโปรไฟล์โรงงาน',
+      confirmText: 'ลบใบรับรอง',
+      destructive: true,
+    });
+    if (!ok) return;
     await certificatesApi.delete(factoryId, id);
     invalidate();
   };
 
   return (
     <div>
+      <ConfirmDialog />
       {certs.length === 0 ? (
         <p className='text-sm text-gray-400'>ยังไม่มีใบรับรอง</p>
       ) : (

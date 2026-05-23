@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { categoriesApi } from '@/services/api/masterApi';
@@ -42,7 +42,7 @@ export function RFQCreateWizard() {
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
 
-  React.useEffect(() => {
+  useEffect(() => {
     const mode = (searchParams.get('mode') || '').trim();
     const showcaseId = Number(searchParams.get('showcaseId') || 0);
     if (mode === 'sample-product') {
@@ -58,7 +58,7 @@ export function RFQCreateWizard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
     if (!Number.isFinite(cid) || cid <= 0) {
       setSubCategories([]);
@@ -101,7 +101,7 @@ export function RFQCreateWizard() {
     [modeCategories],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
     if (!cid) return;
     const exists = modeCategories.some((c) => c.id === cid);
@@ -110,13 +110,13 @@ export function RFQCreateWizard() {
     }
   }, [draft.category_id, modeCategories, setDraft]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if ((draft.request_kind === 'MS' || draft.request_kind === 'MR') && draft.sub_category_id != null) {
       setDraft({ sub_category_id: undefined });
     }
   }, [draft.request_kind, draft.sub_category_id, setDraft]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const cid = Number(draft.category_id ?? 0);
     if (!cid || !draft.request_kind) {
       setMatchCount(null);

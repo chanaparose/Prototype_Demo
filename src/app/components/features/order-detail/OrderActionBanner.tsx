@@ -9,6 +9,7 @@ import { diffDaysFromNow, formatDateTh } from '@/components/features/order-detai
 import type { NextAction, PaymentScheduleItem } from '@/pages/order-detail/orderDetailFromApi';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
+import { redirectTo } from '@/utils/navigation/redirect';
 
 type Props = {
   nextAction: NextAction | null;
@@ -46,7 +47,7 @@ export function OrderActionBanner({
       return;
     }
     if (ctaUrl.startsWith('http')) {
-      window.location.href = ctaUrl;
+      redirectTo(ctaUrl);
       return;
     }
     navigate(ctaUrl || '.');

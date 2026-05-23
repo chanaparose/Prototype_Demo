@@ -6,6 +6,7 @@ import { useModal } from '@/hooks/ui/useModal';
 import { addressesApi } from '@/services/api/masterApi';
 import { AddressList } from '@/components/factory/AddressList';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 type Row = Record<string, unknown>;
 
@@ -13,6 +14,7 @@ export function AddressesSection() {
   const qc = useQueryClient();
   const { data: addresses = [] } = useMyAddresses();
   const modal = useModal();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editing, setEditing] = useState<Row | null>(null);
@@ -41,7 +43,13 @@ export function AddressesSection() {
   const remove = async (row: Row) => {
     const id = row.address_id ?? row.id;
     if (id == null) return;
-    if (!window.confirm('ลบที่อยู่นี้?')) return;
+    const ok = await confirm({
+      title: 'ลบที่อยู่นี้?',
+      description: 'ที่อยู่นี้จะถูกลบออกจากโปรไฟล์โรงงาน',
+      confirmText: 'ลบที่อยู่',
+      destructive: true,
+    });
+    if (!ok) return;
     await addressesApi.delete(id as string | number);
     invalidate();
   };
@@ -55,6 +63,7 @@ export function AddressesSection() {
 
   return (
     <div>
+      <ConfirmDialog />
       <AddressList
         addresses={addresses}
         onCreate={() => {

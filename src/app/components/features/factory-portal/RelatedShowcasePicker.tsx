@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Search, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -41,7 +41,7 @@ export function RelatedShowcasePicker({
     return set;
   }, [value]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) return;
     setDraft([...selected]);
   }, [open, selected]);

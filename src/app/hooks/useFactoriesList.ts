@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useData } from '@/stores/useDataStore';
 import { type Factory } from '@/stores/types';
 import { factoriesApi } from '@/services/api/factoryApi';
@@ -16,7 +16,7 @@ export function useFactoriesList() {
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setLoadError(null);

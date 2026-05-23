@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { platformConfigApi } from '@/services/api/adminApi';
 import type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 type FormState = {
   default_commission_rate: number;
@@ -33,8 +34,9 @@ export function CommissionConfig() {
   const [history, setHistory] = React.useState<IPlatformConfigResponse[]>([]);
   const [form, setForm] = React.useState<FormState | null>(null);
   const [saving, setSaving] = React.useState(false);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  React.useEffect(() => {
+  useEffect(() => {
     void (async () => {
       const [a, h] = await Promise.all([
         platformConfigApi.getActive(),
@@ -50,6 +52,7 @@ export function CommissionConfig() {
 
   return (
     <div className='max-w-3xl mx-auto px-4 py-6 space-y-4'>
+      <ConfirmDialog />
       <div className='bg-white rounded-2xl border border-gray-100 p-4 space-y-3'>
         <p className='text-base font-bold text-gray-900'>Commission Config</p>
         <Label className='block text-sm'>
@@ -138,9 +141,11 @@ export function CommissionConfig() {
           type='button'
           disabled={saving}
           onClick={async () => {
-            const ok = window.confirm(
-              'การเปลี่ยน rate จะมีผลกับ quote ใหม่เท่านั้น quote ที่ submit แล้วใช้ rate เดิม',
-            );
+            const ok = await confirm({
+              title: 'บันทึก commission rate ใหม่?',
+              description: 'การเปลี่ยน rate จะมีผลกับ quote ใหม่เท่านั้น quote ที่ submit แล้วใช้ rate เดิม',
+              confirmText: 'บันทึกเวอร์ชันใหม่',
+            });
             if (!ok) return;
             setSaving(true);
             try {

@@ -23,6 +23,7 @@ import { mapShowcaseFromApi } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
+import { getCurrentHref } from '@/utils/navigation/redirect';
 
 const CARD = {
   purple: 'var(--brand-mauve)',
@@ -141,13 +142,14 @@ export function IdeaDetailMobile() {
             className='ml-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shrink-0'
             aria-label='แชร์'
             onClick={() => {
+              const url = getCurrentHref();
               if (typeof navigator !== 'undefined' && navigator.share) {
                 void navigator.share({
                   title: item.title,
-                  url: window.location.href,
+                  url,
                 });
               } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                void navigator.clipboard.writeText(window.location.href);
+                void navigator.clipboard.writeText(url);
               }
             }}
           >

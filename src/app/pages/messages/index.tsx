@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { MessagesMobile } from '@/pages/messages/Messages.mobile';
 import { MessagesDesktop } from '@/pages/messages/Messages.desktop';
@@ -19,11 +19,11 @@ export function Messages() {
     setSelectedId(id);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!selectedId && items.length > 0) handleSelectId(items[0].id);
   }, [items, selectedId, handleSelectId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedId && items.length > 0 && !items.some((c) => c.id === selectedId)) {
       handleSelectId(items[0]?.id ?? '');
     }

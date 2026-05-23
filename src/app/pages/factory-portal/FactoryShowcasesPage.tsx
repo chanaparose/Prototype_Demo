@@ -8,10 +8,15 @@ import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
+import {
+  mapFactoryShowcaseList,
+  type FactoryShowcaseListItem,
+  type FactoryShowcaseStatus,
+  type FactoryShowcaseType,
+} from '@/domain/showcase/mappers/mapFactoryShowcaseListItem';
 
-type Row = Record<string, unknown>;
-type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
-type ShowcaseStatus = 'DR' | 'AC' | 'HI' | 'AR';
+type ShowcaseType = FactoryShowcaseType;
 
 const TAB_META = {
   PD: { icon: '🏷', label: 'สินค้า', btnLabel: 'เพิ่มสินค้า', empty: 'ยังไม่มีสินค้า' },
@@ -20,37 +25,12 @@ const TAB_META = {
   MT: { icon: '🧱', label: 'วัตถุดิบ', btnLabel: 'เพิ่มวัตถุดิบ', empty: 'ยังไม่มีวัตถุดิบ' },
 } as const;
 
-const STATUS_META: Record<ShowcaseStatus, { label: string; bg: string; color: string }> = {
+const STATUS_META: Record<FactoryShowcaseStatus, { label: string; bg: string; color: string }> = {
   DR: { label: 'ร่าง', bg: 'rgba(107,114,128,0.12)', color: 'var(--neutral-subtle)' },
   AC: { label: 'Active', bg: 'rgba(16,185,129,0.12)', color: 'var(--status-success)' },
   HI: { label: 'ซ่อน', bg: 'rgba(245,158,11,0.12)', color: 'var(--status-warning-deep)' },
   AR: { label: 'Archived', bg: 'rgba(107,114,128,0.10)', color: 'var(--neutral-placeholder)' },
 };
-
-function rowId(r: Row): string {
-  return String(r.showcase_id ?? r.id ?? '');
-}
-
-function firstImage(r: Row): string | undefined {
-  const direct = String(r.image_url ?? '').trim();
-  if (direct) return direct;
-  const imgs = r.images ?? r.image_urls;
-  if (Array.isArray(imgs) && imgs.length > 0) {
-    const f = imgs[0];
-    if (typeof f === 'string') return f;
-    if (f && typeof f === 'object') {
-      return String(
-        (f as Record<string, unknown>).url ?? (f as Record<string, unknown>).image_url ?? '',
-      );
-    }
-  }
-  return undefined;
-}
-
-function asPositiveInt(v: unknown): number {
-  const n = Number(v);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
-}
 
 export function FactoryShowcasesPage() {
   const { user } = useAuth();
@@ -58,6 +38,7 @@ export function FactoryShowcasesPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const initialType = ((): ShowcaseType => {
     const t = searchParams.get('type');
@@ -65,14 +46,12 @@ export function FactoryShowcasesPage() {
   })();
 
   const [activeType, setActiveType] = useState<ShowcaseType>(initialType);
-  const [allRows, setAllRows] = useState<Row[]>([]);
+  const [allRows, setAllRows] = useState<FactoryShowcaseListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const rows = allRows.filter(
-    (r) => String(r.content_type ?? '').toUpperCase() === activeType,
-  );
+  const rows = allRows.filter((r) => r.contentType === activeType);
 
   const changeType = (type: ShowcaseType) => {
     setActiveType(type);
@@ -88,7 +67,7 @@ export function FactoryShowcasesPage() {
     setError('');
     try {
       const raw = await showcasesApi.listByFactory(fid);
-      setAllRows(Array.isArray(raw) ? (raw as Row[]) : []);
+      setAllRows(mapFactoryShowcaseList(raw));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
     } finally {
@@ -100,14 +79,21 @@ export function FactoryShowcasesPage() {
     void load();
   }, [load]);
 
-  const remove = async (r: Row) => {
-    const id = rowId(r);
-    if (!id || !window.confirm(`ลบ "${String(r.title ?? 'รายการนี้')}" ออก?`)) return;
+  const remove = async (r: FactoryShowcaseListItem) => {
+    const id = r.id;
+    if (!id) return;
+    const ok = await confirm({
+      title: `ลบ "${r.title || 'รายการนี้'}"?`,
+      description: 'รายการนี้จะถูกลบออกจากโชว์เคสของโรงงาน',
+      confirmText: 'ลบรายการ',
+      destructive: true,
+    });
+    if (!ok) return;
     setDeletingId(id);
     setError('');
     try {
       await showcasesApi.delete(id);
-      setAllRows((prev) => prev.filter((row) => rowId(row) !== id));
+      setAllRows((prev) => prev.filter((row) => row.id !== id));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ลบไม่สำเร็จ');
     } finally {
@@ -125,6 +111,7 @@ export function FactoryShowcasesPage() {
 
   return (
     <div className='space-y-4'>
+      <ConfirmDialog />
       <FactoryPageHeader
         title='โชว์เคสของฉัน'
         subtitle='Factory Portal'
@@ -193,22 +180,16 @@ export function FactoryShowcasesPage() {
       ) : (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {rows.map((r) => {
-            const id = rowId(r);
-            const img = firstImage(r);
-            const statusKey = String(r.status ?? 'DR').toUpperCase() as ShowcaseStatus;
+            const id = r.id;
+            const statusKey = r.status;
             const {
               label: statusLabel,
               bg: statusBg,
               color: statusColor,
             } = STATUS_META[statusKey] ?? STATUS_META.DR;
-            const catLine = [r.category_name, r.sub_category_name].filter(Boolean).join(' › ');
             const isDeleting = deletingId === id;
             const isIdea = activeType === 'ID';
-            const locationLine =
-              String(r.factory_location ?? r.province_name ?? catLine ?? '—').trim() || '—';
-            const rating = Number(r.rating_avg ?? r.factory_rating_avg ?? 0);
-            const reviews = asPositiveInt(r.review_count ?? r.reviews ?? 0);
-            const moq = asPositiveInt(r.moq ?? 0);
+            const locationLine = r.locationLine || r.categoryLine || '—';
 
             return (
               <article
@@ -222,10 +203,10 @@ export function FactoryShowcasesPage() {
                 {!isIdea ? (
                   <>
                     <div className='aspect-[4/3] bg-gray-100 relative overflow-hidden'>
-                      {img ? (
+                      {r.imageUrl ? (
                         <ImageWithFallback
-                          src={img}
-                          alt={String(r.title ?? '')}
+                          src={r.imageUrl}
+                          alt={r.title}
                           className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                         />
                       ) : (
@@ -254,7 +235,7 @@ export function FactoryShowcasesPage() {
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                       <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                        {String(r.title ?? '—')}
+                        {r.title || '—'}
                       </p>
                       <div className='flex items-center gap-0.5 mt-0.5'>
                         <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
@@ -265,11 +246,11 @@ export function FactoryShowcasesPage() {
                           <div className='flex items-center gap-0.5 min-w-0'>
                             <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
                             <span className='text-gray-700 text-[10px] font-semibold'>
-                              {rating.toFixed(1)}
+                              {r.rating.toFixed(1)}
                             </span>
-                            <span className='text-gray-400 text-[9px] truncate'>({reviews})</span>
+                            <span className='text-gray-400 text-[9px] truncate'>({r.reviewCount})</span>
                           </div>
-                          <span className='text-gray-400 text-[8px] shrink-0'>ขั้นต่ำ {moq}</span>
+                          <span className='text-gray-400 text-[8px] shrink-0'>ขั้นต่ำ {r.moq}</span>
                         </div>
                       </div>
                     </div>
@@ -288,14 +269,12 @@ export function FactoryShowcasesPage() {
                       </span>
                     </div>
                     <p className='font-semibold text-sm line-clamp-2 leading-snug text-slate-900 min-h-[40px]'>
-                      {String(r.title ?? '—')}
+                      {r.title || '—'}
                     </p>
                     <div className='border-t border-gray-100 mt-3 pt-2'>
                       <div className='flex items-center justify-between gap-2 text-[11px] text-gray-500'>
                         <p className='min-w-0 flex-1 text-xs font-semibold text-brand-navy line-clamp-1'>
-                          {String(
-                            r.factory_name ?? user?.factory_name ?? user?.name ?? 'โรงงานของคุณ',
-                          )}
+                          {r.factoryName || user?.name || 'โรงงานของคุณ'}
                         </p>
                       </div>
                     </div>

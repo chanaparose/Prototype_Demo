@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import {
   Home,
@@ -56,7 +56,7 @@ export function DesktopSidebar() {
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
   // Tour state persisted with localStorage and synchronized via subscription
   const { value: tourOn, setValue: setTourOn } = useLocalStorage('tourActive', isTourActive());
-  React.useEffect(() => subscribeTourActive((active) => setTourOn(active)), [setTourOn]);
+  useEffect(() => subscribeTourActive((active) => setTourOn(active)), [setTourOn]);
 
   const isActivePath = (path: string) =>
     path === '/'

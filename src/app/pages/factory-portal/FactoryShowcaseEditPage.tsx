@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
@@ -180,7 +180,7 @@ export function FactoryShowcaseEditPage() {
   const [linkedShowcaseError, setLinkedShowcaseError] = React.useState('');
   const didHydrateFromServerRef = React.useRef(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     didHydrateFromServerRef.current = false;
   }, [id]);
 
@@ -253,7 +253,7 @@ export function FactoryShowcaseEditPage() {
     subsResult,
   } = useShowcaseCategoryOptions({ contentType, selectedCategoryId });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!id) return;
     let active = true;
     void showcasesApi

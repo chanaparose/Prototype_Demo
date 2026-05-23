@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface DismissRfqButtonProps {
@@ -24,7 +24,7 @@ export function DismissRfqButton({
   const [busy, setBusy] = React.useState(false);
   const [toast, setToast] = React.useState<{ sec: number } | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!toast) return;
     const t = setInterval(() => {
       setToast((prev) => {

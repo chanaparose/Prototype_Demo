@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import {
@@ -74,7 +74,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
     }
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let shippingMapResult: Record<number, string> = {};
     let addressMapResult: Record<number, string> = {};
 

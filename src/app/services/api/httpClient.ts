@@ -1,5 +1,6 @@
 import { getTourMockResponse } from '@/utils/tourMocks';
 import { getToken, removeToken } from '@/services/api/tokenManager';
+import { redirectToLogin } from '@/utils/navigation/redirect';
 
 export type RequestOptions = {
   method?: string;
@@ -134,7 +135,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     if (!authPostFailed) {
       if (!skipImmediateLogout) {
         removeToken();
-        window.location.href = '/login';
+        redirectToLogin();
       }
     }
 
@@ -177,7 +178,7 @@ export const httpClient = {
 
     if (res.status === 401) {
       removeToken();
-      window.location.href = '/login';
+      redirectToLogin();
       throw new Error('Unauthorized');
     }
 

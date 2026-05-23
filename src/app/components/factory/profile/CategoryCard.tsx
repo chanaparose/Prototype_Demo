@@ -5,6 +5,7 @@ import { factoryKeys } from '@/lib/queryKeys';
 import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { Button } from '@/components/ui/button';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 interface Props {
   factoryId: number | string;
@@ -31,6 +32,7 @@ export function CategoryCard({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const qc = useQueryClient();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const handleRemove = async () => {
     if (deleting) return;
@@ -38,9 +40,12 @@ export function CategoryCard({
       setDeleteError('ไม่พบรหัสโรงงาน');
       return;
     }
-    const confirmed = window.confirm(
-      `ลบหมวด "${categoryName}" และหมวดย่อย ${selectedHere.length} รายการ?`,
-    );
+    const confirmed = await confirm({
+      title: `ลบหมวด "${categoryName}"?`,
+      description: `หมวดย่อย ${selectedHere.length} รายการในหมวดนี้จะถูกลบออกจากโปรไฟล์โรงงาน`,
+      confirmText: 'ลบหมวด',
+      destructive: true,
+    });
     if (!confirmed) return;
     setDeleting(true);
     setDeleteError('');
@@ -59,6 +64,7 @@ export function CategoryCard({
 
   return (
     <div className='border border-gray-200 rounded-2xl p-4 bg-white'>
+      <ConfirmDialog />
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0'>
           <h3 className='text-sm font-bold text-gray-900'>{categoryName}</h3>

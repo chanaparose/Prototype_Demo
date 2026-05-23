@@ -23,6 +23,7 @@ import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFavorites } from '@/hooks/useFavorites';
 import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
+import { getCurrentHref } from '@/utils/navigation/redirect';
 import { Image } from '@/components/ui/image';
 
 export function ProductDetailMobile() {
@@ -142,11 +143,12 @@ export function ProductDetailMobile() {
           type='button'
           className='absolute top-3 right-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center'
           aria-label='แชร์'
-            onClick={() => {
+          onClick={() => {
+            const url = getCurrentHref();
             if (typeof navigator !== 'undefined' && navigator.share) {
-              void navigator.share({ title: item.title, url: window.location.href });
+              void navigator.share({ title: item.title, url });
             } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-              void navigator.clipboard.writeText(window.location.href);
+              void navigator.clipboard.writeText(url);
             }
           }}
         >

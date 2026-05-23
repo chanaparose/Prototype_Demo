@@ -1,31 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { quotationApi } from '@/services/api/rfqApi';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import { DiffRow } from '@/shared/ui/DiffRow';
 import { Button } from '@/components/ui/button';
-
-type AnyObj = Record<string, unknown>;
+import { usePromptDialog } from '@/shared/ui/modals/PromptDialog';
+import {
+  mapQuoteDetail,
+  mapQuoteHistory,
+  type QuoteDetailModel,
+  type QuoteHistoryEntry,
+} from '@/domain/quote/mappers/mapQuoteDetail';
 
 export function QuoteDetailCustomer() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qid = Number(id ?? 0);
-  const [row, setRow] = React.useState<AnyObj | null>(null);
-  const [history, setHistory] = React.useState<AnyObj[]>([]);
-  const [compare, setCompare] = React.useState<{ before: AnyObj; after: AnyObj } | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [requesting, setRequesting] = React.useState(false);
-  const [rejecting, setRejecting] = React.useState(false);
+  const [quote, setQuote] = useState<QuoteDetailModel | null>(null);
+  const [history, setHistory] = useState<QuoteHistoryEntry[]>([]);
+  const [compare, setCompare] = useState<{ before: QuoteHistoryEntry; after: QuoteHistoryEntry } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [requesting, setRequesting] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const { prompt, PromptDialog } = usePromptDialog();
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     void (async () => {
       try {
         const [q, h] = await Promise.all([quotationApi.get(qid), quotationApi.history(qid)]);
         if (!mounted) return;
-        setRow(q as unknown as AnyObj);
-        setHistory(Array.isArray(h) ? (h as unknown as AnyObj[]) : []);
+        setQuote(mapQuoteDetail(q));
+        setHistory(mapQuoteHistory(h));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -35,28 +41,24 @@ export function QuoteDetailCustomer() {
     };
   }, [qid]);
 
-  if (loading || !row) {
+  if (loading || !quote) {
     return <div className='px-4 py-10 text-sm text-gray-500'>กำลังโหลดใบเสนอราคา...</div>;
   }
 
-  const accepted = String(row.status ?? '').toUpperCase() === 'AC';
-  const currency = String(row.currency_code ?? 'THB');
-  const breakdown = (row.breakdown ?? row) as AnyObj;
-  const items = Array.isArray(row.items) ? (row.items as AnyObj[]) : [];
-
   return (
     <div className='max-w-5xl mx-auto px-4 py-6 space-y-4'>
+      <PromptDialog />
       <div className='bg-white rounded-2xl border border-gray-100 p-4'>
         <p className='text-xs text-gray-400'>Quote #{qid}</p>
         <h1 className='text-lg font-bold text-gray-900'>
-          {String(row.factory_name ?? row.factoryName ?? 'Factory quotation')}
+          {quote.factoryName}
         </h1>
         <p className='text-xs text-gray-500 mt-1'>
-          Revision v{String(row.version ?? 1)} · valid {String(row.valid_until ?? '-')}
+          Revision v{quote.version} · valid {quote.validUntil}
         </p>
-        {accepted ? (
+        {quote.accepted ? (
           <p className='mt-2 rounded-lg bg-emerald-50 text-emerald-700 text-xs px-3 py-2'>
-            Accepted on {String(row.accepted_at ?? '-')} - Order #{String(row.order_id ?? '-')}
+            Accepted on {quote.acceptedAt} - Order #{quote.orderId}
           </p>
         ) : null}
       </div>
@@ -64,16 +66,16 @@ export function QuoteDetailCustomer() {
       <div className='bg-white rounded-2xl border border-gray-100 p-4'>
         <p className='text-sm font-bold text-gray-900 mb-2'>Items</p>
         <div className='space-y-2'>
-          {items.map((it, i) => (
-            <div key={i} className='grid grid-cols-12 text-xs'>
-              <p className='col-span-1 text-gray-400'>{String(it.item_no ?? i + 1)}</p>
-              <p className='col-span-5'>{String(it.description ?? '-')}</p>
-              <p className='col-span-2 text-right'>{String(it.qty ?? 0)}</p>
+          {quote.items.map((it, index) => (
+            <div key={`${it.itemNo}-${index}`} className='grid grid-cols-12 text-xs'>
+              <p className='col-span-1 text-gray-400'>{it.itemNo}</p>
+              <p className='col-span-5'>{it.description}</p>
+              <p className='col-span-2 text-right'>{it.qty}</p>
               <p className='col-span-2 text-right'>
-                <MoneyText value={Number(it.unit_price ?? 0)} currencyCode={currency} />
+                <MoneyText value={it.unitPrice} currencyCode={quote.currencyCode} />
               </p>
               <p className='col-span-2 text-right'>
-                <MoneyText value={Number(it.line_total ?? 0)} currencyCode={currency} />
+                <MoneyText value={it.lineTotal} currencyCode={quote.currencyCode} />
               </p>
             </div>
           ))}
@@ -84,28 +86,28 @@ export function QuoteDetailCustomer() {
         <p className='text-sm font-bold text-gray-900 mb-2'>Breakdown</p>
         <div className='flex justify-between text-sm'>
           <span>Subtotal</span>
-          <MoneyText value={Number(breakdown.subtotal ?? 0)} currencyCode={currency} />
+          <MoneyText value={quote.breakdown.subtotal} currencyCode={quote.currencyCode} />
         </div>
         <div className='flex justify-between text-sm'>
           <span>Shipping</span>
-          <MoneyText value={Number(breakdown.shipping_cost ?? 0)} currencyCode={currency} />
+          <MoneyText value={quote.breakdown.shippingCost} currencyCode={quote.currencyCode} />
         </div>
         <div className='flex justify-between text-sm'>
           <span>Packaging</span>
-          <MoneyText value={Number(breakdown.packaging_cost ?? 0)} currencyCode={currency} />
+          <MoneyText value={quote.breakdown.packagingCost} currencyCode={quote.currencyCode} />
         </div>
         <div className='flex justify-between text-sm'>
           <span>Tooling</span>
-          <MoneyText value={Number(breakdown.tooling_mold_cost ?? 0)} currencyCode={currency} />
+          <MoneyText value={quote.breakdown.toolingMoldCost} currencyCode={quote.currencyCode} />
         </div>
         <div className='flex justify-between text-sm'>
           <span>VAT</span>
-          <MoneyText value={Number(breakdown.vat_amount ?? 0)} currencyCode={currency} />
+          <MoneyText value={quote.breakdown.vatAmount} currencyCode={quote.currencyCode} />
         </div>
         <hr />
         <div className='flex justify-between font-semibold'>
           <span>Grand Total</span>
-          <MoneyText value={Number(breakdown.grand_total ?? 0)} currencyCode={currency} />
+          <MoneyText value={quote.breakdown.grandTotal} currencyCode={quote.currencyCode} />
         </div>
       </div>
 
@@ -119,7 +121,7 @@ export function QuoteDetailCustomer() {
             {history.map((h, i) => (
               <Button
                 variant='unstyled'
-                key={String(h.quotation_id ?? i)}
+                key={h.quotationId}
                 type='button'
                 onClick={() => {
                   if (i === 0) return;
@@ -127,7 +129,7 @@ export function QuoteDetailCustomer() {
                 }}
                 className='px-2 py-1 rounded-lg text-xs border border-gray-200'
               >
-                v{String(h.version ?? i + 1)}
+                v{h.version}
               </Button>
             ))}
           </div>
@@ -135,21 +137,21 @@ export function QuoteDetailCustomer() {
             <div className='rounded-xl bg-gray-50 p-2'>
               <DiffRow
                 label='Subtotal'
-                before={String(compare.before.subtotal ?? '-')}
-                after={String(compare.after.subtotal ?? '-')}
+                before={String(compare.before.subtotal)}
+                after={String(compare.after.subtotal)}
                 changed={compare.before.subtotal !== compare.after.subtotal}
               />
               <DiffRow
                 label='Lead time'
-                before={String(compare.before.lead_time_days ?? '-')}
-                after={String(compare.after.lead_time_days ?? '-')}
-                changed={compare.before.lead_time_days !== compare.after.lead_time_days}
+                before={compare.before.leadTimeDays}
+                after={compare.after.leadTimeDays}
+                changed={compare.before.leadTimeDays !== compare.after.leadTimeDays}
               />
               <DiffRow
                 label='Grand total'
-                before={String(compare.before.grand_total ?? '-')}
-                after={String(compare.after.grand_total ?? '-')}
-                changed={compare.before.grand_total !== compare.after.grand_total}
+                before={String(compare.before.grandTotal)}
+                after={String(compare.after.grandTotal)}
+                changed={compare.before.grandTotal !== compare.after.grandTotal}
               />
             </div>
           ) : null}
@@ -160,10 +162,15 @@ export function QuoteDetailCustomer() {
         <Button
           variant='unstyled'
           type='button'
-          disabled={accepted || requesting}
+          disabled={quote.accepted || requesting}
           onClick={async () => {
-            const reason = window.prompt('เหตุผลที่ต้องการแก้ไข') ?? '';
-            if (!reason.trim()) return;
+            const reason = await prompt({
+              title: 'ขอแก้ไขใบเสนอราคา',
+              label: 'เหตุผลที่ต้องการแก้ไข',
+              placeholder: 'ระบุรายละเอียดที่อยากให้โรงงานแก้ไข',
+              confirmText: 'ส่งคำขอแก้ไข',
+            });
+            if (!reason) return;
             setRequesting(true);
             try {
               await quotationApi.requestRevision(qid, { reason });
@@ -178,9 +185,16 @@ export function QuoteDetailCustomer() {
         <Button
           variant='unstyled'
           type='button'
-          disabled={accepted || rejecting}
+          disabled={quote.accepted || rejecting}
           onClick={async () => {
-            const reason = window.prompt('เหตุผลที่ปฏิเสธ') ?? '';
+            const reason = await prompt({
+              title: 'ปฏิเสธใบเสนอราคา',
+              label: 'เหตุผลที่ปฏิเสธ',
+              placeholder: 'ระบุเหตุผลเพื่อแจ้งโรงงาน',
+              confirmText: 'ปฏิเสธ',
+              required: false,
+            });
+            if (reason == null) return;
             setRejecting(true);
             try {
               await quotationApi.reject(qid, { reason });
@@ -196,7 +210,7 @@ export function QuoteDetailCustomer() {
         <Button
           variant='unstyled'
           type='button'
-          disabled={accepted}
+          disabled={quote.accepted}
           onClick={async () => {
             await quotationApi.accept(qid);
             navigate(0);

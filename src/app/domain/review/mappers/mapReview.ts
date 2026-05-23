@@ -1,0 +1,37 @@
+import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
+
+type ApiRecord = Record<string, unknown>;
+
+export type ReviewItem = {
+  reviewId: number;
+  factoryName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  isEditable: boolean;
+  imageUrls: string[];
+};
+
+function asRecord(value: unknown): ApiRecord {
+  return value && typeof value === 'object' ? (value as ApiRecord) : {};
+}
+
+export function mapReviewItem(raw: unknown): ReviewItem | null {
+  const row = asRecord(raw);
+  const reviewId = Number(row.review_id ?? row.id ?? 0);
+  if (!Number.isFinite(reviewId) || reviewId <= 0) return null;
+  return {
+    reviewId,
+    factoryName: String(row.factory_name ?? row.factory ?? ''),
+    rating: Number(row.rating ?? 0),
+    comment: String(row.comment ?? ''),
+    createdAt: String(row.created_at ?? ''),
+    isEditable: Boolean(row.is_editable),
+    imageUrls: normalizeReviewImageUrls(row.image_urls),
+  };
+}
+
+export function mapReviewItems(raw: unknown): ReviewItem[] {
+  const rows = asRecord(raw).data;
+  return (Array.isArray(rows) ? rows : []).map(mapReviewItem).filter((item): item is ReviewItem => Boolean(item));
+}

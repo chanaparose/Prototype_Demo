@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { favoritesApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
 import { useSessionStore } from '@/stores/useSessionStore';
@@ -21,7 +21,7 @@ export function useFavorites() {
   const seededFromSessionRef = React.useRef(false);
 
   // Seed from session when it becomes available (no extra API call needed)
-  React.useEffect(() => {
+  useEffect(() => {
     if (sessionLoaded && !seededFromSessionRef.current) {
       seededFromSessionRef.current = true;
       const ids = new Set((sessionData?.favorites ?? []).map(String));
@@ -55,7 +55,7 @@ export function useFavorites() {
     }
   }, [isAuthenticated]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     void load();
   }, [load]);
 

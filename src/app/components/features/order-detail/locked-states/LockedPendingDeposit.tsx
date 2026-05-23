@@ -12,6 +12,7 @@ import {
 import type { ProductionLockContext } from '@/components/features/production/types';
 import { diffDaysFromNow, formatDateTh } from '@/components/features/order-detail/utils';
 import { Button } from '@/components/ui/button';
+import { redirectTo } from '@/utils/navigation/redirect';
 
 type Props = {
   ctx: ProductionLockContext;
@@ -34,7 +35,7 @@ export function LockedPendingDeposit({ ctx, onBackToOverview, onPayDeposit }: Pr
       return;
     }
     if (payUrl.startsWith('http')) {
-      window.location.href = payUrl;
+      redirectTo(payUrl);
       return;
     }
     navigate(payUrl || '.');

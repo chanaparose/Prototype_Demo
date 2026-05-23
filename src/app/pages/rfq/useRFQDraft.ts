@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const KEY = 'rfq_draft_v1';
 
@@ -52,7 +52,7 @@ type UseRFQDraft = {
 export function useRFQDraft(): UseRFQDraft {
   const [draft, setDraftState] = React.useState<RFQDraft>(initialDraft);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const raw = localStorage.getItem(KEY);
     if (!raw) return;
     try {

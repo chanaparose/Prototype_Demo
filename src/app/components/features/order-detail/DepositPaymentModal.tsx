@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Wallet, QrCode, Landmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -17,6 +17,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { walletKeys } from '@/lib/queryKeys';
+import { redirectTo } from '@/utils/navigation/redirect';
+import { mapWalletSummary } from '@/domain/wallet/mappers/mapWallet';
 
 export type DepositPaymentMethod = 'WALLET' | 'PROMPTPAY' | 'BANK';
 
@@ -41,10 +43,10 @@ function useMyWallet(open: boolean) {
   return useQuery({
     queryKey: walletKeys.me(),
     queryFn: async () => {
-      const w = (await walletApi.getMe()) as Record<string, unknown>;
+      const wallet = mapWalletSummary(await walletApi.getMe());
       return {
-        good_fund: Number(w.good_fund ?? w.walletBalance ?? 0) || 0,
-        pending_fund: Number(w.pending_fund ?? w.pendingBalance ?? 0) || 0,
+        good_fund: wallet.goodFund,
+        pending_fund: wallet.pendingFund,
       };
     },
     enabled: open,
@@ -60,7 +62,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
   const [submitting, setSubmitting] = React.useState(false);
   const idemRef = React.useRef<string>('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       idemRef.current = genIdempotencyKey(orderId);
       setMethod('WALLET');
@@ -137,7 +139,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
                 type='button'
                 onClick={() => {
                   onClose();
-                  window.location.href = '/wallet/topup';
+                  redirectTo('/wallet/topup');
                 }}
                 className='w-full rounded-xl py-3 text-sm font-semibold text-white'
                 style={{ background: PLUM }}

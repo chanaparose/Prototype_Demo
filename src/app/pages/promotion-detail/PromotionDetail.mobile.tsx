@@ -23,6 +23,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
+import { getCurrentHref } from '@/utils/navigation/redirect';
 import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
 import { useFavorites } from '@/hooks/useFavorites';
 import { type FactoryShowcase } from '@/stores/types';
@@ -193,13 +194,14 @@ export function PromotionDetailMobile() {
           className='absolute top-3 right-3 w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center'
           aria-label='แชร์'
           onClick={() => {
+            const url = getCurrentHref();
             if (typeof navigator !== 'undefined' && navigator.share) {
               void navigator.share({
                 title: item.title,
-                url: window.location.href,
+                url,
               });
             } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-              void navigator.clipboard.writeText(window.location.href);
+              void navigator.clipboard.writeText(url);
             }
           }}
         >
