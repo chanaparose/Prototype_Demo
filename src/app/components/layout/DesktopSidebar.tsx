@@ -28,7 +28,6 @@ import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 
-/** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
   'data:image/svg+xml,' +
   encodeURIComponent(

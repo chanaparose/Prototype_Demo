@@ -45,7 +45,6 @@ type ExploreDesktopProps = {
   promoSlides: IExploreSlide[];
 };
 
-/* ═══ Style Constants ═══ */
 const FILTER_BUTTON_CLASS = cn(
   'px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100',
   'flex items-center gap-1.5 text-xs font-medium shrink-0',
@@ -80,7 +79,6 @@ const REGISTER_BUTTON_CLASS = cn(
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple'
 );
 
-/* ═══ Helper Functions ═══ */
 function getFactoryMeta(
   factoryId: string | number | undefined,
   factories: FactoryItem[] | undefined

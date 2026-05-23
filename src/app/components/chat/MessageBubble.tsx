@@ -9,7 +9,6 @@ import { formatChatTime } from '@/utils/chatTime';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 
-/** Tiny inline spinner for the "sending" status on optimistic bubbles. */
 function SendingSpinner({ color }: { color: string }) {
   return (
     <svg

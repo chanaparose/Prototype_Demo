@@ -24,13 +24,10 @@ export function guessOrderProgress(status: string): number {
   }
 }
 
-/**
- * คำนวณความคืบหน้าจาก production step (0–5)
- * step 0 = 0%, step 5 = 100%
- *
- * `current_step_id` จาก BE = ขั้นที่กำลัง active
- * (เช่น step 4 = CD แล้ว step 5 = IP รอยืนยันลูกค้า → ส่ง 4 ไม่ใช่ 5)
- */
+// คำนวณความคืบหน้าจาก production step (0–5)
+// step 0 = 0%, step 5 = 100%
+// `current_step_id` จาก BE = ขั้นที่กำลัง active
+// (เช่น step 4 = CD แล้ว step 5 = IP รอยืนยันลูกค้า → ส่ง 4 ไม่ใช่ 5)
 export function guessOrderProgressFromStep(
   currentStepId: number | null | undefined,
   statusFallback?: string,
@@ -44,11 +41,9 @@ export function guessOrderProgressFromStep(
 
 type ProductionStepLike = { step_id: number; status: string };
 
-/**
- * สอดคล้องกับ BE `current_step_id`: ขั้นที่กำลัง active (0–5)
- * — step 5 = รอยืนยันลูกค้า: ไม่นับเป็น active → ใช้ CD สูงสุด (เช่น 4 เมื่อ step 4 CD + step 5 IP)
- * — ขั้นอื่น IP อยู่ระหว่างทำ → ใช้ IP สูงสุดถ้ามากกว่า CD สูงสุด
- */
+// สอดคล้องกับ BE `current_step_id`: ขั้นที่กำลัง active (0–5)
+// — step 5 = รอยืนยันลูกค้า: ไม่นับเป็น active → ใช้ CD สูงสุด (เช่น 4 เมื่อ step 4 CD + step 5 IP)
+// — ขั้นอื่น IP อยู่ระหว่างทำ → ใช้ IP สูงสุดถ้ามากกว่า CD สูงสุด
 export function deriveCurrentStepIdFromProductionUpdates(
   updates: ProductionStepLike[] | undefined,
 ): number | undefined {

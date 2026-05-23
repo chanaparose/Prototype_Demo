@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { toFormErrors } from '@/lib/apiError';
+import { applyFormErrorsFromApi } from '@/lib/apiError';
 import {
   certFormSchema,
   certFormValuesFromRow,
@@ -42,21 +42,7 @@ type Props = {
   readonly onSubmit: (value: CertFormSubmitValue, keepOpen: boolean) => Promise<void>;
 };
 
-function applyCertSubmitErrors(
-  err: unknown,
-  setError: ReturnType<typeof useForm<CertFormInput, unknown, CertFormValues>>['setError'],
-) {
-  const { root, fields } = toFormErrors(err);
-  if (root) setError('root', { message: root });
-  if (fields) {
-    for (const [key, message] of Object.entries(fields)) {
-      const k = key as keyof CertFormInput;
-      if (k === 'cert_id' || k === 'cert_number' || k === 'expire_date' || k === 'file') {
-        setError(k, { message });
-      }
-    }
-  }
-}
+const CERT_FORM_FIELDS = ['root', 'cert_id', 'cert_number', 'expire_date', 'file'] as const;
 
 export function CertUploadModal({
   open,
@@ -123,7 +109,7 @@ export function CertUploadModal({
       {
         onStart: () => setSubmitting(true),
         onSettled: () => setSubmitting(false),
-        onError: (_message, err) => applyCertSubmitErrors(err, setError),
+        onError: (_message, err) => applyFormErrorsFromApi(err, setError, CERT_FORM_FIELDS),
       },
     );
   };

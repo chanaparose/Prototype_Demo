@@ -1,6 +1,4 @@
-/**
- * User API — Profile, wallet, favorites, reviews
- */
+// User API — Profile, wallet, favorites, reviews
 
 import { httpClient } from '@/services/api/httpClient';
 
@@ -103,10 +101,9 @@ export type WalletResponse = {
 };
 
 export const walletApi = {
-  /** GET /wallets/me — full wallet object with good_fund / pending_fund */
   getMe: () => httpClient.get<WalletResponse>('/wallets/me'),
 
-  /** @deprecated use getMe() */
+  // @deprecated use getMe()
   getBalance: () => httpClient.get<WalletResponse>('/wallets/me'),
 
   getTransactions: (limit = 50, offset = 0) => {
@@ -201,10 +198,10 @@ export const reviewsApi = {
 
   getSummary: fetchFactoryReviewSummary,
 
-  /** @deprecated Use `getSummary` */
+  // @deprecated Use `getSummary`
   summaryByFactory: fetchFactoryReviewSummary,
 
-  /** @deprecated Use `getForFactory` */
+  // @deprecated Use `getForFactory`
   listByFactory: fetchFactoryReviews,
 };
 

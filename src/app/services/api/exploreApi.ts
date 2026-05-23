@@ -1,6 +1,4 @@
-/**
- * Explore API — Frontend aggregated data endpoints
- */
+// Explore API — Frontend aggregated data endpoints
 
 import { httpClient } from '@/services/api/httpClient';
 import {
@@ -61,12 +59,10 @@ export const frontendApi = {
   getPromoCodes: () => httpClient.get<unknown[]>('/frontend/promo-codes'),
 };
 
-/** GET /api/v1/explore — single call: categories + showcases (PD/MT/PM/ID) + promoSlides */
 export const exploreApi = {
   get: () => httpClient.get<IExploreApiResponse>('/explore'),
 };
 
-/** GET /api/v1/showcases?types=...&page=N&limit=N — paginated flat showcase list */
 export const showcasesPaginatedApi = {
   list: (params: {
     types: ('PD' | 'PM' | 'ID' | 'MT')[];
@@ -89,7 +85,7 @@ export const showcasesPaginatedApi = {
   },
 };
 
-/** @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ showcases field */
+// @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ showcases field
 export const showcasesExploreApi = {
   listByTypes: (types: ('PD' | 'PM' | 'ID' | 'MT')[], limit: number) => {
     const params = new URLSearchParams({ types: types.join(','), limit: String(limit) });
@@ -97,7 +93,7 @@ export const showcasesExploreApi = {
   },
 };
 
-/** @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ promoSlides field */
+// @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ promoSlides field
 export const promoSlidesApi = {
   list: (limit = 5) =>
     httpClient.get<IPromoSlideResponse[]>(`/promo-slides?limit=${limit}`),

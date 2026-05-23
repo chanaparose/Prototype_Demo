@@ -1,26 +1,16 @@
 export interface StepGuide {
-  /** emoji หรือ icon สั้น ๆ แสดงข้างชื่อขั้นตอน */
   emoji: string;
-  /** หัวข้อสั้น — "คุณต้องทำอะไร" */
   whatToDo: string;
-  /** อธิบายรายละเอียดการดำเนินการ */
   guidance: string;
-
   bulletPoints: string[];
-  /** placeholder ของ textarea หมายเหตุ */
   notesPlaceholder: string;
-  /** ข้อความบนปุ่ม "บันทึกร่าง" */
   draftLabel: string;
-  /** ข้อความบนปุ่ม "ยืนยันเสร็จ" */
   confirmLabel: string;
-  /** ข้อความอธิบาย "จะเกิดอะไรขึ้นต่อไป" หลังยืนยัน */
   nextStepHint: string;
-  /** ขั้นนี้ต้องแสดงที่อยู่จัดส่งของลูกค้าเพื่อทำใบปะหน้าพัสดุ */
   requiresShippingInfo?: boolean;
 }
 
 const STEP_GUIDES: Record<number, StepGuide> = {
-  /** step_id=0: ยืนยันรับงาน — ไม่ต้องแนบรูป แค่กดปุ่มยืนยัน */
   0: {
     emoji: '🤝',
     whatToDo: 'ยืนยันรับงานและเริ่มกระบวนการผลิต',
@@ -35,7 +25,6 @@ const STEP_GUIDES: Record<number, StepGuide> = {
     confirmLabel: 'ยืนยันรับงาน',
     nextStepHint: 'ลูกค้าจะได้รับแจ้งเตือนทันทีว่าโรงงานรับงานแล้ว และเริ่มขั้นตอนการผลิต',
   },
-  /** step_id=1: จัดเตรียมวัตถุดิบ */
   1: {
     emoji: '🧱',
     whatToDo: 'รายงานสถานะการเตรียมวัตถุดิบ',
@@ -51,7 +40,6 @@ const STEP_GUIDES: Record<number, StepGuide> = {
     confirmLabel: 'ยืนยันวัตถุดิบพร้อมแล้ว',
     nextStepHint: 'ขั้นตอนถัดไปคือการผลิตสินค้า — ลูกค้าจะเห็นความคืบหน้านี้',
   },
-  /** step_id=2: ขั้นตอนการผลิต */
   2: {
     emoji: '🏭',
     whatToDo: 'อัปเดตสถานะการผลิต',
@@ -66,7 +54,6 @@ const STEP_GUIDES: Record<number, StepGuide> = {
     confirmLabel: 'ยืนยันผลิตเสร็จสิ้น',
     nextStepHint: 'ขั้นถัดไปคือตรวจสอบคุณภาพ (QC)',
   },
-  /** step_id=3: ตรวจสอบคุณภาพ */
   3: {
     emoji: '🔍',
     whatToDo: 'ส่งหลักฐานตรวจสอบคุณภาพ (QC)',
@@ -82,7 +69,6 @@ const STEP_GUIDES: Record<number, StepGuide> = {
     confirmLabel: 'ยืนยัน QC ผ่าน',
     nextStepHint: 'ขั้นถัดไปคือเตรียมบรรจุและจัดส่งสินค้า',
   },
-  /** step_id=4: จัดส่งแล้ว — โรงงานจัดส่งสินค้าและบันทึกหลักฐาน */
   4: {
     emoji: '🚚',
     whatToDo: 'จัดส่งสินค้าและบันทึกหลักฐานการจัดส่ง',
@@ -100,7 +86,6 @@ const STEP_GUIDES: Record<number, StepGuide> = {
     nextStepHint: '📬 ลูกค้าจะได้รับแจ้งเตือนว่าสินค้าถูกจัดส่งแล้ว และรอยืนยันรับสินค้า',
     requiresShippingInfo: true,
   },
-  /** step_id=5: จัดส่งสำเร็จ — รอลูกค้ายืนยัน หรือระบบปิดอัตโนมัติ 14 วัน (factory ไม่สามารถแก้ไขได้) */
   5: {
     emoji: '📬',
     whatToDo: 'รอลูกค้ายืนยันรับสินค้า',
@@ -118,7 +103,6 @@ const STEP_GUIDES: Record<number, StepGuide> = {
   },
 };
 
-/** Fallback สำหรับขั้นตอนที่ไม่ได้กำหนดใน STEP_GUIDES */
 const DEFAULT_STEP_GUIDE: StepGuide = {
   emoji: '📋',
   whatToDo: 'อัปเดตขั้นตอนการผลิต',

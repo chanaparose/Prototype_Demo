@@ -5,11 +5,10 @@ type Props = {
   label?: string;
   methodName: string;
   hint?: string;
-  /** แสดงเมื่อไม่มีชื่อจาก master */
   emptyFallback?: string;
 };
 
-/** วิธีจัดส่งแบบ read-only + 🔒 (FACTORY_RFQ_BOARD_UX_SPEC §3.4) */
+// วิธีจัดส่งแบบ read-only + 🔒 (FACTORY_RFQ_BOARD_UX_SPEC §3.4)
 export function ShippingMethodLockedField({
   label = 'วิธีจัดส่ง',
   methodName,

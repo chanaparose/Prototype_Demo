@@ -1,10 +1,7 @@
-/**
- * chatTime — shared chat timestamp helpers
- *
- * The backend now emits proper UTC/RFC3339 timestamps. These helpers keep all
- * chat views consistent by parsing the instant once and formatting it for the
- * Bangkok locale on display.
- */
+// chatTime — shared chat timestamp helpers
+// The backend now emits proper UTC/RFC3339 timestamps. These helpers keep all
+// chat views consistent by parsing the instant once and formatting it for the
+// Bangkok locale on display.
 
 export function parseChatInstant(iso: string | null | undefined): Date | null {
   if (!iso) return null;

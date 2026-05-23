@@ -5,6 +5,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { ApiHttpError } from '@/services/api/httpClient';
 import { masterApi } from '@/services/api/masterApi';
 import { mediaApi } from '@/services/api/factoryApi';
+import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
 
 export interface FormState {
   factory_name: string;
@@ -51,22 +52,9 @@ export type CertTypeOption = { id: number; label: string };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^0[6-9]\d{8}$/;
 
-// Handles both plain arrays and { data: [...] } / { categories: [...] } wrappers
-function unwrap(raw: unknown): unknown[] {
-  if (Array.isArray(raw)) return raw;
-  if (raw && typeof raw === 'object') {
-    const o = raw as Record<string, unknown>;
-    if (Array.isArray(o.data)) return o.data;
-    if (Array.isArray(o.categories)) return o.categories;
-  }
-  return [];
-}
-
 function mapFactoryTypes(raw: unknown): FactoryTypeOption[] {
   const out: FactoryTypeOption[] = [];
-  for (const r of unwrap(raw)) {
-    if (!r || typeof r !== 'object') continue;
-    const o = r as Record<string, unknown>;
+  for (const o of apiListAsRecords(raw)) {
     const id = Number(o.factory_type_id ?? o.id);
     const name_th = String(o.name_th ?? o.type_name ?? o.name ?? '').trim();
     if (!Number.isFinite(id) || id <= 0 || !name_th) continue;
@@ -76,12 +64,11 @@ function mapFactoryTypes(raw: unknown): FactoryTypeOption[] {
 }
 
 function mapRow(
-  raw: unknown,
+  raw: ApiRecord,
   idKeys: string[],
   nameKeys: string[],
 ): { id: number; name: string } | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const o = raw as Record<string, unknown>;
+  const o = raw;
   const id = Number(idKeys.map((k) => o[k]).find((v) => v != null));
   const name = String(nameKeys.map((k) => o[k]).find((v) => v != null) ?? '').trim();
   if (!Number.isFinite(id) || id <= 0 || !name) return null;
@@ -103,7 +90,6 @@ export function useRegisterFactory() {
   const navigate = useNavigate();
   const { register, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  // Redirect already-authenticated FT users away from registration page
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       navigate('/factory', { replace: true });
@@ -144,27 +130,25 @@ export function useRegisterFactory() {
         setFactoryTypes(mapFactoryTypes(types));
 
         setProvinces(
-          unwrap(provs)
+          apiListAsRecords(provs)
             .map((r) => mapRow(r, ['province_id', 'row_id', 'id'], ['name_th', 'name']))
             .filter((x): x is ProvinceOption => x != null),
         );
 
         setLbiCategories(
-          unwrap(cats)
+          apiListAsRecords(cats, ['categories'])
             .map((r): CategoryOption | null => {
               const base = mapRow(r, ['category_id', 'id'], ['name_th', 'name']);
               if (!base) return null;
-              const o = r as Record<string, unknown>;
-              return { ...base, scope: String(o.scope ?? 'PD') };
+              return { ...base, scope: String(r.scope ?? 'PD') };
             })
             .filter((x): x is CategoryOption => x != null),
         );
 
         setCertTypes(
-          unwrap(certs)
+          apiListAsRecords(certs)
             .map((r): CertTypeOption | null => {
-              if (!r || typeof r !== 'object') return null;
-              const o = r as Record<string, unknown>;
+              const o = r;
               const id = Number(o.cert_id ?? o.id);
               const label = String(o.name_th ?? o.cert_name ?? o.name ?? '').trim();
               if (!Number.isFinite(id) || id <= 0 || !label) return null;
@@ -296,10 +280,8 @@ export function useRegisterFactory() {
       async () => {
         const taxDigits = form.tax_id.replace(/\D/g, '');
 
-        // Upload cert file first (same for both paths)
         const { url: certUrl } = await mediaApi.upload(form.cert_file!);
 
-        // Guest registration: factory + cert created atomically in one TX
         await register({
           role: 'FT',
           email: form.email.trim(),

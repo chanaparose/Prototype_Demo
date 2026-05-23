@@ -10,7 +10,6 @@ export type FactoryHeroInfo = {
   id: string;
   name: string;
   image: string;
-  /** แถบพื้นหลังด้านบน — ถ้าไม่มีจะใช้ gradient เหมือนหน้าแก้ไขโปรไฟล์โรงงาน */
   coverImageUrl?: string;
   location: string;
   rating: number;

@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 export type CategoryItem = IExploreCategory;
 
 type ExploreCategoriesProps = {
-  /** สำรองชื่อจาก bundle (เช่น mock-data) ถ้า API ยังไม่มี id นั้น */
   categories?: CategoryItem[];
   mergedFromApi: CategoryItem[];
   apiLoading: boolean;

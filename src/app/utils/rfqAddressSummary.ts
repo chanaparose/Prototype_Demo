@@ -1,6 +1,6 @@
 import { pickScalarString } from '@/utils/pickScalarString';
 
-/** สรุปที่อยู่ปลายทางจาก RFQ / nested address (FACTORY_RFQ_BOARD_UX_SPEC) */
+// สรุปที่อยู่ปลายทางจาก RFQ / nested address (FACTORY_RFQ_BOARD_UX_SPEC)
 export function summarizeRfqAddress(rfq: Record<string, unknown>): string {
   const a = rfq.address;
   if (a && typeof a === 'object') {

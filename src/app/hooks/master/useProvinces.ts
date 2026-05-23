@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { masterKeys } from '@/lib/queryKeys';
 import { mapProvinceOption, type MasterAddressOption } from '@/domain/master/mappers/mapAddressMaster';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { masterApi } from '@/services/api/masterApi';
-
-type Row = Record<string, unknown>;
 
 export type ProvinceOption = MasterAddressOption;
 
@@ -12,13 +11,7 @@ export function useProvinces() {
     queryKey: masterKeys.provinces(),
     queryFn: async () => {
       const raw = await masterApi.provinces();
-      const unwrapped = Array.isArray(raw)
-        ? raw
-        : Array.isArray((raw as Record<string, unknown>).data)
-          ? (raw as Record<string, unknown>).data
-          : [];
-      const arr = unwrapped as Row[];
-      return arr
+      return apiListAsRecords(raw)
         .map(mapProvinceOption)
         .filter((x): x is ProvinceOption => x != null)
         .sort((a, b) => a.name.localeCompare(b.name, 'th'));

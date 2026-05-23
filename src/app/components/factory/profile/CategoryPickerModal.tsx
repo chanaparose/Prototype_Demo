@@ -8,6 +8,7 @@ import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { parseCategorySelection } from '@/domain/factory/schemas/categoryPicker.schema';
+import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
 import { runAsyncAction } from '@/utils/asyncAction';
 
 interface Props {
@@ -17,11 +18,10 @@ interface Props {
   onConfirm: (ids: number[]) => void;
 }
 
-type Row = Record<string, unknown>;
 type SubCategoryOption = { id: number; name: string; categoryId: number };
 type CategoryWithScope = { id: number; name: string; scope: 'PD' | 'MT' | string };
 
-function toSubCategoryOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
+function toSubCategoryOption(r: ApiRecord, categoryIdHint: number): SubCategoryOption | null {
   const id = Number(
     r.sub_category_id ??
       r.subCategoryId ??
@@ -43,11 +43,7 @@ function useLbiAllCategories() {
     queryKey: masterKeys.lbiCategories('ALL'),
     queryFn: async (): Promise<CategoryWithScope[]> => {
       const raw = await masterApi.getLbiCategories('ALL');
-      const obj = raw as Record<string, unknown>;
-      const arr = (
-        Array.isArray(obj.categories) ? obj.categories : Array.isArray(raw) ? raw : []
-      ) as Row[];
-      return arr
+      return apiListAsRecords(raw, ['categories'])
         .map((r): CategoryWithScope | null => {
           const id = Number(r.category_id ?? r.id);
           const name = String(r.name ?? r.category_name ?? '').trim();
@@ -106,8 +102,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
                 queryKey: masterKeys.subCategories(cid),
                 queryFn: async () => {
                   const raw = await categoriesApi.subCategories(cid);
-                  const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
-                  const normalized = arr
+                  const normalized = apiListAsRecords(raw)
                     .map((r) => toSubCategoryOption(r, cid))
                     .filter((x): x is SubCategoryOption => x != null);
                   const uniq = new Map<number, SubCategoryOption>();

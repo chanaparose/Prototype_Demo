@@ -1,4 +1,4 @@
-type ApiRecord = Record<string, unknown>;
+import { asRecord, type ApiRecord } from '@/lib/apiShape';
 
 export type QuoteDetailItem = {
   itemNo: string;
@@ -34,10 +34,6 @@ export type QuoteDetailModel = {
   items: QuoteDetailItem[];
   breakdown: QuoteBreakdown;
 };
-
-function asRecord(value: unknown): ApiRecord {
-  return value && typeof value === 'object' ? (value as ApiRecord) : {};
-}
 
 function asNumber(value: unknown): number {
   const numeric = Number(value ?? 0);

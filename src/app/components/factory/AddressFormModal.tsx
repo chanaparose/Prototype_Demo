@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toFormErrors } from '@/lib/apiError';
+import { applyFormErrorsFromApi } from '@/lib/apiError';
 import {
   addressFormSchema,
   addressFormValuesFromRow,
@@ -41,21 +41,10 @@ type Props = {
   onSubmit: (payload: AddressFormPayload, editingId?: string | number) => Promise<void>;
 };
 
-function applySubmitErrors(
-  err: unknown,
-  setError: ReturnType<typeof useForm<AddressFormValues>>['setError'],
-) {
-  const { root, fields } = toFormErrors(err);
-  if (root) setError('root', { message: root });
-  if (fields) {
-    for (const [key, message] of Object.entries(fields)) {
-      const k = key as keyof AddressFormValues;
-      if (k in defaultAddressFormValues) {
-        setError(k, { message });
-      }
-    }
-  }
-}
+const ADDRESS_FORM_FIELDS = [
+  'root',
+  ...(Object.keys(defaultAddressFormValues) as (keyof AddressFormValues)[]),
+] as const;
 
 export function AddressFormModal({ open, mode, initial, saving: savingProp, onClose, onSubmit }: Readonly<Props>) {
   const [submitting, setSubmitting] = useState(false);
@@ -96,7 +85,8 @@ export function AddressFormModal({ open, mode, initial, saving: savingProp, onCl
       {
         onStart: () => setSubmitting(true),
         onSettled: () => setSubmitting(false),
-        onError: (_message, err) => applySubmitErrors(err, setError),
+        onError: (_message, err) =>
+          applyFormErrorsFromApi(err, setError, ADDRESS_FORM_FIELDS),
       },
     );
   };

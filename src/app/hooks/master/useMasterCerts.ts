@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
 import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
-
-type Row = Record<string, unknown>;
 
 export interface CertTypeOption {
   id: number;
@@ -14,9 +13,8 @@ export function useMasterCerts() {
     queryKey: masterKeys.certificates(),
     queryFn: async () => {
       const raw = await masterApi.certificates();
-      const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
-      return arr
-        .map((r): CertTypeOption | null => {
+      return apiListAsRecords(raw)
+        .map((r: ApiRecord): CertTypeOption | null => {
           const id = Number(r.cert_id ?? r.id);
           const label = String(r.name_th ?? r.name ?? r.cert_name ?? '').trim();
           if (!Number.isFinite(id) || id <= 0 || !label) return null;

@@ -1,8 +1,7 @@
 import { useQueries } from '@tanstack/react-query';
+import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
 import { masterKeys } from '@/lib/queryKeys';
 import { categoriesApi } from '@/services/api/masterApi';
-
-type Row = Record<string, unknown>;
 
 export interface SubCategoryOption {
   id: number;
@@ -10,7 +9,7 @@ export interface SubCategoryOption {
   categoryId: number;
 }
 
-function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
+function toOption(r: ApiRecord, categoryIdHint: number): SubCategoryOption | null {
   const id = Number(r.sub_category_id ?? r.id);
   const categoryId = Number(r.category_id ?? r.parent_category_id ?? categoryIdHint);
   const name = String(r.name ?? r.name_th ?? r.sub_category_name ?? '').trim();
@@ -26,8 +25,7 @@ export function useSubCategoriesByCategories(categoryIds: number[]) {
       queryKey: masterKeys.subCategories(cid),
       queryFn: async (): Promise<SubCategoryOption[]> => {
         const raw = await categoriesApi.subCategories(cid);
-        const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
-        return arr
+        return apiListAsRecords(raw)
           .map((r) => toOption(r, cid))
           .filter((x): x is SubCategoryOption => x != null)
           .sort((a, b) => a.name.localeCompare(b.name, 'th'));
@@ -47,7 +45,7 @@ export function useSubCategoriesByCategories(categoryIds: number[]) {
     const cid = categoryIds[idx];
     const raw = (Array.isArray(q.data) ? q.data : []) as unknown[];
     const normalized = raw
-      .map((r) => toOption((r ?? {}) as Row, cid))
+      .map((r) => toOption(r, cid))
       .filter((x): x is SubCategoryOption => x != null);
     const uniq = new Map<number, SubCategoryOption>();
     for (const item of normalized) {

@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 import { runAsyncAction } from '@/utils/asyncAction';
 
-/** ข้อมูลที่อยู่จัดส่งลูกค้า — ส่งมาจาก order API */
 export interface CustomerShippingInfo {
   recipientName?: string;
   phone?: string;
@@ -28,7 +27,6 @@ type Props = {
   placement: 'right' | 'bottom';
   step: MergedProductionStep | null;
   onClose: () => void;
-  /** ข้อมูลที่อยู่จัดส่งลูกค้า — ใช้แสดงในขั้นจัดส่ง */
   customerShipping?: CustomerShippingInfo;
   onSubmit: (
     body: {

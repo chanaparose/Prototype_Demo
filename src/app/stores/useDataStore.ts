@@ -50,9 +50,9 @@ export interface DataActions {
   refetchRfqs: () => Promise<void>;
   refetchRfq: (id: string) => Promise<void>;
   refetchOrders: () => Promise<void>;
-  /** @deprecated Use chat query invalidation/refetch instead. */
+  // @deprecated Use chat query invalidation/refetch instead.
   refetchMessages: () => Promise<void>;
-  /** @deprecated Use `refreshConversationsCache` or `useConversationsQuery().refetch()`. */
+  // @deprecated Use `refreshConversationsCache` or `useConversationsQuery().refetch()`.
   refetchConversations: () => Promise<void>;
   refetchFactory: (id: string) => Promise<void>;
   refetchWallet: () => Promise<void>;
@@ -237,7 +237,8 @@ export const useDataStore = create<DataState & DataActions>((set) => {
           return { ...state, factories };
         });
       }).catch(() => {
-        /* keep cached factory row */
+        // 
+
       });
     },
 
@@ -257,7 +258,8 @@ export const useDataStore = create<DataState & DataActions>((set) => {
           };
         });
       }).catch(() => {
-        /* keep cached wallet */
+        // 
+
       });
     },
   };

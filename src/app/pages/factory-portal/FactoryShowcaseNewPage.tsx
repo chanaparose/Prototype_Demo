@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useSearchParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
-import { showcasesApi, mediaApi } from '@/services/api/factoryApi';
+import { showcasesApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
 import { useAuth } from '@/stores/useAuthStore';
@@ -35,7 +35,7 @@ import {
   normalizeShowcaseType,
   type ShowcaseSubmitStatus,
 } from '@/constants/showcase';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useFactoryShowcaseMutations } from '@/pages/factory-portal/hooks/useFactoryShowcaseMutations';
 
 export function FactoryShowcaseNewPage() {
   const navigate = useNavigate();
@@ -55,8 +55,8 @@ export function FactoryShowcaseNewPage() {
   const [selectedShowcaseIds, setSelectedShowcaseIds] = useState<number[]>([]);
   const [uploading, setUploading] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { createShowcase, uploadShowcaseImage } = useFactoryShowcaseMutations();
   const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
   const selectedCategoryId = Number(form.category_id);
   const {
@@ -106,26 +106,21 @@ export function FactoryShowcaseNewPage() {
       setError(publishError);
       return;
     }
-    void runAsyncAction(async () => {
-      await showcasesApi.create(
-        buildPayload(status, values) as Parameters<typeof showcasesApi.create>[0],
-      );
-
-      navigate('/factory/showcases', { replace: true });
-    }, {
-      onStart: () => {
-        setSaving(true);
-        setError('');
-        setLinkedShowcaseError('');
+    setError('');
+    setLinkedShowcaseError('');
+    createShowcase.mutate(
+      buildPayload(status, values) as Parameters<typeof showcasesApi.create>[0],
+      {
+        onSuccess: () => navigate('/factory/showcases', { replace: true }),
+        onError: (err) => {
+          const message =
+            err instanceof Error ? err.message : 'สร้างไม่สำเร็จ';
+          const linkedMsg = mapLinkedShowcasesErrorToThai(message);
+          if (linkedMsg) setLinkedShowcaseError(linkedMsg);
+          setError(message);
+        },
       },
-      onError: (message) => {
-        const linkedMsg = mapLinkedShowcasesErrorToThai(message);
-        if (linkedMsg) setLinkedShowcaseError(linkedMsg);
-        setError(message);
-      },
-      onSettled: () => setSaving(false),
-      fallbackMessage: 'สร้างไม่สำเร็จ',
-    });
+    );
   };
 
   const canPublish = form.title.trim().length > 0 && (contentType === 'ID' || imageUrls.length > 0);
@@ -149,7 +144,7 @@ export function FactoryShowcaseNewPage() {
           variant='unstyled'
           type='button'
           onClick={() => void onSubmit('DR')}
-          disabled={saving}
+          disabled={createShowcase.isPending}
           className='text-sm text-gray-600 font-medium hover:text-gray-900 disabled:opacity-40 transition-colors whitespace-nowrap'
         >
           บันทึกร่าง
@@ -166,22 +161,18 @@ export function FactoryShowcaseNewPage() {
           outputWidth={1600}
           onCancel={() => setCropFile(null)}
           onConfirm={async (file) => {
-            void runAsyncAction(async () => {
-              const up = await mediaApi.upload(file);
-              const url = String(up.url ?? '').trim();
-              if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));
-            }, {
-              onStart: () => {
-                setUploading(true);
-                setError('');
-                setLinkedShowcaseError('');
-              },
-              onError: (message) => setError(message),
-              onSettled: () => {
-                setUploading(false);
+            setError('');
+            setLinkedShowcaseError('');
+            uploadShowcaseImage.mutate(file, {
+              onSuccess: (up) => {
+                const url = String(up.url ?? '').trim();
+                if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));
                 setCropFile(null);
               },
-              fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
+              onError: (err) =>
+                setError(err instanceof Error ? err.message : 'อัปโหลดรูปไม่สำเร็จ'),
+              onSettled: () => setUploading(false),
+              onMutate: () => setUploading(true),
             });
           }}
         />
@@ -337,23 +328,23 @@ export function FactoryShowcaseNewPage() {
                   variant='unstyled'
                   type='button'
                   onClick={() => void onSubmit('DR')}
-                  disabled={saving}
+                  disabled={createShowcase.isPending}
                   className='w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50 hover:bg-gray-50 transition-colors'
                 >
-                  {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
+                  {createShowcase.isPending ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
                 </Button>
                 <Button
                   variant='unstyled'
                   type='button'
                   onClick={() => void onSubmit('AC')}
-                  disabled={saving || !canPublish}
+                  disabled={createShowcase.isPending || !canPublish}
                   className='w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm transition-all'
                   style={{
                     background:
                       'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                   }}
                 >
-                  {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
+                  {createShowcase.isPending ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
                 </Button>
               </div>
             </div>
@@ -406,7 +397,7 @@ export function FactoryShowcaseNewPage() {
                 value={selectedShowcaseIds}
                 onChange={setSelectedShowcaseIds}
                 max={5}
-                disabled={saving}
+                disabled={createShowcase.isPending}
                 errorText={linkedShowcaseError}
               />
             </section>
@@ -419,23 +410,23 @@ export function FactoryShowcaseNewPage() {
           variant='unstyled'
           type='button'
           onClick={() => void onSubmit('DR')}
-          disabled={saving}
+          disabled={createShowcase.isPending}
           className='flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50 hover:bg-gray-50 transition-colors'
         >
-          {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
+          {createShowcase.isPending ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
         </Button>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => void onSubmit('AC')}
-          disabled={saving || !canPublish}
+          disabled={createShowcase.isPending || !canPublish}
           className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm active:scale-95 transition-all'
           style={{
             background:
               'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
           }}
         >
-          {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
+          {createShowcase.isPending ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
         </Button>
       </div>
     </div>

@@ -35,7 +35,6 @@ type ProfileMenuItem = {
   sub: string;
   color: string;
   bg: string;
-  /** customer app route (relative to site root) */
   to?: string;
 };
 

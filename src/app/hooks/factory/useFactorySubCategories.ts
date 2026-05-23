@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { factoryKeys } from '@/lib/queryKeys';
-
-type Row = Record<string, unknown>;
 
 export function useFactorySubCategories(factoryId: number | string | null | undefined) {
   const enabled = factoryId != null && String(factoryId).trim() !== '';
@@ -11,9 +10,7 @@ export function useFactorySubCategories(factoryId: number | string | null | unde
     enabled,
     queryFn: async () => {
       const raw = await factoriesApi.getSubCategories(factoryId as string | number);
-      const rawObj = raw as Record<string, unknown>;
-      const arr = (Array.isArray(rawObj?.data) ? rawObj.data : Array.isArray(raw) ? raw : []) as Row[];
-      return arr
+      return apiListAsRecords(raw)
         .map((r) => Number(r.sub_category_id ?? r.row_id ?? r.id))
         .filter((n) => Number.isFinite(n) && n > 0);
     },

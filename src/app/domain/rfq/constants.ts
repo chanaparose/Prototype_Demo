@@ -8,7 +8,6 @@ export const STATUS_LABEL: Record<string, string> = {
   expired: 'หมดอายุ',
 };
 
-/** รหัสสถานะใบเสนอราคา (API) — มุมมองลูกค้า / ประวัติ */
 export const QUOTATION_STATUS_LABEL: Record<string, string> = {
   PD: 'รอการตอบรับ',
   AC: 'ยืนยันแล้ว',
@@ -16,7 +15,6 @@ export const QUOTATION_STATUS_LABEL: Record<string, string> = {
   EX: 'หมดอายุ',
 };
 
-/** รหัสสถานะใบเสนอราคา — มุมมองโรงงาน (รายการใบเสนอราคา) */
 export const QUOTATION_STATUS_LABEL_FACTORY: Record<string, string> = {
   PD: 'รอลูกค้าตัดสินใจ',
   AC: 'ลูกค้ารับแล้ว',

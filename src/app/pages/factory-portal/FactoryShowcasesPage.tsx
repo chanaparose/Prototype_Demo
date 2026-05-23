@@ -1,19 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Plus, Pencil, Trash2, ImageIcon, Sparkles, MapPin, Star } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { showcasesApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
+import { useFactoryShowcasesPage } from '@/pages/factory-portal/hooks/useFactoryShowcasesPage';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
-import {
-  mapFactoryShowcaseList,
-  type FactoryShowcaseListItem,
-  type FactoryShowcaseType,
-} from '@/domain/showcase/mappers/mapFactoryShowcaseListItem';
+import type { FactoryShowcaseListItem, FactoryShowcaseType } from '@/domain/showcase/mappers/mapFactoryShowcaseListItem';
 import {
   SHOWCASE_LIST_TAB_META,
   SHOWCASE_STATUS_META,
@@ -22,7 +18,6 @@ import {
 } from '@/constants/showcase';
 import { COMMON_COPY } from '@/constants/uiText';
 import { factoryShowcaseEditRoute, factoryShowcaseNewRoute } from '@/constants/routes';
-import { runAsyncAction } from '@/utils/asyncAction';
 
 type ShowcaseType = FactoryShowcaseType;
 
@@ -39,9 +34,7 @@ export function FactoryShowcasesPage() {
   })();
 
   const [activeType, setActiveType] = useState<ShowcaseType>(initialType);
-  const [allRows, setAllRows] = useState<FactoryShowcaseListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { rows: allRows, loading, error, deleteShowcase } = useFactoryShowcasesPage(fid);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const rows = allRows.filter((r) => r.contentType === activeType);
@@ -50,29 +43,6 @@ export function FactoryShowcasesPage() {
     setActiveType(type);
     setSearchParams({ type }, { replace: true });
   };
-
-  const load = useCallback(async () => {
-    if (fid == null) {
-      setLoading(false);
-      return;
-    }
-    void runAsyncAction(async () => {
-      const raw = await showcasesApi.listByFactory(fid);
-      setAllRows(mapFactoryShowcaseList(raw));
-    }, {
-      onStart: () => {
-        setLoading(true);
-        setError('');
-      },
-      onError: (message) => setError(message),
-      onSettled: () => setLoading(false),
-      fallbackMessage: COMMON_COPY.loadFailed,
-    });
-  }, [fid]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   const remove = async (r: FactoryShowcaseListItem) => {
     const id = r.id;
@@ -84,18 +54,8 @@ export function FactoryShowcasesPage() {
       destructive: true,
     });
     if (!ok) return;
-    void runAsyncAction(async () => {
-      await showcasesApi.delete(id);
-      setAllRows((prev) => prev.filter((row) => row.id !== id));
-    }, {
-      onStart: () => {
-        setDeletingId(id);
-        setError('');
-      },
-      onError: (message) => setError(message),
-      onSettled: () => setDeletingId(null),
-      fallbackMessage: COMMON_COPY.deleteFailed,
-    });
+    setDeletingId(id);
+    deleteShowcase.mutate(id, { onSettled: () => setDeletingId(null) });
   };
 
   if (fid == null) {

@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, CheckSquare, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
-import { adminConfigApi } from '@/services/api/adminApi';
 import type {
   IPlatformConfigItemResponse,
   IUpdatePlatformConfigRequest,
@@ -20,6 +18,7 @@ import {
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import { formatDate } from '@/utils/formatting/formatDate';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { useAdminConfigPage } from '@/pages/admin/hooks/useAdminConfigPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -110,8 +109,8 @@ export function AdminConfigPage() {
   const isSA = canEdit(role, 'SA');
 
   const [activeTab, setActiveTab] = useState<TabKey>('general');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { configs, loading, error, updateDefault, createConfig, deleteConfig } =
+    useAdminConfigPage();
 
   const generalForm = useForm<AdminGeneralConfigFormValues>({
     resolver: zodResolver(adminGeneralConfigSchema),
@@ -124,12 +123,10 @@ export function AdminConfigPage() {
   const [savingGeneral, setSavingGeneral] = useState(false);
   const [savedGeneral, setSavedGeneral] = useState(false);
 
-  const [configs, setConfigs] = useState<IPlatformConfigItemResponse[]>([]);
   const defaultCommissionForm = useForm<AdminDefaultCommissionFormValues>({
     resolver: zodResolver(adminDefaultCommissionSchema),
     defaultValues: { label: '', commission: '', vat: '' },
   });
-  const [savingDefault, setSavingDefault] = useState(false);
   const [savedDefault, setSavedDefault] = useState(false);
 
   const newConfigForm = useForm<AdminNewConfigFormValues>({
@@ -141,8 +138,6 @@ export function AdminConfigPage() {
       effective_to: '',
     },
   });
-  const [savingConfig, setSavingConfig] = useState(false);
-
   const [savingVerification, setSavingVerification] = useState(false);
   const [savedVerification, setSavedVerification] = useState(false);
   const [requirements, setRequirements] = useState<VerificationRequirement[]>(DEFAULT_REQUIREMENTS);
@@ -162,26 +157,6 @@ export function AdminConfigPage() {
     });
   }, [defaultConfig, defaultCommissionForm]);
 
-  const loadData = async () => {
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const res = await adminConfigApi.listConfigs();
-        setConfigs(Array.isArray(res.configs) ? res.configs : []);
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'โหลด config packages ไม่สำเร็จ',
-      },
-    );
-  };
-
-  useEffect(() => {
-    void loadData();
-  }, []);
-
   const onSaveGeneral = generalForm.handleSubmit(async () => {
     if (!isSA) return;
     setSavingGeneral(true);
@@ -194,26 +169,14 @@ export function AdminConfigPage() {
 
   const handleSaveDefault = defaultCommissionForm.handleSubmit(async (values) => {
     if (!isSA || !defaultConfig) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const payload: IUpdatePlatformConfigRequest = {
-          label: values.label.trim(),
-          default_commission_rate: pickScalarNumber(values.commission) ?? 0,
-          vat_rate: pickScalarNumber(values.vat) ?? 0,
-        };
-        const updated = await adminConfigApi.updateConfig(defaultConfig.config_id, payload);
-        setConfigs((prev) => prev.map((c) => (c.config_id === updated.config_id ? updated : c)));
-        setSavedDefault(true);
-        setTimeout(() => setSavedDefault(false), 2200);
-      },
-      {
-        onStart: () => setSavingDefault(true),
-        onSettled: () => setSavingDefault(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'บันทึก config มาตรฐานไม่สำเร็จ',
-      },
-    );
+    const payload: IUpdatePlatformConfigRequest = {
+      label: values.label.trim(),
+      default_commission_rate: pickScalarNumber(values.commission) ?? 0,
+      vat_rate: pickScalarNumber(values.vat) ?? 0,
+    };
+    await updateDefault.mutateAsync({ configId: defaultConfig.config_id, payload });
+    setSavedDefault(true);
+    setTimeout(() => setSavedDefault(false), 2200);
   });
 
   const handleCreateConfig = newConfigForm.handleSubmit(async (values) => {
@@ -221,46 +184,24 @@ export function AdminConfigPage() {
     const commission = pickScalarNumber(values.default_commission_rate) ?? 0;
     const vat = pickScalarNumber(values.vat_rate, '7') ?? 7;
 
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const created = await adminConfigApi.createConfig({
-          label: values.label.trim(),
-          default_commission_rate: commission,
-          vat_rate: Number.isFinite(vat) ? vat : 7,
-          currency_code: 'THB',
-          effective_to: values.effective_to || null,
-        });
-        setConfigs((prev) => [...prev, created]);
-        newConfigForm.reset({
-          label: '',
-          default_commission_rate: '',
-          vat_rate: '7',
-          effective_to: '',
-        });
-      },
-      {
-        onStart: () => setSavingConfig(true),
-        onSettled: () => setSavingConfig(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'สร้าง config พิเศษไม่สำเร็จ',
-      },
-    );
+    await createConfig.mutateAsync({
+      label: values.label.trim(),
+      default_commission_rate: commission,
+      vat_rate: Number.isFinite(vat) ? vat : 7,
+      currency_code: 'THB',
+      effective_to: values.effective_to || null,
+    });
+    newConfigForm.reset({
+      label: '',
+      default_commission_rate: '',
+      vat_rate: '7',
+      effective_to: '',
+    });
   });
 
   const handleDeleteConfig = async (configId: number) => {
     if (!isSA || configId === defaultConfig?.config_id) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        await adminConfigApi.deleteConfig(configId);
-        setConfigs((prev) => prev.filter((c) => c.config_id !== configId));
-      },
-      {
-        onError: (message) => setError(message),
-        fallbackMessage: 'ลบ config ไม่สำเร็จ',
-      },
-    );
+    await deleteConfig.mutateAsync(configId);
   };
 
   const handleSaveVerification = async () => {
@@ -431,7 +372,7 @@ export function AdminConfigPage() {
               </div>
               {isSA ? (
                 <SaveButton
-                  saving={savingDefault}
+                  saving={updateDefault.isPending}
                   saved={savedDefault}
                   onClick={() => void handleSaveDefault()}
                   disabled={!defaultConfig}
@@ -581,11 +522,11 @@ export function AdminConfigPage() {
                     variant='unstyled'
                     type='button'
                     onClick={() => void handleCreateConfig()}
-                    disabled={savingConfig}
+                    disabled={createConfig.isPending}
                     className='mt-3 flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
                           >
                             <Plus size={14} />
-                    {savingConfig ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
+                    {createConfig.isPending ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
                   </Button>
                         </div>
                 </Form>

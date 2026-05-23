@@ -1,6 +1,4 @@
-/**
- * Admin APIs — Platform management, factories, orders, customers, settlements
- */
+// Admin APIs — Platform management, factories, orders, customers, settlements
 
 import { httpClient } from '@/services/api/httpClient';
 import type {

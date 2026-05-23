@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
-
-type Row = Record<string, unknown>;
 
 export interface FactoryTypeOption {
   id: number;
@@ -14,9 +13,7 @@ export function useFactoryTypes() {
     queryKey: masterKeys.factoryTypes(),
     queryFn: async () => {
       const raw = await masterApi.factoryTypes();
-      const unwrapped = Array.isArray(raw) ? raw : Array.isArray((raw as Record<string, unknown>).data) ? (raw as Record<string, unknown>).data : [];
-      const arr = unwrapped as Row[];
-      return arr
+      return apiListAsRecords(raw)
         .map((r): FactoryTypeOption | null => {
           const id = Number(r.factory_type_id ?? r.row_id ?? r.id);
           const label = String(

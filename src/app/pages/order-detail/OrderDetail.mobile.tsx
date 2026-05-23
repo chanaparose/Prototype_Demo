@@ -2,13 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, MessageCircle, Star, X, AlertTriangle, PackageCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
-import { ApiHttpError } from '@/services/api/httpClient';
-import { ordersApi } from '@/services/api/ordersApi';
+import { useOrderDetailCustomerActions } from '@/pages/order-detail/hooks/useOrderDetailCustomerActions';
 import { Button } from '@/components/ui/button';
 import { OrderSummaryCard } from '@/components/features/order-detail/OrderSummaryCard';
 import { OrderOverviewSection } from '@/components/features/order-detail/OrderOverviewSection';
@@ -19,7 +17,6 @@ import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenc
 import { OrderBOQCard } from '@/components/features/order-detail/OrderBOQCard';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
-import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { OrderProductionTab } from '@/components/features/production/OrderProductionTab';
 import { useRfqDetailQuery } from '@/domain/rfq/queries/useRfqDetailQuery';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
@@ -49,19 +46,18 @@ function OrderDetailMobileBody() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'overview' | 'production'>('overview');
   const [depositModalOpen, setDepositModalOpen] = useState(false);
-  const [confirmingReceive, setConfirmingReceive] = useState(false);
-  const [receiveForbidden, setReceiveForbidden] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewImageUrls, setReviewImageUrls] = useState<string[]>([]);
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [cancellingOrder, setCancellingOrder] = useState(false);
+
+  const { receiveForbidden, confirmReceipt, cancelOrder, submitReview } =
+    useOrderDetailCustomerActions(order.id, refetchAll);
 
   const canShowCancelButton = apiStatus === 'PP';
 
-  // Show acceptance banner when production step 5 = IP (step 4 CD → awaiting customer confirmation)
+  // step 5 = IP: รอลูกค้ายืนยันรับของ (step 4 เป็น CD แล้ว)
   const step5IsIP = useMemo(
     () =>
       production.updates?.some(
@@ -106,69 +102,18 @@ function OrderDetailMobileBody() {
     });
   };
 
-  // Floating action: show for shipped/completed, but NOT for step-5-IP (that uses the inline banner)
+  // ปุ่มลอยไม่แสดงเมื่อ step 5 IP — ใช้แบนเนอร์ใน flow แทน
   const showFloatingAction =
     (order.status === 'shipped' && !showAcceptDeliveryBanner) || order.status === 'completed';
 
-  const onConfirmReceive = async () => {
-    if (confirmingReceive) return;
-    await runAsyncAction(
-      async () => {
-        await ordersApi.confirmReceipt(order.id, {
-          note: 'Customer confirmed receipt from order detail',
-          received_at: new Date().toISOString(),
-        });
-        toast.success('ยืนยันรับสินค้าแล้ว');
-        await refetchAll();
-      },
-      {
-        onStart: () => {
-          setReceiveForbidden(false);
-          setConfirmingReceive(true);
-        },
-        onSettled: () => setConfirmingReceive(false),
-        onError: (_message, e) => {
-          if (e instanceof ApiHttpError) {
-            if (e.status === 403) {
-              setReceiveForbidden(true);
-              toast.error('คุณไม่มีสิทธิ์ยืนยันการรับสินค้าสำหรับคำสั่งซื้อนี้');
-            } else if (e.status === 404) {
-              toast.error('ไม่พบคำสั่งซื้อนี้ในระบบ');
-            } else {
-              toast.error(e.message || 'ยืนยันรับสินค้าไม่สำเร็จ');
-            }
-          } else {
-            const message = e instanceof Error ? e.message : 'ยืนยันรับสินค้าไม่สำเร็จ';
-            toast.error(message);
-          }
-        },
-      },
-    );
+  const onConfirmReceive = () => {
+    if (confirmReceipt.isPending) return;
+    confirmReceipt.mutate();
   };
 
-  const onCancelOrder = async () => {
-    if (cancellingOrder) return;
-    await runAsyncAction(
-      async () => {
-        await ordersApi.cancel(order.id);
-        toast.success('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
-        setCancelModalOpen(false);
-        await refetchAll();
-      },
-      {
-        onStart: () => setCancellingOrder(true),
-        onSettled: () => setCancellingOrder(false),
-        onError: (_message, e) => {
-          if (e instanceof ApiHttpError) {
-            if (e.status === 400) toast.error(e.message || 'ไม่สามารถยกเลิกคำสั่งซื้อในสถานะนี้ได้');
-            else if (e.status === 404) toast.error('ไม่พบคำสั่งซื้อนี้');
-            else toast.error(e.message || 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
-          } else {
-            toast.error(e instanceof Error ? e.message : 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
-          }
-        },
-      },
-    );
+  const onCancelOrder = () => {
+    if (cancelOrder.isPending) return;
+    cancelOrder.mutate(undefined, { onSuccess: () => setCancelModalOpen(false) });
   };
 
   const onOpenReview = () => {
@@ -192,8 +137,8 @@ function OrderDetailMobileBody() {
     setReviewModalOpen(true);
   };
 
-  const onSubmitReview = async () => {
-    if (reviewSubmitting) return;
+  const onSubmitReview = () => {
+    if (submitReview.isPending) return;
     if (order.status !== 'completed') {
       toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
       return;
@@ -211,32 +156,13 @@ function OrderDetailMobileBody() {
       toast.error('คอมเมนต์ยาวเกิน 1000 ตัวอักษร');
       return;
     }
-    await runAsyncAction(
-      async () => {
-        const image_urls = normalizeReviewImageUrls(reviewImageUrls);
-        await ordersApi.createReview(order.id, { rating: reviewRating, comment, image_urls });
-        toast.success('ส่งรีวิวสำเร็จ');
-        setReviewModalOpen(false);
-        setReviewComment('');
-        setReviewImageUrls([]);
-        await refetchAll();
-      },
+    submitReview.mutate(
+      { rating: reviewRating, comment, imageUrls: reviewImageUrls },
       {
-        onStart: () => setReviewSubmitting(true),
-        onSettled: () => setReviewSubmitting(false),
-        onError: (_message, e) => {
-          if (e instanceof ApiHttpError) {
-            const m = String(e.message ?? '').toLowerCase();
-            if (m.includes('review already exists')) toast.error('คุณรีวิวคำสั่งซื้อนี้ไปแล้ว');
-            else if (m.includes('order must be completed'))
-              toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
-            else if (m.includes('rating must be between')) toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
-            else if (m.includes('comment must be')) toast.error('กรุณาเขียนรีวิว');
-            else if (m.includes('image_urls') && m.includes('5')) toast.error('แนบรูปได้ไม่เกิน 5 รูป');
-            else toast.error(e.message || 'ส่งรีวิวไม่สำเร็จ');
-          } else {
-            toast.error(e instanceof Error ? e.message : 'ส่งรีวิวไม่สำเร็จ');
-          }
+        onSuccess: () => {
+          setReviewModalOpen(false);
+          setReviewComment('');
+          setReviewImageUrls([]);
         },
       },
     );
@@ -372,11 +298,11 @@ function OrderDetailMobileBody() {
                 variant='unstyled'
                 type='button'
                 onClick={() => void onConfirmReceive()}
-                disabled={confirmingReceive}
+                disabled={confirmReceipt.isPending}
                 className='w-full py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-60 flex items-center justify-center gap-2'
-                style={{ background: confirmingReceive ? '#7C3AED99' : 'var(--brand-purple)' }}
+                style={{ background: confirmReceipt.isPending ? '#7C3AED99' : 'var(--brand-purple)' }}
               >
-                {confirmingReceive ? (
+                {confirmReceipt.isPending ? (
                   <>
                     <div className='w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin' />
                     กำลังยืนยัน...
@@ -483,16 +409,16 @@ function OrderDetailMobileBody() {
                   onOpenReview();
                 }
               }}
-              disabled={order.status === 'shipped' ? confirmingReceive : false}
+              disabled={order.status === 'shipped' ? confirmReceipt.isPending : false}
               className='w-full py-4 rounded-2xl text-white text-sm shadow-xl'
               style={{
                 background: 'linear-gradient(135deg, var(--brand-navy-deep), #4A267D)',
                 fontWeight: 700,
-                opacity: order.status === 'shipped' && confirmingReceive ? 0.7 : 1,
+                opacity: order.status === 'shipped' && confirmReceipt.isPending ? 0.7 : 1,
               }}
             >
               {order.status === 'shipped'
-                ? confirmingReceive
+                ? confirmReceipt.isPending
                   ? 'กำลังยืนยันการรับสินค้า...'
                   : '✓ ยืนยันการรับสินค้า'
                 : reviewState?.already_reviewed
@@ -517,12 +443,12 @@ function OrderDetailMobileBody() {
         open={cancelModalOpen}
         onOpenChange={(v) => {
           if (v) return;
-          if (!cancellingOrder) setCancelModalOpen(false);
+          if (!cancelOrder.isPending) setCancelModalOpen(false);
         }}
         showCloseButton={false}
         variant='sheet'
         size='sm'
-        dismissible={!cancellingOrder}
+        dismissible={!cancelOrder.isPending}
         className='max-w-sm overflow-hidden'
         bodyClassName='p-0'
         overlayClassName='bg-black/50'
@@ -543,7 +469,7 @@ function OrderDetailMobileBody() {
             variant='unstyled'
             type='button'
             onClick={() => setCancelModalOpen(false)}
-            disabled={cancellingOrder}
+            disabled={cancelOrder.isPending}
             className='py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-700 disabled:opacity-50'
           >
             ไม่ยกเลิก
@@ -552,11 +478,11 @@ function OrderDetailMobileBody() {
             variant='unstyled'
             type='button'
             onClick={() => void onCancelOrder()}
-            disabled={cancellingOrder}
+            disabled={cancelOrder.isPending}
             className='py-3 rounded-2xl text-sm font-semibold text-white disabled:opacity-60 flex items-center justify-center gap-1.5'
-            style={{ background: cancellingOrder ? '#F87171' : 'var(--status-danger-deep)' }}
+            style={{ background: cancelOrder.isPending ? '#F87171' : 'var(--status-danger-deep)' }}
           >
-            {cancellingOrder ? (
+            {cancelOrder.isPending ? (
               <>
                 <div className='w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin' />
                 กำลังยกเลิก...
@@ -654,11 +580,11 @@ function OrderDetailMobileBody() {
               variant='unstyled'
               type='button'
               onClick={() => void onSubmitReview()}
-              disabled={reviewSubmitting}
+              disabled={submitReview.isPending}
               className='w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-60'
               style={{ background: 'var(--brand-royal)' }}
             >
-              {reviewSubmitting ? 'กำลังส่งรีวิว...' : 'ส่งรีวิว'}
+              {submitReview.isPending ? 'กำลังส่งรีวิว...' : 'ส่งรีวิว'}
             </Button>
           </div>
         )}

@@ -39,11 +39,8 @@ export type OfferItem = {
   recommended?: boolean;
   aiReason?: string;
   factoryHighlight?: string;
-  /** PD | AC | RJ จากตาราง quotations */
   quoteStatus?: string;
-  /** order_id ที่สร้างแล้วเมื่อ quoteStatus = 'AC' */
   orderId?: string;
-  /** รายละเอียด BOQ จาก API — รวมกับค่าที่คำนวณจากราคา/จำนวน RFQ */
   quotationDetail?: Partial<Quotation>;
 };
 
@@ -61,13 +58,10 @@ type RfqDetailOffersSectionProps = {
   orderForRfq: OrderForRfq | null | undefined;
   selectedOfferId: string | null;
   onSelectOffer: (id: string | null) => void;
-  /** แชทกับโรงงานของ offer นี้ (ลูกค้า) — ส่ง RFQ reference ตาม spec */
   onChatWithOffer?: (offer: OfferItem) => void;
-  /** หลัง POST /orders (BE accept quote + สร้าง order PP) — ไม่ PATCH quotation ก่อน */
+  // หลัง POST /orders (BE accept quote + สร้าง order PP) — ไม่ PATCH quotation ก่อน
   onOfferFlowComplete?: (result: { quoteId: string; orderId?: string }) => void;
-  /** จำนวนชิ้นจาก RFQ — ใช้ประมาณราคา/ชิ้นใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
   rfqQuantity?: number;
-  /** quoteId → history entries pre-fetched from bundle endpoint */
   quoteHistories?: Record<string, import('@/services/api/types/rfq.types').IQuotationHistoryEntry[]>;
 };
 
@@ -97,7 +91,6 @@ export function RfqDetailOffersSection({
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [flowError, setFlowError] = useState<string | null>(null);
   const [expandedBoqOfferId, setExpandedBoqOfferId] = useState<string | null>(null);
-  /** orderId ล่าสุดที่เพิ่ง accept สำเร็จ — แสดง toast 5 วินาที */
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -678,7 +671,8 @@ export function RfqDetailOffersSection({
                       </Button>
                     ) : null}
                     {isAccepted ? (
-                      /* AC: แสดง link ไป order แทนปุ่ม */
+                      // 
+
                       offer.orderId ? (
                         <Link
                           to={`/orders/${offer.orderId}`}

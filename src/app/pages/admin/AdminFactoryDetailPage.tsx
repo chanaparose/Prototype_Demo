@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate, useParams, Link } from 'react-router';
 import {
   ChevronLeft,
@@ -15,15 +14,10 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
-import { adminApi, adminConfigApi, adminFactoryConfigApi, adminSettlementApi } from '@/services/api/adminApi';
-import { mapFactoryApprovalStatus } from '@/domain/admin/mappers/mapAdminFactory';
-import type {
-  IAdminSettlementListItemResponse,
-  IFactoryConfigResponse,
-  IPlatformConfigItemResponse,
-} from '@/services/api/types/admin.types';
-import type { FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
+import { adminSettlementApi } from '@/services/api/adminApi';
+import type { IAdminSettlementListItemResponse } from '@/services/api/types/admin.types';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { useAdminFactoryDetailPage } from '@/pages/admin/hooks/useAdminFactoryDetailPage';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -46,51 +40,6 @@ import { formatDateTime } from '@/utils/formatting/formatDate';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { usePromptDialog } from '@/shared/ui/modals/PromptDialog';
 
-type TimelineStatus = FactoryApprovalStatus | 'submitted';
-
-interface TimelineRow {
-  status: TimelineStatus;
-  timestamp: string;
-  note?: string;
-}
-
-interface AdminFactoryDetailState {
-  id: string;
-  factory_id: number;
-  factory_name: string;
-  owner_name: string;
-  email: string;
-  phone: string;
-  registered_at: string;
-  approval_status: FactoryApprovalStatus;
-  business_type: string;
-  province: string;
-  address: string;
-  tax_id: string;
-  website?: string;
-  documents: { name: string; status: 'uploaded' | 'missing' | 'verified'; url?: string }[];
-  timeline: TimelineRow[];
-  is_verified: boolean;
-}
-
-const EMPTY_DETAIL: AdminFactoryDetailState = {
-  id: '',
-  factory_id: 0,
-  factory_name: '-',
-  owner_name: '-',
-  email: '-',
-  phone: '-',
-  registered_at: '',
-  approval_status: 'pending',
-  business_type: '-',
-  province: '-',
-  address: '-',
-  tax_id: '-',
-  documents: [],
-  timeline: [],
-  is_verified: false,
-};
-
 const STATUS_META: Record<string, { label: string; cls: string; icon: React.ElementType }> = {
   submitted: { label: 'ส่งใบสมัคร', cls: 'text-slate-500', icon: Clock },
   pending: { label: 'รอ Approve', cls: 'text-amber-600', icon: Clock },
@@ -105,87 +54,6 @@ const DOC_STATUS_META = {
   missing: { label: 'ยังไม่มี', cls: 'bg-red-100 text-red-600' },
 };
 
-function getArray(raw: unknown, key: string): Record<string, unknown>[] {
-  if (!raw || typeof raw !== 'object') return [];
-  const v = (raw as Record<string, unknown>)[key];
-  return Array.isArray(v) ? (v as Record<string, unknown>[]) : [];
-}
-
-function mapDetail(raw: unknown): AdminFactoryDetailState {
-  const root = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
-  const factory = (root.factory ?? root.profile ?? root) as Record<string, unknown>;
-  const stats = (root.stats ?? {}) as Record<string, unknown>;
-  const docs = getArray(root, 'certificates');
-  const categories = getArray(root, 'categories');
-
-  const factoryId = pickScalarNumber(factory.factory_id, factory.id, root.factory_id) ?? 0;
-  const approvalStatus = mapFactoryApprovalStatus(factory.approval_status);
-  const registeredAt = pickScalarString(
-    factory.submitted_at,
-    factory.created_at,
-    factory.registered_at,
-  );
-
-  const timeline: TimelineRow[] = [
-    { status: 'submitted' as const, timestamp: registeredAt || '', note: 'ส่งใบสมัครเข้ามา' },
-    {
-      status: approvalStatus,
-      timestamp: pickScalarString(factory.updated_at, registeredAt),
-      note:
-        approvalStatus === 'rejected'
-          ? pickScalarString(factory.rejection_reason, 'ปฏิเสธโดยผู้ดูแล')
-          : approvalStatus === 'approved'
-            ? 'อนุมัติโดยผู้ดูแลระบบ'
-            : approvalStatus === 'suspended'
-              ? 'ระงับการใช้งานโดยผู้ดูแลระบบ'
-              : 'รอการตรวจสอบจากทีม Admin',
-    },
-  ].filter((r) => r.timestamp);
-
-  return {
-    id: pickScalarString(factoryId),
-    factory_id: factoryId,
-    factory_name: pickScalarString(factory.factory_name, factory.name, '-'),
-    owner_name: pickScalarString(factory.owner_name, factory.contact_name, '-'),
-    email: pickScalarString(factory.owner_email, factory.email, '-'),
-    phone: pickScalarString(factory.owner_phone, factory.phone, '-'),
-    registered_at: registeredAt,
-    approval_status: approvalStatus,
-    business_type: pickScalarString(factory.business_type_name, factory.business_type, '-'),
-    province: pickScalarString(factory.province_name, factory.province, '-'),
-    address: pickScalarString(factory.address_detail, factory.address, '-'),
-    tax_id: pickScalarString(factory.tax_id, '-'),
-    website: pickScalarString(factory.website),
-    documents:
-      docs.length > 0
-        ? docs.map((d) => ({
-            name: pickScalarString(d.cert_name, d.name, 'เอกสารโรงงาน'),
-            status:
-              pickScalarString(d.status, d.is_verified).toLowerCase() === 'verified' ||
-              Boolean(d.is_verified)
-                ? 'verified'
-                : pickScalarString(d.document_url, d.url)
-                  ? 'uploaded'
-                  : 'missing',
-            url: pickScalarString(d.document_url, d.url),
-          }))
-        : [
-            ...categories.map((c) => ({
-              name: `หมวด: ${pickScalarString(c.category_name, c.name, '-')}`,
-              status: 'verified' as const,
-              url: '',
-            })),
-            {
-              name: 'ยืนยันโปรไฟล์โรงงาน',
-              status: stats.profile_completed ? 'verified' : 'uploaded',
-              url: '',
-            },
-          ],
-    timeline,
-    is_verified: Boolean(factory.is_verified ?? false),
-  };
-}
-
 export function AdminFactoryDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -193,75 +61,27 @@ export function AdminFactoryDetailPage() {
   const role = pickScalarString(user?.role);
   const { prompt, PromptDialog } = usePromptDialog();
 
-  const [factory, setFactory] = useState<AdminFactoryDetailState>(EMPTY_DETAIL);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'info' | 'config' | 'settlements'>('info');
+  const { factory, loading, error, config, actions } = useAdminFactoryDetailPage(id);
 
-  const [configList, setConfigList] = useState<IPlatformConfigItemResponse[]>([]);
-  const [currentConfig, setCurrentConfig] = useState<IFactoryConfigResponse | null>(null);
-  /** ค่า '' = ยังไม่โหลด / ยังไม่เลือก; 0 = reset กลับ default ตาม BE (`config_id: 0`) */
+  const [activeTab, setActiveTab] = useState<'info' | 'config' | 'settlements'>('info');
   const [selectedConfigId, setSelectedConfigId] = useState<number | ''>('');
   const [configNote, setConfigNote] = useState('');
-  const [savingConfig, setSavingConfig] = useState(false);
   const [savedConfig, setSavedConfig] = useState(false);
 
+  const currentConfig = config.current;
+
+  useEffect(() => {
+    if (currentConfig) setSelectedConfigId(currentConfig.config_id);
+  }, [currentConfig?.config_id]);
+
   const defaultPlatformConfigId = useMemo(
-    () => (configList.length ? configList[0].config_id : undefined),
-    [configList],
+    () => (config.list.length ? config.list[0].config_id : undefined),
+    [config.list],
   );
 
   const canAssignConfig = role === 'AD' || role === 'SA';
   const canApprove = role === 'AD' || role === 'SA';
   const canSuspend = role === 'SA';
-
-  const loadDetail = async () => {
-    if (!id) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const rawFactory = await adminApi.getFactory(id);
-        const mapped = mapDetail(rawFactory);
-        setFactory(mapped);
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'โหลดรายละเอียดโรงงานไม่สำเร็จ',
-      },
-    );
-  };
-
-  useEffect(() => {
-    void loadDetail();
-  }, [id]);
-
-  const loadFactoryConfig = async () => {
-    if (!id) return;
-    await runAsyncAction(
-      async () => {
-        const fid = pickScalarNumber(id) ?? 0;
-        if (!Number.isFinite(fid) || fid <= 0) return;
-        const [configRes, listRes] = await Promise.all([
-          adminFactoryConfigApi.getFactoryConfig(fid),
-          adminConfigApi.listConfigs(),
-        ]);
-        setCurrentConfig(configRes);
-        setSelectedConfigId(configRes.config_id);
-        setConfigList((listRes.configs ?? []).slice().sort((a, b) => a.config_id - b.config_id));
-      },
-      {
-        onError: (message) => setError(message),
-        fallbackMessage: 'โหลด config ของโรงงานไม่สำเร็จ',
-      },
-    );
-  };
-
-  useEffect(() => {
-    void loadFactoryConfig();
-  }, [id]);
 
   const isFactoryConfigSelectionUnchanged = useMemo(() => {
     if (selectedConfigId === '' || !currentConfig) return true;
@@ -278,43 +98,14 @@ export function AdminFactoryDetailPage() {
 
   const handleSaveFactoryConfig = async () => {
     if (!factory.factory_id || selectedConfigId === '' || isFactoryConfigSelectionUnchanged) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const res = await adminFactoryConfigApi.assignConfig(factory.factory_id, {
-          config_id: selectedConfigId,
-          note: configNote.trim(),
-        });
-        setCurrentConfig(res);
-        setSelectedConfigId(res.config_id);
-        setConfigNote('');
-        setSavedConfig(true);
-        setTimeout(() => setSavedConfig(false), 2200);
-      },
-      {
-        onStart: () => setSavingConfig(true),
-        onSettled: () => setSavingConfig(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'บันทึก config โรงงานไม่สำเร็จ',
-      },
-    );
-  };
-
-  const handleApprove = async () => {
-    if (!canApprove || !factory.factory_id) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        await adminApi.approveFactory(factory.factory_id);
-        await loadDetail();
-      },
-      {
-        onStart: () => setSaving(true),
-        onSettled: () => setSaving(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'อนุมัติโรงงานไม่สำเร็จ',
-      },
-    );
+    const res = await actions.assignConfig({
+      config_id: selectedConfigId,
+      note: configNote.trim(),
+    });
+    setSelectedConfigId(res.config_id);
+    setConfigNote('');
+    setSavedConfig(true);
+    setTimeout(() => setSavedConfig(false), 2200);
   };
 
   const handleReject = async () => {
@@ -328,58 +119,7 @@ export function AdminFactoryDetailPage() {
       minLength: 10,
     });
     if (!reason) return;
-
-    setError('');
-    await runAsyncAction(
-      async () => {
-        await adminApi.rejectFactory(factory.factory_id, reason);
-        await loadDetail();
-      },
-      {
-        onStart: () => setSaving(true),
-        onSettled: () => setSaving(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'ปฏิเสธโรงงานไม่สำเร็จ',
-      },
-    );
-  };
-
-  const handleSuspendToggle = async () => {
-    if (!canSuspend || !factory.factory_id) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        if (factory.approval_status === 'suspended') {
-          await adminApi.unsuspendFactory(factory.factory_id);
-        } else {
-          await adminApi.suspendFactory(factory.factory_id, 'ระงับโดยผู้ดูแลระบบ');
-        }
-        await loadDetail();
-      },
-      {
-        onStart: () => setSaving(true),
-        onSettled: () => setSaving(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'อัปเดตสถานะระงับไม่สำเร็จ',
-      },
-    );
-  };
-
-  const handleToggleVerification = async () => {
-    if (!canSuspend || !factory.factory_id) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        await adminApi.updateFactoryVerification(factory.factory_id, !factory.is_verified);
-        await loadDetail();
-      },
-      {
-        onStart: () => setSaving(true),
-        onSettled: () => setSaving(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'อัปเดตสถานะยืนยันไม่สำเร็จ',
-      },
-    );
+    actions.reject(reason);
   };
 
   const statusChip = useMemo(() => {
@@ -500,7 +240,7 @@ export function AdminFactoryDetailPage() {
                 <SelectContent>
                   <SelectItem value='__empty'>เลือก Config Package</SelectItem>
                   <SelectItem value='0'>กลับเป็นมาตรฐาน (ใช้ default จากระบบ)</SelectItem>
-                  {configList.map((cfg) => (
+                  {config.list.map((cfg) => (
                     <SelectItem key={cfg.config_id} value={String(cfg.config_id)}>
                       [{cfg.config_id}]{' '}
                       {cfg.label ??
@@ -526,12 +266,20 @@ export function AdminFactoryDetailPage() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={handleSaveFactoryConfig}
-            disabled={!canAssignConfig || savingConfig || isFactoryConfigSelectionUnchanged}
+            onClick={() => void handleSaveFactoryConfig()}
+            disabled={
+              !canAssignConfig ||
+              actions.isAssigningConfig ||
+              isFactoryConfigSelectionUnchanged
+            }
             className='flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60'
           >
             <Save size={14} />
-            {savingConfig ? 'กำลังบันทึก...' : savedConfig ? 'บันทึกแล้ว ✓' : 'บันทึก'}
+            {actions.isAssigningConfig
+              ? 'กำลังบันทึก...'
+              : savedConfig
+                ? 'บันทึกแล้ว ✓'
+                : 'บันทึก'}
           </Button>
         </div>
       ) : null}
@@ -626,8 +374,8 @@ export function AdminFactoryDetailPage() {
                       <Button
                         variant='unstyled'
                         type='button'
-                        onClick={handleApprove}
-                        disabled={saving}
+                        onClick={() => actions.approve()}
+                        disabled={actions.isBusy}
                         className='w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-60'
                       >
                         <CheckCircle size={15} />
@@ -636,8 +384,8 @@ export function AdminFactoryDetailPage() {
                       <Button
                         variant='unstyled'
                         type='button'
-                        onClick={handleReject}
-                        disabled={saving}
+                        onClick={() => void handleReject()}
+                        disabled={actions.isBusy}
                         className='w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-100 disabled:opacity-60'
                       >
                         <XCircle size={15} />
@@ -650,8 +398,8 @@ export function AdminFactoryDetailPage() {
                     <Button
                       variant='unstyled'
                       type='button'
-                      onClick={handleSuspendToggle}
-                      disabled={saving}
+                      onClick={() => actions.toggleSuspend()}
+                      disabled={actions.isBusy}
                       className='w-full flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-60'
                     >
                       {factory.approval_status === 'suspended'
@@ -664,8 +412,8 @@ export function AdminFactoryDetailPage() {
                     <Button
                       variant='unstyled'
                       type='button'
-                      onClick={handleToggleVerification}
-                      disabled={saving}
+                      onClick={() => actions.toggleVerification()}
+                      disabled={actions.isBusy}
                       className='w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-60'
                     >
                       {factory.is_verified ? 'ยกเลิกยืนยันตัวตน' : 'ยืนยันตัวตนโรงงาน'}

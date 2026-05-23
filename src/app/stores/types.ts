@@ -1,7 +1,5 @@
-/**
- * Legacy bootstrap/store UI models.
- * These are camelCase client models, not API response contracts.
- */
+// Legacy bootstrap/store UI models.
+// These are camelCase client models, not API response contracts.
 export type BootstrapCategoryModel = {
   id: string;
   name: string;
@@ -188,7 +186,6 @@ export type BootstrapOrderModel = {
   createdAt: string;
   estimatedDelivery: string;
   timeline: OrderTimeline[];
-  /** step_id ของขั้นตอนที่ active ล่าสุด (มาจาก production_updates) — ใช้แยก tab เช่น 4 = จัดส่ง */
   currentStepId?: number;
 };
 

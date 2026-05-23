@@ -20,7 +20,6 @@ type ModalFooterPrimaryAction = ModalFooterAction & {
   loading?: boolean;
   loadingLabel?: ReactNode;
   accent?: ModalFooterAccent;
-  /** Override gradient (e.g. CTA_GRADIENT) */
   style?: React.CSSProperties;
   fullWidth?: boolean;
 };
@@ -32,11 +31,9 @@ type ModalFooterSecondaryAction = ModalFooterAction & {
 type ModalFooterProps = {
   layout?: ModalFooterLayout;
   className?: string;
-  /** Default accent for primary when not set on `primary.accent` */
   accent?: ModalFooterAccent;
   leading?: ReactNode;
   primary: ModalFooterPrimaryAction;
-  /** Second action in grid layouts (outline style) */
   alternatePrimary?: ModalFooterSecondaryAction;
   secondary?: ModalFooterSecondaryAction;
 };

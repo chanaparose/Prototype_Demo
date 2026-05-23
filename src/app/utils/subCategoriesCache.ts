@@ -21,7 +21,6 @@ export function mapSubCategoryRows(raw: unknown): SubCategoryRow[] {
 }
 
 const resolved = new Map<string, SubCategoryRow[]>();
-/** In-flight promises (dedupe concurrent requests) */
 const pending = new Map<string, Promise<SubCategoryRow[]>>();
 
 export function loadSubCategories(categoryId: string | number): Promise<SubCategoryRow[]> {
@@ -57,7 +56,6 @@ export function prefetchSubCategoriesFor(categoryIds: ReadonlyArray<string | num
   }
 }
 
-/** Synchronous peek — returns resolved data if ready, else null. */
 export function getCachedSubCategoriesSync(categoryId: string | number): SubCategoryRow[] | null {
   return resolved.get(String(categoryId)) ?? null;
 }

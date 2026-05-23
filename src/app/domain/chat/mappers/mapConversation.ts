@@ -1,20 +1,15 @@
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 import type { IConversationResponse } from '@/services/api/types/chat.types';
 import { pickScalarString } from '@/utils/pickScalarString';
 
-function rowObject(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
-
-export function mapConversationFromApi(row: Record<string, unknown>): IConversationResponse | null {
+export function mapConversationFromApi(row: ApiRecord): IConversationResponse | null {
   const convId = Number(row.conv_id ?? row.conversation_id ?? row.id);
   if (!Number.isFinite(convId)) return null;
 
   const customerId = Number(row.customer_id ?? row.customerId ?? 0);
   const factoryId = Number(row.factory_id ?? row.factoryId ?? 0);
-  const customerObj = rowObject(row.customer);
-  const factoryObj = rowObject(row.factory);
+  const customerObj = asRecord(row.customer);
+  const factoryObj = asRecord(row.factory);
 
   return {
     conv_id: convId,
@@ -45,8 +40,7 @@ export function mapConversationFromApi(row: Record<string, unknown>): IConversat
 }
 
 export function mapConversationsFromApi(raw: unknown): IConversationResponse[] {
-  const rows = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-  return rows
+  return apiListAsRecords(raw)
     .map(mapConversationFromApi)
     .filter((conversation): conversation is IConversationResponse => conversation != null);
 }

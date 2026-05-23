@@ -13,13 +13,8 @@ import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
 import type { IFactoryWithDetailsResponse } from '@/services/api/types/factory.types';
 import type { IFactoryReviewSummaryResponse } from '@/services/api/userApi';
+import { asRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
 
 export type FactorySubCategoryPair = { categoryLabel: string; subLabel: string };
 
@@ -271,7 +266,8 @@ export async function fetchAndMapFactoryProfile(
         });
       if (fromApi.length > 0) showcases = fromApi;
     } catch {
-      /* keep BFF showcases */
+      // 
+
     }
   }
 

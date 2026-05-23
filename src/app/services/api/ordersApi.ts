@@ -48,7 +48,6 @@ export const ordersApi = {
     headers?: Record<string, string>,
   ) => httpClient.post<unknown>(`/orders/${orderId}/production-updates`, data, headers),
 
-  /** POST /orders/:id/payments — pay deposit or full payment */
   createPayment: (
     orderId: string | number,
     data: {
@@ -59,21 +58,17 @@ export const ordersApi = {
     },
   ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/payments`, data),
 
-  /** POST /orders/:id/confirm-receipt — customer confirms goods received */
   confirmReceipt: (
     orderId: string | number,
     data: { note?: string; received_at?: string },
   ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/confirm-receipt`, data),
 
-  /** DELETE /orders/:id — cancel an order */
   cancel: (orderId: string | number) =>
     httpClient.delete<{ message: string }>(`/orders/${orderId}`),
 
-  /** GET /orders/:id/review-state — check if review is eligible */
   getReviewState: (orderId: string | number) =>
     httpClient.get<Record<string, unknown>>(`/orders/${orderId}/review-state`),
 
-  /** POST /orders/:id/reviews — submit a review */
   createReview: (
     orderId: string | number,
     data: { rating: number; comment: string; image_urls?: string[] },

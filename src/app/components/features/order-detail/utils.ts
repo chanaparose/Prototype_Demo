@@ -18,7 +18,6 @@ export function formatDateTh(dateStr: string): string {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
 
-/** Calendar-day difference from now to `iso` (end of due date friendly). */
 export function diffDaysFromNow(iso: string | undefined | null): number {
   if (!iso) return 999;
   const target = new Date(iso);

@@ -12,7 +12,6 @@ type Props = {
   onChange?: (next: string[]) => void;
   disabled?: boolean;
   onPreviewUrl?: (url: string) => void;
-  /** Called when upload fails (e.g. toast) */
   onUploadError?: (message: string) => void;
 };
 

@@ -3,7 +3,6 @@ import type { Conversation } from '@/stores/types';
 import type { ApiConversation } from '@/utils/chatContract';
 import { pickScalarString } from '@/utils/pickScalarString';
 
-/** Store/bootstrap model used by layout and legacy ChatRoom preview. */
 export function mapConversationToStoreModel(
   conv: IConversationResponse,
   viewerRole?: 'CT' | 'FT',

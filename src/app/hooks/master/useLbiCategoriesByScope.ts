@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
 
@@ -13,11 +14,7 @@ export function useLbiCategoriesByScope(scope: 'PD' | 'MT' | 'ALL') {
     queryKey: masterKeys.lbiCategories(scope),
     queryFn: async () => {
       const raw = await masterApi.lbiCategories(scope);
-      const obj = raw as Record<string, unknown>;
-      const arr = (
-        Array.isArray(obj.categories) ? obj.categories : Array.isArray(raw) ? raw : []
-      ) as Record<string, unknown>[];
-      return arr
+      return apiListAsRecords(raw, ['categories'])
         .map((r): CategoryOption | null => {
           const id = Number(r.category_id ?? r.id);
           const name = String(r.name ?? r.category_name ?? '').trim();

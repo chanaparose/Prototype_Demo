@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { useDisclosure } from '@/hooks/ui/useDisclosure';
-import { useToggle } from '@/hooks/ui/useToggle';
 import {
   Quote,
   Minus,
@@ -128,8 +127,8 @@ export function MarkdownEditor({
   const [tab, setTab] = useState<'write' | 'preview'>('write');
 
   // Upload and focus states
-  const { state: uploading, toggle: toggleUploading, close: closeUploading } = useToggle(false);
-  const { state: focused, open: focusOn, close: focusOff } = useToggle(false);
+  const [uploading, setUploading] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   const {
     isOpen: isTemplateModalOpen,
@@ -171,7 +170,7 @@ export function MarkdownEditor({
 
   const onPickImage = async (file: File | null) => {
     if (!file || disabled) return;
-    toggleUploading();
+    setUploading(true);
     void mediaApi
       .upload(file)
       .then((up) => {
@@ -179,7 +178,7 @@ export function MarkdownEditor({
         if (!url) return;
         applyInsert(`![](${url})`);
       })
-      .finally(closeUploading);
+      .finally(() => setUploading(false));
   };
 
   const applyTemplate = (text: string) => {
@@ -431,8 +430,8 @@ export function MarkdownEditor({
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder || 'พิมพ์เนื้อหาของคุณที่นี่ รองรับ Markdown...'}
               disabled={disabled}
-              onFocus={focusOn}
-              onBlur={focusOff}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
             />
           </>
         ) : (

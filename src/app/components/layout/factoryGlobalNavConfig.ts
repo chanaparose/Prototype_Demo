@@ -17,9 +17,7 @@ export type FactorySidebarNavItem = {
   badge?: 'unread-messages';
   activeMatch: 'exact' | 'prefix' | 'pathname';
   activePath: string;
-  /** เส้นทางเพิ่มเติมที่ถือว่า active ในเมนูเดียวกัน */
   extraActivePaths?: string[];
-  /** ต้องอนุมัติ (AP) ก่อนเข้าได้ */
   requiresApproval?: boolean;
 };
 

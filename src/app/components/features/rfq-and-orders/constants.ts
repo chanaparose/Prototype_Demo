@@ -1,30 +1,22 @@
-/**
- * ค่าคงที่และ config สำหรับหน้า คำขอราคา & คำสั่งซื้อ
- * โทนสีอ้างอิงภาพประกอบ (ม่วงหลายระดับ / ส้ม / พีช / ครีม / แทน)
- */
+// ค่าคงที่และ config สำหรับหน้า คำขอราคา & คำสั่งซื้อ
+// โทนสีอ้างอิงภาพประกอบ (ม่วงหลายระดับ / ส้ม / พีช / ครีม / แทน)
 
-/** ม่วงหลัก (แม็กนีตา) */
 export const PRIMARY_COLOR = 'var(--brand-purple)';
 export const PRIMARY_BG = 'var(--brand-lavender)';
-/** ม่วงพลัม / วิโอเลตกลาง (พื้นที่ม่วงเข้มบนภาพ) */
 export const PLUM = 'var(--brand-violet-deep)';
 export const PLUM_SOFT_BG = 'var(--brand-violet-soft)';
 
-/** น้ำเงินเข้ม / มิดไนท์ (เงา, ตัวหนังสือเน้น) */
 export const DEEP_PURPLE = 'var(--brand-navy-deep)';
 
-/** ลิลลา / ออร์คิดอ่อน */
 const LILAC_MUTED = '#E8DDF5';
 const ORCHID = '#A78BFA';
 
-/** ส้มสด / ส้มเข้ม / พีช */
 export const ACCENT_ORANGE = 'var(--brand-orange)';
 export const ACCENT_ORANGE_DEEP = 'var(--brand-orange-vivid)';
 const PEACH_SOFT = '#FFE8D6';
 export const PEACH_MIST = 'var(--surface-peach-mist)';
 const CREAM = 'var(--surface-cream)';
 
-/** ส้มแทน / ขอบอุ่น (แทนที่เทาเย็น) */
 const TAN_MUTED = '#C4A484';
 export const BORDER_WARM = 'rgba(196, 164, 132, 0.4)';
 
@@ -47,7 +39,6 @@ export type OrderFilterId =
   | 'completed'
   | 'cancelled_expired';
 
-/** ธีมแท็บคำสั่งซื้อ (มือถือ) — สลับม่วง / ส้ม / มิดไนท์ */
 export const ORDER_MOBILE_TAB_THEME: Record<
   OrderFilterId,
   { activeBg: string; activeColor: string; badgeInactive: string }
@@ -83,7 +74,6 @@ export const RFQ_STATUS_DISPLAY: Record<string, { label: string; color: string; 
   pending: { label: 'รอดำเนินการ', color: '#C2410C', bg: PEACH_MIST },
   offers_received: { label: 'มีใบเสนอราคา', color: PLUM, bg: PLUM_SOFT_BG },
   reviewing: { label: 'มีใบเสนอราคา', color: PLUM, bg: PLUM_SOFT_BG },
-  /** RFQ.status = CL (Closed) หลังลูกค้ายอมรับใบเสนอราคา */
   completed: {
     label: 'ปิดคำขอแล้ว',
     color: 'var(--status-success)',

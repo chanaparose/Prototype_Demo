@@ -5,10 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 interface UseEditFormOptions<T extends FieldValues, Raw> {
   queryKey: readonly unknown[];
   queryFn: () => Promise<Raw>;
-  /** Map server data → form values. Return `undefined` while not ready. */
   mapper: (raw: Raw) => T;
   defaults: DefaultValues<T>;
-  /** Optional: called after values are applied to form (e.g., reset dirty state tracking). */
   onReady?: (values: T) => void;
   enabled?: boolean;
 }

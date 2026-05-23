@@ -5,7 +5,6 @@ export type SubCategoryTagProps = {
   variant?: 'solid' | 'outline';
   size?: 'sm' | 'md';
   className?: string;
-  /** ถ้า true แสดง prefix "sub: " (ตาม mock ใน spec) */
   showSubPrefix?: boolean;
 };
 

@@ -24,11 +24,8 @@ export interface ApiSubCategory {
 interface Props {
   form: UseFormReturn<ProfileFormValues>;
   factoryId: number | string;
-  /** Called by parent to register the "open category picker" handler */
   onRegisterAdd?: (handler: () => void) => void;
-  /** Raw categories from /factories/me — used as fallback when master data is unavailable */
   apiCategories?: ApiCategory[];
-  /** Raw sub_categories from /factories/me — used as fallback when master data is unavailable */
   apiSubCategories?: ApiSubCategory[];
 }
 

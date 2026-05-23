@@ -14,7 +14,6 @@ import { redirectTo } from '@/utils/navigation/redirect';
 type Props = {
   nextAction: NextAction | null;
   paymentSchedule: PaymentScheduleItem[];
-  /** PP-style copy vs PE urgency */
   variant: 'pending_deposit' | 'deposit_expired';
 
   fallbackCtaUrl?: string;

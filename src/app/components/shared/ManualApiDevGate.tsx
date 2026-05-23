@@ -6,7 +6,6 @@ type Props = {
   onLoad: () => void;
 };
 
-/** แสดงเมื่อใช้ ?manualApi=1 (dev) — กดแล้วค่อย mount โหลด API ของหน้านั้น */
 export function ManualApiDevGate({ pageLabel, onLoad }: Props) {
   return (
     <div className='min-h-[calc(100vh-6rem)] flex items-center justify-center p-6 bg-brand-page'>

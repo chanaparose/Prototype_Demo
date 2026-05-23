@@ -1,9 +1,8 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useFactoryProfileMutations } from '@/pages/factory-portal/hooks/useFactoryProfileMutations';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { profileFormSchema } from '@/domain/factory/schemas/profileForm.schema';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   Building2,
   CheckCircle,
@@ -22,9 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { factoriesApi, mediaApi } from '@/services/api/factoryApi';
-
-import { useProfileInit, profileInitKey } from '@/hooks/factory/useProfileInit';
+import { useProfileInit } from '@/hooks/factory/useProfileInit';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 
 import { FormSkeleton } from '@/components/common/FormSkeleton';
@@ -376,7 +373,6 @@ function FactoryHeroCard({
 export function FactoryProfilePage() {
   const { user, refreshUser } = useAuth();
   const fid = getFactoryEntityId(user);
-  const qc = useQueryClient();
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const initQ = useProfileInit();
@@ -427,7 +423,7 @@ export function FactoryProfilePage() {
     mode: 'onBlur',
   });
 
-  const [saving, setSaving] = useState(false);
+  const { saveProfile, uploadImage, removeCover } = useFactoryProfileMutations();
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [cropTarget, setCropTarget] = useState<'profile' | 'cover' | null>(null);
@@ -474,9 +470,10 @@ export function FactoryProfilePage() {
       sub_category_ids: normalizedSubCategoryIds,
     };
 
-    await runAsyncAction(
-      async () => {
-        await factoriesApi.saveProfile(fid, {
+    saveProfile.mutate(
+      {
+        factoryId: fid,
+        payload: {
           factory_name: v.factory_name.trim(),
           tax_id: v.tax_id.trim() || undefined,
           description: v.description.trim() || undefined,
@@ -487,46 +484,41 @@ export function FactoryProfilePage() {
           background_image_url: String(v.cover_image_url ?? ''),
           category_ids: normalizedCategoryIds,
           sub_category_ids: normalizedSubCategoryIds,
-        });
-        setOkMsg('บันทึกข้อมูลเรียบร้อย');
-        form.reset(saveDraftValues);
-        await refreshUser();
-        await qc.invalidateQueries({ queryKey: profileInitKey });
+        },
       },
       {
-        onStart: () => setSaving(true),
-        onSettled: () => setSaving(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง',
+        onSuccess: async () => {
+          setOkMsg('บันทึกข้อมูลเรียบร้อย');
+          form.reset(saveDraftValues);
+          await refreshUser();
+        },
+        onError: (err) =>
+          setError(err instanceof Error ? err.message : 'บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง'),
       },
     );
-  }, [fid, form, qc, refreshUser]);
+  }, [fid, form, refreshUser, saveProfile]);
 
   const handleUploadImage = useCallback(
     async (file: File) => {
       if (!file || !fid) return;
       setError('');
       setOkMsg('');
-      await runAsyncAction(
-        async () => {
-          const up = await mediaApi.upload(file);
-          const url = String(up?.url ?? '').trim();
-          if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
-          await factoriesApi.patch(fid, { image_url: url });
-          form.setValue('image_url', url, { shouldDirty: false });
-          setOkMsg('อัปโหลดและบันทึกรูปโปรไฟล์โรงงานแล้ว');
-          await refreshUser();
-          await qc.invalidateQueries({ queryKey: profileInitKey });
-        },
+      uploadImage.mutate(
+        { factoryId: fid, file, field: 'image_url' },
         {
-          onStart: () => setUploadingImage(true),
+          onMutate: () => setUploadingImage(true),
           onSettled: () => setUploadingImage(false),
-          onError: (message) => setError(message),
-          fallbackMessage: 'อัปโหลดหรือบันทึกรูปไม่สำเร็จ',
+          onSuccess: ({ url }) => {
+            form.setValue('image_url', url, { shouldDirty: false });
+            setOkMsg('อัปโหลดและบันทึกรูปโปรไฟล์โรงงานแล้ว');
+            void refreshUser();
+          },
+          onError: (err) =>
+            setError(err instanceof Error ? err.message : 'อัปโหลดหรือบันทึกรูปไม่สำเร็จ'),
         },
       );
     },
-    [fid, form, qc, refreshUser],
+    [fid, form, refreshUser, uploadImage],
   );
 
   const handleUploadCover = useCallback(
@@ -534,26 +526,22 @@ export function FactoryProfilePage() {
       if (!file || !fid) return;
       setError('');
       setOkMsg('');
-      await runAsyncAction(
-        async () => {
-          const up = await mediaApi.upload(file);
-          const url = String(up?.url ?? '').trim();
-          if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
-          await factoriesApi.patch(fid, { background_image_url: url });
-          form.setValue('cover_image_url', url, { shouldDirty: false });
-          setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
-          await refreshUser();
-          await qc.invalidateQueries({ queryKey: profileInitKey });
-        },
+      uploadImage.mutate(
+        { factoryId: fid, file, field: 'background_image_url' },
         {
-          onStart: () => setUploadingCover(true),
+          onMutate: () => setUploadingCover(true),
           onSettled: () => setUploadingCover(false),
-          onError: (message) => setError(message),
-          fallbackMessage: 'อัปโหลดหรือบันทึกพื้นหลังไม่สำเร็จ',
+          onSuccess: ({ url }) => {
+            form.setValue('cover_image_url', url, { shouldDirty: false });
+            setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
+            void refreshUser();
+          },
+          onError: (err) =>
+            setError(err instanceof Error ? err.message : 'อัปโหลดหรือบันทึกพื้นหลังไม่สำเร็จ'),
         },
       );
     },
-    [fid, form, qc, refreshUser],
+    [fid, form, refreshUser, uploadImage],
   );
 
   const handleRemoveCover = useCallback(async () => {
@@ -567,22 +555,18 @@ export function FactoryProfilePage() {
     if (!ok) return;
     setError('');
     setOkMsg('');
-    await runAsyncAction(
-      async () => {
-        await factoriesApi.patch(fid, { background_image_url: '' });
+    removeCover.mutate(fid, {
+      onMutate: () => setUploadingCover(true),
+      onSettled: () => setUploadingCover(false),
+      onSuccess: async () => {
         form.setValue('cover_image_url', '', { shouldDirty: false });
         setOkMsg('ลบรูปพื้นหลังแล้ว');
         await refreshUser();
-        await qc.invalidateQueries({ queryKey: profileInitKey });
       },
-      {
-        onStart: () => setUploadingCover(true),
-        onSettled: () => setUploadingCover(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'ลบพื้นหลังไม่สำเร็จ',
-      },
-    );
-  }, [confirm, fid, form, qc, refreshUser]);
+      onError: (err) =>
+        setError(err instanceof Error ? err.message : 'ลบพื้นหลังไม่สำเร็จ'),
+    });
+  }, [confirm, fid, form, refreshUser, removeCover]);
 
   const openCropper = useCallback((target: 'profile' | 'cover', file: File) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -827,7 +811,7 @@ export function FactoryProfilePage() {
       <ProfileSaveBar
         isDirty={isDirty}
         changeCount={changeCount}
-        saving={saving}
+        saving={saveProfile.isPending}
         onSave={() => void handleSave()}
         onDiscard={() => form.reset(initialValues)}
       />

@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { certificatesApi } from '@/services/api/userApi';
 import { factoryKeys } from '@/lib/queryKeys';
-
-type Row = Record<string, unknown>;
 
 export function useFactoryCerts(factoryId: number | string | null | undefined) {
   const enabled = factoryId != null && String(factoryId).trim() !== '';
@@ -11,7 +10,7 @@ export function useFactoryCerts(factoryId: number | string | null | undefined) {
     enabled,
     queryFn: async () => {
       const raw = await certificatesApi.list(factoryId as string | number);
-      return (Array.isArray(raw) ? raw : []) as Row[];
+      return apiListAsRecords(raw);
     },
     staleTime: 0,
     refetchOnWindowFocus: false,

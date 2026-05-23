@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
 import { ordersApi } from '@/services/api/ordersApi';
 import { walletApi } from '@/services/api/userApi';
 import { factoriesApi } from '@/services/api/factoryApi';
+import { apiListAsRecords, asRecord, nestedRecord, type ApiRecord } from '@/lib/apiShape';
+import { factoryKeys } from '@/lib/queryKeys';
+import { getErrorMessage } from '@/lib/apiError';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type AnalyticsTimeframe = 'daily' | 'weekly' | 'monthly';
@@ -31,49 +34,44 @@ export type AnalyticsSummary = {
   pending_quotations_total: number;
 };
 
-function orderFactoryId(row: Record<string, unknown>): number | null {
-  const inner = (row.order as Record<string, unknown>) ?? row;
-  const n = pickScalarNumber(inner.factory_id, row.factory_id, row.factoryId);
+function orderFactoryId(row: ApiRecord): number | null {
+  const inner = nestedRecord(row, 'order');
+  const n = pickScalarNumber(inner.factory_id, row.factory_id);
   return Number.isFinite(n) ? n : null;
 }
 
-function orderStatus(row: Record<string, unknown>): string {
-  const inner = (row.order as Record<string, unknown>) ?? row;
+function orderStatus(row: ApiRecord): string {
+  const inner = nestedRecord(row, 'order');
   return pickScalarString(inner.status, row.status).toUpperCase();
 }
 
-function orderCreatedTs(row: Record<string, unknown>): number | null {
-  const inner = (row.order as Record<string, unknown>) ?? row;
+function orderCreatedTs(row: ApiRecord): number | null {
+  const inner = nestedRecord(row, 'order');
   const raw = pickScalarString(inner.created_at, row.created_at, inner.updated_at, row.updated_at);
   if (!raw) return null;
   const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : null;
 }
 
-function orderTotalAmount(row: Record<string, unknown>): number {
-  const inner = (row.order as Record<string, unknown>) ?? row;
-  return pickScalarNumber(
-    inner.total_amount,
-    inner.totalAmount,
-    row.total_amount,
-    row.totalAmount,
-  ) ?? 0;
+function orderTotalAmount(row: ApiRecord): number {
+  const inner = nestedRecord(row, 'order');
+  return pickScalarNumber(inner.total_amount, row.total_amount) ?? 0;
 }
 
-function rfqCreatedTs(r: Record<string, unknown>): number | null {
+function rfqCreatedTs(r: ApiRecord): number | null {
   const raw = pickScalarString(r.created_at, r.createdAt);
   if (!raw) return null;
   const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : null;
 }
 
-function quoteFactoryId(q: Record<string, unknown>): number | null {
-  const n = pickScalarNumber(q.factory_id, q.factoryId);
+function quoteFactoryId(q: ApiRecord): number | null {
+  const n = pickScalarNumber(q.factory_id);
   return Number.isFinite(n) ? n : null;
 }
 
-function quoteCreatedTs(q: Record<string, unknown>): number | null {
-  const raw = pickScalarString(q.created_at, q.updated_at, q.createdAt);
+function quoteCreatedTs(q: ApiRecord): number | null {
+  const raw = pickScalarString(q.created_at, q.updated_at);
   if (!raw) return null;
   const t = new Date(raw).getTime();
   return Number.isFinite(t) ? t : null;
@@ -201,22 +199,23 @@ function buildSeries(
   });
 }
 
+type DashboardFetchResult = {
+  opRfqs: ApiRecord[];
+  allOrders: ApiRecord[];
+  myQuotes: ApiRecord[];
+  wallet: ApiRecord | null;
+  analyticsApi: ApiRecord | null;
+  dashboardApi: ApiRecord | null;
+  allFailed: boolean;
+};
+
 export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [opRfqs, setOpRfqs] = useState<Record<string, unknown>[]>([]);
-  const [allOrders, setAllOrders] = useState<Record<string, unknown>[]>([]);
-  const [myQuotes, setMyQuotes] = useState<Record<string, unknown>[]>([]);
-  const [wallet, setWallet] = useState<Record<string, unknown> | null>(null);
-  const [analyticsApi, setAnalyticsApi] = useState<Record<string, unknown> | null>(null);
-  const [dashboardApi, setDashboardApi] = useState<Record<string, unknown> | null>(null);
-
-  const load = useCallback(async () => {
-    await runAsyncAction(
-      async () => {
+  const dashboardQuery = useQuery({
+    queryKey: factoryKeys.dashboard(),
+    queryFn: async (): Promise<DashboardFetchResult> => {
       const [rfqRes, ordRes, qRes, wRes, aRes, dRes] = await Promise.allSettled([
         rfqsApi.matching(),
         ordersApi.list(),
@@ -225,70 +224,37 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
         factoriesApi.getAnalytics(),
         factoriesApi.getDashboard(),
       ]);
-
-      if (rfqRes.status === 'fulfilled') {
-        const arr = Array.isArray(rfqRes.value) ? rfqRes.value : [];
-        setOpRfqs(arr as Record<string, unknown>[]);
-      } else {
-        setOpRfqs([]);
-      }
-
-      if (ordRes.status === 'fulfilled') {
-        const arr = Array.isArray(ordRes.value) ? ordRes.value : [];
-        setAllOrders(arr as unknown as Record<string, unknown>[]);
-      } else {
-        setAllOrders([]);
-      }
-
-      if (qRes.status === 'fulfilled') {
-        const arr = Array.isArray(qRes.value) ? qRes.value : [];
-        setMyQuotes(arr as unknown as Record<string, unknown>[]);
-      } else {
-        setMyQuotes([]);
-      }
-
-      if (wRes.status === 'fulfilled' && wRes.value && typeof wRes.value === 'object') {
-        setWallet(wRes.value as Record<string, unknown>);
-      } else {
-        setWallet(null);
-      }
-
-      if (aRes.status === 'fulfilled' && aRes.value && typeof aRes.value === 'object') {
-        setAnalyticsApi(aRes.value as unknown as Record<string, unknown>);
-      } else {
-        setAnalyticsApi(null);
-      }
-
-      if (dRes.status === 'fulfilled' && dRes.value && typeof dRes.value === 'object') {
-        setDashboardApi(dRes.value as unknown as Record<string, unknown>);
-      } else {
-        setDashboardApi(null);
-      }
-
-      if (
+      const allFailed =
         rfqRes.status === 'rejected' &&
         ordRes.status === 'rejected' &&
         qRes.status === 'rejected' &&
         wRes.status === 'rejected' &&
         aRes.status === 'rejected' &&
-        dRes.status === 'rejected'
-      ) {
-        setError('โหลดข้อมูลแดชบอร์ดไม่สำเร็จ');
-      }
-      },
-      {
-        onStart: () => {
-          setLoading(true);
-          setError(null);
-        },
-        onSettled: () => setLoading(false),
-      },
-    );
-  }, []);
+        dRes.status === 'rejected';
+      return {
+        opRfqs: rfqRes.status === 'fulfilled' ? apiListAsRecords(rfqRes.value) : [],
+        allOrders: ordRes.status === 'fulfilled' ? apiListAsRecords(ordRes.value) : [],
+        myQuotes: qRes.status === 'fulfilled' ? apiListAsRecords(qRes.value) : [],
+        wallet: wRes.status === 'fulfilled' ? asRecord(wRes.value) : null,
+        analyticsApi: aRes.status === 'fulfilled' ? asRecord(aRes.value) : null,
+        dashboardApi: dRes.status === 'fulfilled' ? asRecord(dRes.value) : null,
+        allFailed,
+      };
+    },
+  });
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const opRfqs = dashboardQuery.data?.opRfqs ?? [];
+  const allOrders = dashboardQuery.data?.allOrders ?? [];
+  const myQuotes = dashboardQuery.data?.myQuotes ?? [];
+  const wallet = dashboardQuery.data?.wallet ?? null;
+  const analyticsApi = dashboardQuery.data?.analyticsApi ?? null;
+  const dashboardApi = dashboardQuery.data?.dashboardApi ?? null;
+  const loading = dashboardQuery.isLoading;
+  const error = dashboardQuery.data?.allFailed
+    ? 'โหลดข้อมูลแดชบอร์ดไม่สำเร็จ'
+    : dashboardQuery.error
+      ? getErrorMessage(dashboardQuery.error, 'โหลดข้อมูลแดชบอร์ดไม่สำเร็จ')
+      : null;
 
   const mineOrders = useMemo(() => {
     if (fid == null) return [];
@@ -360,5 +326,5 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
     return buildSeries(mineOrders, opRfqs, myQuotes, fid, timeframe);
   }, [mineOrders, opRfqs, myQuotes, fid, timeframe]);
 
-  return { loading, error, summary, series, reload: load };
+  return { loading, error, summary, series, reload: () => dashboardQuery.refetch() };
 }

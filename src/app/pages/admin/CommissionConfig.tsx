@@ -1,55 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
-import { platformConfigApi } from '@/services/api/adminApi';
-import type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
+import React from 'react';
+import { useCommissionConfig } from '@/pages/admin/hooks/useCommissionConfig';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
-type FormState = {
-  default_commission_rate: number;
-  promo_enabled: boolean;
-  promo_commission_rate: number;
-  promo_label: string;
-  promo_start_at: string;
-  promo_end_at: string;
-  vat_rate: number;
-};
-
-function fromConfig(c: IPlatformConfigResponse): FormState {
-  return {
-    default_commission_rate: c.default_commission_rate ?? 0,
-    promo_enabled: c.promo_commission_rate != null,
-    promo_commission_rate: c.promo_commission_rate ?? 0,
-    promo_label: c.promo_label ?? '',
-    promo_start_at: c.promo_start_at ?? '',
-    promo_end_at: c.promo_end_at ?? '',
-    vat_rate: c.vat_rate ?? 0,
-  };
-}
-
 export function CommissionConfig() {
-  const [active, setActive] = useState<IPlatformConfigResponse | null>(null);
-  const [history, setHistory] = useState<IPlatformConfigResponse[]>([]);
-  const [form, setForm] = useState<FormState | null>(null);
-  const [saving, setSaving] = useState(false);
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const { active, history, form, setForm, loading, saveVersion } = useCommissionConfig();
 
-  useEffect(() => {
-    void (async () => {
-      const [a, h] = await Promise.all([
-        platformConfigApi.getActive(),
-        platformConfigApi.history(),
-      ]);
-      setActive(a);
-      setHistory(h);
-      setForm(fromConfig(a));
-    })();
-  }, []);
-
-  if (!form || !active) return <div className='px-4 py-8 text-sm text-gray-500'>กำลังโหลด...</div>;
+  if (loading || !form || !active) {
+    return <div className='px-4 py-8 text-sm text-gray-500'>กำลังโหลด...</div>;
+  }
 
   return (
     <div className='max-w-3xl mx-auto px-4 py-6 space-y-4'>
@@ -140,39 +103,20 @@ export function CommissionConfig() {
         <Button
           variant='unstyled'
           type='button'
-          disabled={saving}
+          disabled={saveVersion.isPending}
           onClick={async () => {
             const ok = await confirm({
               title: 'บันทึก commission rate ใหม่?',
-              description: 'การเปลี่ยน rate จะมีผลกับ quote ใหม่เท่านั้น quote ที่ submit แล้วใช้ rate เดิม',
+              description:
+                'การเปลี่ยน rate จะมีผลกับ quote ใหม่เท่านั้น quote ที่ submit แล้วใช้ rate เดิม',
               confirmText: 'บันทึกเวอร์ชันใหม่',
             });
             if (!ok) return;
-            await runAsyncAction(
-              async () => {
-                const created = await platformConfigApi.create({
-                  default_commission_rate: form.default_commission_rate,
-                  promo_commission_rate: form.promo_enabled ? form.promo_commission_rate : null,
-                  promo_label: form.promo_enabled ? form.promo_label : null,
-                  promo_start_at: form.promo_enabled ? form.promo_start_at : null,
-                  promo_end_at: form.promo_enabled ? form.promo_end_at : null,
-                  vat_rate: form.vat_rate,
-                  currency_code: active.currency_code,
-                });
-                setActive(created);
-                setForm(fromConfig(created));
-                const h = await platformConfigApi.history();
-                setHistory(h);
-              },
-              {
-                onStart: () => setSaving(true),
-                onSettled: () => setSaving(false),
-              },
-            );
+            saveVersion.mutate({ form, currencyCode: active.currency_code });
           }}
           className='w-full py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50'
         >
-          {saving ? 'Saving...' : 'Save -> New Ver'}
+          {saveVersion.isPending ? 'Saving...' : 'Save -> New Ver'}
         </Button>
       </div>
 

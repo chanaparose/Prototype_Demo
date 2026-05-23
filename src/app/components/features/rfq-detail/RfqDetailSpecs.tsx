@@ -14,7 +14,6 @@ export type RfqForSpecs = {
   description?: string;
   imageUrls?: string[];
   subCategoryName?: string;
-  /** จาก GET /rfqs/:id — แสดงแถวประเภทย่อยแม้ยัง resolve ชื่อไม่ได้ */
   subCategoryId?: number;
   shippingMethodName?: string;
   deliveryAddress?: string;

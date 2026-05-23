@@ -1,10 +1,7 @@
-/**
- * useMeRFQOrdersQuery
- *
- * Fetches the unified /api/v1/me/rfq-orders endpoint and maps the response
- * into the existing Rfq[] and Order[] UI models so all existing components
- * work without modification.
- */
+// useMeRFQOrdersQuery
+// Fetches the unified /api/v1/me/rfq-orders endpoint and maps the response
+// into the existing Rfq[] and Order[] UI models so all existing components
+// work without modification.
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';

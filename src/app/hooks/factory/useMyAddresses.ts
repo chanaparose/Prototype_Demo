@@ -1,15 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { httpClient } from '@/services/api/httpClient';
 import { addressKeys } from '@/lib/queryKeys';
-
-type Row = Record<string, unknown>;
 
 export function useMyAddresses() {
   return useQuery({
     queryKey: addressKeys.me(),
     queryFn: async () => {
-      const raw = await httpClient.get<Row[] | { data: Row[] }>('/addresses');
-      return (Array.isArray(raw) ? raw : Array.isArray((raw as { data: Row[] }).data) ? (raw as { data: Row[] }).data : []) as Row[];
+      const raw = await httpClient.get<unknown>('/addresses');
+      return apiListAsRecords(raw);
     },
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,

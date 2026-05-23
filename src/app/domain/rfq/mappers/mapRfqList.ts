@@ -10,11 +10,9 @@ import {
 
 export type RfqListResult = { rfqs: Rfq[]; orders: Order[] };
 
-/**
- * ดึงข้อมูล RFQ + Order จาก /frontend/bootstrap (แทน /me/rfq-orders)
- * Bootstrap คืน rfqs[] และ orders[] แยกกัน พร้อม status ที่ map ไว้แล้วบน BE
- * (เช่น 'in_production', 'shipped', 'completed', 'pp' สำหรับ pending_payment)
- */
+// ดึงข้อมูล RFQ + Order จาก /frontend/bootstrap (แทน /me/rfq-orders)
+// Bootstrap คืน rfqs[] และ orders[] แยกกัน พร้อม status ที่ map ไว้แล้วบน BE
+// (เช่น 'in_production', 'shipped', 'completed', 'pp' สำหรับ pending_payment)
 export async function fetchAndMapRfqList(): Promise<RfqListResult> {
   const bootstrap = await frontendApi.getBootstrap();
 

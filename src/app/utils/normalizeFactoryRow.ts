@@ -15,7 +15,6 @@ function pickFactoryAvatarUrl(row: Record<string, unknown>): string {
   return pickScalarString(row.image_url, row.image, row.logo_url);
 }
 
-/** แปลงแถวโรงงานจาก API (bootstrap / frontend/factories ฯลฯ) → รูปแบบ Factory ของแอป */
 export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = ''): Factory {
   const id = pickScalarString(row.id, row.factory_id, idFallback);
   const ftn = pickScalarString(row.factory_type_name, row.factoryTypeName);

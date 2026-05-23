@@ -1,26 +1,20 @@
-/**
- * Tour mock registry — provides canned API responses while the ProductTour
- * is walking a guest user through the steps. Keeps real navigation working
- * (so the spotlight ring can highlight real components) but ensures every
- * user sees the same demo data even without an account or live order.
- *
- * Lifecycle:
- *   ProductTour.tsx → activateTourMocks('product')        on entering step 3
- *   ProductTour.tsx → activateTourMocks('messages')       on entering step 4
- *   ProductTour.tsx → activateTourMocks('rfq')            on entering step 5
- *   ProductTour.tsx → activateTourMocks('order')          on entering step 6
- *   ProductTour.tsx → clearTourMocks()                    on close/finish
- *
- * Intercept point: services/api.ts → request() checks getTourMockResponse(endpoint)
- * before fetching. If a match is returned, the real network call is skipped.
- */
+// Tour mock registry — provides canned API responses while the ProductTour
+// is walking a guest user through the steps. Keeps real navigation working
+// (so the spotlight ring can highlight real components) but ensures every
+// user sees the same demo data even without an account or live order.
+// Lifecycle:
+// ProductTour.tsx → activateTourMocks('product')        on entering step 3
+// ProductTour.tsx → activateTourMocks('messages')       on entering step 4
+// ProductTour.tsx → activateTourMocks('rfq')            on entering step 5
+// ProductTour.tsx → activateTourMocks('order')          on entering step 6
+// ProductTour.tsx → clearTourMocks()                    on close/finish
+// Intercept point: services/api.ts → request() checks getTourMockResponse(endpoint)
+// before fetching. If a match is returned, the real network call is skipped.
 
 export type TourScenario = 'product' | 'messages' | 'rfq' | 'order';
 
 type MockEntry = {
-  /** Match by exact endpoint (e.g. "/showcases/14") OR by RegExp */
   match: string | RegExp;
-  /** HTTP method to intercept; default GET */
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   body: unknown;
 };
@@ -29,7 +23,6 @@ let activeMocks: MockEntry[] = [];
 let tourActive = false;
 const tourActiveListeners = new Set<(active: boolean) => void>();
 
-/** True while the ProductTour is walking the user through any step. */
 export function isTourActive(): boolean {
   return tourActive;
 }
@@ -40,7 +33,6 @@ export function setTourActive(active: boolean): void {
   tourActiveListeners.forEach((fn) => fn(active));
 }
 
-/** React-friendly subscription. Returns unsubscribe. */
 export function subscribeTourActive(fn: (active: boolean) => void): () => void {
   tourActiveListeners.add(fn);
   return () => {

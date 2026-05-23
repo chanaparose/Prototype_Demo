@@ -1,15 +1,11 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import React, { useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
-import type { IQuotationResponse } from '@/services/api/types/rfq.types';
 import { getFactoryEntityId } from '@/utils/factoryUser';
-import { factoryRfqsApi, quotationsApi } from '@/services/api/rfqApi';
-import { conversationsApi, messagesApi } from '@/services/api/chatApi';
-import { buildSendPayload, chatRoomPath, getCurrentUserId } from '@/utils/chatContract';
-import type { ApiConversation } from '@/utils/chatContract';
+import { chatRoomPath } from '@/utils/chatContract';
+import { useFactoryRfqDetailPage, type FactoryRfqQuoteRow } from '@/pages/factory-portal/hooks/useFactoryRfqDetailPage';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
@@ -26,12 +22,7 @@ import { Image } from '@/components/ui/image';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { formatCompactNumber, formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
-type QuoteRow = IQuotationResponse & {
-  factoryId?: number | string;
-  id?: number | string;
-  mold_cost?: number | string;
-  image_urls?: unknown;
-};
+type QuoteRow = FactoryRfqQuoteRow;
 
 function quoteFid(q: QuoteRow): number | null {
   const qRecord = q as unknown as Record<string, unknown>;
@@ -47,10 +38,6 @@ function quoteFid(q: QuoteRow): number | null {
       factoryObj?.id,
   );
   return Number.isFinite(n) ? n : null;
-}
-
-function quoteIdOf(q: QuoteRow): string {
-  return String(q.quote_id ?? q.id ?? '');
 }
 
 function rfqStatusLabel(status: string): string {
@@ -86,48 +73,32 @@ export function FactoryRfqDetailPage() {
   const fid = getFactoryEntityId(user);
   const isDesktop = useIsDesktop();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [rfqTitle, setRfqTitle] = useState('');
-  const [rfqBody, setRfqBody] = useState<Record<string, unknown>>({});
-  const [quotes, setQuotes] = useState<QuoteRow[]>([]);
-  const [subCategoryName, setSubCategoryName] = useState('');
-  const [commissionConfig, setCommissionConfig] = useState<{ vat_rate: number; commission_rate: number } | null>(null);
+  const {
+    loading,
+    error,
+    setError,
+    rfqTitle,
+    rfqBody,
+    quotes,
+    subCategoryName,
+    commissionConfig,
+    reload,
+    cancelQuote: cancelQuoteMutation,
+    dismissRfq: dismissRfqMutation,
+    undismissRfq: undismissRfqMutation,
+    openChat,
+    sendQuoteInChat,
+    quoteIdOf,
+  } = useFactoryRfqDetailPage(id);
 
   const quoteFormRef = useRef<QuotationCreateFormHandle>(null);
-
-  const [cancelBusy, setCancelBusy] = useState(false);
-  const [dismissBusy, setDismissBusy] = useState(false);
-  const [chatBusy, setChatBusy] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    if (!id) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const detail = await factoryRfqsApi.getRFQDetail(id);
-        const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
-        setRfqTitle(String(rfq.title ?? ''));
-        setRfqBody(rfq);
-        setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as unknown as QuoteRow[]) : []);
-        setSubCategoryName(String(rfq.sub_category_name ?? '').trim());
-        if (detail.commission_config) setCommissionConfig(detail.commission_config);
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'โหลดไม่สำเร็จ',
-      },
-    );
-  }, [id]);
+  const cancelBusy = cancelQuoteMutation.isPending;
+  const dismissBusy = dismissRfqMutation.isPending || undismissRfqMutation.isPending;
+  const chatBusy = openChat.isPending || sendQuoteInChat.isPending;
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const myQuote = fid != null ? quotes.find((q) => quoteFid(q) === fid) : undefined;
+  const myQuote = fid == null ? undefined : quotes.find((q) => quoteFid(q) === fid);
   const myStatus = myQuote ? String(myQuote.status ?? 'PD').toUpperCase() : '';
   const canEdit = Boolean(myQuote && myStatus === 'PD');
   const canDismiss = useMemo(() => {
@@ -221,107 +192,27 @@ export function FactoryRfqDetailPage() {
     [rfqBody],
   );
 
-  const findExistingConvId = async (): Promise<number | null> => {
-    const convsRaw = await conversationsApi.list();
-    const convs = (() => {
-      if (Array.isArray(convsRaw)) return convsRaw as unknown as Array<Record<string, unknown>>;
-      if (convsRaw && typeof convsRaw === 'object') {
-        const root = convsRaw as Record<string, unknown>;
-        const c1 = root.conversations;
-        if (Array.isArray(c1)) return c1 as Array<Record<string, unknown>>;
-        const c2 = root.data;
-        if (Array.isArray(c2)) return c2 as Array<Record<string, unknown>>;
-        const c3 = root.items;
-        if (Array.isArray(c3)) return c3 as Array<Record<string, unknown>>;
-        const c4 = root.results;
-        if (Array.isArray(c4)) return c4 as Array<Record<string, unknown>>;
-      }
-      return [] as Array<Record<string, unknown>>;
-    })();
-
-    const customerIdOf = (c: Record<string, unknown>): number =>
-      Number(
-        c.customer_id ??
-          c.customerId ??
-          (c.customer as Record<string, unknown> | undefined)?.user_id ??
-          0,
-      );
-    const factoryIdOf = (c: Record<string, unknown>): number =>
-      Number(
-        c.factory_id ??
-          c.factoryId ??
-          (c.factory as Record<string, unknown> | undefined)?.user_id ??
-          0,
-      );
-
-    let hit = convs.find((c) => customerIdOf(c) === customerId && factoryIdOf(c) === fid);
-
-    if (!hit && customerId > 0) {
-      hit = convs.find((c) => customerIdOf(c) === customerId);
-    }
-
-    const convId = Number(hit?.conv_id ?? hit?.conversation_id ?? hit?.id ?? 0);
-
-    return Number.isFinite(convId) && convId > 0 ? convId : null;
-  };
-
-  const ensureConversationId = async (): Promise<number> => {
-    const existing = await findExistingConvId();
-    if (existing) return existing;
-
-    const created = await conversationsApi.create({
-      customer_id: customerId,
-      factory_id: fid as number,
-    });
-
-    const root = (created && typeof created === 'object' ? created : {}) as Record<string, unknown>;
-    const row = (root.data && typeof root.data === 'object' ? root.data : null) as Record<
-      string,
-      unknown
-    > | null;
-    const convId = Number(
-      root.conv_id ??
-        root.conversation_id ??
-        root.id ??
-        row?.conv_id ??
-        row?.conversation_id ??
-        row?.id ??
-        0,
-    );
-    if (!Number.isFinite(convId) || convId <= 0) {
-      throw new Error('สร้างห้องแชทไม่สำเร็จ (ไม่พบ conv_id)');
-    }
-
-    return convId;
-  };
-
-  const openChatToCustomer = async () => {
+  const openChatToCustomer = () => {
     if (fid == null || !Number.isFinite(customerId) || customerId <= 0) {
       setError('ไม่พบรหัสลูกค้าใน RFQ');
       return;
     }
     setError('');
-    await runAsyncAction(
-      async () => {
-        const convId = await ensureConversationId();
-        navigate(chatRoomPath(convId), {
-          state: {
-            reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
-          },
-        });
-      },
+    openChat.mutate(
+      { customerId, rfqTitle: rfqTitle || `RFQ #${id}` },
       {
-        onStart: () => setChatBusy(true),
-        onSettled: () => setChatBusy(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'เปิดแชทไม่สำเร็จ',
+        onSuccess: (convId) =>
+          navigate(chatRoomPath(convId), {
+            state: {
+              reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
+            },
+          }),
       },
     );
   };
 
-  const sendQuoteMessageToCustomer = async () => {
-    const uid = getCurrentUserId(user);
-    if (fid == null || !Number.isFinite(customerId) || customerId <= 0 || uid == null) {
+  const sendQuoteMessageToCustomer = () => {
+    if (fid == null || !Number.isFinite(customerId) || customerId <= 0) {
       setError('ไม่พบข้อมูลลูกค้าหรือบัญชี');
       return;
     }
@@ -340,85 +231,30 @@ export function FactoryRfqDetailPage() {
       valid_until: until.toISOString().slice(0, 10),
     });
     setError('');
-    await runAsyncAction(
-      async () => {
-        const convId = await ensureConversationId();
-        const apiConv: ApiConversation = {
-          conv_id: convId,
-          customer_id: customerId,
-          factory_id: fid,
-          unread_customer: 0,
-          unread_factory: 0,
-          has_quote: false,
-          updated_at: new Date().toISOString(),
-        };
-        await messagesApi.send(
-          convId,
-          buildSendPayload({
-            conv: apiConv,
-            currentUserId: uid,
-            content: 'ใบเสนอราคา',
-            messageType: 'QT',
-            reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
-            quoteData,
-          }),
-        );
-        navigate(chatRoomPath(convId));
-      },
-      {
-        onStart: () => setChatBusy(true),
-        onSettled: () => setChatBusy(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'ส่งใบเสนอราคาในแชทไม่สำเร็จ',
-      },
+    sendQuoteInChat.mutate(
+      { customerId, rfqTitle: rfqTitle || `RFQ #${id}`, quoteData },
+      { onSuccess: (convId) => navigate(chatRoomPath(convId)) },
     );
   };
 
-  const cancelQuote = async () => {
+  const cancelQuote = () => {
     if (!myQuote) return;
     const qid = quoteIdOf(myQuote);
     if (!qid) return;
     setError('');
-    await runAsyncAction(
-      async () => {
-        await quotationsApi.delete(qid);
-        await load();
-      },
-      {
-        onStart: () => setCancelBusy(true),
-        onSettled: () => setCancelBusy(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'ยกเลิกใบเสนอราคาไม่สำเร็จ',
-      },
-    );
+    cancelQuoteMutation.mutate(qid);
   };
 
   const dismissRfq = async () => {
     if (!id) return;
-    setDismissBusy(true);
     setError('');
-    return factoryRfqsApi
-      .dismiss(id)
-      .then(() => navigate(backPath))
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : 'ซ่อน RFQ ไม่สำเร็จ');
-        throw e;
-      })
-      .finally(() => setDismissBusy(false));
+    dismissRfqMutation.mutate(undefined, { onSuccess: () => navigate(backPath) });
   };
 
   const undismissRfq = async () => {
     if (!id) return;
-    setDismissBusy(true);
     setError('');
-    return factoryRfqsApi
-      .undismiss(id)
-      .then(() => load())
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : 'คืน RFQ ไม่สำเร็จ');
-        throw e;
-      })
-      .finally(() => setDismissBusy(false));
+    undismissRfqMutation.mutate();
   };
 
   const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';
@@ -719,8 +555,8 @@ export function FactoryRfqDetailPage() {
                     targetDaysCustomer={targetDaysCustomer}
                     deadlineIso={deadlineIso}
                     commissionConfig={commissionConfig}
-                    onSubmitted={async () => {
-                      await load();
+                    onSubmitted={() => {
+                      void reload();
                     }}
                   />
                 ) : null}

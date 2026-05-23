@@ -1,4 +1,3 @@
-/** Aligns with backend: max 5 unique URLs per review (REVIEW_IMAGE_FE_HANDOFF). */
 export const REVIEW_IMAGE_MAX = 5;
 
 export function normalizeReviewImageUrls(input: unknown): string[] {

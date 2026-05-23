@@ -49,6 +49,8 @@ export const factoryKeys = {
   reviewsSummary: (id: string | number) => [...factoryKeys.all, String(id), 'reviews-summary'] as const,
   reviewsList: (id: string | number) => [...factoryKeys.all, String(id), 'reviews-list'] as const,
   orders: (id: string | number | null | undefined) => [...factoryKeys.all, 'orders', id] as const,
+  dashboard: () => [...factoryKeys.all, 'dashboard'] as const,
+  rfqDetail: (id: string) => [...factoryKeys.all, 'rfq-detail', id] as const,
 };
 
 export const quotationKeys = {
@@ -85,6 +87,20 @@ export const adminKeys = {
   rfqList: (status: string, search: string) =>
     [...adminKeys.all, 'rfqs', status, search] as const,
   rfqDetail: (id: string) => [...adminKeys.all, 'rfq', id] as const,
+  factoriesList: (statusTab: string, search: string) =>
+    [...adminKeys.all, 'factories', statusTab, search] as const,
+  factoryDetail: (id: string) => [...adminKeys.all, 'factory', id] as const,
+  factoryConfig: (factoryId: number) => [...adminKeys.all, 'factory-config', factoryId] as const,
+  configList: () => [...adminKeys.all, 'config-list'] as const,
+  ordersList: (filters: {
+    statusTab: string;
+    search: string;
+    dateFrom: string;
+    dateTo: string;
+  }) => [...adminKeys.all, 'orders', filters] as const,
+  platformCommission: () => [...adminKeys.all, 'platform-commission'] as const,
+  factorySettlements: (factoryId: number, page: number) =>
+    [...adminKeys.all, 'factory-settlements', factoryId, page] as const,
 };
 
 export const factoryIdeasKeys = {
@@ -127,6 +143,7 @@ export const addressKeys = {
 export const walletKeys = {
   all: ['wallet'] as const,
   me: () => [...walletKeys.all, 'me'] as const,
+  factoryPage: () => [...walletKeys.all, 'factory-page'] as const,
 };
 
 export const productionKeys = {

@@ -7,10 +7,8 @@ type Props = {
   onVerified?: () => void;
 };
 
-/**
- * ช่องชำระเงินแบบ prototype (สร้าง DP + verify) ถูกถอนออก —
- * การชำระหลักใช้จากแบนเนอร์ / ลิงก์ชำระเงินตาม flow ออเดอร์
- */
+// ช่องชำระเงินแบบ prototype (สร้าง DP + verify) ถูกถอนออก —
+// การชำระหลักใช้จากแบนเนอร์ / ลิงก์ชำระเงินตาม flow ออเดอร์
 export function OrderPendingPaymentSection(props: Props) {
   const { depositAmount } = props;
   if (!Number.isFinite(depositAmount) || depositAmount <= 0) {

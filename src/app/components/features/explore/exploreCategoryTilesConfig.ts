@@ -1,7 +1,7 @@
 import { Cat, Pill, Bone, Scissors, Package, Volleyball } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-/** หมวด 6 ช่องบน Explore — category_id + icon + สี; ชื่อจาก API ผ่าน exploreDisplayNameForTile */
+// หมวด 6 ช่องบน Explore — category_id + icon + สี; ชื่อจาก API ผ่าน exploreDisplayNameForTile
 export const EXPLORE_CATEGORY_TILES: {
   categoryId: string;
   fallbackName: string;

@@ -1,6 +1,5 @@
+import { asRecord } from '@/lib/apiShape';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
-
-type ApiRecord = Record<string, unknown>;
 
 export type ReviewItem = {
   reviewId: number;
@@ -11,10 +10,6 @@ export type ReviewItem = {
   isEditable: boolean;
   imageUrls: string[];
 };
-
-function asRecord(value: unknown): ApiRecord {
-  return value && typeof value === 'object' ? (value as ApiRecord) : {};
-}
 
 export function mapReviewItem(raw: unknown): ReviewItem | null {
   const row = asRecord(raw);

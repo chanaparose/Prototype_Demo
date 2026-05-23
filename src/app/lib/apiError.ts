@@ -65,3 +65,20 @@ export function toFormErrors(
 
   return { root: getErrorMessage(error, fallback) };
 }
+
+export function applyFormErrorsFromApi<TField extends string>(
+  err: unknown,
+  setError: (name: TField, error: { message: string }) => void,
+  allowed: readonly TField[],
+) {
+  const allowedSet = new Set(allowed);
+  const { root, fields } = toFormErrors(err);
+  if (root) setError('root' as TField, { message: root });
+  if (fields) {
+    for (const [key, message] of Object.entries(fields)) {
+      if (allowedSet.has(key as TField)) {
+        setError(key as TField, { message });
+      }
+    }
+  }
+}

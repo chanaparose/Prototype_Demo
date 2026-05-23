@@ -220,7 +220,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     setMessages,
     msgLoading,
     refreshConversations,
-    /** @deprecated Use `refreshConversations` */
+    // @deprecated Use `refreshConversations`
     refetchConversations: refreshConversations,
   };
 }

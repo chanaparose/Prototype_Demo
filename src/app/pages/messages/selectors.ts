@@ -2,12 +2,10 @@ import type { RoomMessage } from '@/components/chat/MessageBubble';
 import type { UiConversation } from '@/pages/messages/types';
 import { parseChatInstant } from '@/utils/chatTime';
 
-/**
- * Normalize an ISO-8601 / RFC-3339 timestamp so JavaScript's Date parser
- * handles it reliably across all browsers (Safari is strict about fractional
- * seconds — it only accepts up to 3 digits).  Go's time.Time marshals with
- * up to 9 nanosecond digits; truncate the excess here.
- */
+// Normalize an ISO-8601 / RFC-3339 timestamp so JavaScript's Date parser
+// handles it reliably across all browsers (Safari is strict about fractional
+// seconds — it only accepts up to 3 digits).  Go's time.Time marshals with
+// up to 9 nanosecond digits; truncate the excess here.
 export function normalizeIso(iso: string): string {
   if (!iso) return '';
   // Guard: Go zero time "0001-01-01T..." is meaningless on the frontend.
@@ -23,7 +21,6 @@ function messageTimeMs(iso: string): number {
   return Number.isFinite(t) && t > 0 ? t : 0;
 }
 
-/** Sort by created_at ASC, tiebreak by key (message_id). */
 export function sortMessagesByCreatedAt(msgs: RoomMessage[]): RoomMessage[] {
   return [...msgs].sort((a, b) => {
     const ta = messageTimeMs(a.created_at);
@@ -36,7 +33,6 @@ export function sortMessagesByCreatedAt(msgs: RoomMessage[]): RoomMessage[] {
   });
 }
 
-/** Insert one message preserving sort order. O(n) but n is small. */
 export function insertMessageSorted(list: RoomMessage[], next: RoomMessage): RoomMessage[] {
   const clone = [...list];
   const t = messageTimeMs(next.created_at);
@@ -46,7 +42,6 @@ export function insertMessageSorted(list: RoomMessage[], next: RoomMessage): Roo
   return clone;
 }
 
-/** Dedupe by key (server id wins over temp-*). */
 export function dedupeByKey(list: RoomMessage[]): RoomMessage[] {
   const seen = new Map<string, RoomMessage>();
   for (const m of list) {
@@ -57,7 +52,6 @@ export function dedupeByKey(list: RoomMessage[]): RoomMessage[] {
   return Array.from(seen.values());
 }
 
-/** Sort conversation list by lastMessageAt desc, fallback updatedAt desc. */
 export function sortConversations(items: UiConversation[]): UiConversation[] {
   return [...items].sort((a, b) => {
     const ta = new Date(a.lastMessageAt || a.updatedAt || 0).getTime();

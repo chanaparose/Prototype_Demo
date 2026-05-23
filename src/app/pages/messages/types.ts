@@ -17,7 +17,6 @@ export function unreadForViewer(conv: IConversationResponse, role: 'CT' | 'FT') 
   return role === 'CT' ? conv.unread_customer : conv.unread_factory;
 }
 
-/** Relative label for list timestamps (API ISO or free text fallback). */
 export function formatConversationTime(iso: string): string {
   if (!iso || !String(iso).trim()) return '';
   const d = new Date(iso);

@@ -45,11 +45,9 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     });
   }, [rfqFilter, rfqs]);
 
-  /**
-   * order อยู่ใน tab "จัดส่ง" เมื่อ:
-   * 1. status === 'shipped' (order status = SH) หรือ
-   * 2. currentStepId >= 4 (step จัดส่ง CD แล้ว — BE ส่ง 4 แม้ step 5 = IP รอยืนยัน)
-   */
+// order อยู่ใน tab "จัดส่ง" เมื่อ:
+// 1. status === 'shipped' (order status = SH) หรือ
+// 2. currentStepId >= 4 (step จัดส่ง CD แล้ว — BE ส่ง 4 แม้ step 5 = IP รอยืนยัน)
   const isShippingOrder = useCallback(
     (o: Order) =>
       o.status !== 'completed' &&

@@ -6,11 +6,9 @@ interface UseLocalStorageReturn<T> {
   clear: () => void;
 }
 
-/**
- * Sync state with localStorage
- * @param key - localStorage key
- * @param initialValue - Default value if key doesn't exist
- */
+// Sync state with localStorage
+// @param key - localStorage key
+// @param initialValue - Default value if key doesn't exist
 export function useLocalStorage<T = any>(key: string, initialValue?: T): UseLocalStorageReturn<T> {
   const [value, setValue] = useState<T | null>(() => {
     try {
@@ -33,7 +31,8 @@ export function useLocalStorage<T = any>(key: string, initialValue?: T): UseLoca
           }
         }
       } catch {
-        /* ignore quota / private mode */
+        // 
+
       }
     },
     [key],

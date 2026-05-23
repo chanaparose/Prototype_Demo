@@ -4,8 +4,7 @@ import {
   type ShowcaseStatus,
   type ShowcaseType,
 } from '@/constants/showcase';
-
-type ApiRecord = Record<string, unknown>;
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 
 export type FactoryShowcaseType = ShowcaseType;
 export type FactoryShowcaseStatus = ShowcaseStatus;
@@ -24,10 +23,6 @@ export type FactoryShowcaseListItem = {
   reviewCount: number;
   factoryName: string;
 };
-
-function asRecord(value: unknown): ApiRecord {
-  return value && typeof value === 'object' ? (value as ApiRecord) : {};
-}
 
 function firstImage(row: ApiRecord): string | undefined {
   const direct = String(row.image_url ?? '').trim();
@@ -65,5 +60,5 @@ export function mapFactoryShowcaseListItem(raw: unknown): FactoryShowcaseListIte
 }
 
 export function mapFactoryShowcaseList(raw: unknown): FactoryShowcaseListItem[] {
-  return (Array.isArray(raw) ? raw : []).map(mapFactoryShowcaseListItem);
+  return apiListAsRecords(raw).map(mapFactoryShowcaseListItem);
 }

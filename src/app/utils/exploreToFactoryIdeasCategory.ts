@@ -1,6 +1,6 @@
 import { categoryIdsMatch, TILE_DB_ID_TO_CONTEXT_ID } from '@/utils/exploreCategoriesFromApi';
 
-/** เทียบ id หมวดจาก API (ตัวเลข / string) กับค่าใน URL หรือ dropdown รวมแม็ป DB id ↔ context id */
+// เทียบ id หมวดจาก API (ตัวเลข / string) กับค่าใน URL หรือ dropdown รวมแม็ป DB id ↔ context id
 function categoryIdsEquivalent(a: string, b: string): boolean {
   const sa = a.trim();
   const sb = b.trim();
@@ -13,7 +13,6 @@ function categoryIdsEquivalent(a: string, b: string): boolean {
   return false;
 }
 
-/** category_id บน Explore (ฐานข้อมูล) → ค่า factoryShowcase.category ใน mock/bundle */
 export const EXPLORE_TILE_CATEGORY_ID_TO_SHOWCASE_CATEGORY: Record<string, string> = {
   '1': 'อาหารสัตว์',
   '2': 'อาหารเสริม',
@@ -25,18 +24,14 @@ export const EXPLORE_TILE_CATEGORY_ID_TO_SHOWCASE_CATEGORY: Record<string, strin
 
 type CategoryLike = { id: string; name: string };
 
-/** เปรียบเทียบหมวดที่เลือก (id) กับตัวเลือกใน dropdown */
 export function factoryIdeasCategoryOptionSelected(selectedId: string, optionId: string): boolean {
   if (optionId === 'all') return selectedId === 'all';
   if (selectedId === 'all') return false;
   return categoryIdsMatch(selectedId, optionId);
 }
 
-/**
- * กรอง showcase ตามหมวดที่เลือก — state ใช้ category id (เช่น จาก ?category_id= หลัง Explore)
- *
- * ถ้ามี `itemCategoryId` จาก API (`category_id`) จะเทียบกับ `selectedId` ก่อน แล้วค่อย fallback ชื่อหมวด
- */
+// กรอง showcase ตามหมวดที่เลือก — state ใช้ category id (เช่น จาก ?category_id= หลัง Explore)
+// ถ้ามี `itemCategoryId` จาก API (`category_id`) จะเทียบกับ `selectedId` ก่อน แล้วค่อย fallback ชื่อหมวด
 export function showcaseMatchesSelectedCategoryId(
   itemCategory: string,
   selectedId: string,

@@ -1,7 +1,5 @@
-/**
- * Token Management — Store, retrieve, and clear JWT tokens
- * Handles token expiration logic (2 hours)
- */
+// Token Management — Store, retrieve, and clear JWT tokens
+// Handles token expiration logic (2 hours)
 
 const TOKEN_ISSUED_AT_KEY = 'auth_token_issued_at';
 const TOKEN_MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours

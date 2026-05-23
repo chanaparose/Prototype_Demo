@@ -121,7 +121,6 @@ type RawRfqDetail = {
   };
 };
 
-/** ดึงชื่อประเภทย่อยจาก payload GET /rfqs/:id (รองรับหลายรูปแบบฟิลด์ / root / nested) */
 function extractSubCategoryNameFromRfqResponse(
   detailPayload: Record<string, unknown> | null,
   rawRfq: Record<string, unknown>,
@@ -182,9 +181,7 @@ type RawQuotation = {
 export type RfqDetailData = {
   rfq: Rfq | null;
   relatedOrder: Order | null;
-  /** quoteId → orderId สำหรับ multi-factory: แต่ละ AC quote มี order ของตัวเอง */
   quoteOrderMap: Record<string, string>;
-  /** quoteId → history entries — pre-fetched from bundle endpoint */
   quoteHistories: Record<string, IQuotationHistoryEntry[]>;
   shippingMethodId: number | null;
   addressSummary: string;
@@ -286,7 +283,8 @@ export async function fetchAndMapRfqDetail(
             shippingMethodName = pickScalarString(row.method_name, row.name_th, row.name);
           }
         } catch {
-          /* ignore */
+          // 
+
         }
       }
 
@@ -527,7 +525,8 @@ export async function fetchAndMapRfqDetail(
         };
       }
     } catch {
-      /* no orders found */
+      // 
+
     }
   }
 

@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { masterKeys } from '@/lib/queryKeys';
 import { masterApi } from '@/services/api/masterApi';
-
-type Row = Record<string, unknown>;
 
 export interface CategoryOption {
   id: number;
@@ -14,13 +13,7 @@ export function useProductCategories() {
     queryKey: masterKeys.productCategories(),
     queryFn: async () => {
       const raw = await masterApi.getProductCategories();
-      const unwrapped = Array.isArray(raw)
-        ? raw
-        : Array.isArray((raw as Record<string, unknown>).data)
-          ? (raw as Record<string, unknown>).data
-          : [];
-      const arr = unwrapped as Row[];
-      return arr
+      return apiListAsRecords(raw)
         .map((r): CategoryOption | null => {
           const id = Number(r.category_id ?? r.id);
           const name = String(r.name ?? r.category_name ?? '').trim();

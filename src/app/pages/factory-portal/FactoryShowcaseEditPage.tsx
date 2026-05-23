@@ -1,11 +1,10 @@
 import React, { useCallback, useMemo, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
 import { ChevronLeft } from 'lucide-react';
 
-import { runAsyncAction } from '@/utils/asyncAction';
-import { mediaApi, showcasesApi } from '@/services/api/factoryApi';
+import { showcasesApi } from '@/services/api/factoryApi';
+import { useFactoryShowcaseMutations } from '@/pages/factory-portal/hooks/useFactoryShowcaseMutations';
 import { useEditForm } from '@/hooks/forms/useEditForm';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -14,7 +13,7 @@ import { MarkdownEditor } from '@/components/common/MarkdownEditor';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
-import { mapLinkedShowcasesErrorToThai, partitionLinkedShowcases } from '@/utils/linkedShowcases';
+import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
 import { ImageCropModal } from '@/components/common/ImageCropModal';
 import { ShowcaseTypeSelector } from '@/components/factory/showcase/ShowcaseTypeSelector';
 import {
@@ -28,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showcaseKeys } from '@/lib/queryKeys';
+import { asRecord, unwrapApiEntity, type ApiRecord } from '@/lib/apiShape';
 import {
   buildShowcasePayload,
   useShowcaseCategoryOptions,
@@ -73,16 +73,18 @@ const DEFAULTS: ShowcaseFormValues = {
   related_showcase_ids: [],
 };
 
-type Raw = Record<string, unknown>;
+type Raw = ApiRecord;
 
-function unwrapShowcasePayload(raw: Record<string, unknown>): Record<string, unknown> {
-  const inner = raw.showcase;
-  if (inner && typeof inner === 'object') return inner as Record<string, unknown>;
-  const data = raw.data;
-  if (data && typeof data === 'object' && ('showcase_id' in data || 'id' in data)) {
-    return data as Record<string, unknown>;
+function unwrapShowcasePayload(raw: unknown): ApiRecord {
+  const record = asRecord(raw);
+  const nested = unwrapApiEntity(record, ['showcase']);
+  if (nested !== record) return nested;
+  const data = record.data;
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    const d = asRecord(data);
+    if ('showcase_id' in d || 'id' in d) return d;
   }
-  return raw;
+  return record;
 }
 
 function numOrNull(v: unknown): number | null {
@@ -90,12 +92,6 @@ function numOrNull(v: unknown): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-/**
- * One image entry — `id` is present when the image already exists in the
- * `factory_showcase_images` table (loaded from server). Newly added images
- * uploaded in this session start with `id: undefined` until they're persisted
- * via `addImage` (or saved as part of the `linked_showcases` legacy storage).
- */
 type ImageEntry = { url: string; id?: number };
 
 function parseImageEntries(raw: unknown): ImageEntry[] {
@@ -165,11 +161,12 @@ export function FactoryShowcaseEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const qc = useQueryClient();
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
   const { confirm, ConfirmDialog } = useConfirmDialog();
-  const [saving, setSaving] = useState(false);
+  const { updateShowcase, uploadShowcaseImage, deleteShowcaseImage, mapLinkedError } =
+    useFactoryShowcaseMutations();
+  const saving = updateShowcase.isPending;
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
@@ -193,36 +190,33 @@ export function FactoryShowcaseEditPage() {
       const imageId = persistedImageIdByUrl[urlToRemove];
       if (!id || !Number.isFinite(imageId) || imageId <= 0) return;
 
-      await runAsyncAction(
-        async () => {
-          await showcasesApi.deleteImage(id, imageId);
-          setPersistedImageIdByUrl((prev) => {
-            const next = { ...prev };
-            delete next[urlToRemove];
-            return next;
-          });
-        },
+      deleteShowcaseImage.mutate(
+        { showcaseId: id, imageId },
         {
-          onError: (message) => {
-            // Revert on failure
+          onSuccess: () => {
+            setPersistedImageIdByUrl((prev) => {
+              const next = { ...prev };
+              delete next[urlToRemove];
+              return next;
+            });
+          },
+          onError: (err) => {
             setImageUrls((prev) =>
               prev.includes(urlToRemove) ? prev : [...prev, urlToRemove].slice(0, 5),
             );
-            setError(message);
+            setError(err instanceof Error ? err.message : 'ลบรูปไม่สำเร็จ');
           },
-          fallbackMessage: 'ลบรูปไม่สำเร็จ',
         },
       );
     },
-    [id, persistedImageIdByUrl],
+    [id, persistedImageIdByUrl, deleteShowcaseImage],
   );
 
   const { form, isLoading, isError, refetch } = useEditForm<ShowcaseFormValues, Raw>({
     queryKey: showcaseKeys.detail(id ?? ''),
     queryFn: async () => {
       const raw = await showcasesApi.get(id!);
-      const row = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
-      return unwrapShowcasePayload(row);
+      return unwrapShowcasePayload(raw);
     },
     mapper: mapShowcaseToForm,
     defaults: DEFAULTS,
@@ -308,84 +302,20 @@ export function FactoryShowcaseEditPage() {
         selectedShowcaseIds,
       });
 
-      await runAsyncAction(
-        async () => {
-        await showcasesApi.update(id, payload);
-        const existingRaw = await showcasesApi.listImages(id).catch(() => []);
-        const existing = (Array.isArray(existingRaw) ? existingRaw : [])
-          .map((r) => {
-            const row = (r ?? {}) as Record<string, unknown>;
-            const imageId = Number(row.image_id ?? row.id ?? 0);
-            const imageUrl = String(row.image_url ?? row.url ?? '').trim();
-            const sortOrder = Number(row.sort_order ?? 0);
-            if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
-            return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
-          })
-          .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
-
-        const desiredUrls = imageUrls.slice(0, 5);
-        const desiredSet = new Set(desiredUrls);
-        const existingSet = new Set(existing.map((x) => x.imageUrl));
-
-        await Promise.all(
-          existing
-            .filter((x) => !desiredSet.has(x.imageUrl))
-            .map((x) => showcasesApi.deleteImage(id, x.imageId).catch(() => undefined)),
-        );
-
-        await Promise.all(
-          desiredUrls
-            .filter((url) => !existingSet.has(url))
-            .map((url, idx) =>
-              showcasesApi
-                .addImage(id, { image_url: url, sort_order: idx + 1 })
-                .catch(() => undefined),
-            ),
-        );
-
-        const refreshedRaw = await showcasesApi.listImages(id).catch(() => []);
-        const refreshed = (Array.isArray(refreshedRaw) ? refreshedRaw : [])
-          .map((r) => {
-            const row = (r ?? {}) as Record<string, unknown>;
-            const imageId = Number(row.image_id ?? row.id ?? 0);
-            const imageUrl = String(row.image_url ?? row.url ?? '').trim();
-            const sortOrder = Number(row.sort_order ?? 0);
-            if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
-            return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
-          })
-          .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
-
-        await Promise.all(
-          desiredUrls.map((url, idx) => {
-            const row = refreshed.find((x) => x.imageUrl === url);
-            if (!row) return Promise.resolve();
-            const nextSort = idx + 1;
-            if (row.sortOrder === nextSort) return Promise.resolve();
-            return showcasesApi
-              .updateImage(id, row.imageId, { sort_order: nextSort })
-              .catch(() => undefined);
-          }),
-        );
-
-        await Promise.all([
-          qc.invalidateQueries({ queryKey: showcaseKeys.detail(id) }),
-          qc.invalidateQueries({ queryKey: showcaseKeys.lists() }),
-        ]);
-        navigate(backPath, { replace: true });
-        },
+      updateShowcase.mutate(
+        { id, payload, imageUrls },
         {
-          onStart: () => setSaving(true),
-          onSettled: () => setSaving(false),
-          onError: (msg) => {
-            const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
+          onSuccess: () => navigate(backPath, { replace: true }),
+          onError: (err) => {
+            const msg = err instanceof Error ? err.message : 'บันทึกไม่สำเร็จ';
+            const linkedMsg = mapLinkedError(msg);
             if (linkedMsg) setLinkedShowcaseError(linkedMsg);
             setError(msg);
           },
-          fallbackMessage: 'บันทึกไม่สำเร็จ',
         },
       );
     },
-    [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath],
+    [id, form, imageUrls, selectedShowcaseIds, navigate, backPath, updateShowcase, mapLinkedError],
   );
 
   const onBack = useCallback(async () => {
@@ -470,23 +400,17 @@ export function FactoryShowcaseEditPage() {
           onCancel={() => setCropFile(null)}
           onConfirm={async (file) => {
             setError('');
-            await runAsyncAction(
-              async () => {
-                const up = await mediaApi.upload(file);
+            uploadShowcaseImage.mutate(file, {
+              onMutate: () => setUploading(true),
+              onSuccess: (up) => {
                 const url = String(up.url ?? '').trim();
-                if (!url) return;
-                setImageUrls((prev) => [...prev, url].slice(0, 5));
+                if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));
+                setCropFile(null);
               },
-              {
-                onStart: () => setUploading(true),
-                onSettled: () => {
-                  setUploading(false);
-                  setCropFile(null);
-                },
-                onError: (message) => setError(message),
-                fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
-              },
-            );
+              onSettled: () => setUploading(false),
+              onError: (err) =>
+                setError(err instanceof Error ? err.message : 'อัปโหลดรูปไม่สำเร็จ'),
+            });
           }}
         />
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}

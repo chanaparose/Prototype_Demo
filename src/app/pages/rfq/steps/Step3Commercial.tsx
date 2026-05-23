@@ -9,6 +9,7 @@ import {
   type MappedAddress,
 } from '@/domain/shared/mappers/mapAddressFromApi';
 import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Button } from '@/components/ui/button';
@@ -39,7 +40,8 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
 ];
 
 export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) {
-  /* addresses */
+  // 
+
   const [addresses, setAddresses] = useState<MappedAddress[]>([]);
   const [addrLoading, setAddrLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -55,14 +57,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
     const result = await runAsyncAction(
       async () => {
         const raw = await addressesApi.list();
-        const arr = (
-          Array.isArray(raw)
-            ? raw
-            : Array.isArray((raw as Record<string, unknown>)?.data)
-              ? ((raw as Record<string, unknown>).data as unknown[])
-              : []
-        ) as Record<string, unknown>[];
-        const mapped = arr
+        const mapped = apiListAsRecords(raw)
           .map(mapAddressFromApi)
           .filter((a): a is MappedAddress => a != null);
         setAddresses(mapped);
@@ -81,7 +76,6 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
     let shippingMapResult: Record<number, string> = {};
     let addressMapResult: Record<number, string> = {};
 
-    // โหลด addresses + auto-select default
     void loadAddresses().then((mapped) => {
       addressMapResult = Object.fromEntries(
         mapped.map((a) => {
@@ -104,12 +98,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
     void masterApi
       .getShippingMethods()
       .then((raw) => {
-        const normalized = Array.isArray(raw)
-          ? raw
-          : Array.isArray((raw as Record<string, unknown>)?.data)
-            ? ((raw as Record<string, unknown>).data as unknown[])
-            : [];
-        const mapped = mapShippingMethodsList(normalized);
+        const mapped = mapShippingMethodsList(apiListAsRecords(raw));
         if (mapped.length > 0) setShippingMethods(mapped);
         shippingMapResult = Object.fromEntries(mapped.map((m) => [m.id, m.name]));
         onLoadedRef.current?.(addressMapResult, shippingMapResult);

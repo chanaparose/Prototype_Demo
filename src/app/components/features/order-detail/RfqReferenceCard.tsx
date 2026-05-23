@@ -12,7 +12,6 @@ interface Props {
   rfq: IRfqNestedResponse;
   variant?: 'accordion';
   defaultOpen?: boolean;
-  /** Optional quotation details to show alongside the RFQ spec */
   quotation?: IQuoteNestedResponse | null;
 }
 

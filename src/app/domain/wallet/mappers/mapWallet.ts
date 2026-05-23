@@ -1,4 +1,4 @@
-type ApiRecord = Record<string, unknown>;
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 
 export type WalletSummary = {
   goodFund: number;
@@ -14,10 +14,6 @@ export type WalletTransaction = {
   description: string;
   reference: string;
 };
-
-function asRecord(value: unknown): ApiRecord {
-  return value && typeof value === 'object' ? (value as ApiRecord) : {};
-}
 
 function asNumber(value: unknown): number {
   const numeric = Number(value ?? 0);
@@ -47,5 +43,5 @@ export function mapWalletTransaction(raw: unknown): WalletTransaction {
 }
 
 export function mapWalletTransactions(raw: unknown): WalletTransaction[] {
-  return (Array.isArray(raw) ? raw : []).map(mapWalletTransaction).filter((tx) => tx.id);
+  return apiListAsRecords(raw).map(mapWalletTransaction).filter((tx) => tx.id);
 }

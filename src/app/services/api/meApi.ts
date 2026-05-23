@@ -1,7 +1,5 @@
-/**
- * Unified /me endpoints — designed to reduce multiple round trips for the
- * /orders (rfq-and-orders) page.
- */
+// Unified /me endpoints — designed to reduce multiple round trips for the
+// /orders (rfq-and-orders) page.
 import { httpClient } from '@/services/api/httpClient';
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -23,7 +21,6 @@ export interface IMeRFQOrderSummary {
   factory_name?: string | null;
   estimated_delivery?: string | null;
   order_created_at?: string | null;
-  /** ขั้นที่กำลัง active 0–5 (step 4 CD + step 5 IP → ส่ง 4) */
   production_current_step_id?: number | null;
   current_step_id?: number | null;
 }
@@ -61,17 +58,13 @@ export interface IMeRFQOrderDetail {
 // ── API calls ─────────────────────────────────────────────────────────────────
 
 export const meApi = {
-  /**
-   * GET /api/v1/me/rfq-orders
-   * Returns the current user's RFQs, each enriched with quotation count and
-   * order info (if any), in a single round trip.
-   */
+// GET /api/v1/me/rfq-orders
+// Returns the current user's RFQs, each enriched with quotation count and
+// order info (if any), in a single round trip.
   listRFQOrders: () => httpClient.get<IMeRFQOrderSummary[]>('/me/rfq-orders'),
 
-  /**
-   * GET /api/v1/me/rfq-orders/:rfq_id
-   * Returns full detail for one RFQ: RFQ data + quotation list + order (if any).
-   */
+// GET /api/v1/me/rfq-orders/:rfq_id
+// Returns full detail for one RFQ: RFQ data + quotation list + order (if any).
   getRFQOrderDetail: (rfqId: string | number) =>
     httpClient.get<IMeRFQOrderDetail>(`/me/rfq-orders/${rfqId}`),
 };

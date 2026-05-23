@@ -33,18 +33,14 @@ import {
   type PaymentScheduleItem,
 } from '@/pages/order-detail/orderDetailFromApi';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
-function unwrapOrderPayload(raw: unknown): Record<string, unknown> {
-  if (!raw || typeof raw !== 'object') return {};
-  const r = raw as Record<string, unknown>;
-  const inner = r.order;
-  if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
-    return inner as Record<string, unknown>;
-  }
-  return r;
+import { asRecord, unwrapApiEntity, type ApiRecord } from '@/lib/apiShape';
+
+function unwrapOrderPayload(raw: unknown): ApiRecord {
+  return unwrapApiEntity(raw, ['order']);
 }
 
 function mapApiOrderToOrder(
-  row: Record<string, unknown>,
+  row: ApiRecord,
   factories: { id: string; name: string }[],
   opts?: {
     currentStepId?: number;
@@ -193,7 +189,6 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       row.status_label_th != null ? String(row.status_label_th) : undefined,
     );
 
-    // Extract production from embedded response (GET /orders/:id now includes it).
     const rawProd = row.production;
     const production: ProductionUpdatesBundle =
       rawProd && typeof rawProd === 'object'
@@ -204,7 +199,6 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
             updates: [],
           } as ProductionUpdatesBundle);
 
-    // Extract review_state from embedded response.
     const rawReview = row.review_state;
     const reviewState: ReviewStateData | null =
       rawReview && typeof rawReview === 'object'

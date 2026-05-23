@@ -1,10 +1,7 @@
-/** ─── printShippingLabel.ts ──────────────────────────────────────────────────
- *  ใบปะหน้าพัสดุแบบตาราง ผู้ส่ง | ผู้รับ — พร้อมช่อง Description กรอกในหน้า
- *  ไม่ต้องติดตั้ง library เพิ่มเติม
- * ──────────────────────────────────────────────────────────────────────────── */
+// ใบปะหน้าพัสดุแบบตาราง ผู้ส่ง | ผู้รับ — พร้อมช่อง Description กรอกในหน้า
+// ไม่ต้องติดตั้ง library เพิ่มเติม
 
 export interface ShippingLabelOptions {
-  /* ผู้รับ */
   recipientName?: string;
   recipientPhone?: string;
   addressLine?: string;
@@ -13,19 +10,15 @@ export interface ShippingLabelOptions {
   province?: string;
   postalCode?: string;
 
-  /* ผู้ส่ง */
   senderName?: string;
   senderPhone?: string;
   senderAddress?: string;
 
-  /* ออเดอร์ */
   orderCode: string;
   orderTitle?: string;
   trackingNumber?: string;
   printDate?: string;
 }
-
-/* ─── helpers ────────────────────────────────────────────────────────────── */
 
 function escHtml(s: string | undefined): string {
   return (s ?? '')
@@ -52,8 +45,6 @@ function fullAddress(opts: {
     .filter(Boolean)
     .join(' ');
 }
-
-/* ─── buildHtml ──────────────────────────────────────────────────────────── */
 
 function buildHtml(opts: ShippingLabelOptions): string {
   const recipientAddr = escHtml(fullAddress(opts));
@@ -91,7 +82,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
       padding: 28px 16px 48px;
     }
 
-    /* ── toolbar ── */
+    // 
+
     .toolbar {
       display: flex;
       gap: 10px;
@@ -116,7 +108,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
     .btn-print  { background: #111; color: #fff; }
     .btn-outline { background: #fff; color: #333; border: 1.5px solid #bbb; }
 
-    /* ── description input (screen only) ── */
+    // 
+
     .desc-panel {
       width: 148mm;
       margin-bottom: 12px;
@@ -137,7 +130,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
     }
     .desc-panel input:focus { border-color: #555; }
 
-    /* ── label wrapper ── */
+    // 
+
     .label {
       width: 148mm;
       background: #fff;
@@ -145,7 +139,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
       color: #000;
     }
 
-    /* ── logo / header bar ── */
+    // 
+
     .logo-bar {
       border: 1.5px solid #000;
       border-bottom: none;
@@ -176,7 +171,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
     .logo-right { text-align: right; font-size: 11px; color: #555; line-height: 1.5; }
     .logo-order { font-size: 13px; font-weight: 700; color: #111; }
 
-    /* ── main table ── */
+    // 
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -188,7 +184,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
       vertical-align: top;
     }
 
-    /* column header */
+    // 
+
     .col-header {
       text-align: center;
       font-weight: 800;
@@ -197,7 +194,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
       background: #fff;
     }
 
-    /* party cells */
+    // 
+
     .party-cell {
       padding: 8px 10px;
       width: 50%;
@@ -219,7 +217,8 @@ function buildHtml(opts: ShippingLabelOptions): string {
     .party-val { flex: 1; word-break: break-word; }
     .party-addr-block { margin-top: 1px; font-size: 12px; line-height: 1.6; }
 
-    /* bottom: description | payment */
+    // 
+
     .bottom-key {
       font-weight: 700;
       font-size: 12px;
@@ -238,10 +237,12 @@ function buildHtml(opts: ShippingLabelOptions): string {
       min-height: 32px;
     }
 
-    /* description text shown when printing (hidden span, updated by JS) */
+    // 
+
     #desc-print { display: none; }
 
-    /* print */
+    // 
+
     @media print {
       body  { background: #fff; padding: 0; align-items: flex-start; }
       .toolbar { display: none; }
@@ -377,8 +378,6 @@ function buildHtml(opts: ShippingLabelOptions): string {
 </body>
 </html>`;
 }
-
-/* ─── public API ─────────────────────────────────────────────────────────── */
 
 export function openShippingLabel(opts: ShippingLabelOptions): void {
   const html = buildHtml(opts);

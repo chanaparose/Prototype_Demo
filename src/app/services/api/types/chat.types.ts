@@ -44,7 +44,6 @@ export interface IMessageResponse {
   }>;
 }
 
-/** POST /conversations/:id/messages — matches backend CreateMessageRequest */
 export interface IMessageSendRequest {
   content: string;
   receiver_id: number;

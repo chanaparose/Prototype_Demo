@@ -1,7 +1,4 @@
-/**
- * ORDER_DETAIL_PP_STATE_FE §2 — derive UI from API `order.status` only (never from production_updates.length).
- */
-
+// ORDER_DETAIL_PP_STATE_FE §2 — UI จาก order.status เท่านั้น
 export type LockReason = 'PENDING_DEPOSIT' | 'DEPOSIT_EXPIRED' | 'ORDER_CANCELLED' | 'UNKNOWN';
 
 export type OrderUiMode = {

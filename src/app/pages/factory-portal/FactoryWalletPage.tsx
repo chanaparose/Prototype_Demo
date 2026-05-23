@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Wallet,
   ArrowDownLeft,
@@ -11,18 +11,14 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useModal } from '@/hooks/ui/useModal';
-import { walletApi, transactionsApi } from '@/services/api/userApi';
+import { useFactoryWalletPage } from '@/pages/factory-portal/hooks/useFactoryWalletPage';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
-import {
-  mapWalletSummary,
-  mapWalletTransactions,
-  type WalletTransaction,
-} from '@/domain/wallet/mappers/mapWallet';
+import type { WalletTransaction } from '@/domain/wallet/mappers/mapWallet';
 import {
   WALLET_FAILED_STATUSES,
   WALLET_PENDING_STATUSES,
@@ -33,7 +29,6 @@ import {
   isWalletPendingStatus,
 } from '@/constants/wallet';
 import { COMMON_COPY } from '@/constants/uiText';
-import { fallbackAsync, runAsyncAction } from '@/utils/asyncAction';
 
 const NAVY = appColors.brand.navy;
 const ORANGE = appColors.brand.indigo;
@@ -132,45 +127,15 @@ function TxRow({ t }: { t: WalletTransaction }) {
 }
 
 export function FactoryWalletPage() {
-  const [good, setGood] = useState<number | null>(null);
-  const [pending, setPending] = useState<number | null>(null);
-  const [tx, setTx] = useState<WalletTransaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+  const { data, loading, error, refetch } = useFactoryWalletPage();
+  const good = data?.good ?? null;
+  const pending = data?.pending ?? null;
+  const tx = data?.transactions ?? [];
+  const lastRefreshedAt = data?.refreshedAt ?? null;
   const [filterType, setFilterType] = useState<'all' | 'credit' | 'debit'>('all');
 
   const withdraw = useModal();
   const [withdrawAmount, setWithdrawAmount] = useState('');
-
-  const load = () =>
-    runAsyncAction(async () => {
-      const wallet = mapWalletSummary(await walletApi.getMe());
-      setGood(wallet.goodFund);
-      setPending(wallet.pendingFund);
-
-      const raw = await walletApi
-        .transactions()
-        .catch(() => fallbackAsync(transactionsApi.list(), []));
-      const apiTx = mapWalletTransactions(raw).slice(0, 30);
-      setTx(apiTx);
-      setLastRefreshedAt(new Date());
-    }, {
-      onStart: () => {
-        setLoading(true);
-        setError('');
-      },
-      onError: (message) => {
-        setError(message);
-        setTx([]);
-      },
-      onSettled: () => setLoading(false),
-      fallbackMessage: 'โหลดกระเป๋าไม่สำเร็จ',
-    });
-
-  useEffect(() => {
-    void load();
-  }, []);
 
   const filteredTx = useMemo(
     () =>
@@ -230,7 +195,7 @@ export function FactoryWalletPage() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => void load()}
+            onClick={() => void refetch()}
             className='flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-1.5 hover:bg-gray-50 transition-colors font-medium'
           >
             <RefreshCw size={12} />
@@ -526,7 +491,7 @@ export function FactoryWalletPage() {
                     const ok = await withdraw.runAsync(async () => {
                       // Existing withdrawal handler — wire to actual API when ready
                       await new Promise((r) => setTimeout(r, 800));
-                      await load();
+                      await refetch();
                     });
                     if (ok !== undefined) withdraw.closeModal();
                   }}

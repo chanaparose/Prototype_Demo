@@ -1,9 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate } from 'react-router';
 import { X, ChevronRight, Clock } from 'lucide-react';
-import { ordersApi } from '@/services/api/ordersApi';
 import { useFactoryOrdersData } from '@/pages/factory-portal/factory-orders/useFactoryOrdersData';
+import { useFactoryOrdersMutations } from '@/pages/factory-portal/hooks/useFactoryOrdersMutations';
 import { deriveOrderCardState } from '@/pages/factory-portal/factory-orders/deriveOrderCardState';
 import { computeKpi, countByTab } from '@/pages/factory-portal/factory-orders/factoryOrderKpi';
 import {
@@ -54,6 +53,7 @@ function statusMeta(code: string) {
 
 export function FactoryOrdersPage() {
   const { data: rows = [], isLoading, isError, refetch, error } = useFactoryOrdersData();
+  const { productionUpdate, shipOrder } = useFactoryOrdersMutations();
   const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<TabId>('needs_action');
   const [search, setSearch] = useState('');
@@ -61,14 +61,12 @@ export function FactoryOrdersPage() {
   const [updateModal, setUpdateModal] = useState<{
     row: FactoryOrderRow;
     notes: string;
-    busy: boolean;
     stepId: number;
   } | null>(null);
   const [shipModal, setShipModal] = useState<{
     row: FactoryOrderRow;
     tracking: string;
     note: string;
-    busy: boolean;
   } | null>(null);
 
   const now = useMemo(() => new Date(), []);
@@ -283,9 +281,9 @@ export function FactoryOrdersPage() {
                   derived={d}
                   onPrimaryCta={(r, cta) => {
                     if (cta.kind === 'update_step')
-                      setUpdateModal({ row: r, notes: '', busy: false, stepId: cta.stepId });
+                      setUpdateModal({ row: r, notes: '', stepId: cta.stepId });
                     if (cta.kind === 'mark_shipped')
-                      setShipModal({ row: r, tracking: '', note: '', busy: false });
+                      setShipModal({ row: r, tracking: '', note: '' });
                   }}
                 />
               </li>
@@ -327,34 +325,29 @@ export function FactoryOrdersPage() {
             <Button
               variant='unstyled'
               type='button'
-              disabled={updateModal.busy || !updateModal.notes.trim()}
+              disabled={productionUpdate.isPending || !updateModal.notes.trim()}
               className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
               style={{
                 background: 'linear-gradient(135deg, var(--brand-indigo) 0%, #334155 100%)',
               }}
-              onClick={async () => {
+              onClick={() => {
                 if (!updateModal) return;
-                const modal = updateModal;
-                await runAsyncAction(
-                  async () => {
-                    await ordersApi.postProductionUpdate(modal.row.order_id, {
-                      step_id: modal.stepId,
-                      status: 'CD',
-                      description: modal.notes.trim(),
-                      image_urls: [],
-                    });
-                    setUpdateModal(null);
-                    await refetch();
+                productionUpdate.mutate(
+                  {
+                    orderId: updateModal.row.order_id,
+                    stepId: updateModal.stepId,
+                    notes: updateModal.notes,
                   },
                   {
-                    onStart: () => setUpdateModal((prev) => (prev ? { ...prev, busy: true } : prev)),
-                    onError: () =>
-                      setUpdateModal((prev) => (prev ? { ...prev, busy: false } : prev)),
+                    onSuccess: async () => {
+                      setUpdateModal(null);
+                      await refetch();
+                    },
                   },
                 );
               }}
             >
-              {updateModal.busy ? 'กำลังบันทึก...' : 'บันทึกอัปเดต'}
+              {productionUpdate.isPending ? 'กำลังบันทึก...' : 'บันทึกอัปเดต'}
             </Button>
           </div>
         </div>
@@ -401,33 +394,31 @@ export function FactoryOrdersPage() {
             <Button
               variant='unstyled'
               type='button'
-              disabled={shipModal.busy || !shipModal.tracking.trim()}
+              disabled={shipOrder.isPending || !shipModal.tracking.trim()}
               className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
               style={{
                 background:
                   'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
                 boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
               }}
-              onClick={async () => {
+              onClick={() => {
                 if (!shipModal) return;
-                const modal = shipModal;
-                await runAsyncAction(
-                  async () => {
-                    await ordersApi.ship(modal.row.order_id, {
-                      tracking_number: modal.tracking.trim(),
-                      note: modal.note.trim() || undefined,
-                    });
-                    setShipModal(null);
-                    await refetch();
+                shipOrder.mutate(
+                  {
+                    orderId: shipModal.row.order_id,
+                    tracking: shipModal.tracking,
+                    note: shipModal.note,
                   },
                   {
-                    onStart: () => setShipModal((prev) => (prev ? { ...prev, busy: true } : prev)),
-                    onError: () => setShipModal((prev) => (prev ? { ...prev, busy: false } : prev)),
+                    onSuccess: async () => {
+                      setShipModal(null);
+                      await refetch();
+                    },
                   },
                 );
               }}
             >
-              {shipModal.busy ? 'กำลังบันทึก...' : 'ยืนยันบันทึกจัดส่ง'}
+              {shipOrder.isPending ? 'กำลังบันทึก...' : 'ยืนยันบันทึกจัดส่ง'}
             </Button>
           </div>
         </div>

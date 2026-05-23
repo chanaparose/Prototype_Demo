@@ -15,7 +15,6 @@ import {
 import { RfqCard, type RfqCardModel } from '@/components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '@/hooks/useFactoryRfqBoard';
 import { useDisclosure } from '@/hooks/ui/useDisclosure';
-import { useToggle } from '@/hooks/ui/useToggle';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
@@ -31,13 +30,13 @@ function FilterDropdown({
   options,
   onChange,
   className = '',
-}: {
+}: Readonly<{
   label: string;
   value: string;
   options: DropdownOption[];
   onChange: (value: string) => void;
   className?: string;
-}) {
+}>) {
   const { isOpen, onToggle, onClose } = useDisclosure();
   const boxRef = useRef<HTMLDivElement | null>(null);
   const selected = options.find((o) => o.value === value) ?? options[0];
@@ -104,7 +103,7 @@ function FilterDropdown({
 }
 
 function useNarrowTabs(breakpoint = 400) {
-  const { state: narrow, set: setNarrow } = useToggle();
+  const [narrow, setNarrow] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
     const fn = () => setNarrow(mq.matches);

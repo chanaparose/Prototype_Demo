@@ -6,7 +6,6 @@ import { getCurrentUserId } from '@/utils/chatContract';
 import type { IConversationResponse } from '@/services/api/types/chat.types';
 import { ignoreAsyncError } from '@/utils/asyncAction';
 
-/** Invalidate and refresh the TanStack conversation cache. */
 export async function refreshConversationsCache(): Promise<void> {
   const { isAuthenticated } = useAuthStore.getState();
   if (!isAuthenticated) return;
@@ -17,16 +16,13 @@ export async function refreshConversationsCache(): Promise<void> {
   if (list) queryClient.setQueryData(chatKeys.conversations(), list);
 }
 
-/** Derive which counter field belongs to the viewer for a given conversation. */
 function viewerRole(conv: IConversationResponse, currentUserId: number): 'CT' | 'FT' {
   if (conv.viewer_role) return conv.viewer_role;
   return conv.customer_id === currentUserId ? 'CT' : 'FT';
 }
 
-/**
- * Optimistically zero the unread count for a conversation in the TanStack cache.
- * Uses viewer_role (or derives it from customer_id) to pick the right counter.
- */
+// Optimistically zero the unread count for a conversation in the TanStack cache.
+// Uses viewer_role (or derives it from customer_id) to pick the right counter.
 export function setConversationReadInCache(convId: string | number): void {
   const numId = Number(convId);
   const user = useAuthStore.getState().user;
@@ -50,10 +46,8 @@ export function setConversationReadInCache(convId: string | number): void {
   );
 }
 
-/**
- * Optimistically increment the unread counter for a conversation in the cache.
- * Only increments if the current user is NOT the sender of the message.
- */
+// Optimistically increment the unread counter for a conversation in the cache.
+// Only increments if the current user is NOT the sender of the message.
 export function incrementConversationUnreadInCache(convId: number, senderId: number): void {
   const user = useAuthStore.getState().user;
   const uid = getCurrentUserId(user);

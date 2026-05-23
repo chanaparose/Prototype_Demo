@@ -1,6 +1,5 @@
 export type ExploreContentType = 'product' | 'promotion' | 'idea' | 'material' | 'factory';
 
-/** Response shape จาก GET /api/v1/showcases?types=...&limit=... */
 export interface IExploreShowcaseResponse {
   showcase_id: number;
   factory_id: number;
@@ -22,10 +21,8 @@ export interface IExploreShowcaseResponse {
   end_date?: string;
 }
 
-/** Grouped response: { PD: [...], MT: [...] } */
 export type IShowcasesGroupedResponse = Partial<Record<'PD' | 'PM' | 'ID' | 'MT', IExploreShowcaseResponse[]>>;
 
-/** Response shape จาก GET /api/v1/categories?limit=N */
 export interface IExploreCategoryResponse {
   category_id: number;
   id?: number;
@@ -65,7 +62,6 @@ export interface IExploreResponse {
   categories: IExploreCategoryResponse[];
 }
 
-/** Response shape จาก GET /api/v1/promo-slides?limit=N — direct array */
 export interface IPromoSlideResponse {
   slide_id: number | string;
   title: string;
@@ -73,14 +69,13 @@ export interface IPromoSlideResponse {
   link_to: string;
 }
 
-/** Response shape จาก GET /api/v1/explore — single call ที่รวม categories + showcases + promoSlides */
+// Response shape จาก GET /api/v1/explore — single call ที่รวม categories + showcases + promoSlides
 export interface IExploreApiResponse {
   categories: IExploreCategoryResponse[];
   showcases: IShowcasesGroupedResponse;
   promoSlides: IPromoSlideResponse[];
 }
 
-/** Response shape จาก GET /api/v1/categories?include_sub=true */
 export interface ICategoryWithSubsResponse {
   category_id: number;
   name: string;
@@ -88,7 +83,6 @@ export interface ICategoryWithSubsResponse {
   sub_categories: IExploreSubCategoryResponse[];
 }
 
-/** Response shape จาก GET /api/v1/showcases?types=...&page=N&limit=N (paginated flat list) */
 export interface IShowcasePaginatedResponse {
   total: number;
   page: number;
@@ -96,7 +90,6 @@ export interface IShowcasePaginatedResponse {
   items: IExploreShowcaseResponse[];
 }
 
-/** /me/session types */
 export interface ISessionOffer {
   quote_id: number;
   factory_id: number;
@@ -133,9 +126,7 @@ export interface ISessionOrder {
   deposit_amount?: number;
   estimated_delivery?: string;
   created_at: string;
-  /**
-   * ขั้นที่กำลัง active 0–5 (เช่น step 4 = CD + step 5 = IP → ส่ง 4)
-   */
+// ขั้นที่กำลัง active 0–5 (เช่น step 4 = CD + step 5 = IP → ส่ง 4)
   current_step_id?: number | null;
 }
 

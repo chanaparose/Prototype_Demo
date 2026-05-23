@@ -5,14 +5,13 @@ import { useAuth } from '@/stores/useAuthStore';
 
 export type FactoryVerifyStatus = 'AP' | 'PD' | 'RJ';
 
-/** อ่านสถานะตรวจโรงงานจาก user (ค่าเริ่ม AP ถ้าไม่ส่งมา — ไม่ล็อกจนกว่า BE จะส่ง PD/RJ) */
 export function factoryVerifyStatus(user: { verify_status?: string } | null): FactoryVerifyStatus {
   const s = String(user?.verify_status ?? 'AP').toUpperCase();
   if (s === 'PD' || s === 'RJ') return s;
   return 'AP';
 }
 
-/** หน้าที่ต้อง verify_status = AP — ไม่ผ่านแสดง placeholder (FACTORY_UI_SPEC §11) */
+// หน้าที่ต้อง verify_status = AP — ไม่ผ่านแสดง placeholder (FACTORY_UI_SPEC §11)
 export function FactoryVerifiedGuard() {
   const { user } = useAuth();
   const st = factoryVerifyStatus(user);

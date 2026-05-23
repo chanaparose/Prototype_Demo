@@ -12,7 +12,6 @@ function parseDateInput(dateInput: string | Date | null | undefined): Date | nul
   return isValid(fallback) ? fallback : null;
 }
 
-/** dd/MM/yyyy (พ.ศ. ผ่าน locale th) */
 export function formatDate(
   dateInput: string | Date | null | undefined,
   pattern = 'dd/MM/yyyy',
@@ -22,7 +21,6 @@ export function formatDate(
   return formatDateFns(date, pattern, { locale: th });
 }
 
-/** yyyy-MM-dd — แทน `.slice(0, 10)` */
 export function formatIsoDate(dateInput: string | Date | null | undefined): string {
   const date = parseDateInput(dateInput);
   if (!date) return '-';

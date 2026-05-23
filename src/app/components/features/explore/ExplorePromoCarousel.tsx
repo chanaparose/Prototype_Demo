@@ -8,13 +8,10 @@ type Slide = { id: string; title: string; subtitle: string; code: string };
 type ExplorePromoCarouselProps = {
   initialIndex?: number;
   onCopyCode?: (code: string, id: string) => void;
-  /** Promo slides จาก API เท่านั้น — ไม่มี fallback */
   promoSlides?: unknown[];
-  /** Promo codes จาก API — merge เข้า slides */
   promoCodes?: unknown[];
 };
 
-/** Normalise API promo-slide or promo-code objects into a flat Slide shape */
 function toSlides(raw: unknown[]): Slide[] {
   return raw
     .map((item) => {

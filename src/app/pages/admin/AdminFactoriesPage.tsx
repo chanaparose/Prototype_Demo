@@ -1,16 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
-import { adminApi } from '@/services/api/adminApi';
-import {
-  extractAdminFactoryRows,
-  mapAdminFactory,
-} from '@/domain/admin/mappers/mapAdminFactory';
 import type {
   AdminFactory,
   FactoryApprovalStatus,
 } from '@/domain/admin/types/adminFactory.model';
+import { useAdminFactoriesPage } from '@/pages/admin/hooks/useAdminFactoriesPage';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -126,46 +121,21 @@ function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: Confi
 export function AdminFactoriesPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusTab, setStatusTab] = useState<'all' | FactoryApprovalStatus>('all');
-  const [factories, setFactories] = useState<AdminFactory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
   const [dialog, setDialog] = useState<{ type: FactoryActionType; factory: AdminFactory } | null>(
     null,
   );
 
-  const loadFactories = async () => {
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const apiStatus = STATUS_TABS.find((t) => t.key === statusTab)?.apiStatus;
-        const raw = await adminApi.listFactories({
-          approval_status: apiStatus,
-          search: search.trim() || undefined,
-          page: 1,
-          page_size: 100,
-        });
-        setFactories(extractAdminFactoryRows(raw).map(mapAdminFactory));
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: (message) => {
-          setError(message);
-          setFactories([]);
-        },
-        fallbackMessage: 'โหลดข้อมูลโรงงานไม่สำเร็จ',
-      },
-    );
-  };
-
   useEffect(() => {
-    const id = setTimeout(() => {
-      void loadFactories();
-    }, 250);
+    const id = setTimeout(() => setDebouncedSearch(search), 250);
     return () => clearTimeout(id);
-  }, [statusTab, search]);
+  }, [search]);
+
+  const { factories, loading, error, updateStatus } = useAdminFactoriesPage(
+    statusTab,
+    debouncedSearch,
+  );
 
   const counts = useMemo(() => {
     const next: Record<string, number> = {
@@ -181,24 +151,15 @@ export function AdminFactoriesPage() {
     return next;
   }, [factories]);
 
-  const handleConfirm = async (reason: string) => {
+  const handleConfirm = (reason: string) => {
     if (!dialog) return;
-    await runAsyncAction(
-      async () => {
-        if (dialog.type === 'approve') {
-          await adminApi.approveFactory(dialog.factory.factory_id);
-        } else {
-          await adminApi.rejectFactory(dialog.factory.factory_id, reason.trim());
-        }
-        setDialog(null);
-        await loadFactories();
-      },
+    updateStatus.mutate(
       {
-        onStart: () => setSubmitting(true),
-        onSettled: () => setSubmitting(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'อัปเดตสถานะโรงงานไม่สำเร็จ',
+        type: dialog.type,
+        factoryId: dialog.factory.factory_id,
+        reason: dialog.type === 'reject' ? reason : undefined,
       },
+      { onSuccess: () => setDialog(null) },
     );
   };
 
@@ -389,7 +350,7 @@ export function AdminFactoriesPage() {
           factory={dialog.factory}
           onConfirm={handleConfirm}
           onCancel={() => setDialog(null)}
-          submitting={submitting}
+          submitting={updateStatus.isPending}
         />
       )}
 

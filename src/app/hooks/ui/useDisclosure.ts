@@ -7,10 +7,6 @@ interface UseDisclosureReturn {
   onToggle: () => void;
 }
 
-/**
- * Advanced disclosure hook for managing open/close state
- * More semantic than useToggle with consistent API
- */
 export function useDisclosure(initialIsOpen = false): UseDisclosureReturn {
   const [isOpen, setIsOpen] = useState(initialIsOpen);
 

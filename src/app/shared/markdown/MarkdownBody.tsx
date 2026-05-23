@@ -6,7 +6,6 @@ type Props = {
   className?: string;
 };
 
-/** XSS-safe markdown body (detail pages + editor preview parity). */
 export function MarkdownBody({ source, className }: Props) {
   const html = useMemo(() => renderMarkdown(source), [source]);
   const markdownClassName = `max-w-none text-gray-800 text-sm md:text-base leading-relaxed

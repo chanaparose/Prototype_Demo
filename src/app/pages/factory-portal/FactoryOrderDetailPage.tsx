@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import React, { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -18,7 +18,6 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { openShippingLabel } from '@/utils/printShippingLabel';
-import { useQueryClient } from '@tanstack/react-query';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
@@ -26,6 +25,8 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
 import { ordersApi } from '@/services/api/ordersApi';
 import { orderKeys } from '@/lib/queryKeys';
+import { getErrorMessage } from '@/lib/apiError';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
 import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
 import { ProductionHeader } from '@/components/features/production/ProductionHeader';
@@ -45,14 +46,10 @@ import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
+import { asRecord, unwrapApiEntity, type ApiRecord } from '@/lib/apiShape';
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
-}
-
-function unwrapOrder(raw: unknown): Record<string, unknown> {
-  const root = asRecord(raw);
-  return asRecord(root.order ?? root);
+function unwrapOrder(raw: unknown): ApiRecord {
+  return unwrapApiEntity(raw, ['order']);
 }
 
 function statusLabel(code: string): string {
@@ -77,7 +74,6 @@ function statusVariant(code: string): React.ComponentProps<typeof StatusBadge>['
   return 'pending';
 }
 
-/** คืนจำนวนวันนับจากวันนี้ถึง isoDate (ลบ = เกินกำหนด) */
 function daysUntil(isoDate: unknown): number | null {
   if (!isoDate || typeof isoDate !== 'string') return null;
   const d = new Date(isoDate);
@@ -165,7 +161,8 @@ interface NextActionCardProps {
   state: StepState;
   customerShipping: CustomerShippingInfo;
   onUpdate: () => void;
-  onAcceptOrder?: () => Promise<void>;
+  onAcceptOrder?: () => void;
+  acceptPending?: boolean;
 }
 
 function NextActionCard({
@@ -176,8 +173,8 @@ function NextActionCard({
   customerShipping,
   onUpdate,
   onAcceptOrder,
+  acceptPending = false,
 }: Readonly<NextActionCardProps>) {
-  const [accepting, setAccepting] = useState(false);
   const guide = getStepGuide(getStepId(step));
   const canUpdate = factoryCanUpdateStep(step);
   const stepId = getStepId(step);
@@ -282,18 +279,12 @@ function NextActionCard({
             <Button
               variant='unstyled'
               type='button'
-              disabled={accepting}
-              onClick={async () => {
-                if (!onAcceptOrder) return;
-                await runAsyncAction(() => onAcceptOrder(), {
-                  onStart: () => setAccepting(true),
-                  onSettled: () => setAccepting(false),
-                });
-              }}
+              disabled={acceptPending}
+              onClick={() => onAcceptOrder?.()}
               className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)] disabled:opacity-60'
             >
               <Package size={16} />
-              {accepting ? 'กำลังบันทึก…' : guide.confirmLabel}
+              {acceptPending ? 'กำลังบันทึก…' : guide.confirmLabel}
             </Button>
           ) : (
           <Button
@@ -331,30 +322,23 @@ export function FactoryOrderDetailPage() {
   const qc = useQueryClient();
   const drawerWide = useIsDesktop(768);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [order, setOrder] = useState<Record<string, unknown>>({});
+  const [actionError, setActionError] = useState('');
 
-  const loadOrder = useCallback(async () => {
-    if (!id) return;
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const detail = await ordersApi.get(id);
-        setOrder(unwrapOrder(detail));
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: (message) => setError(message),
-        fallbackMessage: 'โหลดออเดอร์ไม่สำเร็จ',
-      },
-    );
-  }, [id]);
+  const orderQuery = useQuery({
+    queryKey: orderKeys.detail(id ?? ''),
+    queryFn: async () => unwrapOrder(await ordersApi.get(id!)),
+    enabled: Boolean(id),
+  });
 
-  useEffect(() => {
-    void loadOrder();
-  }, [loadOrder]);
+  const order = orderQuery.data ?? {};
+  const loading = orderQuery.isLoading;
+  const error = actionError
+    ? actionError
+    : orderQuery.error
+      ? getErrorMessage(orderQuery.error, 'โหลดออเดอร์ไม่สำเร็จ')
+      : '';
+
+  const reloadOrder = useCallback(() => orderQuery.refetch(), [orderQuery]);
 
   const updQ = useOrderProductionUpdates(id);
 
@@ -442,15 +426,18 @@ export function FactoryOrderDetailPage() {
       await ordersApi.postProductionUpdate(id, body, headers);
       await qc.invalidateQueries({ queryKey: orderKeys.productionUpdates(id) });
       await qc.invalidateQueries({ queryKey: orderKeys.detail(id) });
-      await loadOrder();
+      await reloadOrder();
     },
-    [id, qc, loadOrder],
+    [id, qc, reloadOrder],
   );
 
-  /** step_id=0: ยืนยันรับงาน — ส่ง CD โดยตรง ไม่ต้องรูป */
-  const handleAcceptOrder = useCallback(async () => {
-    await handleStepSubmit({ step_id: 0, status: 'CD', description: '', image_urls: [] });
-  }, [handleStepSubmit]);
+  const acceptOrder = useAppMutation({
+    mutationFn: () =>
+      handleStepSubmit({ step_id: 0, status: 'CD', description: '', image_urls: [] }),
+    onMutate: () => setActionError(''),
+    onError: (err) =>
+      setActionError(err instanceof Error ? err.message : 'ยืนยันรับงานไม่สำเร็จ'),
+  });
 
   const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as IRfqNestedResponse) : null;
   const quotation =
@@ -466,7 +453,6 @@ export function FactoryOrderDetailPage() {
   const totalSteps = displayMerged.length;
   const badgeVariant = statusVariant(status);
 
-  /** step_id=0 "ยืนยันรับงาน" — ดึงจาก displayMerged สำหรับแสดง info card */
   const step0 = useMemo(
     () => displayMerged.find((m) => Number(m.template.step_id) === 0) ?? null,
     [displayMerged],
@@ -475,21 +461,16 @@ export function FactoryOrderDetailPage() {
   const step0StartDate = step0?.update.completed_at ?? step0?.update.last_updated_at ?? null;
   const deliveryDays = daysUntil(order.estimated_delivery);
 
-  /** step_id=4 "จัดส่งแล้ว" — ใช้แสดงใบปะหน้าพัสดุ */
   const step4 = useMemo(
     () => displayMerged.find((m) => Number(m.template.step_id) === 4) ?? null,
     [displayMerged],
   );
-  /**
-   * แสดงการ์ดใบปะหน้าเมื่อ step 4 อยู่ในสถานะ "กำลังดำเนินการ" (IP) เท่านั้น
-   * เมื่อขั้นจัดส่งถูกยืนยันเสร็จสิ้น (CD) จะซ่อนการ์ดใบปะหน้า
-   */
+  // ใบปะหน้าแสดงเมื่อ step 4 ยัง IP — ซ่อนเมื่อ CD
   const showLabelCard = useMemo(() => {
     if (step4 === null) return false;
     return step4.update.status === 'IP';
   }, [step4]);
 
-  /** ชื่อโรงงาน (ผู้ส่ง) */
   const senderName = String(
     (order.factory as Record<string, unknown>)?.factory_name ??
     (order.factory as Record<string, unknown>)?.name ??
@@ -498,15 +479,12 @@ export function FactoryOrderDetailPage() {
     'โรงงาน Tryly',
   ).trim();
 
-  /** เบอร์โทรโรงงาน (ผู้ส่ง) จาก factory.phone ที่ API ส่งมา */
   const senderPhone =
     String((order.factory as Record<string, unknown>)?.phone ?? '').trim() || undefined;
 
-  /** ที่อยู่โรงงาน (จังหวัด) */
   const senderAddress =
     String((order.factory as Record<string, unknown>)?.address ?? '').trim() || undefined;
 
-  /** Tracking number จาก description ของ step 4 (ถ้ามี) */
   const trackingNumber = step4?.update.description
     ? (step4.update.description.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9-]{6,})/i)?.[1] ?? undefined)
     : undefined;
@@ -671,7 +649,8 @@ export function FactoryOrderDetailPage() {
                   totalSteps={totalSteps}
                   state={activeState ?? 'upcoming'}
                   customerShipping={customerShipping}
-                  onAcceptOrder={handleAcceptOrder}
+                  onAcceptOrder={() => acceptOrder.mutate()}
+                  acceptPending={acceptOrder.isPending}
                   onUpdate={() => {
                     if (factoryCanUpdateStep(activeStep) && !isAcceptStep(activeStep))
                       setDrawerStep(activeStep);
@@ -824,7 +803,8 @@ export function FactoryOrderDetailPage() {
                         ) : null}
                       </div>
                     ) : !step0Accepted && order.estimated_delivery ? (
-                      /* ยังไม่รับงาน: แสดง estimated_delivery อย่างเดียว */
+                      // 
+
                       <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 flex items-center justify-between gap-2'>
                         <div className='flex items-center gap-1.5'>
                           <CalendarClock size={14} className='text-slate-500' />

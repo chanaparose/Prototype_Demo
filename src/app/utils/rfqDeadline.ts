@@ -1,4 +1,3 @@
-/** คำนวณจำนวนวันจากวันนี้ถึง deadline (ตัดเป็น calendar day แบบ local) */
 export function daysUntilDeadline(deadlineIso: string | null | undefined): number | null {
   if (!deadlineIso || !String(deadlineIso).trim()) return null;
   const s = String(deadlineIso).trim();
@@ -21,7 +20,6 @@ export function deadlineTone(daysLeft: number | null): DeadlineTone {
   return 'ok';
 }
 
-/** เหลือกี่ชั่วโมงถึง deadline (ใช้เตือนก่อนปิดรับ 24 ชม.) */
 export function hoursUntilDeadline(deadlineIso: string | null | undefined): number | null {
   if (!deadlineIso || !String(deadlineIso).trim()) return null;
   const s = String(deadlineIso).trim();

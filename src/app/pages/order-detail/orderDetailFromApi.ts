@@ -51,7 +51,7 @@ export function parsePaymentSchedule(row: Record<string, unknown>): PaymentSched
   const overdue = apiSt === 'PE';
   const due = row.deposit_due_date != null ? pickScalarString(row.deposit_due_date) : null;
 
-  // Business rule: 100% upfront payment — single FULL_PAYMENT stage.
+  // ชำระเต็มจำนวนล่วงหน้า 100% (stage เดียว)
   return [
     {
       stage: 'FULL_PAYMENT',

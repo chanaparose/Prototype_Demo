@@ -19,7 +19,6 @@ type Props = {
   className?: string;
 };
 
-/** D-3 / D-7 / D-14 สีตาม spec — ใช้ทั้ง board และ detail */
 export function DeadlineBadge({ deadlineIso, className = '' }: Props) {
   const dLeft = daysUntilDeadline(deadlineIso);
   const tone = deadlineTone(dLeft);

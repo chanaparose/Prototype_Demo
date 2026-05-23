@@ -1,10 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
-import { adminApi } from '@/services/api/adminApi';
-import type { IAdminOrderListResponse } from '@/services/api/types/admin.types';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
-import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { pickScalarString } from '@/utils/pickScalarString';
+import { useAdminOrdersPage, type OrderStatusTab } from '@/pages/admin/hooks/useAdminOrdersPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,19 +16,6 @@ import {
   TableSkeletonRows,
 } from '@/components/ui/table';
 
-type OrderStatusTab = 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
-
-interface AdminOrderView {
-  order_id: string;
-  buyer: string;
-  factory: string;
-  total_amount: number;
-  commission_amount: number;
-  vat_amount: number;
-  status: string;
-  created_at: string;
-}
-
 const STATUS_META: Record<OrderStatusTab, { label: string; cls: string }> = {
   all: { label: 'ทั้งหมด', cls: '' },
   pending: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' },
@@ -39,12 +24,12 @@ const STATUS_META: Record<OrderStatusTab, { label: string; cls: string }> = {
   cancelled: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-700' },
 };
 
-const STATUS_TABS: { key: OrderStatusTab; label: string; apiStatus?: string }[] = [
+const STATUS_TABS: { key: OrderStatusTab; label: string }[] = [
   { key: 'all', label: 'ทั้งหมด' },
-  { key: 'pending', label: 'รอดำเนินการ', apiStatus: 'OP' },
-  { key: 'processing', label: 'กำลังดำเนินการ', apiStatus: 'PR' },
-  { key: 'completed', label: 'เสร็จสิ้น', apiStatus: 'CM' },
-  { key: 'cancelled', label: 'ยกเลิก', apiStatus: 'CL' },
+  { key: 'pending', label: 'รอดำเนินการ' },
+  { key: 'processing', label: 'กำลังดำเนินการ' },
+  { key: 'completed', label: 'เสร็จสิ้น' },
+  { key: 'cancelled', label: 'ยกเลิก' },
 ];
 
 function inferTab(status: string): OrderStatusTab {
@@ -55,72 +40,24 @@ function inferTab(status: string): OrderStatusTab {
   return 'processing';
 }
 
-function toRows(raw: unknown): IAdminOrderListResponse[] {
-  if (Array.isArray(raw)) return raw as IAdminOrderListResponse[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as IAdminOrderListResponse[];
-    if (Array.isArray(obj.data)) return obj.data as IAdminOrderListResponse[];
-    if (Array.isArray(obj.rows)) return obj.rows as IAdminOrderListResponse[];
-  }
-  return [];
-}
-
-function mapOrder(row: IAdminOrderListResponse): AdminOrderView {
-  return {
-    order_id: pickScalarString(row.order_id),
-    buyer: pickScalarString(row.customer_name, '-'),
-    factory: pickScalarString(row.factory_name, '-'),
-    total_amount: pickScalarNumber(row.total_amount) ?? 0,
-    commission_amount: pickScalarNumber(row.platform_commission_amount) ?? 0,
-    vat_amount: pickScalarNumber(row.vat_amount) ?? 0,
-    status: pickScalarString(row.status, 'OP'),
-    created_at: pickScalarString(row.created_at),
-  };
-}
-
 export function AdminOrdersPage() {
   const [statusTab, setStatusTab] = useState<OrderStatusTab>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [rows, setRows] = useState<AdminOrderView[]>([]);
-
-  const loadOrders = async () => {
-    setError('');
-    await runAsyncAction(
-      async () => {
-        const status = STATUS_TABS.find((t) => t.key === statusTab)?.apiStatus;
-        const raw = await adminApi.listOrders({
-          status,
-          date_from: dateFrom || undefined,
-          date_to: dateTo || undefined,
-          search: search.trim() || undefined,
-          page: 1,
-          page_size: 200,
-        });
-        setRows(toRows(raw).map(mapOrder));
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: (message) => {
-          setError(message);
-          setRows([]);
-        },
-        fallbackMessage: 'โหลดข้อมูลคำสั่งซื้อไม่สำเร็จ',
-      },
-    );
-  };
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
-    const id = setTimeout(() => {
-      void loadOrders();
-    }, 300);
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(id);
-  }, [statusTab, dateFrom, dateTo, search]);
+  }, [search]);
+
+  const { rows, loading, error } = useAdminOrdersPage(
+    statusTab,
+    debouncedSearch,
+    dateFrom,
+    dateTo,
+  );
 
   const counts = useMemo(() => {
     const result: Record<OrderStatusTab, number> = {
