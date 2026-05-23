@@ -3,7 +3,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { daysUntilDeadline } from '@/utils/rfqDeadline';
 import { factoryRfqsApi } from '@/services/api/rfqApi';
-import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { pickScalarString } from '@/utils/pickScalarString';
 import type { RfqCardModel } from '@/components/factory/RfqCard';
 
 function innerRfq(row: Record<string, unknown>): Record<string, unknown> {

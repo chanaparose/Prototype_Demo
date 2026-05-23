@@ -30,12 +30,25 @@ export const orderKeys = {
   list: () => [...orderKeys.lists()] as const,
   details: () => [...orderKeys.all, 'detail'] as const,
   detail: (id: string) => [...orderKeys.details(), id] as const,
+  productionUpdates: (id: string | number | undefined) =>
+    [...orderKeys.detail(String(id ?? '')), 'production-updates'] as const,
 };
 
 export const factoryKeys = {
   all: ['factory'] as const,
+  me: () => [...factoryKeys.all, 'me'] as const,
+  profileInit: () => [...factoryKeys.me(), 'profile-init'] as const,
   details: () => [...factoryKeys.all, 'detail'] as const,
   detail: (id: string) => [...factoryKeys.details(), id] as const,
+  categories: (id: string | number | null | undefined) =>
+    [...factoryKeys.all, String(id ?? ''), 'categories'] as const,
+  subCategories: (id: string | number | null | undefined) =>
+    [...factoryKeys.all, String(id ?? ''), 'sub-categories'] as const,
+  certificates: (id: string | number | null | undefined) =>
+    [...factoryKeys.all, String(id ?? ''), 'certs'] as const,
+  reviewsSummary: (id: string | number) => [...factoryKeys.all, String(id), 'reviews-summary'] as const,
+  reviewsList: (id: string | number) => [...factoryKeys.all, String(id), 'reviews-list'] as const,
+  orders: (id: string | number | null | undefined) => [...factoryKeys.all, 'orders', id] as const,
 };
 
 export const quotationKeys = {
@@ -54,6 +67,7 @@ export const exploreKeys = {
 export const chatKeys = {
   all: ['chat'] as const,
   conversations: () => [...chatKeys.all, 'conversations'] as const,
+  rfqPicker: () => [...chatKeys.all, 'rfqs', 'open', 'picker'] as const,
 };
 
 export const notificationKeys = {
@@ -99,6 +113,24 @@ export const showcaseKeys = {
   list: (type?: string) => [...showcaseKeys.lists(), type ?? 'ALL'] as const,
   detail: (id: string | number) => [...showcaseKeys.all, 'detail', String(id)] as const,
   related: (idsKey: string) => [...showcaseKeys.all, 'related', idsKey] as const,
+  relatedForDetail: (id: string | number, kind: string) =>
+    [...showcaseKeys.detail(id), 'related', kind] as const,
   factoryList: (factoryId: string | number) =>
     [...showcaseKeys.all, 'factory', String(factoryId)] as const,
+};
+
+export const addressKeys = {
+  all: ['addresses'] as const,
+  me: () => [...addressKeys.all, 'me'] as const,
+};
+
+export const walletKeys = {
+  all: ['wallet'] as const,
+  me: () => [...walletKeys.all, 'me'] as const,
+};
+
+export const productionKeys = {
+  all: ['production'] as const,
+  template: (factoryTypeId?: string | number) =>
+    [...productionKeys.all, 'template', factoryTypeId ?? 'all'] as const,
 };

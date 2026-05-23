@@ -11,10 +11,10 @@ export interface CertTypeOption {
 
 export function useMasterCerts() {
   return useQuery({
-    queryKey: masterKeys.certificates() as const,
+    queryKey: masterKeys.certificates(),
     queryFn: async () => {
       const raw = await masterApi.certificates();
-      const arr = (Array.isArray(raw) ? raw : []) as Row[];
+      const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
       return arr
         .map((r): CertTypeOption | null => {
           const id = Number(r.cert_id ?? r.id);

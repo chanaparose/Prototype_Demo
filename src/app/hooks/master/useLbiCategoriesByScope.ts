@@ -10,7 +10,7 @@ export interface CategoryOption {
 
 export function useLbiCategoriesByScope(scope: 'PD' | 'MT' | 'ALL') {
   return useQuery({
-    queryKey: masterKeys.lbiCategories(scope) as const,
+    queryKey: masterKeys.lbiCategories(scope),
     queryFn: async () => {
       const raw = await masterApi.lbiCategories(scope);
       const obj = raw as Record<string, unknown>;

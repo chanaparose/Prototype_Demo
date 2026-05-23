@@ -97,6 +97,9 @@ export const quotationsApi = {
   update: (quoteId: string | number, data: Record<string, unknown>) =>
     httpClient.patch<IQuotationResponse>(`/quotations/${quoteId}`, data),
 
+  patch: (quoteId: string | number, data: Record<string, unknown>) =>
+    httpClient.patch<IQuotationResponse>(`/quotations/${quoteId}`, data),
+
   get: (quoteId: string | number) => httpClient.get<IQuotationResponse>(`/quotations/${quoteId}`),
 
   delete: (quoteId: string | number) => httpClient.delete<void>(`/quotations/${quoteId}`),
@@ -107,6 +110,9 @@ export const quotationsApi = {
   },
 
   listMine: () => httpClient.get<IQuotationResponse[]>('/quotations'),
+
+  history: (quoteId: string | number) =>
+    httpClient.get<IQuotationHistoryEntry[]>(`/quotations/${quoteId}/history`),
 };
 
 export const quotationApi = {
@@ -116,6 +122,24 @@ export const quotationApi = {
   getDetail: (quoteId: string | number) =>
     httpClient.get<IQuotationResponse & { details?: unknown }>(`/quotations/${quoteId}/detail`),
 
+  get: (quoteId: string | number) =>
+    httpClient.get<IQuotationResponse & { details?: unknown }>(`/quotations/${quoteId}/detail`),
+
   getHistory: (quoteId: string | number) =>
     httpClient.get<IQuotationHistoryEntry[]>(`/quotations/${quoteId}/history`),
+
+  history: (quoteId: string | number) =>
+    httpClient.get<IQuotationHistoryEntry[]>(`/quotations/${quoteId}/history`),
+
+  create: (data: IQuotationCreateRequest) =>
+    httpClient.post<IQuotationResponse>(`/rfqs/${data.rfq_id}/quotations`, data),
+
+  requestRevision: (quoteId: string | number, data: Record<string, unknown>) =>
+    httpClient.post<IQuotationResponse>(`/quotations/${quoteId}/request-revision`, data),
+
+  reject: (quoteId: string | number, data: Record<string, unknown> = {}) =>
+    httpClient.post<IQuotationResponse>(`/quotations/${quoteId}/reject`, data),
+
+  accept: (quoteId: string | number, data: Record<string, unknown> = {}) =>
+    httpClient.post<IQuotationResponse>(`/quotations/${quoteId}/accept`, data),
 };

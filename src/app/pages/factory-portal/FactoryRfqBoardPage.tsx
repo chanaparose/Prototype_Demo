@@ -10,10 +10,8 @@ import {
   Wheat,
   ChevronDown,
   Check,
-  ClipboardList,
   EyeOff,
 } from 'lucide-react';
-import { factoryRfqsApi } from '@/services/api/rfqApi';
 import { RfqCard, type RfqCardModel } from '@/components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '@/hooks/useFactoryRfqBoard';
 import { useDisclosure } from '@/hooks/ui/useDisclosure';
@@ -237,7 +235,6 @@ export function FactoryRfqBoardPage() {
     dismissedLoading,
     dismissedLoaded,
     loadDismissed,
-    reloadDismissed,
   } = useFactoryRfqBoard();
   const narrowTabs = useNarrowTabs(400);
   const navigate = useNavigate();
@@ -249,8 +246,6 @@ export function FactoryRfqBoardPage() {
   const [filterShip, setFilterShip] = useState('');
   const [sort, setSort] = useState<SortKey>('new');
   const [showDismissed, setShowDismissed] = useState(false);
-  const [undismissBusy, setUndismissBusy] = useState<string | null>(null);
-
   const counts = useMemo(() => tabCounts(rows), [rows]);
   // Kind counts = ยังไม่ได้เสนอ + OP เท่านั้น (ใช้ unansweredByKind แทน kindCounts)
   const unansweredByKind = useMemo(
@@ -276,25 +271,6 @@ export function FactoryRfqBoardPage() {
     }),
     [rows],
   );
-  const summary = useMemo(() => {
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
-    // นับเฉพาะ OP ที่ยังไม่เสนอ
-    const newToday = rows.filter(
-      (r) => !r.hasMyQuote && r.status === 'OP' && now - r.createdAtMs <= oneDay,
-    ).length;
-    const closingSoon = rows.filter(
-      (r) =>
-        !r.hasMyQuote &&
-        r.status === 'OP' &&
-        r.daysLeft != null &&
-        r.daysLeft >= 0 &&
-        r.daysLeft <= 3,
-    ).length;
-    const waitingQuote = rows.filter((r) => r.hasMyQuote).length;
-    return { newToday, closingSoon, waitingQuote };
-  }, [rows]);
-
   const categoryOptions = useMemo(() => {
     const m = new Map<number, string>();
     for (const r of rows) {
@@ -340,25 +316,6 @@ export function FactoryRfqBoardPage() {
     setShowDismissed(next);
     if (next && !dismissedLoaded) void loadDismissed();
   };
-
-  const handleUndismiss = async (rfqId: string) => {
-    setUndismissBusy(rfqId);
-    try {
-      await factoryRfqsApi.undismiss(rfqId);
-      await Promise.all([reload(), reloadDismissed()]);
-    } finally {
-      setUndismissBusy(null);
-    }
-  };
-
-  const boqCounts = useMemo(
-    () => ({
-      pd: rows.filter((r) => r.hasMyQuote && r.myQuoteStatus === 'PD').length,
-      ac: rows.filter((r) => r.hasMyQuote && r.myQuoteStatus === 'AC').length,
-      rj: rows.filter((r) => r.hasMyQuote && r.myQuoteStatus === 'RJ').length,
-    }),
-    [rows],
-  );
 
   const tabDefs: { key: TabKey; label: string; count: number; warn?: boolean }[] = [
     { key: 'open', label: 'ยังไม่ได้เสนอ', count: counts.open },

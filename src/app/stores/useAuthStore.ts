@@ -12,7 +12,7 @@ import type {
 } from '@/services/api/types/auth.types';
 import type { IUser } from '@/domain/auth/types/user.model';
 import type { IAuthSession } from '@/domain/auth/types/auth.model';
-import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
+import { isTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
 
 export interface IAuthState {
   user: IUser | null;

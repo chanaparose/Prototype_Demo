@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import { fetchExploreCategoriesListOnly } from '@/utils/exploreCategoriesFromApi';
 

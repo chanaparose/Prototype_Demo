@@ -5,10 +5,6 @@ import {
   Clock,
   CheckCircle2,
   Star,
-  ShieldCheck,
-  Mail,
-  MapPin,
-  ChevronDown,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { FactoryProfileHero } from '@/components/features/factory-profile/FactoryProfileHero';
@@ -53,23 +49,6 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
     if (!factory) return;
     await startChat(factory.id);
   }, [factory, startChat]);
-
-  const [showCategorySubs, setShowCategorySubs] = React.useState(false);
-  const groupedCategorySubs = React.useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (const p of factorySubCategoryPairs) {
-      const cat = String(p.categoryLabel ?? '').trim();
-      const sub = String(p.subLabel ?? '').trim();
-      if (!cat || !sub) continue;
-      const prev = map.get(cat) ?? [];
-      if (!prev.includes(sub)) prev.push(sub);
-      map.set(cat, prev);
-    }
-    if (map.size === 0 && factoryCategoryNames.length > 0) {
-      for (const c of factoryCategoryNames) map.set(c, []);
-    }
-    return Array.from(map.entries());
-  }, [factorySubCategoryPairs, factoryCategoryNames]);
 
   if (detailLoading && !factory) {
     return (

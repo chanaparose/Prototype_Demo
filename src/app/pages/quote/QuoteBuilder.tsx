@@ -32,10 +32,10 @@ export function QuoteBuilder() {
         <div className='lg:col-span-3 space-y-4'>
           <LineItemTable items={state.items} onChange={(items) => setPartial({ items })} />
           <ExtraChargesForm
-            discount_amount={state.discount_amount}
-            shipping_cost={state.shipping_cost}
-            packaging_cost={state.packaging_cost}
-            tooling_mold_cost={state.tooling_mold_cost}
+            discount_amount={state.discount_amount ?? 0}
+            shipping_cost={state.shipping_cost ?? 0}
+            packaging_cost={state.packaging_cost ?? 0}
+            tooling_mold_cost={state.tooling_mold_cost ?? 0}
             onChange={(next) => setPartial(next)}
           />
           <CommercialTermsForm
@@ -54,7 +54,7 @@ export function QuoteBuilder() {
               setSubmitting(true);
               try {
                 const q = await quotationApi.create(state);
-                const id = Number(q.quotation_id ?? q.id ?? 0);
+                const id = Number(q.quote_id ?? 0);
                 if (id > 0) navigate(`/factory/quotations/${id}`);
               } finally {
                 setSubmitting(false);

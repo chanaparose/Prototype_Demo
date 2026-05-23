@@ -11,7 +11,7 @@ export interface CategoryOption {
 
 export function useProductCategories() {
   return useQuery({
-    queryKey: masterKeys.productCategories() as const,
+    queryKey: masterKeys.productCategories(),
     queryFn: async () => {
       const raw = await masterApi.getProductCategories();
       const unwrapped = Array.isArray(raw)

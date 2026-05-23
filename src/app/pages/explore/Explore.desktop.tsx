@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router';
 import {
   Search,
   SlidersHorizontal,
-  Copy,
-  Gift,
   ChevronRight,
   MapPin,
   Star,
@@ -32,8 +30,6 @@ import { useFavorites } from '@/hooks/useFavorites';
 type ExploreDesktopProps = {
   searchText: string;
   setSearchText: (v: string) => void;
-  copiedId: string | null;
-  setCopiedId: (v: string | null) => void;
   categories: CategoryItem[];
   exploreCategoriesMerged: CategoryItem[];
   exploreCategoriesLoading: boolean;
@@ -55,21 +51,6 @@ const FILTER_BUTTON_CLASS = cn(
   'flex items-center gap-1.5 text-xs font-medium shrink-0',
   'text-brand-magenta hover:border-brand-magenta/30 transition-colors'
 );
-
-const PROMO_GRADIENT = {
-  background: 'linear-gradient(135deg, var(--brand-orange) 0%, var(--brand-orange-vivid) 100%)',
-};
-
-const PROMO_PURPLE_BG = { background: 'var(--brand-purple)' };
-const PROMO_LIGHT_BG = { background: '#FAEBD7' };
-
-const PROMO_BADGE_STYLE = { background: 'var(--brand-purple)' };
-const PROMO_CODE_WRAPPER = {
-  background: 'rgba(255,255,255,0.25)',
-  borderColor: 'rgba(255,255,255,0.40)',
-};
-
-const PROMO_COPY_BTN = { background: 'var(--brand-navy-deep)' };
 
 const SHIMMER_GRADIENT = {
   background:
@@ -113,8 +94,6 @@ function getFactoryMeta(
 export function ExploreDesktop({
   searchText,
   setSearchText,
-  copiedId,
-  setCopiedId,
   categories,
   exploreCategoriesMerged,
   exploreCategoriesLoading,
@@ -125,7 +104,6 @@ export function ExploreDesktop({
   exploreProducts,
   explorePromotions,
   exploreMatrials,
-  promoSlides,
 }: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
@@ -168,25 +146,6 @@ export function ExploreDesktop({
     [exploreMatrials],
   );
 
-  // Promo slides จาก API เท่านั้น — ไม่มี fallback
-  const desktopPromoSlides = useMemo(() => {
-    const slides = Array.isArray(promoSlides) ? promoSlides : [];
-    return slides
-      .map((r) => ({
-        id: r.id,
-        title: r.title,
-        subtitle: r.subtitle,
-        code: r.code,
-      }))
-      .filter((s) => s.id && s.title);
-  }, [promoSlides]);
-
-  const handleCopy = (code: string, id: string) => {
-    navigator.clipboard?.writeText(code);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
   return (
     <div className='hidden md:block min-h-screen'>
       <div className='px-4 md:px-6 lg:px-8 py-3 lg:py-4 space-y-6 pb-0 w-full mx-auto'>
@@ -223,89 +182,6 @@ export function ExploreDesktop({
             ตัวกรอง
           </Button>
         </div>
-
-        {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) — แสดงเฉพาะเมื่อมีจาก API ═══ */}
-        {/*
-          Disabled promo-code cards. Keep this block commented out; commented code is not rendered or used.
-          {desktopPromoSlides.length > 0 && (
-          <section>
-            <div className='flex items-center justify-between mb-3'>
-              <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
-                <Sparkles className='text-brand-orange' size={16} />
-                โค้ดส่วนลดพิเศษ
-              </h2>
-            </div>
-
-            <div className='grid grid-cols-3 gap-3'>
-              {desktopPromoSlides.map((promo) => (
-                <div
-                  key={promo.id}
-                  className='h-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all flex flex-col'
-                >
-                  <div
-                    className='relative overflow-hidden p-3.5 text-white h-full flex-1 flex flex-col'
-                    style={PROMO_GRADIENT}
-                  >
-                    <div
-                      className='absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-30'
-                      style={PROMO_PURPLE_BG}
-                    />
-                    <div
-                      className='absolute top-0 right-0 w-14 h-14 rounded-full opacity-20 blur-xl'
-                      style={PROMO_PURPLE_BG}
-                    />
-
-                    <div
-                      className='absolute -bottom-3 -left-3 w-12 h-12 rounded-full opacity-20'
-                      style={PROMO_LIGHT_BG}
-                    />
-                    <div className='relative z-10'>
-                      <div
-                        className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full mb-1.5'
-                        style={PROMO_BADGE_STYLE}
-                      >
-                        <Gift className='w-3 h-3 text-white' />
-                        <span className='text-[10px] text-white font-semibold tracking-wide'>
-                          โปรโมชั่นพิเศษ
-                        </span>
-                      </div>
-                      <p className='text-sm font-bold mb-1 leading-tight text-white drop-shadow-sm'>
-                        {promo.title}
-                      </p>
-                      <p
-                        className='text-[10px] mb-2 leading-snug'
-                        style={{ color: 'rgba(255,255,255,0.85)' }}
-                      >
-                        {promo.subtitle}
-                      </p>
-                      <div className='flex items-center gap-2'>
-                        <div
-                          className='flex items-center rounded-lg px-2.5 py-1 border'
-                          style={PROMO_CODE_WRAPPER}
-                        >
-                          <span className='text-sm font-mono tracking-widest font-bold text-white'>
-                            {promo.code}
-                          </span>
-                        </div>
-                        <Button
-                          variant='unstyled'
-                          type='button'
-                          onClick={() => handleCopy(promo.code, promo.id)}
-                          className='flex items-center gap-1 rounded-lg px-2.5 py-1 transition-colors text-[12px] font-semibold text-white'
-                          style={PROMO_COPY_BTN}
-                        >
-                          <Copy className='w-3 h-3' />
-                          {copiedId === promo.id ? 'คัดลอกแล้ว!' : 'คัดลอก'}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-          )}
-        */}
 
         <div data-tour='categories'>
           <ExploreDesktopCategories

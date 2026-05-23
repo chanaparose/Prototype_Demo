@@ -24,6 +24,7 @@ import { getFactoryEntityId } from '@/utils/factoryUser';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
 import { ordersApi } from '@/services/api/ordersApi';
+import { orderKeys } from '@/lib/queryKeys';
 import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
 import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderProductionUpdates';
 import { ProductionHeader } from '@/components/features/production/ProductionHeader';
@@ -439,8 +440,8 @@ export function FactoryOrderDetailPage() {
           ? { 'X-Confirm-Payment-Trigger': 'true' }
           : undefined;
       await ordersApi.postProductionUpdate(id, body, headers);
-      await qc.invalidateQueries({ queryKey: ['order', id, 'production-updates'] });
-      await qc.invalidateQueries({ queryKey: ['order', id] });
+      await qc.invalidateQueries({ queryKey: orderKeys.productionUpdates(id) });
+      await qc.invalidateQueries({ queryKey: orderKeys.detail(id) });
       await loadOrder();
     },
     [id, qc, loadOrder],
@@ -507,7 +508,7 @@ export function FactoryOrderDetailPage() {
 
   /** Tracking number จาก description ของ step 4 (ถ้ามี) */
   const trackingNumber = step4?.update.description
-    ? (step4.update.description.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i)?.[1] ?? undefined)
+    ? (step4.update.description.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9-]{6,})/i)?.[1] ?? undefined)
     : undefined;
 
   const customerShipping = useMemo(() => extractShippingInfo(order), [order]);

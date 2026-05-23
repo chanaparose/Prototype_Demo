@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi } from '@/services/api/ordersApi';
+import { orderKeys } from '@/lib/queryKeys';
 import type {
   IProductionUpdateRequest,
   IProductionUpdatesBundle,
@@ -28,7 +29,7 @@ function applyOptimistic(old: IProductionUpdatesBundle, body: PostBody): IProduc
 
 export function usePostProductionUpdate(orderId: string | undefined) {
   const qc = useQueryClient();
-  const key = ['order', orderId, 'production-updates'] as const;
+  const key = orderKeys.productionUpdates(orderId);
 
   return useMutation({
     mutationFn: async ({ body, confirmHeader }: { body: PostBody; confirmHeader?: boolean }) => {
@@ -49,7 +50,7 @@ export function usePostProductionUpdate(orderId: string | undefined) {
     },
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: key });
-      void qc.invalidateQueries({ queryKey: ['order', orderId] });
+      void qc.invalidateQueries({ queryKey: orderKeys.detail(String(orderId ?? '')) });
     },
     retry: 3,
   });

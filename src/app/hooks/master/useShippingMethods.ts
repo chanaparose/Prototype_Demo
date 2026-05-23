@@ -10,7 +10,7 @@ export type ShippingMethodOption = {
 
 export function useShippingMethods(enabled = true) {
   return useQuery({
-    queryKey: masterKeys.shippingMethods() as const,
+    queryKey: masterKeys.shippingMethods(),
     enabled,
     queryFn: async () => {
       const raw = await masterApi.getShippingMethods();

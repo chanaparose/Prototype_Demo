@@ -23,18 +23,6 @@ const step1Schema = z.object({
   qty: z.number().positive(),
 });
 
-const step2Schema = z.object({
-  material_grade: z.string().optional(),
-});
-
-const step3Schema = z.object({
-  delivery_address_id: z.number().int().positive(), // maps to address_id on submit
-  shipping_method_id: z.number().int().positive(), // required — factory ต้องรู้วิธีจัดส่ง
-  target_lead_time_days: z.number().optional(),
-});
-
-const step4Schema = z.object({});
-
 const STEPS = ['กรอกข้อมูล', 'สรุปข้อมูล'];
 
 export function RFQCreateWizard() {
@@ -243,18 +231,6 @@ export function RFQCreateWizard() {
     if (!id) return '-';
     return shippingMap[id] ?? `วิธีจัดส่ง #${id}`;
   }, [shippingMap, draft.shipping_method_id]);
-
-  const optionalMissing = React.useMemo(() => {
-    const missing: string[] = [];
-    const k = draft.request_kind ?? 'PR';
-    if (k !== 'MS' && k !== 'MR' && !draft.sub_category_id) missing.push('หมวดย่อย');
-    if (!draft.material_grade?.trim()) missing.push('วัตถุดิบ');
-    if (!draft.target_price) missing.push('งบประมาณรวม');
-    if (!draft.target_lead_time_days) missing.push('ระยะเวลาผลิต');
-    if (!draft.certifications_required.length) missing.push('Certification');
-    if (!draft.reference_images.length) missing.push('รูปอ้างอิง');
-    return missing;
-  }, [draft]);
 
   const submit = async () => {
     if (!step1Schema.safeParse(draft).success) return;

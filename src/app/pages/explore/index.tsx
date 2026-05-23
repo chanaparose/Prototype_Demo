@@ -14,8 +14,6 @@ export function Explore() {
   const {
     searchText,
     setSearchText,
-    copiedId,
-    setCopiedId,
     exploreBootstrapCategories,
     exploreFactories,
     ideaArticles,
@@ -58,16 +56,12 @@ export function Explore() {
         <ExploreDesktop
           searchText={searchText}
           setSearchText={setSearchText}
-          copiedId={copiedId}
-          setCopiedId={setCopiedId}
           categories={exploreBootstrapCategories}
           exploreCategoriesMerged={exploreCategoriesMerged}
           exploreCategoriesLoading={exploreCategoriesLoading}
           exploreCategoriesError={exploreCategoriesError}
           reloadExploreCategories={reloadExploreCategories}
           factories={exploreFactories}
-          activeRFQs={[]}
-          recentOrders={[]}
           ideaArticles={ideaArticles}
           factoryShowcases={showcases}
           exploreProducts={productShowcases}

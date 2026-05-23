@@ -117,6 +117,14 @@ export const walletApi = {
     return httpClient.get<unknown[]>(`/wallets/me/transactions?${params}`);
   },
 
+  transactions: (limit = 50, offset = 0) => {
+    const params = new URLSearchParams({
+      limit: String(limit),
+      offset: String(offset),
+    });
+    return httpClient.get<unknown[]>(`/wallets/me/transactions?${params}`);
+  },
+
   deposit: (amount: number, payment_method: string) =>
     httpClient.post<Record<string, unknown>>('/wallet/deposit', {
       amount,

@@ -1,15 +1,23 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { httpClient } from '@/services/api/httpClient';
-import { masterKeys } from '@/lib/queryKeys';
+import { addressKeys, factoryKeys, masterKeys } from '@/lib/queryKeys';
 import type { FactoryTypeOption } from '@/hooks/master/useFactoryTypes';
 import type { CategoryOption } from '@/hooks/master/useLbiCategoriesByScope';
 import type { CertTypeOption } from '@/hooks/master/useMasterCerts';
 import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
+import type {
+  ApiCategory,
+  ApiSubCategory,
+} from '@/components/factory/profile/CategoriesSection';
+import type { IFactoryProfileResponse } from '@/services/api/types/factory.types';
 
 type Row = Record<string, unknown>;
 
 interface ProfileInitData {
-  factory: Row;
+  factory: IFactoryProfileResponse & {
+    categories?: ApiCategory[];
+    sub_categories?: ApiSubCategory[];
+  };
   factory_types: Row[];
   lbi_categories: Row[];
   addresses: Row[];
@@ -17,7 +25,7 @@ interface ProfileInitData {
   sub_categories: Row[];
 }
 
-export const profileInitKey = ['factory', 'me', 'profile-init'] as const;
+export const profileInitKey = factoryKeys.profileInit();
 
 export function useProfileInit() {
   const qc = useQueryClient();
@@ -66,7 +74,7 @@ export function useProfileInit() {
       );
 
       // addresses → raw rows
-      qc.setQueryData(['addresses', 'me'], data.addresses ?? []);
+      qc.setQueryData(addressKeys.me(), data.addresses ?? []);
 
       // certificate_types → CertTypeOption[]
       const certs: CertTypeOption[] = (data.certificate_types ?? [])

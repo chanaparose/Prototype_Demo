@@ -21,7 +21,6 @@ type RfqDetailStatusCardProps = {
 
 export function RfqDetailStatusCard({
   rfq,
-  isHistoryView,
   statusBadgeStyle,
   statusLabel,
 }: RfqDetailStatusCardProps) {

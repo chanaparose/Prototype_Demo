@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { factoriesApi } from '@/services/api/factoryApi';
+import { factoryKeys } from '@/lib/queryKeys';
 
 export function useMyFactory() {
   const query = useQuery({
-    queryKey: ['factory', 'me'] as const,
+    queryKey: factoryKeys.me(),
     queryFn: async () => {
       const init = await factoriesApi.getProfileInit();
       const factory = (init?.factory ?? {}) as Record<string, unknown>;

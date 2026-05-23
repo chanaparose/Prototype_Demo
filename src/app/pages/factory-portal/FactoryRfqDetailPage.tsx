@@ -109,7 +109,7 @@ export function FactoryRfqDetailPage() {
       const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
       setRfqTitle(String(rfq.title ?? ''));
       setRfqBody(rfq);
-      setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as QuoteRow[]) : []);
+      setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as unknown as QuoteRow[]) : []);
       setSubCategoryName(String(rfq.sub_category_name ?? '').trim());
       if (detail.commission_config) setCommissionConfig(detail.commission_config);
     } catch (e) {
@@ -220,7 +220,7 @@ export function FactoryRfqDetailPage() {
   const findExistingConvId = async (): Promise<number | null> => {
     const convsRaw = await conversationsApi.list();
     const convs = (() => {
-      if (Array.isArray(convsRaw)) return convsRaw as Array<Record<string, unknown>>;
+      if (Array.isArray(convsRaw)) return convsRaw as unknown as Array<Record<string, unknown>>;
       if (convsRaw && typeof convsRaw === 'object') {
         const root = convsRaw as Record<string, unknown>;
         const c1 = root.conversations;

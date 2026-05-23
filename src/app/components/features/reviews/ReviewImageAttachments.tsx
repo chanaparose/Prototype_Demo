@@ -32,7 +32,7 @@ export function ReviewImageAttachments({
     if (list.length === 0) return;
     setUploading(true);
     try {
-      let next = [...urls];
+      const next = [...urls];
       for (const f of list) {
         if (next.length >= REVIEW_IMAGE_MAX) break;
         const { url } = await mediaApi.upload(f);

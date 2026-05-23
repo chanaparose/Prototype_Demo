@@ -4,7 +4,6 @@ import { categoriesApi } from '@/services/api/masterApi';
 import { showcasesPaginatedApi } from '@/services/api/exploreApi';
 import { type Factory, type FactoryShowcase } from '@/stores/types';
 import { factoryIdeasKeys } from '@/lib/queryKeys';
-import { pickScalarString } from '@/utils/pickScalarString';
 import { normalizeFactoryIdeaFactory } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 

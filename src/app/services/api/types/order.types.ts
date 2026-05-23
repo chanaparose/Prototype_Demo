@@ -78,4 +78,6 @@ export interface IOrderCreateRequest {
 export interface IOrderUpdateRequest {
   status?: OrderStatus;
   estimated_delivery?: string;
+  tracking_number?: string;
+  note?: string;
 }

@@ -11,7 +11,7 @@ export function useDistricts(provinceId: number | string | null | undefined) {
   const pid = Number(provinceId);
   const enabled = Number.isFinite(pid) && pid > 0;
   return useQuery({
-    queryKey: masterKeys.districts(pid) as const,
+    queryKey: masterKeys.districts(pid),
     enabled,
     queryFn: async () => {
       const raw = await masterApi.districts(pid);
@@ -20,7 +20,7 @@ export function useDistricts(provinceId: number | string | null | undefined) {
         : Array.isArray((raw as Record<string, unknown>).data)
           ? (raw as Record<string, unknown>).data
           : [];
-      const arr = unwrapped as Row[];
+      const arr = unwrapped as unknown as Row[];
       return arr
         .map(mapDistrictOption)
         .filter((x): x is DistrictOption => x != null)

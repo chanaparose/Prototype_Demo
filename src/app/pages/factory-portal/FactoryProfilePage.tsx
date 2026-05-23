@@ -37,6 +37,7 @@ import { BankAccountPlaceholder } from '@/components/factory/profile/BankAccount
 import { ProfileSaveBar } from '@/components/factory/profile/ProfileSaveBar';
 import { SectionCard } from '@/shared/ui/cards/SectionCard';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 import {
   PROFILE_FORM_DEFAULTS,
@@ -148,7 +149,6 @@ function FactoryHeroCard({
   uploadingImage,
   uploadingCover,
   onPickImage,
-  onRemoveImage,
   onPickCover,
   onRemoveCover,
 }: {
@@ -159,7 +159,6 @@ function FactoryHeroCard({
   uploadingImage: boolean;
   uploadingCover: boolean;
   onPickImage: (file: File) => void;
-  onRemoveImage: () => void;
   onPickCover: (file: File) => void;
   onRemoveCover: () => void;
 }) {
@@ -376,15 +375,17 @@ export function FactoryProfilePage() {
   const { user, refreshUser } = useAuth();
   const fid = getFactoryEntityId(user);
   const qc = useQueryClient();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const initQ = useProfileInit();
 
   // Adapter: expose the same shape as useMyFactory so the rest of the page doesn't change
+  const factory = initQ.data?.factory;
   const factoryQ = {
     ...initQ,
-    data: initQ.data?.factory as Record<string, unknown> | undefined,
-    categoryIds: ((initQ.data?.factory as Record<string, unknown>)?.categories as Array<{ category_id: number }> ?? []).map((c) => c.category_id),
-    subCategoryIds: ((initQ.data?.factory as Record<string, unknown>)?.sub_categories as Array<{ sub_category_id: number }> ?? []).map((s) => s.sub_category_id),
+    data: factory,
+    categoryIds: (factory?.categories ?? []).map((c) => c.category_id),
+    subCategoryIds: (factory?.sub_categories ?? []).map((s) => s.sub_category_id),
     refetch: initQ.refetch,
   };
 
@@ -521,25 +522,6 @@ export function FactoryProfilePage() {
     [fid, form, qc, refreshUser],
   );
 
-  const handleRemoveImage = useCallback(async () => {
-    if (!fid) return;
-    if (!window.confirm('ลบรูปโปรไฟล์โรงงานออกจากระบบ?')) return;
-    setUploadingImage(true);
-    setError('');
-    setOkMsg('');
-    try {
-      await factoriesApi.patch(fid, { image_url: '' });
-      form.setValue('image_url', '', { shouldDirty: false });
-      setOkMsg('ลบรูปโปรไฟล์แล้ว');
-      await refreshUser();
-      await qc.invalidateQueries({ queryKey: profileInitKey });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
-    } finally {
-      setUploadingImage(false);
-    }
-  }, [fid, form, qc, refreshUser]);
-
   const handleUploadCover = useCallback(
     async (file: File) => {
       if (!file || !fid) return;
@@ -566,7 +548,13 @@ export function FactoryProfilePage() {
 
   const handleRemoveCover = useCallback(async () => {
     if (!fid) return;
-    if (!window.confirm('ลบรูปพื้นหลังโรงงานออกจากระบบ?')) return;
+    const ok = await confirm({
+      title: 'ลบรูปพื้นหลังโรงงาน',
+      description: 'รูปพื้นหลังโรงงานจะถูกลบออกจากระบบ ต้องการดำเนินการต่อหรือไม่?',
+      confirmText: 'ลบรูป',
+      destructive: true,
+    });
+    if (!ok) return;
     setUploadingCover(true);
     setError('');
     setOkMsg('');
@@ -581,7 +569,7 @@ export function FactoryProfilePage() {
     } finally {
       setUploadingCover(false);
     }
-  }, [fid, form, qc, refreshUser]);
+  }, [confirm, fid, form, qc, refreshUser]);
 
   const openCropper = useCallback((target: 'profile' | 'cover', file: File) => {
     if (!file || !file.type.startsWith('image/')) return;
@@ -662,7 +650,6 @@ export function FactoryProfilePage() {
         onPickImage={(file) => {
           openCropper('profile', file);
         }}
-        onRemoveImage={() => void handleRemoveImage()}
         onPickCover={(file) => {
           openCropper('cover', file);
         }}
@@ -688,6 +675,7 @@ export function FactoryProfilePage() {
           }
         }}
       />
+      <ConfirmDialog />
 
       {!isVerified && <VerificationStepper steps={steps} />}
       <VerifyStatusBanner status={verifyStatus} />

@@ -10,13 +10,21 @@ function pickString(raw: Record<string, unknown>, ...keys: string[]): string {
   return '';
 }
 
+function pickId(raw: Record<string, unknown>, ...keys: string[]): string | number | undefined {
+  for (const key of keys) {
+    const value = raw[key];
+    if (typeof value === 'string' || typeof value === 'number') return value;
+  }
+  return undefined;
+}
+
 export function mapUserFromApi(raw: Record<string, unknown>): IUser {
   const first = pickString(raw, 'first_name', 'firstName');
   const last = pickString(raw, 'last_name', 'lastName');
   const composedName = [first, last].filter(Boolean).join(' ').trim();
 
   return {
-    id: raw.user_id ?? raw.id ?? '',
+    id: pickId(raw, 'user_id', 'id') ?? '',
     role: pickString(raw, 'role'),
     name: pickString(raw, 'name', 'full_name', 'display_name') || composedName,
     email: pickString(raw, 'email'),
@@ -26,8 +34,8 @@ export function mapUserFromApi(raw: Record<string, unknown>): IUser {
     walletBalance: Number(raw.wallet_balance ?? raw.walletBalance ?? 0),
     pendingBalance: Number(raw.pending_balance ?? raw.pendingBalance ?? 0),
     memberSince: pickString(raw, 'member_since', 'memberSince', 'created_at'),
-    factory_id: raw.factory_id,
-    factoryId: raw.factoryId ?? raw.factory_id,
+    factory_id: pickId(raw, 'factory_id'),
+    factoryId: pickId(raw, 'factoryId', 'factory_id'),
     verify_status: pickString(raw, 'verify_status', 'verifyStatus') || undefined,
   };
 }

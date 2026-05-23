@@ -67,10 +67,11 @@ export function ChangePasswordPage() {
     } catch (e) {
       const { root, fields } = toFormErrors(e);
       if (root) setRootError(root);
-      for (const [key, message] of Object.entries(fields)) {
+      const fieldErrors = fields ?? {};
+      for (const [key, message] of Object.entries(fieldErrors)) {
         form.setError(key as keyof AuthChangePasswordFormValues, { message });
       }
-      if (!root && Object.keys(fields).length === 0) {
+      if (!root && Object.keys(fieldErrors).length === 0) {
         setRootError(getErrorMessage(e, 'เปลี่ยนรหัสผ่านไม่สำเร็จ'));
       }
     } finally {

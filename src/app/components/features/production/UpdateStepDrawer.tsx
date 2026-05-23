@@ -68,7 +68,7 @@ export function UpdateStepDrawer({
     setErr('');
     // pre-fill tracking fields if already saved
     const desc = String(step.update.description ?? '');
-    const match = desc.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i);
+    const match = desc.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9-]{6,})/i);
     setTrackingNo(match?.[1] ?? '');
     setCourier('');
   }, [open, step]);

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
@@ -37,14 +37,6 @@ export function IdeaDetailMobile() {
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
   const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
-  const gallery = useMemo(() => {
-    const urls = Array.isArray(item?.imageUrls)
-      ? item.imageUrls.filter((u) => String(u).trim() !== '')
-      : [];
-    if (urls.length > 0) return urls.slice(0, 8);
-    return item?.image ? [item.image] : [];
-  }, [item?.image, item?.imageUrls]);
-  const [activeImage, setActiveImage] = useState(0);
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -72,10 +64,6 @@ export function IdeaDetailMobile() {
     return () => {
       cancelled = true;
     };
-  }, [item?.id]);
-
-  useEffect(() => {
-    setActiveImage(0);
   }, [item?.id]);
 
   if (loading) {

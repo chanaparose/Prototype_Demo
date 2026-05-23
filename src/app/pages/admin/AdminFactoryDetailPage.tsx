@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/table';
 import { formatDateTime } from '@/utils/formatting/formatDate';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { usePromptDialog } from '@/shared/ui/modals/PromptDialog';
 
 type TimelineStatus = FactoryApprovalStatus | 'submitted';
 
@@ -125,7 +126,7 @@ function mapDetail(raw: unknown): AdminFactoryDetailState {
   );
 
   const timeline: TimelineRow[] = [
-    { status: 'submitted', timestamp: registeredAt || '', note: 'ส่งใบสมัครเข้ามา' },
+    { status: 'submitted' as const, timestamp: registeredAt || '', note: 'ส่งใบสมัครเข้ามา' },
     {
       status: approvalStatus,
       timestamp: pickScalarString(factory.updated_at, registeredAt),
@@ -175,7 +176,7 @@ function mapDetail(raw: unknown): AdminFactoryDetailState {
             })),
             {
               name: 'ยืนยันโปรไฟล์โรงงาน',
-              status: Boolean(stats.profile_completed) ? 'verified' : 'uploaded',
+              status: stats.profile_completed ? 'verified' : 'uploaded',
               url: '',
             },
           ],
@@ -189,6 +190,7 @@ export function AdminFactoryDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const role = pickScalarString(user?.role);
+  const { prompt, PromptDialog } = usePromptDialog();
 
   const [factory, setFactory] = useState<AdminFactoryDetailState>(EMPTY_DETAIL);
   const [loading, setLoading] = useState(true);
@@ -304,13 +306,20 @@ export function AdminFactoryDetailPage() {
 
   const handleReject = async () => {
     if (!canApprove || !factory.factory_id) return;
-    const reason = window.prompt('กรุณาระบุเหตุผลในการปฏิเสธ (อย่างน้อย 10 ตัวอักษร)') ?? '';
-    if (reason.trim().length < 10) return;
+    const reason = await prompt({
+      title: 'ปฏิเสธโรงงาน',
+      label: 'เหตุผลในการปฏิเสธ',
+      description: 'กรุณาระบุเหตุผลเพื่อให้โรงงานนำไปแก้ไขข้อมูลก่อนส่งตรวจอีกครั้ง',
+      placeholder: 'เช่น เอกสารไม่ครบ หรือข้อมูลธุรกิจไม่ตรงกับเอกสาร',
+      confirmText: 'ยืนยันการปฏิเสธ',
+      minLength: 10,
+    });
+    if (!reason) return;
 
     setSaving(true);
     setError('');
     try {
-      await adminApi.rejectFactory(factory.factory_id, reason.trim());
+      await adminApi.rejectFactory(factory.factory_id, reason);
       await loadDetail();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ปฏิเสธโรงงานไม่สำเร็จ');
@@ -382,6 +391,7 @@ export function AdminFactoryDetailPage() {
 
   return (
     <div className='space-y-6'>
+      <PromptDialog />
       <div>
         <Button
           variant='unstyled'

@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { mapProductionUpdatesBundleFromApi } from '@/domain/production/mappers/mapProductionBundle';
 import type { IProductionUpdatesBundle } from '@/domain/production/types/production.model';
 import { ordersApi } from '@/services/api/ordersApi';
+import { orderKeys } from '@/lib/queryKeys';
 
 export function useOrderProductionUpdates(orderId: string | undefined) {
   return useQuery({
-    queryKey: ['order', orderId, 'production-updates'] as const,
+    queryKey: orderKeys.productionUpdates(orderId),
     queryFn: async (): Promise<IProductionUpdatesBundle> => {
       const b = await ordersApi.getProductionUpdatesBundle(orderId!);
       return mapProductionUpdatesBundleFromApi(b);

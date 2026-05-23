@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { FileText } from 'lucide-react';
 import { SectionCard } from '@/shared/ui/cards/SectionCard';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDateTh } from '@/components/features/order-detail/utils';

@@ -14,7 +14,7 @@ import {
   deriveCurrentStepIdFromProductionUpdates,
   parseCurrentStepId,
 } from '@/domain/order/status';
-import { orderKeys } from '@/lib/queryKeys';
+import { orderKeys, walletKeys } from '@/lib/queryKeys';
 import { useOrderDetailQuery } from '@/hooks/order-detail/useOrderDetailQuery';
 import { mapProductionUpdatesBundleFromApi } from '@/domain/production/mappers/mapProductionBundle';
 import type { IProductionUpdatesBundleResponse } from '@/services/api/types/production.types';
@@ -165,7 +165,7 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
 
   // Prefetch wallet so DepositPaymentModal shows balance immediately (no loading flash)
   useQuery({
-    queryKey: ['wallet', 'me'],
+    queryKey: walletKeys.me(),
     queryFn: () => walletApi.getMe(),
     staleTime: 30_000,
     gcTime: 5 * 60_000,

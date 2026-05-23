@@ -8,6 +8,7 @@ export const SHOWCASE_DETAIL_BRAND = {
   purpleSoft: '#F5F3FF',
   ink: 'var(--brand-ink)',
   border: '#E7E2F0',
+  divider: '#E7E2F0',
 } as const;
 
 export function formatShowcaseThaiDate(date: string): string {

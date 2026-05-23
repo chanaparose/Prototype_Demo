@@ -4,7 +4,6 @@ import { useToggle } from '@/hooks/ui/useToggle';
 import {
   Quote,
   Minus,
-  Paperclip,
   Bold,
   Italic,
   Code,

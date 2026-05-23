@@ -15,8 +15,11 @@ export interface IPlatformConfigResponse {
   [key: string]: unknown;
 }
 
-export interface IPlatformConfigItemResponse {
-  [key: string]: unknown;
+export interface IPlatformConfigItemResponse extends IPlatformConfigResponse {
+  config_id: number;
+  label?: string | null;
+  default_commission_rate: number;
+  vat_rate: number;
 }
 
 export interface ICreatePlatformConfigRequest {
@@ -28,6 +31,10 @@ export interface IUpdatePlatformConfigRequest {
 }
 
 export interface IFactoryConfigResponse {
+  config_id: number;
+  label?: string | null;
+  default_commission_rate?: number;
+  vat_rate?: number;
   [key: string]: unknown;
 }
 

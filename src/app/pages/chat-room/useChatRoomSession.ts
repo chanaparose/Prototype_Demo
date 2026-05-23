@@ -85,14 +85,15 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
         setMessages(messagesFromApi(rawMsgs));
 
         if (rawConv && typeof rawConv === 'object') {
-          const mapped = mapConversationFromApi(rawConv as Record<string, unknown>);
+          const rawConvRow = rawConv as unknown as Record<string, unknown>;
+          const mapped = mapConversationFromApi(rawConvRow);
           if (mapped) {
             const parsed = mapConversationToApiConversation(mapped);
             setApiConv({
               ...parsed,
               rfq_title: pickScalarString(
-                (rawConv as Record<string, unknown>).rfq_title,
-                (rawConv as Record<string, unknown>).rfq_name,
+                rawConvRow.rfq_title,
+                rawConvRow.rfq_name,
               ) || null,
             });
             setHeader((h) => ({
@@ -101,8 +102,8 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
               factoryAvatar: mapped.factory.image_url || h.factoryAvatar,
               rfqName:
                 pickScalarString(
-                  (rawConv as Record<string, unknown>).rfq_title,
-                  (rawConv as Record<string, unknown>).rfq_name,
+                  rawConvRow.rfq_title,
+                  rawConvRow.rfq_name,
                 ) || h.rfqName,
               hasQuote: mapped.has_quote,
             }));

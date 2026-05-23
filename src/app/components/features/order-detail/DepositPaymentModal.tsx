@@ -16,6 +16,7 @@ import {
 } from '@/components/features/rfq-and-orders/constants';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { walletKeys } from '@/lib/queryKeys';
 
 export type DepositPaymentMethod = 'WALLET' | 'PROMPTPAY' | 'BANK';
 
@@ -38,7 +39,7 @@ function genIdempotencyKey(orderId: string) {
 
 function useMyWallet(open: boolean) {
   return useQuery({
-    queryKey: ['wallet', 'me'],
+    queryKey: walletKeys.me(),
     queryFn: async () => {
       const w = (await walletApi.getMe()) as Record<string, unknown>;
       return {

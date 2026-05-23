@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -6,8 +6,6 @@ import { ChevronLeft } from 'lucide-react';
 import { showcasesApi, mediaApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
-import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
-import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
@@ -26,10 +24,13 @@ import { Label } from '@/components/ui/label';
 import {
   showcaseFormEmptyValues,
   showcaseFormSchema,
-  validateShowcasePublish,
-  type ShowcaseContentType,
   type ShowcaseFormValues,
 } from '@/domain/showcase/schemas/showcaseForm.schema';
+import {
+  buildShowcasePayload,
+  useShowcaseCategoryOptions,
+  validateShowcaseSubmission,
+} from '@/pages/factory-portal/hooks/useShowcaseForm';
 
 export function FactoryShowcaseNewPage() {
   const navigate = useNavigate();
@@ -55,34 +56,23 @@ export function FactoryShowcaseNewPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
-  const [idScope, setIdScope] = useState<'PD' | 'MT'>('PD');
-  const [pmScope, setPmScope] = useState<'PD' | 'MT'>('PD');
-
-  const categoryScope: 'PD' | 'MT' =
-    contentType === 'MT'
-      ? 'MT'
-      : contentType === 'ID'
-        ? idScope
-        : contentType === 'PM'
-          ? pmScope
-          : 'PD';
-  const categoriesQ = useLbiCategoriesByScope(categoryScope);
   const selectedCategoryId = Number(form.category_id);
-  const subIds = useMemo(
-    () =>
-      contentType !== 'MT' && Number.isFinite(selectedCategoryId) && selectedCategoryId > 0
-        ? [selectedCategoryId]
-        : [],
-    [contentType, selectedCategoryId],
-  );
-  const subsResult = useSubCategoriesByCategories(subIds);
-  const subOptions =
-    Number.isFinite(selectedCategoryId) && selectedCategoryId > 0
-      ? (subsResult.byCategory.get(selectedCategoryId) ?? [])
-      : [];
+  const {
+    idScope,
+    pmScope,
+    setIdScope,
+    setPmScope,
+    categoriesQ,
+    subOptions,
+    subsResult,
+  } = useShowcaseCategoryOptions({
+    contentType,
+    selectedCategoryId:
+      Number.isFinite(selectedCategoryId) && selectedCategoryId > 0 ? selectedCategoryId : null,
+  });
 
   const setField = <K extends keyof ShowcaseFormValues>(key: K, value: ShowcaseFormValues[K]) =>
-    setValue(key, value);
+    setValue(key, value as never);
 
   const onPickImage = async (file: File | null) => {
     if (!file || imageUrls.length >= 5) return;
@@ -94,40 +84,19 @@ export function FactoryShowcaseNewPage() {
   const buildPayload = (
     status: 'DR' | 'AC',
     values: ShowcaseFormValues = getValues(),
-  ): Record<string, unknown> => {
-    const base = {
-      content_type: contentType,
+  ): Record<string, unknown> =>
+    buildShowcasePayload({
+      contentType,
       status,
-      title: values.title.trim(),
-      excerpt: contentType !== 'ID' ? values.excerpt.trim() || undefined : undefined,
-      content: values.content.trim() || undefined,
-      image_url: imageUrls[0] ?? undefined,
-      category_id: values.category_id ? Number(values.category_id) : undefined,
-      sub_category_id: values.sub_category_id ? Number(values.sub_category_id) : undefined,
-      lead_time_days: values.lead_time_days ? Number(values.lead_time_days) : undefined,
-      linked_showcases: [...imageUrls, ...selectedShowcaseIds],
-    };
-    if (contentType === 'ID') return base;
-    const withPrice = {
-      ...base,
-      moq: values.moq ? Number(values.moq) : undefined,
-      base_price: values.base_price ? Number(values.base_price) : undefined,
-    };
-    if (contentType === 'PM') {
-      return {
-        ...withPrice,
-        promo_price: values.promo_price ? Number(values.promo_price) : undefined,
-        start_date: values.start_date || undefined,
-        end_date: values.end_date || undefined,
-      };
-    }
-    return withPrice;
-  };
+      values,
+      imageUrls,
+      selectedShowcaseIds,
+    });
 
   const onSubmit = async (status: 'DR' | 'AC') => {
     const values = getValues();
-    const publishError = validateShowcasePublish(values, {
-      contentType: contentType as ShowcaseContentType,
+    const publishError = validateShowcaseSubmission(values, {
+      contentType,
       status,
       imageCount: imageUrls.length,
     });
@@ -238,11 +207,13 @@ export function FactoryShowcaseNewPage() {
                 pmScope={pmScope}
                 onIdScopeChange={(scope) => {
                   setIdScope(scope);
-                  setForm((prev) => ({ ...prev, category_id: '', sub_category_id: '' }));
+                  setField('category_id', '');
+                  setField('sub_category_id', '');
                 }}
                 onPmScopeChange={(scope) => {
                   setPmScope(scope);
-                  setForm((prev) => ({ ...prev, category_id: '', sub_category_id: '' }));
+                  setField('category_id', '');
+                  setField('sub_category_id', '');
                 }}
                 categoryValue={form.category_id ? Number(form.category_id) : null}
                 subCategoryValue={form.sub_category_id ? Number(form.sub_category_id) : null}

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useAuthStore, useAuth } from '@/stores/useAuthStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
 import { useSessionStore } from '@/stores/useSessionStore';
 import { walletApi } from '@/services/api/userApi';
@@ -72,10 +72,7 @@ const INITIAL_STATE: DataState = {
   error: null,
 };
 
-let lastFetchTime = 0;
-const STALE_MS = 60_000; // 1 minute
-
-export const useDataStore = create<DataState & DataActions>((set, get) => {
+export const useDataStore = create<DataState & DataActions>((set) => {
   const fetchAll = async () => {
     const rawAuthState = useAuthStore.getState();
     const isAuthenticated = rawAuthState.isAuthenticated;
@@ -136,7 +133,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         rfqs: (() => {
           const raw = session?.rfqs;
           if (!Array.isArray(raw)) return [];
-          return (raw as Record<string, unknown>[]).map((r) => {
+          return (raw as unknown as Record<string, unknown>[]).map((r) => {
             const category = pickScalarString(r.category);
             const offerCount = pickScalarNumber(r.offerCount ?? r.offer_count) ?? 0;
             const statusCode = pickScalarString(r.status);
@@ -162,7 +159,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         orders: (() => {
           const raw = session?.orders;
           if (!Array.isArray(raw)) return [];
-          return (raw as Record<string, unknown>[]).map((o) => {
+          return (raw as unknown as Record<string, unknown>[]).map((o) => {
             const status = mapOrderStatusFromApi(pickScalarString(o.status));
             const currentStepId = parseCurrentStepId(o.currentStepId ?? o.current_step_id);
             return {
@@ -188,7 +185,6 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
         isLoading: false,
         error: null,
       });
-      lastFetchTime = Date.now();
     } catch (err) {
       set((state) => ({
         ...state,

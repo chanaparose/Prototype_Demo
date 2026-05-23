@@ -18,13 +18,13 @@ type FormState = {
 
 function fromConfig(c: IPlatformConfigResponse): FormState {
   return {
-    default_commission_rate: c.default_commission_rate,
+    default_commission_rate: c.default_commission_rate ?? 0,
     promo_enabled: c.promo_commission_rate != null,
     promo_commission_rate: c.promo_commission_rate ?? 0,
     promo_label: c.promo_label ?? '',
     promo_start_at: c.promo_start_at ?? '',
     promo_end_at: c.promo_end_at ?? '',
-    vat_rate: c.vat_rate,
+    vat_rate: c.vat_rate ?? 0,
   };
 }
 

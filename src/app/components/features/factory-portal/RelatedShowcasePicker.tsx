@@ -1,5 +1,4 @@
 import React from 'react';
-import { type FactoryShowcase } from '@/stores/types';
 import { Search, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,7 +31,6 @@ export function RelatedShowcasePicker({
 
   const showcasesQ = useFactoryShowcasesQuery(factoryId);
   const items = showcasesQ.data ?? [];
-  const loading = showcasesQ.isLoading;
 
   const selected = React.useMemo(() => {
     const set = new Set<number>();
@@ -42,8 +40,6 @@ export function RelatedShowcasePicker({
     }
     return set;
   }, [value]);
-
-  const atLimit = selected.size >= max;
 
   React.useEffect(() => {
     if (!open) return;

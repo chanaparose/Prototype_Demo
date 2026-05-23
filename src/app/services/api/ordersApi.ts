@@ -22,6 +22,9 @@ export const ordersApi = {
   update: (id: string | number, data: IOrderUpdateRequest) =>
     httpClient.patch<IOrderDetailResponse>(`/orders/${id}`, data),
 
+  ship: (id: string | number, data: Partial<IOrderUpdateRequest> = {}) =>
+    httpClient.patch<IOrderDetailResponse>(`/orders/${id}`, { ...data, status: 'SH' }),
+
   delete: (id: string | number) => httpClient.delete<void>(`/orders/${id}`),
 
   getMyOrders: () =>

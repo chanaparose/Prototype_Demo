@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, Download } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { factoryKeys } from '@/lib/queryKeys';
 import { useModal } from '@/hooks/ui/useModal';
 import { useMasterCerts, type CertTypeOption } from '@/hooks/master/useMasterCerts';
 import { certificatesApi } from '@/services/api/userApi';
@@ -61,7 +62,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
   }, []);
 
   const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+    qc.invalidateQueries({ queryKey: factoryKeys.me() });
 
   const submit = async (value: CertFormSubmitValue, keepOpen: boolean) => {
     modal.setLoading(true);

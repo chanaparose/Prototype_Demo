@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { addressKeys } from '@/lib/queryKeys';
 import { useMyAddresses } from '@/hooks/factory/useMyAddresses';
 import { useModal } from '@/hooks/ui/useModal';
 import { addressesApi } from '@/services/api/masterApi';
@@ -16,7 +17,7 @@ export function AddressesSection() {
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editing, setEditing] = useState<Row | null>(null);
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['addresses', 'me'] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: addressKeys.me() });
 
   const submit = async (payload: AddressFormPayload, editingId?: string | number) => {
     modal.setLoading(true);

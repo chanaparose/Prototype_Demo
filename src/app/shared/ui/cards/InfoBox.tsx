@@ -2,7 +2,7 @@ import React from 'react';
 
 type InfoBoxVariant = 'info' | 'warning' | 'success' | 'error' | 'neutral';
 
-const variantStyles: Record<InfoBoxVariant, { bg: string; border: string }> = {
+const variantStyles: Record<InfoBoxVariant, string> = {
   info: 'bg-blue-50 border-blue-100',
   warning: 'bg-amber-50 border-amber-100',
   success: 'bg-emerald-50 border-emerald-100',

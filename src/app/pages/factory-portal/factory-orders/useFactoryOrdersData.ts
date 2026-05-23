@@ -3,6 +3,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { ordersApi } from '@/services/api/ordersApi';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { pickScalarString } from '@/utils/pickScalarString';
+import { factoryKeys } from '@/lib/queryKeys';
 import type {
   FactoryOrderRow,
   OrderStatusCode,
@@ -98,10 +99,10 @@ export function useFactoryOrdersData() {
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
   return useQuery({
-    queryKey: ['factory', 'orders', fid],
+    queryKey: factoryKeys.orders(fid),
     queryFn: async () => {
       const raw = await ordersApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const arr = (Array.isArray(raw) ? raw : []) as unknown as Record<string, unknown>[];
       return arr
         .map(normalizeRow)
         .filter((r): r is FactoryOrderRow => r != null)

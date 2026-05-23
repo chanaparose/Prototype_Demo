@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth, useAuthStore } from '@/stores/useAuthStore';
+import { useAuth } from '@/stores/useAuthStore';
 import { ApiHttpError } from '@/services/api/httpClient';
 import { masterApi } from '@/services/api/masterApi';
 import { mediaApi } from '@/services/api/factoryApi';

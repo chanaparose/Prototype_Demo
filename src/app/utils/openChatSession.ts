@@ -20,7 +20,7 @@ async function findOrCreateConversation(
   if (!Number.isFinite(customerUserId) || customerUserId <= 0) return null;
   if (!Number.isFinite(factoryEntityId) || factoryEntityId <= 0) return null;
   const convsRaw = await conversationsApi.list();
-  const convs = (Array.isArray(convsRaw) ? convsRaw : []) as Row[];
+  const convs = (Array.isArray(convsRaw) ? convsRaw : []) as unknown as Row[];
   const existing = convs.find((c) => {
     const cf = Number(c.factory_id ?? c.factoryId ?? 0);
     const cc = Number(c.customer_id ?? c.customerId ?? 0);
@@ -30,11 +30,11 @@ async function findOrCreateConversation(
   const res = (await conversationsApi.create({
     customer_id: customerUserId,
     factory_id: factoryEntityId,
-  })) as Row;
+  })) as unknown as Row;
   let conv = mergeConversationFromCreate(res, customerUserId, factoryEntityId);
   if (!conv.conv_id) {
     const rawAgain = await conversationsApi.list();
-    const again = (Array.isArray(rawAgain) ? rawAgain : []) as Row[];
+    const again = (Array.isArray(rawAgain) ? rawAgain : []) as unknown as Row[];
     const found = again.find((c) => {
       const cf = Number(c.factory_id ?? c.factoryId ?? 0);
       const cc = Number(c.customer_id ?? c.customerId ?? 0);
@@ -79,7 +79,7 @@ export async function openChatSession(
         conv,
         currentUserId,
         content: fm,
-        reference: firstMessage.reference ?? undefined,
+        reference: firstMessage?.reference ?? undefined,
         messageType: 'TX',
       }),
     );

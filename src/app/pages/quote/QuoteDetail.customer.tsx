@@ -24,8 +24,8 @@ export function QuoteDetailCustomer() {
       try {
         const [q, h] = await Promise.all([quotationApi.get(qid), quotationApi.history(qid)]);
         if (!mounted) return;
-        setRow(q);
-        setHistory(Array.isArray(h) ? h : []);
+        setRow(q as unknown as AnyObj);
+        setHistory(Array.isArray(h) ? (h as unknown as AnyObj[]) : []);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -183,7 +183,7 @@ export function QuoteDetailCustomer() {
             const reason = window.prompt('เหตุผลที่ปฏิเสธ') ?? '';
             setRejecting(true);
             try {
-              await quotationApi.reject(qid, reason);
+              await quotationApi.reject(qid, { reason });
               navigate(-1);
             } finally {
               setRejecting(false);

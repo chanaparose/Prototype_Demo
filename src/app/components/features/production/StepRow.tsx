@@ -83,7 +83,6 @@ export function StepRow({
   isCustomer,
   canReject,
   onOpenDrawer,
-  onOpenReject,
   onContactFactory,
   onPhotoClick,
 }: Props) {
@@ -163,10 +162,6 @@ export function StepRow({
         ติดต่อโรงงาน
       </Button>
     ) : null;
-
-  const showPayChip =
-    template.is_payment_trigger &&
-    (derivedState === 'upcoming' || derivedState === 'active' || derivedState === 'blocked');
 
   return (
     <div

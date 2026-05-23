@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { ordersApi } from '@/services/api/ordersApi';
+import { getOrderIdFromCreateResult } from '@/domain/order/mappers/mapOrderCreateResult';
 import type { Quotation } from '@/components/features/rfq-detail/QuotationBOQCard';
 import {
   QuotationBOQDetailsPanel,
@@ -110,10 +111,7 @@ export function RfqDetailOffersSection({
     setAcceptingId(offerId);
     setFlowError(null);
     try {
-      let orderId: string | undefined;
-      const created = (await ordersApi.create(Number(offerId))) as Record<string, unknown>;
-      const oid = created.order_id ?? created.id;
-      if (oid != null && String(oid)) orderId = String(oid);
+      const orderId = getOrderIdFromCreateResult(await ordersApi.create(Number(offerId)));
       if (orderId) setSuccessOrderId(orderId);
       onOfferFlowComplete?.({ quoteId: offerId, orderId });
     } catch (err) {

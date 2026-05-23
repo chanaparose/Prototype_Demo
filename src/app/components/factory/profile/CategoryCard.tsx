@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { factoryKeys } from '@/lib/queryKeys';
 import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,7 @@ export function CategoryCard({
       await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
 
       await factoriesApi.removeCategory(factoryId, categoryId);
-      await qc.invalidateQueries({ queryKey: ['factory', 'me', 'profile-init'] });
+      await qc.invalidateQueries({ queryKey: factoryKeys.profileInit() });
       onRemove(categoryId);
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : 'ลบไม่สำเร็จ');

@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { rfqsApi } from '@/services/api/rfqApi';
-import { type IRfqWizardCreateInput } from '@/services/api/types/rfq.types';
+import type { IRfqCreateRequest, IRfqWizardCreateInput } from '@/services/api/types/rfq.types';
 
 export function useCreateRFQ() {
   return useMutation({
@@ -20,12 +20,13 @@ export function useCreateRFQ() {
         throw new Error('กรุณาเลือกวิธีจัดส่ง');
       }
       // backend handoff: allowlist only fields in docs/RFQ_FE_HANDOFF.md
-      const body: Record<string, unknown> = {
+      const body: IRfqCreateRequest = {
         title: payload.title,
         description: payload.description,
         details: payload.description,
         category_id: Number(payload.category_id),
         quantity: Number(payload.qty),
+        address_id: Number(addressId),
         target_price:
           payload.target_price != null && Number.isFinite(Number(payload.target_price))
             ? Number(payload.target_price)

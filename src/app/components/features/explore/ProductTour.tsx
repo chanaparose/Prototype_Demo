@@ -3,19 +3,11 @@ import { useNavigate, useLocation } from 'react-router';
 
 import { activateTourMocks, clearTourMocks, setTourActive } from '@/utils/tourMocks';
 import { useAuth } from '@/stores/useAuthStore';
-import { Button } from '@/components/ui/button';
 import { TOUR_STEPS } from '@/components/features/explore/product-tour/tourSteps';
 import { injectTourCSS } from '@/components/features/explore/product-tour/tourStyles';
 import { TourCard } from '@/components/features/explore/product-tour/TourCard';
 import { SpotlightOverlay } from '@/components/features/explore/product-tour/TourSpotlight';
-import {
-  MockCreateRfq,
-  MockMessages,
-  MockOrderDetail,
-  MockProductDetail,
-  MockRfqDetail,
-} from '@/components/features/explore/product-tour/TourMockScreens';
-import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
+import { findTarget } from '@/components/features/explore/product-tour/tourTarget';
 
 const TOUR_KEY = 'tryly_tour_seen_v1';
 

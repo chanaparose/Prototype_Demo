@@ -16,6 +16,7 @@ import {
   type QuotationFormSchemaValues,
 } from '@/domain/factory/schemas/quotationForm.schema';
 import { useQueryClient } from '@tanstack/react-query';
+import { rfqKeys } from '@/lib/queryKeys';
 import { quotationsApi } from '@/services/api/rfqApi';
 import { mediaApi } from '@/services/api/factoryApi';
 import type { IQuotationBreakdown } from '@/services/api/types/rfq.types';
@@ -253,8 +254,8 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           await quotationsApi.create(rfqId, body);
         }
         form.reset(v);
-        await qc.invalidateQueries({ queryKey: ['rfq', rfqId] });
-        await qc.invalidateQueries({ queryKey: ['rfq', rfqId, 'quotations'] });
+        await qc.invalidateQueries({ queryKey: rfqKeys.detail(rfqId) });
+        await qc.invalidateQueries({ queryKey: rfqKeys.quotations(rfqId) });
         await onSubmitted?.();
       } catch (e) {
         setError(getErrorMessage(e, 'ส่งไม่สำเร็จ'));

@@ -1,89 +1,25 @@
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
-
-function MockStatusBar() {
-  return (
-    <div
-      style={{
-        background: 'var(--neutral-white)',
-        padding: '5px 14px 3px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexShrink: 0,
-      }}
-    >
-      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--neutral-text)' }}>9:41</span>
-      <span style={{ fontSize: 9, color: 'var(--neutral-placeholder)', letterSpacing: 2 }}>
-        ● ● ●
-      </span>
-      <span style={{ fontSize: 10, color: 'var(--neutral-text)' }}>🔋 100%</span>
-    </div>
-  );
-}
-
-function MockNav({ title, showBack = true }: { title?: string; showBack?: boolean }) {
-  return (
-    <div
-      style={{
-        background: 'var(--neutral-white)',
-        padding: '8px 14px',
-        borderBottom: '1px solid var(--neutral-muted)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        flexShrink: 0,
-      }}
-    >
-      {showBack && (
-        <div
-          style={{
-            width: 30,
-            height: 30,
-            borderRadius: 9,
-            background: 'var(--neutral-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 14,
-            color: 'var(--neutral-text)',
-          }}
-        >
-          ←
-        </div>
-      )}
-      {title ? (
-        <span
-          style={{
-            fontSize: 14,
-            fontWeight: 700,
-            color: 'var(--brand-ink)',
-            flex: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {title}
-        </span>
-      ) : (
-        <Image
-          src='/assets/tryly-logo.png'
-          alt='Tryly'
-          style={{ height: 26, objectFit: 'contain' }}
-        />
-      )}
-    </div>
-  );
-}
+import {
+  MockBottomAction,
+  MockField,
+  MockPill,
+  MockScreen,
+  TourGlowButton,
+} from '@/components/features/explore/product-tour/TourMockPrimitives';
+import {
+  CREATE_RFQ_CATEGORIES,
+  CREATE_RFQ_FIELDS,
+  ORDER_PAYMENT_ROWS,
+  ORDER_TIMELINE,
+  PRODUCT_STATS,
+  RFQ_OFFERS,
+} from '@/components/features/explore/product-tour/tourMockData';
 
 export function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <MockStatusBar />
-      <MockNav title='ส่งคำขอราคา (RFQ)' />
+    <MockScreen title='ส่งคำขอราคา (RFQ)'>
       <div
         style={{
           flex: 1,
@@ -93,138 +29,42 @@ export function MockCreateRfq({ badgeColor }: { badgeColor: string }) {
         }}
       >
         <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-          {['ของเล่นสัตว์เลี้ยง', 'อาหารสัตว์', 'เสื้อผ้าสัตว์เลี้ยง'].map((c, i) => (
-            <span
-              key={c}
-              style={{
-                padding: '5px 12px',
-                borderRadius: 99,
-                fontSize: 11,
-                fontWeight: 600,
-                background: i === 0 ? badgeColor : 'var(--neutral-muted)',
-                color: i === 0 ? 'var(--neutral-white)' : 'var(--neutral-text)',
-                border: i === 0 ? 'none' : '1px solid var(--neutral-border)',
-              }}
-            >
+          {CREATE_RFQ_CATEGORIES.map((c, i) => (
+            <MockPill key={c} active={i === 0} color={badgeColor}>
               {c}
-            </span>
+            </MockPill>
           ))}
         </div>
 
-        {[
-          {
-            label: 'ชื่อโปรเจกต์',
-            placeholder: 'เช่น ของเล่นแมวยางธรรมชาติ',
-            value: 'ของเล่นแมว MOQ 100 ชิ้น',
-            filled: true,
-          },
-          {
-            label: 'รายละเอียดสินค้า',
-            placeholder: 'อธิบายสินค้าที่ต้องการผลิต...',
-            value: 'ต้องการผลิตของเล่นแมวจากยางธรรมชาติ ปลอดภัยสำหรับสัตว์เลี้ยง ขนาด 5–8 ซม.',
-            filled: true,
-            multiline: true,
-          },
-          { label: 'จำนวนที่ต้องการ (ชิ้น)', placeholder: '100', value: '100', filled: true },
-          { label: 'งบประมาณ (บาท)', placeholder: '10,000', value: '5,000', filled: true },
-          {
-            label: 'วัสดุที่ต้องการ',
-            placeholder: 'เช่น ยางธรรมชาติ, พลาสติก ABS',
-            value: 'ยางธรรมชาติปลอดสาร BPA',
-            filled: true,
-          },
-        ].map((f) => (
-          <div key={f.label} style={{ marginBottom: 12 }}>
-            <Label
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: 'var(--neutral-text)',
-                display: 'block',
-                marginBottom: 4,
-              }}
-            >
-              {f.label}
-            </Label>
-            <div
-              style={{
-                background: f.filled ? 'var(--neutral-white)' : 'var(--neutral-surface)',
-                borderRadius: 10,
-                padding: f.multiline ? '9px 12px' : '9px 12px',
-                border: `1.5px solid ${f.filled ? '#E9D5FF' : 'var(--neutral-border)'}`,
-                fontSize: 12,
-                color: f.filled ? 'var(--neutral-black)' : 'var(--neutral-placeholder)',
-                minHeight: f.multiline ? 56 : 'auto',
-                lineHeight: 1.5,
-              }}
-            >
-              {f.filled ? f.value : f.placeholder}
-            </div>
-          </div>
+        {CREATE_RFQ_FIELDS.map((f) => (
+          <MockField
+            key={f.label}
+            label={f.label}
+            placeholder={f.placeholder}
+            value={f.value}
+            filled={f.filled}
+            multiline={'multiline' in f ? f.multiline : false}
+          />
         ))}
 
-        <div style={{ marginBottom: 12 }}>
-          <Label
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: 'var(--neutral-text)',
-              display: 'block',
-              marginBottom: 4,
-            }}
-          >
-            กำหนดส่ง
-          </Label>
-          <div
-            style={{
-              background: 'var(--neutral-white)',
-              borderRadius: 10,
-              padding: '9px 12px',
-              border: '1.5px solid #E9D5FF',
-              fontSize: 12,
-              color: 'var(--neutral-black)',
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-            <span>15 มี.ค. 2569</span>
-            <span style={{ color: 'var(--neutral-placeholder)' }}>📅</span>
-          </div>
-        </div>
+        <MockField label='กำหนดส่ง' value='15 มี.ค. 2569' trailing='📅' />
 
-        <Button
-          variant='unstyled'
-          type='button'
-          className='tour-btn-glow'
-          style={
-            {
-              width: '100%',
-              padding: '12px',
-              borderRadius: 12,
-              border: 'none',
-              background: badgeColor,
-              color: 'var(--neutral-white)',
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: 'default',
-              marginTop: 4,
-              '--tour-glow': 'rgba(242,138,46,0.55)',
-              '--tour-glow-soft': 'rgba(242,138,46,0.28)',
-            } as React.CSSProperties
-          }
+        <TourGlowButton
+          color={badgeColor}
+          glow='rgba(242,138,46,0.55)'
+          glowSoft='rgba(242,138,46,0.28)'
+          style={{ width: '100%', padding: 12, borderRadius: 12, fontSize: 14, marginTop: 4 }}
         >
           📋 ส่งคำขอราคาให้โรงงาน
-        </Button>
+        </TourGlowButton>
       </div>
-    </div>
+    </MockScreen>
   );
 }
 
 export function MockProductDetail({ badgeColor }: { badgeColor: string }) {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <MockStatusBar />
-      <MockNav />
+    <MockScreen>
 
       <div
         style={{
@@ -384,11 +224,7 @@ export function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           <span>•</span>
           <span>♡ 1 สนใจ</span>
         </div>
-        {[
-          ['ขั้นต่ำผลิต', '100 ชิ้น (MOQ)'],
-          ['สถานที่ผลิต', '📍 กรุงเทพมหานคร'],
-          ['เผยแพร่', '25 เม.ย. 2569'],
-        ].map(([label, value]) => (
+        {PRODUCT_STATS.map(([label, value]) => (
           <div
             key={label}
             style={{
@@ -416,70 +252,33 @@ export function MockProductDetail({ badgeColor }: { badgeColor: string }) {
           alignItems: 'center',
         }}
       >
-        <div
+        <MockBottomAction icon='🏭' label='โปรไฟล์' />
+        <MockBottomAction icon='♡' label='1' />
+        <TourGlowButton
+          color={badgeColor}
+          glow='rgba(13,148,136,0.55)'
+          glowSoft='rgba(13,148,136,0.28)'
           style={{
+            flex: 1,
+            padding: '10px 14px',
+            borderRadius: 12,
+            fontSize: 13,
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            gap: 1,
-            padding: '0 8px',
-            color: 'var(--neutral-subtle)',
-            fontSize: 9,
+            justifyContent: 'center',
+            gap: 6,
           }}
-        >
-          <span style={{ fontSize: 16 }}>🏭</span>
-          <span>โปรไฟล์</span>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 1,
-            padding: '0 8px',
-            color: 'var(--neutral-subtle)',
-            fontSize: 9,
-          }}
-        >
-          <span style={{ fontSize: 16 }}>♡</span>
-          <span>1</span>
-        </div>
-        <Button
-          variant='unstyled'
-          type='button'
-          className='tour-btn-glow'
-          style={
-            {
-              flex: 1,
-              padding: '10px 14px',
-              borderRadius: 12,
-              border: 'none',
-              background: badgeColor,
-              color: 'var(--neutral-white)',
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: 'default',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              '--tour-glow': 'rgba(13,148,136,0.55)',
-              '--tour-glow-soft': 'rgba(13,148,136,0.28)',
-            } as React.CSSProperties
-          }
         >
           💬 แชทกับโรงงาน
-        </Button>
+        </TourGlowButton>
       </div>
-    </div>
+    </MockScreen>
   );
 }
 
 export function MockMessages({ badgeColor }: { badgeColor: string }) {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <MockStatusBar />
-      <MockNav title='ของเล่นสัตว์เลี้ยง แฮปปี้' />
+    <MockScreen title='ของเล่นสัตว์เลี้ยง แฮปปี้'>
 
       <div
         style={{
@@ -703,44 +502,13 @@ export function MockMessages({ badgeColor }: { badgeColor: string }) {
           </div>
         </div>
       </div>
-    </div>
+    </MockScreen>
   );
 }
 
 export function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
-  const offers = [
-    {
-      name: 'โรงงานอาหารสัตว์เลี้ยงพรีเมี่ยม',
-      price: 42000,
-      leadTime: 8,
-      rating: 4.9,
-      verified: true,
-      recommended: true,
-      reason: 'ราคาคุ้มค่าที่สุด + งานไวสุด',
-    },
-    {
-      name: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร',
-      price: 38500,
-      leadTime: 12,
-      rating: 4.6,
-      verified: false,
-      recommended: false,
-      reason: 'ราคาถูกที่สุด แต่ lead time นานกว่า',
-    },
-    {
-      name: 'ของเล่นสัตว์เลี้ยง แฮปปี้',
-      price: 48000,
-      leadTime: 7,
-      rating: 4.8,
-      verified: true,
-      recommended: false,
-      reason: 'ส่งเร็วที่สุด แต่ราคาสูงกว่า',
-    },
-  ];
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <MockStatusBar />
-      <MockNav title='คำขอผลิต: อาหารสัตว์แห้ง' />
+    <MockScreen title='คำขอผลิต: อาหารสัตว์แห้ง'>
 
       <div
         style={{
@@ -777,7 +545,7 @@ export function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
           background: 'var(--neutral-surface)',
         }}
       >
-        {offers.map((o, i) => (
+        {RFQ_OFFERS.map((o, i) => (
           <div
             key={i}
             style={{
@@ -886,43 +654,13 @@ export function MockRfqDetail({ badgeColor }: { badgeColor: string }) {
           </div>
         ))}
       </div>
-    </div>
+    </MockScreen>
   );
 }
 
 export function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
-  const timeline = [
-    {
-      title: 'ยืนยันคำสั่งซื้อ',
-      date: '15 ม.ค. 2569',
-      status: 'done',
-      desc: 'ชำระมัดจำและยืนยันแล้ว',
-    },
-    {
-      title: 'จัดซื้อวัตถุดิบ',
-      date: '18 ม.ค. 2569',
-      status: 'done',
-      desc: 'ไนลอนและหนังสังเคราะห์พร้อมแล้ว',
-    },
-    {
-      title: 'เริ่มกระบวนการผลิต',
-      date: '22 ม.ค. 2569',
-      status: 'done',
-      desc: 'ตัดเย็บและประกอบตามแบบ',
-    },
-    {
-      title: 'Quality Check ครั้งที่ 1',
-      date: '5 ก.พ. 2569',
-      status: 'current',
-      desc: 'ตรวจสอบความแข็งแรงของชิ้นงาน',
-    },
-    { title: 'บรรจุและติดฉลาก', date: '', status: 'pending', desc: '' },
-    { title: 'QC ขั้นสุดท้ายและจัดส่ง', date: '', status: 'pending', desc: '' },
-  ];
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <MockStatusBar />
-      <MockNav title='คำสั่งซื้อ: สายจูงสัตว์เลี้ยง' />
+    <MockScreen title='คำสั่งซื้อ: สายจูงสัตว์เลี้ยง'>
       <div style={{ flex: 1, overflowY: 'auto', background: 'var(--neutral-surface)' }}>
         <div style={{ padding: '10px 12px 0' }}>
           <div
@@ -1022,11 +760,7 @@ export function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
             >
               💳 สรุปการชำระเงิน (Escrow)
             </div>
-            {[
-              ['ยอดรวม', '฿42,000', false],
-              ['ชำระมัดจำแล้ว', '฿21,000 ✓', true],
-              ['ยอดที่ต้องชำระ', '฿21,000', false],
-            ].map(([label, val, green]) => (
+            {ORDER_PAYMENT_ROWS.map(([label, val, green]) => (
               <div
                 key={label as string}
                 style={{
@@ -1084,7 +818,7 @@ export function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
           >
             📋 ความคืบหน้าการผลิต
           </div>
-          {timeline.map((t, i) => (
+          {ORDER_TIMELINE.map((t, i) => (
             <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
               <div
                 style={{
@@ -1115,7 +849,7 @@ export function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
                 >
                   {t.status === 'done' ? '✓' : t.status === 'current' ? '●' : ''}
                 </div>
-                {i < timeline.length - 1 && (
+                {i < ORDER_TIMELINE.length - 1 && (
                   <div
                     style={{
                       width: 2,
@@ -1162,49 +896,6 @@ export function MockOrderDetail({ badgeColor }: { badgeColor: string }) {
           ))}
         </div>
       </div>
-    </div>
+    </MockScreen>
   );
-}
-
-function isVisible(el: Element): boolean {
-  const r = el.getBoundingClientRect();
-  return r.width > 1 && r.height > 1;
-}
-
-function findTarget(def: TourStepDef): Element | null {
-  if (def.targetSelector) {
-    const candidates = Array.from(document.querySelectorAll(def.targetSelector));
-    const visible = candidates.find(isVisible);
-    if (visible) return visible;
-  }
-  if (def.targetTexts) {
-    const interactiveSel = 'button, a, [role="button"], [role="tab"], input';
-    for (const text of def.targetTexts) {
-      const matches = Array.from(document.querySelectorAll(interactiveSel));
-      const found = matches.find((el) => {
-        const card = el.closest('[style*="z-index: 9999"]');
-        if (card) return false;
-        if (!isVisible(el)) return false;
-        const t = (el.textContent || '').trim();
-        const ph = (el as HTMLInputElement).placeholder || '';
-        return t.includes(text) || ph.includes(text);
-      });
-      if (found) return found;
-    }
-    for (const text of def.targetTexts) {
-      const all = Array.from(document.querySelectorAll('h1, h2, h3, p, span, div'));
-      const found = all.find((el) => {
-        if (el.closest('[style*="z-index: 9999"]')) return false;
-        if (!isVisible(el)) return false;
-        const own = Array.from(el.childNodes)
-          .filter((n) => n.nodeType === 3)
-          .map((n) => n.textContent || '')
-          .join('')
-          .trim();
-        return own.includes(text);
-      });
-      if (found) return found;
-    }
-  }
-  return null;
 }

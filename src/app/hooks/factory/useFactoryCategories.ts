@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { factoriesApi } from '@/services/api/factoryApi';
+import { factoryKeys } from '@/lib/queryKeys';
 
 type Row = Record<string, unknown>;
 
 export function useFactoryCategories(factoryId: number | string | null | undefined) {
   const enabled = factoryId != null && String(factoryId).trim() !== '';
   return useQuery({
-    queryKey: ['factory', String(factoryId), 'categories'] as const,
+    queryKey: factoryKeys.categories(factoryId),
     enabled,
     queryFn: async () => {
       const raw = await factoriesApi.getCategories(factoryId as string | number);

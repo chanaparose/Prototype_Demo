@@ -257,7 +257,6 @@ export function FactoryIdeasDesktop() {
         ) : selectedType === 'idea' ? (
           <div className='grid grid-cols-2 gap-4'>
             {visibleIdeaItems.map((item) => {
-              const factory = data.factories.find((f) => f.id === item.factoryId);
               return (
                 <article
                   key={item.id}
@@ -597,7 +596,6 @@ export function FactoryIdeasDesktop() {
             </div>
             <div className='grid grid-cols-2 gap-4'>
               {visibleIdeaItems.slice(0, 6).map((item) => {
-                const factory = data.factories.find((f) => f.id === item.factoryId);
                 return (
                   <article
                     key={`idea-${item.id}`}

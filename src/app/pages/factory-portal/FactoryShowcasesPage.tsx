@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles, MapPin, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon, Sparkles, MapPin, Star } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { showcasesApi } from '@/services/api/factoryApi';
@@ -8,7 +8,6 @@ import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
-import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -46,19 +45,6 @@ function firstImage(r: Row): string | undefined {
     }
   }
   return undefined;
-}
-
-function contextLine(r: Row, type: ShowcaseType): string {
-  const parts: string[] = [];
-  const moq = Number(r.moq ?? 0);
-  const price = Number(r.base_price ?? 0);
-  const promo = Number(r.promo_price ?? 0);
-  const lead = Number(r.lead_time_days ?? 0);
-  if (moq > 0) parts.push(`MOQ ${formatCompactNumber(moq)}`);
-  if (type === 'PM' && promo > 0) parts.push(`${formatCurrencyNoDecimals(promo)} (โปร)`);
-  else if (price > 0) parts.push(formatCurrencyNoDecimals(price));
-  if (lead > 0 && type !== 'ID') parts.push(`${lead} วัน`);
-  return parts.join(' · ');
 }
 
 function asPositiveInt(v: unknown): number {
@@ -215,11 +201,9 @@ export function FactoryShowcasesPage() {
               bg: statusBg,
               color: statusColor,
             } = STATUS_META[statusKey] ?? STATUS_META.DR;
-            const ctx = contextLine(r, activeType);
             const catLine = [r.category_name, r.sub_category_name].filter(Boolean).join(' › ');
             const isDeleting = deletingId === id;
             const isIdea = activeType === 'ID';
-            const likes = asPositiveInt(r.like_count ?? r.likes ?? r.likes_count);
             const locationLine =
               String(r.factory_location ?? r.province_name ?? catLine ?? '—').trim() || '—';
             const rating = Number(r.rating_avg ?? r.factory_rating_avg ?? 0);

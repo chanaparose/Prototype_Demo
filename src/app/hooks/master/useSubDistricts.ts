@@ -14,7 +14,7 @@ export function useSubDistricts(districtId: number | string | null | undefined) 
   const did = Number(districtId);
   const enabled = Number.isFinite(did) && did > 0;
   return useQuery({
-    queryKey: masterKeys.subDistricts(did) as const,
+    queryKey: masterKeys.subDistricts(did),
     enabled,
     queryFn: async () => {
       const raw = await masterApi.subDistricts(did);

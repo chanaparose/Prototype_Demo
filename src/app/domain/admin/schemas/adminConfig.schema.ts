@@ -31,7 +31,7 @@ export const adminNewConfigSchema = z.object({
     .trim()
     .min(1, 'กรุณากรอกอัตราค่าคอม')
     .refine((v) => Number.isFinite(Number(v)), 'อัตราค่าคอมไม่ถูกต้อง'),
-  vat_rate: z.string().trim().default('7'),
+  vat_rate: z.string().trim().min(1, 'กรุณากรอก VAT'),
   effective_to: z.string(),
 });
 

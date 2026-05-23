@@ -38,6 +38,13 @@ export interface IRfqCreateRequest {
   quantity: number;
   details?: string;
   address_id: number;
+  description?: string;
+  delivery_address_id?: number;
+  shipping_method_id?: number;
+  material_grade?: string;
+  reference_images?: string[];
+  request_kind?: string;
+  source_showcase_id?: number;
   target_price?: number;
   target_lead_time_days?: number;
   required_delivery_date?: string;
@@ -107,6 +114,9 @@ export interface IQuotationCreateRequest {
   packaging_cost?: number;
   tooling_mold_cost?: number;
   validity_days?: number;
+  lead_time_days?: number;
+  incoterms?: 'EXW' | 'FOB' | 'CIF' | 'DDP';
+  payment_terms?: '50_50' | '30_70' | 'net_30' | 'lc_at_sight';
 }
 
 export interface IQuotationBreakdown {

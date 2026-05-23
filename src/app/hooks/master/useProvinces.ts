@@ -9,7 +9,7 @@ export type ProvinceOption = MasterAddressOption;
 
 export function useProvinces() {
   return useQuery({
-    queryKey: masterKeys.provinces() as const,
+    queryKey: masterKeys.provinces(),
     queryFn: async () => {
       const raw = await masterApi.provinces();
       const unwrapped = Array.isArray(raw)

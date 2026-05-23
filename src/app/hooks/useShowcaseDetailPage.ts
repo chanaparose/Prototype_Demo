@@ -203,7 +203,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   // [3] GET /api/v1/showcases?types=PD,PM,MT&sub_category_id=X&limit=8
   // รอให้ item พร้อมก่อน → ใช้ sub_category_id/category_id โดยตรง ไม่ต้อง fetch ซ้ำ
   const relatedQ = useQuery({
-    queryKey: [...showcaseKeys.detail(resolvedId), 'related', kind],
+    queryKey: showcaseKeys.relatedForDetail(resolvedId, kind),
     queryFn: async () => {
       if (!item) return [] as FactoryShowcase[];
       const apiTypes: Array<'PD' | 'PM' | 'MT'> = ['PD', 'PM', 'MT'];

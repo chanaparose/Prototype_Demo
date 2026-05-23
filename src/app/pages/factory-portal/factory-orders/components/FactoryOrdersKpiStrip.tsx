@@ -13,12 +13,12 @@ export function FactoryOrdersKpiStrip({
 }) {
   return (
     <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
-      {[
+      {([
         ['needs_action', 'ต้องดำเนินการ', false],
         ['in_production', 'กำลังผลิต', false],
         ['shipped', 'จัดส่งแล้ว', false],
         ['overdue', 'ล่าช้า', true],
-      ].map(([id, label, danger]) => (
+      ] satisfies Array<[KpiKey, string, boolean]>).map(([id, label, danger]) => (
         <Button
           key={id}
           variant='outline'

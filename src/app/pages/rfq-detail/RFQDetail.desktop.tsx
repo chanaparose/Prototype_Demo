@@ -13,7 +13,6 @@ import {
   HISTORY_STATUSES,
   STATUS_LABEL,
 } from '@/domain/rfq/constants';
-import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
 import { RfqDetailStatusCard } from '@/components/features/rfq-detail/RfqDetailStatusCard';
@@ -35,7 +34,7 @@ export function RFQDetailDesktop() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { rfq, relatedOrder, quoteOrderMap, quoteHistories, loading, error, refetch } = useRfqDetail(id);
+  const { rfq, relatedOrder, quoteHistories, loading, error, refetch } = useRfqDetail(id);
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);

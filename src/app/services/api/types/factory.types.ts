@@ -34,9 +34,16 @@ export interface IFactoryProfileResponse extends IFactoryBaseResponse {
   phone?: string;
   email?: string;
   address?: string;
+  background_image_url?: string;
+  factory_type_id?: number;
+  tax_id?: string;
+  lead_time_desc?: string;
   established_year?: number;
   employees_count?: number;
   certifications?: string[];
+  categories?: Array<{ category_id: number; name?: string }>;
+  sub_categories?: Array<{ sub_category_id: number; category_id?: number; name?: string }>;
+  certificates?: unknown[];
 }
 
 export interface IFactoryWithDetailsResponse {

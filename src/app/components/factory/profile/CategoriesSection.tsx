@@ -9,12 +9,12 @@ import { CategoryPickerModal } from '@/components/factory/profile/CategoryPicker
 import { SubCategoryPickerModal } from '@/components/factory/profile/SubCategoryPickerModal';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
 
-interface ApiCategory {
+export interface ApiCategory {
   category_id: number;
   name: string;
 }
 
-interface ApiSubCategory {
+export interface ApiSubCategory {
   sub_category_id: number;
   category_id: number;
   name?: string;

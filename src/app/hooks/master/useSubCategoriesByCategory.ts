@@ -23,10 +23,10 @@ function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
 export function useSubCategoriesByCategories(categoryIds: number[]) {
   const queries = useQueries({
     queries: categoryIds.map((cid) => ({
-      queryKey: masterKeys.subCategories(cid) as const,
+      queryKey: masterKeys.subCategories(cid),
       queryFn: async (): Promise<SubCategoryOption[]> => {
         const raw = await categoriesApi.subCategories(cid);
-        const arr = (Array.isArray(raw) ? raw : []) as Row[];
+        const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
         return arr
           .map((r) => toOption(r, cid))
           .filter((x): x is SubCategoryOption => x != null)

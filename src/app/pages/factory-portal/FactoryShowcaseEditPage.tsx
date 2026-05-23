@@ -10,8 +10,6 @@ import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { MarkdownEditor } from '@/components/common/MarkdownEditor';
-import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
-import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { RelatedShowcasePicker } from '@/components/features/factory-portal/RelatedShowcasePicker';
@@ -28,6 +26,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { showcaseKeys } from '@/lib/queryKeys';
+import {
+  buildShowcasePayload,
+  useShowcaseCategoryOptions,
+  validateShowcaseSubmission,
+} from '@/pages/factory-portal/hooks/useShowcaseForm';
+import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -123,11 +128,6 @@ function parseImageEntries(raw: unknown): ImageEntry[] {
     .slice(0, 5);
 }
 
-/** Backward-compat helper for places that only need URL strings. */
-function parseImageUrls(raw: unknown): string[] {
-  return parseImageEntries(raw).map((e) => e.url);
-}
-
 function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
   const r = raw ?? {};
   const ct = String(r.content_type ?? 'PD').toUpperCase();
@@ -167,6 +167,7 @@ export function FactoryShowcaseEditPage() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const fid = getFactoryEntityId(user);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
   const [uploading, setUploading] = React.useState(false);
@@ -210,7 +211,7 @@ export function FactoryShowcaseEditPage() {
   );
 
   const { form, isLoading, isError, refetch } = useEditForm<ShowcaseFormValues, Raw>({
-    queryKey: ['showcase', id] as const,
+    queryKey: showcaseKeys.detail(id ?? ''),
     queryFn: async () => {
       const raw = await showcasesApi.get(id!);
       const row = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
@@ -234,9 +235,6 @@ export function FactoryShowcaseEditPage() {
 
   useBeforeUnload(form.formState.isDirty);
 
-  const [idScope, setIdScope] = React.useState<'PD' | 'MT'>('PD');
-  const [pmScope, setPmScope] = React.useState<'PD' | 'MT'>('PD');
-
   const selectedCategoryId = form.watch('category_id');
   const contentType = form.watch('content_type');
   const backPath = useMemo(() => {
@@ -245,58 +243,15 @@ export function FactoryShowcaseEditPage() {
     return `/factory/showcases?type=${contentType}`;
   }, [location.state, contentType]);
 
-  const categoryScope: 'PD' | 'MT' =
-    contentType === 'MT'
-      ? 'MT'
-      : contentType === 'ID'
-        ? idScope
-        : contentType === 'PM'
-          ? pmScope
-          : 'PD';
-  const categoriesQ = useLbiCategoriesByScope(categoryScope);
-  const pdCategoriesQ = useLbiCategoriesByScope('PD');
-  const mtCategoriesQ = useLbiCategoriesByScope('MT');
-
-  const subIds = useMemo(
-    () => (contentType !== 'MT' && selectedCategoryId != null ? [selectedCategoryId] : []),
-    [contentType, selectedCategoryId],
-  );
-  const subsResult = useSubCategoriesByCategories(subIds);
-  const subOptions =
-    selectedCategoryId != null ? (subsResult.byCategory.get(selectedCategoryId) ?? []) : [];
-
-  // Auto-adjust scope for ID/PM edit forms so existing category_id from API is visible
-  // even when it belongs to MT while default scope starts at PD.
-  React.useEffect(() => {
-    if (selectedCategoryId == null) return;
-
-    const pdIds = new Set((pdCategoriesQ.data ?? []).map((c) => c.id));
-    const mtIds = new Set((mtCategoriesQ.data ?? []).map((c) => c.id));
-
-    if (contentType === 'ID') {
-      if (mtIds.has(selectedCategoryId) && idScope !== 'MT') {
-        setIdScope('MT');
-      } else if (pdIds.has(selectedCategoryId) && idScope !== 'PD') {
-        setIdScope('PD');
-      }
-      return;
-    }
-
-    if (contentType === 'PM') {
-      if (mtIds.has(selectedCategoryId) && pmScope !== 'MT') {
-        setPmScope('MT');
-      } else if (pdIds.has(selectedCategoryId) && pmScope !== 'PD') {
-        setPmScope('PD');
-      }
-    }
-  }, [
-    selectedCategoryId,
-    contentType,
+  const {
     idScope,
     pmScope,
-    pdCategoriesQ.data,
-    mtCategoriesQ.data,
-  ]);
+    setIdScope,
+    setPmScope,
+    categoriesQ,
+    subOptions,
+    subsResult,
+  } = useShowcaseCategoryOptions({ contentType, selectedCategoryId });
 
   React.useEffect(() => {
     if (!id) return;
@@ -326,74 +281,26 @@ export function FactoryShowcaseEditPage() {
     async (submitStatus: 'DR' | 'AC') => {
       if (!id) return;
       const v = form.getValues();
-      if (!v.title.trim()) {
-        setError('กรุณากรอกชื่อรายการ');
+      const validationError = validateShowcaseSubmission(v, {
+        contentType: v.content_type,
+        status: submitStatus,
+        imageCount: imageUrls.length,
+        requireTitle: true,
+      });
+      if (validationError) {
+        setError(validationError);
         return;
-      }
-      if (submitStatus === 'AC' && v.content_type !== 'ID') {
-        if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
-          setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
-          return;
-        }
-      }
-      if (v.content_type === 'PM') {
-        if (submitStatus === 'AC') {
-          if (v.promo_price == null || Number(v.promo_price) <= 0) {
-            setError('กรุณากรอกราคาโปรโมชันให้มากกว่า 0');
-            return;
-          }
-          if (
-            v.base_price != null &&
-            Number(v.base_price) > 0 &&
-            Number(v.promo_price) > Number(v.base_price)
-          ) {
-            setError('ราคาโปรโมชันต้องไม่มากกว่าราคาปกติ');
-            return;
-          }
-        }
-        if (!v.start_date || !v.end_date) {
-          setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
-          return;
-        }
-        if (v.end_date < v.start_date) {
-          setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
-          return;
-        }
       }
       setSaving(true);
       setError('');
       setLinkedShowcaseError('');
-      const coverUrl = imageUrls[0] ?? '';
-      const base = {
-        content_type: v.content_type,
+      const payload = buildShowcasePayload({
+        contentType: v.content_type,
         status: submitStatus,
-        title: v.title.trim(),
-        excerpt: v.content_type === 'ID' ? undefined : v.excerpt.trim() || undefined,
-        content: v.content.trim() || undefined,
-        image_url: coverUrl || undefined,
-        category_id: v.category_id ?? undefined,
-        sub_category_id: v.sub_category_id ?? undefined,
-        lead_time_days: v.lead_time_days ?? undefined,
-        linked_showcases: [...imageUrls, ...selectedShowcaseIds],
-      };
-
-      const payload: Record<string, unknown> =
-        v.content_type === 'ID'
-          ? base
-          : v.content_type === 'PM'
-            ? {
-                ...base,
-                moq: v.moq ?? undefined,
-                base_price: v.base_price ?? undefined,
-                promo_price: v.promo_price ?? undefined,
-                start_date: v.start_date || undefined,
-                end_date: v.end_date || undefined,
-              }
-            : {
-                ...base,
-                moq: v.moq ?? undefined,
-                base_price: v.base_price ?? undefined,
-              };
+        values: v,
+        imageUrls,
+        selectedShowcaseIds,
+      });
 
       try {
         await showcasesApi.update(id, payload);
@@ -454,10 +361,10 @@ export function FactoryShowcaseEditPage() {
         );
 
         await Promise.all([
-          qc.invalidateQueries({ queryKey: ['showcase', id] }),
-          qc.invalidateQueries({ queryKey: ['showcases'] }),
+          qc.invalidateQueries({ queryKey: showcaseKeys.detail(id) }),
+          qc.invalidateQueries({ queryKey: showcaseKeys.lists() }),
         ]);
-        navigate('/factory/showcases', { replace: true });
+        navigate(backPath, { replace: true });
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
         const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
@@ -470,13 +377,18 @@ export function FactoryShowcaseEditPage() {
     [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath],
   );
 
-  const onBack = useCallback(() => {
+  const onBack = useCallback(async () => {
     if (form.formState.isDirty) {
-      const ok = window.confirm('มีข้อมูลที่ยังไม่บันทึก ต้องการออกจากหน้านี้หรือไม่?');
+      const ok = await confirm({
+        title: 'ออกจากหน้านี้?',
+        description: 'มีข้อมูลที่ยังไม่บันทึก หากออกจากหน้านี้ การเปลี่ยนแปลงจะไม่ถูกบันทึก',
+        confirmText: 'ออกจากหน้า',
+        destructive: true,
+      });
       if (!ok) return;
     }
-    navigate('/factory/showcases');
-  }, [form.formState.isDirty, navigate]);
+    navigate(backPath);
+  }, [backPath, confirm, form.formState.isDirty, navigate]);
 
   const onPickImage = async (file: File | null) => {
     if (!file || imageUrls.length >= 5) return;
@@ -514,7 +426,7 @@ export function FactoryShowcaseEditPage() {
         <Button
           variant='unstyled'
           type='button'
-          onClick={onBack}
+          onClick={() => void onBack()}
           className='flex items-center gap-1.5 text-sm font-medium transition-colors'
           style={{ color: 'var(--brand-indigo)' }}
         >
@@ -536,6 +448,7 @@ export function FactoryShowcaseEditPage() {
       </div>
 
       <div className='px-4 py-5'>
+        <ConfirmDialog />
         <ImageCropModal
           open={cropFile != null}
           file={cropFile}

@@ -43,7 +43,6 @@ export interface Quotation {
 }
 
 const MIDNIGHT = 'var(--brand-navy)';
-const PLUM = 'var(--brand-mauve)';
 const PLUM_SOFT = 'var(--brand-page)';
 
 /** ข้อมูลจาก OfferItem / API สำหรับสร้าง Quotation แบบเต็ม (เติมค่า default ถ้าขาด) */

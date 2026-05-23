@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, Check, CreditCard, FileText, X } from 'lucide-react';
+import { ArrowRight, Check, CreditCard, X } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { ChatReference, ChatReferenceType } from '@/utils/chatContract';
 import { ReferenceChip } from '@/components/chat/ReferenceChip';
@@ -199,9 +199,6 @@ export function MessageBubble({
   currentUserId,
   peerAvatarUrl,
   viewerRole,
-  quotationLoadingId,
-  onAcceptQuotation,
-  onRejectQuotation,
 }: Props) {
   const navigate = useNavigate();
   const isMine = Number(msg.sender_id) === currentUserId;

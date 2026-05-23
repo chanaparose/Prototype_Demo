@@ -39,7 +39,7 @@ function toSubCategoryOption(r: Row, categoryIdHint: number): SubCategoryOption 
 
 function useLbiAllCategories() {
   return useQuery({
-    queryKey: masterKeys.lbiCategories('ALL') as const,
+    queryKey: masterKeys.lbiCategories('ALL'),
     queryFn: async (): Promise<CategoryWithScope[]> => {
       const raw = await masterApi.getLbiCategories('ALL');
       const obj = raw as Record<string, unknown>;
@@ -106,7 +106,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
               queryKey: masterKeys.subCategories(cid),
               queryFn: async () => {
                 const raw = await categoriesApi.subCategories(cid);
-                const arr = (Array.isArray(raw) ? raw : []) as Row[];
+                const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
                 const normalized = arr
                   .map((r) => toSubCategoryOption(r, cid))
                   .filter((x): x is SubCategoryOption => x != null);

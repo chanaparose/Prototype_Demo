@@ -235,14 +235,14 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
 
       if (ordRes.status === 'fulfilled') {
         const arr = Array.isArray(ordRes.value) ? ordRes.value : [];
-        setAllOrders(arr as Record<string, unknown>[]);
+        setAllOrders(arr as unknown as Record<string, unknown>[]);
       } else {
         setAllOrders([]);
       }
 
       if (qRes.status === 'fulfilled') {
         const arr = Array.isArray(qRes.value) ? qRes.value : [];
-        setMyQuotes(arr as Record<string, unknown>[]);
+        setMyQuotes(arr as unknown as Record<string, unknown>[]);
       } else {
         setMyQuotes([]);
       }
@@ -254,13 +254,13 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
       }
 
       if (aRes.status === 'fulfilled' && aRes.value && typeof aRes.value === 'object') {
-        setAnalyticsApi(aRes.value as Record<string, unknown>);
+        setAnalyticsApi(aRes.value as unknown as Record<string, unknown>);
       } else {
         setAnalyticsApi(null);
       }
 
       if (dRes.status === 'fulfilled' && dRes.value && typeof dRes.value === 'object') {
-        setDashboardApi(dRes.value as Record<string, unknown>);
+        setDashboardApi(dRes.value as unknown as Record<string, unknown>);
       } else {
         setDashboardApi(null);
       }

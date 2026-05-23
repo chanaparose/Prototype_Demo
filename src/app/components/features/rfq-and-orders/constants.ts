@@ -20,7 +20,6 @@ const ORCHID = '#A78BFA';
 /** ส้มสด / ส้มเข้ม / พีช */
 export const ACCENT_ORANGE = 'var(--brand-orange)';
 export const ACCENT_ORANGE_DEEP = 'var(--brand-orange-vivid)';
-const ACCENT_ORANGE_BG = 'var(--surface-peach)';
 const PEACH_SOFT = '#FFE8D6';
 export const PEACH_MIST = 'var(--surface-peach-mist)';
 const CREAM = 'var(--surface-cream)';

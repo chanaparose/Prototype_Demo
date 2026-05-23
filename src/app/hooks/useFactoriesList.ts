@@ -24,7 +24,7 @@ export function useFactoriesList() {
       .list()
       .then((raw) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+        const arr = (Array.isArray(raw) ? raw : []) as unknown as Record<string, unknown>[];
         const mapped = arr.map((row) => normalizeFactoryRow(row)).filter((f) => f.id && f.name);
         setApiFactories(mapped);
       })

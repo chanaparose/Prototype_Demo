@@ -81,7 +81,7 @@ export function mapProductionUpdatesBundleFromApi(
     : undefined;
   const updates = (Array.isArray(b.updates) ? b.updates : []).map((row) =>
     mapProductionUpdateRowFromApi(
-      row && typeof row === 'object' ? (row as Record<string, unknown>) : {},
+      row && typeof row === 'object' ? (row as unknown as Record<string, unknown>) : {},
     ),
   );
   return {
