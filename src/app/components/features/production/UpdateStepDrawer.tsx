@@ -346,12 +346,12 @@ export function UpdateStepDrawer({
                     className='hidden'
                     capture={placement === 'bottom' ? 'environment' : undefined}
                     onChange={(e) => void addFiles(e.target.files)}
-                    disabled={uploading}
+                    disabled={isUploading}
                   />
                 </Label>
               ) : null}
             </div>
-            {uploading ? <p className='text-xs text-indigo-500 mt-1.5'>กำลังอัปโหลด…</p> : null}
+            {isUploading ? <p className='text-xs text-indigo-500 mt-1.5'>กำลังอัปโหลด…</p> : null}
           </div>
 
           {/* What happens next hint */}

@@ -13,9 +13,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { FormField, SectionHeading } from '@/components/common/FormField';
+import { FormField, SectionHeading, FieldBlock } from '@/components/common/FormField';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { getInputClass } from '@/utils/formHelpers';
+import { Label } from '@/components/ui/label';
 
 export function RegisterFactoryPage() {
   const {
@@ -39,6 +40,7 @@ export function RegisterFactoryPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const inClass = getInputClass;
 
   const bizSection = 1;
   const accountSection = 2;

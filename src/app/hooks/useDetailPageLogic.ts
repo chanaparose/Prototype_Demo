@@ -8,6 +8,7 @@ import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
 import { usePromotionDetailShowcase, useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import type { FactoryShowcase, Factory } from '@/stores/types';
 import type { ReviewsData } from '@/domain/showcase/mappers/mapShowcaseDetail';
+import type { ChatReference } from '@/utils/chatContract';
 
 type DetailPageType = 'product' | 'promotion' | 'idea';
 
@@ -33,7 +34,7 @@ interface UseDetailPageLogicResult {
   handleBack: () => void;
   toggleFavorite: () => void;
   handleStartChat: () => void;
-  startChat: (factoryId: string, meta: any) => Promise<void>;
+  startChat: (factoryId: string | number, reference?: ChatReference | null) => Promise<'ok' | null>;
   starting: boolean;
 
   // Additional info

@@ -66,6 +66,7 @@ export function PromotionDetailDesktop() {
     handleStartChat,
     starting,
     canChat,
+    relatedProducts: relatedShowcases,
   } = useDetailPageLogic('promotion');
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);

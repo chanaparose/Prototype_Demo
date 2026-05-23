@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useDetailPageLogic } from '@/hooks/useDetailPageLogic';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useData } from '@/stores/useDataStore';
 import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -45,6 +46,7 @@ export function IdeaDetailMobile() {
     starting,
     canChat,
   } = useDetailPageLogic('idea');
+  const { isLiked: checkIsLiked, toggleFavorite: toggleRelatedFavorite } = useFavorites();
   const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
 
   const { data: relatedIdeasData } = useFetchData(
@@ -296,11 +298,11 @@ export function IdeaDetailMobile() {
                       </span>
                       <button
                         type='button'
-                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(next.id); }}
+                        onClick={(e) => { e.stopPropagation(); void toggleRelatedFavorite(next.id); }}
                         className='flex items-center gap-1 shrink-0 text-[10px] text-gray-400'
                       >
-                        <Heart className={`w-3 h-3 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
-                        <span className='tabular-nums font-medium text-gray-500'>{next.likes + (isLiked(next.id) ? 1 : 0)}</span>
+                        <Heart className={`w-3 h-3 shrink-0 ${checkIsLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
+                        <span className='tabular-nums font-medium text-gray-500'>{next.likes + (checkIsLiked(next.id) ? 1 : 0)}</span>
                       </button>
                     </div>
                   </div>

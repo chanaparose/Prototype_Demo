@@ -31,6 +31,36 @@ export function FormField({
   );
 }
 
+import type { FormState } from '@/pages/auth/useRegisterFactory';
+
+type FieldBlockProps = {
+  label: string;
+  error?: string;
+  fieldKey: keyof FormState | 'acceptTerms';
+  setFieldRef: (key: keyof FormState) => (el: HTMLElement | null) => void;
+  children: ReactNode;
+  className?: string;
+  required?: boolean;
+};
+
+export function FieldBlock({
+  label,
+  error,
+  fieldKey,
+  setFieldRef,
+  children,
+  className = '',
+  required,
+}: Readonly<FieldBlockProps>) {
+  return (
+    <div ref={setFieldRef(fieldKey)} className={className}>
+      <FormField label={label} error={error} required={required}>
+        {children}
+      </FormField>
+    </div>
+  );
+}
+
 interface SectionHeadingProps {
   num: number;
   label: string;

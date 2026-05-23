@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { ImagePlus, X } from 'lucide-react';
 import { getErrorMessage } from '@/lib/apiError';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
@@ -24,6 +24,7 @@ export function ReviewImageAttachments({
 }: Readonly<Props>) {
   const editable = Boolean(onChange) && !disabled;
 
+  const inputRef = useRef<HTMLInputElement>(null);
   const { upload, isUploading } = useImageUpload({
     maxFiles: REVIEW_IMAGE_MAX - urls.length,
     multiple: true,

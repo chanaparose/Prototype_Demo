@@ -531,7 +531,7 @@ export function ProductDetailMobile() {
         <Button
           variant='unstyled'
           type='button'
-          onClick={() => void toggleFavorite(item.id)}
+          onClick={() => void toggleFavorite()}
           className='w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white'
           aria-label='ถูกใจ'
         >

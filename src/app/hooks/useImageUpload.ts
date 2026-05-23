@@ -6,7 +6,7 @@ interface UseImageUploadOptions {
   maxFiles?: number;
   multiple?: boolean;
   onSuccess?: (urls: string[]) => void;
-  onError?: (error: Error) => void;
+  onError?: (error: unknown) => void;
   fallbackMessage?: string;
 }
 
@@ -14,6 +14,7 @@ interface UseImageUploadResult {
   upload: (files: FileList | null) => Promise<void>;
   isUploading: boolean;
   uploadFile: (file: File) => Promise<string>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUploadResult {
@@ -68,7 +69,11 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
         onSuccess(urls);
       }
     },
-    onError,
+    onError: onError
+      ? (err: unknown) => {
+          onError(err);
+        }
+      : undefined,
   });
 
   const upload = useCallback(
@@ -101,5 +106,6 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
     upload,
     isUploading: uploadMutation.isPending,
     uploadFile,
+    inputRef,
   };
 }

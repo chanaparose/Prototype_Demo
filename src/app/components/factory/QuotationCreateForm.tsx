@@ -153,7 +153,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
     const [factoryHighlight, setFactoryHighlight] = useState<string>(initialFactoryHighlight ?? '');
     const [error, setError] = useState('');
-    const { upload, isUploading } = useImageUpload({
+    const { upload, isUploading, inputRef: imageInputRef } = useImageUpload({
       onSuccess: (urls) => {
         setImageUrls((prev) => [...prev, ...urls]);
         form.setValue('price_per_piece', form.getValues('price_per_piece'), { shouldDirty: true });
