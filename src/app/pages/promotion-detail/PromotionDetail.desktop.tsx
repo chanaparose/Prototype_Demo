@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { SHOWCASE_DETAIL_BRAND as BRAND, daysBetween, formatShowcaseTHB as formatTHB, formatShowcaseThaiDate as formatThaiDate, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
@@ -22,7 +22,6 @@ import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
 import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
-import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';

@@ -3,7 +3,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { daysUntilDeadline } from '@/utils/rfqDeadline';
 import { factoryRfqsApi } from '@/services/api/rfqApi';
-import { apiListAsRecords, asRecord, nestedRecord, type ApiRecord } from '@/lib/apiShape';
+import { apiListAsRecords, nestedRecord, type ApiRecord } from '@/lib/apiShape';
 import { getErrorMessage } from '@/lib/apiError';
 import { pickScalarString } from '@/utils/pickScalarString';
 import type { RfqCardModel } from '@/components/factory/RfqCard';

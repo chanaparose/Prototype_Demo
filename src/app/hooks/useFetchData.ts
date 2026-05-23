@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-interface UseFetchDataOptions<TRaw, TMapped> {
+interface UseFetchDataOptions<TMapped> {
   enabled?: boolean;
   onError?: (error: Error) => void;
   onSuccess?: (data: TMapped) => void;
@@ -16,7 +16,7 @@ export function useFetchData<TRaw, TMapped>(
   fetchFn: () => Promise<TRaw>,
   mapFn: (raw: TRaw) => TMapped,
   dependencies: React.DependencyList,
-  options: UseFetchDataOptions<TRaw, TMapped> = {},
+  options: UseFetchDataOptions<TMapped> = {},
 ): UseFetchDataResult<TMapped> {
   const { enabled = true, onError, onSuccess } = options;
   const [data, setData] = useState<TMapped | null>(null);

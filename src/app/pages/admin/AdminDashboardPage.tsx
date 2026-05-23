@@ -8,7 +8,6 @@ import {
   ClipboardList,
   Factory,
   TrendingDown,
-  AlertTriangle,
 } from 'lucide-react';
 import {
   BarChart,

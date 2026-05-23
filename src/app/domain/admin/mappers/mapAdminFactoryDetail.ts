@@ -1,6 +1,6 @@
 import { mapFactoryApprovalStatus } from '@/domain/admin/mappers/mapAdminFactory';
 import type { FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
-import { apiListAsRecords, asRecord, nestedRecord, type ApiRecord } from '@/lib/apiShape';
+import { apiListAsRecords, asRecord, nestedRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type TimelineStatus = FactoryApprovalStatus | 'submitted';

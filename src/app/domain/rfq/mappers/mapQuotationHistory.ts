@@ -1,6 +1,6 @@
 import { apiListAsRecords, asRecord } from '@/lib/apiShape';
 import type { IQuotationHistoryEntry } from '@/services/api/types/rfq.types';
-import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { pickScalarString } from '@/utils/pickScalarString';
 
 function toNum(v: unknown): number | null {
   const n = Number(v);

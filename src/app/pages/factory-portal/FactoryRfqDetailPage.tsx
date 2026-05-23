@@ -9,7 +9,6 @@ import {
   quoteFactoryHighlight,
   quoteFactoryIdOf,
   quoteImageUrls,
-  type FactoryRfqQuoteRow,
 } from '@/domain/factory/mappers/mapFactoryRfqDetail';
 import { useFactoryRfqDetailPage } from '@/pages/factory-portal/hooks/useFactoryRfqDetailPage';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
@@ -27,8 +26,6 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { formatCompactNumber, formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
-
-type QuoteRow = FactoryRfqQuoteRow;
 
 function rfqStatusLabel(status: string): string {
   const s = status.toUpperCase();

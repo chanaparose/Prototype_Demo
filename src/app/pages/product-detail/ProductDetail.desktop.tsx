@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import React, { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseTHB as formatTHB, formatShowcaseThaiDate as formatThaiDate, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { ShowcaseHeroGallery } from '@/components/features/showcase-detail/ShowcaseHeroGallery';
 import { useNavigate } from 'react-router';

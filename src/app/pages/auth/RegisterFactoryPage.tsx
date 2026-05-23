@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Eye, EyeOff, Factory, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useRegisterFactory } from '@/pages/auth/useRegisterFactory';
-import type { FormState } from '@/pages/auth/useRegisterFactory';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -13,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { FormField, SectionHeading, FieldBlock } from '@/components/common/FormField';
+import { SectionHeading, FieldBlock } from '@/components/common/FormField';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { getInputClass } from '@/utils/formHelpers';
 import { Label } from '@/components/ui/label';

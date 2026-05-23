@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
@@ -37,8 +37,6 @@ export function IdeaDetailDesktop() {
     error,
     factory,
     resolvedId,
-    isLiked,
-    toggleFavorite,
     handleBack,
     handleStartChat,
     starting,

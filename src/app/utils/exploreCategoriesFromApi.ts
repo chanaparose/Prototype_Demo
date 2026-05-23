@@ -1,7 +1,4 @@
-import { unwrapApiList } from '@/lib/apiShape';
-import { mapExploreCategoryFromApi } from '@/domain/explore/mappers/mapExploreCategory';
 import type { IExploreCategory } from '@/domain/explore/types/explore.model';
-import type { IExploreCategoryResponse } from '@/services/api/types/explore.types';
 
 export const TILE_DB_ID_TO_CONTEXT_ID: Record<string, string> = {
   '1': 'pet_food',
@@ -10,10 +7,6 @@ export const TILE_DB_ID_TO_CONTEXT_ID: Record<string, string> = {
   '4': 'pet_clothes',
   '6': 'other',
 };
-
-function extractCategoriesArray(raw: unknown): unknown[] {
-  return unwrapApiList(raw, ['categories']);
-}
 
 export function categoryIdsMatch(a: string, b: string): boolean {
   const sa = String(a).trim();

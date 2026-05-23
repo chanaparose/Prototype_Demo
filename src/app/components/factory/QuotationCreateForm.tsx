@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,7 +12,6 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { rfqKeys } from '@/lib/queryKeys';
 import { quotationsApi } from '@/services/api/rfqApi';
-import { mediaApi } from '@/services/api/factoryApi';
 import type { IQuotationBreakdown } from '@/services/api/types/rfq.types';
 import { calculateQuotationBreakdown, type CommissionConfig } from '@/utils/quotationCalculator';
 import { useShippingMethods } from '@/hooks/master/useShippingMethods';

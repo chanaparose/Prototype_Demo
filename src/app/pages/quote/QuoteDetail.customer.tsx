@@ -9,7 +9,6 @@ import { usePromptDialog } from '@/shared/ui/modals/PromptDialog';
 import {
   mapQuoteDetail,
   mapQuoteHistory,
-  type QuoteDetailModel,
   type QuoteHistoryEntry,
 } from '@/domain/quote/mappers/mapQuoteDetail';
 import { useAppMutation } from '@/hooks/useAppMutation';

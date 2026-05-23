@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useData } from '@/stores/useDataStore';
-import { type Factory } from '@/stores/types';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { apiListAsRecords } from '@/lib/apiShape';
 import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';

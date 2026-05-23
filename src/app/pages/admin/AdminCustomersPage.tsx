@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Users, Search, AlertTriangle } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 import { adminCustomerApi } from '@/services/api/adminApi';
 import type { IAdminCustomerListItemResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';

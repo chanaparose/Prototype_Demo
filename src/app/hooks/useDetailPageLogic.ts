@@ -1,11 +1,9 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
-import { usePromotionDetailShowcase, useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
+import { useShowcaseDetailPage } from '@/hooks/useShowcaseDetailPage';
 import type { FactoryShowcase, Factory } from '@/stores/types';
 import type { ReviewsData } from '@/domain/showcase/mappers/mapShowcaseDetail';
 import type { ChatReference } from '@/utils/chatContract';
@@ -13,33 +11,34 @@ import type { ChatReference } from '@/utils/chatContract';
 type DetailPageType = 'product' | 'promotion' | 'idea';
 
 interface UseDetailPageLogicResult {
-  // Item data
   item: FactoryShowcase | null;
   factory: Factory | null;
   reviews: ReviewsData | null;
   relatedProducts: FactoryShowcase[];
 
-  // State
   loading: boolean;
   error: string | null;
   resolvedId: string;
 
-  // User info
   user: unknown;
   isSelfFactory: boolean;
   canChat: boolean;
   isLiked: boolean;
 
-  // Actions
   handleBack: () => void;
   toggleFavorite: () => void;
   handleStartChat: () => void;
   startChat: (factoryId: string | number, reference?: ChatReference | null) => Promise<'ok' | null>;
   starting: boolean;
 
-  // Additional info
   isIdea?: boolean;
   isMaterial?: boolean;
+}
+
+function chatReferenceType(pageType: DetailPageType): 'PD' | 'PM' | 'ID' {
+  if (pageType === 'promotion') return 'PM';
+  if (pageType === 'idea') return 'ID';
+  return 'PD';
 }
 
 /**
@@ -49,19 +48,11 @@ interface UseDetailPageLogicResult {
 export function useDetailPageLogic(pageType: DetailPageType): UseDetailPageLogicResult {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const data = useData();
   const { isLiked: checkIsLiked, toggleFavorite } = useFavorites();
   const { startChat, starting } = useStartChatWithFactory();
 
-  // Get the appropriate hook based on page type
-  const getDetailHook = () => {
-    if (pageType === 'product') return useProductDetailShowcase();
-    if (pageType === 'promotion') return usePromotionDetailShowcase();
-    return useIdeaDetailShowcase();
-  };
-
-  const detailHook = getDetailHook();
-  const { item, loading, error, factory, reviews, resolvedId, relatedProducts } = detailHook as any;
+  const { item, loading, error, factory, reviews, resolvedId, relatedProducts } =
+    useShowcaseDetailPage(pageType);
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -69,7 +60,7 @@ export function useDetailPageLogic(pageType: DetailPageType): UseDetailPageLogic
 
   const handleToggleFavorite = useCallback(() => {
     if (item?.id) {
-      void toggleFavorite(item.id);
+      toggleFavorite(item.id).catch(() => undefined);
     }
   }, [item?.id, toggleFavorite]);
 
@@ -79,40 +70,35 @@ export function useDetailPageLogic(pageType: DetailPageType): UseDetailPageLogic
 
   const handleStartChat = useCallback(() => {
     if (!item || !resolvedId) return;
-    void startChat(item.factoryId, {
-      type: pageType === 'product' ? 'PD' : pageType === 'promotion' ? 'PM' : 'ID',
+    startChat(item.factoryId, {
+      type: chatReferenceType(pageType),
       id: Number(resolvedId),
       title: item.title,
-    });
+    }).catch(() => undefined);
   }, [item, resolvedId, pageType, startChat]);
 
   return {
-    // Item data
     item,
     factory,
     reviews,
     relatedProducts: relatedProducts ?? [],
 
-    // State
     loading,
     error,
     resolvedId,
 
-    // User info
     user,
     isSelfFactory,
     canChat,
     isLiked,
 
-    // Actions
     handleBack,
     toggleFavorite: handleToggleFavorite,
     handleStartChat,
     startChat,
     starting,
 
-    // Additional info
-    isIdea: (item as any)?.isIdea,
-    isMaterial: (item as any)?.isMaterial,
+    isIdea: item?.contentType === 'idea',
+    isMaterial: item?.contentType === 'material',
   };
 }

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { asRecord, type ApiRecord } from '@/lib/apiShape';
+import { asRecord } from '@/lib/apiShape';
 
 export const addressFormSchema = z.object({
   address_type: z.enum(['M', 'B', 'S']),

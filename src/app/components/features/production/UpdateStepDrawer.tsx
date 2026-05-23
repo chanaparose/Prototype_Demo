@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { X, Plus, ChevronRight } from 'lucide-react';
-import { mediaApi } from '@/services/api/factoryApi';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';

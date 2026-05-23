@@ -17,7 +17,6 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { openShippingLabel } from '@/utils/printShippingLabel';
-import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
@@ -48,7 +47,7 @@ import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
-import { nestedRecord, type ApiRecord } from '@/lib/apiShape';
+import { nestedRecord } from '@/lib/apiShape';
 
 function statusLabel(code: string): string {
   const s = code.toUpperCase();

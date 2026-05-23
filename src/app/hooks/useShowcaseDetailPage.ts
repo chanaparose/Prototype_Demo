@@ -6,7 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import {
   mapShowcaseDetailBundle,
   parseGroupedRelatedShowcases,
-  type ReviewsData,
 } from '@/domain/showcase/mappers/mapShowcaseDetail';
 import { showcaseKeys } from '@/lib/queryKeys';
 import { showcasesApi } from '@/services/api/factoryApi';
@@ -38,7 +37,7 @@ const PAGE_CONFIG: Record<
   idea: { acceptTypes: ['idea'] },
 };
 
-function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
+export function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const { acceptTypes } = PAGE_CONFIG[kind];
   const { id: pathId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
