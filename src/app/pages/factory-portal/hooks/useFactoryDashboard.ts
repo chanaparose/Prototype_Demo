@@ -149,8 +149,11 @@ function buildSeries(
   const n = periods.length;
   const rfqTotal = opRfqs.length;
   const repliesTotal = fid != null ? myQuotes.filter((q) => quoteFactoryId(q) === fid).length : 0;
-  const rfqFallback = n > 0 ? Math.max(1, Math.round(rfqTotal / n)) : 0;
-  const replyFallback = n > 0 ? Math.max(1, Math.round(repliesTotal / n)) : 0;
+  // Fallback is only used when items exist but lack date fields.
+  // When the array is empty (rfqTotal === 0) the fallback must be 0, not 1,
+  // to avoid plotting fake bars on days with no actual data.
+  const rfqFallback = rfqTotal > 0 && n > 0 ? Math.max(1, Math.round(rfqTotal / n)) : 0;
+  const replyFallback = repliesTotal > 0 && n > 0 ? Math.max(1, Math.round(repliesTotal / n)) : 0;
 
   return periods.map((p) => {
     let revenue = 0;
@@ -230,8 +233,9 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
       if (portal && typeof portal === 'object') {
         const p = portal as Record<string, unknown>;
 
-        // matching_rfqs → opRfqs (used for chart series + rfq_received_total)
-        setOpRfqs(Array.isArray(p.matching_rfqs) ? (p.matching_rfqs as Record<string, unknown>[]) : []);
+        // rfq_history → opRfqs for chart series (real RFQ timestamps from DB).
+        // matching_rfqs are only open/available RFQs and have no historical date data.
+        setOpRfqs(Array.isArray(p.rfq_history) ? (p.rfq_history as Record<string, unknown>[]) : []);
 
         // orders → allOrders (used for chart series + revenue/closed_orders)
         setAllOrders(Array.isArray(p.orders) ? (p.orders as Record<string, unknown>[]) : []);

@@ -874,7 +874,7 @@ export function FactoryDashboardPage() {
               RFQ ที่ได้รับ vs การตอบกลับ
             </h3>
             <p className='text-xs text-gray-400 mt-0.5'>
-              เปรียบเทียบจำนวน RFQ ที่ได้รับและที่ตอบกลับ
+              จำนวนต่อ{timeframe === 'daily' ? 'วัน' : timeframe === 'weekly' ? 'สัปดาห์' : 'เดือน'} · ไม่ใช่ยอดสะสม
             </p>
           </div>
 
