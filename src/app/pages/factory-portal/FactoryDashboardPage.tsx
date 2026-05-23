@@ -26,7 +26,9 @@ import {
   CheckCircle,
   ShieldAlert,
 } from 'lucide-react';
+import { asRecord } from '@/lib/apiShape';
 import { useAuth } from '@/stores/useAuthStore';
+import { pickScalarString } from '@/utils/pickScalarString';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import {
   useFactoryDashboard,
@@ -306,18 +308,15 @@ export function FactoryDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const verifySt = factoryVerifyStatus(user);
-  const verifyReason = String(
-    (user as Record<string, unknown> | null)?.verify_rejection_reason ??
-      (user as Record<string, unknown> | null)?.rejection_reason ??
-      '',
-  ).trim();
+  const userRow = asRecord(user);
+  const verifyReason = pickScalarString(
+    userRow.verify_rejection_reason,
+    userRow.rejection_reason,
+  );
 
   const factoryName =
-    String(
-      (user as Record<string, unknown> | null)?.factory_name ??
-        (user as Record<string, unknown> | null)?.name ??
-        COMMON_COPY.defaultFactoryName,
-    ).trim() || COMMON_COPY.defaultFactoryName;
+    pickScalarString(userRow.factory_name, userRow.name, COMMON_COPY.defaultFactoryName) ||
+    COMMON_COPY.defaultFactoryName;
 
   const isDesktop = useIsDesktop();
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('daily');

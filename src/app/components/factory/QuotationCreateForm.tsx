@@ -2,6 +2,7 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo
 import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { ApiRecord } from '@/lib/apiShape';
 import { useAppMutation } from '@/hooks/useAppMutation';
 import {
   quotationFormSchema,
@@ -172,7 +173,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         const priceN = Number(v.price_per_piece);
         const leadN = Number(v.lead_time_days);
         const shipId = lockedShippingMethodId ?? 0;
-        const body: Record<string, unknown> = {
+        const body: ApiRecord = {
           factory_id: factoryId,
           price_per_piece: priceN,
           tooling_mold_cost: Number(v.tooling_mold_cost) || 0,

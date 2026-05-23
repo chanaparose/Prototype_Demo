@@ -7,8 +7,13 @@ import { refreshConversationsCache } from '@/domain/chat/chatCache';
 import { mapConversationFromApi } from '@/domain/chat/mappers/mapConversation';
 import { mapConversationToApiConversation } from '@/domain/chat/mappers/mapConversationStore';
 import { getCurrentUserId, type ApiConversation } from '@/utils/chatContract';
+import { asRecord } from '@/lib/apiShape';
 import { pickScalarString } from '@/utils/pickScalarString';
-import { rowToRoomMessage, type RoomMessage } from '@/components/chat/MessageBubble';
+import {
+  mapChatMessageRow,
+  messagesFromApiList,
+  type RoomMessage,
+} from '@/domain/chat/mappers/mapChatMessage';
 import { dedupeByKey, sortMessagesByCreatedAt } from '@/pages/messages/selectors';
 import { useMarkAsRead } from '@/pages/messages/useMarkAsRead';
 import { setSSECallbacks } from '@/hooks/useNotificationSSE';
@@ -21,16 +26,7 @@ export type ChatRoomPreview = {
   hasQuote?: boolean;
 };
 
-export function messagesFromApi(raw: unknown): RoomMessage[] {
-  const arr = Array.isArray(raw) ? raw : [];
-  const msgs = (arr as Record<string, unknown>[])
-    .map(rowToRoomMessage)
-    // rowToRoomMessage already returns null for messages with no renderable body,
-    // so a simple null-check here is sufficient. We use message_type (not reference_type)
-    // to determine renderability — that logic lives inside rowToRoomMessage.
-    .filter((m): m is RoomMessage => m != null);
-  return sortMessagesByCreatedAt(msgs);
-}
+export { messagesFromApi, messagesFromApiList } from '@/domain/chat/mappers/mapChatMessage';
 
 export function useChatRoomSession(conversationId: string, preview?: ChatRoomPreview) {
   const { user } = useAuth();
@@ -82,10 +78,10 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     ])
       .then(([rawMsgs, rawConv]) => {
         if (cancelled) return;
-        setMessages(messagesFromApi(rawMsgs));
+        setMessages(messagesFromApiList(rawMsgs));
 
         if (rawConv && typeof rawConv === 'object') {
-          const rawConvRow = rawConv as unknown as Record<string, unknown>;
+          const rawConvRow = asRecord(rawConv);
           const mapped = mapConversationFromApi(rawConvRow);
           if (mapped) {
             const parsed = mapConversationToApiConversation(mapped);
@@ -154,12 +150,12 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
 
     const handleNewMessage = (raw: unknown) => {
       if (!raw || typeof raw !== 'object') return;
-      const msgObj = raw as Record<string, unknown>;
+      const msgObj = asRecord(raw);
       // Only process messages belonging to the current conversation
       const msgConvId = String(msgObj.conv_id ?? '');
       if (msgConvId !== String(convIdRef.current)) return;
 
-      const incoming = rowToRoomMessage(msgObj);
+      const incoming = mapChatMessageRow(msgObj);
       if (!incoming) return;
 
       setMessages((prev) => {

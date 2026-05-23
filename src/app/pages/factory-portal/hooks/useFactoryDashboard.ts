@@ -132,9 +132,9 @@ function periodsFor(tf: AnalyticsTimeframe): { label: string; start: number; end
 }
 
 function buildSeries(
-  mineOrders: Record<string, unknown>[],
-  opRfqs: Record<string, unknown>[],
-  myQuotes: Record<string, unknown>[],
+  mineOrders: ApiRecord[],
+  opRfqs: ApiRecord[],
+  myQuotes: ApiRecord[],
   fid: number | null,
   tf: AnalyticsTimeframe,
 ): AnalyticsSeriesPoint[] {

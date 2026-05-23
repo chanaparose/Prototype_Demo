@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAppMutation } from '@/hooks/useAppMutation';
-import { apiListAsRecords } from '@/lib/apiShape';
+import { mapProfileAddressCardList } from '@/domain/shared/mappers/mapAddressFromApi';
+import {
+  mapProfileWalletSummaryTxList,
+  type ProfileWalletSummaryTx,
+} from '@/domain/wallet/mappers/mapProfileTransaction';
 import { useNavigate } from 'react-router';
 import {
   ChevronRight,
@@ -118,61 +122,7 @@ const menuSections: { title?: string; items: ProfileMenuItem[] }[] = [
   },
 ];
 
-type WalletTransaction = {
-  id: string;
-  label: string;
-  amount: number;
-  date: string;
-  type: 'credit' | 'debit';
-};
-
-function mapTxLabel(row: Record<string, unknown>): string {
-  const txType = String(row.transaction_type ?? row.type ?? '').toUpperCase();
-  const refType = String(row.reference_type ?? '').toLowerCase();
-  const refId = Number(row.reference_id ?? 0);
-  if (txType === 'BU') {
-    if (refType === 'order' && Number.isFinite(refId) && refId > 0)
-      return `สั่งซื้อ Order #${refId}`;
-    return 'สั่งซื้อ';
-  }
-  if (txType === 'DP') return 'มัดจำ';
-  if (txType === 'WD') return 'ถอนเงิน';
-  if (txType === 'SC') return 'รับเงิน';
-  if (txType === 'RF') return 'คืนเงิน';
-  return String(row.description ?? row.type_label ?? row.label ?? row.note ?? 'รายการ');
-}
-
-function normTransaction(r: Record<string, unknown>, isCustomer: boolean): WalletTransaction {
-  const amount = Number(r.amount ?? 0);
-  const direction = String(r.direction ?? '').toLowerCase();
-  const txTypeRaw = String(r.transaction_type ?? r.type ?? '').toUpperCase();
-  let type: 'credit' | 'debit';
-  if (amount < 0) type = 'debit';
-  else if (amount > 0) type = 'credit';
-  else if (isCustomer && txTypeRaw === 'BU') type = 'debit';
-  else if (direction === 'in') type = 'credit';
-  else if (direction === 'out') type = 'debit';
-  else {
-    const txType = String(r.transaction_type ?? r.type ?? '').toLowerCase();
-    type = txType === 'credit' || txType === 'topup' || txType === 'refund' ? 'credit' : 'debit';
-  }
-  const rawDate = String(r.created_at ?? r.date ?? '');
-  let date = rawDate;
-  if (rawDate && !Number.isNaN(Date.parse(rawDate))) {
-    date = new Date(rawDate).toLocaleDateString('th-TH', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  }
-  return {
-    id: String(r.tx_id ?? r.transaction_id ?? r.id ?? ''),
-    label: mapTxLabel(r),
-    amount: Math.abs(amount),
-    date,
-    type,
-  };
-}
+type WalletTransaction = ProfileWalletSummaryTx;
 
 export function ProfileMobile() {
   const navigate = useNavigate();
@@ -210,14 +160,7 @@ export function ProfileMobile() {
         is_default: addresses.length === 0,
       });
       const raw = await addressesApi.list();
-      return apiListAsRecords(raw)
-        .map((r) => ({
-          id: String(r.address_id ?? r.id ?? ''),
-          label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
-          detail: String(r.address_detail ?? r.detail ?? ''),
-          isDefault: Boolean(r.is_default ?? false),
-        }))
-        .filter((a) => a.id);
+      return mapProfileAddressCardList(raw);
     },
   });
 
@@ -235,17 +178,7 @@ export function ProfileMobile() {
       .list()
       .then((raw) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
-        setAddresses(
-          arr
-            .map((r) => ({
-              id: String(r.address_id ?? r.id ?? ''),
-              label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
-              detail: String(r.address_detail ?? r.detail ?? ''),
-              isDefault: Boolean(r.is_default ?? false),
-            }))
-            .filter((a) => a.id),
-        );
+        setAddresses(mapProfileAddressCardList(raw));
       })
       .catch(() => {})
       .finally(() => {
@@ -263,12 +196,8 @@ export function ProfileMobile() {
       .transactions({ page: 1, limit: 20, type: 'all' })
       .then((raw) => {
         if (cancelled) return;
-        const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
         setWalletTransactions(
-          data
-            .map((row) => normTransaction(row, isCustomer))
-            .filter((t) => t.id)
-            .slice(0, 5),
+          mapProfileWalletSummaryTxList(raw, isCustomer).slice(0, 5),
         );
       })
       .catch(() => {})

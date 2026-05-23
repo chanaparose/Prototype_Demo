@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { asRecord, type ApiRecord } from '@/lib/apiShape';
 
 export const addressFormSchema = z.object({
   address_type: z.enum(['M', 'B', 'S']),
@@ -35,18 +36,17 @@ export const defaultAddressFormValues: AddressFormValues = {
   is_default: false,
 };
 
-export function addressFormValuesFromRow(
-  row: Record<string, unknown> | null | undefined,
-): AddressFormValues {
-  const t = String(row?.address_type ?? '').toUpperCase();
+export function addressFormValuesFromRow(row: unknown): AddressFormValues {
+  const r = asRecord(row);
+  const t = String(r.address_type ?? '').toUpperCase();
   return {
     address_type: t === 'B' || t === 'S' ? t : 'M',
-    province_id: String(row?.province_id ?? '').trim(),
-    district_id: String(row?.district_id ?? '').trim(),
-    sub_district_id: String(row?.sub_district_id ?? '').trim(),
-    zip_code: String(row?.zip_code ?? '').trim(),
-    address_detail: String(row?.address_detail ?? '').trim(),
-    is_default: Boolean(row?.is_default),
+    province_id: String(r.province_id ?? '').trim(),
+    district_id: String(r.district_id ?? '').trim(),
+    sub_district_id: String(r.sub_district_id ?? '').trim(),
+    zip_code: String(r.zip_code ?? '').trim(),
+    address_detail: String(r.address_detail ?? '').trim(),
+    is_default: Boolean(r.is_default),
   };
 }
 

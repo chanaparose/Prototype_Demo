@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { asRecord } from '@/lib/apiShape';
 import { useAppMutation } from '@/hooks/useAppMutation';
 import { Link } from 'react-router';
 import {
@@ -408,8 +409,7 @@ export function RfqDetailOffersSection({
                 })();
               const boqOpen = expandedBoqOfferId === offer.id || selectedOfferId === offer.id;
               const boq = quotationFromOfferSource(offer, rfqQuantity);
-              const qd = (offer.quotationDetail ?? {}) as Partial<Quotation> &
-                Record<string, unknown>;
+              const qd = asRecord(offer.quotationDetail);
               const shippingCost = asNumber(qd.shipping_cost);
               const packagingCost = asNumber(qd.packaging_cost);
               const toolingMoldCost = asNumber(

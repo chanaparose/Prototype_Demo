@@ -31,6 +31,7 @@ import {
   useShowcaseCategoryOptions,
   validateShowcaseSubmission,
 } from '@/pages/factory-portal/hooks/useShowcaseForm';
+import type { ApiRecord } from '@/lib/apiShape';
 import {
   normalizeShowcaseType,
   type ShowcaseSubmitStatus,
@@ -86,7 +87,7 @@ export function FactoryShowcaseNewPage() {
   const buildPayload = (
     status: ShowcaseSubmitStatus,
     values: ShowcaseFormValues = getValues(),
-  ): Record<string, unknown> =>
+  ): ApiRecord =>
     buildShowcasePayload({
       contentType,
       status,

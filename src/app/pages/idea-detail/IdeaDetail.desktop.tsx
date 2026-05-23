@@ -53,7 +53,7 @@ export function IdeaDetailDesktop() {
       .then((rows) => {
         if (cancelled) return;
         const list = (Array.isArray(rows) ? rows : [])
-          .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
+          .map((r) => mapShowcaseFromApi(r))
           .filter((s) => s.contentType === 'idea' && s.id !== item.id)
           .slice(0, 5);
         setRelatedIdeas(list);

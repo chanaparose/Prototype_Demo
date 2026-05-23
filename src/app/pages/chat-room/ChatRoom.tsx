@@ -29,16 +29,19 @@ import {
 } from '@/utils/chatContract';
 import {
   MessageBubble,
-  rowToRoomMessage,
   formatDisplayTimeFromIso,
   type RoomMessage,
 } from '@/components/chat/MessageBubble';
+import { asRecord } from '@/lib/apiShape';
+import {
+  mapChatMessageRow,
+  normalizeSharedChatMessageRow,
+} from '@/domain/chat/mappers/mapChatMessage';
 import { RFQPicker } from '@/components/chat/RFQPicker';
 import { labelFor, ReferenceChip } from '@/components/chat/ReferenceChip';
 import {
   dedupeByKey,
   insertMessageSorted,
-  normalizeIso,
   sortMessagesByCreatedAt,
 } from '@/pages/messages/selectors';
 import {
@@ -280,8 +283,8 @@ function ChatRoomBody({
           }),
         )
         .then((res) => {
-          const row = res as unknown as Record<string, unknown>;
-          const serverRow = rowToRoomMessage(row);
+          const row = asRecord(res);
+          const serverRow = mapChatMessageRow(row);
           if (serverRow && serverRow.key) {
             setMessages((prev) => {
               const optimistic = prev.find((m) => m.key === tempKey);
@@ -393,14 +396,14 @@ function ChatRoomBody({
       const imageUrl = String(uploaded?.url ?? '');
       if (!imageUrl) throw new Error('ไม่ได้รับ URL รูปภาพ');
 
-      const res = (await messagesApi.send(apiConv.conv_id, {
+      const res = await messagesApi.send(apiConv.conv_id, {
         content: '',
         receiver_id: resolveReceiverId(apiConv, currentUserId),
         message_type: 'IM',
         attachment_url: imageUrl,
-      })) as unknown as Record<string, unknown>;
+      });
 
-      const serverRow = rowToRoomMessage(res);
+      const serverRow = mapChatMessageRow(res);
       setMessages((prev) => {
         const withImage = serverRow
           ? { ...serverRow, imageUrl, status: 'ok' as const }
@@ -409,7 +412,17 @@ function ChatRoomBody({
         return withImage
           ? sortMessagesByCreatedAt(dedupeByKey([...filtered, withImage]))
           : sortMessagesByCreatedAt(
-              dedupeByKey(prev.map((m) => (m.key === tempKey ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const } : m))),
+              dedupeByKey(
+                prev.map((m) =>
+                  m.key === tempKey
+                    ? {
+                        ...m,
+                        key: String(asRecord(res).message_id ?? asRecord(res).id ?? tempKey),
+                        status: 'ok' as const,
+                      }
+                    : m,
+                ),
+              ),
             );
       });
       URL.revokeObjectURL(localUrl);
@@ -796,13 +809,7 @@ function ChatRoomBody({
               // The share-rfq API returns Go RFC3339Nano (nanoseconds) which
               // Safari's Date parser cannot handle; also guard against Go zero
               // time "0001-01-01…". Fall back to a local optimistic UTC stamp.
-              const ca = String(sharedMessage.created_at ?? '');
-              const caNorm = normalizeIso(ca);
-              const isInvalid = !caNorm || Number.isNaN(new Date(caNorm).getTime());
-              const enriched: Record<string, unknown> = isInvalid
-                ? { ...sharedMessage, created_at: chatNowIso() }
-                : sharedMessage;
-              const row = rowToRoomMessage(enriched);
+              const row = mapChatMessageRow(normalizeSharedChatMessageRow(sharedMessage));
               if (row) setMessages((prev) =>
                 prev.some((m) => m.key === row.key) ? prev : insertMessageSorted(prev, row),
               );

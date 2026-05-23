@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { showcasesApi } from '@/services/api/factoryApi';
+import { unwrapApiEntity } from '@/lib/apiShape';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import { type FactoryShowcase } from '@/stores/types';
 import { showcaseKeys } from '@/lib/queryKeys';
@@ -23,14 +24,8 @@ export function useRelatedShowcasesQuery(ids: number[]) {
         stableIds.map((id) => showcasesApi.get(id).catch(() => null)),
       );
       return results
-        .filter((r): r is Record<string, unknown> => r != null)
-        .map((r) =>
-          mapShowcaseFromApi(
-            r.showcase && typeof r.showcase === 'object'
-              ? (r.showcase as Record<string, unknown>)
-              : r,
-          ),
-        )
+        .filter((r): r is NonNullable<typeof r> => r != null)
+        .map((r) => mapShowcaseFromApi(unwrapApiEntity(r, ['showcase'])))
         .filter(
           (s): s is FactoryShowcase =>
             Boolean(s.id) && (s.contentType === 'product' || s.contentType === 'promotion'),

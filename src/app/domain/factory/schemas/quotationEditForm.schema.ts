@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { asRecord } from '@/lib/apiShape';
 
 const optionalMoney = z
   .string()
@@ -47,12 +48,13 @@ export const quotationEditFormDefaults: QuotationEditFormInput = {
   reason: '',
 };
 
-export function mapQuotationToEditForm(raw: Record<string, unknown>): QuotationEditFormInput {
-  const sid = Number(raw.shipping_method_id ?? 0);
+export function mapQuotationToEditForm(raw: unknown): QuotationEditFormInput {
+  const row = asRecord(raw);
+  const sid = Number(row.shipping_method_id ?? 0);
   return {
-    price_per_piece: String(raw.price_per_piece ?? ''),
-    mold_cost: String(raw.mold_cost ?? raw.tooling_mold_cost ?? ''),
-    lead_time_days: String(raw.lead_time_days ?? ''),
+    price_per_piece: String(row.price_per_piece ?? ''),
+    mold_cost: String(row.mold_cost ?? row.tooling_mold_cost ?? ''),
+    lead_time_days: String(row.lead_time_days ?? ''),
     shipping_method_id: Number.isFinite(sid) && sid > 0 ? sid : null,
     reason: '',
   };

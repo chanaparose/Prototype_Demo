@@ -8,8 +8,7 @@ export function isFactoryRole(user: IUser | null | undefined): boolean {
 
 export function getFactoryEntityId(user: IUser | null | undefined): number | null {
   if (!user || !isFactoryRole(user)) return null;
-  const raw =
-    user.factory_id ?? user.factoryId ?? (user as Record<string, unknown>).factory_id ?? user.id;
+  const raw = user.factory_id ?? user.factoryId ?? user.id;
   const n = Number(raw);
   return Number.isFinite(n) ? n : null;
 }

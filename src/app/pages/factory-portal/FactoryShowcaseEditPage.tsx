@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { showcaseKeys } from '@/lib/queryKeys';
 import { asRecord, unwrapApiEntity, type ApiRecord } from '@/lib/apiShape';
+import { mapShowcaseImageList } from '@/domain/showcase/mappers/mapShowcaseImages';
 import {
   buildShowcasePayload,
   useShowcaseCategoryOptions,
@@ -114,7 +115,7 @@ function parseImageEntries(raw: unknown): ImageEntry[] {
         return url ? { url } : null;
       }
       if (!item || typeof item !== 'object') return null;
-      const row = item as Record<string, unknown>;
+      const row = asRecord(item);
       const url = String(row.url ?? row.image_url ?? row.public_url ?? '').trim();
       if (!url) return null;
       const idRaw = row.image_id ?? row.id;
@@ -261,12 +262,9 @@ export function FactoryShowcaseEditPage() {
       .listImages(id)
       .then((rows) => {
         if (!active) return;
-        const arr = (Array.isArray(rows) ? rows : []) as Record<string, unknown>[];
         const map: Record<string, number> = {};
-        for (const r of arr) {
-          const imageId = Number(r.image_id ?? r.id ?? 0);
-          const url = String(r.image_url ?? r.url ?? '').trim();
-          if (Number.isFinite(imageId) && imageId > 0 && url) map[url] = imageId;
+        for (const r of mapShowcaseImageList(rows)) {
+          map[r.imageUrl] = r.imageId;
         }
         setPersistedImageIdByUrl(map);
       })

@@ -9,9 +9,8 @@ import {
   type ApiConversation,
   type ChatReference,
 } from '@/utils/chatContract';
+import { apiListAsRecords, asRecord } from '@/lib/apiShape';
 import type { IUser } from '@/domain/auth/types/user.model';
-
-type Row = Record<string, unknown>;
 
 async function findOrCreateConversation(
   customerUserId: number,
@@ -19,29 +18,29 @@ async function findOrCreateConversation(
 ): Promise<ApiConversation | null> {
   if (!Number.isFinite(customerUserId) || customerUserId <= 0) return null;
   if (!Number.isFinite(factoryEntityId) || factoryEntityId <= 0) return null;
-  const convsRaw = await conversationsApi.list();
-  const convs = (Array.isArray(convsRaw) ? convsRaw : []) as unknown as Row[];
+  const convs = apiListAsRecords(await conversationsApi.list());
   const existing = convs.find((c) => {
     const cf = Number(c.factory_id ?? c.factoryId ?? 0);
     const cc = Number(c.customer_id ?? c.customerId ?? 0);
     return cf === factoryEntityId && cc === customerUserId;
   });
-  if (existing) return parseApiConversation(existing as Row);
-  const res = (await conversationsApi.create({
-    customer_id: customerUserId,
-    factory_id: factoryEntityId,
-  })) as unknown as Row;
+  if (existing) return parseApiConversation(existing);
+  const res = asRecord(
+    await conversationsApi.create({
+      customer_id: customerUserId,
+      factory_id: factoryEntityId,
+    }),
+  );
   let conv = mergeConversationFromCreate(res, customerUserId, factoryEntityId);
   if (!conv.conv_id) {
-    const rawAgain = await conversationsApi.list();
-    const again = (Array.isArray(rawAgain) ? rawAgain : []) as unknown as Row[];
+    const again = apiListAsRecords(await conversationsApi.list());
     const found = again.find((c) => {
       const cf = Number(c.factory_id ?? c.factoryId ?? 0);
       const cc = Number(c.customer_id ?? c.customerId ?? 0);
       return cf === factoryEntityId && cc === customerUserId;
     });
     if (found) {
-      const p = parseApiConversation(found as Row);
+      const p = parseApiConversation(found);
       if (p) conv = p;
     }
   }

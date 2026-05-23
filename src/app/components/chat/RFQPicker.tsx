@@ -18,7 +18,7 @@ import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 type Props = {
   conversationId: number;
   receiverId: number;
-  onSelect: (sharedMessage?: Record<string, unknown>) => void;
+  onSelect: (sharedMessage?: ApiRecord) => void;
   onCancel: () => void;
 };
 

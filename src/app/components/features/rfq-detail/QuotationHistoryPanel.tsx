@@ -3,6 +3,10 @@ import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 import { quotationApi } from '@/services/api/rfqApi';
 import type { IQuotationHistoryEntry } from '@/services/api/types/rfq.types';
 import { QUOTATION_STATUS_LABEL } from '@/domain/rfq/constants';
+import {
+  mapQuotationHistoryEntry,
+  mapQuotationHistoryList,
+} from '@/domain/rfq/mappers/mapQuotationHistory';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDateTime } from '@/utils/formatting/formatDate';
 import { Button } from '@/components/ui/button';
@@ -24,39 +28,11 @@ const EVENT_COLOR: Record<string, string> = {
   ST: '#9333EA',
 };
 
-function toNum(v: unknown): number | null {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
-function normalizeHistoryRow(row: unknown): IQuotationHistoryEntry | null {
-  if (!row || typeof row !== 'object') return null;
-  const r = row as Record<string, unknown>;
-  const historyId = Number(r.history_id ?? 0);
-  const quoteId = Number(r.quote_id ?? 0);
-  if (!Number.isFinite(historyId) || historyId <= 0 || !Number.isFinite(quoteId) || quoteId <= 0)
-    return null;
-  return {
-    history_id: historyId,
-    quote_id: quoteId,
-    event_type: String(r.event_type ?? 'UP') as IQuotationHistoryEntry['event_type'],
-    version_after: Number(r.version_after ?? 0),
-    price_per_piece: toNum(r.price_per_piece),
-    mold_cost: toNum(r.mold_cost),
-    lead_time_days: toNum(r.lead_time_days),
-    shipping_method_id: toNum(r.shipping_method_id),
-    status: r.status == null ? null : String(r.status),
-    reason: r.reason == null ? null : String(r.reason),
-    edited_by: toNum(r.edited_by),
-    created_at: String(r.created_at ?? ''),
-  };
-}
-
 export function QuotationHistoryPanel({ quotationId, preloadedHistory }: QuotationHistoryPanelProps) {
   const [open, setOpen] = useState(false);
   const [history, setHistory] = useState<IQuotationHistoryEntry[]>(() =>
     preloadedHistory
-      ? preloadedHistory.map(normalizeHistoryRow).filter((v): v is IQuotationHistoryEntry => v != null)
+      ? preloadedHistory.map(mapQuotationHistoryEntry).filter((v): v is IQuotationHistoryEntry => v != null)
       : [],
   );
   const [loading, setLoading] = useState(false);
@@ -64,10 +40,7 @@ export function QuotationHistoryPanel({ quotationId, preloadedHistory }: Quotati
 
   useEffect(() => {
     if (preloadedHistory !== undefined) {
-      const mapped = preloadedHistory
-        .map(normalizeHistoryRow)
-        .filter((v): v is IQuotationHistoryEntry => v != null);
-      setHistory(mapped);
+      setHistory(mapQuotationHistoryList(preloadedHistory));
       setFetched(true);
       return;
     }
@@ -77,11 +50,7 @@ export function QuotationHistoryPanel({ quotationId, preloadedHistory }: Quotati
     quotationApi
       .getHistory(quotationId)
       .then((data) => {
-        const arr = Array.isArray(data) ? data : [];
-        const mapped = arr
-          .map(normalizeHistoryRow)
-          .filter((v): v is IQuotationHistoryEntry => v != null);
-        setHistory(mapped);
+        setHistory(mapQuotationHistoryList(data));
       })
       .catch(() => setHistory([]))
       .finally(() => {

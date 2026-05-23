@@ -7,6 +7,8 @@ export type FactoryRfqQuoteRow = IQuotationResponse & {
   id?: number | string;
   mold_cost?: number | string;
   image_urls?: unknown;
+  factory_highlight?: unknown;
+  highlight?: unknown;
 };
 
 export type FactoryRfqDetailData = {
@@ -19,6 +21,34 @@ export type FactoryRfqDetailData = {
 
 export function quoteIdOf(q: FactoryRfqQuoteRow): string {
   return String(q.quote_id ?? q.id ?? '');
+}
+
+export function quoteFactoryIdOf(q: FactoryRfqQuoteRow): number | null {
+  const row = asRecord(q);
+  const factoryRaw = row.factory;
+  const factoryObj = factoryRaw && typeof factoryRaw === 'object' ? asRecord(factoryRaw) : null;
+  const n = Number(
+    q.factory_id ??
+      q.factoryId ??
+      row.user_id ??
+      row.factory_user_id ??
+      factoryObj?.user_id ??
+      factoryObj?.id,
+  );
+  return Number.isFinite(n) ? n : null;
+}
+
+export function quoteFactoryHighlight(q: FactoryRfqQuoteRow | null | undefined): string {
+  if (!q) return '';
+  const row = asRecord(q);
+  return pickScalarString(row.factory_highlight, row.highlight);
+}
+
+export function quoteImageUrls(q: FactoryRfqQuoteRow | null | undefined): string[] {
+  if (!q) return [];
+  const urls = q.image_urls;
+  if (!Array.isArray(urls)) return [];
+  return urls.filter((u): u is string => typeof u === 'string');
 }
 
 export function mapFactoryRfqDetailFromApi(detail: unknown): FactoryRfqDetailData {

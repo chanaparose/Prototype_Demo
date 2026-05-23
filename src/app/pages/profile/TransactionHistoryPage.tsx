@@ -3,34 +3,16 @@ import { useNavigate } from 'react-router';
 import { ChevronLeft, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { profileApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
+import {
+  mapProfileWalletHistoryTxList,
+  type ProfileWalletHistoryTx,
+} from '@/domain/wallet/mappers/mapProfileTransaction';
+import { asRecord } from '@/lib/apiShape';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { formatDateTime } from '@/utils/formatting/formatDate';
 
-type TxItem = {
-  id: string;
-  description: string;
-  amount: number;
-  direction: 'in' | 'out';
-  status_label: string;
-  created_at: string;
-};
-
-function mapTxDescription(row: Record<string, unknown>): string {
-  const txType = String(row.type ?? row.transaction_type ?? '').toUpperCase();
-  const refType = String(row.reference_type ?? '').toLowerCase();
-  const refId = Number(row.reference_id ?? 0);
-  if (txType === 'BU') {
-    if (refType === 'order' && Number.isFinite(refId) && refId > 0)
-      return `สั่งซื้อ Order #${refId}`;
-    return 'สั่งซื้อ';
-  }
-  if (txType === 'DP') return 'มัดจำ';
-  if (txType === 'WD') return 'ถอนเงิน';
-  if (txType === 'SC') return 'รับเงิน';
-  if (txType === 'RF') return 'คืนเงิน';
-  return String(row.description ?? row.type_label ?? row.type ?? 'รายการ');
-}
+type TxItem = ProfileWalletHistoryTx;
 
 export function TransactionHistoryPage() {
   const navigate = useNavigate();
@@ -53,38 +35,20 @@ export function TransactionHistoryPage() {
       .transactions({ page, limit: 20, type: 'all' })
       .then((raw) => {
         if (!mounted) return;
-        const data = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
-        setItems(
-          data
-            .map((row) => {
-              // Customer BU is spending (negative) even if API direction says "in".
-              const txType = String(row.type ?? '').toUpperCase();
-              const apiDir = String(row.direction ?? '').toLowerCase();
-              const amount = Number(row.amount ?? 0);
-              const effectiveDirection: 'in' | 'out' =
-                amount < 0
-                  ? 'out'
-                  : amount > 0
-                    ? 'in'
-                    : isCustomer && txType === 'BU'
-                      ? 'out'
-                      : apiDir === 'in'
-                        ? 'in'
-                        : 'out';
-              return {
-                id: String(row.tx_id ?? row.transaction_id ?? row.id ?? ''),
-                description: mapTxDescription(row),
-                amount,
-                direction: effectiveDirection,
-                status_label: String(row.status_label ?? row.status ?? '-'),
-                created_at: String(row.created_at ?? row.date ?? ''),
-              };
-            })
-            .filter((r) => r.id),
-        );
-        setSummary((raw.summary as Record<string, number>) ?? {});
+        setItems(mapProfileWalletHistoryTxList(raw, isCustomer));
+        const sum = asRecord(raw.summary);
+        if (Object.keys(sum).length > 0) {
+          setSummary({
+            total_in: Number(sum.total_in ?? 0),
+            total_out: Number(sum.total_out ?? 0),
+            net: Number(sum.net ?? 0),
+          });
+        }
       })
-      .finally(() => mounted && setLoading(false));
+      .catch(() => {})
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
     return () => {
       mounted = false;
     };

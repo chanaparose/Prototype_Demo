@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { asRecord } from '@/lib/apiShape';
 
 function isFutureOrToday(raw: string): boolean {
   const d = new Date(`${raw}T00:00:00`);
@@ -28,15 +29,13 @@ export type CertFormSubmitValue = {
   file: File | null;
 };
 
-export function certFormValuesFromRow(
-  initial: Record<string, unknown> | null | undefined,
-  fallbackCertId: number,
-): CertFormInput {
-  const rawCertId = Number(initial?.certificate_id ?? initial?.cert_id ?? fallbackCertId);
-  const expire = String(initial?.expire_date ?? '').trim();
+export function certFormValuesFromRow(initial: unknown, fallbackCertId: number): CertFormInput {
+  const row = asRecord(initial);
+  const rawCertId = Number(row.certificate_id ?? row.cert_id ?? fallbackCertId);
+  const expire = String(row.expire_date ?? '').trim();
   return {
     cert_id: Number.isFinite(rawCertId) && rawCertId > 0 ? rawCertId : fallbackCertId,
-    cert_number: String(initial?.cert_number ?? '').trim(),
+    cert_number: String(row.cert_number ?? '').trim(),
     expire_date: expire.length >= 10 ? expire.slice(0, 10) : expire,
     file: null,
   };

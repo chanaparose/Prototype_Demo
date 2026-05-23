@@ -1,4 +1,4 @@
-import type { ApiRecord } from '@/lib/apiShape';
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type ApiAddressRow = ApiRecord;
@@ -59,4 +59,29 @@ export function formatAddressLocation(address: Pick<MappedAddress, 'province' | 
   if (address.zipCode) parts.push(address.zipCode);
 
   return parts.length > 0 ? parts.join(' ') : '—';
+}
+
+export type ProfileAddressCard = {
+  id: string;
+  label: string;
+  detail: string;
+  isDefault: boolean;
+};
+
+export function mapProfileAddressCard(raw: unknown): ProfileAddressCard | null {
+  const row = asRecord(raw);
+  const id = pickScalarString(row.address_id, row.id);
+  if (!id) return null;
+  return {
+    id,
+    label: pickScalarString(row.address_type, row.label, 'ที่อยู่'),
+    detail: pickScalarString(row.address_detail, row.detail),
+    isDefault: Boolean(row.is_default ?? false),
+  };
+}
+
+export function mapProfileAddressCardList(raw: unknown): ProfileAddressCard[] {
+  return apiListAsRecords(raw)
+    .map(mapProfileAddressCard)
+    .filter((a): a is ProfileAddressCard => a != null);
 }

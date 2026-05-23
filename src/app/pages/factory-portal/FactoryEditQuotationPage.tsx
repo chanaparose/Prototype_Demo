@@ -18,7 +18,7 @@ import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { Button } from '@/components/ui/button';
 
-type Raw = Record<string, unknown>;
+import { asRecord, type ApiRecord } from '@/lib/apiShape';
 
 export function FactoryEditQuotationPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +29,7 @@ export function FactoryEditQuotationPage() {
 
   const detailQ = useQuotationDetailQuery(id);
   const historyQ = useQuotationHistoryQuery(id);
-  const raw = (detailQ.data ?? {}) as Raw;
+  const raw = (detailQ.data ?? {}) as ApiRecord;
   const status = String(raw.status ?? 'PD').toUpperCase();
   const isLocked = Boolean(raw.is_locked) || status === 'AC';
   const version = String(raw.version ?? 1);
@@ -50,7 +50,7 @@ export function FactoryEditQuotationPage() {
 
   useBeforeUnload(isDirty);
 
-  const history = Array.isArray(historyQ.data) ? (historyQ.data as Raw[]) : [];
+  const history = (Array.isArray(historyQ.data) ? historyQ.data : []).map(asRecord);
 
   if (!id) return null;
   if (detailQ.isError) {

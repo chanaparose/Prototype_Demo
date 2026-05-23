@@ -5,7 +5,13 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { chatRoomPath } from '@/utils/chatContract';
-import { useFactoryRfqDetailPage, type FactoryRfqQuoteRow } from '@/pages/factory-portal/hooks/useFactoryRfqDetailPage';
+import {
+  quoteFactoryHighlight,
+  quoteFactoryIdOf,
+  quoteImageUrls,
+  type FactoryRfqQuoteRow,
+} from '@/domain/factory/mappers/mapFactoryRfqDetail';
+import { useFactoryRfqDetailPage } from '@/pages/factory-portal/hooks/useFactoryRfqDetailPage';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
@@ -23,22 +29,6 @@ import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { formatCompactNumber, formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 
 type QuoteRow = FactoryRfqQuoteRow;
-
-function quoteFid(q: QuoteRow): number | null {
-  const qRecord = q as unknown as Record<string, unknown>;
-  const factoryRaw = qRecord.factory;
-  const factoryObj =
-    factoryRaw && typeof factoryRaw === 'object' ? (factoryRaw as Record<string, unknown>) : null;
-  const n = Number(
-    q.factory_id ??
-      q.factoryId ??
-      qRecord.user_id ??
-      qRecord.factory_user_id ??
-      factoryObj?.user_id ??
-      factoryObj?.id,
-  );
-  return Number.isFinite(n) ? n : null;
-}
 
 function rfqStatusLabel(status: string): string {
   const s = status.toUpperCase();
@@ -98,7 +88,7 @@ export function FactoryRfqDetailPage() {
   const dismissBusy = dismissRfqMutation.isPending || undismissRfqMutation.isPending;
   const chatBusy = openChat.isPending || sendQuoteInChat.isPending;
 
-  const myQuote = fid == null ? undefined : quotes.find((q) => quoteFid(q) === fid);
+  const myQuote = fid == null ? undefined : quotes.find((q) => quoteFactoryIdOf(q) === fid);
   const myStatus = myQuote ? String(myQuote.status ?? 'PD').toUpperCase() : '';
   const canEdit = Boolean(myQuote && myStatus === 'PD');
   const canDismiss = useMemo(() => {
@@ -177,7 +167,7 @@ export function FactoryRfqDetailPage() {
 
   const competitorCount = useMemo(() => {
     if (fid == null) return quotes.length;
-    return quotes.filter((q) => quoteFid(q) !== fid).length;
+    return quotes.filter((q) => quoteFactoryIdOf(q) !== fid).length;
   }, [quotes, fid]);
 
   const rfqStatus = String(rfqBody.status ?? '').toUpperCase();
@@ -529,25 +519,8 @@ export function FactoryRfqDetailPage() {
                           }
                         : undefined
                     }
-                    initialImageUrls={
-                      myQuote
-                        ? (() => {
-                            const urls = myQuote.image_urls;
-                            if (Array.isArray(urls))
-                              return urls.filter((u): u is string => typeof u === 'string');
-                            return [];
-                          })()
-                        : undefined
-                    }
-                    initialFactoryHighlight={
-                      myQuote
-                        ? String(
-                            (myQuote as unknown as Record<string, unknown>).factory_highlight ??
-                              (myQuote as unknown as Record<string, unknown>).highlight ??
-                              '',
-                          )
-                        : ''
-                    }
+                    initialImageUrls={myQuote ? quoteImageUrls(myQuote) : undefined}
+                    initialFactoryHighlight={quoteFactoryHighlight(myQuote)}
                     submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                     readOnly={Boolean(myQuote && !canEdit)}
                     showHeading={false}

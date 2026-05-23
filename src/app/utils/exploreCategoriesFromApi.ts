@@ -1,3 +1,4 @@
+import { unwrapApiList } from '@/lib/apiShape';
 import { mapExploreCategoryFromApi } from '@/domain/explore/mappers/mapExploreCategory';
 import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import type { IExploreCategoryResponse } from '@/services/api/types/explore.types';
@@ -11,14 +12,7 @@ export const TILE_DB_ID_TO_CONTEXT_ID: Record<string, string> = {
 };
 
 function extractCategoriesArray(raw: unknown): unknown[] {
-  if (Array.isArray(raw)) return raw;
-  if (!raw || typeof raw !== 'object') return [];
-  const o = raw as Record<string, unknown>;
-  for (const key of ['data', 'items', 'results', 'categories']) {
-    const v = o[key];
-    if (Array.isArray(v)) return v;
-  }
-  return [];
+  return unwrapApiList(raw, ['categories']);
 }
 
 export function categoryIdsMatch(a: string, b: string): boolean {

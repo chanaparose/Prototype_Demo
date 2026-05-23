@@ -9,7 +9,7 @@ export function useFactoryShowcasesQuery(factoryId: number) {
     queryFn: async () => {
       const rows = await showcasesApi.listByFactory(factoryId);
       return (Array.isArray(rows) ? rows : [])
-        .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
+        .map((r) => mapShowcaseFromApi(r))
         .filter((s) => s.contentType === 'product' || s.contentType === 'promotion');
     },
     enabled: Number.isFinite(factoryId) && factoryId > 0,

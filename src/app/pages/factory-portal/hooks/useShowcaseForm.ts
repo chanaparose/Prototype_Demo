@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { useSubCategoriesByCategories } from '@/hooks/master/useSubCategoriesByCategory';
 import type { ShowcaseSubmitStatus, ShowcaseType } from '@/constants/showcase';
+import type { ApiRecord } from '@/lib/apiShape';
 
 export type { ShowcaseSubmitStatus };
 
@@ -47,7 +48,7 @@ export function buildShowcasePayload({
   values,
   imageUrls,
   selectedShowcaseIds,
-}: BuildPayloadOptions): Record<string, unknown> {
+}: BuildPayloadOptions): ApiRecord {
   const base = {
     content_type: contentType,
     status,

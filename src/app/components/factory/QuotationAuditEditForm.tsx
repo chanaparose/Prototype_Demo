@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { ApiRecord } from '@/lib/apiShape';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 export type QuotationAuditEditFormHandle = {
@@ -29,7 +30,7 @@ export type QuotationAuditEditFormHandle = {
 type Props = {
   quotationId: string;
   factoryEntityId: number;
-  rawQuotation: Record<string, unknown>;
+  rawQuotation: ApiRecord;
   shippingMethodNameHint?: string;
   shippingMethodLabel?: string;
   isLocked?: boolean;

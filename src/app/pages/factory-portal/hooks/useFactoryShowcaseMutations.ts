@@ -2,7 +2,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { mediaApi, showcasesApi } from '@/services/api/factoryApi';
 import { showcaseKeys } from '@/lib/queryKeys';
 import { useAppMutation } from '@/hooks/useAppMutation';
+import { mapShowcaseImageList } from '@/domain/showcase/mappers/mapShowcaseImages';
 import { mapLinkedShowcasesErrorToThai } from '@/utils/linkedShowcases';
+import type { ApiRecord } from '@/lib/apiShape';
 
 export function useFactoryShowcaseMutations() {
   const qc = useQueryClient();
@@ -31,21 +33,12 @@ export function useFactoryShowcaseMutations() {
       imageUrls,
     }: {
       id: string;
-      payload: Record<string, unknown>;
+      payload: ApiRecord;
       imageUrls: string[];
     }) => {
       await showcasesApi.update(id, payload);
       const existingRaw = await showcasesApi.listImages(id).catch(() => []);
-      const existing = (Array.isArray(existingRaw) ? existingRaw : [])
-        .map((r) => {
-          const row = (r ?? {}) as Record<string, unknown>;
-          const imageId = Number(row.image_id ?? row.id ?? 0);
-          const imageUrl = String(row.image_url ?? row.url ?? '').trim();
-          const sortOrder = Number(row.sort_order ?? 0);
-          if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
-          return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
-        })
-        .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
+      const existing = mapShowcaseImageList(existingRaw);
 
       const desiredUrls = imageUrls.slice(0, 5);
       const desiredSet = new Set(desiredUrls);
@@ -66,16 +59,7 @@ export function useFactoryShowcaseMutations() {
       );
 
       const refreshedRaw = await showcasesApi.listImages(id).catch(() => []);
-      const refreshed = (Array.isArray(refreshedRaw) ? refreshedRaw : [])
-        .map((r) => {
-          const row = (r ?? {}) as Record<string, unknown>;
-          const imageId = Number(row.image_id ?? row.id ?? 0);
-          const imageUrl = String(row.image_url ?? row.url ?? '').trim();
-          const sortOrder = Number(row.sort_order ?? 0);
-          if (!Number.isFinite(imageId) || imageId <= 0 || !imageUrl) return null;
-          return { imageId, imageUrl, sortOrder: Number.isFinite(sortOrder) ? sortOrder : 0 };
-        })
-        .filter((x): x is { imageId: number; imageUrl: string; sortOrder: number } => x != null);
+      const refreshed = mapShowcaseImageList(refreshedRaw);
 
       await Promise.all(
         desiredUrls.map((url, idx) => {

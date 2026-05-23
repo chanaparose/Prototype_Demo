@@ -12,6 +12,7 @@ import type { IAdminRfqListResponse } from '@/services/api/types/admin.types';
 import { formatIsoDate } from '@/utils/formatting/formatDate';
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { extractAdminRfqDetailBody } from '@/domain/admin/mappers/mapAdminRfq';
 import {
   useAdminRfqDetailQuery,
   useAdminRfqListQuery,
@@ -96,7 +97,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
         ? 'โหลดไม่สำเร็จ'
         : '';
 
-  const rfq = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
+  const rfq = extractAdminRfqDetailBody(detail);
   const deliveryDate = pickScalarString(rfq.required_delivery_date, rfq.deadline);
 
   return (

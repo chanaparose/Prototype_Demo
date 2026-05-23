@@ -1,3 +1,5 @@
+import { apiListAsRecords, asRecord } from '@/lib/apiShape';
+import { pickScalarString } from '@/utils/pickScalarString';
 import { categoryIdsMatch, TILE_DB_ID_TO_CONTEXT_ID } from '@/utils/exploreCategoriesFromApi';
 
 // เทียบ id หมวดจาก API (ตัวเลข / string) กับค่าใน URL หรือ dropdown รวมแม็ป DB id ↔ context id
@@ -57,17 +59,13 @@ export function showcaseMatchesSelectedCategoryId(
 }
 
 export function parseMasterProductCategories(raw: unknown): { id: string; name: string }[] {
-  if (!Array.isArray(raw)) return [];
   const seen = new Set<string>();
   const out: { id: string; name: string }[] = [];
-  for (const item of raw) {
-    if (!item || typeof item !== 'object') continue;
-    const o = item as Record<string, unknown>;
-    const nameRaw = o.name ?? o.name_th ?? o.category_name ?? o.label;
-    const name = typeof nameRaw === 'string' ? nameRaw.trim() : String(nameRaw ?? '').trim();
+  for (const item of apiListAsRecords(raw)) {
+    const o = asRecord(item);
+    const name = pickScalarString(o.name, o.name_th, o.category_name, o.label);
     if (!name) continue;
-    const idRaw = o.id ?? o.category_id;
-    const id = String(idRaw ?? name);
+    const id = pickScalarString(o.id, o.category_id, name);
     if (seen.has(id)) continue;
     seen.add(id);
     out.push({ id, name });

@@ -1,7 +1,7 @@
 import { type FactoryShowcase, type ShowcaseImageRow, type ShowcaseSpecRow } from '@/stores/types';
 import { showcasesApi } from '@/services/api/factoryApi';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
-import { asRecord, apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
+import { asRecord, apiListAsRecords, nestedRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -130,30 +130,19 @@ export function mapShowcaseFromApi(raw: unknown): FactoryShowcase {
   };
 }
 
-function unwrapShowcaseRow(raw: unknown): Record<string, unknown> | null {
-  if (!raw || typeof raw !== 'object') return null;
-  const o = raw as Record<string, unknown>;
-  const inner = o.showcase;
-  if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
-    return inner as Record<string, unknown>;
-  }
-  return o;
+function unwrapShowcaseRow(raw: unknown): ApiRecord | null {
+  if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const o = asRecord(raw);
+  const nested = nestedRecord(o, 'showcase');
+  const candidate = nested !== o && (nested.showcase_id || nested.id) ? nested : o;
+  if (!candidate.showcase_id && !candidate.id) return null;
+  return candidate;
 }
 
-export function extractShowcaseRows(raw: unknown): Record<string, unknown>[] {
-  const top = raw as Record<string, unknown> | null;
-  const rows: unknown[] = Array.isArray(raw)
-    ? raw
-    : Array.isArray((top as Record<string, unknown> | null)?.showcases)
-      ? ((top as Record<string, unknown>).showcases as unknown[])
-      : Array.isArray((top as Record<string, unknown> | null)?.data)
-        ? ((top as Record<string, unknown>).data as unknown[])
-        : Array.isArray((top as Record<string, unknown> | null)?.items)
-          ? ((top as Record<string, unknown>).items as unknown[])
-          : Array.isArray((top as Record<string, unknown> | null)?.results)
-            ? ((top as Record<string, unknown>).results as unknown[])
-            : [];
-  return rows.map(unwrapShowcaseRow).filter((r): r is Record<string, unknown> => r != null);
+export function extractShowcaseRows(raw: unknown): ApiRecord[] {
+  return apiListAsRecords(raw, ['showcases'])
+    .map(unwrapShowcaseRow)
+    .filter((r): r is ApiRecord => r != null);
 }
 
 export async function fetchAndMapShowcaseList(type?: ShowcaseApiType): Promise<FactoryShowcase[]> {

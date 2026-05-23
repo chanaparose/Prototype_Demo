@@ -1,4 +1,6 @@
+import { asRecord } from '@/lib/apiShape';
 import { type Factory } from '@/stores/types';
+import { pickScalarString } from '@/utils/pickScalarString';
 
 export const factoryIdeasTheme = {
   purple: 'var(--brand-mauve)',
@@ -51,23 +53,24 @@ export const factoryIdeasContentTypeBadge: Record<
   factory: factoryIdeasTheme.teal,
 };
 
-export function normalizeFactoryIdeaFactory(r: Record<string, unknown>): Factory {
-  const provinceName = String(r.province_name ?? r.provinceName ?? '').trim();
+export function normalizeFactoryIdeaFactory(raw: unknown): Factory {
+  const r = asRecord(raw);
+  const provinceName = pickScalarString(r.province_name, r.provinceName);
   return {
-    id: String(r.factory_id ?? r.id ?? ''),
-    name: String(r.factory_name ?? r.name ?? ''),
-    image: String(r.image_url ?? r.image ?? r.logo_url ?? ''),
-    location: provinceName || String(r.location ?? r.city ?? ''),
+    id: pickScalarString(r.factory_id, r.id),
+    name: pickScalarString(r.factory_name, r.name),
+    image: pickScalarString(r.image_url, r.image, r.logo_url),
+    location: provinceName || pickScalarString(r.location, r.city),
     ...(provinceName ? { provinceName } : {}),
     rating: Number(r.avg_rating ?? r.rating ?? 0),
     reviews: Number(r.review_count ?? r.reviews ?? 0),
-    specialization: String(r.specialization ?? ''),
+    specialization: pickScalarString(r.specialization),
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
     minOrder: Number(r.min_order ?? r.minOrder ?? 0),
-    leadTime: String(r.lead_time ?? r.leadTime ?? ''),
+    leadTime: pickScalarString(r.lead_time, r.leadTime),
     verified: Boolean(r.is_verified ?? r.verified ?? false),
     completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
-    priceRange: String(r.price_range ?? r.priceRange ?? ''),
+    priceRange: pickScalarString(r.price_range, r.priceRange),
   };
 }
 

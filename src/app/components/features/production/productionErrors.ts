@@ -1,6 +1,7 @@
 import { ApiHttpError } from '@/services/api/httpClient';
+import { asRecord, type ApiRecord } from '@/lib/apiShape';
 
-function productionErrorToThai(code: string, details?: Record<string, unknown>): string {
+function productionErrorToThai(code: string, details?: ApiRecord): string {
   switch (code) {
     case 'NOT_ORDER_FACTORY':
       return 'คุณไม่มีสิทธิ์แก้ไขคำสั่งซื้อนี้';
@@ -45,20 +46,18 @@ function productionErrorToThai(code: string, details?: Record<string, unknown>):
 
 export function getProductionErrorMeta(err: unknown): {
   code: string | null;
-  details?: Record<string, unknown>;
+  details?: ApiRecord;
 } {
   if (!(err instanceof ApiHttpError) || err.body == null || typeof err.body !== 'object') {
     return { code: null };
   }
-  const body = err.body as Record<string, unknown>;
+  const body = asRecord(err.body);
   const errObj = body.error;
   if (errObj && typeof errObj === 'object') {
-    const e = errObj as Record<string, unknown>;
+    const e = asRecord(errObj);
     const code = typeof e.code === 'string' ? e.code : null;
     const details =
-      e.details && typeof e.details === 'object'
-        ? (e.details as Record<string, unknown>)
-        : undefined;
+      e.details && typeof e.details === 'object' ? asRecord(e.details) : undefined;
     return { code, details };
   }
   return { code: null };

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useData } from '@/stores/useDataStore';
 import { type Factory } from '@/stores/types';
 import { factoriesApi } from '@/services/api/factoryApi';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';
 
 export type FactoryFilterState = {
@@ -24,8 +25,9 @@ export function useFactoriesList() {
       .list()
       .then((raw) => {
         if (cancelled) return;
-        const arr = (Array.isArray(raw) ? raw : []) as unknown as Record<string, unknown>[];
-        const mapped = arr.map((row) => normalizeFactoryRow(row)).filter((f) => f.id && f.name);
+        const mapped = apiListAsRecords(raw, ['factories'])
+          .map((row) => normalizeFactoryRow(row))
+          .filter((f) => f.id && f.name);
         setApiFactories(mapped);
       })
       .catch((err) => {

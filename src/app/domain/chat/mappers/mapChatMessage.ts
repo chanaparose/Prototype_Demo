@@ -1,6 +1,7 @@
 import { normalizeIso } from '@/pages/messages/selectors';
-import { formatChatTime } from '@/utils/chatTime';
-import { asRecord, type ApiRecord } from '@/lib/apiShape';
+import { sortMessagesByCreatedAt } from '@/pages/messages/selectors';
+import { chatNowIso, formatChatTime } from '@/utils/chatTime';
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarString } from '@/utils/pickScalarString';
 import type { ChatReferenceType } from '@/utils/chatContract';
 
@@ -156,5 +157,27 @@ export function mapChatMessageRow(raw: unknown): RoomMessage | null {
   };
 }
 
-/** @deprecated Use mapChatMessageRow */
 export const rowToRoomMessage = mapChatMessageRow;
+
+export function messagesFromApiList(raw: unknown): RoomMessage[] {
+  return sortMessagesByCreatedAt(
+    apiListAsRecords(raw)
+      .map(mapChatMessageRow)
+      .filter((m): m is RoomMessage => m != null),
+  );
+}
+
+/** Normalize shared RFQ card payload before mapping to a room message. */
+export function normalizeSharedChatMessageRow(raw: unknown): ApiRecord {
+  const row = asRecord(raw);
+  const ca = pickScalarString(row.created_at);
+  const caNorm = normalizeIso(ca);
+  const isInvalid = !caNorm || Number.isNaN(new Date(caNorm).getTime());
+  if (isInvalid) {
+    return { ...row, created_at: chatNowIso() };
+  }
+  return row;
+}
+
+/** @deprecated Prefer messagesFromApiList */
+export const messagesFromApi = messagesFromApiList;

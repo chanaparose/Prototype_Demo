@@ -4,6 +4,7 @@ import { categoriesApi } from '@/services/api/masterApi';
 import { showcasesPaginatedApi } from '@/services/api/exploreApi';
 import { type Factory, type FactoryShowcase } from '@/stores/types';
 import { factoryIdeasKeys } from '@/lib/queryKeys';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { normalizeFactoryIdeaFactory } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 
@@ -44,19 +45,9 @@ export function useFactoryIdeasFactoryListQuery(enabled: boolean) {
     queryKey: factoryIdeasKeys.factoryList(),
     queryFn: async () => {
       const raw = await factoriesApi.list();
-      const r = raw as unknown;
-      const arr = (
-        Array.isArray(r)
-          ? r
-          : Array.isArray((r as Record<string, unknown>)?.factories)
-            ? (r as Record<string, unknown>).factories
-            : Array.isArray((r as Record<string, unknown>)?.data)
-              ? (r as Record<string, unknown>).data
-              : []
-      ) as Record<string, unknown>[];
-      return arr
+      return apiListAsRecords(raw, ['factories'])
         .map((row) => normalizeFactoryIdeaFactory(row))
-        .filter((f) => f.id && f.name) as Factory[];
+        .filter((f): f is Factory => Boolean(f.id && f.name));
     },
     enabled,
     staleTime: 5 * 60_000,
@@ -101,7 +92,7 @@ export function useFactoryIdeasShowcasesPaginatedQuery(
         page: raw.page,
         limit: raw.limit,
         items: (raw.items ?? [])
-          .map((r) => mapShowcaseFromApi(r as unknown as Record<string, unknown>))
+          .map((r) => mapShowcaseFromApi(r))
           .filter((s): s is FactoryShowcase => Boolean(s.id && s.title)),
       };
     },

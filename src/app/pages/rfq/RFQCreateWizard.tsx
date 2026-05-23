@@ -5,6 +5,7 @@ import { categoriesApi } from '@/services/api/masterApi';
 import type { ISubCategoryResponse } from '@/services/api/types/master.types';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { pickScalarString } from '@/utils/pickScalarString';
+import { mapPreviewFactoryMatchCount } from '@/domain/rfq/mappers/mapRfqPreview';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { useCreateRFQ } from '@/pages/rfq/useCreateRFQ';
 import { useRFQDraft } from '@/pages/rfq/useRFQDraft';
@@ -139,14 +140,7 @@ export function RFQCreateWizard() {
       })
       .then((raw) => {
         if (!active) return;
-        const n = Number(
-          (raw as Record<string, unknown>)?.match_count ??
-            (raw as Record<string, unknown>)?.count ??
-            (raw as Record<string, unknown>)?.total ??
-            (raw as Record<string, unknown>)?.matched_factory_count ??
-            0,
-        );
-        setMatchCount(Number.isFinite(n) ? n : 0);
+        setMatchCount(mapPreviewFactoryMatchCount(raw));
       })
       .catch(() => {
         if (active) setMatchCount(null);

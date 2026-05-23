@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router';
 import { Lock } from 'lucide-react';
+import { asRecord } from '@/lib/apiShape';
 import { useAuth } from '@/stores/useAuthStore';
 
 export type FactoryVerifyStatus = 'AP' | 'PD' | 'RJ';
@@ -22,9 +23,7 @@ export function FactoryVerifiedGuard() {
 function FactoryPendingPlaceholder({ status }: { status: 'PD' | 'RJ' }) {
   const { user } = useAuth();
   const reason = String(
-    (user as Record<string, unknown> | null)?.verify_rejection_reason ??
-      (user as Record<string, unknown> | null)?.rejection_reason ??
-      '',
+    asRecord(user).verify_rejection_reason ?? asRecord(user).rejection_reason ?? '',
   ).trim();
 
   return (

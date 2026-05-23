@@ -2,17 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/services/api/adminApi';
 import type { IAdminRfqListResponse } from '@/services/api/types/admin.types';
 import { adminKeys } from '@/lib/queryKeys';
+import { parseAdminRfqRows } from '@/domain/admin/mappers/mapAdminRfq';
 
-export function parseAdminRfqRows(raw: unknown): IAdminRfqListResponse[] {
-  if (Array.isArray(raw)) return raw as IAdminRfqListResponse[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as IAdminRfqListResponse[];
-    if (Array.isArray(obj.data)) return obj.data as IAdminRfqListResponse[];
-    if (Array.isArray(obj.rows)) return obj.rows as IAdminRfqListResponse[];
-  }
-  return [];
-}
+export { parseAdminRfqRows };
 
 export function useAdminRfqListQuery(params: {
   status?: string;
@@ -31,7 +23,7 @@ export function useAdminRfqListQuery(params: {
         page: 1,
         page_size: 100,
       });
-      return parseAdminRfqRows(raw);
+      return parseAdminRfqRows<IAdminRfqListResponse>(raw);
     },
     enabled: params.enabled !== false,
     staleTime: 15_000,
@@ -42,7 +34,7 @@ export function useAdminRfqListQuery(params: {
 export function useAdminRfqDetailQuery(rfqId: string, enabled = true) {
   return useQuery({
     queryKey: adminKeys.rfqDetail(rfqId),
-    queryFn: () => adminApi.getRfq(rfqId) as Promise<Record<string, unknown>>,
+    queryFn: () => adminApi.getRfq(rfqId),
     enabled: enabled && Boolean(rfqId),
     staleTime: 30_000,
     refetchOnWindowFocus: false,

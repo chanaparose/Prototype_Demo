@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Copy, Gift } from 'lucide-react';
+import { mapExplorePromoSlides } from '@/domain/explore/mappers/mapExplorePromo';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselDots, CarouselItem } from '@/components/ui/carousel';
 
@@ -13,17 +14,7 @@ type ExplorePromoCarouselProps = {
 };
 
 function toSlides(raw: unknown[]): Slide[] {
-  return raw
-    .map((item) => {
-      const r = item as Record<string, unknown>;
-      return {
-        id: String(r.slide_id ?? r.id ?? ''),
-        title: String(r.title ?? ''),
-        subtitle: String(r.subtitle ?? ''),
-        code: String(r.code ?? ''),
-      };
-    })
-    .filter((s) => s.id && s.title);
+  return mapExplorePromoSlides(raw);
 }
 
 export function ExplorePromoCarousel({
