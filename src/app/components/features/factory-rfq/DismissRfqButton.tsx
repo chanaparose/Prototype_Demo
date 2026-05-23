@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { getErrorMessage } from '@/lib/apiError';
 import { Button } from '@/components/ui/button';
 
 interface DismissRfqButtonProps {
@@ -40,31 +40,29 @@ export function DismissRfqButton({
   const labelCode = rfqCode || `#${rfqId}`;
 
   const doDismiss = async () => {
-    await runAsyncAction(
-      async () => {
-        await onDismiss();
-        if (onUndismiss) setToast({ sec: 5 });
-        setConfirmOpen(false);
-      },
-      {
-        onStart: () => setBusy(true),
-        onSettled: () => setBusy(false),
-      },
-    );
+    setBusy(true);
+    try {
+      await onDismiss();
+      if (onUndismiss) setToast({ sec: 5 });
+      setConfirmOpen(false);
+    } catch (err) {
+      console.error(getErrorMessage(err, 'ไม่สามารถซ่อน RFQ ได้'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const doUndo = async () => {
     if (!onUndismiss) return;
-    await runAsyncAction(
-      async () => {
-        await onUndismiss();
-        setToast(null);
-      },
-      {
-        onStart: () => setBusy(true),
-        onSettled: () => setBusy(false),
-      },
-    );
+    setBusy(true);
+    try {
+      await onUndismiss();
+      setToast(null);
+    } catch (err) {
+      console.error(getErrorMessage(err, 'ไม่สามารถยกเลิกการซ่อนได้'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (isDismissed) return null;

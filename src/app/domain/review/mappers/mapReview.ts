@@ -1,4 +1,4 @@
-import { asRecord } from '@/lib/apiShape';
+import { apiListAsRecords, asRecord } from '@/lib/apiShape';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 
 export type ReviewItem = {
@@ -27,6 +27,7 @@ export function mapReviewItem(raw: unknown): ReviewItem | null {
 }
 
 export function mapReviewItems(raw: unknown): ReviewItem[] {
-  const rows = asRecord(raw).data;
-  return (Array.isArray(rows) ? rows : []).map(mapReviewItem).filter((item): item is ReviewItem => Boolean(item));
+  return apiListAsRecords(raw)
+    .map(mapReviewItem)
+    .filter((item): item is ReviewItem => Boolean(item));
 }

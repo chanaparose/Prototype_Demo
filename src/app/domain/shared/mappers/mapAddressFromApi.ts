@@ -1,6 +1,7 @@
+import type { ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
-export type ApiAddressRow = Record<string, unknown>;
+export type ApiAddressRow = ApiRecord;
 
 export type MappedAddress = {
   id: number;

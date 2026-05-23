@@ -23,7 +23,7 @@ export function SubCategoryPickerModal({
   initialSelected,
   onClose,
   onConfirm,
-}: Props) {
+}: Readonly<Props>) {
   const { byCategory, isLoading, isError } = useSubCategoriesByCategories(
     categoryId != null ? [categoryId] : [],
   );

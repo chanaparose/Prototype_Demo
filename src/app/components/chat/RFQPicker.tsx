@@ -13,6 +13,7 @@ import { AppDialog } from '@/components/ui/app-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { chatKeys } from '@/lib/queryKeys';
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 
 type Props = {
   conversationId: number;
@@ -30,7 +31,7 @@ type OpenRfqItem = {
   required_delivery_date?: string;
 };
 
-function toOpenRfqItem(row: Record<string, unknown>): OpenRfqItem | null {
+function toOpenRfqItem(row: ApiRecord): OpenRfqItem | null {
   const rfqId = Number(row.rfq_id ?? row.id ?? 0);
   if (!Number.isFinite(rfqId) || rfqId <= 0) return null;
   const status = String(row.status ?? '').toUpperCase();
@@ -61,7 +62,7 @@ export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Pr
         reference_type: 'RQ',
         reference_id: rfqId,
       });
-      return res as unknown as Record<string, unknown>;
+      return asRecord(res);
     },
     onMutate: (rfqId) => setSelectedRfqId(rfqId),
     onSuccess: (res) => onSelect(res),
@@ -73,9 +74,7 @@ export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Pr
   const q = useQuery({
     queryKey: chatKeys.rfqPicker(),
     queryFn: async () => {
-      const rows = (await rfqsApi.list()) as unknown as Record<string, unknown>[];
-      const all = Array.isArray(rows) ? rows : [];
-      return all
+      return apiListAsRecords(await rfqsApi.list())
         .map(toOpenRfqItem)
         .filter((x): x is OpenRfqItem => x !== null);
     },

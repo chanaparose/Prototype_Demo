@@ -1,4 +1,4 @@
-import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
+import { apiListAsRecords, asRecord, nestedRecord, type ApiRecord } from '@/lib/apiShape';
 import type { IConversationResponse } from '@/services/api/types/chat.types';
 import { pickScalarString } from '@/utils/pickScalarString';
 
@@ -43,4 +43,53 @@ export function mapConversationsFromApi(raw: unknown): IConversationResponse[] {
   return apiListAsRecords(raw)
     .map(mapConversationFromApi)
     .filter((conversation): conversation is IConversationResponse => conversation != null);
+}
+
+export function conversationIdFromRow(row: ApiRecord): number {
+  const id = Number(row.conv_id ?? row.conversation_id ?? row.id ?? 0);
+  return Number.isFinite(id) && id > 0 ? id : 0;
+}
+
+export function customerIdFromConversationRow(row: ApiRecord): number {
+  const customer = nestedRecord(row, 'customer');
+  return Number(row.customer_id ?? row.customerId ?? customer.user_id ?? 0);
+}
+
+export function factoryIdFromConversationRow(row: ApiRecord): number {
+  const factory = nestedRecord(row, 'factory');
+  return Number(row.factory_id ?? row.factoryId ?? factory.user_id ?? 0);
+}
+
+export function findExistingConversationId(
+  raw: unknown,
+  customerId: number,
+  factoryId: number,
+): number | null {
+  const convs = apiListAsRecords(raw, ['conversations']);
+  let hit = convs.find(
+    (c) => customerIdFromConversationRow(c) === customerId && factoryIdFromConversationRow(c) === factoryId,
+  );
+  if (!hit && customerId > 0) {
+    hit = convs.find((c) => customerIdFromConversationRow(c) === customerId);
+  }
+  const convId = hit ? conversationIdFromRow(hit) : 0;
+  return convId > 0 ? convId : null;
+}
+
+export function conversationIdFromCreateResponse(created: unknown): number {
+  const root = asRecord(created);
+  const data = nestedRecord(root, 'data');
+  const convId = Number(
+    root.conv_id ??
+      root.conversation_id ??
+      root.id ??
+      data.conv_id ??
+      data.conversation_id ??
+      data.id ??
+      0,
+  );
+  if (!Number.isFinite(convId) || convId <= 0) {
+    throw new Error('สร้างห้องแชทไม่สำเร็จ (ไม่พบ conv_id)');
+  }
+  return convId;
 }

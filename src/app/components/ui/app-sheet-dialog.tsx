@@ -26,7 +26,7 @@ export function AppSheetDialog({
   footer,
   className,
   bodyClassName,
-}: AppSheetDialogProps) {
+}: Readonly<AppSheetDialogProps>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent

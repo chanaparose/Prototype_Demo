@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { getErrorMessage } from '@/lib/apiError';
+import { asRecord } from '@/lib/apiShape';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
 import { useSessionStore } from '@/stores/useSessionStore';
@@ -79,8 +80,8 @@ export const useDataStore = create<DataState & DataActions>((set) => {
       return;
     }
 
-    await runAsyncAction(
-      async () => {
+    set((state) => ({ ...state, isLoading: true, error: null }));
+    try {
       const [sessionRes, notifRes] = await Promise.allSettled([
         frontendApi.getBootstrap(),
         fetchNotificationsList(),
@@ -100,8 +101,8 @@ export const useDataStore = create<DataState & DataActions>((set) => {
         lastFetchedAt: session ? Date.now() : null,
       });
 
-      const u = session?.currentUser as unknown as Record<string, unknown> | undefined;
-      const w = session?.wallet as unknown as Record<string, unknown> | undefined;
+      const u = session?.currentUser ? asRecord(session.currentUser) : undefined;
+      const w = session?.wallet ? asRecord(session.wallet) : undefined;
       const rfqList = mapRfqListFromBootstrap(session);
 
       queryClient.setQueryData(rfqKeys.list(), rfqList);
@@ -133,19 +134,13 @@ export const useDataStore = create<DataState & DataActions>((set) => {
         isLoading: false,
         error: null,
       });
-      },
-      {
-        onStart: () => set((state) => ({ ...state, isLoading: true, error: null })),
-        onError: (message) => {
-          set((state) => ({
-            ...state,
-            isLoading: false,
-            error: message,
-          }));
-        },
-        fallbackMessage: 'โหลดข้อมูลไม่สำเร็จ',
-      },
-    );
+    } catch (err) {
+      set((state) => ({
+        ...state,
+        isLoading: false,
+        error: getErrorMessage(err, 'โหลดข้อมูลไม่สำเร็จ'),
+      }));
+    }
   };
 
   return {

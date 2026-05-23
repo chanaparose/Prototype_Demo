@@ -34,7 +34,7 @@ export function LookupSelect<Option>({
   required,
   disabled,
   className = '',
-}: LookupSelectProps<Option>) {
+}: Readonly<LookupSelectProps<Option>>) {
   const { data, isLoading, isError, refetch } = queryResult;
   const opts = data ?? [];
   const selected = value != null && String(value).trim() !== '' ? String(value) : '';

@@ -2,14 +2,11 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { favoritesApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
 import { useSessionStore } from '@/stores/useSessionStore';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
 
-type FavoriteRow = Record<string, unknown>;
-
-function extractShowcaseId(row: FavoriteRow): string {
+function extractShowcaseId(row: ApiRecord): string {
   const raw = row.showcase_id ?? row.showcaseId ?? row.id ?? row.favorite_id;
-  const s = String(raw ?? '').trim();
-  return s;
+  return String(raw ?? '').trim();
 }
 
 export function useFavorites() {
@@ -21,7 +18,6 @@ export function useFavorites() {
   const [loading, setLoading] = useState(false);
   const seededFromSessionRef = useRef(false);
 
-  // Seed from session when it becomes available (no extra API call needed)
   useEffect(() => {
     if (sessionLoaded && !seededFromSessionRef.current) {
       seededFromSessionRef.current = true;
@@ -36,26 +32,22 @@ export function useFavorites() {
       setLoading(false);
       return;
     }
-    // If session already seeded favorites, skip the separate API call
     if (seededFromSessionRef.current) return;
 
-    await runAsyncAction(
-      async () => {
-        const raw = await favoritesApi.list();
-        const arr = (Array.isArray(raw) ? raw : []) as FavoriteRow[];
-        const next = new Set<string>();
-        for (const row of arr) {
-          const id = extractShowcaseId(row);
-          if (id) next.add(id);
-        }
-        setLikedIds(next);
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: () => setLikedIds(new Set()),
-      },
-    );
+    setLoading(true);
+    try {
+      const raw = await favoritesApi.list();
+      const next = new Set<string>();
+      for (const row of apiListAsRecords(raw)) {
+        const id = extractShowcaseId(row);
+        if (id) next.add(id);
+      }
+      setLikedIds(next);
+    } catch {
+      setLikedIds(new Set());
+    } finally {
+      setLoading(false);
+    }
   }, [isAuthenticated]);
 
   useEffect(() => {

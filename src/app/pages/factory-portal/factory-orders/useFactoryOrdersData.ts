@@ -3,16 +3,13 @@ import { useAuth } from '@/stores/useAuthStore';
 import { ordersApi } from '@/services/api/ordersApi';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { pickScalarString } from '@/utils/pickScalarString';
+import { apiListAsRecords, asRecord, nestedRecord, type ApiRecord } from '@/lib/apiShape';
 import { factoryKeys } from '@/lib/queryKeys';
 import type {
   FactoryOrderRow,
   OrderStatusCode,
   ProductionSummaryRow,
 } from '@/pages/factory-portal/factory-orders/types';
-
-function isObj(v: unknown): v is Record<string, unknown> {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
-}
 
 const VALID_STATUS: OrderStatusCode[] = [
   'PP',
@@ -28,44 +25,53 @@ const VALID_STATUS: OrderStatusCode[] = [
 ];
 
 function toProductionSummary(raw: unknown): ProductionSummaryRow | null {
-  if (!isObj(raw)) return null;
-  const st = pickScalarString(raw.current_update_status).toUpperCase();
+  const row = asRecord(raw);
+  if (Object.keys(row).length === 0) return null;
+  const st = pickScalarString(row.current_update_status).toUpperCase();
   return {
-    current_step_code: raw.current_step_code != null ? pickScalarString(raw.current_step_code) : null,
+    current_step_code:
+      row.current_step_code != null ? pickScalarString(row.current_step_code) : null,
     current_step_name_th:
-      raw.current_step_name_th != null ? pickScalarString(raw.current_step_name_th) : null,
-    current_step_id: Number.isFinite(Number(raw.current_step_id))
-      ? Number(raw.current_step_id)
+      row.current_step_name_th != null ? pickScalarString(row.current_step_name_th) : null,
+    current_step_id: Number.isFinite(Number(row.current_step_id))
+      ? Number(row.current_step_id)
       : null,
     current_update_status: ['PD', 'IP', 'CD', 'RJ'].includes(st)
       ? (st as 'PD' | 'IP' | 'CD' | 'RJ')
       : null,
-    completed_count: Number(raw.completed_count ?? 0),
-    total_count: Number(raw.total_count ?? 0),
-    last_updated_at: raw.last_updated_at != null ? pickScalarString(raw.last_updated_at) : null,
-    has_rejected: raw.has_rejected === true,
+    completed_count: Number(row.completed_count ?? 0),
+    total_count: Number(row.total_count ?? 0),
+    last_updated_at: row.last_updated_at != null ? pickScalarString(row.last_updated_at) : null,
+    has_rejected: row.has_rejected === true,
   };
 }
 
-function normalizeRow(raw: Record<string, unknown>): FactoryOrderRow | null {
-  const row = isObj(raw.order) ? (raw.order as Record<string, unknown>) : raw;
+function normalizeRow(raw: unknown): FactoryOrderRow | null {
+  const row = nestedRecord(asRecord(raw), 'order');
   const status = pickScalarString(row.status).toUpperCase();
   if (!VALID_STATUS.includes(status as OrderStatusCode)) return null;
-  const rfqObj = isObj(row.rfq)
-    ? row.rfq
-    : row.rfq_title != null
-      ? {
-          rfq_id: row.rfq_id ?? 0,
-          title: row.rfq_title,
-          quantity: row.rfq_quantity ?? 0,
-          unit_name: row.unit_name ?? 'ชิ้น',
-        }
-      : null;
-  const customerObj = isObj(row.customer)
-    ? row.customer
-    : row.user_id != null
-      ? { user_id: row.user_id, display_name: '' }
-      : null;
+
+  const rfqNested = nestedRecord(row, 'rfq');
+  const rfqObj =
+    rfqNested.rfq_id || rfqNested.title
+      ? rfqNested
+      : row.rfq_title != null
+        ? ({
+            rfq_id: row.rfq_id ?? 0,
+            title: row.rfq_title,
+            quantity: row.rfq_quantity ?? 0,
+            unit_name: row.unit_name ?? 'ชิ้น',
+          } as ApiRecord)
+        : null;
+
+  const customerNested = nestedRecord(row, 'customer');
+  const customerObj =
+    customerNested.user_id || customerNested.display_name
+      ? customerNested
+      : row.user_id != null
+        ? ({ user_id: row.user_id, display_name: '' } as ApiRecord)
+        : null;
+
   return {
     order_id: Number(row.order_id ?? row.id ?? 0),
     status: status as OrderStatusCode,
@@ -102,8 +108,7 @@ export function useFactoryOrdersData() {
     queryKey: factoryKeys.orders(fid),
     queryFn: async () => {
       const raw = await ordersApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as unknown as Record<string, unknown>[];
-      return arr
+      return apiListAsRecords(raw)
         .map(normalizeRow)
         .filter((r): r is FactoryOrderRow => r != null)
         .filter((r) => (fid ? r.factory_id === fid : true));

@@ -8,6 +8,7 @@ import {
   type IExploreSlide,
 } from '@/domain/explore/types/explore.model';
 import type { IExploreShowcaseResponse, IPromoSlideResponse } from '@/services/api/types/explore.types';
+import { asRecord } from '@/lib/apiShape';
 
 export type {
   IExploreArticle,
@@ -19,7 +20,7 @@ export type {
 export { EMPTY_EXPLORE_PAGE_DATA };
 
 function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcase {
-  const s = mapShowcaseFromApi(row as unknown as Record<string, unknown>);
+  const s = mapShowcaseFromApi(row);
   return {
     id: s.id,
     factoryId: s.factoryId,
@@ -43,14 +44,15 @@ function mapShowcaseList(rows: IExploreShowcaseResponse[]): IExploreShowcase[] {
   return rows.map(mapRowToExploreShowcase).filter((s) => s.id && s.title);
 }
 
-function normSlide(r: IPromoSlideResponse | Record<string, unknown>): IExploreSlide {
+function normSlide(r: IPromoSlideResponse | unknown): IExploreSlide {
+  const row = asRecord(r);
   return {
-    id: String((r as IPromoSlideResponse).slide_id ?? (r as Record<string, unknown>).id ?? ''),
-    title: String((r as IPromoSlideResponse).title ?? (r as Record<string, unknown>).title ?? ''),
-    subtitle: String((r as Record<string, unknown>).subtitle ?? ''),
-    code: String((r as Record<string, unknown>).code ?? ''),
-    image: String((r as IPromoSlideResponse).image_url ?? (r as Record<string, unknown>).image ?? ''),
-    linkTo: String((r as IPromoSlideResponse).link_to ?? (r as Record<string, unknown>).linkTo ?? ''),
+    id: String(row.slide_id ?? row.id ?? ''),
+    title: String(row.title ?? ''),
+    subtitle: String(row.subtitle ?? ''),
+    code: String(row.code ?? ''),
+    image: String(row.image_url ?? row.image ?? ''),
+    linkTo: String(row.link_to ?? row.linkTo ?? ''),
   };
 }
 

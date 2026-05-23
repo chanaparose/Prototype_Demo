@@ -4,6 +4,7 @@ import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
+import { asRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -20,7 +21,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   // Use enriched data from GET /orders/:id — no extra API calls needed.
-  const data = rfq as unknown as Record<string, unknown>;
+  const data = asRecord(rfq);
   const quantity = Math.max(0, pickScalarNumber(data.quantity, rfq.quantity) ?? 0);
   const categoryName = pickScalarString(data.category_name, rfq.category_name) || '-';
   const subCategoryName = pickScalarString(data.sub_category_name, data.subCategoryName);

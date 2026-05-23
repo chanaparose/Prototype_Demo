@@ -7,6 +7,7 @@ import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
 import { mapOrderStatusFromApi, guessOrderProgressFromStep } from '@/domain/order/status';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
+import { asRecord, apiListAsRecords, nestedRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 function collectUrlsFromUnknown(input: unknown): string[] {
@@ -33,7 +34,7 @@ function collectUrlsFromUnknown(input: unknown): string[] {
         continue;
       }
       if (item && typeof item === 'object') {
-        const o = item as Record<string, unknown>;
+        const o = asRecord(item);
         const u = pickScalarString(o.url, o.image_url, o.public_url);
         if (u) out.push(u);
       }
@@ -41,7 +42,7 @@ function collectUrlsFromUnknown(input: unknown): string[] {
     return out;
   }
   if (typeof input === 'object') {
-    const o = input as Record<string, unknown>;
+    const o = asRecord(input);
     return [
       ...collectUrlsFromUnknown(o.images),
       ...collectUrlsFromUnknown(o.image_urls),
@@ -77,7 +78,7 @@ function collectStringArrayFromUnknown(input: unknown): string[] {
     return input.map((x) => pickScalarString(x)).filter(Boolean);
   }
   if (typeof input === 'object') {
-    const o = input as Record<string, unknown>;
+    const o = asRecord(input);
     return [
       ...collectStringArrayFromUnknown(o.items),
       ...collectStringArrayFromUnknown(o.values),
@@ -91,7 +92,7 @@ function formatDimensionSpec(input: unknown): string {
   if (!input) return '';
   if (typeof input === 'string') return input.trim();
   if (typeof input === 'object') {
-    const o = input as Record<string, unknown>;
+    const o = asRecord(input);
     const l = numberOrNull(o.L, o.l, o.length);
     const w = numberOrNull(o.W, o.w, o.width);
     const h = numberOrNull(o.H, o.h, o.height);
@@ -122,8 +123,8 @@ type RawRfqDetail = {
 };
 
 function extractSubCategoryNameFromRfqResponse(
-  detailPayload: Record<string, unknown> | null,
-  rawRfq: Record<string, unknown>,
+  detailPayload: ApiRecord | null,
+  rawRfq: ApiRecord,
 ): string {
   const fromRfq = pickScalarString(
     rawRfq.sub_category_name,
@@ -134,16 +135,15 @@ function extractSubCategoryNameFromRfqResponse(
   if (!detailPayload) return '';
   const fromRoot = pickScalarString(detailPayload.sub_category_name, detailPayload.subCategoryName);
   if (fromRoot) return fromRoot;
-  const inner = detailPayload.rfq;
-  if (inner && typeof inner === 'object') {
-    const o = inner as Record<string, unknown>;
-    return pickScalarString(o.sub_category_name, o.subCategoryName);
+  const inner = nestedRecord(detailPayload, 'rfq');
+  if (inner.rfq_id || inner.title || inner.sub_category_name) {
+    return pickScalarString(inner.sub_category_name, inner.subCategoryName);
   }
   return '';
 }
 
 async function resolveSubCategoryNameById(
-  rawRfq: Record<string, unknown>,
+  rawRfq: ApiRecord,
   currentName: string,
 ): Promise<string> {
   if (currentName) return currentName;
@@ -205,14 +205,14 @@ export async function fetchAndMapRfqDetail(
 ): Promise<RfqDetailData> {
       // Single bundle call — replaces GET /rfqs/:id + GET /rfqs/:id/quotations + N×GET /quotations/:id/history
       const bundle = await rfqsApi.getDetail(rfqId);
-      const bundleObj = bundle as unknown as Record<string, unknown>;
+      const bundleObj = asRecord(bundle);
+      const rfqRecord = nestedRecord(bundleObj, 'rfq');
 
       let rawRfq: RawRfqDetail['rfq'] | null = null;
-      let detailPayload: RawRfqDetail | null = null;
-      if (bundleObj.rfq) {
-        const data = { rfq: bundleObj.rfq } as unknown as RawRfqDetail;
-        detailPayload = data;
-        rawRfq = data.rfq ?? (bundleObj.rfq as unknown as RawRfqDetail['rfq']);
+      let detailPayload: ApiRecord | null = null;
+      if (rfqRecord.rfq_id || rfqRecord.title) {
+        detailPayload = bundleObj;
+        rawRfq = rfqRecord as unknown as RawRfqDetail['rfq'];
       }
 
       if (!rawRfq || !rawRfq.rfq_id) {
@@ -220,18 +220,14 @@ export async function fetchAndMapRfqDetail(
       }
 
       // Parse quotations
-      let quotes: RawQuotation[] = [];
-      const rawQuotes = bundleObj.quotations;
-      if (Array.isArray(rawQuotes)) {
-        quotes = rawQuotes as RawQuotation[];
-      }
+      const quotes = apiListAsRecords(bundleObj.quotations) as RawQuotation[];
 
       // Pre-fetched histories keyed by quote_id string
       const quoteHistories: Record<string, IQuotationHistoryEntry[]> =
         (bundleObj.quote_histories as Record<string, IQuotationHistoryEntry[]> | undefined) ?? {};
 
       // Map to FE type
-      const rExtra = rawRfq as Record<string, unknown>;
+      const rExtra = asRecord(rawRfq);
       const quantity = Math.max(0, Math.round(numberOrNull(rawRfq.quantity, rExtra.qty) ?? 0));
       const budgetPerPiece = numberOrNull(rawRfq.budget_per_piece, rExtra.budgetPerPiece);
       const budgetTotalExplicit = numberOrNull(
@@ -261,9 +257,8 @@ export async function fetchAndMapRfqDetail(
       const deadline =
         deadlineRaw && deadlineRaw.includes('T') ? deadlineRaw.split('T')[0] : deadlineRaw;
 
-      const payloadRecord =
-        detailPayload != null ? (detailPayload as unknown as Record<string, unknown>) : null;
-      const rawRecord = rawRfq as unknown as Record<string, unknown>;
+      const payloadRecord = detailPayload;
+      const rawRecord = rExtra;
       let subCategoryName = extractSubCategoryNameFromRfqResponse(payloadRecord, rawRecord);
       subCategoryName = await resolveSubCategoryNameById(rawRecord, subCategoryName);
       const subCategoryIdNum = Number(rawRecord.sub_category_id ?? rawRecord.subCategoryId ?? 0);

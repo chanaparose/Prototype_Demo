@@ -10,7 +10,7 @@ interface Props {
   onDiscard: () => void;
 }
 
-export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard }: Props) {
+export function ProfileSaveBar({ isDirty, changeCount, saving, onSave, onDiscard }: Readonly<Props>) {
   if (!isDirty && !saving) return null;
   return (
     <div

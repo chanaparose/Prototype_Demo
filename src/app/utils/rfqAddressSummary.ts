@@ -1,10 +1,10 @@
+import { nestedRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarString } from '@/utils/pickScalarString';
 
 // สรุปที่อยู่ปลายทางจาก RFQ / nested address (FACTORY_RFQ_BOARD_UX_SPEC)
-export function summarizeRfqAddress(rfq: Record<string, unknown>): string {
-  const a = rfq.address;
-  if (a && typeof a === 'object') {
-    const o = a as Record<string, unknown>;
+export function summarizeRfqAddress(rfq: ApiRecord): string {
+  const o = nestedRecord(rfq, 'address');
+  if (o.address_line || o.address_detail || o.detail) {
     const line = pickScalarString(o.address_line, o.address_detail, o.detail);
     const parts = [
       pickScalarString(o.sub_district_name, o.subdistrict_name),

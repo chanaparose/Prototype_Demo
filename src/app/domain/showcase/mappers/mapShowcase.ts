@@ -1,6 +1,7 @@
 import { type FactoryShowcase, type ShowcaseImageRow, type ShowcaseSpecRow } from '@/stores/types';
 import { showcasesApi } from '@/services/api/factoryApi';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
+import { asRecord, apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type ShowcaseApiType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -34,14 +35,15 @@ function parseImageUrls(raw: unknown): string[] {
     .map((item) => {
       if (typeof item === 'string') return item.trim();
       if (!item || typeof item !== 'object') return '';
-      const row = item as Record<string, unknown>;
+      const row = asRecord(item);
       return pickScalarString(row.url, row.image_url, row.public_url);
     })
     .filter((u) => u !== '')
     .slice(0, 5);
 }
 
-export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase {
+export function mapShowcaseFromApi(raw: unknown): FactoryShowcase {
+  const r = asRecord(raw);
   const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
   const leadTime =
     leadRaw != null && leadRaw !== '' ? pickScalarString(leadRaw) : '';
@@ -115,7 +117,7 @@ export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase 
       : {}),
     ...(Array.isArray(r.specs) && r.specs.length > 0
       ? {
-          specs: (r.specs as Record<string, unknown>[]).map((sp) => ({
+          specs: apiListAsRecords(r.specs).map((sp) => ({
             spec_key: pickScalarString(sp.spec_key),
             spec_value: pickScalarString(sp.spec_value),
             sort_order: Number(sp.sort_order ?? 0),

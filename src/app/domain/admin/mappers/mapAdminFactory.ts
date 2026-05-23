@@ -2,6 +2,7 @@ import type {
   AdminFactory,
   FactoryApprovalStatus,
 } from '@/domain/admin/types/adminFactory.model';
+import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarString } from '@/utils/pickScalarString';
 
 export function mapFactoryApprovalStatus(raw: unknown): FactoryApprovalStatus {
@@ -12,18 +13,11 @@ export function mapFactoryApprovalStatus(raw: unknown): FactoryApprovalStatus {
   return 'pending';
 }
 
-export function extractAdminFactoryRows(raw: unknown): Record<string, unknown>[] {
-  if (Array.isArray(raw)) return raw as Record<string, unknown>[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as Record<string, unknown>[];
-    if (Array.isArray(obj.rows)) return obj.rows as Record<string, unknown>[];
-    if (Array.isArray(obj.data)) return obj.data as Record<string, unknown>[];
-  }
-  return [];
+export function extractAdminFactoryRows(raw: unknown): ApiRecord[] {
+  return apiListAsRecords(raw);
 }
 
-export function mapAdminFactory(row: Record<string, unknown>): AdminFactory {
+export function mapAdminFactory(row: ApiRecord): AdminFactory {
   const factoryId = Number(row.factory_id ?? row.id ?? 0);
   return {
     id: pickScalarString(factoryId || row.id),

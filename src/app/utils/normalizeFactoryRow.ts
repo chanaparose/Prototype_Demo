@@ -1,7 +1,8 @@
 import { type Factory } from '@/stores/types';
+import type { ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
-export function pickFactoryCoverUrl(row: Record<string, unknown>): string {
+export function pickFactoryCoverUrl(row: ApiRecord): string {
   return pickScalarString(
     row.background_image_url,
     row.cover_image_url,
@@ -11,11 +12,11 @@ export function pickFactoryCoverUrl(row: Record<string, unknown>): string {
   );
 }
 
-function pickFactoryAvatarUrl(row: Record<string, unknown>): string {
+function pickFactoryAvatarUrl(row: ApiRecord): string {
   return pickScalarString(row.image_url, row.image, row.logo_url);
 }
 
-export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = ''): Factory {
+export function normalizeFactoryRow(row: ApiRecord, idFallback = ''): Factory {
   const id = pickScalarString(row.id, row.factory_id, idFallback);
   const ftn = pickScalarString(row.factory_type_name, row.factoryTypeName);
   const coverImageUrl = pickFactoryCoverUrl(row);

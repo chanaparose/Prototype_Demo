@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { daysUntilDeadline } from '@/utils/rfqDeadline';
 import { factoryRfqsApi } from '@/services/api/rfqApi';
+import { apiListAsRecords, asRecord, nestedRecord, type ApiRecord } from '@/lib/apiShape';
+import { getErrorMessage } from '@/lib/apiError';
 import { pickScalarString } from '@/utils/pickScalarString';
 import type { RfqCardModel } from '@/components/factory/RfqCard';
 
-function innerRfq(row: Record<string, unknown>): Record<string, unknown> {
-  const r = row.rfq;
-  if (r && typeof r === 'object') return r as Record<string, unknown>;
-  return row;
+function innerRfq(row: ApiRecord): ApiRecord {
+  const nested = nestedRecord(row, 'rfq');
+  return nested.rfq_id || nested.title || nested.id ? nested : row;
 }
 
 export type FactoryBoardRow = RfqCardModel & {
@@ -21,7 +21,7 @@ export type FactoryBoardRow = RfqCardModel & {
 };
 
 function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }): FactoryBoardRow[] {
-  const arr = (Array.isArray(board.rfqs) ? board.rfqs : []) as Record<string, unknown>[];
+  const arr = apiListAsRecords(board.rfqs);
   const bases: FactoryBoardRow[] = [];
 
   for (const row of arr) {
@@ -121,48 +121,41 @@ export function useFactoryRfqBoard() {
 
   const load = useCallback(async () => {
     setError('');
-    await runAsyncAction(
-      async () => {
-        const board = await factoryRfqsApi.getRFQBoard();
-        setFactoryCategoryIds(Array.isArray(board.factory_category_ids) ? board.factory_category_ids : []);
+    setLoading(true);
+    try {
+      const board = await factoryRfqsApi.getRFQBoard();
+      setFactoryCategoryIds(
+        Array.isArray(board.factory_category_ids) ? board.factory_category_ids : [],
+      );
 
-        const bases = parseRfqRows(board);
-        const visible = bases.filter((b) => {
-          if (b.hasMyQuote && b.myQuoteStatus === 'AC') return false;
-          if (b.hasMyQuote && b.myQuoteStatus === 'EX') return false;
-          if (!b.hasMyQuote && b.status !== 'OP') return false;
-          return true;
-        });
+      const bases = parseRfqRows(board);
+      const visible = bases.filter((b) => {
+        if (b.hasMyQuote && b.myQuoteStatus === 'AC') return false;
+        if (b.hasMyQuote && b.myQuoteStatus === 'EX') return false;
+        if (!b.hasMyQuote && b.status !== 'OP') return false;
+        return true;
+      });
 
-        setRows(visible);
-      },
-      {
-        onStart: () => setLoading(true),
-        onSettled: () => setLoading(false),
-        onError: (message) => {
-          setError(message);
-          setRows([]);
-        },
-        fallbackMessage: 'โหลด RFQ ไม่สำเร็จ',
-      },
-    );
+      setRows(visible);
+    } catch (err) {
+      setError(getErrorMessage(err, 'โหลด RFQ ไม่สำเร็จ'));
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   }, [fid]);
 
   const loadDismissed = useCallback(async () => {
-    await runAsyncAction(
-      async () => {
-        const board = await factoryRfqsApi.getRFQBoard({ show_dismissed: true });
-        const all = parseRfqRows(board);
-        // show_dismissed=true returns only dismissed rows from BE
-        setDismissedRows(all);
-        setDismissedLoaded(true);
-      },
-      {
-        onStart: () => setDismissedLoading(true),
-        onSettled: () => setDismissedLoading(false),
-        onError: () => setDismissedRows([]),
-      },
-    );
+    setDismissedLoading(true);
+    try {
+      const board = await factoryRfqsApi.getRFQBoard({ show_dismissed: true });
+      setDismissedRows(parseRfqRows(board));
+      setDismissedLoaded(true);
+    } catch {
+      setDismissedRows([]);
+    } finally {
+      setDismissedLoading(false);
+    }
   }, [fid]);
 
   useEffect(() => {
@@ -181,6 +174,5 @@ export function useFactoryRfqBoard() {
     dismissedLoading,
     dismissedLoaded,
     loadDismissed,
-    reloadDismissed: loadDismissed,
   };
 }

@@ -3,20 +3,14 @@ import type {
   INotificationsPageModel,
 } from '@/domain/notifications/types/notification.model';
 import type { Notification as BootstrapNotificationModel } from '@/stores/types';
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
-function extractRows(raw: unknown): Record<string, unknown>[] {
-  if (Array.isArray(raw)) return raw as Record<string, unknown>[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.data)) return obj.data as Record<string, unknown>[];
-    if (Array.isArray(obj.items)) return obj.items as Record<string, unknown>[];
-    if (Array.isArray(obj.rows)) return obj.rows as Record<string, unknown>[];
-  }
-  return [];
+function extractRows(raw: unknown): ApiRecord[] {
+  return apiListAsRecords(raw);
 }
 
-export function mapNotificationFromApi(row: Record<string, unknown>): INotificationModel | null {
+export function mapNotificationFromApi(row: ApiRecord): INotificationModel | null {
   const notiId = pickScalarNumber(row.noti_id, row.notification_id, row.id) ?? 0;
   if (!Number.isFinite(notiId) || notiId <= 0) return null;
 
@@ -30,9 +24,10 @@ export function mapNotificationFromApi(row: Record<string, unknown>): INotificat
     is_read: Boolean(row.is_read ?? row.read ?? false),
     created_at: pickScalarString(row.created_at, row.time),
     avatar: pickScalarString(row.avatar) || undefined,
-    rfq_id: row.rfq_id != null ? pickScalarString(row.rfq_id) : undefined,
-    order_id: row.order_id != null ? pickScalarString(row.order_id) : undefined,
-    conversation_id: row.conversation_id != null ? pickScalarString(row.conversation_id) : undefined,
+    rfq_id: row.rfq_id == null ? undefined : pickScalarString(row.rfq_id),
+    order_id: row.order_id == null ? undefined : pickScalarString(row.order_id),
+    conversation_id:
+      row.conversation_id == null ? undefined : pickScalarString(row.conversation_id),
   };
 }
 
@@ -42,14 +37,19 @@ export function mapNotificationsFromApi(raw: unknown): INotificationModel[] {
     .filter((item): item is INotificationModel => item != null);
 }
 
-export function mapNotificationsPageFromApi(raw: unknown, fallbackPage: number): INotificationsPageModel {
-  const root = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+export function mapNotificationsPageFromApi(
+  raw: unknown,
+  fallbackPage: number,
+): INotificationsPageModel {
+  const root = asRecord(raw);
   const items = mapNotificationsFromApi(raw);
   return {
     items,
     page: pickScalarNumber(root.page) ?? fallbackPage,
     total: pickScalarNumber(root.total) ?? items.length,
-    unreadCount: pickScalarNumber(root.unread_count, root.unreadCount) ?? items.filter((n) => !n.is_read).length,
+    unreadCount:
+      pickScalarNumber(root.unread_count, root.unreadCount) ??
+      items.filter((n) => !n.is_read).length,
   };
 }
 

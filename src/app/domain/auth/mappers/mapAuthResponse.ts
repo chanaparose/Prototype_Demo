@@ -1,8 +1,9 @@
 import type { IAuthResponse } from '@/services/api/types/auth.types';
 import type { IAuthSession } from '@/domain/auth/types/auth.model';
 import type { IUser } from '@/domain/auth/types/user.model';
+import { asRecord, nestedRecord, type ApiRecord } from '@/lib/apiShape';
 
-function pickString(raw: Record<string, unknown>, ...keys: string[]): string {
+function pickString(raw: ApiRecord, ...keys: string[]): string {
   for (const key of keys) {
     const v = raw[key];
     if (v != null && String(v).trim() !== '') return String(v).trim();
@@ -10,7 +11,7 @@ function pickString(raw: Record<string, unknown>, ...keys: string[]): string {
   return '';
 }
 
-function pickId(raw: Record<string, unknown>, ...keys: string[]): string | number | undefined {
+function pickId(raw: ApiRecord, ...keys: string[]): string | number | undefined {
   for (const key of keys) {
     const value = raw[key];
     if (typeof value === 'string' || typeof value === 'number') return value;
@@ -18,7 +19,7 @@ function pickId(raw: Record<string, unknown>, ...keys: string[]): string | numbe
   return undefined;
 }
 
-export function mapUserFromApi(raw: Record<string, unknown>): IUser {
+export function mapUserFromApi(raw: ApiRecord): IUser {
   const first = pickString(raw, 'first_name', 'firstName');
   const last = pickString(raw, 'last_name', 'lastName');
   const composedName = [first, last].filter(Boolean).join(' ').trim();
@@ -40,18 +41,15 @@ export function mapUserFromApi(raw: Record<string, unknown>): IUser {
   };
 }
 
-export function mapAuthResponseToModel(
-  data: IAuthResponse | Record<string, unknown>,
-): IAuthSession {
-  const row = data as Record<string, unknown>;
+export function mapAuthResponseToModel(data: IAuthResponse | unknown): IAuthSession {
+  const row = asRecord(data);
   const token = pickString(row, 'token', 'access_token');
   if (!token) {
     throw new Error('เซิร์ฟเวอร์ไม่ได้ส่ง token กลับมา — กรุณาลองใหม่');
   }
 
-  const userRaw = (row.user ?? {}) as Record<string, unknown>;
   return {
     token,
-    user: mapUserFromApi(userRaw),
+    user: mapUserFromApi(nestedRecord(row, 'user')),
   };
 }

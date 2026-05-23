@@ -4,7 +4,7 @@ interface Props {
   status: string;
 }
 
-export function VerifyStatusBanner({ status }: Props) {
+export function VerifyStatusBanner({ status }: Readonly<Props>) {
   const s = (status || 'PD').toUpperCase();
   if (s === 'AP') {
     return (

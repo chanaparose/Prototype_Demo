@@ -1,5 +1,4 @@
 import { useMemo, useState, useCallback } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
 import { useParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
 import { type IdeaArticle } from '@/stores/types';
@@ -84,14 +83,14 @@ export function useFactoryProfile() {
     async (customerId: number | string): Promise<string | null> => {
       if (!id || startingConversation) return null;
       if (conversation) return String(conversation.id);
-      const result = await runAsyncAction(
-        () => createFactoryConversation(id, customerId),
-        {
-          onStart: () => setStartingConversation(true),
-          onSettled: () => setStartingConversation(false),
-        },
-      );
-      return result ?? null;
+      setStartingConversation(true);
+      try {
+        return await createFactoryConversation(id, customerId);
+      } catch {
+        return null;
+      } finally {
+        setStartingConversation(false);
+      }
     },
     [id, conversation, startingConversation],
   );

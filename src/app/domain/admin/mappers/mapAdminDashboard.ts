@@ -4,6 +4,7 @@ import type {
   IAdminRevenueChartResponse,
   IAdminRfqListResponse,
 } from '@/services/api/types/admin.types';
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 
 export type AdminChartRow = {
   month: string;
@@ -12,7 +13,7 @@ export type AdminChartRow = {
 };
 
 export type AdminDashboardData = {
-  summary: Record<string, unknown>;
+  summary: ApiRecord;
   revenueRows: AdminChartRow[];
   recentOrders: IAdminOrderListResponse[];
   recentRfqs: IAdminRfqListResponse[];
@@ -25,17 +26,6 @@ export const EMPTY_ADMIN_DASHBOARD: AdminDashboardData = {
   recentRfqs: [],
 };
 
-function parseRows<T extends Record<string, unknown>>(raw: unknown): T[] {
-  if (Array.isArray(raw)) return raw as T[];
-  if (raw && typeof raw === 'object') {
-    const obj = raw as Record<string, unknown>;
-    if (Array.isArray(obj.items)) return obj.items as T[];
-    if (Array.isArray(obj.rows)) return obj.rows as T[];
-    if (Array.isArray(obj.data)) return obj.data as T[];
-  }
-  return [];
-}
-
 export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
   const [summaryRaw, revenueRaw, ordersRaw, rfqsRaw] = await Promise.all([
     adminApi.dashboardSummary(),
@@ -44,7 +34,7 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
     adminApi.listRfqs({ page: 1, page_size: 5 }),
   ]);
 
-  const summary = summaryRaw as Record<string, unknown>;
+  const summary = asRecord(summaryRaw);
 
   const revenueObj =
     revenueRaw && typeof revenueRaw === 'object'
@@ -52,8 +42,8 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
       : null;
   const sourceRows =
     revenueObj && Array.isArray(revenueObj.data)
-      ? revenueObj.data
-      : parseRows<Record<string, unknown>>(revenueRaw);
+      ? apiListAsRecords(revenueObj.data)
+      : apiListAsRecords(revenueRaw);
   const revenueRows = sourceRows.map((r) => ({
     month: String(r.month ?? r.date ?? r.period ?? r.label ?? '-'),
     revenue: Number(r.revenue ?? r.gross_order_value ?? 0),
@@ -63,7 +53,7 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardData> {
   return {
     summary,
     revenueRows: revenueRows.slice(-6),
-    recentOrders: parseRows<IAdminOrderListResponse>(ordersRaw).slice(0, 5),
-    recentRfqs: parseRows<IAdminRfqListResponse>(rfqsRaw).slice(0, 5),
+    recentOrders: apiListAsRecords(ordersRaw) as IAdminOrderListResponse[],
+    recentRfqs: apiListAsRecords(rfqsRaw) as IAdminRfqListResponse[],
   };
 }

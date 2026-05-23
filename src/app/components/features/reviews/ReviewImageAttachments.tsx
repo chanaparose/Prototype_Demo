@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ImagePlus, X } from 'lucide-react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { getErrorMessage } from '@/lib/apiError';
 import { mediaApi } from '@/services/api/factoryApi';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
 import { Button } from '@/components/ui/button';
@@ -30,24 +30,21 @@ export function ReviewImageAttachments({
     if (!files || !onChange) return;
     const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
     if (list.length === 0) return;
-    await runAsyncAction(
-      async () => {
-        const next = [...urls];
-        for (const f of list) {
-          if (next.length >= REVIEW_IMAGE_MAX) break;
-          const { url } = await mediaApi.upload(f);
-          const u = String(url ?? '').trim();
-          if (u && !next.includes(u)) next.push(u);
-        }
-        onChange(normalizeReviewImageUrls(next));
-      },
-      {
-        onStart: () => setUploading(true),
-        onSettled: () => setUploading(false),
-        onError: (message) => onUploadError?.(message),
-        fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
-      },
-    );
+    setUploading(true);
+    try {
+      const next = [...urls];
+      for (const f of list) {
+        if (next.length >= REVIEW_IMAGE_MAX) break;
+        const { url } = await mediaApi.upload(f);
+        const u = String(url ?? '').trim();
+        if (u && !next.includes(u)) next.push(u);
+      }
+      onChange(normalizeReviewImageUrls(next));
+    } catch (err) {
+      onUploadError?.(getErrorMessage(err, 'อัปโหลดรูปไม่สำเร็จ'));
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeAt = (idx: number) => {

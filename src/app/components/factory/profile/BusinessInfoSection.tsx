@@ -11,7 +11,7 @@ interface Props {
   form: UseFormReturn<ProfileFormValues>;
 }
 
-export function BusinessInfoSection({ form }: Props) {
+export function BusinessInfoSection({ form }: Readonly<Props>) {
   const { register, control, formState: { errors } } = form;
   const factoryTypesQ = useFactoryTypes();
 

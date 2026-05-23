@@ -5,7 +5,7 @@ interface Props {
   linesPerSection?: number;
 }
 
-export function FormSkeleton({ sections = 3, linesPerSection = 4 }: Props) {
+export function FormSkeleton({ sections = 3, linesPerSection = 4 }: Readonly<Props>) {
   return (
     <div className='space-y-6 animate-pulse' aria-busy aria-label='กำลังโหลดข้อมูล'>
       {Array.from({ length: sections }).map((_, s) => (

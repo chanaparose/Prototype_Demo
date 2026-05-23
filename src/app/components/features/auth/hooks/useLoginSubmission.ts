@@ -5,7 +5,7 @@ import type {
   AuthLoginFormValues,
   AuthRegisterFormValues,
 } from '@/domain/auth/schemas/authForm.schema';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { getErrorMessage } from '@/lib/apiError';
 
 function navigateByRole(navigate: ReturnType<typeof useNavigate>, role?: string) {
   navigate(String(role ?? '').toUpperCase() === 'FT' ? '/factory' : '/', { replace: true });
@@ -19,27 +19,27 @@ export function useLoginSubmission() {
 
   const submitLogin = useCallback(
     async (values: AuthLoginFormValues): Promise<boolean> => {
-      const result = await runAsyncAction(async () => {
+      setIsSubmitting(true);
+      setError('');
+      try {
         const session = await login(values);
         navigateByRole(navigate, session?.user?.role);
         return true;
-      }, {
-        onStart: () => {
-          setIsSubmitting(true);
-          setError('');
-        },
-        onError: (message) => setError(message),
-        onSettled: () => setIsSubmitting(false),
-        fallbackMessage: 'เข้าสู่ระบบไม่สำเร็จ',
-      });
-      return result ?? false;
+      } catch (err) {
+        setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'));
+        return false;
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     [login, navigate],
   );
 
   const submitRegister = useCallback(
     async (values: AuthRegisterFormValues): Promise<boolean> => {
-      const result = await runAsyncAction(async () => {
+      setIsSubmitting(true);
+      setError('');
+      try {
         const session = await register({
           role: 'CT',
           email: values.email,
@@ -50,16 +50,12 @@ export function useLoginSubmission() {
         });
         navigateByRole(navigate, session?.user?.role);
         return true;
-      }, {
-        onStart: () => {
-          setIsSubmitting(true);
-          setError('');
-        },
-        onError: (message) => setError(message),
-        onSettled: () => setIsSubmitting(false),
-        fallbackMessage: 'สมัครสมาชิกไม่สำเร็จ',
-      });
-      return result ?? false;
+      } catch (err) {
+        setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'));
+        return false;
+      } finally {
+        setIsSubmitting(false);
+      }
     },
     [register, navigate],
   );
