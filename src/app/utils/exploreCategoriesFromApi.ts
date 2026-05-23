@@ -85,13 +85,10 @@ export type FetchExploreCategoriesResult = {
 };
 
 export async function fetchExploreCategoriesListOnly(): Promise<FetchExploreCategoriesResult> {
-  let res: PromiseSettledResult<unknown>;
-  try {
-    const value = await categoriesApi.list(6);
-    res = { status: 'fulfilled', value };
-  } catch (reason) {
-    res = { status: 'rejected', reason };
-  }
+  const res: PromiseSettledResult<unknown> = await categoriesApi
+    .list(6)
+    .then((value) => ({ status: 'fulfilled' as const, value }))
+    .catch((reason) => ({ status: 'rejected' as const, reason }));
   const fromCat = res.status === 'fulfilled' ? parseCategoriesResponse(res.value) : [];
   const merged = fromCat;
 

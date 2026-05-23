@@ -8,6 +8,7 @@ import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { parseCategorySelection } from '@/domain/factory/schemas/categoryPicker.schema';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 interface Props {
   open: boolean;
@@ -63,7 +64,7 @@ function useLbiAllCategories() {
   });
 }
 
-export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm }: Props) {
+export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm }: Readonly<Props>) {
   const { data, isLoading, isError } = useLbiAllCategories();
   const categories = data ?? [];
   const [selected, setSelected] = useState<number[]>(initialSelected);
@@ -94,38 +95,43 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
       setConfirmError(parsed.error.issues[0]?.message ?? 'เลือกอย่างน้อย 1 หมวดหมู่');
       return;
     }
-    setConfirming(true);
-    setConfirmError('');
     const mtIdSet = new Set(mtCategories.map((c) => c.id));
-    try {
-      await Promise.all(
-        selected
-          .filter((cid) => !mtIdSet.has(cid))
-          .map((cid) =>
-            qc.fetchQuery({
-              queryKey: masterKeys.subCategories(cid),
-              queryFn: async () => {
-                const raw = await categoriesApi.subCategories(cid);
-                const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
-                const normalized = arr
-                  .map((r) => toSubCategoryOption(r, cid))
-                  .filter((x): x is SubCategoryOption => x != null);
-                const uniq = new Map<number, SubCategoryOption>();
-                for (const item of normalized) {
-                  if (!uniq.has(item.id)) uniq.set(item.id, item);
-                }
-                return [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
-              },
-              staleTime: 5 * 60_000,
-            }),
-          ),
-      );
-      onConfirm(selected);
-    } catch (e) {
-      setConfirmError(e instanceof Error ? e.message : 'โหลดหมวดย่อยไม่สำเร็จ');
-    } finally {
-      setConfirming(false);
-    }
+    void runAsyncAction(
+      async () => {
+        await Promise.all(
+          selected
+            .filter((cid) => !mtIdSet.has(cid))
+            .map((cid) =>
+              qc.fetchQuery({
+                queryKey: masterKeys.subCategories(cid),
+                queryFn: async () => {
+                  const raw = await categoriesApi.subCategories(cid);
+                  const arr = (Array.isArray(raw) ? raw : []) as unknown as Row[];
+                  const normalized = arr
+                    .map((r) => toSubCategoryOption(r, cid))
+                    .filter((x): x is SubCategoryOption => x != null);
+                  const uniq = new Map<number, SubCategoryOption>();
+                  for (const item of normalized) {
+                    if (!uniq.has(item.id)) uniq.set(item.id, item);
+                  }
+                  return [...uniq.values()].sort((a, b) => a.name.localeCompare(b.name, 'th'));
+                },
+                staleTime: 5 * 60_000,
+              }),
+            ),
+        );
+        onConfirm(selected);
+      },
+      {
+        onStart: () => {
+          setConfirming(true);
+          setConfirmError('');
+        },
+        onSettled: () => setConfirming(false),
+        onError: (message) => setConfirmError(message),
+        fallbackMessage: 'โหลดหมวดย่อยไม่สำเร็จ',
+      },
+    );
   };
 
   const renderGroup = (label: string, items: CategoryWithScope[], accentClass: string) => (

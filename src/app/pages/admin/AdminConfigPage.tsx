@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertTriangle, CheckSquare, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
@@ -162,16 +163,19 @@ export function AdminConfigPage() {
   }, [defaultConfig, defaultCommissionForm]);
 
   const loadData = async () => {
-    setLoading(true);
     setError('');
-    try {
-      const res = await adminConfigApi.listConfigs();
-      setConfigs(Array.isArray(res.configs) ? res.configs : []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลด config packages ไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const res = await adminConfigApi.listConfigs();
+        setConfigs(Array.isArray(res.configs) ? res.configs : []);
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'โหลด config packages ไม่สำเร็จ',
+      },
+    );
   };
 
   useEffect(() => {
@@ -190,23 +194,26 @@ export function AdminConfigPage() {
 
   const handleSaveDefault = defaultCommissionForm.handleSubmit(async (values) => {
     if (!isSA || !defaultConfig) return;
-    setSavingDefault(true);
     setError('');
-    try {
-      const payload: IUpdatePlatformConfigRequest = {
-        label: values.label.trim(),
-        default_commission_rate: pickScalarNumber(values.commission) ?? 0,
-        vat_rate: pickScalarNumber(values.vat) ?? 0,
-      };
-      const updated = await adminConfigApi.updateConfig(defaultConfig.config_id, payload);
-      setConfigs((prev) => prev.map((c) => (c.config_id === updated.config_id ? updated : c)));
-      setSavedDefault(true);
-      setTimeout(() => setSavedDefault(false), 2200);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'บันทึก config มาตรฐานไม่สำเร็จ');
-    } finally {
-      setSavingDefault(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const payload: IUpdatePlatformConfigRequest = {
+          label: values.label.trim(),
+          default_commission_rate: pickScalarNumber(values.commission) ?? 0,
+          vat_rate: pickScalarNumber(values.vat) ?? 0,
+        };
+        const updated = await adminConfigApi.updateConfig(defaultConfig.config_id, payload);
+        setConfigs((prev) => prev.map((c) => (c.config_id === updated.config_id ? updated : c)));
+        setSavedDefault(true);
+        setTimeout(() => setSavedDefault(false), 2200);
+      },
+      {
+        onStart: () => setSavingDefault(true),
+        onSettled: () => setSavingDefault(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'บันทึก config มาตรฐานไม่สำเร็จ',
+      },
+    );
   });
 
   const handleCreateConfig = newConfigForm.handleSubmit(async (values) => {
@@ -214,39 +221,46 @@ export function AdminConfigPage() {
     const commission = pickScalarNumber(values.default_commission_rate) ?? 0;
     const vat = pickScalarNumber(values.vat_rate, '7') ?? 7;
 
-    setSavingConfig(true);
     setError('');
-    try {
-      const created = await adminConfigApi.createConfig({
-        label: values.label.trim(),
-        default_commission_rate: commission,
-        vat_rate: Number.isFinite(vat) ? vat : 7,
-        currency_code: 'THB',
-        effective_to: values.effective_to || null,
-      });
-      setConfigs((prev) => [...prev, created]);
-      newConfigForm.reset({
-        label: '',
-        default_commission_rate: '',
-        vat_rate: '7',
-        effective_to: '',
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'สร้าง config พิเศษไม่สำเร็จ');
-    } finally {
-      setSavingConfig(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const created = await adminConfigApi.createConfig({
+          label: values.label.trim(),
+          default_commission_rate: commission,
+          vat_rate: Number.isFinite(vat) ? vat : 7,
+          currency_code: 'THB',
+          effective_to: values.effective_to || null,
+        });
+        setConfigs((prev) => [...prev, created]);
+        newConfigForm.reset({
+          label: '',
+          default_commission_rate: '',
+          vat_rate: '7',
+          effective_to: '',
+        });
+      },
+      {
+        onStart: () => setSavingConfig(true),
+        onSettled: () => setSavingConfig(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'สร้าง config พิเศษไม่สำเร็จ',
+      },
+    );
   });
 
   const handleDeleteConfig = async (configId: number) => {
     if (!isSA || configId === defaultConfig?.config_id) return;
     setError('');
-    try {
-      await adminConfigApi.deleteConfig(configId);
-      setConfigs((prev) => prev.filter((c) => c.config_id !== configId));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ลบ config ไม่สำเร็จ');
-    }
+    await runAsyncAction(
+      async () => {
+        await adminConfigApi.deleteConfig(configId);
+        setConfigs((prev) => prev.filter((c) => c.config_id !== configId));
+      },
+      {
+        onError: (message) => setError(message),
+        fallbackMessage: 'ลบ config ไม่สำเร็จ',
+      },
+    );
   };
 
   const handleSaveVerification = async () => {

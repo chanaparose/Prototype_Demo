@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { Button } from '@/components/ui/button';
 
 interface DismissRfqButtonProps {
@@ -39,25 +40,31 @@ export function DismissRfqButton({
   const labelCode = rfqCode || `#${rfqId}`;
 
   const doDismiss = async () => {
-    setBusy(true);
-    try {
-      await onDismiss();
-      if (onUndismiss) setToast({ sec: 5 });
-      setConfirmOpen(false);
-    } finally {
-      setBusy(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await onDismiss();
+        if (onUndismiss) setToast({ sec: 5 });
+        setConfirmOpen(false);
+      },
+      {
+        onStart: () => setBusy(true),
+        onSettled: () => setBusy(false),
+      },
+    );
   };
 
   const doUndo = async () => {
     if (!onUndismiss) return;
-    setBusy(true);
-    try {
-      await onUndismiss();
-      setToast(null);
-    } finally {
-      setBusy(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await onUndismiss();
+        setToast(null);
+      },
+      {
+        onStart: () => setBusy(true),
+        onSettled: () => setBusy(false),
+      },
+    );
   };
 
   if (isDismissed) return null;

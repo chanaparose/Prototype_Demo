@@ -12,15 +12,12 @@ import type {
   IRegisterFactoryRequest,
 } from '@/services/api/types/auth.types';
 import { setToken } from '@/services/api/tokenManager';
+import { ignoreAsyncError } from '@/utils/asyncAction';
 
 async function hydrateUserProfile(session: IAuthSession): Promise<IAuthSession> {
-  try {
-    setToken(session.token);
-    const me = await frontendApi.getMe();
-    return { ...session, user: mapUserFromApi(me) };
-  } catch {
-    return session;
-  }
+  setToken(session.token);
+  const me = await ignoreAsyncError(frontendApi.getMe());
+  return me ? { ...session, user: mapUserFromApi(me) } : session;
 }
 
 export async function loginAction(request: ILoginRequest): Promise<IAuthSession> {

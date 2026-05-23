@@ -33,21 +33,22 @@ export interface IAuthActions {
 
 export const useAuthStore = create<IAuthState & IAuthActions>((set) => {
   const fetchUser = async () => {
-    try {
-      const user = await fetchCurrentUserAction();
-      set({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
+    await fetchCurrentUserAction()
+      .then((user) => {
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      })
+      .catch(() => {
+        const token = getToken();
+        set({
+          token,
+          isAuthenticated: Boolean(token),
+          isLoading: false,
+        });
       });
-    } catch {
-      const token = getToken();
-      set({
-        token,
-        isAuthenticated: Boolean(token),
-        isLoading: false,
-      });
-    }
   };
 
   const token = getToken();

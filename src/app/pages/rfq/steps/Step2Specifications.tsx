@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { mediaApi } from '@/services/api/factoryApi';
 import { DimensionInput } from '@/shared/ui/DimensionInput';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
@@ -19,13 +20,16 @@ export function Step2Specifications({ draft, setDraft }: Props) {
 
   const uploadOne = async (f: File) => {
     if (draft.reference_images.length >= 5) return;
-    setUploading(true);
-    try {
-      const res = await mediaApi.upload(f);
-      setDraft({ reference_images: [...draft.reference_images, res.url].slice(0, 5) });
-    } finally {
-      setUploading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const res = await mediaApi.upload(f);
+        setDraft({ reference_images: [...draft.reference_images, res.url].slice(0, 5) });
+      },
+      {
+        onStart: () => setUploading(true),
+        onSettled: () => setUploading(false),
+      },
+    );
   };
 
   const removeReference = (index: number) => {

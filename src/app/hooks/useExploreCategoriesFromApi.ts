@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { IExploreCategory } from '@/domain/explore/types/explore.model';
 import { fetchExploreCategoriesListOnly } from '@/utils/exploreCategoriesFromApi';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 export type ExploreCategoriesApiState = {
   merged: IExploreCategory[];
@@ -18,22 +19,29 @@ export function useExploreCategoriesFromApi(options?: Options): ExploreCategorie
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fetchExploreCategoriesListOnly();
-      setMerged(result.merged);
-      if (result.bothFailed && result.firstError) {
-        setError(result.firstError.message);
-      } else {
-        setError(null);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ไม่สามารถโหลดหมวดหมู่ได้');
-      setMerged([]);
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const result = await fetchExploreCategoriesListOnly();
+        setMerged(result.merged);
+        if (result.bothFailed && result.firstError) {
+          setError(result.firstError.message);
+        } else {
+          setError(null);
+        }
+      },
+      {
+        onStart: () => {
+          setLoading(true);
+          setError(null);
+        },
+        onSettled: () => setLoading(false),
+        onError: (message) => {
+          setError(message);
+          setMerged([]);
+        },
+        fallbackMessage: 'ไม่สามารถโหลดหมวดหมู่ได้',
+      },
+    );
   }, []);
 
   useEffect(() => {

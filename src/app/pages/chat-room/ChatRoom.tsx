@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -266,8 +267,8 @@ function ChatRoomBody({
   const sendWithText = useCallback(
     async (text: string, tempKey: string, attachRef: ChatReference | null) => {
       if (!apiConv || currentUserId == null) return;
-      try {
-        const res = (await messagesApi.send(
+      await messagesApi
+        .send(
           apiConv.conv_id,
           buildSendPayload({
             conv: apiConv,
@@ -276,11 +277,12 @@ function ChatRoomBody({
             reference: attachRef ?? undefined,
             messageType: 'TX',
           }),
-        )) as unknown as Record<string, unknown>;
-        const serverRow = rowToRoomMessage(res);
-        if (serverRow && serverRow.key) {
-          setMessages((prev) =>
-            {
+        )
+        .then((res) => {
+          const row = res as unknown as Record<string, unknown>;
+          const serverRow = rowToRoomMessage(row);
+          if (serverRow && serverRow.key) {
+            setMessages((prev) => {
               const optimistic = prev.find((m) => m.key === tempKey);
               const mergedServerRow: RoomMessage = {
                 ...serverRow,
@@ -293,27 +295,27 @@ function ChatRoomBody({
                   mergedServerRow,
                 ]),
               );
-            },
-          );
-        } else {
-          const mid = String(res.message_id ?? res.id ?? tempKey);
-          setMessages((prev) =>
-            sortMessagesByCreatedAt(
-              dedupeByKey(
-                prev.map((m) =>
-                  m.key === tempKey ? { ...m, key: mid, status: 'ok' as const } : m,
+            });
+          } else {
+            const mid = String(row.message_id ?? row.id ?? tempKey);
+            setMessages((prev) =>
+              sortMessagesByCreatedAt(
+                dedupeByKey(
+                  prev.map((m) =>
+                    m.key === tempKey ? { ...m, key: mid, status: 'ok' as const } : m,
+                  ),
                 ),
               ),
-            ),
+            );
+          }
+          void refetchConversations?.();
+          if (attachRef) setPendingRef(null);
+        })
+        .catch(() => {
+          setMessages((prev) =>
+            prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
           );
-        }
-        void refetchConversations?.();
-        if (attachRef) setPendingRef(null);
-      } catch {
-        setMessages((prev) =>
-          prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
-        );
-      }
+        });
     },
     [apiConv, currentUserId, setMessages, refetchConversations],
   );
@@ -385,39 +387,45 @@ function ChatRoomBody({
     };
     setMessages((prev) => insertMessageSorted(prev, optimistic));
 
-    try {
-      const uploaded = await mediaApi.upload(file);
-      const imageUrl = String(uploaded?.url ?? '');
-      if (!imageUrl) throw new Error('ไม่ได้รับ URL รูปภาพ');
+    await runAsyncAction(
+      async () => {
+        const uploaded = await mediaApi.upload(file);
+        const imageUrl = String(uploaded?.url ?? '');
+        if (!imageUrl) throw new Error('ไม่ได้รับ URL รูปภาพ');
 
-      const res = (await messagesApi.send(apiConv.conv_id, {
-        content: '',
-        receiver_id: resolveReceiverId(apiConv, currentUserId),
-        message_type: 'IM',
-        attachment_url: imageUrl,
-      })) as unknown as Record<string, unknown>;
+        const res = (await messagesApi.send(apiConv.conv_id, {
+          content: '',
+          receiver_id: resolveReceiverId(apiConv, currentUserId),
+          message_type: 'IM',
+          attachment_url: imageUrl,
+        })) as unknown as Record<string, unknown>;
 
-      const serverRow = rowToRoomMessage(res);
-      setMessages((prev) => {
-        const withImage = serverRow
-          ? { ...serverRow, imageUrl, status: 'ok' as const }
-          : null;
-        const filtered = prev.filter((m) => m.key !== tempKey && m.key !== serverRow?.key);
-        return withImage
-          ? sortMessagesByCreatedAt(dedupeByKey([...filtered, withImage]))
-          : sortMessagesByCreatedAt(
-              dedupeByKey(prev.map((m) => (m.key === tempKey ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const } : m))),
-            );
-      });
-      URL.revokeObjectURL(localUrl);
-    } catch (err) {
-      setMessages((prev) =>
-        prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
-      );
-      toast.error(err instanceof Error ? err.message : 'อัปโหลดรูปไม่สำเร็จ');
-    } finally {
-      setUploadingImage(false);
-    }
+        const serverRow = rowToRoomMessage(res);
+        setMessages((prev) => {
+          const withImage = serverRow
+            ? { ...serverRow, imageUrl, status: 'ok' as const }
+            : null;
+          const filtered = prev.filter((m) => m.key !== tempKey && m.key !== serverRow?.key);
+          return withImage
+            ? sortMessagesByCreatedAt(dedupeByKey([...filtered, withImage]))
+            : sortMessagesByCreatedAt(
+                dedupeByKey(prev.map((m) => (m.key === tempKey ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const } : m))),
+              );
+        });
+        URL.revokeObjectURL(localUrl);
+      },
+      {
+        onStart: () => setUploadingImage(true),
+        onSettled: () => setUploadingImage(false),
+        onError: (_message, err) => {
+          setMessages((prev) =>
+            prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
+          );
+          toast.error(err instanceof Error ? err.message : 'อัปโหลดรูปไม่สำเร็จ');
+        },
+        fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
+      },
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -470,34 +478,40 @@ function ChatRoomBody({
 
   const handleAcceptQuotation = useCallback(
     async (quotationId: number) => {
-      setQuotationLoadingId(quotationId);
-      try {
-        const res = await ordersApi.acceptQuote(quotationId);
-        const orderId = Number(res.order_id ?? 0);
-        await refreshThread();
-        if (Number.isFinite(orderId) && orderId > 0) navigate(`/orders/${orderId}`);
-        else toast.success('ยืนยันใบเสนอราคาแล้ว');
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'ยืนยันใบเสนอราคาไม่สำเร็จ');
-      } finally {
-        setQuotationLoadingId(null);
-      }
+      await runAsyncAction(
+        async () => {
+          const res = await ordersApi.acceptQuote(quotationId);
+          const orderId = Number(res.order_id ?? 0);
+          await refreshThread();
+          if (Number.isFinite(orderId) && orderId > 0) navigate(`/orders/${orderId}`);
+          else toast.success('ยืนยันใบเสนอราคาแล้ว');
+        },
+        {
+          onStart: () => setQuotationLoadingId(quotationId),
+          onSettled: () => setQuotationLoadingId(null),
+          onError: (message) => toast.error(message),
+          fallbackMessage: 'ยืนยันใบเสนอราคาไม่สำเร็จ',
+        },
+      );
     },
     [navigate, refreshThread],
   );
 
   const handleRejectQuotation = useCallback(
     async (quotationId: number) => {
-      setQuotationLoadingId(quotationId);
-      try {
-        await quotationsApi.update(quotationId, { status: 'RJ' });
-        await refreshThread();
-        toast.success('ปฏิเสธใบเสนอราคาแล้ว');
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : 'ปฏิเสธใบเสนอราคาไม่สำเร็จ');
-      } finally {
-        setQuotationLoadingId(null);
-      }
+      await runAsyncAction(
+        async () => {
+          await quotationsApi.update(quotationId, { status: 'RJ' });
+          await refreshThread();
+          toast.success('ปฏิเสธใบเสนอราคาแล้ว');
+        },
+        {
+          onStart: () => setQuotationLoadingId(quotationId),
+          onSettled: () => setQuotationLoadingId(null),
+          onError: (message) => toast.error(message),
+          fallbackMessage: 'ปฏิเสธใบเสนอราคาไม่สำเร็จ',
+        },
+      );
     },
     [refreshThread],
   );

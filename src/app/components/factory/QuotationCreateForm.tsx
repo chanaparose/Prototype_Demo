@@ -3,6 +3,7 @@ import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getErrorMessage } from '@/lib/apiError';
+import { runAsyncAction } from '@/utils/asyncAction';
 import {
   quotationFormSchema,
   type QuotationFormSchemaValues,
@@ -168,21 +169,25 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const handleImageFiles = useCallback(
       async (files: FileList | null) => {
         if (!files || files.length === 0) return;
-        setUploadingImage(true);
-        try {
-          const uploaded = await Promise.all(
-            Array.from(files).map((f) => mediaApi.upload(f).then((r) => r.url as string)),
-          );
-          setImageUrls((prev) => [...prev, ...uploaded]);
+        await runAsyncAction(
+          async () => {
+            const uploaded = await Promise.all(
+              Array.from(files).map((f) => mediaApi.upload(f).then((r) => r.url as string)),
+            );
+            setImageUrls((prev) => [...prev, ...uploaded]);
 
-          form.setValue('price_per_piece', form.getValues('price_per_piece'), {
-            shouldDirty: true,
-          });
-        } catch {
-        } finally {
-          setUploadingImage(false);
-          if (imageInputRef.current) imageInputRef.current.value = '';
-        }
+            form.setValue('price_per_piece', form.getValues('price_per_piece'), {
+              shouldDirty: true,
+            });
+          },
+          {
+            onStart: () => setUploadingImage(true),
+            onSettled: () => {
+              setUploadingImage(false);
+              if (imageInputRef.current) imageInputRef.current.value = '';
+            },
+          },
+        );
       },
       [form],
     );
@@ -220,40 +225,43 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       const priceN = Number(v.price_per_piece);
       const leadN = Number(v.lead_time_days);
 
-      setSaving(true);
       setError('');
-      try {
-        const shipId = lockedShippingMethodId ?? 0;
-        const body: Record<string, unknown> = {
-          factory_id: factoryId,
-          price_per_piece: priceN,
-          tooling_mold_cost: Number(v.tooling_mold_cost) || 0,
-          shipping_cost: Number(v.shipping_cost) || 0,
-          packaging_cost: Number(v.packaging_cost) || 0,
-          lead_time_days: leadN,
-          validity_days: Number(v.validity_days) || 14,
-          image_urls: imageUrls,
-          factory_highlight: factoryHighlight.trim() || undefined,
-          reason: 'อัปเดตใบเสนอราคา',
-        };
+      await runAsyncAction(
+        async () => {
+          const shipId = lockedShippingMethodId ?? 0;
+          const body: Record<string, unknown> = {
+            factory_id: factoryId,
+            price_per_piece: priceN,
+            tooling_mold_cost: Number(v.tooling_mold_cost) || 0,
+            shipping_cost: Number(v.shipping_cost) || 0,
+            packaging_cost: Number(v.packaging_cost) || 0,
+            lead_time_days: leadN,
+            validity_days: Number(v.validity_days) || 14,
+            image_urls: imageUrls,
+            factory_highlight: factoryHighlight.trim() || undefined,
+            reason: 'อัปเดตใบเสนอราคา',
+          };
 
-        if (shipId > 0) body.shipping_method_id = shipId;
+          if (shipId > 0) body.shipping_method_id = shipId;
 
-        body.payment_terms = LOCKED_PAYMENT_TERMS;
-        if (patchQuotationId) {
-          await quotationsApi.update(patchQuotationId, body);
-        } else {
-          await quotationsApi.create(rfqId, body);
-        }
-        form.reset(v);
-        await qc.invalidateQueries({ queryKey: rfqKeys.detail(rfqId) });
-        await qc.invalidateQueries({ queryKey: rfqKeys.quotations(rfqId) });
-        await onSubmitted?.();
-      } catch (e) {
-        setError(getErrorMessage(e, 'ส่งไม่สำเร็จ'));
-      } finally {
-        setSaving(false);
-      }
+          body.payment_terms = LOCKED_PAYMENT_TERMS;
+          if (patchQuotationId) {
+            await quotationsApi.update(patchQuotationId, body);
+          } else {
+            await quotationsApi.create(rfqId, body);
+          }
+          form.reset(v);
+          await qc.invalidateQueries({ queryKey: rfqKeys.detail(rfqId) });
+          await qc.invalidateQueries({ queryKey: rfqKeys.quotations(rfqId) });
+          await onSubmitted?.();
+        },
+        {
+          onStart: () => setSaving(true),
+          onSettled: () => setSaving(false),
+          onError: (message) => setError(message),
+          fallbackMessage: 'ส่งไม่สำเร็จ',
+        },
+      );
     }, [
       readOnly,
       form,

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate, useParams, Link } from 'react-router';
 import {
   ChevronLeft,
@@ -217,18 +218,20 @@ export function AdminFactoryDetailPage() {
 
   const loadDetail = async () => {
     if (!id) return;
-    setLoading(true);
     setError('');
-    try {
-      const rawFactory = await adminApi.getFactory(id);
-
-      const mapped = mapDetail(rawFactory);
-      setFactory(mapped);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดรายละเอียดโรงงานไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const rawFactory = await adminApi.getFactory(id);
+        const mapped = mapDetail(rawFactory);
+        setFactory(mapped);
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'โหลดรายละเอียดโรงงานไม่สำเร็จ',
+      },
+    );
   };
 
   useEffect(() => {
@@ -237,19 +240,23 @@ export function AdminFactoryDetailPage() {
 
   const loadFactoryConfig = async () => {
     if (!id) return;
-    try {
-      const fid = pickScalarNumber(id) ?? 0;
-      if (!Number.isFinite(fid) || fid <= 0) return;
-      const [configRes, listRes] = await Promise.all([
-        adminFactoryConfigApi.getFactoryConfig(fid),
-        adminConfigApi.listConfigs(),
-      ]);
-      setCurrentConfig(configRes);
-      setSelectedConfigId(configRes.config_id);
-      setConfigList((listRes.configs ?? []).slice().sort((a, b) => a.config_id - b.config_id));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลด config ของโรงงานไม่สำเร็จ');
-    }
+    await runAsyncAction(
+      async () => {
+        const fid = pickScalarNumber(id) ?? 0;
+        if (!Number.isFinite(fid) || fid <= 0) return;
+        const [configRes, listRes] = await Promise.all([
+          adminFactoryConfigApi.getFactoryConfig(fid),
+          adminConfigApi.listConfigs(),
+        ]);
+        setCurrentConfig(configRes);
+        setSelectedConfigId(configRes.config_id);
+        setConfigList((listRes.configs ?? []).slice().sort((a, b) => a.config_id - b.config_id));
+      },
+      {
+        onError: (message) => setError(message),
+        fallbackMessage: 'โหลด config ของโรงงานไม่สำเร็จ',
+      },
+    );
   };
 
   useEffect(() => {
@@ -271,37 +278,43 @@ export function AdminFactoryDetailPage() {
 
   const handleSaveFactoryConfig = async () => {
     if (!factory.factory_id || selectedConfigId === '' || isFactoryConfigSelectionUnchanged) return;
-    setSavingConfig(true);
     setError('');
-    try {
-      const res = await adminFactoryConfigApi.assignConfig(factory.factory_id, {
-        config_id: selectedConfigId,
-        note: configNote.trim(),
-      });
-      setCurrentConfig(res);
-      setSelectedConfigId(res.config_id);
-      setConfigNote('');
-      setSavedConfig(true);
-      setTimeout(() => setSavedConfig(false), 2200);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'บันทึก config โรงงานไม่สำเร็จ');
-    } finally {
-      setSavingConfig(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const res = await adminFactoryConfigApi.assignConfig(factory.factory_id, {
+          config_id: selectedConfigId,
+          note: configNote.trim(),
+        });
+        setCurrentConfig(res);
+        setSelectedConfigId(res.config_id);
+        setConfigNote('');
+        setSavedConfig(true);
+        setTimeout(() => setSavedConfig(false), 2200);
+      },
+      {
+        onStart: () => setSavingConfig(true),
+        onSettled: () => setSavingConfig(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'บันทึก config โรงงานไม่สำเร็จ',
+      },
+    );
   };
 
   const handleApprove = async () => {
     if (!canApprove || !factory.factory_id) return;
-    setSaving(true);
     setError('');
-    try {
-      await adminApi.approveFactory(factory.factory_id);
-      await loadDetail();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'อนุมัติโรงงานไม่สำเร็จ');
-    } finally {
-      setSaving(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await adminApi.approveFactory(factory.factory_id);
+        await loadDetail();
+      },
+      {
+        onStart: () => setSaving(true),
+        onSettled: () => setSaving(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'อนุมัติโรงงานไม่สำเร็จ',
+      },
+    );
   };
 
   const handleReject = async () => {
@@ -316,48 +329,57 @@ export function AdminFactoryDetailPage() {
     });
     if (!reason) return;
 
-    setSaving(true);
     setError('');
-    try {
-      await adminApi.rejectFactory(factory.factory_id, reason);
-      await loadDetail();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ปฏิเสธโรงงานไม่สำเร็จ');
-    } finally {
-      setSaving(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await adminApi.rejectFactory(factory.factory_id, reason);
+        await loadDetail();
+      },
+      {
+        onStart: () => setSaving(true),
+        onSettled: () => setSaving(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'ปฏิเสธโรงงานไม่สำเร็จ',
+      },
+    );
   };
 
   const handleSuspendToggle = async () => {
     if (!canSuspend || !factory.factory_id) return;
-    setSaving(true);
     setError('');
-    try {
-      if (factory.approval_status === 'suspended') {
-        await adminApi.unsuspendFactory(factory.factory_id);
-      } else {
-        await adminApi.suspendFactory(factory.factory_id, 'ระงับโดยผู้ดูแลระบบ');
-      }
-      await loadDetail();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'อัปเดตสถานะระงับไม่สำเร็จ');
-    } finally {
-      setSaving(false);
-    }
+    await runAsyncAction(
+      async () => {
+        if (factory.approval_status === 'suspended') {
+          await adminApi.unsuspendFactory(factory.factory_id);
+        } else {
+          await adminApi.suspendFactory(factory.factory_id, 'ระงับโดยผู้ดูแลระบบ');
+        }
+        await loadDetail();
+      },
+      {
+        onStart: () => setSaving(true),
+        onSettled: () => setSaving(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'อัปเดตสถานะระงับไม่สำเร็จ',
+      },
+    );
   };
 
   const handleToggleVerification = async () => {
     if (!canSuspend || !factory.factory_id) return;
-    setSaving(true);
     setError('');
-    try {
-      await adminApi.updateFactoryVerification(factory.factory_id, !factory.is_verified);
-      await loadDetail();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'อัปเดตสถานะยืนยันไม่สำเร็จ');
-    } finally {
-      setSaving(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await adminApi.updateFactoryVerification(factory.factory_id, !factory.is_verified);
+        await loadDetail();
+      },
+      {
+        onStart: () => setSaving(true),
+        onSettled: () => setSaving(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'อัปเดตสถานะยืนยันไม่สำเร็จ',
+      },
+    );
   };
 
   const statusChip = useMemo(() => {

@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AppDialog } from '@/components/ui/app-dialog';
@@ -40,7 +41,25 @@ type Props = {
   onSubmit: (payload: AddressFormPayload, editingId?: string | number) => Promise<void>;
 };
 
-export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmit }: Props) {
+function applySubmitErrors(
+  err: unknown,
+  setError: ReturnType<typeof useForm<AddressFormValues>>['setError'],
+) {
+  const { root, fields } = toFormErrors(err);
+  if (root) setError('root', { message: root });
+  if (fields) {
+    for (const [key, message] of Object.entries(fields)) {
+      const k = key as keyof AddressFormValues;
+      if (k in defaultAddressFormValues) {
+        setError(k, { message });
+      }
+    }
+  }
+}
+
+export function AddressFormModal({ open, mode, initial, saving: savingProp, onClose, onSubmit }: Readonly<Props>) {
+  const [submitting, setSubmitting] = useState(false);
+  const saving = savingProp ?? submitting;
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
     defaultValues: defaultAddressFormValues,
@@ -72,20 +91,14 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
 
   const onValid = async (values: AddressFormValues) => {
     const editingId = initial?.address_id ?? initial?.id;
-    try {
-      await onSubmit(toAddressFormPayload(values), editingId as string | number | undefined);
-    } catch (err) {
-      const { root, fields } = toFormErrors(err);
-      if (root) setError('root', { message: root });
-      if (fields) {
-        for (const [key, message] of Object.entries(fields)) {
-          const k = key as keyof AddressFormValues;
-          if (k in defaultAddressFormValues) {
-            setError(k, { message });
-          }
-        }
-      }
-    }
+    await runAsyncAction(
+      () => onSubmit(toAddressFormPayload(values), editingId as string | number | undefined),
+      {
+        onStart: () => setSubmitting(true),
+        onSettled: () => setSubmitting(false),
+        onError: (_message, err) => applySubmitErrors(err, setError),
+      },
+    );
   };
 
   return (

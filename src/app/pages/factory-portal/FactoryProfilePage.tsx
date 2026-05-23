@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { profileFormSchema } from '@/domain/factory/schemas/profileForm.schema';
@@ -461,7 +462,6 @@ export function FactoryProfilePage() {
       return;
     }
     const v = form.getValues();
-    setSaving(true);
     setError('');
     setOkMsg('');
 
@@ -474,51 +474,57 @@ export function FactoryProfilePage() {
       sub_category_ids: normalizedSubCategoryIds,
     };
 
-    try {
-      await factoriesApi.saveProfile(fid, {
-        factory_name: v.factory_name.trim(),
-        tax_id: v.tax_id.trim() || undefined,
-        description: v.description.trim() || undefined,
-        factory_type_id: v.factory_type_id ?? undefined,
-        min_order: v.min_order != null && v.min_order > 0 ? v.min_order : undefined,
-        lead_time_desc: v.lead_time_desc.trim() || undefined,
-        image_url: String(v.image_url ?? ''),
-        background_image_url: String(v.cover_image_url ?? ''),
-        category_ids: normalizedCategoryIds,
-        sub_category_ids: normalizedSubCategoryIds,
-      });
-
-    setSaving(false);
-      setOkMsg('บันทึกข้อมูลเรียบร้อย');
-      form.reset(saveDraftValues);
-      await refreshUser();
-      await qc.invalidateQueries({ queryKey: profileInitKey });
-    } catch (err) {
-      setSaving(false);
-      setError(err instanceof Error ? err.message : 'บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง');
-    }
+    await runAsyncAction(
+      async () => {
+        await factoriesApi.saveProfile(fid, {
+          factory_name: v.factory_name.trim(),
+          tax_id: v.tax_id.trim() || undefined,
+          description: v.description.trim() || undefined,
+          factory_type_id: v.factory_type_id ?? undefined,
+          min_order: v.min_order != null && v.min_order > 0 ? v.min_order : undefined,
+          lead_time_desc: v.lead_time_desc.trim() || undefined,
+          image_url: String(v.image_url ?? ''),
+          background_image_url: String(v.cover_image_url ?? ''),
+          category_ids: normalizedCategoryIds,
+          sub_category_ids: normalizedSubCategoryIds,
+        });
+        setOkMsg('บันทึกข้อมูลเรียบร้อย');
+        form.reset(saveDraftValues);
+        await refreshUser();
+        await qc.invalidateQueries({ queryKey: profileInitKey });
+      },
+      {
+        onStart: () => setSaving(true),
+        onSettled: () => setSaving(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'บันทึกไม่สำเร็จ — กรุณาลองอีกครั้ง',
+      },
+    );
   }, [fid, form, qc, refreshUser]);
 
   const handleUploadImage = useCallback(
     async (file: File) => {
       if (!file || !fid) return;
-      setUploadingImage(true);
       setError('');
       setOkMsg('');
-      try {
-        const up = await mediaApi.upload(file);
-        const url = String(up?.url ?? '').trim();
-        if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
-        await factoriesApi.patch(fid, { image_url: url });
-        form.setValue('image_url', url, { shouldDirty: false });
-        setOkMsg('อัปโหลดและบันทึกรูปโปรไฟล์โรงงานแล้ว');
-        await refreshUser();
-        await qc.invalidateQueries({ queryKey: profileInitKey });
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'อัปโหลดหรือบันทึกรูปไม่สำเร็จ');
-      } finally {
-        setUploadingImage(false);
-      }
+      await runAsyncAction(
+        async () => {
+          const up = await mediaApi.upload(file);
+          const url = String(up?.url ?? '').trim();
+          if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+          await factoriesApi.patch(fid, { image_url: url });
+          form.setValue('image_url', url, { shouldDirty: false });
+          setOkMsg('อัปโหลดและบันทึกรูปโปรไฟล์โรงงานแล้ว');
+          await refreshUser();
+          await qc.invalidateQueries({ queryKey: profileInitKey });
+        },
+        {
+          onStart: () => setUploadingImage(true),
+          onSettled: () => setUploadingImage(false),
+          onError: (message) => setError(message),
+          fallbackMessage: 'อัปโหลดหรือบันทึกรูปไม่สำเร็จ',
+        },
+      );
     },
     [fid, form, qc, refreshUser],
   );
@@ -526,23 +532,26 @@ export function FactoryProfilePage() {
   const handleUploadCover = useCallback(
     async (file: File) => {
       if (!file || !fid) return;
-      setUploadingCover(true);
       setError('');
       setOkMsg('');
-      try {
-        const up = await mediaApi.upload(file);
-        const url = String(up?.url ?? '').trim();
-        if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
-        await factoriesApi.patch(fid, { background_image_url: url });
-        form.setValue('cover_image_url', url, { shouldDirty: false });
-        setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
-        await refreshUser();
-        await qc.invalidateQueries({ queryKey: profileInitKey });
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'อัปโหลดหรือบันทึกพื้นหลังไม่สำเร็จ');
-      } finally {
-        setUploadingCover(false);
-      }
+      await runAsyncAction(
+        async () => {
+          const up = await mediaApi.upload(file);
+          const url = String(up?.url ?? '').trim();
+          if (!url) throw new Error('อัปโหลดรูปไม่สำเร็จ');
+          await factoriesApi.patch(fid, { background_image_url: url });
+          form.setValue('cover_image_url', url, { shouldDirty: false });
+          setOkMsg('อัปโหลดและบันทึกรูปพื้นหลังโรงงานแล้ว');
+          await refreshUser();
+          await qc.invalidateQueries({ queryKey: profileInitKey });
+        },
+        {
+          onStart: () => setUploadingCover(true),
+          onSettled: () => setUploadingCover(false),
+          onError: (message) => setError(message),
+          fallbackMessage: 'อัปโหลดหรือบันทึกพื้นหลังไม่สำเร็จ',
+        },
+      );
     },
     [fid, form, qc, refreshUser],
   );
@@ -556,20 +565,23 @@ export function FactoryProfilePage() {
       destructive: true,
     });
     if (!ok) return;
-    setUploadingCover(true);
     setError('');
     setOkMsg('');
-    try {
-      await factoriesApi.patch(fid, { background_image_url: '' });
-      form.setValue('cover_image_url', '', { shouldDirty: false });
-      setOkMsg('ลบรูปพื้นหลังแล้ว');
-      await refreshUser();
-      await qc.invalidateQueries({ queryKey: profileInitKey });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ลบพื้นหลังไม่สำเร็จ');
-    } finally {
-      setUploadingCover(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await factoriesApi.patch(fid, { background_image_url: '' });
+        form.setValue('cover_image_url', '', { shouldDirty: false });
+        setOkMsg('ลบรูปพื้นหลังแล้ว');
+        await refreshUser();
+        await qc.invalidateQueries({ queryKey: profileInitKey });
+      },
+      {
+        onStart: () => setUploadingCover(true),
+        onSettled: () => setUploadingCover(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'ลบพื้นหลังไม่สำเร็จ',
+      },
+    );
   }, [confirm, fid, form, qc, refreshUser]);
 
   const openCropper = useCallback((target: 'profile' | 'cover', file: File) => {
@@ -665,15 +677,12 @@ export function FactoryProfilePage() {
         outputWidth={cropTarget === 'profile' ? 900 : 1800}
         onCancel={closeCropper}
         onConfirm={async (file) => {
-          try {
-            if (cropTarget === 'profile') {
-              await handleUploadImage(file);
-            } else if (cropTarget === 'cover') {
-              await handleUploadCover(file);
-            }
-          } finally {
-            closeCropper();
+          if (cropTarget === 'profile') {
+            await handleUploadImage(file);
+          } else if (cropTarget === 'cover') {
+            await handleUploadCover(file);
           }
+          closeCropper();
         }}
       />
       <ConfirmDialog />

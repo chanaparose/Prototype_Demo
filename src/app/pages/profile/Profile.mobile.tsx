@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate } from 'react-router';
 import {
   ChevronRight,
@@ -198,36 +199,37 @@ export function ProfileMobile() {
 
   const addAddress = async () => {
     if (!newAddress.trim() || addingAddress) return;
-    setAddingAddress(true);
-    try {
-      await addressesApi.create({
-        address_type: 'shipping',
-        address_detail: newAddress.trim(),
-        sub_district_id: 0,
-        district_id: 0,
-        province_id: 0,
-        zip_code: '',
-        is_default: addresses.length === 0,
-      });
-      setNewAddress('');
-      setShowAddressForm(false);
-      // refetch
-      const raw = (await addressesApi.list()) as Record<string, unknown>[];
-      setAddresses(
-        raw
-          .map((r) => ({
-            id: String(r.address_id ?? r.id ?? ''),
-            label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
-            detail: String(r.address_detail ?? r.detail ?? ''),
-            isDefault: Boolean(r.is_default ?? false),
-          }))
-          .filter((a) => a.id),
-      );
-    } catch {
-      // silent fail
-    } finally {
-      setAddingAddress(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await addressesApi.create({
+          address_type: 'shipping',
+          address_detail: newAddress.trim(),
+          sub_district_id: 0,
+          district_id: 0,
+          province_id: 0,
+          zip_code: '',
+          is_default: addresses.length === 0,
+        });
+        setNewAddress('');
+        setShowAddressForm(false);
+        // refetch
+        const raw = (await addressesApi.list()) as Record<string, unknown>[];
+        setAddresses(
+          raw
+            .map((r) => ({
+              id: String(r.address_id ?? r.id ?? ''),
+              label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+              detail: String(r.address_detail ?? r.detail ?? ''),
+              isDefault: Boolean(r.is_default ?? false),
+            }))
+            .filter((a) => a.id),
+        );
+      },
+      {
+        onStart: () => setAddingAddress(true),
+        onSettled: () => setAddingAddress(false),
+      },
+    );
   };
 
   useEffect(() => {

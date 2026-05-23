@@ -22,22 +22,14 @@ export function AddressesSection() {
   const invalidate = () => qc.invalidateQueries({ queryKey: addressKeys.me() });
 
   const submit = async (payload: AddressFormPayload, editingId?: string | number) => {
-    modal.setLoading(true);
-    modal.clearError();
-    try {
-      if (mode === 'create') {
-        await addressesApi.create(payload);
-      } else if (editingId != null) {
-        await addressesApi.update(editingId, payload);
-      }
-      invalidate();
-      modal.closeModal();
-      setEditing(null);
-    } catch (err) {
-      throw err;
-    } finally {
-      modal.setLoading(false);
+    if (mode === 'create') {
+      await addressesApi.create(payload);
+    } else if (editingId != null) {
+      await addressesApi.update(editingId, payload);
     }
+    invalidate();
+    modal.closeModal();
+    setEditing(null);
   };
 
   const remove = async (row: Row) => {
@@ -84,9 +76,7 @@ export function AddressesSection() {
         open={modal.isOpen}
         mode={mode}
         initial={editing}
-        saving={modal.isLoading}
         onClose={() => {
-          if (modal.isLoading) return;
           modal.closeModal();
           setEditing(null);
         }}

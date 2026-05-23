@@ -13,6 +13,7 @@ import {
 } from '@/domain/factory/schemas/quotationEditForm.schema';
 import { quotationKeys } from '@/lib/queryKeys';
 import { getErrorMessage } from '@/lib/apiError';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import { Button } from '@/components/ui/button';
@@ -97,33 +98,37 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
           return false;
         }
 
-        setSaving(true);
         setError('');
-        try {
-          await quotationsApi.patch(quotationId, {
-            factory_id: factoryEntityId,
-            price_per_piece: Number(values.price_per_piece),
-            mold_cost: Number(values.mold_cost) || 0,
-            lead_time_days: Number(values.lead_time_days),
-            shipping_method_id: values.shipping_method_id!,
-            reason: values.reason.trim(),
-          });
-          form.reset({ ...values, reason: '' });
-          lastPrefillKeyRef.current = JSON.stringify(mapQuotationToEditForm(rawQuotation));
-          await Promise.all([
-            qc.invalidateQueries({ queryKey: quotationKeys.detail(quotationId) }),
-            qc.invalidateQueries({ queryKey: quotationKeys.history(quotationId) }),
-          ]);
-          onSaved?.('บันทึกการแก้ไขเรียบร้อย');
-          return true;
-        } catch (e) {
-          const msg = getErrorMessage(e, 'บันทึกไม่สำเร็จ');
-          setError(msg);
-          onError?.(msg);
-          return false;
-        } finally {
-          setSaving(false);
-        }
+        const ok = await runAsyncAction(
+          async () => {
+            await quotationsApi.patch(quotationId, {
+              factory_id: factoryEntityId,
+              price_per_piece: Number(values.price_per_piece),
+              mold_cost: Number(values.mold_cost) || 0,
+              lead_time_days: Number(values.lead_time_days),
+              shipping_method_id: values.shipping_method_id!,
+              reason: values.reason.trim(),
+            });
+            form.reset({ ...values, reason: '' });
+            lastPrefillKeyRef.current = JSON.stringify(mapQuotationToEditForm(rawQuotation));
+            await Promise.all([
+              qc.invalidateQueries({ queryKey: quotationKeys.detail(quotationId) }),
+              qc.invalidateQueries({ queryKey: quotationKeys.history(quotationId) }),
+            ]);
+            onSaved?.('บันทึกการแก้ไขเรียบร้อย');
+            return true;
+          },
+          {
+            onStart: () => setSaving(true),
+            onSettled: () => setSaving(false),
+            onError: (message) => {
+              setError(message);
+              onError?.(message);
+            },
+            fallbackMessage: 'บันทึกไม่สำเร็จ',
+          },
+        );
+        return ok === true;
       },
       [isLocked, quotationId, factoryEntityId, form, qc, rawQuotation, onSaved, onError, setSaving],
     );

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -44,13 +45,18 @@ export function RejectConfirmModal({ open, stepNameTh, onClose, onConfirm }: Pro
   }, [open, form]);
 
   const onSubmit = async (values: RejectReasonFormValues) => {
-    try {
-      await onConfirm(values.reason.trim());
-      form.reset({ reason: '' });
-      onClose();
-    } catch (e) {
-      form.setError('reason', { message: productionErrorMessage(e) });
-    }
+    await runAsyncAction(
+      async () => {
+        await onConfirm(values.reason.trim());
+        form.reset({ reason: '' });
+        onClose();
+      },
+      {
+        onError: (_message, e) => {
+          form.setError('reason', { message: productionErrorMessage(e) });
+        },
+      },
+    );
   };
 
   return (

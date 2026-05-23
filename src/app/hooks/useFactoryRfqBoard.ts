@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { daysUntilDeadline } from '@/utils/rfqDeadline';
@@ -31,10 +32,10 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
     const title = pickScalarString(inner.title, row.title, 'RFQ');
     const requestKind = pickScalarString(inner.request_kind, row.request_kind, 'PR').toUpperCase();
     const status = pickScalarString(inner.status, row.status).toUpperCase();
-    const quantity = inner.quantity != null ? Number(inner.quantity) : null;
+    const quantity = inner.quantity == null ? null : Number(inner.quantity);
 
     const totalBudgetRaw = Number(inner.target_price ?? inner.budget_total ?? inner.total_budget ?? 0);
-    const legacyBudgetPerPiece = inner.budget_per_piece != null ? Number(inner.budget_per_piece) : null;
+    const legacyBudgetPerPiece = inner.budget_per_piece == null ? null : Number(inner.budget_per_piece);
     const budgetPerPiece =
       Number.isFinite(totalBudgetRaw) && totalBudgetRaw > 0 && quantity != null && Number.isFinite(quantity) && quantity > 0
         ? totalBudgetRaw / quantity
@@ -119,42 +120,49 @@ export function useFactoryRfqBoard() {
   const [dismissedLoaded, setDismissedLoaded] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
     setError('');
-    try {
-      const board = await factoryRfqsApi.getRFQBoard();
-      setFactoryCategoryIds(Array.isArray(board.factory_category_ids) ? board.factory_category_ids : []);
+    await runAsyncAction(
+      async () => {
+        const board = await factoryRfqsApi.getRFQBoard();
+        setFactoryCategoryIds(Array.isArray(board.factory_category_ids) ? board.factory_category_ids : []);
 
-      const bases = parseRfqRows(board);
-      const visible = bases.filter((b) => {
-        if (b.hasMyQuote && b.myQuoteStatus === 'AC') return false;
-        if (b.hasMyQuote && b.myQuoteStatus === 'EX') return false;
-        if (!b.hasMyQuote && b.status !== 'OP') return false;
-        return true;
-      });
+        const bases = parseRfqRows(board);
+        const visible = bases.filter((b) => {
+          if (b.hasMyQuote && b.myQuoteStatus === 'AC') return false;
+          if (b.hasMyQuote && b.myQuoteStatus === 'EX') return false;
+          if (!b.hasMyQuote && b.status !== 'OP') return false;
+          return true;
+        });
 
-      setRows(visible);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลด RFQ ไม่สำเร็จ');
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
+        setRows(visible);
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: (message) => {
+          setError(message);
+          setRows([]);
+        },
+        fallbackMessage: 'โหลด RFQ ไม่สำเร็จ',
+      },
+    );
   }, [fid]);
 
   const loadDismissed = useCallback(async () => {
-    setDismissedLoading(true);
-    try {
-      const board = await factoryRfqsApi.getRFQBoard({ show_dismissed: true });
-      const all = parseRfqRows(board);
-      // show_dismissed=true returns only dismissed rows from BE
-      setDismissedRows(all);
-      setDismissedLoaded(true);
-    } catch {
-      setDismissedRows([]);
-    } finally {
-      setDismissedLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const board = await factoryRfqsApi.getRFQBoard({ show_dismissed: true });
+        const all = parseRfqRows(board);
+        // show_dismissed=true returns only dismissed rows from BE
+        setDismissedRows(all);
+        setDismissedLoaded(true);
+      },
+      {
+        onStart: () => setDismissedLoading(true),
+        onSettled: () => setDismissedLoading(false),
+        onError: () => setDismissedRows([]),
+      },
+    );
   }, [fid]);
 
   useEffect(() => {

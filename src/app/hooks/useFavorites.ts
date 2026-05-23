@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { favoritesApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
 import { useSessionStore } from '@/stores/useSessionStore';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 type FavoriteRow = Record<string, unknown>;
 
@@ -38,21 +39,23 @@ export function useFavorites() {
     // If session already seeded favorites, skip the separate API call
     if (seededFromSessionRef.current) return;
 
-    setLoading(true);
-    try {
-      const raw = await favoritesApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as FavoriteRow[];
-      const next = new Set<string>();
-      for (const row of arr) {
-        const id = extractShowcaseId(row);
-        if (id) next.add(id);
-      }
-      setLikedIds(next);
-    } catch {
-      setLikedIds(new Set());
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const raw = await favoritesApi.list();
+        const arr = (Array.isArray(raw) ? raw : []) as FavoriteRow[];
+        const next = new Set<string>();
+        for (const row of arr) {
+          const id = extractShowcaseId(row);
+          if (id) next.add(id);
+        }
+        setLikedIds(next);
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: () => setLikedIds(new Set()),
+      },
+    );
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -79,30 +82,28 @@ export function useFavorites() {
         return next;
       });
 
-      try {
-        if (wasLiked) await favoritesApi.remove(numId);
-        else await favoritesApi.add(numId);
-
-        // Sync back to session store so favorites persist across page navigations
-        useSessionStore.setState((prev) => {
-          if (!prev.data) return prev;
-          const old = prev.data.favorites ?? [];
-          const updated = wasLiked
-            ? old.filter((id) => String(id) !== key)
-            : [...old, numId];
-          return { ...prev, data: { ...prev.data, favorites: updated } };
+      const apiCall = wasLiked ? favoritesApi.remove(numId) : favoritesApi.add(numId);
+      return apiCall
+        .then(() => {
+          useSessionStore.setState((prev) => {
+            if (!prev.data) return prev;
+            const old = prev.data.favorites ?? [];
+            const updated = wasLiked
+              ? old.filter((id) => String(id) !== key)
+              : [...old, numId];
+            return { ...prev, data: { ...prev.data, favorites: updated } };
+          });
+          return true;
+        })
+        .catch(() => {
+          setLikedIds((prev) => {
+            const next = new Set(prev);
+            if (wasLiked) next.add(key);
+            else next.delete(key);
+            return next;
+          });
+          return false;
         });
-
-        return true;
-      } catch {
-        setLikedIds((prev) => {
-          const next = new Set(prev);
-          if (wasLiked) next.add(key);
-          else next.delete(key);
-          return next;
-        });
-        return false;
-      }
     },
     [isAuthenticated, likedIds],
   );

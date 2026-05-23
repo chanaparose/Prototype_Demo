@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Controller } from 'react-hook-form';
 import { ChevronLeft } from 'lucide-react';
 
+import { runAsyncAction } from '@/utils/asyncAction';
 import { mediaApi, showcasesApi } from '@/services/api/factoryApi';
 import { useEditForm } from '@/hooks/forms/useEditForm';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
@@ -192,20 +193,26 @@ export function FactoryShowcaseEditPage() {
       const imageId = persistedImageIdByUrl[urlToRemove];
       if (!id || !Number.isFinite(imageId) || imageId <= 0) return;
 
-      try {
-        await showcasesApi.deleteImage(id, imageId);
-        setPersistedImageIdByUrl((prev) => {
-          const next = { ...prev };
-          delete next[urlToRemove];
-          return next;
-        });
-      } catch (e) {
-        // Revert on failure
-        setImageUrls((prev) =>
-          prev.includes(urlToRemove) ? prev : [...prev, urlToRemove].slice(0, 5),
-        );
-        setError(e instanceof Error ? e.message : 'ลบรูปไม่สำเร็จ');
-      }
+      await runAsyncAction(
+        async () => {
+          await showcasesApi.deleteImage(id, imageId);
+          setPersistedImageIdByUrl((prev) => {
+            const next = { ...prev };
+            delete next[urlToRemove];
+            return next;
+          });
+        },
+        {
+          onError: (message) => {
+            // Revert on failure
+            setImageUrls((prev) =>
+              prev.includes(urlToRemove) ? prev : [...prev, urlToRemove].slice(0, 5),
+            );
+            setError(message);
+          },
+          fallbackMessage: 'ลบรูปไม่สำเร็จ',
+        },
+      );
     },
     [id, persistedImageIdByUrl],
   );
@@ -291,7 +298,6 @@ export function FactoryShowcaseEditPage() {
         setError(validationError);
         return;
       }
-      setSaving(true);
       setError('');
       setLinkedShowcaseError('');
       const payload = buildShowcasePayload({
@@ -302,7 +308,8 @@ export function FactoryShowcaseEditPage() {
         selectedShowcaseIds,
       });
 
-      try {
+      await runAsyncAction(
+        async () => {
         await showcasesApi.update(id, payload);
         const existingRaw = await showcasesApi.listImages(id).catch(() => []);
         const existing = (Array.isArray(existingRaw) ? existingRaw : [])
@@ -365,14 +372,18 @@ export function FactoryShowcaseEditPage() {
           qc.invalidateQueries({ queryKey: showcaseKeys.lists() }),
         ]);
         navigate(backPath, { replace: true });
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
-        const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
-        if (linkedMsg) setLinkedShowcaseError(linkedMsg);
-        setError(msg);
-      } finally {
-        setSaving(false);
-      }
+        },
+        {
+          onStart: () => setSaving(true),
+          onSettled: () => setSaving(false),
+          onError: (msg) => {
+            const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
+            if (linkedMsg) setLinkedShowcaseError(linkedMsg);
+            setError(msg);
+          },
+          fallbackMessage: 'บันทึกไม่สำเร็จ',
+        },
+      );
     },
     [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath],
   );
@@ -458,19 +469,24 @@ export function FactoryShowcaseEditPage() {
           outputWidth={1600}
           onCancel={() => setCropFile(null)}
           onConfirm={async (file) => {
-            setUploading(true);
             setError('');
-            try {
-              const up = await mediaApi.upload(file);
-              const url = String(up.url ?? '').trim();
-              if (!url) return;
-              setImageUrls((prev) => [...prev, url].slice(0, 5));
-            } catch (e) {
-              setError(e instanceof Error ? e.message : 'อัปโหลดรูปไม่สำเร็จ');
-            } finally {
-              setUploading(false);
-              setCropFile(null);
-            }
+            await runAsyncAction(
+              async () => {
+                const up = await mediaApi.upload(file);
+                const url = String(up.url ?? '').trim();
+                if (!url) return;
+                setImageUrls((prev) => [...prev, url].slice(0, 5));
+              },
+              {
+                onStart: () => setUploading(true),
+                onSettled: () => {
+                  setUploading(false);
+                  setCropFile(null);
+                },
+                onError: (message) => setError(message),
+                fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
+              },
+            );
           }}
         />
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}

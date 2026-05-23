@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import {
@@ -51,27 +52,29 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
   onLoadedRef.current = onLoaded;
 
   const loadAddresses = useCallback(async (): Promise<MappedAddress[]> => {
-    setAddrLoading(true);
-    try {
-      const raw = await addressesApi.list();
-      const arr = (
-        Array.isArray(raw)
-          ? raw
-          : Array.isArray((raw as Record<string, unknown>)?.data)
-            ? ((raw as Record<string, unknown>).data as unknown[])
-            : []
-      ) as Record<string, unknown>[];
-      const mapped = arr
-        .map(mapAddressFromApi)
-        .filter((a): a is MappedAddress => a != null);
-      setAddresses(mapped);
-      return mapped;
-    } catch {
-      setAddresses([]);
-      return [];
-    } finally {
-      setAddrLoading(false);
-    }
+    const result = await runAsyncAction(
+      async () => {
+        const raw = await addressesApi.list();
+        const arr = (
+          Array.isArray(raw)
+            ? raw
+            : Array.isArray((raw as Record<string, unknown>)?.data)
+              ? ((raw as Record<string, unknown>).data as unknown[])
+              : []
+        ) as Record<string, unknown>[];
+        const mapped = arr
+          .map(mapAddressFromApi)
+          .filter((a): a is MappedAddress => a != null);
+        setAddresses(mapped);
+        return mapped;
+      },
+      {
+        onStart: () => setAddrLoading(true),
+        onSettled: () => setAddrLoading(false),
+        onError: () => setAddresses([]),
+      },
+    );
+    return result ?? [];
   }, []);
 
   useEffect(() => {
@@ -118,24 +121,27 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
 
   const handleAddAddress = useCallback(
     async (payload: AddressFormPayload) => {
-      setSaving(true);
-      try {
-        const created = await addressesApi.create(payload);
-        if (!created || typeof created !== 'object') {
-          throw new Error('Invalid API response from address creation');
-        }
-        const createdId = Number((created as Record<string, unknown>).address_id ?? (created as Record<string, unknown>).id ?? 0);
-        const latest = await loadAddresses();
-        const selectId =
-          (createdId > 0 ? createdId : null) ??
-          latest.find((a) => a.isDefault)?.id ??
-          latest[latest.length - 1]?.id ??
-          0;
-        if (selectId > 0) setDraft({ delivery_address_id: selectId });
-        setModalOpen(false);
-      } finally {
-        setSaving(false);
-      }
+      await runAsyncAction(
+        async () => {
+          const created = await addressesApi.create(payload);
+          if (!created || typeof created !== 'object') {
+            throw new Error('Invalid API response from address creation');
+          }
+          const createdId = Number((created as Record<string, unknown>).address_id ?? (created as Record<string, unknown>).id ?? 0);
+          const latest = await loadAddresses();
+          const selectId =
+            (createdId > 0 ? createdId : null) ??
+            latest.find((a) => a.isDefault)?.id ??
+            latest[latest.length - 1]?.id ??
+            0;
+          if (selectId > 0) setDraft({ delivery_address_id: selectId });
+          setModalOpen(false);
+        },
+        {
+          onStart: () => setSaving(true),
+          onSettled: () => setSaving(false),
+        },
+      );
     },
     [loadAddresses, setDraft],
   );

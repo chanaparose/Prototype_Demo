@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
@@ -135,23 +136,28 @@ export function AdminFactoriesPage() {
   );
 
   const loadFactories = async () => {
-    setLoading(true);
     setError('');
-    try {
-      const apiStatus = STATUS_TABS.find((t) => t.key === statusTab)?.apiStatus;
-      const raw = await adminApi.listFactories({
-        approval_status: apiStatus,
-        search: search.trim() || undefined,
-        page: 1,
-        page_size: 100,
-      });
-      setFactories(extractAdminFactoryRows(raw).map(mapAdminFactory));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดข้อมูลโรงงานไม่สำเร็จ');
-      setFactories([]);
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const apiStatus = STATUS_TABS.find((t) => t.key === statusTab)?.apiStatus;
+        const raw = await adminApi.listFactories({
+          approval_status: apiStatus,
+          search: search.trim() || undefined,
+          page: 1,
+          page_size: 100,
+        });
+        setFactories(extractAdminFactoryRows(raw).map(mapAdminFactory));
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: (message) => {
+          setError(message);
+          setFactories([]);
+        },
+        fallbackMessage: 'โหลดข้อมูลโรงงานไม่สำเร็จ',
+      },
+    );
   };
 
   useEffect(() => {
@@ -177,20 +183,23 @@ export function AdminFactoriesPage() {
 
   const handleConfirm = async (reason: string) => {
     if (!dialog) return;
-    setSubmitting(true);
-    try {
-      if (dialog.type === 'approve') {
-        await adminApi.approveFactory(dialog.factory.factory_id);
-      } else {
-        await adminApi.rejectFactory(dialog.factory.factory_id, reason.trim());
-      }
-      setDialog(null);
-      await loadFactories();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'อัปเดตสถานะโรงงานไม่สำเร็จ');
-    } finally {
-      setSubmitting(false);
-    }
+    await runAsyncAction(
+      async () => {
+        if (dialog.type === 'approve') {
+          await adminApi.approveFactory(dialog.factory.factory_id);
+        } else {
+          await adminApi.rejectFactory(dialog.factory.factory_id, reason.trim());
+        }
+        setDialog(null);
+        await loadFactories();
+      },
+      {
+        onStart: () => setSubmitting(true),
+        onSettled: () => setSubmitting(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'อัปเดตสถานะโรงงานไม่สำเร็จ',
+      },
+    );
   };
 
   return (

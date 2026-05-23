@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useAuth } from '@/stores/useAuthStore';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId, type ChatReference } from '@/utils/chatContract';
@@ -28,30 +29,34 @@ export function useStartChatWithFactory() {
         return null;
       }
 
-      setStarting(true);
       inFlightRef.current = true;
-      try {
-        const ref = reference ?? null;
-        if (ref) {
-          await openChatSession(navigate, user, {
-            customerUserId: myUserId,
-            factoryEntityId: factoryIdNum,
-            pendingReference: ref,
-          });
-        } else {
-          await openChatSession(navigate, user, {
-            customerUserId: myUserId,
-            factoryEntityId: factoryIdNum,
-          });
-        }
-        return 'ok';
-      } catch {
-        toast.error('เริ่มแชทไม่สำเร็จ กรุณาลองใหม่');
-        return null;
-      } finally {
-        inFlightRef.current = false;
-        setStarting(false);
-      }
+      const result = await runAsyncAction(
+        async () => {
+          const ref = reference ?? null;
+          if (ref) {
+            await openChatSession(navigate, user, {
+              customerUserId: myUserId,
+              factoryEntityId: factoryIdNum,
+              pendingReference: ref,
+            });
+          } else {
+            await openChatSession(navigate, user, {
+              customerUserId: myUserId,
+              factoryEntityId: factoryIdNum,
+            });
+          }
+          return 'ok' as const;
+        },
+        {
+          onStart: () => setStarting(true),
+          onSettled: () => {
+            inFlightRef.current = false;
+            setStarting(false);
+          },
+          onError: () => toast.error('เริ่มแชทไม่สำเร็จ กรุณาลองใหม่'),
+        },
+      );
+      return result ?? null;
     },
     [isAuthenticated, user, navigate, starting],
   );

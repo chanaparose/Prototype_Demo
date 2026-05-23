@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { Calendar, Filter, Search, AlertTriangle } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
 import type { IAdminOrderListResponse } from '@/services/api/types/admin.types';
@@ -88,25 +89,30 @@ export function AdminOrdersPage() {
   const [rows, setRows] = useState<AdminOrderView[]>([]);
 
   const loadOrders = async () => {
-    setLoading(true);
     setError('');
-    try {
-      const status = STATUS_TABS.find((t) => t.key === statusTab)?.apiStatus;
-      const raw = await adminApi.listOrders({
-        status,
-        date_from: dateFrom || undefined,
-        date_to: dateTo || undefined,
-        search: search.trim() || undefined,
-        page: 1,
-        page_size: 200,
-      });
-      setRows(toRows(raw).map(mapOrder));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดข้อมูลคำสั่งซื้อไม่สำเร็จ');
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const status = STATUS_TABS.find((t) => t.key === statusTab)?.apiStatus;
+        const raw = await adminApi.listOrders({
+          status,
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+          search: search.trim() || undefined,
+          page: 1,
+          page_size: 200,
+        });
+        setRows(toRows(raw).map(mapOrder));
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: (message) => {
+          setError(message);
+          setRows([]);
+        },
+        fallbackMessage: 'โหลดข้อมูลคำสั่งซื้อไม่สำเร็จ',
+      },
+    );
   };
 
   useEffect(() => {

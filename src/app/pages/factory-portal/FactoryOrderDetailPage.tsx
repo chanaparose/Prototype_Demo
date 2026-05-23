@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -164,7 +165,6 @@ interface NextActionCardProps {
   state: StepState;
   customerShipping: CustomerShippingInfo;
   onUpdate: () => void;
-  /** เฉพาะ step_id=0: กดยืนยันรับงานโดยไม่ต้องเปิด drawer */
   onAcceptOrder?: () => Promise<void>;
 }
 
@@ -176,7 +176,7 @@ function NextActionCard({
   customerShipping,
   onUpdate,
   onAcceptOrder,
-}: NextActionCardProps) {
+}: Readonly<NextActionCardProps>) {
   const [accepting, setAccepting] = useState(false);
   const guide = getStepGuide(getStepId(step));
   const canUpdate = factoryCanUpdateStep(step);
@@ -279,19 +279,16 @@ function NextActionCard({
 
         {canUpdate ? (
           isAccept ? (
-            // step_id=0: ยืนยันรับงาน — ไม่ต้องแนบรูป กดปุ่มเลย
             <Button
               variant='unstyled'
               type='button'
               disabled={accepting}
               onClick={async () => {
                 if (!onAcceptOrder) return;
-                setAccepting(true);
-                try {
-                  await onAcceptOrder();
-                } finally {
-                  setAccepting(false);
-                }
+                await runAsyncAction(() => onAcceptOrder(), {
+                  onStart: () => setAccepting(true),
+                  onSettled: () => setAccepting(false),
+                });
               }}
               className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)] disabled:opacity-60'
             >
@@ -340,16 +337,19 @@ export function FactoryOrderDetailPage() {
 
   const loadOrder = useCallback(async () => {
     if (!id) return;
-    setLoading(true);
     setError('');
-    try {
-      const detail = await ordersApi.get(id);
-      setOrder(unwrapOrder(detail));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดออเดอร์ไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const detail = await ordersApi.get(id);
+        setOrder(unwrapOrder(detail));
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'โหลดออเดอร์ไม่สำเร็จ',
+      },
+    );
   }, [id]);
 
   useEffect(() => {

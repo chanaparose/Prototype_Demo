@@ -124,7 +124,7 @@ export function MarkdownEditor({
   minHeight = 300,
   label,
   disabled,
-}: MarkdownEditorProps) {
+}: Readonly<MarkdownEditorProps>) {
   const [tab, setTab] = useState<'write' | 'preview'>('write');
 
   // Upload and focus states
@@ -172,14 +172,14 @@ export function MarkdownEditor({
   const onPickImage = async (file: File | null) => {
     if (!file || disabled) return;
     toggleUploading();
-    try {
-      const up = await mediaApi.upload(file);
-      const url = String(up.url ?? '').trim();
-      if (!url) return;
-      applyInsert(`![](${url})`);
-    } finally {
-      closeUploading();
-    }
+    void mediaApi
+      .upload(file)
+      .then((up) => {
+        const url = String(up.url ?? '').trim();
+        if (!url) return;
+        applyInsert(`![](${url})`);
+      })
+      .finally(closeUploading);
   };
 
   const applyTemplate = (text: string) => {

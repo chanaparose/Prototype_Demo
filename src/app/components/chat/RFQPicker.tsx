@@ -5,6 +5,7 @@ import { Search, Plus } from 'lucide-react';
 import { messagesApi } from '@/services/api/chatApi';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { toast } from 'sonner';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate } from '@/utils/formatting/formatDate';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
@@ -78,19 +79,25 @@ export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Pr
 
   const handleShare = async (rfqId: number) => {
     setSelectedRfqId(rfqId);
-    try {
-      const res = await messagesApi.send(conversationId, {
-        content: '',
-        receiver_id: receiverId,
-        message_type: 'rfq_card',
-        reference_type: 'RQ',
-        reference_id: rfqId,
-      });
-      onSelect(res as unknown as Record<string, unknown>);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'แนบ RFQ ไม่สำเร็จ');
-      setSelectedRfqId(null);
-    }
+    await runAsyncAction(
+      async () => {
+        const res = await messagesApi.send(conversationId, {
+          content: '',
+          receiver_id: receiverId,
+          message_type: 'rfq_card',
+          reference_type: 'RQ',
+          reference_id: rfqId,
+        });
+        onSelect(res as unknown as Record<string, unknown>);
+      },
+      {
+        onError: (message) => {
+          toast.error(message);
+          setSelectedRfqId(null);
+        },
+        fallbackMessage: 'แนบ RFQ ไม่สำเร็จ',
+      },
+    );
   };
 
   return (

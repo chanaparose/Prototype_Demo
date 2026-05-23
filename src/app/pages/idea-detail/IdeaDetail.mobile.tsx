@@ -49,19 +49,19 @@ export function IdeaDetailMobile() {
       return;
     }
     let cancelled = false;
-    void (async () => {
-      try {
-        const rows = await showcasesApi.list('ID');
+    void showcasesApi
+      .list('ID')
+      .then((rows) => {
         if (cancelled) return;
         const list = (Array.isArray(rows) ? rows : [])
           .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
           .filter((s) => s.contentType === 'idea' && s.id !== item.id)
           .slice(0, 5);
         setRelatedIdeas(list);
-      } catch {
+      })
+      .catch(() => {
         if (!cancelled) setRelatedIdeas([]);
-      }
-    })();
+      });
     return () => {
       cancelled = true;
     };

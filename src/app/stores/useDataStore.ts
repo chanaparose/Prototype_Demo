@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { frontendApi } from '@/services/api/exploreApi';
 import { useSessionStore } from '@/stores/useSessionStore';
@@ -84,9 +85,8 @@ export const useDataStore = create<DataState & DataActions>((set) => {
       return;
     }
 
-    set((state) => ({ ...state, isLoading: true, error: null }));
-
-    try {
+    await runAsyncAction(
+      async () => {
       const [sessionRes, notifRes] = await Promise.allSettled([
         frontendApi.getBootstrap(),
         fetchNotificationsList(),
@@ -185,13 +185,19 @@ export const useDataStore = create<DataState & DataActions>((set) => {
         isLoading: false,
         error: null,
       });
-    } catch (err) {
-      set((state) => ({
-        ...state,
-        isLoading: false,
-        error: err instanceof Error ? err.message : pickScalarString(err) || 'โหลดข้อมูลไม่สำเร็จ',
-      }));
-    }
+      },
+      {
+        onStart: () => set((state) => ({ ...state, isLoading: true, error: null })),
+        onError: (message) => {
+          set((state) => ({
+            ...state,
+            isLoading: false,
+            error: message,
+          }));
+        },
+        fallbackMessage: 'โหลดข้อมูลไม่สำเร็จ',
+      },
+    );
   };
 
   return {
@@ -223,22 +229,20 @@ export const useDataStore = create<DataState & DataActions>((set) => {
     },
 
     refetchFactory: async (id: string) => {
-      try {
-        const data = await frontendApi.getFactory(id);
+      await frontendApi.getFactory(id).then((data) => {
         set((state) => {
           const factories = state.factories.map((f) =>
             f.id === id ? { ...f, ...(data.factory as Factory) } : f,
           );
           return { ...state, factories };
         });
-      } catch {
+      }).catch(() => {
         /* keep cached factory row */
-      }
+      });
     },
 
     refetchWallet: async () => {
-      try {
-        const w = await walletApi.getMe();
+      await walletApi.getMe().then((w) => {
         const balance = w.good_fund ?? 0;
         const pending = w.pending_fund ?? 0;
         set((state) => {
@@ -252,9 +256,9 @@ export const useDataStore = create<DataState & DataActions>((set) => {
             },
           };
         });
-      } catch {
+      }).catch(() => {
         /* keep cached wallet */
-      }
+      });
     },
   };
 });

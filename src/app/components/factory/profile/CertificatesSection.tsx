@@ -42,7 +42,7 @@ function toDateInputValue(raw: unknown): string {
   return s.length >= 10 ? s.slice(0, 10) : '';
 }
 
-export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Props) {
+export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Readonly<Props>) {
   const qc = useQueryClient();
   const { data: masterCertTypes = [] } = useMasterCerts();
   const { confirm, ConfirmDialog } = useConfirmDialog();
@@ -66,41 +66,33 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
     qc.invalidateQueries({ queryKey: factoryKeys.me() });
 
   const submit = async (value: CertFormSubmitValue, keepOpen: boolean) => {
-    modal.setLoading(true);
-    modal.clearError();
-    try {
-      let documentUrl = '';
-      if (value.file) {
-        const up = await mediaApi.upload(value.file);
-        documentUrl = up.url;
-      }
-      if (mode === 'create') {
-        if (!documentUrl) throw new Error('กรุณาอัปโหลดไฟล์เอกสาร');
-        await certificatesApi.create(factoryId, {
-          cert_id: value.cert_id,
-          document_url: documentUrl,
-          cert_number: value.cert_number,
-          expire_date: value.expire_date,
-        });
-      } else {
-        const id = certRowId(editing ?? {});
-        if (id == null) throw new Error('ไม่พบรหัสใบรับรองที่จะแก้ไข');
-        await certificatesApi.update(factoryId, id, {
-          cert_id: value.cert_id,
-          cert_number: value.cert_number,
-          expire_date: value.expire_date,
-          ...(documentUrl ? { document_url: documentUrl } : {}),
-        });
-      }
-      invalidate();
-      if (!keepOpen || mode === 'edit') {
-        modal.closeModal();
-        setEditing(null);
-      }
-    } catch (err) {
-      throw err;
-    } finally {
-      modal.setLoading(false);
+    let documentUrl = '';
+    if (value.file) {
+      const up = await mediaApi.upload(value.file);
+      documentUrl = up.url;
+    }
+    if (mode === 'create') {
+      if (!documentUrl) throw new Error('กรุณาอัปโหลดไฟล์เอกสาร');
+      await certificatesApi.create(factoryId, {
+        cert_id: value.cert_id,
+        document_url: documentUrl,
+        cert_number: value.cert_number,
+        expire_date: value.expire_date,
+      });
+    } else {
+      const id = certRowId(editing ?? {});
+      if (id == null) throw new Error('ไม่พบรหัสใบรับรองที่จะแก้ไข');
+      await certificatesApi.update(factoryId, id, {
+        cert_id: value.cert_id,
+        cert_number: value.cert_number,
+        expire_date: value.expire_date,
+        ...(documentUrl ? { document_url: documentUrl } : {}),
+      });
+    }
+    invalidate();
+    if (!keepOpen || mode === 'edit') {
+      modal.closeModal();
+      setEditing(null);
     }
   };
 
@@ -191,7 +183,6 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
         mode={mode}
         certTypes={masterCertTypes}
         initial={editing}
-        submitting={modal.isLoading}
         onClose={() => {
           if (modal.isLoading) return;
           modal.closeModal();

@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -41,15 +42,33 @@ type Props = {
   readonly onSubmit: (value: CertFormSubmitValue, keepOpen: boolean) => Promise<void>;
 };
 
+function applyCertSubmitErrors(
+  err: unknown,
+  setError: ReturnType<typeof useForm<CertFormInput, unknown, CertFormValues>>['setError'],
+) {
+  const { root, fields } = toFormErrors(err);
+  if (root) setError('root', { message: root });
+  if (fields) {
+    for (const [key, message] of Object.entries(fields)) {
+      const k = key as keyof CertFormInput;
+      if (k === 'cert_id' || k === 'cert_number' || k === 'expire_date' || k === 'file') {
+        setError(k, { message });
+      }
+    }
+  }
+}
+
 export function CertUploadModal({
   open,
   mode,
   certTypes,
   initial,
-  submitting,
+  submitting: submittingProp,
   onClose,
   onSubmit,
 }: Props) {
+  const [submitting, setSubmitting] = useState(false);
+  const isSubmitting = submittingProp ?? submitting;
   const fallbackCertId = useMemo(() => certTypes[0]?.id ?? 1, [certTypes]);
 
   const form = useForm<CertFormInput, unknown, CertFormValues>({
@@ -94,23 +113,19 @@ export function CertUploadModal({
       return;
     }
 
-    try {
-      await onSubmit(toCertSubmitValue(values), keepOpen);
-      if (mode === 'create' && keepOpen) {
-        reset(certFormValuesFromRow(null, fallbackCertId));
-      }
-    } catch (err) {
-      const { root, fields } = toFormErrors(err);
-      if (root) setError('root', { message: root });
-      if (fields) {
-        for (const [key, message] of Object.entries(fields)) {
-          const k = key as keyof CertFormInput;
-          if (k === 'cert_id' || k === 'cert_number' || k === 'expire_date' || k === 'file') {
-            setError(k, { message });
-          }
+    await runAsyncAction(
+      async () => {
+        await onSubmit(toCertSubmitValue(values), keepOpen);
+        if (mode === 'create' && keepOpen) {
+          reset(certFormValuesFromRow(null, fallbackCertId));
         }
-      }
-    }
+      },
+      {
+        onStart: () => setSubmitting(true),
+        onSettled: () => setSubmitting(false),
+        onError: (_message, err) => applyCertSubmitErrors(err, setError),
+      },
+    );
   };
 
   return (
@@ -122,7 +137,7 @@ export function CertUploadModal({
       title={mode === 'create' ? 'เพิ่มใบรับรอง' : 'แก้ไขใบรับรอง'}
       variant='sheet'
       size='lg'
-      dismissible={!submitting}
+      dismissible={!isSubmitting}
       className='max-h-[min(90vh,100dvh)]'
       bodyClassName='p-4 sm:p-5 pb-6 space-y-4'
       footerClassName='p-4 sm:p-5 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2'
@@ -133,22 +148,22 @@ export function CertUploadModal({
           primary={{
             label: 'บันทึก',
             loadingLabel: 'กำลังบันทึก...',
-            loading: submitting,
-            disabled: submitting,
+            loading: isSubmitting,
+            disabled: isSubmitting,
             onClick: () => void handleSubmit((v) => runSubmit(v, false))(),
           }}
           alternatePrimary={
             mode === 'create'
               ? {
                   label: 'บันทึกและเพิ่มใบรับรองถัดไป',
-                  disabled: submitting,
+                  disabled: isSubmitting,
                   onClick: () => void handleSubmit((v) => runSubmit(v, true))(),
                 }
               : undefined
           }
           secondary={
             mode === 'edit'
-              ? { label: 'ยกเลิก', onClick: onClose, disabled: submitting }
+              ? { label: 'ยกเลิก', onClick: onClose, disabled: isSubmitting }
               : undefined
           }
         />

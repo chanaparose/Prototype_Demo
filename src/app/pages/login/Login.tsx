@@ -62,15 +62,12 @@ export function Login() {
 
   const checkServer = async () => {
     setServerStatus('checking');
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 90_000);
-      const res = await fetch(HEALTH_URL, { signal: controller.signal });
-      clearTimeout(timer);
-      setServerStatus(res.ok ? 'online' : 'offline');
-    } catch {
-      setServerStatus('offline');
-    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 90_000);
+    await fetch(HEALTH_URL, { signal: controller.signal })
+      .then((res) => setServerStatus(res.ok ? 'online' : 'offline'))
+      .catch(() => setServerStatus('offline'))
+      .finally(() => clearTimeout(timer));
   };
 
   useEffect(() => {

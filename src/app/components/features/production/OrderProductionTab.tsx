@@ -105,23 +105,25 @@ export function OrderProductionTab({
       if (uid == null || !Number.isFinite(Number(uid))) {
         throw new Error('ไม่พบรหัสอัปเดตสำหรับขั้นนี้');
       }
-      try {
-        await rejectMutation.mutateAsync({
+      await rejectMutation
+        .mutateAsync({
           updateId: uid,
           rejected_reason: reason,
+        })
+        .then(() => {
+          toast.success('ส่งคำขอตรวจสอบแล้ว');
+        })
+        .catch((e) => {
+          const { code } = getProductionErrorMeta(e);
+          if (code === 'DOWNSTREAM_IN_FLIGHT') {
+            toast.error(
+              'ไม่สามารถปฏิเสธได้ เนื่องจากขั้นตอนถัดไปเริ่มไปแล้ว — กรุณาติดต่อฝ่ายสนับสนุน',
+            );
+            setRejectStep(null);
+            return;
+          }
+          throw new Error(productionErrorMessage(e));
         });
-        toast.success('ส่งคำขอตรวจสอบแล้ว');
-      } catch (e) {
-        const { code } = getProductionErrorMeta(e);
-        if (code === 'DOWNSTREAM_IN_FLIGHT') {
-          toast.error(
-            'ไม่สามารถปฏิเสธได้ เนื่องจากขั้นตอนถัดไปเริ่มไปแล้ว — กรุณาติดต่อฝ่ายสนับสนุน',
-          );
-          setRejectStep(null);
-          return;
-        }
-        throw new Error(productionErrorMessage(e));
-      }
     },
     [rejectMutation, rejectStep],
   );

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronLeft, MessageCircle, Star, X, AlertTriangle, PackageCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
 import { openChatSession } from '@/utils/openChatSession';
@@ -111,53 +112,63 @@ function OrderDetailMobileBody() {
 
   const onConfirmReceive = async () => {
     if (confirmingReceive) return;
-    setReceiveForbidden(false);
-    setConfirmingReceive(true);
-    try {
-      await ordersApi.confirmReceipt(order.id, {
-        note: 'Customer confirmed receipt from order detail',
-        received_at: new Date().toISOString(),
-      });
-      toast.success('ยืนยันรับสินค้าแล้ว');
-      await refetchAll();
-    } catch (e) {
-      if (e instanceof ApiHttpError) {
-        if (e.status === 403) {
-          setReceiveForbidden(true);
-          toast.error('คุณไม่มีสิทธิ์ยืนยันการรับสินค้าสำหรับคำสั่งซื้อนี้');
-        } else if (e.status === 404) {
-          toast.error('ไม่พบคำสั่งซื้อนี้ในระบบ');
-        } else {
-          toast.error(e.message || 'ยืนยันรับสินค้าไม่สำเร็จ');
-        }
-      } else {
-        const message = e instanceof Error ? e.message : 'ยืนยันรับสินค้าไม่สำเร็จ';
-        toast.error(message);
-      }
-    } finally {
-      setConfirmingReceive(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await ordersApi.confirmReceipt(order.id, {
+          note: 'Customer confirmed receipt from order detail',
+          received_at: new Date().toISOString(),
+        });
+        toast.success('ยืนยันรับสินค้าแล้ว');
+        await refetchAll();
+      },
+      {
+        onStart: () => {
+          setReceiveForbidden(false);
+          setConfirmingReceive(true);
+        },
+        onSettled: () => setConfirmingReceive(false),
+        onError: (_message, e) => {
+          if (e instanceof ApiHttpError) {
+            if (e.status === 403) {
+              setReceiveForbidden(true);
+              toast.error('คุณไม่มีสิทธิ์ยืนยันการรับสินค้าสำหรับคำสั่งซื้อนี้');
+            } else if (e.status === 404) {
+              toast.error('ไม่พบคำสั่งซื้อนี้ในระบบ');
+            } else {
+              toast.error(e.message || 'ยืนยันรับสินค้าไม่สำเร็จ');
+            }
+          } else {
+            const message = e instanceof Error ? e.message : 'ยืนยันรับสินค้าไม่สำเร็จ';
+            toast.error(message);
+          }
+        },
+      },
+    );
   };
 
   const onCancelOrder = async () => {
     if (cancellingOrder) return;
-    setCancellingOrder(true);
-    try {
-      await ordersApi.cancel(order.id);
-      toast.success('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
-      setCancelModalOpen(false);
-      await refetchAll();
-    } catch (e) {
-      if (e instanceof ApiHttpError) {
-        if (e.status === 400) toast.error(e.message || 'ไม่สามารถยกเลิกคำสั่งซื้อในสถานะนี้ได้');
-        else if (e.status === 404) toast.error('ไม่พบคำสั่งซื้อนี้');
-        else toast.error(e.message || 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
-      } else {
-        toast.error(e instanceof Error ? e.message : 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
-      }
-    } finally {
-      setCancellingOrder(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await ordersApi.cancel(order.id);
+        toast.success('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
+        setCancelModalOpen(false);
+        await refetchAll();
+      },
+      {
+        onStart: () => setCancellingOrder(true),
+        onSettled: () => setCancellingOrder(false),
+        onError: (_message, e) => {
+          if (e instanceof ApiHttpError) {
+            if (e.status === 400) toast.error(e.message || 'ไม่สามารถยกเลิกคำสั่งซื้อในสถานะนี้ได้');
+            else if (e.status === 404) toast.error('ไม่พบคำสั่งซื้อนี้');
+            else toast.error(e.message || 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
+          } else {
+            toast.error(e instanceof Error ? e.message : 'ยกเลิกคำสั่งซื้อไม่สำเร็จ');
+          }
+        },
+      },
+    );
   };
 
   const onOpenReview = () => {
@@ -200,31 +211,35 @@ function OrderDetailMobileBody() {
       toast.error('คอมเมนต์ยาวเกิน 1000 ตัวอักษร');
       return;
     }
-    setReviewSubmitting(true);
-    try {
-      const image_urls = normalizeReviewImageUrls(reviewImageUrls);
-      await ordersApi.createReview(order.id, { rating: reviewRating, comment, image_urls });
-      toast.success('ส่งรีวิวสำเร็จ');
-      setReviewModalOpen(false);
-      setReviewComment('');
-      setReviewImageUrls([]);
-      await refetchAll();
-    } catch (e) {
-      if (e instanceof ApiHttpError) {
-        const m = String(e.message ?? '').toLowerCase();
-        if (m.includes('review already exists')) toast.error('คุณรีวิวคำสั่งซื้อนี้ไปแล้ว');
-        else if (m.includes('order must be completed'))
-          toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
-        else if (m.includes('rating must be between')) toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
-        else if (m.includes('comment must be')) toast.error('กรุณาเขียนรีวิว');
-        else if (m.includes('image_urls') && m.includes('5')) toast.error('แนบรูปได้ไม่เกิน 5 รูป');
-        else toast.error(e.message || 'ส่งรีวิวไม่สำเร็จ');
-      } else {
-        toast.error(e instanceof Error ? e.message : 'ส่งรีวิวไม่สำเร็จ');
-      }
-    } finally {
-      setReviewSubmitting(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const image_urls = normalizeReviewImageUrls(reviewImageUrls);
+        await ordersApi.createReview(order.id, { rating: reviewRating, comment, image_urls });
+        toast.success('ส่งรีวิวสำเร็จ');
+        setReviewModalOpen(false);
+        setReviewComment('');
+        setReviewImageUrls([]);
+        await refetchAll();
+      },
+      {
+        onStart: () => setReviewSubmitting(true),
+        onSettled: () => setReviewSubmitting(false),
+        onError: (_message, e) => {
+          if (e instanceof ApiHttpError) {
+            const m = String(e.message ?? '').toLowerCase();
+            if (m.includes('review already exists')) toast.error('คุณรีวิวคำสั่งซื้อนี้ไปแล้ว');
+            else if (m.includes('order must be completed'))
+              toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
+            else if (m.includes('rating must be between')) toast.error('กรุณาเลือกคะแนน 1 ถึง 5 ดาว');
+            else if (m.includes('comment must be')) toast.error('กรุณาเขียนรีวิว');
+            else if (m.includes('image_urls') && m.includes('5')) toast.error('แนบรูปได้ไม่เกิน 5 รูป');
+            else toast.error(e.message || 'ส่งรีวิวไม่สำเร็จ');
+          } else {
+            toast.error(e instanceof Error ? e.message : 'ส่งรีวิวไม่สำเร็จ');
+          }
+        },
+      },
+    );
   };
 
   return (

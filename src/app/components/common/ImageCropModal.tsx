@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { Loader2, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -96,7 +97,7 @@ export function ImageCropModal({
   outputWidth = 1600,
   onCancel,
   onConfirm,
-}: Props) {
+}: Readonly<Props>) {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [sourceUrl, setSourceUrl] = useState('');
   const [natural, setNatural] = useState<Size>({ width: 0, height: 0 });
@@ -337,22 +338,25 @@ export function ImageCropModal({
             disabled={!canRender || submitting}
             onClick={async () => {
               if (!canRender || !sourceUrl) return;
-              setSubmitting(true);
-              try {
-                const cropped = await renderCroppedFile({
-                  sourceFile: file,
-                  sourceUrl,
-                  natural,
-                  viewport,
-                  baseScale,
-                  zoom,
-                  offset,
-                  outputWidth,
-                });
-                await onConfirm(cropped);
-              } finally {
-                setSubmitting(false);
-              }
+              await runAsyncAction(
+                async () => {
+                  const cropped = await renderCroppedFile({
+                    sourceFile: file,
+                    sourceUrl,
+                    natural,
+                    viewport,
+                    baseScale,
+                    zoom,
+                    offset,
+                    outputWidth,
+                  });
+                  await onConfirm(cropped);
+                },
+                {
+                  onStart: () => setSubmitting(true),
+                  onSettled: () => setSubmitting(false),
+                },
+              );
             }}
             className='px-3 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50'
             style={{ background: 'var(--brand-indigo)' }}

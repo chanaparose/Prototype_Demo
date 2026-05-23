@@ -6,6 +6,7 @@ import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategor
 import { factoriesApi } from '@/services/api/factoryApi';
 import { Button } from '@/components/ui/button';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
+import { runAsyncAction } from '@/utils/asyncAction';
 
 interface Props {
   factoryId: number | string;
@@ -47,19 +48,23 @@ export function CategoryCard({
       destructive: true,
     });
     if (!confirmed) return;
-    setDeleting(true);
-    setDeleteError('');
-    try {
-      await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
-
-      await factoriesApi.removeCategory(factoryId, categoryId);
-      await qc.invalidateQueries({ queryKey: factoryKeys.profileInit() });
-      onRemove(categoryId);
-    } catch (e) {
-      setDeleteError(e instanceof Error ? e.message : 'ลบไม่สำเร็จ');
-    } finally {
-      setDeleting(false);
-    }
+    void runAsyncAction(
+      async () => {
+        await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
+        await factoriesApi.removeCategory(factoryId, categoryId);
+        await qc.invalidateQueries({ queryKey: factoryKeys.profileInit() });
+        onRemove(categoryId);
+      },
+      {
+        onStart: () => {
+          setDeleting(true);
+          setDeleteError('');
+        },
+        onSettled: () => setDeleting(false),
+        onError: (message) => setDeleteError(message),
+        fallbackMessage: 'ลบไม่สำเร็จ',
+      },
+    );
   };
 
   return (

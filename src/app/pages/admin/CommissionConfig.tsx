@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { platformConfigApi } from '@/services/api/adminApi';
 import type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
 import { Button } from '@/components/ui/button';
@@ -147,24 +148,27 @@ export function CommissionConfig() {
               confirmText: 'บันทึกเวอร์ชันใหม่',
             });
             if (!ok) return;
-            setSaving(true);
-            try {
-              const created = await platformConfigApi.create({
-                default_commission_rate: form.default_commission_rate,
-                promo_commission_rate: form.promo_enabled ? form.promo_commission_rate : null,
-                promo_label: form.promo_enabled ? form.promo_label : null,
-                promo_start_at: form.promo_enabled ? form.promo_start_at : null,
-                promo_end_at: form.promo_enabled ? form.promo_end_at : null,
-                vat_rate: form.vat_rate,
-                currency_code: active.currency_code,
-              });
-              setActive(created);
-              setForm(fromConfig(created));
-              const h = await platformConfigApi.history();
-              setHistory(h);
-            } finally {
-              setSaving(false);
-            }
+            await runAsyncAction(
+              async () => {
+                const created = await platformConfigApi.create({
+                  default_commission_rate: form.default_commission_rate,
+                  promo_commission_rate: form.promo_enabled ? form.promo_commission_rate : null,
+                  promo_label: form.promo_enabled ? form.promo_label : null,
+                  promo_start_at: form.promo_enabled ? form.promo_start_at : null,
+                  promo_end_at: form.promo_enabled ? form.promo_end_at : null,
+                  vat_rate: form.vat_rate,
+                  currency_code: active.currency_code,
+                });
+                setActive(created);
+                setForm(fromConfig(created));
+                const h = await platformConfigApi.history();
+                setHistory(h);
+              },
+              {
+                onStart: () => setSaving(true),
+                onSettled: () => setSaving(false),
+              },
+            );
           }}
           className='w-full py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50'
         >

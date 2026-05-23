@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, X } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
@@ -102,21 +103,24 @@ export function FactoryRfqDetailPage() {
 
   const load = useCallback(async () => {
     if (!id) return;
-    setLoading(true);
     setError('');
-    try {
-      const detail = await factoryRfqsApi.getRFQDetail(id);
-      const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
-      setRfqTitle(String(rfq.title ?? ''));
-      setRfqBody(rfq);
-      setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as unknown as QuoteRow[]) : []);
-      setSubCategoryName(String(rfq.sub_category_name ?? '').trim());
-      if (detail.commission_config) setCommissionConfig(detail.commission_config);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const detail = await factoryRfqsApi.getRFQDetail(id);
+        const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
+        setRfqTitle(String(rfq.title ?? ''));
+        setRfqBody(rfq);
+        setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as unknown as QuoteRow[]) : []);
+        setSubCategoryName(String(rfq.sub_category_name ?? '').trim());
+        if (detail.commission_config) setCommissionConfig(detail.commission_config);
+      },
+      {
+        onStart: () => setLoading(true),
+        onSettled: () => setLoading(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'โหลดไม่สำเร็จ',
+      },
+    );
   }, [id]);
 
   useEffect(() => {
@@ -296,20 +300,23 @@ export function FactoryRfqDetailPage() {
       setError('ไม่พบรหัสลูกค้าใน RFQ');
       return;
     }
-    setChatBusy(true);
     setError('');
-    try {
-      const convId = await ensureConversationId();
-      navigate(chatRoomPath(convId), {
-        state: {
-          reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
-        },
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'เปิดแชทไม่สำเร็จ');
-    } finally {
-      setChatBusy(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const convId = await ensureConversationId();
+        navigate(chatRoomPath(convId), {
+          state: {
+            reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
+          },
+        });
+      },
+      {
+        onStart: () => setChatBusy(true),
+        onSettled: () => setChatBusy(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'เปิดแชทไม่สำเร็จ',
+      },
+    );
   };
 
   const sendQuoteMessageToCustomer = async () => {
@@ -332,82 +339,86 @@ export function FactoryRfqDetailPage() {
       lead_time: ld,
       valid_until: until.toISOString().slice(0, 10),
     });
-    setChatBusy(true);
     setError('');
-    try {
-      const convId = await ensureConversationId();
-      const apiConv: ApiConversation = {
-        conv_id: convId,
-        customer_id: customerId,
-        factory_id: fid,
-        unread_customer: 0,
-        unread_factory: 0,
-        has_quote: false,
-        updated_at: new Date().toISOString(),
-      };
-      await messagesApi.send(
-        convId,
-        buildSendPayload({
-          conv: apiConv,
-          currentUserId: uid,
-          content: 'ใบเสนอราคา',
-          messageType: 'QT',
-          reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
-          quoteData,
-        }),
-      );
-      navigate(chatRoomPath(convId));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ส่งใบเสนอราคาในแชทไม่สำเร็จ');
-    } finally {
-      setChatBusy(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const convId = await ensureConversationId();
+        const apiConv: ApiConversation = {
+          conv_id: convId,
+          customer_id: customerId,
+          factory_id: fid,
+          unread_customer: 0,
+          unread_factory: 0,
+          has_quote: false,
+          updated_at: new Date().toISOString(),
+        };
+        await messagesApi.send(
+          convId,
+          buildSendPayload({
+            conv: apiConv,
+            currentUserId: uid,
+            content: 'ใบเสนอราคา',
+            messageType: 'QT',
+            reference: { type: 'RQ', id: Number(id), title: rfqTitle || `RFQ #${id}` },
+            quoteData,
+          }),
+        );
+        navigate(chatRoomPath(convId));
+      },
+      {
+        onStart: () => setChatBusy(true),
+        onSettled: () => setChatBusy(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'ส่งใบเสนอราคาในแชทไม่สำเร็จ',
+      },
+    );
   };
 
   const cancelQuote = async () => {
     if (!myQuote) return;
     const qid = quoteIdOf(myQuote);
     if (!qid) return;
-    setCancelBusy(true);
     setError('');
-    try {
-      await quotationsApi.delete(qid);
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ยกเลิกใบเสนอราคาไม่สำเร็จ');
-    } finally {
-      setCancelBusy(false);
-    }
+    await runAsyncAction(
+      async () => {
+        await quotationsApi.delete(qid);
+        await load();
+      },
+      {
+        onStart: () => setCancelBusy(true),
+        onSettled: () => setCancelBusy(false),
+        onError: (message) => setError(message),
+        fallbackMessage: 'ยกเลิกใบเสนอราคาไม่สำเร็จ',
+      },
+    );
   };
 
   const dismissRfq = async () => {
     if (!id) return;
     setDismissBusy(true);
     setError('');
-    try {
-      await factoryRfqsApi.dismiss(id);
-      navigate(backPath);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'ซ่อน RFQ ไม่สำเร็จ');
-      throw e;
-    } finally {
-      setDismissBusy(false);
-    }
+    return factoryRfqsApi
+      .dismiss(id)
+      .then(() => navigate(backPath))
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : 'ซ่อน RFQ ไม่สำเร็จ');
+        throw e;
+      })
+      .finally(() => setDismissBusy(false));
   };
 
   const undismissRfq = async () => {
     if (!id) return;
     setDismissBusy(true);
     setError('');
-    try {
-      await factoryRfqsApi.undismiss(id);
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'คืน RFQ ไม่สำเร็จ');
-      throw e;
-    } finally {
-      setDismissBusy(false);
-    }
+    return factoryRfqsApi
+      .undismiss(id)
+      .then(() => load())
+      .catch((e) => {
+        setError(e instanceof Error ? e.message : 'คืน RFQ ไม่สำเร็จ');
+        throw e;
+      })
+      .finally(() => setDismissBusy(false));
   };
 
   const twoCol = isDesktop ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start' : '';

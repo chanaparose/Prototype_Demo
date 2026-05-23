@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { Link, useNavigate } from 'react-router';
 import {
   Search,
@@ -38,21 +39,28 @@ export function NotificationsMobile() {
   const LIMIT = 20;
 
   const load = useCallback(async (nextOffset: number, append: boolean) => {
-    if (append) setLoadingMore(true);
-    else setLoading(true);
     setError('');
-    try {
-      const pageRes = await fetchNotificationsPage(tab, LIMIT, nextOffset);
-      setOffset(nextOffset);
-      setTotal(pageRes.total);
-      setNotifications((prev) => (append ? [...prev, ...pageRes.items] : pageRes.items));
-      setUnreadCount(pageRes.unreadCount);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดการแจ้งเตือนไม่สำเร็จ');
-    } finally {
-      if (append) setLoadingMore(false);
-      else setLoading(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const pageRes = await fetchNotificationsPage(tab, LIMIT, nextOffset);
+        setOffset(nextOffset);
+        setTotal(pageRes.total);
+        setNotifications((prev) => (append ? [...prev, ...pageRes.items] : pageRes.items));
+        setUnreadCount(pageRes.unreadCount);
+      },
+      {
+        onStart: () => {
+          if (append) setLoadingMore(true);
+          else setLoading(true);
+        },
+        onSettled: () => {
+          if (append) setLoadingMore(false);
+          else setLoading(false);
+        },
+        onError: (message) => setError(message),
+        fallbackMessage: 'โหลดการแจ้งเตือนไม่สำเร็จ',
+      },
+    );
   }, [tab]);
 
   // Reload from beginning when tab changes
@@ -78,31 +86,35 @@ export function NotificationsMobile() {
   const markRead = useCallback(async (id: number) => {
     setNotifications((prev) => prev.map((n) => (n.noti_id === id ? { ...n, is_read: true } : n)));
     setUnreadCount((prev) => Math.max(0, prev - 1));
-    try {
-      const res = await notificationsApi.markAsRead(id);
-      setUnreadCount(res.unread_count);
-    } catch {
-      setNotifications((prev) =>
-        prev.map((n) => (n.noti_id === id ? { ...n, is_read: false } : n)),
-      );
-      setUnreadCount((prev) => prev + 1);
-    }
+    await notificationsApi.markAsRead(id).then(
+      (res) => setUnreadCount(res.unread_count),
+      () => {
+        setNotifications((prev) =>
+          prev.map((n) => (n.noti_id === id ? { ...n, is_read: false } : n)),
+        );
+        setUnreadCount((prev) => prev + 1);
+      },
+    );
   }, []);
 
   const markAllRead = useCallback(async () => {
-    setMarkingAll(true);
     const backup = notifications;
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     setUnreadCount(0);
-    try {
-      const res = await notificationsApi.markAllAsRead(tab);
-      setUnreadCount(res.unread_count);
-    } catch {
-      setNotifications(backup);
-      setUnreadCount(backup.filter((n) => !n.is_read).length);
-    } finally {
-      setMarkingAll(false);
-    }
+    await runAsyncAction(
+      async () => {
+        const res = await notificationsApi.markAllAsRead(tab);
+        setUnreadCount(res.unread_count);
+      },
+      {
+        onStart: () => setMarkingAll(true),
+        onSettled: () => setMarkingAll(false),
+        onError: () => {
+          setNotifications(backup);
+          setUnreadCount(backup.filter((n) => !n.is_read).length);
+        },
+      },
+    );
   }, [notifications, tab]);
 
   const removeNotification = useCallback(
@@ -111,12 +123,10 @@ export function NotificationsMobile() {
       const target = backup.find((n) => n.noti_id === id);
       setNotifications((prev) => prev.filter((n) => n.noti_id !== id));
       if (target && !target.is_read) setUnreadCount((prev) => Math.max(0, prev - 1));
-      try {
-        await notificationsApi.delete(id);
-      } catch {
+      await notificationsApi.delete(id).catch(() => {
         setNotifications(backup);
         setUnreadCount(backup.filter((n) => !n.is_read).length);
-      }
+      });
     },
     [notifications],
   );

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/stores/useAuthStore';
 import { ApiHttpError } from '@/services/api/httpClient';
@@ -291,48 +292,52 @@ export function useRegisterFactory() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const taxDigits = form.tax_id.replace(/\D/g, '');
+    await runAsyncAction(
+      async () => {
+        const taxDigits = form.tax_id.replace(/\D/g, '');
 
-      // Upload cert file first (same for both paths)
-      const { url: certUrl } = await mediaApi.upload(form.cert_file!);
+        // Upload cert file first (same for both paths)
+        const { url: certUrl } = await mediaApi.upload(form.cert_file!);
 
-      // Guest registration: factory + cert created atomically in one TX
-      await register({
-        role: 'FT',
-        email: form.email.trim(),
-        phone: form.phone.replace(/\s/g, ''),
-        password: form.password,
-        factory_name: form.factory_name.trim(),
-        factory_type_id: form.factory_type_id,
-        tax_id: taxDigits,
-        province_id: form.province_id || undefined,
-        category_ids: form.category_ids,
-        sub_category_ids: form.sub_category_ids,
-        cert_id: form.cert_id,
-        document_url: certUrl,
-        cert_number: form.cert_number.trim() || undefined,
-        cert_expire_date: form.cert_expire_date || undefined,
-      } as Parameters<typeof register>[0]);
+        // Guest registration: factory + cert created atomically in one TX
+        await register({
+          role: 'FT',
+          email: form.email.trim(),
+          phone: form.phone.replace(/\s/g, ''),
+          password: form.password,
+          factory_name: form.factory_name.trim(),
+          factory_type_id: form.factory_type_id,
+          tax_id: taxDigits,
+          province_id: form.province_id || undefined,
+          category_ids: form.category_ids,
+          sub_category_ids: form.sub_category_ids,
+          cert_id: form.cert_id,
+          document_url: certUrl,
+          cert_number: form.cert_number.trim() || undefined,
+          cert_expire_date: form.cert_expire_date || undefined,
+        } as Parameters<typeof register>[0]);
 
-      navigate('/factory', { replace: true });
-    } catch (err) {
-      if (err instanceof ApiHttpError) {
-        if (err.status === 409) {
-          setApiError('เลขภาษีนี้ถูกใช้แล้ว หรืออีเมลนี้มีบัญชีอยู่แล้ว หรือโปรไฟล์โรงงานนี้มีอยู่แล้ว');
-        } else if (err.status === 422) {
-          setErrors((prev) => ({ ...prev, password: 'รหัสผ่านไม่ตรงตามเงื่อนไขของระบบ' }));
-          scrollToFirstError({ password: 'x' });
-        } else {
-          setApiError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
-        }
-      } else {
-        setApiError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด กรุณาลองใหม่');
-      }
-    } finally {
-      setSubmitting(false);
-    }
+        navigate('/factory', { replace: true });
+      },
+      {
+        onStart: () => setSubmitting(true),
+        onSettled: () => setSubmitting(false),
+        onError: (_message, err) => {
+          if (err instanceof ApiHttpError) {
+            if (err.status === 409) {
+              setApiError('เลขภาษีนี้ถูกใช้แล้ว หรืออีเมลนี้มีบัญชีอยู่แล้ว หรือโปรไฟล์โรงงานนี้มีอยู่แล้ว');
+            } else if (err.status === 422) {
+              setErrors((prev) => ({ ...prev, password: 'รหัสผ่านไม่ตรงตามเงื่อนไขของระบบ' }));
+              scrollToFirstError({ password: 'x' });
+            } else {
+              setApiError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
+            }
+          } else {
+            setApiError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด กรุณาลองใหม่');
+          }
+        },
+      },
+    );
   };
 
   return {

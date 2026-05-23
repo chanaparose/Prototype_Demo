@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { rfqsApi, quotationsApi } from '@/services/api/rfqApi';
@@ -214,9 +215,8 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
   const [dashboardApi, setDashboardApi] = useState<Record<string, unknown> | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
+    await runAsyncAction(
+      async () => {
       const [rfqRes, ordRes, qRes, wRes, aRes, dRes] = await Promise.allSettled([
         rfqsApi.matching(),
         ordersApi.list(),
@@ -275,9 +275,15 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
       ) {
         setError('โหลดข้อมูลแดชบอร์ดไม่สำเร็จ');
       }
-    } finally {
-      setLoading(false);
-    }
+      },
+      {
+        onStart: () => {
+          setLoading(true);
+          setError(null);
+        },
+        onSettled: () => setLoading(false),
+      },
+    );
   }, []);
 
   useEffect(() => {

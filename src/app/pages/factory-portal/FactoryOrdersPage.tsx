@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { useNavigate } from 'react-router';
 import { X, ChevronRight, Clock } from 'lucide-react';
 import { ordersApi } from '@/services/api/ordersApi';
@@ -332,19 +333,25 @@ export function FactoryOrdersPage() {
                 background: 'linear-gradient(135deg, var(--brand-indigo) 0%, #334155 100%)',
               }}
               onClick={async () => {
-                setUpdateModal((prev) => (prev ? { ...prev, busy: true } : prev));
-                try {
-                  await ordersApi.postProductionUpdate(updateModal.row.order_id, {
-                    step_id: updateModal.stepId,
-                    status: 'CD',
-                    description: updateModal.notes.trim(),
-                    image_urls: [],
-                  });
-                  setUpdateModal(null);
-                  await refetch();
-                } catch {
-                  setUpdateModal((prev) => (prev ? { ...prev, busy: false } : prev));
-                }
+                if (!updateModal) return;
+                const modal = updateModal;
+                await runAsyncAction(
+                  async () => {
+                    await ordersApi.postProductionUpdate(modal.row.order_id, {
+                      step_id: modal.stepId,
+                      status: 'CD',
+                      description: modal.notes.trim(),
+                      image_urls: [],
+                    });
+                    setUpdateModal(null);
+                    await refetch();
+                  },
+                  {
+                    onStart: () => setUpdateModal((prev) => (prev ? { ...prev, busy: true } : prev)),
+                    onError: () =>
+                      setUpdateModal((prev) => (prev ? { ...prev, busy: false } : prev)),
+                  },
+                );
               }}
             >
               {updateModal.busy ? 'กำลังบันทึก...' : 'บันทึกอัปเดต'}
@@ -402,17 +409,22 @@ export function FactoryOrdersPage() {
                 boxShadow: '0 2px 8px rgba(227,136,68,0.35)',
               }}
               onClick={async () => {
-                setShipModal((prev) => (prev ? { ...prev, busy: true } : prev));
-                try {
-                  await ordersApi.ship(shipModal.row.order_id, {
-                    tracking_number: shipModal.tracking.trim(),
-                    note: shipModal.note.trim() || undefined,
-                  });
-                  setShipModal(null);
-                  await refetch();
-                } catch {
-                  setShipModal((prev) => (prev ? { ...prev, busy: false } : prev));
-                }
+                if (!shipModal) return;
+                const modal = shipModal;
+                await runAsyncAction(
+                  async () => {
+                    await ordersApi.ship(modal.row.order_id, {
+                      tracking_number: modal.tracking.trim(),
+                      note: modal.note.trim() || undefined,
+                    });
+                    setShipModal(null);
+                    await refetch();
+                  },
+                  {
+                    onStart: () => setShipModal((prev) => (prev ? { ...prev, busy: true } : prev)),
+                    onError: () => setShipModal((prev) => (prev ? { ...prev, busy: false } : prev)),
+                  },
+                );
               }}
             >
               {shipModal.busy ? 'กำลังบันทึก...' : 'ยืนยันบันทึกจัดส่ง'}

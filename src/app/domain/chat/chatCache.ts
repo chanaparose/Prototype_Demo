@@ -4,6 +4,7 @@ import { fetchConversations } from '@/domain/chat/queries/useConversationsQuery'
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { IConversationResponse } from '@/services/api/types/chat.types';
+import { ignoreAsyncError } from '@/utils/asyncAction';
 
 /** Invalidate and refresh the TanStack conversation cache. */
 export async function refreshConversationsCache(): Promise<void> {
@@ -12,12 +13,8 @@ export async function refreshConversationsCache(): Promise<void> {
 
   await queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
 
-  try {
-    const list = await fetchConversations();
-    queryClient.setQueryData(chatKeys.conversations(), list);
-  } catch {
-    /* keep cached conversations */
-  }
+  const list = await ignoreAsyncError(fetchConversations());
+  if (list) queryClient.setQueryData(chatKeys.conversations(), list);
 }
 
 /** Derive which counter field belongs to the viewer for a given conversation. */

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { runAsyncAction } from '@/utils/asyncAction';
 import { Link } from 'react-router';
 import {
   CheckCircle,
@@ -90,7 +91,7 @@ export function RfqDetailOffersSection({
   onOfferFlowComplete,
   rfqQuantity = 0,
   quoteHistories,
-}: RfqDetailOffersSectionProps) {
+}: Readonly<RfqDetailOffersSectionProps>) {
   const isRequestClosed =
     rfqStatus === 'completed' || rfqStatus === 'cancelled' || rfqStatus === 'expired';
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -108,17 +109,20 @@ export function RfqDetailOffersSection({
   const handleAcceptOffer = async (offerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (acceptingId) return;
-    setAcceptingId(offerId);
     setFlowError(null);
-    try {
-      const orderId = getOrderIdFromCreateResult(await ordersApi.create(Number(offerId)));
-      if (orderId) setSuccessOrderId(orderId);
-      onOfferFlowComplete?.({ quoteId: offerId, orderId });
-    } catch (err) {
-      setFlowError(err instanceof Error ? err.message : 'ไม่สามารถยอมรับข้อเสนอได้');
-    } finally {
-      setAcceptingId(null);
-    }
+    await runAsyncAction(
+      async () => {
+        const orderId = getOrderIdFromCreateResult(await ordersApi.create(Number(offerId)));
+        if (orderId) setSuccessOrderId(orderId);
+        onOfferFlowComplete?.({ quoteId: offerId, orderId });
+      },
+      {
+        onStart: () => setAcceptingId(offerId),
+        onSettled: () => setAcceptingId(null),
+        onError: (message) => setFlowError(message),
+        fallbackMessage: 'ไม่สามารถยอมรับข้อเสนอได้',
+      },
+    );
   };
   if (isHistoryView && offers.length > 0) {
     return (
