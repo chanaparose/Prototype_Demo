@@ -5,7 +5,7 @@ import { Search, Plus } from 'lucide-react';
 import { messagesApi } from '@/services/api/chatApi';
 import { rfqsApi } from '@/services/api/rfqApi';
 import { toast } from 'sonner';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate } from '@/utils/formatting/formatDate';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
@@ -52,6 +52,24 @@ export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Pr
   const [keyword, setKeyword] = useState('');
   const [selectedRfqId, setSelectedRfqId] = useState<number | null>(null);
 
+  const shareRfqMutation = useAppMutation({
+    mutationFn: async (rfqId: number) => {
+      const res = await messagesApi.send(conversationId, {
+        content: '',
+        receiver_id: receiverId,
+        message_type: 'rfq_card',
+        reference_type: 'RQ',
+        reference_id: rfqId,
+      });
+      return res as unknown as Record<string, unknown>;
+    },
+    onMutate: (rfqId) => setSelectedRfqId(rfqId),
+    onSuccess: (res) => onSelect(res),
+    onError: () => setSelectedRfqId(null),
+    onErrorMessage: (message) => toast.error(message),
+    fallbackMessage: 'แนบ RFQ ไม่สำเร็จ',
+  });
+
   const q = useQuery({
     queryKey: chatKeys.rfqPicker(),
     queryFn: async () => {
@@ -77,27 +95,9 @@ export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Pr
     );
   }, [q.data, keyword]);
 
-  const handleShare = async (rfqId: number) => {
-    setSelectedRfqId(rfqId);
-    await runAsyncAction(
-      async () => {
-        const res = await messagesApi.send(conversationId, {
-          content: '',
-          receiver_id: receiverId,
-          message_type: 'rfq_card',
-          reference_type: 'RQ',
-          reference_id: rfqId,
-        });
-        onSelect(res as unknown as Record<string, unknown>);
-      },
-      {
-        onError: (message) => {
-          toast.error(message);
-          setSelectedRfqId(null);
-        },
-        fallbackMessage: 'แนบ RFQ ไม่สำเร็จ',
-      },
-    );
+  const handleShare = (rfqId: number) => {
+    if (shareRfqMutation.isPending) return;
+    void shareRfqMutation.mutate(rfqId);
   };
 
   return (

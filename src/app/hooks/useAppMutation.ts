@@ -21,9 +21,9 @@ export function useAppMutation<TData = void, TVariables = void, TContext = unkno
   const { fallbackMessage, onErrorMessage, onError, ...rest } = options;
   return useMutation({
     ...rest,
-    onError: (error, variables, context) => {
+    onError: (error, variables, context, mutation) => {
       onErrorMessage?.(getErrorMessage(error, fallbackMessage));
-      onError?.(error, variables, context);
+      onError?.(error, variables, context, mutation);
     },
   });
 }

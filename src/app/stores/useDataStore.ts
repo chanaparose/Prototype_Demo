@@ -10,13 +10,7 @@ import { refreshConversationsCache } from '@/domain/chat/chatCache';
 import { fetchNotificationsList } from '@/domain/notifications/queries/useNotificationQueries';
 import { mapNotificationToBootstrapModel } from '@/domain/notifications/mappers/mapNotification';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
-import { mapRfqStatusFromApi } from '@/domain/rfq/status';
-import {
-  mapOrderStatusFromApi,
-  guessOrderProgressFromStep,
-  parseCurrentStepId,
-} from '@/domain/order/status';
-import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
+import { fetchAndMapRfqList, mapRfqListFromBootstrap } from '@/domain/rfq/mappers/mapRfqList';
 import type {
   BootstrapCategoryModel,
   Factory,
@@ -108,6 +102,9 @@ export const useDataStore = create<DataState & DataActions>((set) => {
 
       const u = session?.currentUser as unknown as Record<string, unknown> | undefined;
       const w = session?.wallet as unknown as Record<string, unknown> | undefined;
+      const rfqList = mapRfqListFromBootstrap(session);
+
+      queryClient.setQueryData(rfqKeys.list(), rfqList);
 
       set({
         currentUser: u
@@ -130,57 +127,8 @@ export const useDataStore = create<DataState & DataActions>((set) => {
         factoryReviews: [],
         ideaArticles: [],
         factoryShowcases: [],
-        rfqs: (() => {
-          const raw = session?.rfqs;
-          if (!Array.isArray(raw)) return [];
-          return (raw as unknown as Record<string, unknown>[]).map((r) => {
-            const category = pickScalarString(r.category);
-            const offerCount = pickScalarNumber(r.offerCount ?? r.offer_count) ?? 0;
-            const statusCode = pickScalarString(r.status);
-            const status = mapRfqStatusFromApi(statusCode, { quoteCount: offerCount });
-            return {
-              id: String(r.id ?? r.rfq_id ?? ''),
-              projectName: pickScalarString(r.projectName ?? r.project_name),
-              category,
-              categoryIcon: guessCategoryIcon(category),
-              status,
-              offerCount,
-              budget: pickScalarNumber(r.budget) ?? 0,
-              quantity: pickScalarNumber(r.quantity) ?? 0,
-              material: '',
-              deadline: '',
-              createdAt: pickScalarString(r.createdAt ?? r.created_at),
-              description: pickScalarString(r.description),
-              imageUrls: [],
-              offers: [],
-            } as Rfq;
-          });
-        })(),
-        orders: (() => {
-          const raw = session?.orders;
-          if (!Array.isArray(raw)) return [];
-          return (raw as unknown as Record<string, unknown>[]).map((o) => {
-            const status = mapOrderStatusFromApi(pickScalarString(o.status));
-            const currentStepId = parseCurrentStepId(o.currentStepId ?? o.current_step_id);
-            return {
-              id: String(o.id ?? o.order_id ?? ''),
-              rfqId: String(o.rfqId ?? o.rfq_id ?? ''),
-              factoryId: String(o.factoryId ?? o.factory_id ?? ''),
-              factoryName: pickScalarString(o.factoryName ?? o.factory_name),
-              projectName: pickScalarString(o.projectName ?? o.project_name),
-              category: pickScalarString(o.category),
-              status,
-              progress: guessOrderProgressFromStep(currentStepId, status),
-              totalAmount: pickScalarNumber(o.totalAmount ?? o.total_amount) ?? 0,
-              depositPaid: pickScalarNumber(o.depositPaid ?? o.deposit_paid) ?? 0,
-              quantity: pickScalarNumber(o.quantity) ?? 0,
-              createdAt: pickScalarString(o.createdAt ?? o.created_at),
-              estimatedDelivery: pickScalarString(o.estimatedDelivery ?? o.estimated_delivery) || '',
-              timeline: [],
-              currentStepId,
-            } as Order;
-          });
-        })(),
+        rfqs: rfqList.rfqs,
+        orders: rfqList.orders,
         notifications: mappedNotifs,
         isLoading: false,
         error: null,
@@ -208,7 +156,9 @@ export const useDataStore = create<DataState & DataActions>((set) => {
     },
 
     refetchRfqs: async () => {
-      await queryClient.invalidateQueries({ queryKey: rfqKeys.list() });
+      const list = await fetchAndMapRfqList({ fresh: true });
+      queryClient.setQueryData(rfqKeys.list(), list);
+      set((state) => ({ ...state, rfqs: list.rfqs, orders: list.orders }));
     },
 
     refetchRfq: async (id: string) => {

@@ -27,9 +27,14 @@ function applyOptimistic(old: IProductionUpdatesBundle, body: PostBody): IProduc
   return { ...old, updates };
 }
 
-export function usePostProductionUpdate(orderId: string | undefined) {
+type Options = {
+  extraInvalidateKeys?: readonly (readonly unknown[])[];
+};
+
+export function usePostProductionUpdate(orderId: string | undefined, options?: Options) {
   const qc = useQueryClient();
   const key = orderKeys.productionUpdates(orderId);
+  const extraInvalidateKeys = options?.extraInvalidateKeys ?? [];
 
   return useMutation({
     mutationFn: async ({ body, confirmHeader }: { body: PostBody; confirmHeader?: boolean }) => {
@@ -51,6 +56,9 @@ export function usePostProductionUpdate(orderId: string | undefined) {
     onSettled: () => {
       void qc.invalidateQueries({ queryKey: key });
       void qc.invalidateQueries({ queryKey: orderKeys.detail(String(orderId ?? '')) });
+      for (const invalidateKey of extraInvalidateKeys) {
+        void qc.invalidateQueries({ queryKey: invalidateKey });
+      }
     },
     retry: 3,
   });

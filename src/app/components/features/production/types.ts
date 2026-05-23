@@ -9,9 +9,6 @@ export type {
 } from '@/domain/production/types/production.model';
 
 export {
-  mapLockContextFromApi as parseLockContextFromApi,
-  mapStepTemplatesFromApi as parseStepTemplates,
-  mapProductionUpdateRowFromApi as parseUpdateRow,
   mapProductionUpdatesBundleFromApi,
   mergeTemplateWithUpdates,
 } from '@/domain/production/mappers/mapProductionBundle';

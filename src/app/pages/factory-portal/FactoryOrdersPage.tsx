@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { X, ChevronRight, Clock } from 'lucide-react';
+import { useAuth } from '@/stores/useAuthStore';
+import { getFactoryEntityId } from '@/utils/factoryUser';
+import { factoryKeys } from '@/lib/queryKeys';
+import { usePostProductionUpdate } from '@/domain/production/queries/usePostProductionUpdate';
 import { useFactoryOrdersData } from '@/pages/factory-portal/factory-orders/useFactoryOrdersData';
 import { useFactoryOrdersMutations } from '@/pages/factory-portal/hooks/useFactoryOrdersMutations';
 import { deriveOrderCardState } from '@/pages/factory-portal/factory-orders/deriveOrderCardState';
@@ -53,7 +57,9 @@ function statusMeta(code: string) {
 
 export function FactoryOrdersPage() {
   const { data: rows = [], isLoading, isError, refetch, error } = useFactoryOrdersData();
-  const { productionUpdate, shipOrder } = useFactoryOrdersMutations();
+  const { shipOrder } = useFactoryOrdersMutations();
+  const { user } = useAuth();
+  const fid = getFactoryEntityId(user);
   const navigate = useNavigate();
   const [statusTab, setStatusTab] = useState<TabId>('needs_action');
   const [search, setSearch] = useState('');
@@ -68,6 +74,11 @@ export function FactoryOrdersPage() {
     tracking: string;
     note: string;
   } | null>(null);
+
+  const activeOrderId = updateModal ? String(updateModal.row.order_id) : undefined;
+  const postProductionUpdate = usePostProductionUpdate(activeOrderId, {
+    extraInvalidateKeys: [factoryKeys.orders(fid)],
+  });
 
   const now = useMemo(() => new Date(), []);
   const derived = useMemo(() => rows.map((r) => deriveOrderCardState(r, now)), [rows, now]);
@@ -325,18 +336,21 @@ export function FactoryOrdersPage() {
             <Button
               variant='unstyled'
               type='button'
-              disabled={productionUpdate.isPending || !updateModal.notes.trim()}
+              disabled={postProductionUpdate.isPending || !updateModal.notes.trim()}
               className='w-full py-2.5 rounded-xl text-white font-semibold disabled:opacity-50'
               style={{
                 background: 'linear-gradient(135deg, var(--brand-indigo) 0%, #334155 100%)',
               }}
               onClick={() => {
                 if (!updateModal) return;
-                productionUpdate.mutate(
+                postProductionUpdate.mutate(
                   {
-                    orderId: updateModal.row.order_id,
-                    stepId: updateModal.stepId,
-                    notes: updateModal.notes,
+                    body: {
+                      step_id: updateModal.stepId,
+                      status: 'CD',
+                      description: updateModal.notes.trim(),
+                      image_urls: [],
+                    },
                   },
                   {
                     onSuccess: async () => {
@@ -347,7 +361,7 @@ export function FactoryOrdersPage() {
                 );
               }}
             >
-              {productionUpdate.isPending ? 'กำลังบันทึก...' : 'บันทึกอัปเดต'}
+              {postProductionUpdate.isPending ? 'กำลังบันทึก...' : 'บันทึกอัปเดต'}
             </Button>
           </div>
         </div>

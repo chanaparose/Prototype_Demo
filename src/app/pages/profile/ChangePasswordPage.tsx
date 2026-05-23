@@ -9,8 +9,8 @@ import {
   authChangePasswordSchema,
   type AuthChangePasswordFormValues,
 } from '@/domain/auth/schemas/authForm.schema';
-import { toFormErrors } from '@/lib/apiError';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { getErrorMessage, toFormErrors } from '@/lib/apiError';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { APP_ROUTES } from '@/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,6 @@ const FIELDS: Array<{
 export function ChangePasswordPage() {
   const navigate = useNavigate();
   const [show, setShow] = useState({ c: false, n: false, cf: false });
-  const [saving, setSaving] = useState(false);
   const [rootError, setRootError] = useState('');
 
   const form = useForm<AuthChangePasswordFormValues>({
@@ -47,6 +46,24 @@ export function ChangePasswordPage() {
       confirm_password: '',
     },
     mode: 'onSubmit',
+  });
+
+  const saveMutation = useAppMutation({
+    mutationFn: (values: AuthChangePasswordFormValues) => profileApi.changePassword(values),
+    fallbackMessage: 'เปลี่ยนรหัสผ่านไม่สำเร็จ',
+    onMutate: () => setRootError(''),
+    onSuccess: () => navigate(APP_ROUTES.profile),
+    onError: (error) => {
+      const { root, fields } = toFormErrors(error);
+      if (root) setRootError(root);
+      const fieldErrors = fields ?? {};
+      for (const [key, message] of Object.entries(fieldErrors)) {
+        form.setError(key as keyof AuthChangePasswordFormValues, { message });
+      }
+      if (!root && Object.keys(fieldErrors).length === 0) {
+        setRootError(getErrorMessage(error, 'เปลี่ยนรหัสผ่านไม่สำเร็จ'));
+      }
+    },
   });
 
   const newPassword = form.watch('new_password');
@@ -61,28 +78,7 @@ export function ChangePasswordPage() {
   }, [newPassword]);
 
   const onSubmit = async (values: AuthChangePasswordFormValues) => {
-    await runAsyncAction(async () => {
-      await profileApi.changePassword(values);
-      navigate(APP_ROUTES.profile);
-    }, {
-      onStart: () => {
-        setSaving(true);
-        setRootError('');
-      },
-      onError: (_message, error) => {
-        const { root, fields } = toFormErrors(error);
-        if (root) setRootError(root);
-        const fieldErrors = fields ?? {};
-        for (const [key, message] of Object.entries(fieldErrors)) {
-          form.setError(key as keyof AuthChangePasswordFormValues, { message });
-        }
-        if (!root && Object.keys(fieldErrors).length === 0) {
-          setRootError(_message);
-        }
-      },
-      onSettled: () => setSaving(false),
-      fallbackMessage: 'เปลี่ยนรหัสผ่านไม่สำเร็จ',
-    });
+    await saveMutation.mutateAsync(values);
   };
 
   return (
@@ -152,10 +148,10 @@ export function ChangePasswordPage() {
           <Button
             variant='unstyled'
             type='submit'
-            disabled={saving}
+            disabled={saveMutation.isPending}
             className='w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold disabled:opacity-50'
           >
-            {saving ? 'กำลังบันทึก...' : 'เปลี่ยนรหัสผ่าน'}
+            {saveMutation.isPending ? 'กำลังบันทึก...' : 'เปลี่ยนรหัสผ่าน'}
           </Button>
         </form>
       </Form>

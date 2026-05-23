@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -23,8 +22,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDate, formatDateTime } from '@/utils/formatting/formatDate';
-import { ordersApi } from '@/services/api/ordersApi';
-import { orderKeys } from '@/lib/queryKeys';
+import { useOrderDetailQuery } from '@/hooks/order-detail/useOrderDetailQuery';
 import { getErrorMessage } from '@/lib/apiError';
 import { useAppMutation } from '@/hooks/useAppMutation';
 import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenceCard';
@@ -32,10 +30,13 @@ import { useOrderProductionUpdates } from '@/domain/production/queries/useOrderP
 import { usePostProductionUpdate } from '@/domain/production/queries/usePostProductionUpdate';
 import { ProductionHeader } from '@/components/features/production/ProductionHeader';
 import { ProductionTimeline } from '@/components/features/production/ProductionTimeline';
+import { UpdateStepDrawer } from '@/components/features/production/UpdateStepDrawer';
 import {
-  UpdateStepDrawer,
-  type CustomerShippingInfo,
-} from '@/components/features/production/UpdateStepDrawer';
+  extractOrderQuotationFromApi,
+  extractOrderRfqFromApi,
+  extractOrderShippingFromApi,
+} from '@/domain/order/mappers/mapOrderDetailNested';
+import type { CustomerShippingInfo } from '@/domain/order/types';
 import {
   mergeTemplateWithUpdates,
   type MergedProductionStep,
@@ -47,11 +48,7 @@ import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
-import { asRecord, unwrapApiEntity, type ApiRecord } from '@/lib/apiShape';
-
-function unwrapOrder(raw: unknown): ApiRecord {
-  return unwrapApiEntity(raw, ['order']);
-}
+import { nestedRecord, type ApiRecord } from '@/lib/apiShape';
 
 function statusLabel(code: string): string {
   const s = code.toUpperCase();
@@ -98,36 +95,6 @@ function factoryCanUpdateStep(step: MergedProductionStep | null): boolean {
 
 function isAcceptStep(step: MergedProductionStep | null): boolean {
   return getStepId(step) === 0;
-}
-
-function extractShippingInfo(order: Record<string, unknown>): CustomerShippingInfo {
-  const addr =
-    (order.delivery_address as Record<string, unknown>) ??
-    (order.shipping_address as Record<string, unknown>) ??
-    ((order.rfq as Record<string, unknown>)?.address as Record<string, unknown>) ??
-    {};
-
-  const buyer =
-    (order.buyer as Record<string, unknown>) ?? (order.customer as Record<string, unknown>) ?? {};
-
-  return {
-    recipientName:
-      String(order.customer_name ?? addr.recipient_name ?? addr.name ?? buyer.name ?? order.buyer_name ?? '').trim() ||
-      undefined,
-    phone:
-      String(order.customer_phone ?? addr.phone ?? addr.tel ?? buyer.phone ?? order.buyer_phone ?? '').trim() || undefined,
-    addressLine:
-      String(addr.address_detail ?? addr.address_line ?? addr.detail ?? '').trim() || undefined,
-    subDistrict:
-      String(addr.sub_district_name ?? addr.sub_district ?? addr.subdistrict ?? '').trim() ||
-      undefined,
-    district:
-      String(addr.district_name ?? addr.district ?? '').trim() || undefined,
-    province:
-      String(addr.province_name ?? addr.province ?? '').trim() || undefined,
-    postalCode:
-      String(addr.zip_code ?? addr.postal_code ?? '').trim() || undefined,
-  };
 }
 
 type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
@@ -324,11 +291,7 @@ export function FactoryOrderDetailPage() {
 
   const [actionError, setActionError] = useState('');
 
-  const orderQuery = useQuery({
-    queryKey: orderKeys.detail(id ?? ''),
-    queryFn: async () => unwrapOrder(await ordersApi.get(id!)),
-    enabled: Boolean(id),
-  });
+  const orderQuery = useOrderDetailQuery(id);
 
   const order = orderQuery.data ?? {};
   const loading = orderQuery.isLoading;
@@ -440,11 +403,8 @@ export function FactoryOrderDetailPage() {
       setActionError(err instanceof Error ? err.message : 'ยืนยันรับงานไม่สำเร็จ'),
   });
 
-  const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as IRfqNestedResponse) : null;
-  const quotation =
-    order.quotation && typeof order.quotation === 'object'
-      ? (order.quotation as IQuoteNestedResponse)
-      : null;
+  const rfq = extractOrderRfqFromApi(order);
+  const quotation = extractOrderQuotationFromApi(order);
   const title = String(
     rfq?.title ?? order.rfq_title ?? order.title ?? order.project_name ?? `คำสั่งซื้อ #${id ?? ''}`,
   );
@@ -472,25 +432,20 @@ export function FactoryOrderDetailPage() {
     return step4.update.status === 'IP';
   }, [step4]);
 
+  const factoryRow = nestedRecord(order, 'factory');
   const senderName = String(
-    (order.factory as Record<string, unknown>)?.factory_name ??
-    (order.factory as Record<string, unknown>)?.name ??
-    user?.company ??
-    user?.name ??
-    'โรงงาน Tryly',
+    factoryRow.factory_name ?? factoryRow.name ?? user?.company ?? user?.name ?? 'โรงงาน Tryly',
   ).trim();
 
-  const senderPhone =
-    String((order.factory as Record<string, unknown>)?.phone ?? '').trim() || undefined;
+  const senderPhone = String(factoryRow.phone ?? '').trim() || undefined;
 
-  const senderAddress =
-    String((order.factory as Record<string, unknown>)?.address ?? '').trim() || undefined;
+  const senderAddress = String(factoryRow.address ?? '').trim() || undefined;
 
   const trackingNumber = step4?.update.description
     ? (step4.update.description.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9-]{6,})/i)?.[1] ?? undefined)
     : undefined;
 
-  const customerShipping = useMemo(() => extractShippingInfo(order), [order]);
+  const customerShipping = useMemo(() => extractOrderShippingFromApi(order), [order]);
   const completedCount = derivedStates.filter((s) => s === 'completed').length;
   const progressPct = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
 

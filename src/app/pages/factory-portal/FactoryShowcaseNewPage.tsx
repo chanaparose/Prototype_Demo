@@ -163,6 +163,7 @@ export function FactoryShowcaseNewPage() {
           onConfirm={async (file) => {
             setError('');
             setLinkedShowcaseError('');
+            setUploading(true);
             uploadShowcaseImage.mutate(file, {
               onSuccess: (up) => {
                 const url = String(up.url ?? '').trim();
@@ -172,7 +173,6 @@ export function FactoryShowcaseNewPage() {
               onError: (err) =>
                 setError(err instanceof Error ? err.message : 'อัปโหลดรูปไม่สำเร็จ'),
               onSettled: () => setUploading(false),
-              onMutate: () => setUploading(true),
             });
           }}
         />

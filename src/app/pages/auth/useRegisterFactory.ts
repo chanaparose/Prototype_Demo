@@ -5,7 +5,7 @@ import { useAuth } from '@/stores/useAuthStore';
 import { ApiHttpError } from '@/services/api/httpClient';
 import { masterApi } from '@/services/api/masterApi';
 import { mediaApi } from '@/services/api/factoryApi';
-import { apiListAsRecords, type ApiRecord } from '@/lib/apiShape';
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 
 export interface FormState {
   factory_name: string;
@@ -162,10 +162,11 @@ export function useRegisterFactory() {
           .then((subs) => {
             const subArr = (Array.isArray(subs) ? subs : []) as unknown[];
             const subMap: Record<number, SubCategoryOption[]> = {};
-            for (const r of subArr) {
+            for (const raw of subArr) {
+              const r = asRecord(raw);
               const row = mapRow(r, ['sub_category_id', 'id'], ['name_th', 'name']);
               if (!row) continue;
-              const catId = Number((r as Record<string, unknown>).category_id ?? 0);
+              const catId = Number(r.category_id ?? 0);
               if (!catId) continue;
               (subMap[catId] ??= []).push(row);
             }

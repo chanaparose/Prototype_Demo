@@ -17,6 +17,7 @@ import { RfqReferenceCard } from '@/components/features/order-detail/RfqReferenc
 import { OrderBOQCard } from '@/components/features/order-detail/OrderBOQCard';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
+import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { OrderProductionTab } from '@/components/features/production/OrderProductionTab';
 import { useRfqDetailQuery } from '@/domain/rfq/queries/useRfqDetailQuery';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';

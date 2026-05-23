@@ -27,12 +27,6 @@ export const ordersApi = {
 
   delete: (id: string | number) => httpClient.delete<void>(`/orders/${id}`),
 
-  getMyOrders: () =>
-    httpClient.get<{
-      orders: IOrderDetailResponse[];
-      total: number;
-    }>('/orders/me'),
-
   getByQuoteId: (quoteId: string | number) =>
     httpClient.get<IOrderDetailResponse | null>(`/orders/quote/${quoteId}`),
 
@@ -87,12 +81,4 @@ export const productionUpdatesApi = {
 
   reject: (updateId: string | number, data: Record<string, unknown>) =>
     httpClient.post(`/production-updates/${updateId}/reject`, data),
-};
-
-export const productionApi = {
-  getSteps: (orderId: string | number) =>
-    httpClient.get<unknown[]>(`/orders/${orderId}/production-steps`),
-
-  updateStep: (orderId: string | number, stepId: string | number, data: Record<string, unknown>) =>
-    httpClient.patch(`/orders/${orderId}/production-steps/${stepId}`, data),
 };

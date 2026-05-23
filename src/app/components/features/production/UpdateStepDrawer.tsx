@@ -10,17 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
+import type { CustomerShippingInfo } from '@/domain/order/types';
 
-export interface CustomerShippingInfo {
-  recipientName?: string;
-  phone?: string;
-  addressLine?: string;
-  subDistrict?: string;
-  district?: string;
-  province?: string;
-  postalCode?: string;
-}
+export type { CustomerShippingInfo };
 
 type Props = {
   open: boolean;
@@ -53,9 +46,39 @@ export function UpdateStepDrawer({
   const [trackingNo, setTrackingNo] = useState('');
   const [courier, setCourier] = useState('');
   const [urls, setUrls] = useState<string[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState('');
+
+  const uploadMutation = useAppMutation({
+    mutationFn: async (files: FileList) => {
+      const uploaded: string[] = [];
+      for (let i = 0; i < files.length && uploaded.length < 5; i++) {
+        const up = await mediaApi.upload(files[i]);
+        const raw = typeof up.url === 'string' ? up.url.trim() : '';
+        if (/^https?:\/\//i.test(raw)) uploaded.push(raw);
+      }
+      setUrls((prev) => [...prev, ...uploaded].slice(0, 5));
+    },
+    fallbackMessage: 'อัปโหลดไม่สำเร็จ',
+    onMutate: () => setErr(''),
+    onError: (error) => setErr(productionErrorMessage(error)),
+  });
+
+  const submitMutation = useAppMutation({
+    mutationFn: async ({
+      body,
+      opts,
+    }: {
+      body: Parameters<Props['onSubmit']>[0];
+      opts?: Parameters<Props['onSubmit']>[1];
+    }) => {
+      await onSubmit(body, opts);
+    },
+    onMutate: () => setErr(''),
+    onError: (error) => setErr(productionErrorMessage(error)),
+  });
+
+  const busy = submitMutation.isPending;
+  const uploading = uploadMutation.isPending;
   const guide = step ? getStepGuide(Number(step.template.step_id ?? 0)) : null;
   const stepId = step ? Number(step.template.step_id ?? -1) : -1;
   const isShippingStep = stepId === 4;
@@ -87,25 +110,9 @@ export function UpdateStepDrawer({
   const addFiles = useCallback(
     async (files: FileList | null) => {
       if (!files?.length) return;
-      void runAsyncAction(async () => {
-        const next = [...urls];
-        for (let i = 0; i < files.length && next.length < 5; i++) {
-          const up = await mediaApi.upload(files[i]);
-          const raw = typeof up.url === 'string' ? up.url.trim() : '';
-          if (/^https?:\/\//i.test(raw)) next.push(raw);
-        }
-        setUrls(next.slice(0, 5));
-      }, {
-        onStart: () => {
-          setUploading(true);
-          setErr('');
-        },
-        onError: (message) => setErr(message),
-        onSettled: () => setUploading(false),
-        fallbackMessage: 'อัปโหลดไม่สำเร็จ',
-      });
+      await uploadMutation.mutateAsync(files);
     },
-    [urls],
+    [uploadMutation],
   );
 
   const removeAt = (idx: number) => setUrls((u) => u.filter((_, i) => i !== idx));
@@ -122,24 +129,21 @@ export function UpdateStepDrawer({
 
   const saveDraft = async () => {
     if (!step) return;
-    void runAsyncAction(async () => {
-      await onSubmit({
-        step_id: step.template.step_id,
-        status: 'IP',
-        description: notes.trim() || undefined,
-        image_urls: urls,
-        ...(isShippingStep && trackingNo.trim() ? { tracking_no: trackingNo.trim() } : {}),
-        ...(isShippingStep && courier.trim() ? { courier: courier.trim() } : {}),
+    try {
+      await submitMutation.mutateAsync({
+        body: {
+          step_id: step.template.step_id,
+          status: 'IP',
+          description: notes.trim() || undefined,
+          image_urls: urls,
+          ...(isShippingStep && trackingNo.trim() ? { tracking_no: trackingNo.trim() } : {}),
+          ...(isShippingStep && courier.trim() ? { courier: courier.trim() } : {}),
+        },
       });
       onClose();
-    }, {
-      onStart: () => {
-        setBusy(true);
-        setErr('');
-      },
-      onError: (_message, error) => setErr(productionErrorMessage(error)),
-      onSettled: () => setBusy(false),
-    });
+    } catch {
+      // error surfaced via submitMutation
+    }
   };
 
   const confirmDone = async () => {
@@ -148,9 +152,9 @@ export function UpdateStepDrawer({
       setErr(`ต้องแนบภาพอย่างน้อย ${minPhotos} ภาพ`);
       return;
     }
-    void runAsyncAction(async () => {
-      await onSubmit(
-        {
+    try {
+      await submitMutation.mutateAsync({
+        body: {
           step_id: step.template.step_id,
           status: 'CD',
           description: notes.trim() || undefined,
@@ -159,17 +163,12 @@ export function UpdateStepDrawer({
           ...(isShippingStep && trackingNo.trim() ? { tracking_no: trackingNo.trim() } : {}),
           ...(isShippingStep && courier.trim() ? { courier: courier.trim() } : {}),
         },
-        { confirmPaymentTriggerHeader: isPayment },
-      );
+        opts: { confirmPaymentTriggerHeader: isPayment },
+      });
       onClose();
-    }, {
-      onStart: () => {
-        setBusy(true);
-        setErr('');
-      },
-      onError: (_message, error) => setErr(productionErrorMessage(error)),
-      onSettled: () => setBusy(false),
-    });
+    } catch {
+      // error surfaced via submitMutation
+    }
   };
 
   if (!open || !step) return null;

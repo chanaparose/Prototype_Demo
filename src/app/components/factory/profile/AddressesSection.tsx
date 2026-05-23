@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { addressKeys } from '@/lib/queryKeys';
 import { useMyAddresses } from '@/hooks/factory/useMyAddresses';
-import { useModal } from '@/hooks/ui/useModal';
+import { useDisclosure } from '@/hooks/ui/useDisclosure';
 import { addressesApi } from '@/services/api/masterApi';
 import { AddressList } from '@/components/factory/AddressList';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
@@ -13,7 +13,7 @@ type Row = Record<string, unknown>;
 export function AddressesSection() {
   const qc = useQueryClient();
   const { data: addresses = [] } = useMyAddresses();
-  const modal = useModal();
+  const modal = useDisclosure();
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const [mode, setMode] = useState<'create' | 'edit'>('create');
@@ -28,7 +28,7 @@ export function AddressesSection() {
       await addressesApi.update(editingId, payload);
     }
     invalidate();
-    modal.closeModal();
+    modal.onClose();
     setEditing(null);
   };
 
@@ -61,12 +61,12 @@ export function AddressesSection() {
         onCreate={() => {
           setMode('create');
           setEditing(null);
-          modal.openModal();
+          modal.onOpen();
         }}
         onEdit={(row) => {
           setMode('edit');
           setEditing(row);
-          modal.openModal();
+          modal.onOpen();
         }}
         onDelete={(row) => void remove(row)}
         onSetDefault={(row) => void setDefault(row)}
@@ -77,7 +77,7 @@ export function AddressesSection() {
         mode={mode}
         initial={editing}
         onClose={() => {
-          modal.closeModal();
+          modal.onClose();
           setEditing(null);
         }}
         onSubmit={submit}

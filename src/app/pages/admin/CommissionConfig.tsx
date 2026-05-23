@@ -112,7 +112,7 @@ export function CommissionConfig() {
               confirmText: 'บันทึกเวอร์ชันใหม่',
             });
             if (!ok) return;
-            saveVersion.mutate({ form, currencyCode: active.currency_code });
+            saveVersion.mutate({ form, currencyCode: active.currency_code ?? 'THB' });
           }}
           className='w-full py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50'
         >

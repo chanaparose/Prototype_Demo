@@ -1,7 +1,8 @@
 import { Input } from '@/components/ui/input';
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
+import { asRecord } from '@/lib/apiShape';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import {
@@ -45,7 +46,6 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
   const [addresses, setAddresses] = useState<MappedAddress[]>([]);
   const [addrLoading, setAddrLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const autoSelected = useRef(false);
 
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>(FALLBACK_SHIPPING);
@@ -53,24 +53,27 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
   const onLoadedRef = useRef(onLoaded);
   onLoadedRef.current = onLoaded;
 
+  const loadAddressesMutation = useAppMutation({
+    mutationFn: async () => {
+      const raw = await addressesApi.list();
+      return apiListAsRecords(raw)
+        .map(mapAddressFromApi)
+        .filter((a): a is MappedAddress => a != null);
+    },
+    onMutate: () => setAddrLoading(true),
+    onSettled: () => setAddrLoading(false),
+    onError: () => setAddresses([]),
+  });
+
   const loadAddresses = useCallback(async (): Promise<MappedAddress[]> => {
-    const result = await runAsyncAction(
-      async () => {
-        const raw = await addressesApi.list();
-        const mapped = apiListAsRecords(raw)
-          .map(mapAddressFromApi)
-          .filter((a): a is MappedAddress => a != null);
-        setAddresses(mapped);
-        return mapped;
-      },
-      {
-        onStart: () => setAddrLoading(true),
-        onSettled: () => setAddrLoading(false),
-        onError: () => setAddresses([]),
-      },
-    );
-    return result ?? [];
-  }, []);
+    try {
+      const mapped = await loadAddressesMutation.mutateAsync();
+      setAddresses(mapped);
+      return mapped;
+    } catch {
+      return [];
+    }
+  }, [loadAddressesMutation]);
 
   useEffect(() => {
     let shippingMapResult: Record<number, string> = {};
@@ -108,31 +111,27 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
       });
   }, [loadAddresses, setDraft]);
 
+  const addAddressMutation = useAppMutation({
+    mutationFn: async (payload: AddressFormPayload) => {
+      const created = await addressesApi.create(payload);
+      const row = asRecord(created);
+      const createdId = Number(row.address_id ?? row.id ?? 0);
+      const latest = await loadAddresses();
+      const selectId =
+        (createdId > 0 ? createdId : null) ??
+        latest.find((a) => a.isDefault)?.id ??
+        latest[latest.length - 1]?.id ??
+        0;
+      if (selectId > 0) setDraft({ delivery_address_id: selectId });
+      setModalOpen(false);
+    },
+  });
+
   const handleAddAddress = useCallback(
     async (payload: AddressFormPayload) => {
-      await runAsyncAction(
-        async () => {
-          const created = await addressesApi.create(payload);
-          if (!created || typeof created !== 'object') {
-            throw new Error('Invalid API response from address creation');
-          }
-          const createdId = Number((created as Record<string, unknown>).address_id ?? (created as Record<string, unknown>).id ?? 0);
-          const latest = await loadAddresses();
-          const selectId =
-            (createdId > 0 ? createdId : null) ??
-            latest.find((a) => a.isDefault)?.id ??
-            latest[latest.length - 1]?.id ??
-            0;
-          if (selectId > 0) setDraft({ delivery_address_id: selectId });
-          setModalOpen(false);
-        },
-        {
-          onStart: () => setSaving(true),
-          onSettled: () => setSaving(false),
-        },
-      );
+      await addAddressMutation.mutateAsync(payload);
     },
-    [loadAddresses, setDraft],
+    [addAddressMutation],
   );
 
   return (
@@ -280,9 +279,9 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
       <AddressFormModal
         open={modalOpen}
         mode='create'
-        saving={saving}
+        saving={addAddressMutation.isPending}
         onClose={() => {
-          if (!saving) setModalOpen(false);
+          if (!addAddressMutation.isPending) setModalOpen(false);
         }}
         onSubmit={handleAddAddress}
       />

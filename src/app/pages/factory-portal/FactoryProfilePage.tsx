@@ -503,10 +503,10 @@ export function FactoryProfilePage() {
       if (!file || !fid) return;
       setError('');
       setOkMsg('');
+      setUploadingImage(true);
       uploadImage.mutate(
         { factoryId: fid, file, field: 'image_url' },
         {
-          onMutate: () => setUploadingImage(true),
           onSettled: () => setUploadingImage(false),
           onSuccess: ({ url }) => {
             form.setValue('image_url', url, { shouldDirty: false });
@@ -526,10 +526,10 @@ export function FactoryProfilePage() {
       if (!file || !fid) return;
       setError('');
       setOkMsg('');
+      setUploadingCover(true);
       uploadImage.mutate(
         { factoryId: fid, file, field: 'background_image_url' },
         {
-          onMutate: () => setUploadingCover(true),
           onSettled: () => setUploadingCover(false),
           onSuccess: ({ url }) => {
             form.setValue('cover_image_url', url, { shouldDirty: false });
@@ -555,8 +555,8 @@ export function FactoryProfilePage() {
     if (!ok) return;
     setError('');
     setOkMsg('');
+    setUploadingCover(true);
     removeCover.mutate(fid, {
-      onMutate: () => setUploadingCover(true),
       onSettled: () => setUploadingCover(false),
       onSuccess: async () => {
         form.setValue('cover_image_url', '', { shouldDirty: false });

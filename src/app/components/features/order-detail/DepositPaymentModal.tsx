@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, type ReactNode } from 'react';
 import { Wallet, QrCode, Landmark } from 'lucide-react';
 import { toast } from 'sonner';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { useQuery } from '@tanstack/react-query';
 import { ordersApi } from '@/services/api/ordersApi';
 import { walletApi } from '@/services/api/userApi';
@@ -61,8 +61,18 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
   const good = wallet.data?.good_fund ?? 0;
   const insufficient = good < amount;
   const [method, setMethod] = useState<DepositPaymentMethod>('WALLET');
-  const [submitting, setSubmitting] = useState(false);
   const idemRef = useRef<string>('');
+
+  const payMutation = useAppMutation({
+    mutationFn: async (paymentMethod: DepositPaymentMethod) => {
+      await ordersApi.createPayment(orderId, {
+        type: 'DP',
+        amount,
+        payment_method: paymentMethod,
+        idempotency_key: idemRef.current || genIdempotencyKey(orderId),
+      });
+    },
+  });
 
   useEffect(() => {
     if (open) {
@@ -75,54 +85,40 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
   const canSubmit = method === 'WALLET' ? canSubmitWallet : true;
 
   const handleSubmit = async () => {
-    if (submitting || !canSubmit) return;
-    await runAsyncAction(
-      async () => {
-        await ordersApi.createPayment(orderId, {
-          type: 'DP',
-          amount,
-          payment_method: method,
-          idempotency_key: idemRef.current || genIdempotencyKey(orderId),
-        });
-        if (method === 'WALLET') {
-          toast.success('ชำระเงินด้วย Wallet สำเร็จ');
-          await onSuccess?.();
-          onClose();
-        } else {
-          // Legacy off-ledger flow: BE returns intent (PromptPay QR / bank instructions).
-
-          toast.success('สร้างรายการชำระแล้ว กรุณาทำตามขั้นตอนการชำระเงิน');
-          onClose();
-        }
-      },
-      {
-        onStart: () => setSubmitting(true),
-        onSettled: () => setSubmitting(false),
-        onError: (_message, err) => {
-          const e = err as {
-            status?: number;
-            body?: { error_code?: string; message?: string; shortfall?: number; topup_url?: string };
-          };
-          const code = e?.body?.error_code;
-          if (code === 'INSUFFICIENT_WALLET_BALANCE') {
-            toast.error(
-              `ยอด Wallet ไม่พอ ขาดอีก ${formatCurrency(Number(e.body?.shortfall ?? 0))}`,
-            );
-          } else if (code === 'DEPOSIT_EXPIRED') {
-            toast.error('หมดกำหนดชำระเงินแล้ว');
-          } else if (code === 'DEPOSIT_ALREADY_PAID') {
-            toast.error('คำสั่งซื้อนี้ชำระเงินแล้ว');
-            void onSuccess?.();
-            onClose();
-          } else if (code === 'AMOUNT_MISMATCH') {
-            toast.error('ยอดไม่ตรงกับที่ระบบกำหนด กรุณารีเฟรชหน้า');
-          } else {
-            const msg = e?.body?.message ?? (err instanceof Error ? err.message : 'ชำระเงินไม่สำเร็จ');
-            toast.error(msg);
-          }
-        },
-      },
-    );
+    if (payMutation.isPending || !canSubmit) return;
+    try {
+      await payMutation.mutateAsync(method);
+      if (method === 'WALLET') {
+        toast.success('ชำระเงินด้วย Wallet สำเร็จ');
+        await onSuccess?.();
+        onClose();
+      } else {
+        toast.success('สร้างรายการชำระแล้ว กรุณาทำตามขั้นตอนการชำระเงิน');
+        onClose();
+      }
+    } catch (err) {
+      const e = err as {
+        status?: number;
+        body?: { error_code?: string; message?: string; shortfall?: number; topup_url?: string };
+      };
+      const code = e?.body?.error_code;
+      if (code === 'INSUFFICIENT_WALLET_BALANCE') {
+        toast.error(
+          `ยอด Wallet ไม่พอ ขาดอีก ${formatCurrency(Number(e.body?.shortfall ?? 0))}`,
+        );
+      } else if (code === 'DEPOSIT_EXPIRED') {
+        toast.error('หมดกำหนดชำระเงินแล้ว');
+      } else if (code === 'DEPOSIT_ALREADY_PAID') {
+        toast.error('คำสั่งซื้อนี้ชำระเงินแล้ว');
+        void onSuccess?.();
+        onClose();
+      } else if (code === 'AMOUNT_MISMATCH') {
+        toast.error('ยอดไม่ตรงกับที่ระบบกำหนด กรุณารีเฟรชหน้า');
+      } else {
+        const msg = e?.body?.message ?? (err instanceof Error ? err.message : 'ชำระเงินไม่สำเร็จ');
+        toast.error(msg);
+      }
+    }
   };
 
   const shortfall = Math.max(0, amount - good);
@@ -160,8 +156,8 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
                 ? `ยืนยันชำระด้วย Wallet · ${formatCurrency(amount)}`
                 : 'ดำเนินการต่อ',
             loadingLabel: 'กำลังดำเนินการ…',
-            loading: submitting,
-            disabled: !canSubmit || submitting,
+            loading: payMutation.isPending,
+            disabled: !canSubmit || payMutation.isPending,
             onClick: handleSubmit,
             style: { background: CTA_GRADIENT },
             fullWidth: true,

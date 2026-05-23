@@ -2,7 +2,6 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo
 import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getErrorMessage } from '@/lib/apiError';
 import { useAppMutation } from '@/hooks/useAppMutation';
 import {
   quotationFormSchema,

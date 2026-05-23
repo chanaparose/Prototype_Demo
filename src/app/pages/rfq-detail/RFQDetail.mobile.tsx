@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { appColors } from '@/styles/colors';
 import { useConfirmDialog } from '@/shared/ui/modals/ConfirmDialog';
 import { APP_ROUTES } from '@/constants/routes';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 
 const COLORS = {
   purple: appColors.brand.mauve,
@@ -47,7 +47,15 @@ export function RFQDetailMobile() {
   const { confirm, ConfirmDialog } = useConfirmDialog();
   const [specsOpen, setSpecsOpen] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
-  const [closing, setClosing] = useState(false);
+  const closeRfqMutation = useAppMutation({
+    mutationFn: () => rfqsApi.close(rfq!.id),
+    onSuccess: async () => {
+      toast.success('ปิดรับคำขอราคาเรียบร้อย');
+      await refetch();
+    },
+    onErrorMessage: (message) => toast.error(message),
+    fallbackMessage: 'ไม่สามารถปิดคำขอได้',
+  });
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
@@ -200,7 +208,7 @@ export function RFQDetailMobile() {
               <Button
                 variant='unstyled'
                 type='button'
-                disabled={closing}
+                disabled={closeRfqMutation.isPending}
                 onClick={async () => {
                   const ok = await confirm({
                     title: 'ปิดรับคำขอราคา?',
@@ -210,16 +218,7 @@ export function RFQDetailMobile() {
                     destructive: true,
                   });
                   if (!ok) return;
-                  void runAsyncAction(async () => {
-                    await rfqsApi.close(rfq.id);
-                    toast.success('ปิดรับคำขอราคาเรียบร้อย');
-                    await refetch();
-                  }, {
-                    onStart: () => setClosing(true),
-                    onError: (message) => toast.error(message),
-                    onSettled: () => setClosing(false),
-                    fallbackMessage: 'ไม่สามารถปิดคำขอได้',
-                  });
+                  void closeRfqMutation.mutate();
                 }}
                 className='flex-1 rounded-xl border text-sm font-semibold py-2.5 disabled:opacity-60'
                 style={{
@@ -228,7 +227,7 @@ export function RFQDetailMobile() {
                   backgroundColor: COLORS.lightPurpleBg,
                 }}
               >
-                {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
+                {closeRfqMutation.isPending ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
               </Button>
             ) : null}
           </div>

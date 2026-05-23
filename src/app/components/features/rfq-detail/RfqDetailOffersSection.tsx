@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { Link } from 'react-router';
 import {
   CheckCircle,
@@ -89,6 +89,20 @@ export function RfqDetailOffersSection({
   const isRequestClosed =
     rfqStatus === 'completed' || rfqStatus === 'cancelled' || rfqStatus === 'expired';
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const acceptOfferMutation = useAppMutation({
+    mutationFn: async (offerId: string) => {
+      const orderId = getOrderIdFromCreateResult(await ordersApi.create(Number(offerId)));
+      return { offerId, orderId };
+    },
+    fallbackMessage: 'ไม่สามารถยอมรับข้อเสนอได้',
+    onMutate: (offerId) => setAcceptingId(offerId),
+    onSettled: () => setAcceptingId(null),
+    onSuccess: ({ offerId, orderId }) => {
+      if (orderId) setSuccessOrderId(orderId);
+      onOfferFlowComplete?.({ quoteId: offerId, orderId });
+    },
+    onErrorMessage: (message) => setFlowError(message),
+  });
   const [flowError, setFlowError] = useState<string | null>(null);
   const [expandedBoqOfferId, setExpandedBoqOfferId] = useState<string | null>(null);
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null);
@@ -99,23 +113,11 @@ export function RfqDetailOffersSection({
     return () => clearTimeout(t);
   }, [successOrderId]);
 
-  const handleAcceptOffer = async (offerId: string, e: React.MouseEvent) => {
+  const handleAcceptOffer = (offerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (acceptingId) return;
+    if (acceptingId || acceptOfferMutation.isPending) return;
     setFlowError(null);
-    await runAsyncAction(
-      async () => {
-        const orderId = getOrderIdFromCreateResult(await ordersApi.create(Number(offerId)));
-        if (orderId) setSuccessOrderId(orderId);
-        onOfferFlowComplete?.({ quoteId: offerId, orderId });
-      },
-      {
-        onStart: () => setAcceptingId(offerId),
-        onSettled: () => setAcceptingId(null),
-        onError: (message) => setFlowError(message),
-        fallbackMessage: 'ไม่สามารถยอมรับข้อเสนอได้',
-      },
-    );
+    void acceptOfferMutation.mutate(offerId);
   };
   if (isHistoryView && offers.length > 0) {
     return (

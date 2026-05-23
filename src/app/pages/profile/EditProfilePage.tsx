@@ -12,7 +12,10 @@ import {
   type ProfileEditFormValues,
 } from '@/domain/profile/schemas/profileEditForm.schema';
 import { getErrorMessage } from '@/lib/apiError';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useQuery } from '@tanstack/react-query';
+import { useAppMutation } from '@/hooks/useAppMutation';
+import { applyFormErrorsFromApi } from '@/lib/apiError';
+import { asRecord } from '@/lib/apiShape';
 import { APP_ROUTES } from '@/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,7 +50,6 @@ const emptyValues: ProfileEditFormValues = {
 export function EditProfilePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [rootError, setRootError] = useState('');
   const [role, setRole] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -62,38 +64,52 @@ export function EditProfilePage() {
   const bioLength = form.watch('bio').length;
   const isFactory = String(role || user?.role || '').toUpperCase() === 'FT';
 
+  const profileQuery = useQuery({
+    queryKey: ['profile', 'edit'],
+    queryFn: () => profileApi.get(),
+    staleTime: 0,
+  });
+
   useEffect(() => {
-    let mounted = true;
-    void profileApi
-      .get()
-      .then((p) => {
-        if (!mounted) return;
-        const addr = (p.address ?? {}) as Record<string, unknown>;
-        setAvatarPreview(String(p.avatar_url ?? ''));
-        setRole(String(p.role ?? user?.role ?? ''));
-        form.reset({
-          first_name: String(p.first_name ?? ''),
-          last_name: String(p.last_name ?? ''),
-          phone: String(p.phone ?? ''),
-          bio: String(p.bio ?? ''),
-          address_line1: String(p.address_line1 ?? addr.address_line1 ?? ''),
-          sub_district: String(p.sub_district ?? addr.sub_district ?? ''),
-          district: String(p.district ?? addr.district ?? ''),
-          province: String(p.province ?? addr.province ?? ''),
-          postal_code: String(p.postal_code ?? addr.postal_code ?? ''),
-          description: String(p.description ?? ''),
-          specialization: String(p.specialization ?? ''),
-          min_order: String(p.min_order ?? ''),
-          lead_time_desc: String(p.lead_time_desc ?? ''),
-          price_range: String(p.price_range ?? ''),
-        });
-      })
-      .catch((e) => setRootError(getErrorMessage(e, 'โหลดข้อมูลไม่สำเร็จ')))
-      .finally(() => mounted && setLoading(false));
-    return () => {
-      mounted = false;
-    };
-  }, [form, user?.role]);
+    if (!profileQuery.data) return;
+    const p = profileQuery.data;
+    const addr = asRecord(p.address);
+    setAvatarPreview(String(p.avatar_url ?? ''));
+    setRole(String(p.role ?? user?.role ?? ''));
+    form.reset({
+      first_name: String(p.first_name ?? ''),
+      last_name: String(p.last_name ?? ''),
+      phone: String(p.phone ?? ''),
+      bio: String(p.bio ?? ''),
+      address_line1: String(p.address_line1 ?? addr.address_line1 ?? ''),
+      sub_district: String(p.sub_district ?? addr.sub_district ?? ''),
+      district: String(p.district ?? addr.district ?? ''),
+      province: String(p.province ?? addr.province ?? ''),
+      postal_code: String(p.postal_code ?? addr.postal_code ?? ''),
+      description: String(p.description ?? ''),
+      specialization: String(p.specialization ?? ''),
+      min_order: String(p.min_order ?? ''),
+      lead_time_desc: String(p.lead_time_desc ?? ''),
+      price_range: String(p.price_range ?? ''),
+    });
+  }, [profileQuery.data, form, user?.role]);
+
+  useEffect(() => {
+    if (profileQuery.error) {
+      setRootError(getErrorMessage(profileQuery.error, 'โหลดข้อมูลไม่สำเร็จ'));
+    }
+  }, [profileQuery.error]);
+
+  const saveMutation = useAppMutation({
+    mutationFn: async (values: ProfileEditFormValues) => {
+      if (avatarFile) await profileApi.uploadAvatar(avatarFile);
+      await profileApi.update({ ...values, bio: values.bio.slice(0, 300) });
+    },
+    fallbackMessage: 'บันทึกไม่สำเร็จ',
+    onMutate: () => setRootError(''),
+    onError: (err) => applyFormErrorsFromApi(err, form.setError, ['root']),
+    onSuccess: () => navigate(APP_ROUTES.profile),
+  });
 
   const onSubmit = async (values: ProfileEditFormValues) => {
     const currentRole = String(role || user?.role || '');
@@ -102,16 +118,10 @@ export function EditProfilePage() {
       setRootError(roleError);
       return;
     }
-    setRootError('');
-    await runAsyncAction(async () => {
-      if (avatarFile) await profileApi.uploadAvatar(avatarFile);
-      await profileApi.update({ ...values, bio: values.bio.slice(0, 300) });
-      navigate(APP_ROUTES.profile);
-    }, {
-      onError: (message) => setRootError(message),
-      fallbackMessage: 'บันทึกไม่สำเร็จ',
-    });
+    await saveMutation.mutateAsync(values);
   };
+
+  const loading = profileQuery.isLoading;
 
   const fieldRows: Array<{ label: string; name: keyof ProfileEditFormValues }> = isFactory
     ? [
@@ -149,7 +159,7 @@ export function EditProfilePage() {
           variant='unstyled'
           type='button'
           onClick={() => void form.handleSubmit(onSubmit)()}
-          disabled={form.formState.isSubmitting}
+          disabled={saveMutation.isPending}
           className='text-xs font-semibold text-indigo-600 disabled:opacity-50'
         >
           บันทึก

@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { Pencil, Trash2, Download } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { factoryKeys } from '@/lib/queryKeys';
-import { useModal } from '@/hooks/ui/useModal';
+import { useDisclosure } from '@/hooks/ui/useDisclosure';
 import { useMasterCerts, type CertTypeOption } from '@/hooks/master/useMasterCerts';
 import { certificatesApi } from '@/services/api/userApi';
 import { mediaApi } from '@/services/api/factoryApi';
@@ -47,8 +47,8 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Re
   const { data: masterCertTypes = [] } = useMasterCerts();
   const { confirm, ConfirmDialog } = useConfirmDialog();
 
-  const modal = useModal();
-  const { openModal } = modal;
+  const modal = useDisclosure();
+  const { onOpen: openModal } = modal;
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editing, setEditing] = useState<Row | null>(null);
 
@@ -91,7 +91,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Re
     }
     invalidate();
     if (!keepOpen || mode === 'edit') {
-      modal.closeModal();
+      modal.onClose();
       setEditing(null);
     }
   };
@@ -153,7 +153,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Re
                     onClick={() => {
                       setMode('edit');
                       setEditing(c);
-                      modal.openModal();
+                      openModal();
                     }}
                     variant='outline'
                     size='icon-sm'
@@ -184,8 +184,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Re
         certTypes={masterCertTypes}
         initial={editing}
         onClose={() => {
-          if (modal.isLoading) return;
-          modal.closeModal();
+          modal.onClose();
           setEditing(null);
         }}
         onSubmit={submit}

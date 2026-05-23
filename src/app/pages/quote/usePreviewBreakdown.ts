@@ -1,39 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { quotationApi } from '@/services/api/rfqApi';
 import type { IQuotationBreakdown, IQuotationCreateRequest } from '@/services/api/types/rfq.types';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { getErrorMessage } from '@/lib/apiError';
 
 export function usePreviewBreakdown(state: Partial<IQuotationCreateRequest>) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [breakdown, setBreakdown] = useState<IQuotationBreakdown | null>(null);
+  const stateKey = JSON.stringify(state);
+  const query = useQuery({
+    queryKey: ['quotation', 'preview', stateKey],
+    queryFn: () => quotationApi.preview(state),
+    staleTime: 30_000,
+    retry: 1,
+  });
 
-  useEffect(() => {
-    let mounted = true;
-    const timer = setTimeout(async () => {
-      void runAsyncAction(async () => {
-        const next = await quotationApi.preview(state);
-        if (mounted) setBreakdown(next);
-      }, {
-        onStart: () => {
-          if (!mounted) return;
-          setLoading(true);
-          setError('');
-        },
-        onError: (message) => {
-          if (mounted) setError(message);
-        },
-        onSettled: () => {
-          if (mounted) setLoading(false);
-        },
-        fallbackMessage: 'preview failed',
-      });
-    }, 400);
-    return () => {
-      mounted = false;
-      clearTimeout(timer);
-    };
-  }, [JSON.stringify(state)]);
-
-  return { loading, error, breakdown };
+  return {
+    loading: query.isFetching,
+    error: query.error ? getErrorMessage(query.error, 'preview failed') : '',
+    breakdown: (query.data ?? null) as IQuotationBreakdown | null,
+  };
 }

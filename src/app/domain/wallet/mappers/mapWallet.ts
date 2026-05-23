@@ -1,4 +1,4 @@
-import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
+import { apiListAsRecords, asRecord } from '@/lib/apiShape';
 
 export type WalletSummary = {
   goodFund: number;

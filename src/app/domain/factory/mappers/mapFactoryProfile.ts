@@ -13,7 +13,7 @@ import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { pickFactoryCoverUrl } from '@/utils/normalizeFactoryRow';
 import type { IFactoryWithDetailsResponse } from '@/services/api/types/factory.types';
 import type { IFactoryReviewSummaryResponse } from '@/services/api/userApi';
-import { asRecord } from '@/lib/apiShape';
+import { apiListAsRecords, asRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type FactorySubCategoryPair = { categoryLabel: string; subLabel: string };
@@ -26,7 +26,7 @@ export type FactoryProfileDetail = {
   factoryCategoryNames: string[];
   factorySubCategoryNames: string[];
   factorySubCategoryPairs: FactorySubCategoryPair[];
-  apiCertificates: Record<string, unknown>[];
+  apiCertificates: ApiRecord[];
 };
 
 export type FactoryProfileFallbacks = {
@@ -35,24 +35,19 @@ export type FactoryProfileFallbacks = {
 };
 
 function nameFromCatRow(row: unknown): string | null {
-  if (!row || typeof row !== 'object') return null;
-  const o = row as Record<string, unknown>;
+  const o = asRecord(row);
   const n = pickScalarString(o.name, o.category_name, o.sub_category_name);
   return n || null;
 }
 
-function extractNestedArray(
-  top: Record<string, unknown>,
-  inner: Record<string, unknown>,
-  key: string,
-): unknown[] {
+function extractNestedArray(top: ApiRecord, inner: ApiRecord, key: string): unknown[] {
   if (Array.isArray(top[key])) return top[key] as unknown[];
   if (Array.isArray(inner[key])) return inner[key] as unknown[];
   return [];
 }
 
 function mapFactoryFromApi(
-  row: Record<string, unknown>,
+  row: ApiRecord,
   id: string,
   fallback?: Factory | null,
 ): Factory {
@@ -83,7 +78,7 @@ function mapFactoryFromApi(
 }
 
 function mapProfileFromApi(
-  p: Record<string, unknown>,
+  p: ApiRecord,
   factoryId: string,
   fallback?: FactoryProfile | null,
 ): FactoryProfile {
@@ -106,7 +101,7 @@ function mapProfileFromApi(
 }
 
 function mapReviewFromApi(
-  r: Record<string, unknown>,
+  r: ApiRecord,
   factoryId: string,
 ): FactoryReview | null {
   const rid = pickScalarString(r.id, r.review_id);
@@ -150,7 +145,7 @@ export async function fetchAndMapFactoryProfile(
   const factorySubCategoryPairs: FactorySubCategoryPair[] = [];
   const factoryCategoryNames: string[] = [];
   const factorySubCategoryNames: string[] = [];
-  let apiCertificates: Record<string, unknown>[] = [];
+  let apiCertificates: ApiRecord[] = [];
 
   const pushPair = (cat: string, sub: string) => {
     const c = cat.trim();
@@ -186,16 +181,14 @@ export async function fetchAndMapFactoryProfile(
     }
 
     for (const row of extractNestedArray(raw, rawF, 'factory_sub_categories')) {
-      if (!row || typeof row !== 'object') continue;
-      const o = row as Record<string, unknown>;
+      const o = asRecord(row);
       pushPair(
         pickScalarString(o.category_name, o.parent_category_name),
         pickScalarString(o.sub_category_name, o.name),
       );
     }
     for (const row of extractNestedArray(raw, rawF, 'sub_categories')) {
-      if (!row || typeof row !== 'object') continue;
-      const o = row as Record<string, unknown>;
+      const o = asRecord(row);
       const cat = pickScalarString(o.category_name, o.parent_category_name);
       const sub = pickScalarString(o.sub_category_name, o.name);
       if (cat && sub) pushPair(cat, sub);
@@ -211,31 +204,21 @@ export async function fetchAndMapFactoryProfile(
     factorySubCategoryPairs.length = 0;
     factorySubCategoryPairs.push(...dedupedPairs);
 
-    const certArr = extractNestedArray(raw, rawF, 'certificates');
-    apiCertificates = certArr.filter(
-      (x): x is Record<string, unknown> => x != null && typeof x === 'object',
-    );
+    apiCertificates = apiListAsRecords(extractNestedArray(raw, rawF, 'certificates'));
   }
 
   if (frontRes.status === 'fulfilled' && frontRes.value) {
     const res = frontRes.value;
-    const rawF = (res.factory && typeof res.factory === 'object' ? res.factory : {}) as Record<
-      string,
-      unknown
-    >;
+    const rawF = asRecord(res.factory);
     factory = mapFactoryFromApi(rawF, fid, factory ?? fb);
 
-    const rawP =
-      res.profile && typeof res.profile === 'object'
-        ? (res.profile as Record<string, unknown>)
-        : null;
+    const rawP = asRecord(res.profile);
     profile =
       rawP && Object.keys(rawP).length > 0
         ? mapProfileFromApi(rawP, fid, profFallback)
         : profFallback;
 
-    const revRows = Array.isArray(res.reviews) ? (res.reviews as Record<string, unknown>[]) : [];
-    reviews = revRows
+    reviews = apiListAsRecords(res.reviews)
       .map((r) => mapReviewFromApi(r, fid))
       .filter((x): x is FactoryReview => x != null);
 
@@ -243,7 +226,7 @@ export async function fetchAndMapFactoryProfile(
       const arr = res[key];
       if (Array.isArray(arr)) {
         for (const raw of arr) {
-          const s = mapShowcaseFromApi(raw as Record<string, unknown>);
+          const s = mapShowcaseFromApi(asRecord(raw));
           if (s.id && s.title) {
             if (!s.factoryId) s.factoryId = fid;
             showcases.push(s);
@@ -256,8 +239,7 @@ export async function fetchAndMapFactoryProfile(
   if (factory) {
     try {
       const rawList = await showcasesApi.listByFactory(factoryId);
-      const arr = (Array.isArray(rawList) ? rawList : []) as Record<string, unknown>[];
-      const fromApi = arr
+      const fromApi = apiListAsRecords(rawList)
         .map((row) => mapShowcaseFromApi(row))
         .filter((s) => s.id && s.title)
         .map((s) => {
@@ -275,8 +257,7 @@ export async function fetchAndMapFactoryProfile(
     const details = factRes.value as IFactoryWithDetailsResponse;
     const raw = asRecord(details);
     const rawF = asRecord(details.factory);
-    const revRows = extractNestedArray(raw, rawF, 'reviews') as Record<string, unknown>[];
-    reviews = revRows
+    reviews = apiListAsRecords(extractNestedArray(raw, rawF, 'reviews'))
       .map((r) => mapReviewFromApi(r, fid))
       .filter((x): x is FactoryReview => x != null);
   }

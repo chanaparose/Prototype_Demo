@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { quotationApi } from '@/services/api/rfqApi';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import { DiffRow } from '@/shared/ui/DiffRow';
@@ -11,36 +12,41 @@ import {
   type QuoteDetailModel,
   type QuoteHistoryEntry,
 } from '@/domain/quote/mappers/mapQuoteDetail';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 
 export function QuoteDetailCustomer() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qid = Number(id ?? 0);
-  const [quote, setQuote] = useState<QuoteDetailModel | null>(null);
-  const [history, setHistory] = useState<QuoteHistoryEntry[]>([]);
   const [compare, setCompare] = useState<{ before: QuoteHistoryEntry; after: QuoteHistoryEntry } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [requesting, setRequesting] = useState(false);
-  const [rejecting, setRejecting] = useState(false);
   const { prompt, PromptDialog } = usePromptDialog();
 
-  useEffect(() => {
-    let mounted = true;
-    void runAsyncAction(async () => {
+  const quoteQuery = useQuery({
+    queryKey: ['quotation', 'detail', qid],
+    queryFn: async () => {
       const [q, h] = await Promise.all([quotationApi.get(qid), quotationApi.history(qid)]);
-      if (!mounted) return;
-      setQuote(mapQuoteDetail(q));
-      setHistory(mapQuoteHistory(h));
-    }, {
-      onSettled: () => {
-        if (mounted) setLoading(false);
-      },
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [qid]);
+      return { quote: mapQuoteDetail(q), history: mapQuoteHistory(h) };
+    },
+    enabled: qid > 0,
+  });
+
+  const revisionMutation = useAppMutation({
+    mutationFn: (reason: string) => quotationApi.requestRevision(qid, { reason }),
+  });
+
+  const rejectMutation = useAppMutation({
+    mutationFn: (reason: string) => quotationApi.reject(qid, { reason }),
+    onSuccess: () => navigate(-1),
+  });
+
+  const acceptMutation = useAppMutation({
+    mutationFn: () => quotationApi.accept(qid),
+    onSuccess: () => navigate(0),
+  });
+
+  const quote = quoteQuery.data?.quote ?? null;
+  const history = quoteQuery.data?.history ?? [];
+  const loading = quoteQuery.isLoading;
 
   if (loading || !quote) {
     return <div className='px-4 py-10 text-sm text-gray-500'>กำลังโหลดใบเสนอราคา...</div>;
@@ -163,7 +169,7 @@ export function QuoteDetailCustomer() {
         <Button
           variant='unstyled'
           type='button'
-          disabled={quote.accepted || requesting}
+          disabled={quote.accepted || revisionMutation.isPending}
           onClick={async () => {
             const reason = await prompt({
               title: 'ขอแก้ไขใบเสนอราคา',
@@ -172,13 +178,7 @@ export function QuoteDetailCustomer() {
               confirmText: 'ส่งคำขอแก้ไข',
             });
             if (!reason) return;
-            void runAsyncAction(
-              () => quotationApi.requestRevision(qid, { reason }),
-              {
-              onStart: () => setRequesting(true),
-              onSettled: () => setRequesting(false),
-              },
-            );
+            void revisionMutation.mutate(reason);
           }}
           className='py-2 rounded-xl border border-gray-200 text-sm disabled:opacity-50'
         >
@@ -187,7 +187,7 @@ export function QuoteDetailCustomer() {
         <Button
           variant='unstyled'
           type='button'
-          disabled={quote.accepted || rejecting}
+          disabled={quote.accepted || rejectMutation.isPending}
           onClick={async () => {
             const reason = await prompt({
               title: 'ปฏิเสธใบเสนอราคา',
@@ -197,13 +197,7 @@ export function QuoteDetailCustomer() {
               required: false,
             });
             if (reason == null) return;
-            void runAsyncAction(async () => {
-              await quotationApi.reject(qid, { reason });
-              navigate(-1);
-            }, {
-              onStart: () => setRejecting(true),
-              onSettled: () => setRejecting(false),
-            });
+            void rejectMutation.mutate(reason);
           }}
           className='py-2 rounded-xl border border-rose-200 text-rose-600 text-sm disabled:opacity-50'
         >
@@ -212,11 +206,8 @@ export function QuoteDetailCustomer() {
         <Button
           variant='unstyled'
           type='button'
-          disabled={quote.accepted}
-          onClick={async () => {
-            await quotationApi.accept(qid);
-            navigate(0);
-          }}
+          disabled={quote.accepted || acceptMutation.isPending}
+          onClick={() => void acceptMutation.mutate()}
           className='py-2 rounded-xl bg-emerald-600 text-white text-sm disabled:opacity-50'
         >
           Accept

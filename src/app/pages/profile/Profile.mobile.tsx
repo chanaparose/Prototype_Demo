@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { useNavigate } from 'react-router';
 import {
   ChevronRight,
@@ -20,6 +21,7 @@ import {
   Home,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
+import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
 import { useAuth } from '@/stores/useAuthStore';
 import { profileApi } from '@/services/api/userApi';
 import { addressesApi } from '@/services/api/masterApi';
@@ -175,6 +177,7 @@ function normTransaction(r: Record<string, unknown>, isCustomer: boolean): Walle
 export function ProfileMobile() {
   const navigate = useNavigate();
   const data = useData();
+  const { data: rfqListResult } = useRfqListQuery();
   const { logout } = useAuth();
   const currentUser = data.currentUser;
   const role = String(
@@ -183,8 +186,9 @@ export function ProfileMobile() {
       '',
   ).toUpperCase();
   const isCustomer = role === 'CT' || role === 'CUSTOMER';
-  const completedOrders = data.orders.filter((o) => o.status === 'completed').length;
-  const totalSpent = data.orders.reduce((s, o) => s + o.depositPaid, 0);
+  const profileOrders = rfqListResult?.orders ?? data.orders;
+  const completedOrders = profileOrders.filter((o) => o.status === 'completed').length;
+  const totalSpent = profileOrders.reduce((s, o) => s + o.depositPaid, 0);
 
   const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([]);
   const [txLoading, setTxLoading] = useState(true);
@@ -194,41 +198,35 @@ export function ProfileMobile() {
   const [addressesLoading, setAddressesLoading] = useState(true);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState('');
-  const [addingAddress, setAddingAddress] = useState(false);
+  const addAddressMutation = useAppMutation({
+    mutationFn: async (detail: string) => {
+      await addressesApi.create({
+        address_type: 'shipping',
+        address_detail: detail,
+        sub_district_id: 0,
+        district_id: 0,
+        province_id: 0,
+        zip_code: '',
+        is_default: addresses.length === 0,
+      });
+      const raw = await addressesApi.list();
+      return apiListAsRecords(raw)
+        .map((r) => ({
+          id: String(r.address_id ?? r.id ?? ''),
+          label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
+          detail: String(r.address_detail ?? r.detail ?? ''),
+          isDefault: Boolean(r.is_default ?? false),
+        }))
+        .filter((a) => a.id);
+    },
+  });
 
   const addAddress = async () => {
-    if (!newAddress.trim() || addingAddress) return;
-    await runAsyncAction(
-      async () => {
-        await addressesApi.create({
-          address_type: 'shipping',
-          address_detail: newAddress.trim(),
-          sub_district_id: 0,
-          district_id: 0,
-          province_id: 0,
-          zip_code: '',
-          is_default: addresses.length === 0,
-        });
-        setNewAddress('');
-        setShowAddressForm(false);
-        // refetch
-        const raw = (await addressesApi.list()) as Record<string, unknown>[];
-        setAddresses(
-          raw
-            .map((r) => ({
-              id: String(r.address_id ?? r.id ?? ''),
-              label: String(r.address_type ?? r.label ?? 'ที่อยู่'),
-              detail: String(r.address_detail ?? r.detail ?? ''),
-              isDefault: Boolean(r.is_default ?? false),
-            }))
-            .filter((a) => a.id),
-        );
-      },
-      {
-        onStart: () => setAddingAddress(true),
-        onSettled: () => setAddingAddress(false),
-      },
-    );
+    if (!newAddress.trim() || addAddressMutation.isPending) return;
+    const mapped = await addAddressMutation.mutateAsync(newAddress.trim());
+    setAddresses(mapped);
+    setNewAddress('');
+    setShowAddressForm(false);
   };
 
   useEffect(() => {
@@ -541,11 +539,11 @@ export function ProfileMobile() {
                 variant='unstyled'
                 type='button'
                 onClick={addAddress}
-                disabled={addingAddress || !newAddress.trim()}
+                disabled={addAddressMutation.isPending || !newAddress.trim()}
                 className='px-3 py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50'
                 style={{ background: 'var(--brand-royal)' }}
               >
-                {addingAddress ? '...' : 'บันทึก'}
+                {addAddressMutation.isPending ? '...' : 'บันทึก'}
               </Button>
             </div>
           )}

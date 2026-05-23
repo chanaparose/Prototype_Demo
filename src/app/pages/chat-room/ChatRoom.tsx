@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
+import { getErrorMessage } from '@/lib/apiError';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   ChevronLeft,
@@ -387,45 +388,39 @@ function ChatRoomBody({
     };
     setMessages((prev) => insertMessageSorted(prev, optimistic));
 
-    await runAsyncAction(
-      async () => {
-        const uploaded = await mediaApi.upload(file);
-        const imageUrl = String(uploaded?.url ?? '');
-        if (!imageUrl) throw new Error('ไม่ได้รับ URL รูปภาพ');
+    try {
+      const uploaded = await mediaApi.upload(file);
+      const imageUrl = String(uploaded?.url ?? '');
+      if (!imageUrl) throw new Error('ไม่ได้รับ URL รูปภาพ');
 
-        const res = (await messagesApi.send(apiConv.conv_id, {
-          content: '',
-          receiver_id: resolveReceiverId(apiConv, currentUserId),
-          message_type: 'IM',
-          attachment_url: imageUrl,
-        })) as unknown as Record<string, unknown>;
+      const res = (await messagesApi.send(apiConv.conv_id, {
+        content: '',
+        receiver_id: resolveReceiverId(apiConv, currentUserId),
+        message_type: 'IM',
+        attachment_url: imageUrl,
+      })) as unknown as Record<string, unknown>;
 
-        const serverRow = rowToRoomMessage(res);
-        setMessages((prev) => {
-          const withImage = serverRow
-            ? { ...serverRow, imageUrl, status: 'ok' as const }
-            : null;
-          const filtered = prev.filter((m) => m.key !== tempKey && m.key !== serverRow?.key);
-          return withImage
-            ? sortMessagesByCreatedAt(dedupeByKey([...filtered, withImage]))
-            : sortMessagesByCreatedAt(
-                dedupeByKey(prev.map((m) => (m.key === tempKey ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const } : m))),
-              );
-        });
-        URL.revokeObjectURL(localUrl);
-      },
-      {
-        onStart: () => setUploadingImage(true),
-        onSettled: () => setUploadingImage(false),
-        onError: (_message, err) => {
-          setMessages((prev) =>
-            prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
-          );
-          toast.error(err instanceof Error ? err.message : 'อัปโหลดรูปไม่สำเร็จ');
-        },
-        fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
-      },
-    );
+      const serverRow = rowToRoomMessage(res);
+      setMessages((prev) => {
+        const withImage = serverRow
+          ? { ...serverRow, imageUrl, status: 'ok' as const }
+          : null;
+        const filtered = prev.filter((m) => m.key !== tempKey && m.key !== serverRow?.key);
+        return withImage
+          ? sortMessagesByCreatedAt(dedupeByKey([...filtered, withImage]))
+          : sortMessagesByCreatedAt(
+              dedupeByKey(prev.map((m) => (m.key === tempKey ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const } : m))),
+            );
+      });
+      URL.revokeObjectURL(localUrl);
+    } catch (err) {
+      setMessages((prev) =>
+        prev.map((m) => (m.key === tempKey ? { ...m, status: 'error' as const } : m)),
+      );
+      toast.error(getErrorMessage(err, 'อัปโหลดรูปไม่สำเร็จ'));
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -476,44 +471,49 @@ function ChatRoomBody({
     await refetchConversations?.();
   }, [apiConv, refetchConversations, setMessages]);
 
+  const acceptQuoteMutation = useAppMutation({
+    mutationFn: async (quotationId: number) => {
+      const res = await ordersApi.acceptQuote(quotationId);
+      await refreshThread();
+      return res;
+    },
+    fallbackMessage: 'ยืนยันใบเสนอราคาไม่สำเร็จ',
+    onMutate: (quotationId) => setQuotationLoadingId(quotationId),
+    onSettled: () => setQuotationLoadingId(null),
+    onErrorMessage: (message) => toast.error(message),
+  });
+
+  const rejectQuoteMutation = useAppMutation({
+    mutationFn: async (quotationId: number) => {
+      await quotationsApi.update(quotationId, { status: 'RJ' });
+      await refreshThread();
+    },
+    fallbackMessage: 'ปฏิเสธใบเสนอราคาไม่สำเร็จ',
+    onMutate: (quotationId) => setQuotationLoadingId(quotationId),
+    onSettled: () => setQuotationLoadingId(null),
+    onSuccess: () => toast.success('ปฏิเสธใบเสนอราคาแล้ว'),
+    onErrorMessage: (message) => toast.error(message),
+  });
+
   const handleAcceptQuotation = useCallback(
     async (quotationId: number) => {
-      await runAsyncAction(
-        async () => {
-          const res = await ordersApi.acceptQuote(quotationId);
-          const orderId = Number(res.order_id ?? 0);
-          await refreshThread();
-          if (Number.isFinite(orderId) && orderId > 0) navigate(`/orders/${orderId}`);
-          else toast.success('ยืนยันใบเสนอราคาแล้ว');
-        },
-        {
-          onStart: () => setQuotationLoadingId(quotationId),
-          onSettled: () => setQuotationLoadingId(null),
-          onError: (message) => toast.error(message),
-          fallbackMessage: 'ยืนยันใบเสนอราคาไม่สำเร็จ',
-        },
-      );
+      try {
+        const res = await acceptQuoteMutation.mutateAsync(quotationId);
+        const orderId = Number(res.order_id ?? 0);
+        if (Number.isFinite(orderId) && orderId > 0) navigate(`/orders/${orderId}`);
+        else toast.success('ยืนยันใบเสนอราคาแล้ว');
+      } catch {
+        // toast via mutation
+      }
     },
-    [navigate, refreshThread],
+    [navigate, acceptQuoteMutation],
   );
 
   const handleRejectQuotation = useCallback(
     async (quotationId: number) => {
-      await runAsyncAction(
-        async () => {
-          await quotationsApi.update(quotationId, { status: 'RJ' });
-          await refreshThread();
-          toast.success('ปฏิเสธใบเสนอราคาแล้ว');
-        },
-        {
-          onStart: () => setQuotationLoadingId(quotationId),
-          onSettled: () => setQuotationLoadingId(null),
-          onError: (message) => toast.error(message),
-          fallbackMessage: 'ปฏิเสธใบเสนอราคาไม่สำเร็จ',
-        },
-      );
+      void rejectQuoteMutation.mutate(quotationId);
     },
-    [refreshThread],
+    [rejectQuoteMutation],
   );
 
   return (

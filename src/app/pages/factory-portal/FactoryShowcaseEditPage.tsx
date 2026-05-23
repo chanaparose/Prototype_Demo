@@ -400,8 +400,8 @@ export function FactoryShowcaseEditPage() {
           onCancel={() => setCropFile(null)}
           onConfirm={async (file) => {
             setError('');
+            setUploading(true);
             uploadShowcaseImage.mutate(file, {
-              onMutate: () => setUploading(true),
               onSuccess: (up) => {
                 const url = String(up.url ?? '').trim();
                 if (url) setImageUrls((prev) => [...prev, url].slice(0, 5));

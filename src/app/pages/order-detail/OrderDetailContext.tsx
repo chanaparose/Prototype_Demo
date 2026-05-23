@@ -33,11 +33,13 @@ import {
   type PaymentScheduleItem,
 } from '@/pages/order-detail/orderDetailFromApi';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
-import { asRecord, unwrapApiEntity, type ApiRecord } from '@/lib/apiShape';
-
-function unwrapOrderPayload(raw: unknown): ApiRecord {
-  return unwrapApiEntity(raw, ['order']);
-}
+import {
+  extractOrderQuotationFromApi,
+  extractOrderRfqFromApi,
+  extractOrderRfqSummaryFromApi,
+} from '@/domain/order/mappers/mapOrderDetailNested';
+import type { OrderRfqSummary } from '@/domain/order/types';
+import { nestedRecord, type ApiRecord } from '@/lib/apiShape';
 
 function mapApiOrderToOrder(
   row: ApiRecord,
@@ -50,10 +52,8 @@ function mapApiOrderToOrder(
   const fid = String(row.factory_id ?? '');
   const st = mapOrderStatusFromApi(String(row.status ?? ''));
   const fName = factories.find((f) => f.id === fid)?.name ?? `โรงงาน #${fid}`;
-  const rfqObj =
-    row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
-      ? (row.rfq as Record<string, unknown>)
-      : null;
+  const rfqObj = nestedRecord(row, 'rfq');
+  const hasRfq = Boolean(rfqObj.rfq_id || rfqObj.title);
   const currentStepId =
     opts?.currentStepId ??
     parseCurrentStepId(row.current_step_id ?? row.currentStepId) ??
@@ -64,7 +64,10 @@ function mapApiOrderToOrder(
     factoryId: fid,
     factoryName: fName,
     projectName: String(
-      rfqObj?.title ?? row.project_name ?? row.title ?? `คำสั่งซื้อ #${row.order_id ?? row.id}`,
+      (hasRfq ? rfqObj.title : undefined) ??
+        row.project_name ??
+        row.title ??
+        `คำสั่งซื้อ #${row.order_id ?? row.id}`,
     ),
     category: '',
     status: st,
@@ -79,10 +82,7 @@ function mapApiOrderToOrder(
   };
 }
 
-export type RfqSummaryInfo = {
-  quantity: number;
-  unit_name: string;
-};
+export type RfqSummaryInfo = OrderRfqSummary;
 
 export type ReviewStateData = {
   order_id: number;
@@ -124,23 +124,6 @@ export type OrderDetailContextValue = {
   refetchAll: () => Promise<void>;
 };
 
-function extractRfqSummary(row: Record<string, unknown>): RfqSummaryInfo | null {
-  const rfq = row.rfq;
-  if (rfq && typeof rfq === 'object') {
-    const r = rfq as Record<string, unknown>;
-    const q = Number(r.quantity);
-    if (Number.isFinite(q) && q > 0) {
-      return { quantity: q, unit_name: String(r.unit_name ?? 'ชิ้น') };
-    }
-  }
-  // Legacy flat-row fallback: some BE versions expose rfq_quantity / quantity at top level.
-  const legacy = Number(row.rfq_quantity ?? row.quantity);
-  if (Number.isFinite(legacy) && legacy > 0) {
-    return { quantity: legacy, unit_name: String(row.unit_name ?? 'ชิ้น') };
-  }
-  return null;
-}
-
 const OrderDetailContext = createContext<OrderDetailContextValue | null>(null);
 
 export function useOrderDetail(): OrderDetailContextValue {
@@ -179,7 +162,7 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
 
   const value = useMemo((): OrderDetailContextValue | null => {
     if (!orderQ.data) return null;
-    const row = unwrapOrderPayload(orderQ.data);
+    const row = orderQ.data;
     const apiStatus = String(row.status ?? '').toUpperCase();
     const uiMode = getOrderUiMode(apiStatus);
     const paymentSchedule = parsePaymentSchedule(row);
@@ -264,15 +247,9 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
       effectiveLockReason,
       lockContextMerged,
       reviewState,
-      rfqSummary: extractRfqSummary(row),
-      rfq:
-        row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
-          ? (row.rfq as IRfqNestedResponse)
-          : null,
-      quotation:
-        row.quotation && typeof row.quotation === 'object' && !Array.isArray(row.quotation)
-          ? (row.quotation as IQuoteNestedResponse)
-          : null,
+      rfqSummary: extractOrderRfqSummaryFromApi(row),
+      rfq: extractOrderRfqFromApi(row),
+      quotation: extractOrderQuotationFromApi(row),
       refetchAll,
     };
   }, [orderQ.data, factories, orderId]);

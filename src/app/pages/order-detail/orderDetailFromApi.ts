@@ -1,6 +1,7 @@
 import type { ProductionLockContext } from '@/components/features/production/types';
 import type { LockReason } from '@/pages/order-detail/getOrderUiMode';
 import { getOrderUiMode } from '@/pages/order-detail/getOrderUiMode';
+import { asRecord, type ApiRecord } from '@/lib/apiShape';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 
 export type NextAction = {
@@ -25,11 +26,11 @@ export type PaymentScheduleItem = {
 
 export { orderStatusLabelTh } from '@/domain/order/constants';
 
-export function parsePaymentSchedule(row: Record<string, unknown>): PaymentScheduleItem[] {
+export function parsePaymentSchedule(row: ApiRecord): PaymentScheduleItem[] {
   const raw = row.payment_schedule;
   if (Array.isArray(raw) && raw.length > 0) {
     return raw.map((x) => {
-      const r = x as Record<string, unknown>;
+      const r = asRecord(x);
       return {
         stage: pickScalarString(r.stage).toUpperCase(),
         percent: pickScalarNumber(r.percent) ?? 0,
@@ -66,13 +67,13 @@ export function parsePaymentSchedule(row: Record<string, unknown>): PaymentSched
 }
 
 export function parseNextAction(
-  row: Record<string, unknown>,
+  row: ApiRecord,
   orderId: string,
   apiStatus: string,
 ): NextAction | null {
   const na = row.next_action;
   if (na && typeof na === 'object' && !Array.isArray(na)) {
-    const o = na as Record<string, unknown>;
+    const o = asRecord(na);
     if (o.type === 'NONE' || o.type === null) return null;
     return {
       actor: pickScalarString(o.actor) || 'CUSTOMER',
@@ -104,7 +105,7 @@ export function parseNextAction(
 
 export function buildFallbackLockContext(
   orderId: string,
-  row: Record<string, unknown>,
+  row: ApiRecord,
   schedule: PaymentScheduleItem[],
 ): ProductionLockContext {
   const fullPay = schedule.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');

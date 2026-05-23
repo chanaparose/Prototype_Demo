@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 import { mediaApi } from '@/services/api/factoryApi';
 import { DimensionInput } from '@/shared/ui/DimensionInput';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
@@ -14,22 +14,19 @@ type Props = {
 
 export function Step2Specifications({ draft, setDraft }: Props) {
   const [advanced, setAdvanced] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
   const ref = useRef<HTMLInputElement>(null);
 
+  const uploadMutation = useAppMutation({
+    mutationFn: (f: File) => mediaApi.upload(f),
+    onSuccess: (res) => {
+      setDraft({ reference_images: [...draft.reference_images, res.url].slice(0, 5) });
+    },
+  });
+
   const uploadOne = async (f: File) => {
-    if (draft.reference_images.length >= 5) return;
-    await runAsyncAction(
-      async () => {
-        const res = await mediaApi.upload(f);
-        setDraft({ reference_images: [...draft.reference_images, res.url].slice(0, 5) });
-      },
-      {
-        onStart: () => setUploading(true),
-        onSettled: () => setUploading(false),
-      },
-    );
+    if (draft.reference_images.length >= 5 || uploadMutation.isPending) return;
+    await uploadMutation.mutateAsync(f);
   };
 
   const removeReference = (index: number) => {
@@ -95,10 +92,10 @@ export function Step2Specifications({ draft, setDraft }: Props) {
           variant='unstyled'
           type='button'
           onClick={() => ref.current?.click()}
-          disabled={uploading || draft.reference_images.length >= 5}
+          disabled={uploadMutation.isPending || draft.reference_images.length >= 5}
           className='rounded-xl border border-dashed border-gray-300 px-3 py-2 text-sm w-full'
         >
-          {uploading
+          {uploadMutation.isPending
             ? 'กำลังอัปโหลด...'
             : draft.reference_images.length >= 5
               ? 'อัปโหลดครบ 5 ไฟล์แล้ว'

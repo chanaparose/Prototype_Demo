@@ -1,5 +1,7 @@
 import { type Rfq, type Order } from '@/stores/types';
 import { frontendApi } from '@/services/api/exploreApi';
+import type { ISessionResponse } from '@/services/api/types/explore.types';
+import { apiListAsRecords } from '@/lib/apiShape';
 import { guessCategoryIcon } from '@/domain/shared/categoryIcons';
 import { mapRfqStatusFromApi } from '@/domain/rfq/status';
 import {
@@ -7,25 +9,20 @@ import {
   guessOrderProgressFromStep,
   parseCurrentStepId,
 } from '@/domain/order/status';
+import { useSessionStore } from '@/stores/useSessionStore';
 
 export type RfqListResult = { rfqs: Rfq[]; orders: Order[] };
 
-// ดึงข้อมูล RFQ + Order จาก /frontend/bootstrap (แทน /me/rfq-orders)
-// Bootstrap คืน rfqs[] และ orders[] แยกกัน พร้อม status ที่ map ไว้แล้วบน BE
-// (เช่น 'in_production', 'shipped', 'completed', 'pp' สำหรับ pending_payment)
-export async function fetchAndMapRfqList(): Promise<RfqListResult> {
-  const bootstrap = await frontendApi.getBootstrap();
+const SESSION_RFQ_STALE_MS = 30_000;
 
-  // ── RFQs ──────────────────────────────────────────────────────────────────
-  const rfqsRaw = Array.isArray(bootstrap.rfqs)
-    ? (bootstrap.rfqs as unknown as Record<string, unknown>[])
-    : [];
+export function mapRfqListFromBootstrap(
+  bootstrap: Pick<ISessionResponse, 'rfqs' | 'orders'> | null | undefined,
+): RfqListResult {
+  const rfqsRaw = apiListAsRecords(bootstrap?.rfqs);
 
   const rfqs: Rfq[] = rfqsRaw.map((r) => {
     const category = String(r.category ?? r.category_name ?? '');
     const offerCount = Number(r.offerCount ?? r.offer_count ?? 0);
-    // bootstrap.rfqs.status ถูก map ไว้แล้วโดย BE (FrontendRFQ)
-    // mapRfqStatusFromApi รับได้ทั้ง raw code (OP/CL/CC) และ frontend string ('pending','offers_received',...)
     const status = mapRfqStatusFromApi(String(r.status ?? ''), { quoteCount: offerCount });
     return {
       id: String(r.id ?? r.rfq_id ?? ''),
@@ -42,18 +39,12 @@ export async function fetchAndMapRfqList(): Promise<RfqListResult> {
       description: String(r.description ?? ''),
       imageUrls: Array.isArray(r.images) ? (r.images as string[]) : [],
       offers: [],
-    } as Rfq;
+    };
   });
 
-  // ── Orders ────────────────────────────────────────────────────────────────
-  const ordersRaw = Array.isArray(bootstrap.orders)
-    ? (bootstrap.orders as unknown as Record<string, unknown>[])
-    : [];
+  const ordersRaw = apiListAsRecords(bootstrap?.orders);
 
   const orders: Order[] = ordersRaw.map((o) => {
-    // bootstrap.orders.status ถูก map ไว้แล้วโดย BE (FrontendOrder):
-    //   PR/QC → 'in_production', SH → 'shipped', CP → 'completed', PP → 'pp', ...
-    // mapOrderStatusFromApi รับได้ทั้ง raw ('PP') และ pre-mapped ('pp','in_production',...)
     const status = mapOrderStatusFromApi(String(o.status ?? ''));
     const currentStepId = parseCurrentStepId(o.currentStepId ?? o.current_step_id);
     return {
@@ -72,8 +63,24 @@ export async function fetchAndMapRfqList(): Promise<RfqListResult> {
       estimatedDelivery: String(o.estimatedDelivery ?? o.estimated_delivery ?? ''),
       timeline: [],
       currentStepId,
-    } as Order;
+    };
   });
 
   return { rfqs, orders };
+}
+
+export async function fetchAndMapRfqList(options?: { fresh?: boolean }): Promise<RfqListResult> {
+  if (!options?.fresh) {
+    const { data: session, lastFetchedAt } = useSessionStore.getState();
+    if (
+      session &&
+      lastFetchedAt != null &&
+      Date.now() - lastFetchedAt < SESSION_RFQ_STALE_MS
+    ) {
+      return mapRfqListFromBootstrap(session);
+    }
+  }
+
+  const bootstrap = await frontendApi.getBootstrap();
+  return mapRfqListFromBootstrap(bootstrap);
 }

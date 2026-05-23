@@ -10,7 +10,7 @@ import { ExtraChargesForm } from '@/pages/quote/components/ExtraChargesForm';
 import { CommercialTermsForm } from '@/pages/quote/components/CommercialTermsForm';
 import { BreakdownCard } from '@/pages/quote/components/BreakdownCard';
 import { Button } from '@/components/ui/button';
-import { runAsyncAction } from '@/utils/asyncAction';
+import { useAppMutation } from '@/hooks/useAppMutation';
 
 export function QuoteBuilder() {
   const { rfqId } = useParams<{ rfqId: string }>();
@@ -18,7 +18,13 @@ export function QuoteBuilder() {
   const rid = Number(rfqId ?? 0);
   const { state, setPartial } = useQuoteBuilder(rid);
   const { loading, error, breakdown } = usePreviewBreakdown(state);
-  const [submitting, setSubmitting] = useState(false);
+  const submitMutation = useAppMutation({
+    mutationFn: () => quotationApi.create(state),
+    onSuccess: (q) => {
+      const id = Number(q.quote_id ?? 0);
+      if (id > 0) navigate(`/factory/quotations/${id}`);
+    },
+  });
 
   useEffect(() => {
     if (error) toast.error(error);
@@ -50,20 +56,11 @@ export function QuoteBuilder() {
           <Button
             variant='unstyled'
             type='button'
-            disabled={submitting}
-            onClick={async () => {
-              void runAsyncAction(async () => {
-                const q = await quotationApi.create(state);
-                const id = Number(q.quote_id ?? 0);
-                if (id > 0) navigate(`/factory/quotations/${id}`);
-              }, {
-                onStart: () => setSubmitting(true),
-                onSettled: () => setSubmitting(false),
-              });
-            }}
+            disabled={submitMutation.isPending}
+            onClick={() => void submitMutation.mutate()}
             className='w-full py-3 rounded-xl text-sm font-semibold text-white bg-violet-600 disabled:opacity-50'
           >
-            {submitting ? 'กำลังบันทึก...' : 'Create quotation'}
+            {submitMutation.isPending ? 'กำลังบันทึก...' : 'Create quotation'}
           </Button>
         </div>
       </div>
