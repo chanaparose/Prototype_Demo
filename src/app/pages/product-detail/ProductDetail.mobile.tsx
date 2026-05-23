@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseTHB as formatTHB, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseTHB as formatTHB, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft,
@@ -15,25 +15,35 @@ import {
   Store,
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
-import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores/useAuthStore';
+import { useDetailPageLogic } from '@/hooks/useDetailPageLogic';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { useFavorites } from '@/hooks/useFavorites';
 import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
 import { getCurrentHref } from '@/utils/navigation/redirect';
 import { Image } from '@/components/ui/image';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 export function ProductDetailMobile() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, reviews, isIdea, isMaterial, resolvedId, relatedProducts } =
-    useProductDetailShowcase();
-  const { isLiked, toggleFavorite } = useFavorites();
+  const {
+    item,
+    loading,
+    error,
+    factory,
+    reviews,
+    isIdea,
+    isMaterial,
+    resolvedId,
+    relatedProducts,
+    isLiked,
+    toggleFavorite,
+    handleBack,
+    handleStartChat,
+    starting,
+    canChat,
+  } = useDetailPageLogic('product');
 
   const gallery = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
@@ -45,23 +55,12 @@ export function ProductDetailMobile() {
 
   const [activeImage, setActiveImage] = useState(0);
 
-  const handleBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
-
   useEffect(() => {
     setActiveImage(0);
   }, [item?.id]);
 
   if (loading) {
-    return (
-      <div className='flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8'>
-        <span
-          className='h-9 w-9 animate-spin rounded-full border-2 border-violet-600 border-t-transparent'
-          aria-hidden
-        />
-      </div>
-    );
+    return <LoadingSpinner fullHeight />;
   }
 
   if (!item || !resolvedId) {
@@ -84,18 +83,10 @@ export function ProductDetailMobile() {
   }
 
   const subName = item.sub_category_name?.trim() ?? null;
-  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
-  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
-  const handleStartChat = () =>
-    void startChat(item.factoryId, {
-      type: 'PD',
-      id: Number(resolvedId),
-      title: item.title,
-    });
 
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const priceText = formatTHB(item.basePrice) ?? (item.priceRange?.trim() || null);
-  const liked = item ? isLiked(item.id) : false;
+  const liked = isLiked;
   const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
   const avgRating = Number(reviews?.summary.average ?? factory?.rating ?? 0);
   const reviewCount = Number(reviews?.summary.total ?? factory?.reviews ?? 0);
@@ -245,7 +236,7 @@ export function ProductDetailMobile() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => void toggleFavorite(item.id)}
+            onClick={() => void toggleFavorite()}
             className='inline-flex items-center gap-1 active:opacity-70'
           >
             <Heart
@@ -561,7 +552,7 @@ export function ProductDetailMobile() {
           }}
         >
           {starting ? (
-            <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+            <LoadingSpinner size='sm' color='border-white border-t-transparent' />
           ) : (
             <MessageCircle className='w-4 h-4' />
           )}

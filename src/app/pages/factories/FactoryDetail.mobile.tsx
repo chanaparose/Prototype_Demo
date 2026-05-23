@@ -13,6 +13,7 @@ import type { useFactoryProfile } from '@/components/features/factory/hooks/useF
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailMobileProps = { state: FactoryDetailState };
@@ -53,10 +54,7 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
   if (detailLoading && !factory) {
     return (
       <div className='flex min-h-screen items-center justify-center bg-gray-50 px-4 pb-20'>
-        <span
-          className='h-9 w-9 animate-spin rounded-full border-2 border-violet-600 border-t-transparent'
-          aria-hidden
-        />
+        <LoadingSpinner size='md' color='border-violet-600 border-t-transparent' />
       </div>
     );
   }

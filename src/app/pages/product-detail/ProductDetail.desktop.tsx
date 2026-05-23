@@ -17,12 +17,9 @@ import {
   Store,
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
-import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores/useAuthStore';
+import { useDetailPageLogic } from '@/hooks/useDetailPageLogic';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
-import { useFavorites } from '@/hooks/useFavorites';
 import { getCurrentHref } from '@/utils/navigation/redirect';
 import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
@@ -32,15 +29,28 @@ import {
   TableCell,
   TableRow,
 } from '@/components/ui/table';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 export function ProductDetailDesktop() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, reviews, isIdea, isMaterial, resolvedId, relatedProducts } =
-    useProductDetailShowcase();
-  const { isLiked, toggleFavorite } = useFavorites();
+  const {
+    item,
+    loading,
+    error,
+    factory,
+    reviews,
+    isIdea,
+    isMaterial,
+    resolvedId,
+    relatedProducts,
+    isLiked,
+    toggleFavorite,
+    handleBack,
+    handleStartChat,
+    starting,
+    canChat,
+  } = useDetailPageLogic('product');
 
   const gallery = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
@@ -52,10 +62,6 @@ export function ProductDetailDesktop() {
 
   const [activeImage, setActiveImage] = useState(0);
 
-  const handleBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
-
   useEffect(() => {
     setActiveImage(0);
   }, [item?.id]);
@@ -63,10 +69,7 @@ export function ProductDetailDesktop() {
   if (loading) {
     return (
       <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-[#F5F3FF] lg:flex'>
-        <span
-          className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
-          aria-hidden
-        />
+        <LoadingSpinner size='lg' color='border-purple-600 border-t-transparent' />
       </div>
     );
   }
@@ -91,18 +94,10 @@ export function ProductDetailDesktop() {
   }
 
   const subName = item.sub_category_name?.trim() ?? null;
-  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
-  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
-  const handleStartChat = () =>
-    void startChat(item.factoryId, {
-      type: 'PD',
-      id: Number(resolvedId),
-      title: item.title,
-    });
 
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const priceText = formatTHB(item.basePrice) ?? (item.priceRange?.trim() || null);
-  const liked = item ? isLiked(item.id) : false;
+  const liked = isLiked;
   const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
   const avgRating = Number(reviews?.summary.average ?? factory?.rating ?? 0);
   const reviewCount = Number(reviews?.summary.total ?? factory?.reviews ?? 0);
@@ -182,7 +177,7 @@ export function ProductDetailDesktop() {
                 <Button
                   variant='unstyled'
                   type='button'
-                  onClick={() => void toggleFavorite(item.id)}
+                  onClick={() => void toggleFavorite()}
                   className='inline-flex items-center gap-1.5 hover:text-gray-700 transition-colors'
                 >
                   <Heart
@@ -315,10 +310,7 @@ export function ProductDetailDesktop() {
                     className='inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-5 text-[14px] font-semibold text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
                   >
                     {starting ? (
-                      <span
-                        className='w-4 h-4 border-2 border-t-transparent rounded-full animate-spin'
-                        style={{ borderColor: BRAND.orangeDark }}
-                      />
+                      <LoadingSpinner size='sm' color={`border-[${BRAND.orangeDark}] border-t-transparent`} />
                     ) : (
                       <MessageCircle className='w-4 h-4' />
                     )}
@@ -562,7 +554,7 @@ export function ProductDetailDesktop() {
                 className='inline-flex h-11 items-center gap-2 rounded-md bg-[var(--brand-orange)] px-5 text-[13px] font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:opacity-70'
               >
                 {starting ? (
-                  <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                  <LoadingSpinner size='sm' color='border-white border-t-transparent' />
                 ) : (
                   <MessageCircle className='w-4 h-4' />
                 )}

@@ -1,9 +1,9 @@
 import React from 'react';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useResponsiveRender } from '@/hooks/useResponsiveRender';
 import { IdeaDetailMobile } from '@/pages/idea-detail/IdeaDetail.mobile.tsx';
 import { IdeaDetailDesktop } from '@/pages/idea-detail/IdeaDetail.desktop.tsx';
 
 export function IdeaDetail() {
-  const isDesktop = useIsDesktop();
-  return isDesktop ? <IdeaDetailDesktop /> : <IdeaDetailMobile />;
+  const { render } = useResponsiveRender();
+  return render(<IdeaDetailMobile />, <IdeaDetailDesktop />);
 }

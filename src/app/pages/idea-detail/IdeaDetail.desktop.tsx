@@ -12,9 +12,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
-import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores/useAuthStore';
+import { useDetailPageLogic } from '@/hooks/useDetailPageLogic';
 import { useData } from '@/stores/useDataStore';
 import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -23,6 +21,7 @@ import { mapShowcaseFromApi } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 const CARD = {
   purple: 'var(--brand-mauve)',
@@ -31,16 +30,22 @@ const CARD = {
 
 export function IdeaDetailDesktop() {
   const navigate = useNavigate();
-  const { isLiked, toggleFavorite } = useFavorites();
-  const { user } = useAuth();
   const data = useData();
-  const { startChat, starting } = useStartChatWithFactory();
-  const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
+  const {
+    item,
+    loading,
+    error,
+    factory,
+    resolvedId,
+    isLiked,
+    toggleFavorite,
+    handleBack,
+    handleStartChat,
+    starting,
+    canChat,
+  } = useDetailPageLogic('idea');
+  const { isLiked: checkIsLiked, toggleFavorite: toggleRelatedFavorite } = useFavorites();
   const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
-
-  const handleBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
 
   useEffect(() => {
     if (!item?.id) {
@@ -72,10 +77,7 @@ export function IdeaDetailDesktop() {
         className='hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex'
         style={{ background: BRAND.purpleSoft }}
       >
-        <span
-          className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
-          aria-hidden
-        />
+        <LoadingSpinner size='lg' color='border-purple-600 border-t-transparent' />
       </div>
     );
   }
@@ -104,8 +106,6 @@ export function IdeaDetailDesktop() {
     );
   }
 
-  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
-  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
   const markdown = String(item.content ?? '').trim();
   const subName = item.sub_category_name?.trim() ?? null;
 
@@ -208,19 +208,13 @@ export function IdeaDetailDesktop() {
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() =>
-                  void startChat(item.factoryId, {
-                    type: 'ID',
-                    id: Number(resolvedId),
-                    title: item.title,
-                  })
-                }
+                onClick={handleStartChat}
                 disabled={starting}
                 className='inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-bold text-white disabled:opacity-70'
                 style={{ background: BRAND.purple }}
               >
                 {starting ? (
-                  <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                  <LoadingSpinner size='sm' color='border-white border-t-transparent' />
                 ) : (
                   <MessageCircle className='w-4 h-4' />
                 )}
@@ -310,11 +304,11 @@ export function IdeaDetailDesktop() {
                       </span>
                       <button
                         type='button'
-                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(next.id); }}
+                        onClick={(e) => { e.stopPropagation(); void toggleRelatedFavorite(next.id); }}
                         className='flex items-center gap-0.5 shrink-0 tabular-nums'
                       >
-                        <Heart className={`w-2.5 h-2.5 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
-                        {next.likes + (isLiked(next.id) ? 1 : 0)}
+                        <Heart className={`w-2.5 h-2.5 shrink-0 ${checkIsLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
+                        {next.likes + (checkIsLiked(next.id) ? 1 : 0)}
                       </button>
                     </div>
                   </div>

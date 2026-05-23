@@ -7,6 +7,7 @@ import type { useFactoryProfile } from '@/components/features/factory/hooks/useF
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 type FactoryDetailState = ReturnType<typeof useFactoryProfile>;
 type FactoryDetailDesktopProps = { state: FactoryDetailState };
@@ -46,10 +47,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
   if (detailLoading && !factory) {
     return (
       <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-gray-50 pb-20 lg:flex'>
-        <span
-          className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
-          aria-hidden
-        />
+        <LoadingSpinner size='lg' color='border-purple-600 border-t-transparent' />
       </div>
     );
   }

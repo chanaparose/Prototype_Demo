@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ApiRecord } from '@/lib/apiShape';
 import { useAppMutation } from '@/hooks/useAppMutation';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import {
   quotationFormSchema,
   type QuotationFormSchemaValues,
@@ -152,19 +153,12 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
     const [factoryHighlight, setFactoryHighlight] = useState<string>(initialFactoryHighlight ?? '');
     const [error, setError] = useState('');
-    const imageInputRef = useRef<HTMLInputElement>(null);
-
-    const uploadImagesMutation = useAppMutation({
-      mutationFn: async (files: FileList) => {
-        const uploaded = await Promise.all(
-          Array.from(files).map((f) => mediaApi.upload(f).then((r) => r.url as string)),
-        );
-        setImageUrls((prev) => [...prev, ...uploaded]);
+    const { upload, isUploading } = useImageUpload({
+      onSuccess: (urls) => {
+        setImageUrls((prev) => [...prev, ...urls]);
         form.setValue('price_per_piece', form.getValues('price_per_piece'), { shouldDirty: true });
       },
-      onSettled: () => {
-        if (imageInputRef.current) imageInputRef.current.value = '';
-      },
+      fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
     });
 
     const submitMutation = useAppMutation({
@@ -217,9 +211,9 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const handleImageFiles = useCallback(
       async (files: FileList | null) => {
         if (!files || files.length === 0) return;
-        await uploadImagesMutation.mutateAsync(files);
+        await upload(files);
       },
-      [uploadImagesMutation],
+      [upload],
     );
 
     const removeImage = useCallback(
@@ -422,11 +416,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             <Button
               variant='unstyled'
               type='button'
-              disabled={uploadImagesMutation.isPending}
+              disabled={isUploading}
               onClick={() => imageInputRef.current?.click()}
               className='inline-flex items-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500 hover:border-violet-400 hover:text-violet-600 disabled:opacity-50'
             >
-              {uploadImagesMutation.isPending ? (
+              {isUploading ? (
                 <>
                   <Loader2 size={13} className='animate-spin' />
                   กำลังอัปโหลด…

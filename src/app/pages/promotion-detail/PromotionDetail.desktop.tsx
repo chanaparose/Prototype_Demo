@@ -17,9 +17,7 @@ import {
 } from 'lucide-react';
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { usePromotionDetailShowcase } from '@/hooks/useShowcaseDetailPage';
-import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores/useAuthStore';
+import { useDetailPageLogic } from '@/hooks/useDetailPageLogic';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
@@ -27,6 +25,7 @@ import { useFactoryReviewList } from '@/hooks/useFactoryReviewList';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 function promoMeta(startDate?: string, endDate?: string) {
   const now = new Date();
@@ -54,14 +53,22 @@ function promoMeta(startDate?: string, endDate?: string) {
 
 export function PromotionDetailDesktop() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, resolvedId, relatedShowcases } =
-    usePromotionDetailShowcase();
+  const {
+    item,
+    loading,
+    error,
+    factory,
+    resolvedId,
+    isLiked,
+    toggleFavorite,
+    handleBack,
+    handleStartChat,
+    starting,
+    canChat,
+  } = useDetailPageLogic('promotion');
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
-  const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
@@ -71,8 +78,6 @@ export function PromotionDetailDesktop() {
     return item?.image ? [item.image] : [];
   }, [item?.image, item?.imageUrls]);
   const [activeImage, setActiveImage] = useState(0);
-
-  const handleBack = useCallback(() => navigate(-1), [navigate]);
 
   useEffect(() => {
     setActiveImage(0);
@@ -84,10 +89,7 @@ export function PromotionDetailDesktop() {
         className='hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex'
         style={{ background: BRAND.purpleSoft }}
       >
-        <span
-          className='h-10 w-10 animate-spin rounded-full border-2 border-rose-500 border-t-transparent'
-          aria-hidden
-        />
+        <LoadingSpinner size='lg' color='border-rose-500 border-t-transparent' />
       </div>
     );
   }
@@ -116,12 +118,10 @@ export function PromotionDetailDesktop() {
   }
 
   const subName = item.sub_category_name?.trim() ?? null;
-  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
-  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const promo = promoMeta(item.startDate, item.endDate);
   const priceText = formatTHB(item.promoPrice ?? item.basePrice) ?? 'สอบถามราคา';
-  const liked = item ? isLiked(item.id) : false;
+  const liked = isLiked;
   const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
   const summary = reviewSummaryQ.data;
   const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
@@ -134,13 +134,6 @@ export function PromotionDetailDesktop() {
     '1': 0,
   };
   const latestReviews = reviewListQ.data ?? [];
-
-  const handleStartChat = () =>
-    void startChat(item.factoryId, {
-      type: 'PM',
-      id: Number(resolvedId),
-      title: item.title,
-    });
 
   return (
     <div
@@ -266,7 +259,7 @@ export function PromotionDetailDesktop() {
                 <Button
                   variant='unstyled'
                   type='button'
-                  onClick={() => void toggleFavorite(item.id)}
+                  onClick={() => void toggleFavorite()}
                   className='inline-flex items-center gap-1 active:opacity-70'
                 >
                   <Heart

@@ -31,6 +31,7 @@ import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { EMPTY_ADMIN_DASHBOARD } from '@/domain/admin/mappers/mapAdminDashboard';
 import { useAdminDashboardQuery } from '@/domain/admin/queries/useAdminDashboardQuery';
 import { useAdminTopCustomersQuery } from '@/domain/admin/queries/useAdminTopCustomersQuery';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { StatusBadge as SharedStatusBadge } from '@/shared/ui/badges/StatusBadge';
 import {
   Table,
@@ -244,12 +245,7 @@ export function AdminDashboardPage() {
         <h2 className='text-2xl font-bold text-slate-900 mt-1'>ภาพรวมระบบ</h2>
       </div>
 
-      {error ? (
-        <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2'>
-          <AlertTriangle className='w-4 h-4 mt-0.5 shrink-0' />
-          <span>{error}</span>
-        </div>
-      ) : null}
+      {error && <ErrorAlert>{error}</ErrorAlert>}
 
       <div className='grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4'>
         {kpiData.map((card) => {

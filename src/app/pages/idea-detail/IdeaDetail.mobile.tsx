@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -12,9 +13,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
-import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores/useAuthStore';
+import { useDetailPageLogic } from '@/hooks/useDetailPageLogic';
 import { useData } from '@/stores/useDataStore';
 import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -22,8 +21,8 @@ import { showcasesApi } from '@/services/api/factoryApi';
 import { mapShowcaseFromApi } from '@/hooks/useShowcases';
 import { RelatedShowcasesSection } from '@/components/features/idea-detail/RelatedShowcasesSection';
 import { Button } from '@/components/ui/button';
-import { useFavorites } from '@/hooks/useFavorites';
 import { getCurrentHref } from '@/utils/navigation/redirect';
+import { useFetchData } from '@/hooks/useFetchData';
 
 const CARD = {
   purple: 'var(--brand-mauve)',
@@ -32,50 +31,38 @@ const CARD = {
 
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
-  const { isLiked, toggleFavorite } = useFavorites();
-  const { user } = useAuth();
   const data = useData();
-  const { startChat, starting } = useStartChatWithFactory();
-  const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
+  const {
+    item,
+    loading,
+    error,
+    factory,
+    resolvedId,
+    isLiked,
+    toggleFavorite,
+    handleBack,
+    handleStartChat,
+    starting,
+    canChat,
+  } = useDetailPageLogic('idea');
   const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
 
-  const handleBack = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
+  const { data: relatedIdeasData } = useFetchData(
+    () => showcasesApi.list('ID'),
+    (rows) =>
+      (Array.isArray(rows) ? rows : [])
+        .map((r) => mapShowcaseFromApi(r))
+        .filter((s) => s.contentType === 'idea' && s.id !== item?.id)
+        .slice(0, 5),
+    [item?.id],
+  );
 
   useEffect(() => {
-    if (!item?.id) {
-      setRelatedIdeas([]);
-      return;
-    }
-    let cancelled = false;
-    void showcasesApi
-      .list('ID')
-      .then((rows) => {
-        if (cancelled) return;
-        const list = (Array.isArray(rows) ? rows : [])
-          .map((r) => mapShowcaseFromApi(r))
-          .filter((s) => s.contentType === 'idea' && s.id !== item.id)
-          .slice(0, 5);
-        setRelatedIdeas(list);
-      })
-      .catch(() => {
-        if (!cancelled) setRelatedIdeas([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [item?.id]);
+    setRelatedIdeas(relatedIdeasData ?? []);
+  }, [relatedIdeasData]);
 
   if (loading) {
-    return (
-      <div className='flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8'>
-        <span
-          className='h-9 w-9 animate-spin rounded-full border-2 border-violet-600 border-t-transparent'
-          aria-hidden
-        />
-      </div>
-    );
+    return <LoadingSpinner fullHeight />;
   }
 
   if (!item || !resolvedId) {
@@ -98,8 +85,6 @@ export function IdeaDetailMobile() {
     );
   }
 
-  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
-  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
   const markdown = String(item.content ?? '').trim();
 
   return (
@@ -194,11 +179,11 @@ export function IdeaDetailMobile() {
             </div>
             <button
               type='button'
-              onClick={() => void toggleFavorite(item.id)}
+              onClick={() => void toggleFavorite()}
               className='inline-flex items-center gap-1 text-[11px] text-gray-500'
             >
-              <Heart className={`w-3 h-3 ${isLiked(item.id) ? 'text-red-500 fill-red-500' : ''}`} style={isLiked(item.id) ? undefined : { color: BRAND.orange }} />
-              {item.likes + (isLiked(item.id) ? 1 : 0)}
+              <Heart className={`w-3 h-3 ${isLiked ? 'text-red-500 fill-red-500' : ''}`} style={isLiked ? undefined : { color: BRAND.orange }} />
+              {item.likes + (isLiked ? 1 : 0)}
             </button>
           </div>
           <div className='mt-3 flex gap-2'>
@@ -206,19 +191,13 @@ export function IdeaDetailMobile() {
               <Button
                 variant='unstyled'
                 type='button'
-                onClick={() =>
-                  void startChat(item.factoryId, {
-                    type: 'ID',
-                    id: Number(resolvedId),
-                    title: item.title,
-                  })
-                }
+                onClick={handleStartChat}
                 disabled={starting}
                 className='flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-[12px] font-bold text-white disabled:opacity-70'
                 style={{ background: BRAND.purple }}
               >
                 {starting ? (
-                  <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                  <LoadingSpinner size='sm' color='border-white border-t-transparent' />
                 ) : (
                   <MessageCircle className='w-4 h-4' />
                 )}

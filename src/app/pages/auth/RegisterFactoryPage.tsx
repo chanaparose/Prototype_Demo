@@ -1,4 +1,4 @@
-import React, { useState, type ReactNode } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Eye, EyeOff, Factory, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useRegisterFactory } from '@/pages/auth/useRegisterFactory';
@@ -13,56 +13,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-
-const inputBase =
-  'w-full px-4 py-2.5 md:py-3 rounded-xl border text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-shadow bg-gray-50/50 focus:bg-white';
-const inputNormal = 'border-gray-200 focus:ring-2 focus:ring-brand-purple/25 focus:border-brand-purple';
-const inputError = 'border-red-400 focus:ring-2 focus:ring-red-200 focus:border-red-500';
-
-function inClass(err?: string) {
-  return `${inputBase} ${err ? inputError : inputNormal}`;
-}
-
-function SectionHeading({ num, label }: { num: number; label: string }) {
-  return (
-    <h3 className='text-base font-semibold text-brand-purple mb-4 flex items-center gap-2'>
-      <span className='w-6 h-6 rounded-full bg-brand-purple/10 flex items-center justify-center text-xs'>
-        {num}
-      </span>
-      {label}
-    </h3>
-  );
-}
-
-function FieldBlock({
-  label,
-  error,
-  fieldKey,
-  setFieldRef,
-  children,
-  className = '',
-  required,
-}: {
-  label: string;
-  error?: string;
-  fieldKey: keyof FormState;
-  setFieldRef: (key: keyof FormState) => (el: HTMLElement | null) => void;
-  children: ReactNode;
-  className?: string;
-  required?: boolean;
-}) {
-  return (
-    <div ref={setFieldRef(fieldKey)} className={`space-y-1.5 ${className}`}>
-      <Label className='block text-sm font-medium text-brand-navy-deep'>
-        {label}
-        {required && <span className='text-red-500 ml-0.5'>*</span>}
-      </Label>
-      {children}
-      {error ? <p className='text-xs md:text-sm text-red-600 mt-1'>{error}</p> : null}
-    </div>
-  );
-}
+import { FormField, SectionHeading } from '@/components/common/FormField';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
+import { getInputClass } from '@/utils/formHelpers';
 
 export function RegisterFactoryPage() {
   const {
@@ -142,10 +95,9 @@ export function RegisterFactoryPage() {
           </div>
 
           {apiError && (
-            <div className='bg-red-50 text-red-700 text-sm p-4 rounded-xl border border-red-100 mb-6 flex items-start gap-3'>
-              <AlertCircle className='w-5 h-5 shrink-0 mt-0.5' />
-              <span>{apiError}</span>
-            </div>
+            <ErrorAlert className='mb-6'>
+              {apiError}
+            </ErrorAlert>
           )}
 
           {masterFailed && (

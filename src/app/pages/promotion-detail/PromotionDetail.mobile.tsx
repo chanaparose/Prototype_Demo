@@ -17,9 +17,7 @@ import {
 } from 'lucide-react';
 
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
-import { usePromotionDetailShowcase } from '@/hooks/useShowcaseDetailPage';
-import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
-import { useAuth } from '@/stores/useAuthStore';
+import { useDetailPageLogic } from '@/hooks/useDetailPageLogic';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFactoryReviewSummary } from '@/hooks/useFactoryReviewSummary';
@@ -29,6 +27,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { type FactoryShowcase } from '@/stores/types';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 function promoMeta(startDate?: string, endDate?: string) {
   const now = new Date();
@@ -56,14 +55,22 @@ function promoMeta(startDate?: string, endDate?: string) {
 
 export function PromotionDetailMobile() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, resolvedId, relatedShowcases } =
-    usePromotionDetailShowcase();
+  const {
+    item,
+    loading,
+    error,
+    factory,
+    resolvedId,
+    isLiked,
+    toggleFavorite,
+    handleBack,
+    handleStartChat,
+    starting,
+    canChat,
+  } = useDetailPageLogic('promotion');
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
-  const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
@@ -74,21 +81,13 @@ export function PromotionDetailMobile() {
   }, [item?.image, item?.imageUrls]);
 
   const [activeImage, setActiveImage] = useState(0);
-  const handleBack = useCallback(() => navigate(-1), [navigate]);
 
   useEffect(() => {
     setActiveImage(0);
   }, [item?.id]);
 
   if (loading) {
-    return (
-      <div className='flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8'>
-        <span
-          className='h-9 w-9 animate-spin rounded-full border-2 border-rose-500 border-t-transparent'
-          aria-hidden
-        />
-      </div>
-    );
+    return <LoadingSpinner fullHeight color='border-rose-500 border-t-transparent' />;
   }
 
   if (!item || !resolvedId) {
@@ -111,13 +110,11 @@ export function PromotionDetailMobile() {
     );
   }
 
-  const isSelfFactory = String(user?.id ?? '') === String(item.factoryId ?? '');
-  const canChat = !isSelfFactory && String(item.factoryId ?? '').trim() !== '';
   const markdown = normalizeMarkdownContent(item.content || item.excerpt || '');
   const promo = promoMeta(item.startDate, item.endDate);
   const priceText =
     formatTHB(item.promoPrice ?? item.basePrice) ?? (item.priceRange?.trim() || null);
-  const liked = item ? isLiked(item.id) : false;
+  const liked = isLiked;
   const likeCount = item ? item.likes + (liked ? 1 : 0) : 0;
   const summary = reviewSummaryQ.data;
   const avgRating = Number(summary?.average_rating ?? factory?.rating ?? 0);
@@ -131,13 +128,6 @@ export function PromotionDetailMobile() {
   };
   const latestReviews = reviewListQ.data ?? [];
   const subName = item.sub_category_name?.trim() ?? null;
-
-  const handleStartChat = () =>
-    void startChat(item.factoryId, {
-      type: 'PM',
-      id: Number(resolvedId),
-      title: item.title,
-    });
 
   const specRows: { label: string; value: string }[] = [];
   specRows.push({
@@ -303,7 +293,7 @@ export function PromotionDetailMobile() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => void toggleFavorite(item.id)}
+            onClick={() => void toggleFavorite()}
             className='inline-flex items-center gap-1 active:opacity-70'
           >
             <Heart
@@ -594,7 +584,7 @@ export function PromotionDetailMobile() {
         <Button
           variant='unstyled'
           type='button'
-          onClick={() => void toggleFavorite(item.id)}
+          onClick={() => void toggleFavorite()}
           className='w-[72px] flex flex-col items-center justify-center gap-0.5 text-gray-600 active:bg-white'
           aria-label='ถูกใจ'
         >
@@ -615,7 +605,7 @@ export function PromotionDetailMobile() {
           }}
         >
           {starting ? (
-            <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+            <LoadingSpinner size='sm' color='border-white border-t-transparent' />
           ) : (
             <MessageCircle className='w-4 h-4' />
           )}

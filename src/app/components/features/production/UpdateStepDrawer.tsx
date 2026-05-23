@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 import { useAppMutation } from '@/hooks/useAppMutation';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import type { CustomerShippingInfo } from '@/domain/order/types';
 
 export type { CustomerShippingInfo };
@@ -48,19 +49,12 @@ export function UpdateStepDrawer({
   const [urls, setUrls] = useState<string[]>([]);
   const [err, setErr] = useState('');
 
-  const uploadMutation = useAppMutation({
-    mutationFn: async (files: FileList) => {
-      const uploaded: string[] = [];
-      for (let i = 0; i < files.length && uploaded.length < 5; i++) {
-        const up = await mediaApi.upload(files[i]);
-        const raw = typeof up.url === 'string' ? up.url.trim() : '';
-        if (/^https?:\/\//i.test(raw)) uploaded.push(raw);
-      }
-      setUrls((prev) => [...prev, ...uploaded].slice(0, 5));
-    },
-    fallbackMessage: 'อัปโหลดไม่สำเร็จ',
-    onMutate: () => setErr(''),
+  const { upload, isUploading } = useImageUpload({
+    maxFiles: 5,
+    multiple: true,
+    onSuccess: (newUrls) => setUrls((prev) => [...prev, ...newUrls].slice(0, 5)),
     onError: (error) => setErr(productionErrorMessage(error)),
+    fallbackMessage: 'อัปโหลดไม่สำเร็จ',
   });
 
   const submitMutation = useAppMutation({
@@ -78,7 +72,6 @@ export function UpdateStepDrawer({
   });
 
   const busy = submitMutation.isPending;
-  const uploading = uploadMutation.isPending;
   const guide = step ? getStepGuide(Number(step.template.step_id ?? 0)) : null;
   const stepId = step ? Number(step.template.step_id ?? -1) : -1;
   const isShippingStep = stepId === 4;
@@ -110,9 +103,9 @@ export function UpdateStepDrawer({
   const addFiles = useCallback(
     async (files: FileList | null) => {
       if (!files?.length) return;
-      await uploadMutation.mutateAsync(files);
+      await upload(files);
     },
-    [uploadMutation],
+    [upload],
   );
 
   const removeAt = (idx: number) => setUrls((u) => u.filter((_, i) => i !== idx));

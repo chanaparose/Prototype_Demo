@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { ErrorAlert } from '@/components/common/ErrorAlert';
 import {
   Table,
   TableBody,
@@ -131,12 +132,7 @@ export function AdminCustomersPage() {
         </Select>
       </div>
 
-      {error && (
-        <div className='rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2'>
-          <AlertTriangle className='w-4 h-4 mt-0.5 shrink-0' />
-          <span>{error}</span>
-        </div>
-      )}
+      {error && <ErrorAlert>{error}</ErrorAlert>}
 
       <div className='bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden'>
         <div className='overflow-x-auto'>

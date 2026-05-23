@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useData } from '@/stores/useDataStore';
 import { type Factory } from '@/stores/types';
 import { factoriesApi } from '@/services/api/factoryApi';
 import { apiListAsRecords } from '@/lib/apiShape';
 import { normalizeFactoryRow } from '@/utils/normalizeFactoryRow';
+import { useFetchData } from '@/hooks/useFetchData';
 
 export type FactoryFilterState = {
   searchText: string;
@@ -13,36 +14,15 @@ export type FactoryFilterState = {
 
 export function useFactoriesList() {
   const data = useData();
-  const [apiFactories, setApiFactories] = useState<Factory[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError(null);
-    factoriesApi
-      .list()
-      .then((raw) => {
-        if (cancelled) return;
-        const mapped = apiListAsRecords(raw, ['factories'])
-          .map((row) => normalizeFactoryRow(row))
-          .filter((f) => f.id && f.name);
-        setApiFactories(mapped);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setApiFactories(null);
-          setLoadError(err instanceof Error ? err.message : 'โหลดรายการโรงงานไม่สำเร็จ');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: apiFactories, loading, error } = useFetchData(
+    () => factoriesApi.list(),
+    (raw) =>
+      apiListAsRecords(raw, ['factories'])
+        .map((row) => normalizeFactoryRow(row))
+        .filter((f) => f.id && f.name),
+    [],
+  );
 
   const allFactories = apiFactories ?? data.factories;
 
@@ -92,7 +72,7 @@ export function useFactoriesList() {
     setLocation,
     setVerifiedOnly,
     loading,
-    loadError,
+    loadError: error,
     usedApiList: apiFactories != null,
   };
 }

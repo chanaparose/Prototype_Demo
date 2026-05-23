@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import { ImagePlus, X } from 'lucide-react';
 import { getErrorMessage } from '@/lib/apiError';
-import { mediaApi } from '@/services/api/factoryApi';
 import { normalizeReviewImageUrls, REVIEW_IMAGE_MAX } from '@/utils/reviewImageUrls';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
@@ -21,31 +21,31 @@ export function ReviewImageAttachments({
   disabled,
   onPreviewUrl,
   onUploadError,
-}: Props) {
+}: Readonly<Props>) {
   const editable = Boolean(onChange) && !disabled;
-  const [uploading, setUploading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const addFiles = async (files: FileList | null) => {
-    if (!files || !onChange) return;
-    const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
-    if (list.length === 0) return;
-    setUploading(true);
-    try {
-      const next = [...urls];
-      for (const f of list) {
-        if (next.length >= REVIEW_IMAGE_MAX) break;
-        const { url } = await mediaApi.upload(f);
-        const u = String(url ?? '').trim();
-        if (u && !next.includes(u)) next.push(u);
+  const { upload, isUploading } = useImageUpload({
+    maxFiles: REVIEW_IMAGE_MAX - urls.length,
+    multiple: true,
+    onSuccess: (newUrls) => {
+      if (onChange) {
+        const next = [...urls, ...newUrls];
+        onChange(normalizeReviewImageUrls(next));
       }
-      onChange(normalizeReviewImageUrls(next));
-    } catch (err) {
-      onUploadError?.(getErrorMessage(err, 'อัปโหลดรูปไม่สำเร็จ'));
-    } finally {
-      setUploading(false);
-    }
-  };
+    },
+    onError: (error) => {
+      onUploadError?.(getErrorMessage(error, 'อัปโหลดรูปไม่สำเร็จ'));
+    },
+    fallbackMessage: 'อัปโหลดรูปไม่สำเร็จ',
+  });
+
+  const addFiles = useCallback(
+    async (files: FileList | null) => {
+      if (!files || !onChange) return;
+      await upload(files);
+    },
+    [upload, onChange],
+  );
 
   const removeAt = (idx: number) => {
     if (!onChange) return;
@@ -107,12 +107,12 @@ export function ReviewImageAttachments({
             <Button
               variant='unstyled'
               type='button'
-              disabled={uploading}
+              disabled={isUploading}
               onClick={() => inputRef.current?.click()}
               className='w-16 h-16 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 text-[10px] gap-0.5 disabled:opacity-50'
             >
               <ImagePlus size={18} />
-              {uploading ? '…' : 'เพิ่ม'}
+              {isUploading ? '…' : 'เพิ่ม'}
             </Button>
           </>
         ) : null}

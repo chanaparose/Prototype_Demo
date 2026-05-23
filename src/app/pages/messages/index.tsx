@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { useIsDesktop } from '@/hooks/useIsDesktop';
+import { useResponsiveRender } from '@/hooks/useResponsiveRender';
 import { MessagesMobile } from '@/pages/messages/Messages.mobile';
 import { MessagesDesktop } from '@/pages/messages/Messages.desktop';
 import { useConversations } from '@/pages/messages/useConversations';
@@ -8,7 +8,7 @@ import { setConversationReadInCache } from '@/domain/chat/chatCache';
 import type { UiConversation } from '@/pages/messages/types';
 
 export function Messages() {
-  const isDesktop = useIsDesktop();
+  const { render } = useResponsiveRender();
   const { items, loading, error, reload } = useConversations();
   const [searchText, setSearchText] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -56,16 +56,13 @@ export function Messages() {
     onReload: reload,
   };
 
-  if (isDesktop) {
-    return (
-      <MessagesDesktop
-        {...commonProps}
-        selectedId={selectedId}
-        setSelectedId={handleSelectId}
-        selectedConversation={selectedConversation}
-      />
-    );
-  }
-
-  return <MessagesMobile {...commonProps} />;
+  return render(
+    <MessagesMobile {...commonProps} />,
+    <MessagesDesktop
+      {...commonProps}
+      selectedId={selectedId}
+      setSelectedId={handleSelectId}
+      selectedConversation={selectedConversation}
+    />
+  );
 }
