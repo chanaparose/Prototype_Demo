@@ -605,13 +605,15 @@ export function FactoryDashboardPage() {
       </div>
 
       <div className='grid gap-5 lg:grid-cols-2'>
-        <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'>
+        {/* ── Pipeline ธุรกิจ ── */}
+        <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col'>
+          {/* header */}
           <div className='px-5 py-4 border-b border-gray-50 flex items-center justify-between'>
             <div>
               <h3 className='text-sm font-bold' style={{ color: COLORS.navy }}>
-                RFQ ล่าสุด
+                Pipeline ธุรกิจ
               </h3>
-              <p className='text-xs text-gray-400 mt-0.5'>คำขอใบเสนอราคาที่เข้ามา</p>
+              <p className='text-xs text-gray-400 mt-0.5'>Conversion ตั้งแต่ RFQ ถึงยอดขาย</p>
             </div>
             <Button
               variant='unstyled'
@@ -620,64 +622,174 @@ export function FactoryDashboardPage() {
               className='text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity'
               style={{ color: COLORS.orange }}
             >
-              ดูทั้งหมด <ArrowRight size={12} />
+              จัดการ RFQ <ArrowRight size={12} />
             </Button>
           </div>
-          <div className='overflow-x-auto'>
-            <Table className='w-full text-sm min-w-[400px]'>
-              <TableHeader>
-                <TableRow className='bg-gray-50/70 border-b border-gray-100'>
-                  <TableHead className='text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
-                    RFQ ID
-                  </TableHead>
-                  <TableHead className='text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
-                    สถานะ
-                  </TableHead>
-                  <TableHead className='text-right px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
-                    Action
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className='divide-y divide-gray-50'>
-                {summary.rfq_received_total === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={3} className='px-4 py-10 text-center text-sm text-gray-400'>
-                      ยังไม่มี RFQ ที่ได้รับ
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className='px-4 py-3 text-center text-xs text-gray-400'>
-                      ดู RFQ ทั้งหมดในหน้า RFQ
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+
+          {/* funnel stages */}
+          <div className='px-5 py-4 flex-1 space-y-4'>
+            {(() => {
+              const stages = [
+                {
+                  label: 'RFQ ที่ได้รับ',
+                  sub: 'คำขอใบเสนอราคาทั้งหมด',
+                  count: summary.rfq_received_total,
+                  barColor: '#6366F1',
+                  textColor: 'text-indigo-600',
+                  bgColor: 'bg-indigo-50',
+                  iconColor: 'text-indigo-500',
+                  Icon: ClipboardList,
+                  pct: 100,
+                  to: '/factory/rfqs',
+                },
+                {
+                  label: 'ส่งใบเสนอราคาแล้ว',
+                  sub: 'ตอบกลับ RFQ',
+                  count: summary.rfq_replies_total,
+                  barColor: '#0EA5E9',
+                  textColor: 'text-sky-600',
+                  bgColor: 'bg-sky-50',
+                  iconColor: 'text-sky-500',
+                  Icon: MessageSquareReply,
+                  pct:
+                    summary.rfq_received_total > 0
+                      ? Math.round((summary.rfq_replies_total / summary.rfq_received_total) * 100)
+                      : 0,
+                  to: '/factory/rfqs',
+                },
+                {
+                  label: 'ออเดอร์ที่ได้รับ',
+                  sub: 'ลูกค้ายืนยันแล้ว',
+                  count: summary.total_orders_total,
+                  barColor: '#F59E0B',
+                  textColor: 'text-amber-600',
+                  bgColor: 'bg-amber-50',
+                  iconColor: 'text-amber-500',
+                  Icon: Package,
+                  pct:
+                    summary.rfq_replies_total > 0
+                      ? Math.round((summary.total_orders_total / summary.rfq_replies_total) * 100)
+                      : 0,
+                  to: '/factory/orders',
+                },
+                {
+                  label: 'ปิดการขายสำเร็จ',
+                  sub: 'ดำเนินการเสร็จสิ้น',
+                  count: summary.closed_orders_total,
+                  barColor: '#10B981',
+                  textColor: 'text-emerald-600',
+                  bgColor: 'bg-emerald-50',
+                  iconColor: 'text-emerald-500',
+                  Icon: CheckCircle,
+                  pct:
+                    summary.total_orders_total > 0
+                      ? Math.round(
+                          (summary.closed_orders_total / summary.total_orders_total) * 100,
+                        )
+                      : 0,
+                  to: '/factory/orders',
+                },
+              ];
+              return stages.map((s, i) => (
+                <button
+                  key={s.label}
+                  type='button'
+                  onClick={() => navigate(s.to)}
+                  className='w-full text-left group'
+                >
+                  <div className='flex items-center gap-3 mb-1.5'>
+                    {/* step number + icon */}
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${s.bgColor} transition-transform group-hover:scale-110`}
+                    >
+                      <s.Icon size={13} className={s.iconColor} />
+                    </div>
+                    {/* label */}
+                    <div className='flex-1 min-w-0'>
+                      <div className='flex items-baseline justify-between gap-2'>
+                        <span className='text-xs font-semibold text-gray-700 truncate'>
+                          {s.label}
+                        </span>
+                        <span className={`text-sm font-bold shrink-0 ${s.textColor}`}>
+                          {formatCompactNumber(s.count)}
+                        </span>
+                      </div>
+                      <div className='flex items-center justify-between gap-2 mt-0.5'>
+                        <span className='text-[10px] text-gray-400 truncate'>{s.sub}</span>
+                        <span className='text-[10px] text-gray-400 shrink-0'>
+                          {i === 0 ? '100%' : `${s.pct}%`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* progress bar */}
+                  <div className='ml-10 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden'>
+                    <div
+                      className='h-full rounded-full transition-all duration-700'
+                      style={{
+                        width: `${Math.min(i === 0 ? 100 : s.pct, 100)}%`,
+                        backgroundColor: s.barColor,
+                      }}
+                    />
+                  </div>
+                </button>
+              ));
+            })()}
           </div>
 
-          <div className='px-5 py-3 border-t border-gray-50 flex gap-3 flex-wrap'>
+          {/* urgent action — pending quotations */}
+          {summary.pending_quotations_total > 0 && (
+            <div className='mx-5 mb-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center gap-3'>
+              <div className='w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0'>
+                <AlertTriangle size={13} className='text-amber-600' />
+              </div>
+              <div className='flex-1 min-w-0'>
+                <p className='text-xs font-semibold text-amber-800'>
+                  มี {summary.pending_quotations_total} RFQ รอการตอบกลับ
+                </p>
+                <p className='text-[11px] text-amber-600 mt-0.5'>ตอบเร็วเพื่อเพิ่มโอกาสได้ออเดอร์</p>
+              </div>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => navigate('/factory/rfqs')}
+                className='shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-amber-500 hover:bg-amber-600 transition-colors'
+              >
+                ตอบเลย
+              </Button>
+            </div>
+          )}
+
+          {/* footer metrics */}
+          <div className='px-5 py-3 border-t border-gray-50 flex gap-4 flex-wrap'>
             <div className='flex items-center gap-1.5'>
-              <span className='w-2 h-2 rounded-full bg-amber-400' />
+              <span className='w-2 h-2 rounded-full bg-sky-400' />
               <span className='text-[11px] text-gray-500'>
-                รอตอบ:{' '}
-                <span className='font-semibold text-gray-700'>
-                  {summary.pending_quotations_total}
-                </span>
+                Reply Rate:{' '}
+                <span className='font-semibold text-gray-700'>{rfqReplyRatePct(summary)}%</span>
               </span>
             </div>
             <div className='flex items-center gap-1.5'>
               <span className='w-2 h-2 rounded-full bg-emerald-400' />
               <span className='text-[11px] text-gray-500'>
-                ตอบแล้ว:{' '}
-                <span className='font-semibold text-gray-700'>{summary.rfq_replies_total}</span>
+                Close Rate:{' '}
+                <span className='font-semibold text-gray-700'>
+                  {summary.total_orders_total > 0
+                    ? Math.round(
+                        (summary.closed_orders_total / summary.total_orders_total) * 100,
+                      )
+                    : 0}
+                  %
+                </span>
               </span>
             </div>
             <div className='flex items-center gap-1.5'>
               <span className='w-2 h-2 rounded-full' style={{ backgroundColor: SLATE }} />
               <span className='text-[11px] text-gray-500'>
-                ทั้งหมด:{' '}
-                <span className='font-semibold text-gray-700'>{summary.rfq_received_total}</span>
+                รายได้:{' '}
+                <span className='font-semibold text-gray-700'>
+                  {formatCurrencyNoDecimals(summary.revenue_total)}
+                </span>
               </span>
             </div>
           </div>

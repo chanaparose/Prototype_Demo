@@ -17,6 +17,15 @@ export type AnalyticsSeriesPoint = {
   rfq_replies: number;
 };
 
+export type RecentRFQItem = {
+  rfq_id: number;
+  title: string;
+  category_id?: number;
+  sub_category_id?: number;
+  status: string;
+  created_at: string;
+};
+
 export type AnalyticsSummary = {
   revenue_total: number;
   deposits_total: number;
@@ -209,6 +218,7 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
   const [wallet, setWallet] = useState<Record<string, unknown> | null>(null);
   const [analyticsApi, setAnalyticsApi] = useState<Record<string, unknown> | null>(null);
   const [dashboardApi, setDashboardApi] = useState<Record<string, unknown> | null>(null);
+  const [recentRfqs, setRecentRfqs] = useState<RecentRFQItem[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -234,6 +244,9 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
 
         // analytics object (total_orders, completed_orders, total_revenue, etc.)
         setAnalyticsApi(p.analytics && typeof p.analytics === 'object' ? (p.analytics as Record<string, unknown>) : null);
+
+        // recent_rfqs for dashboard RFQ list
+        setRecentRfqs(Array.isArray(p.recent_rfqs) ? (p.recent_rfqs as RecentRFQItem[]) : []);
 
         // counts + recent items — pack into dashboardApi shape the summary useMemo already reads
         setDashboardApi(p);
@@ -322,5 +335,5 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
     return buildSeries(mineOrders, opRfqs, myQuotes, fid, timeframe);
   }, [mineOrders, opRfqs, myQuotes, fid, timeframe]);
 
-  return { loading, error, summary, series, reload: load };
+  return { loading, error, summary, series, recentRfqs, reload: load };
 }
