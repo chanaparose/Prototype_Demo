@@ -4,6 +4,14 @@ import { useNavigate, useLocation } from 'react-router';
 import { activateTourMocks, clearTourMocks, setTourActive } from '@/utils/tourMocks';
 import { useAuth } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
+import { queryClient } from '@/lib/queryClient';
+import {
+  chatKeys,
+  orderKeys,
+  rfqKeys,
+  showcaseKeys,
+  factoryIdeasKeys,
+} from '@/lib/queryKeys';
 import { TOUR_STEPS } from '@/components/features/explore/product-tour/tourSteps';
 import { injectTourCSS } from '@/components/features/explore/product-tour/tourStyles';
 import { TourCard } from '@/components/features/explore/product-tour/TourCard';
@@ -117,10 +125,32 @@ export function ProductTour() {
     return false;
   }, []);
 
+  /**
+   * ล้าง React Query cache ที่ถูก contaminate ด้วย tour mock data
+   * เรียกเมื่อ tour จบหรือถูกปิด ก่อน navigate กลับ
+   */
+  const purgeTourQueryCache = useCallback(() => {
+    // list: conversations ที่แสดง conv 9001 ปลอม
+    queryClient.removeQueries({ queryKey: chatKeys.all });
+    // factory-ideas: categories + showcases + factories จาก browse step
+    queryClient.removeQueries({ queryKey: factoryIdeasKeys.all });
+    // showcase 14 detail จาก product step
+    queryClient.removeQueries({ queryKey: showcaseKeys.all });
+    // rfq 28 bundle จาก rfq step
+    queryClient.removeQueries({ queryKey: rfqKeys.detail('28') });
+    // order 17 detail จาก order step
+    queryClient.removeQueries({ queryKey: orderKeys.detail('17') });
+    // wallet balance จาก order step
+    queryClient.removeQueries({ queryKey: ['wallet', 'me'] });
+    // review state ของ order 17
+    queryClient.removeQueries({ queryKey: ['orderReviewState', '17'] });
+  }, []);
+
   const closeTo = useCallback(
     (target: string) => {
       localStorage.setItem(TOUR_KEY, '1');
       clearTourMocks();
+      purgeTourQueryCache();
       setOpen(false);
       setTargetRect(null);
 
@@ -129,7 +159,7 @@ export function ProductTour() {
       }
       window.setTimeout(() => setTourActive(false), 50);
     },
-    [location.pathname, navigate],
+    [location.pathname, navigate, purgeTourQueryCache],
   );
 
   const handleClose = useCallback(() => {
