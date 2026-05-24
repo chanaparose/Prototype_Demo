@@ -341,7 +341,7 @@ export function FactoryIdeasMobile() {
                     <div className='flex items-center gap-0.5 mt-0.5'>
                       <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
                       <span className='text-gray-500 text-[10px] truncate'>
-                        {(factory?.provinceName ?? factory?.location ?? '').trim() || '—'}
+                        {(item.location ?? '').trim() || '—'}
                       </span>
                     </div>
 
@@ -488,7 +488,7 @@ export function FactoryIdeasMobile() {
                       <div className='flex items-center gap-0.5 mt-0.5'>
                         <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
                         <span className='text-gray-500 text-[10px] truncate'>
-                          {(factory?.provinceName ?? factory?.location ?? '').trim() || '—'}
+                          {(item.location ?? '').trim() || '—'}
                         </span>
                       </div>
                       <div className='mt-auto pt-1 border-t border-gray-50'>

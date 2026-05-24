@@ -99,6 +99,9 @@ export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase 
     ...(pickScalarString(r.end_date) !== '' ? { endDate: pickScalarString(r.end_date) } : {}),
     ...(pickScalarString(r.status) !== '' ? { status: pickScalarString(r.status) } : {}),
     tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+    ...(pickScalarString(r.province_name, r.provinceName) !== ''
+      ? { location: pickScalarString(r.province_name, r.provinceName) }
+      : {}),
     ...(factoryImageUrl ? { factoryImageUrl } : {}),
     ...(factoryRating != null ? { factoryRating } : {}),
     ...(factoryVerified ? { factoryVerified } : {}),

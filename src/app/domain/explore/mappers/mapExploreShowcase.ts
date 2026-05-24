@@ -11,6 +11,7 @@ import type {
   IExploreShowcaseResponse,
   IPromoSlideResponse,
 } from '@/services/api/types/explore.types';
+import { pickScalarString } from '@/utils/pickScalarString';
 
 export type {
   IExploreArticle,
@@ -39,6 +40,7 @@ function mapRowToExploreShowcase(row: IExploreShowcaseResponse): IExploreShowcas
     leadTime: s.leadTime,
     tags: s.tags,
     ...(s.factoryRating != null ? { factoryRating: s.factoryRating } : {}),
+    ...(pickScalarString(s.location) !== '' ? { location: pickScalarString(s.location) } : {}),
   };
 }
 

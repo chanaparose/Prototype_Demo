@@ -26,6 +26,7 @@ export type ExploreProductCarouselItem = {
   likes?: number;
   minOrder?: number;
   factoryRating?: number;
+  location?: string;
 };
 
 const AUTO_SCROLL_INTERVAL = 3500;
@@ -122,7 +123,9 @@ export function ExploreProductCarouselSection({
                 <CarouselPrevious className='top-[calc(50%-28px)]' />
                 <CarouselContent className='gap-3 pb-1'>
                   {items.map((product) => {
-                    const meta = getFactoryMeta?.(product.factoryId) ?? { location: '—' };
+                    const locationLabel =
+                      (product.location ?? getFactoryMeta?.(product.factoryId)?.location ?? '').trim() ||
+                      '—';
                     return (
                       <CarouselItem key={product.id} className='basis-[180px]'>
                         <div
@@ -166,7 +169,7 @@ export function ExploreProductCarouselSection({
                             <div className='flex items-center gap-0.5 mt-0.5'>
                               <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
                               <span className='text-gray-500 text-[10px] truncate'>
-                                {meta.location || '—'}
+                                {locationLabel}
                               </span>
                             </div>
                             <div className='mt-auto pt-1 border-t border-gray-50'>

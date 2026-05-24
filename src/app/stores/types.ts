@@ -108,6 +108,7 @@ export type BootstrapFactoryShowcaseModel = {
   status?: string;
   priceRange?: string;
   tags: string[];
+  location?: string;
   factoryImageUrl?: string;
   factoryRating?: number;
   factoryVerified?: boolean;

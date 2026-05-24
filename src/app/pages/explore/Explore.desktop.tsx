@@ -99,15 +99,8 @@ const REGISTER_BUTTON_CLASS = cn(
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple',
 );
 
-/* ═══ Helper Functions ═══ */
-function getFactoryMeta(
-  factoryId: string | number | undefined,
-  factories: FactoryItem[] | undefined,
-) {
-  const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
-  return {
-    location: (f?.location ?? '').trim() || '—',
-  };
+function showcaseLocationLabel(location?: string): string {
+  return (location ?? '').trim() || '—';
 }
 
 export function ExploreDesktop({
@@ -145,6 +138,7 @@ export function ExploreDesktop({
         factoryName: s.factoryName,
         minOrder: s.minOrder,
         factoryRating: s.factoryRating,
+        location: s.location,
       })),
     [exploreProducts],
   );
@@ -164,6 +158,7 @@ export function ExploreDesktop({
         factoryName: s.factoryName,
         minOrder: s.minOrder,
         factoryRating: s.factoryRating,
+        location: s.location,
       })),
     [exploreMatrials],
   );
@@ -320,7 +315,6 @@ export function ExploreDesktop({
             bannerImg={'assets/tryly_vertical_banner_v5_oval_final.png'}
             bannerText='คุ้มค่า ถูกใจสัตว์เลี้ยง'
             onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
-            getFactoryMeta={(factoryId) => getFactoryMeta(factoryId, factories)}
             isLiked={isLiked}
             onToggleFavorite={toggleFavorite}
           />
@@ -334,7 +328,6 @@ export function ExploreDesktop({
           bannerImg={'assets/tryly_vertical_banner_raw_material_v5_oval_final.png'}
           bannerText='วัตถุดิบคุณภาพสูง'
           onItemClick={(id) => navigate(`/product-detail?showcase_id=${encodeURIComponent(id)}`)}
-          getFactoryMeta={(factoryId) => getFactoryMeta(factoryId, factories)}
           isLiked={isLiked}
           onToggleFavorite={toggleFavorite}
         />
@@ -381,7 +374,6 @@ export function ExploreDesktop({
 
             <div className='w-full lg:w-[60%] flex gap-3 overflow-x-auto snap-x hide-scrollbar pb-2'>
               {promoShowcases.map((item) => {
-                const meta = getFactoryMeta(item.factoryId, factories);
                 return (
                   <div
                     key={item.id}
@@ -410,7 +402,9 @@ export function ExploreDesktop({
                       </h3>
                       <div className='flex items-center gap-0.5 mt-0.5'>
                         <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                        <span className='text-gray-500 text-[10px] truncate'>{meta.location}</span>
+                        <span className='text-gray-500 text-[10px] truncate'>
+                          {showcaseLocationLabel(item.location)}
+                        </span>
                       </div>
                       <div className='mt-auto pt-1 border-t border-gray-50'>
                         <div className='flex items-center justify-between min-w-0'>

@@ -24,6 +24,8 @@ export type IExploreShowcase = {
   leadTime: string;
   tags: string[];
   factoryRating?: number;
+  /** จังหวัดจาก API (province_name) — แสดงบนการ์ดเหมือน /factory-ideas */
+  location?: string;
 };
 
 export type IExploreArticle = {
