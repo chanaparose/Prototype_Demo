@@ -73,9 +73,10 @@ export const TOUR_STEPS: TourStepDef[] = [
   {
     route: '/rfqs/28',
     mockScenario: 'rfq',
-    targetSelector: '[data-tour="offers-compare"]',
-    targetTexts: ['ยอมรับข้อเสนอ', 'ยอมรับ', 'ข้อเสนอ', 'AI แนะนำ', 'ใบเสนอราคา'],
-    spotlightRadius: 12,
+    targetSelector: '[data-tour="offer-card"][data-factory-id="9998"]',
+    targetTexts: ['แพ็กเกจจิ้งสัตว์เลี้ยง โปร', 'ยอมรับข้อเสนอ'],
+    spotlightRadius: 14,
+    spotlightPad: 8,
     badgeColor: 'var(--brand-violet)',
     icon: '⚖️',
     badge: 'ขั้นตอนที่ 6 / 7',

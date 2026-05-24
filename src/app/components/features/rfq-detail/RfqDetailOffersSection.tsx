@@ -444,6 +444,8 @@ export function RfqDetailOffersSection({
               return (
                 <div
                   key={offer.id}
+                  data-tour='offer-card'
+                  data-factory-id={offer.factoryId}
                   role='button'
                   tabIndex={0}
                   aria-expanded={boqOpen}
