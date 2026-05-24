@@ -6,7 +6,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   // loadEnv อ่าน .env.local ก่อน .env → ใช้สลับ local/production โดยไม่แก้โค้ด
   const env = loadEnv(mode, process.cwd(), '');
-  const BE_URL = env.VITE_BE_URL || 'https://wemake-server.onrender.com';
+  const BE_URL = env.VITE_BE_URL || 'https://tryly-dev-server.onrender.com';
 
   return {
     plugins: [

@@ -1,8 +1,8 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://wemake-server.onrender.com/api/$1" },
-    { "source": "/health", "destination": "https://wemake-server.onrender.com/health" },
+    { "source": "/api/(.*)", "destination": "https://tryly-dev-server.onrender.com/api/$1" },
+    { "source": "/health", "destination": "https://tryly-dev-server.onrender.com/health" },
     { "source": "/((?!assets/|favicon|.*\\..*).*)", "destination": "/index.html" }
   ]
 }
