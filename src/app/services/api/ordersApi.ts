@@ -66,15 +66,15 @@ export const ordersApi = {
   cancel: (orderId: string | number) =>
     httpClient.delete<{ message: string }>(`/orders/${orderId}`),
 
-  /** GET /orders/:id/review-state — check if review is eligible */
+  /** GET /orders/:id/review — check if review is eligible */
   getReviewState: (orderId: string | number) =>
-    httpClient.get<Record<string, unknown>>(`/orders/${orderId}/review-state`),
+    httpClient.get<Record<string, unknown>>(`/orders/${orderId}/review`),
 
-  /** POST /orders/:id/reviews — submit a review */
+  /** POST /orders/:id/review — submit a review */
   createReview: (
     orderId: string | number,
     data: { rating: number; comment: string; image_urls?: string[] },
-  ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/reviews`, data),
+  ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/review`, data),
 };
 
 export const productionUpdatesApi = {

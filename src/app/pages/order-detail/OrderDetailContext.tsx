@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useData } from '@/stores/useDataStore';
 import { walletApi } from '@/services/api/userApi';
+import { ordersApi } from '@/services/api/ordersApi';
 import { type Order } from '@/stores/types';
 import type {
   ProductionLockContext,
@@ -173,9 +174,29 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
   });
   const { refetchWallet, refetchRfqs } = useData();
 
+  // Determine whether the embedded review_state is present.
+  const embeddedReviewState = useMemo((): ReviewStateData | null => {
+    if (!orderQ.data) return null;
+    const row = unwrapOrderPayload(orderQ.data);
+    const raw = row.review_state;
+    return raw && typeof raw === 'object' ? (raw as ReviewStateData) : null;
+  }, [orderQ.data]);
+
+  // Fallback: fetch review state separately when the backend doesn't embed it.
+  const reviewStateQ = useQuery({
+    queryKey: ['orderReviewState', orderId],
+    queryFn: () => ordersApi.getReviewState(orderId),
+    enabled: !!orderQ.data && embeddedReviewState === null,
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
   const refetchAll = useCallback(async () => {
     await Promise.all([
       qc.refetchQueries({ queryKey: orderKeys.detail(orderId) }),
+      qc.refetchQueries({ queryKey: ['orderReviewState', orderId] }),
       refetchRfqs(),
       refetchWallet(),
     ]);
@@ -204,12 +225,12 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
             updates: [],
           } as ProductionUpdatesBundle);
 
-    // Extract review_state from embedded response.
-    const rawReview = row.review_state;
+    // Use embedded review_state if available; otherwise fall back to the dedicated endpoint.
     const reviewState: ReviewStateData | null =
-      rawReview && typeof rawReview === 'object'
-        ? (rawReview as ReviewStateData)
-        : null;
+      embeddedReviewState ??
+      (reviewStateQ.data && typeof reviewStateQ.data === 'object'
+        ? (reviewStateQ.data as ReviewStateData)
+        : null);
 
     const mappedOrder = mapApiOrderToOrder(row, factories, {
       productionUpdates: production.updates,
@@ -281,7 +302,7 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
           : null,
       refetchAll,
     };
-  }, [orderQ.data, factories, orderId]);
+  }, [orderQ.data, factories, orderId, embeddedReviewState, reviewStateQ.data]);
 
   if (orderQ.isPending && !orderQ.data) {
     return (

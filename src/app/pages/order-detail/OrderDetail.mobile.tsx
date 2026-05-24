@@ -107,7 +107,8 @@ function OrderDetailMobileBody() {
 
   // Floating action: show for shipped/completed, but NOT for step-5-IP (that uses the inline banner)
   const showFloatingAction =
-    (order.status === 'shipped' && !showAcceptDeliveryBanner) || order.status === 'completed';
+    (order.status === 'shipped' && !showAcceptDeliveryBanner) ||
+    (order.status === 'completed' && !reviewState?.already_reviewed);
 
   const onConfirmReceive = async () => {
     if (confirmingReceive) return;
@@ -183,6 +184,10 @@ function OrderDetailMobileBody() {
 
   const onSubmitReview = async () => {
     if (reviewSubmitting) return;
+    if (reviewState?.already_reviewed) {
+      toast.error('คุณรีวิวคำสั่งซื้อนี้ไปแล้ว');
+      return;
+    }
     if (order.status !== 'completed') {
       toast.error('สามารถรีวิวได้หลังคำสั่งซื้อเสร็จสมบูรณ์');
       return;
