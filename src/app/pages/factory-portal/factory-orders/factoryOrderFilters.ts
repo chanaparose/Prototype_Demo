@@ -20,7 +20,8 @@ export function matchTab(row: FactoryOrderRow, derived: DerivedCardState, tabId:
       [null, 'PD'].includes(row.production_summary?.current_update_status ?? null));
 
   if (tabId === 'needs_action') return needsAction && !isShipping;
-  if (tabId === 'in_production') return ['PR', 'QC'].includes(row.status) && !needsAction && !isShipping;
+  if (tabId === 'in_production')
+    return ['PR', 'QC'].includes(row.status) && !needsAction && !isShipping;
   if (tabId === 'awaiting_customer') return row.status === 'PP';
   if (tabId === 'shipped') return isShipping;
   if (tabId === 'completed') return row.status === 'CP';

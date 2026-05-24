@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseTHB as formatTHB, formatShowcaseThaiDate as formatThaiDate, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
+import {
+  SHOWCASE_DETAIL_BRAND as BRAND,
+  formatShowcaseTHB as formatTHB,
+  formatShowcaseThaiDate as formatThaiDate,
+  normalizeShowcaseMarkdown as normalizeMarkdownContent,
+} from '@/components/features/showcase-detail/showcaseDetailShared';
 import { ShowcaseHeroGallery } from '@/components/features/showcase-detail/ShowcaseHeroGallery';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
@@ -39,8 +44,17 @@ export function ProductDetailDesktop() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, reviews, isIdea, isMaterial, resolvedId, relatedProducts } =
-    useProductDetailShowcase();
+  const {
+    item,
+    loading,
+    error,
+    factory,
+    reviews,
+    isIdea,
+    isMaterial,
+    resolvedId,
+    relatedProducts,
+  } = useProductDetailShowcase();
   const { isLiked, toggleFavorite } = useFavorites();
 
   const gallery = useMemo(() => {

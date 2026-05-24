@@ -43,8 +43,7 @@ function parseImageUrls(raw: unknown): string[] {
 
 export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase {
   const leadRaw = r.lead_time ?? r.leadTime ?? r.lead_time_days;
-  const leadTime =
-    leadRaw != null && leadRaw !== '' ? pickScalarString(leadRaw) : '';
+  const leadTime = leadRaw != null && leadRaw !== '' ? pickScalarString(leadRaw) : '';
   const imageUrls = parseImageUrls(r.images ?? r.image_urls ?? r.imageUrls);
   const { imageUrls: linkedImageUrls, showcaseIds } = partitionLinkedShowcases(
     r.linked_showcases ?? r.linkedShowcases,
@@ -103,7 +102,9 @@ export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase 
     ...(factoryImageUrl ? { factoryImageUrl } : {}),
     ...(factoryRating != null ? { factoryRating } : {}),
     ...(factoryVerified ? { factoryVerified } : {}),
-    ...(pickScalarString(r.description) !== '' ? { description: pickScalarString(r.description) } : {}),
+    ...(pickScalarString(r.description) !== ''
+      ? { description: pickScalarString(r.description) }
+      : {}),
     ...(pickScalarString(r.price_range, r.priceRange) !== ''
       ? { priceRange: pickScalarString(r.price_range, r.priceRange) }
       : {}),

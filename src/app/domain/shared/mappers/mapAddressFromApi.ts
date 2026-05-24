@@ -46,7 +46,9 @@ export function formatAddressLabel(address: MappedAddress): string {
     .join(', ');
 }
 
-export function formatAddressLocation(address: Pick<MappedAddress, 'province' | 'district' | 'subDistrict' | 'zipCode'>): string {
+export function formatAddressLocation(
+  address: Pick<MappedAddress, 'province' | 'district' | 'subDistrict' | 'zipCode'>,
+): string {
   const isBangkok = /กรุงเทพ/.test(address.province);
   const subDistrictLabel = isBangkok ? 'แขวง' : 'ตำบล';
   const districtLabel = isBangkok ? 'เขต' : 'อำเภอ';

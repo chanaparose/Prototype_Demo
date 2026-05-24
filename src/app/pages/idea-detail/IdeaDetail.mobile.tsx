@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '@/components/features/showcase-detail/showcaseDetailShared';
+import {
+  SHOWCASE_DETAIL_BRAND as BRAND,
+  formatShowcaseThaiDate as formatThaiDate,
+} from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -207,7 +210,10 @@ export function IdeaDetailMobile() {
               onClick={() => void toggleFavorite(item.id)}
               className='inline-flex items-center gap-1 text-[11px] text-gray-500'
             >
-              <Heart className={`w-3 h-3 ${isLiked(item.id) ? 'text-red-500 fill-red-500' : ''}`} style={isLiked(item.id) ? undefined : { color: BRAND.orange }} />
+              <Heart
+                className={`w-3 h-3 ${isLiked(item.id) ? 'text-red-500 fill-red-500' : ''}`}
+                style={isLiked(item.id) ? undefined : { color: BRAND.orange }}
+              />
               {item.likes + (isLiked(item.id) ? 1 : 0)}
             </button>
           </div>
@@ -327,11 +333,18 @@ export function IdeaDetailMobile() {
                       </span>
                       <button
                         type='button'
-                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(next.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void toggleFavorite(next.id);
+                        }}
                         className='flex items-center gap-1 shrink-0 text-[10px] text-gray-400'
                       >
-                        <Heart className={`w-3 h-3 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
-                        <span className='tabular-nums font-medium text-gray-500'>{next.likes + (isLiked(next.id) ? 1 : 0)}</span>
+                        <Heart
+                          className={`w-3 h-3 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`}
+                        />
+                        <span className='tabular-nums font-medium text-gray-500'>
+                          {next.likes + (isLiked(next.id) ? 1 : 0)}
+                        </span>
                       </button>
                     </div>
                   </div>

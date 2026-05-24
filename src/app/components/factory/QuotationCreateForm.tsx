@@ -98,9 +98,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     const qc = useQueryClient();
     const shippingMethodsQ = useShippingMethods(!lockedShippingMethodName);
     const shipId = lockedShippingMethodId ?? 0;
-    const shipLabel = String(lockedShippingMethodName ?? '').trim()
-      || shippingMethodsQ.data?.find((m) => m.id === shipId)?.label
-      || (shipId > 0 ? `#${shipId}` : '—');
+    const shipLabel =
+      String(lockedShippingMethodName ?? '').trim() ||
+      shippingMethodsQ.data?.find((m) => m.id === shipId)?.label ||
+      (shipId > 0 ? `#${shipId}` : '—');
 
     const form = useForm<QuotationCreateFormValues>({
       resolver: zodResolver(quotationFormSchema),

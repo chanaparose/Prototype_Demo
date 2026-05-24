@@ -6,9 +6,9 @@ import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
 function mapQuotationStatus(qSt: string): 'Pending' | 'Accepted' | 'Rejected' | 'Expired' {
   const statusMap: Record<string, 'Pending' | 'Accepted' | 'Rejected' | 'Expired'> = {
-    'AC': 'Accepted',
-    'RJ': 'Rejected',
-    'EX': 'Expired',
+    AC: 'Accepted',
+    RJ: 'Rejected',
+    EX: 'Expired',
   };
   return statusMap[qSt] ?? 'Pending';
 }
@@ -110,7 +110,6 @@ export function quotationFromOfferSource(
       : [],
   };
 }
-
 
 export type QuotationBOQDetailsPanelProps = {
   quotation: Quotation;

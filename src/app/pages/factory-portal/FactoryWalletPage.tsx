@@ -331,12 +331,7 @@ export function FactoryWalletPage() {
             value={formatCurrency(totalWithdrawn)}
             accent={ORANGE}
           />
-          <StatCard
-            icon={Clock}
-            label='รอรับ'
-            value={formatCurrency(pending ?? 0)}
-            accent={TEAL}
-          />
+          <StatCard icon={Clock} label='รอรับ' value={formatCurrency(pending ?? 0)} accent={TEAL} />
         </div>
 
         <div
@@ -379,9 +374,7 @@ export function FactoryWalletPage() {
                     </p>
                   </div>
                   <div className='text-right shrink-0'>
-                    <p className='text-sm font-bold text-amber-700'>
-                      -{formatCurrency(t.amount)}
-                    </p>
+                    <p className='text-sm font-bold text-amber-700'>-{formatCurrency(t.amount)}</p>
                     <span className='text-[11px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full'>
                       รอดำเนินการ
                     </span>

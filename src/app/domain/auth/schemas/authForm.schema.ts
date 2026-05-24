@@ -1,10 +1,6 @@
 import { z } from 'zod';
 
-const emailField = z
-  .string()
-  .trim()
-  .min(1, 'กรุณากรอกอีเมล')
-  .email('รูปแบบอีเมลไม่ถูกต้อง');
+const emailField = z.string().trim().min(1, 'กรุณากรอกอีเมล').email('รูปแบบอีเมลไม่ถูกต้อง');
 
 const passwordField = z.string().trim().min(1, 'กรุณากรอกรหัสผ่าน');
 
@@ -19,11 +15,7 @@ export const authRegisterSchema = z.object({
   first_name: z.string().trim().min(1, 'กรุณากรอกชื่อ'),
   last_name: z.string().trim().min(1, 'กรุณากรอกนามสกุล'),
   email: emailField,
-  phone: z
-    .string()
-    .trim()
-    .min(9, 'กรุณากรอกเบอร์โทรศัพท์')
-    .max(15, 'เบอร์โทรศัพท์ไม่ถูกต้อง'),
+  phone: z.string().trim().min(9, 'กรุณากรอกเบอร์โทรศัพท์').max(15, 'เบอร์โทรศัพท์ไม่ถูกต้อง'),
   password: z.string().trim().min(8, 'รหัสผ่านอย่างน้อย 8 ตัวอักษร'),
 });
 

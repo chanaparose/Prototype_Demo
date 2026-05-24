@@ -55,7 +55,14 @@ export const profileApi = {
 
   // POST /profile/avatar  (wraps File in FormData automatically)
   uploadAvatar: (file: File | FormData) => {
-    const fd = file instanceof FormData ? file : (() => { const f = new FormData(); f.append('file', file); return f; })();
+    const fd =
+      file instanceof FormData
+        ? file
+        : (() => {
+            const f = new FormData();
+            f.append('file', file);
+            return f;
+          })();
     return httpClient.postForm<{ avatar_url: string }>('/profile/avatar', fd);
   },
 
@@ -156,11 +163,7 @@ export type IFactoryReviewSummaryResponse = {
   rating_distribution: Record<string, number>;
 };
 
-function fetchFactoryReviews(
-  factoryId: string | number,
-  limit = 20,
-  offset = 0,
-) {
+function fetchFactoryReviews(factoryId: string | number, limit = 20, offset = 0) {
   const params = new URLSearchParams({
     limit: String(limit),
     offset: String(offset),
@@ -169,9 +172,7 @@ function fetchFactoryReviews(
 }
 
 function fetchFactoryReviewSummary(factoryId: string | number) {
-  return httpClient.get<IFactoryReviewSummaryResponse>(
-    `/factories/${factoryId}/reviews/summary`,
-  );
+  return httpClient.get<IFactoryReviewSummaryResponse>(`/factories/${factoryId}/reviews/summary`);
 }
 
 export const reviewsApi = {
@@ -214,7 +215,12 @@ export const certificatesApi = {
   update: (
     factoryId: string | number,
     mapId: string | number,
-    data: Partial<{ cert_id: number; document_url: string; cert_number: string; expire_date: string }>,
+    data: Partial<{
+      cert_id: number;
+      document_url: string;
+      cert_number: string;
+      expire_date: string;
+    }>,
   ) => httpClient.patch<unknown>(`/factories/${factoryId}/certificates/${mapId}`, data),
 
   upload: (formData: FormData) => httpClient.postForm<unknown>('/certificates/upload', formData),

@@ -11,7 +11,11 @@ import {
   BORDER_WARM,
   RFQ_STATUS_DISPLAY,
 } from '@/components/features/rfq-and-orders/constants';
-import { formatBudget, formatDate, getRfqActivityCounts } from '@/components/features/rfq-and-orders/utils';
+import {
+  formatBudget,
+  formatDate,
+  getRfqActivityCounts,
+} from '@/components/features/rfq-and-orders/utils';
 import { type Rfq } from '@/stores/types';
 
 export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {

@@ -1,15 +1,11 @@
 import { z } from 'zod';
 
 const categorySelectionSchema = z.object({
-  categoryIds: z
-    .array(z.number().int().positive())
-    .min(1, 'เลือกอย่างน้อย 1 หมวดหมู่'),
+  categoryIds: z.array(z.number().int().positive()).min(1, 'เลือกอย่างน้อย 1 หมวดหมู่'),
 });
 
 const subCategorySelectionSchema = z.object({
-  subCategoryIds: z
-    .array(z.number().int().positive())
-    .min(1, 'เลือกอย่างน้อย 1 หมวดหมู่ย่อย'),
+  subCategoryIds: z.array(z.number().int().positive()).min(1, 'เลือกอย่างน้อย 1 หมวดหมู่ย่อย'),
 });
 
 export function parseCategorySelection(ids: number[]) {

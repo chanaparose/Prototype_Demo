@@ -90,13 +90,20 @@ function mapRow(
 export type FormErrors = Partial<Record<keyof FormState, string>>;
 
 const FIELD_ORDER_FULL: (keyof FormState)[] = [
-  'factory_name', 'factory_type_id', 'tax_id', 'province_id',
+  'factory_name',
+  'factory_type_id',
+  'tax_id',
+  'province_id',
   'category_ids',
-  'cert_id', 'cert_file', 'cert_expire_date',
-  'email', 'phone', 'password', 'confirmPassword',
+  'cert_id',
+  'cert_file',
+  'cert_expire_date',
+  'email',
+  'phone',
+  'password',
+  'confirmPassword',
   'acceptTerms',
 ];
-
 
 export function useRegisterFactory() {
   const navigate = useNavigate();
@@ -173,7 +180,8 @@ export function useRegisterFactory() {
         );
 
         // Sub-categories: 1 non-blocking call, FE groups by category_id
-        masterApi.lbiSubCategories('ALL')
+        masterApi
+          .lbiSubCategories('ALL')
           .then((subs) => {
             const subArr = (Array.isArray(subs) ? subs : []) as unknown[];
             const subMap: Record<number, SubCategoryOption[]> = {};
@@ -186,7 +194,9 @@ export function useRegisterFactory() {
             }
             setLbiSubCategories(subMap);
           })
-          .catch(() => { /* sub-categories optional — don't block form */ });
+          .catch(() => {
+            /* sub-categories optional — don't block form */
+          });
       })
       .catch(() => setMasterFailed(true))
       .finally(() => setMasterLoading(false));
@@ -223,7 +233,9 @@ export function useRegisterFactory() {
         case 'province_id':
           return !values.province_id ? 'กรุณาเลือกจังหวัดที่ตั้งโรงงาน' : undefined;
         case 'category_ids':
-          return values.category_ids.length === 0 ? 'กรุณาเลือกหมวดหมู่ที่รับผลิตอย่างน้อย 1 หมวด' : undefined;
+          return values.category_ids.length === 0
+            ? 'กรุณาเลือกหมวดหมู่ที่รับผลิตอย่างน้อย 1 หมวด'
+            : undefined;
         case 'cert_id':
           return !values.cert_id ? 'กรุณาเลือกประเภทใบรับรอง' : undefined;
         case 'cert_file':
@@ -320,7 +332,9 @@ export function useRegisterFactory() {
     } catch (err) {
       if (err instanceof ApiHttpError) {
         if (err.status === 409) {
-          setApiError('เลขภาษีนี้ถูกใช้แล้ว หรืออีเมลนี้มีบัญชีอยู่แล้ว หรือโปรไฟล์โรงงานนี้มีอยู่แล้ว');
+          setApiError(
+            'เลขภาษีนี้ถูกใช้แล้ว หรืออีเมลนี้มีบัญชีอยู่แล้ว หรือโปรไฟล์โรงงานนี้มีอยู่แล้ว',
+          );
         } else if (err.status === 422) {
           setErrors((prev) => ({ ...prev, password: 'รหัสผ่านไม่ตรงตามเงื่อนไขของระบบ' }));
           scrollToFirstError({ password: 'x' });

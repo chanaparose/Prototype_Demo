@@ -295,7 +295,13 @@ export function Login() {
                       <FormItem>
                         <FormLabel className='text-xs text-gray-500'>ชื่อ</FormLabel>
                         <FormControl>
-                          <Input type='text' placeholder='ชื่อ' autoComplete='given-name' className={inputClassName} {...field} />
+                          <Input
+                            type='text'
+                            placeholder='ชื่อ'
+                            autoComplete='given-name'
+                            className={inputClassName}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

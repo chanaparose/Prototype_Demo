@@ -3,10 +3,7 @@ import { Input } from '@/components/ui/input';
 import React from 'react';
 import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
-import {
-  mapAddressFromApi,
-  type MappedAddress,
-} from '@/domain/shared/mappers/mapAddressFromApi';
+import { mapAddressFromApi, type MappedAddress } from '@/domain/shared/mappers/mapAddressFromApi';
 import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
 import { AddressFormModal, type AddressFormPayload } from '@/components/factory/AddressFormModal';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
@@ -61,9 +58,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
             ? ((raw as Record<string, unknown>).data as unknown[])
             : []
       ) as Record<string, unknown>[];
-      const mapped = arr
-        .map(mapAddressFromApi)
-        .filter((a): a is MappedAddress => a != null);
+      const mapped = arr.map(mapAddressFromApi).filter((a): a is MappedAddress => a != null);
       setAddresses(mapped);
       return mapped;
     } catch {
@@ -124,7 +119,11 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
         if (!created || typeof created !== 'object') {
           throw new Error('Invalid API response from address creation');
         }
-        const createdId = Number((created as Record<string, unknown>).address_id ?? (created as Record<string, unknown>).id ?? 0);
+        const createdId = Number(
+          (created as Record<string, unknown>).address_id ??
+            (created as Record<string, unknown>).id ??
+            0,
+        );
         const latest = await loadAddresses();
         const selectId =
           (createdId > 0 ? createdId : null) ??

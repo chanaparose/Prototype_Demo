@@ -1,9 +1,5 @@
 import { create } from 'zustand';
-import {
-  fetchCurrentUserAction,
-  loginAction,
-  registerAction,
-} from '@/domain/auth/api/authActions';
+import { fetchCurrentUserAction, loginAction, registerAction } from '@/domain/auth/api/authActions';
 import { getToken, setToken, removeToken } from '@/services/api/tokenManager';
 import type {
   ILoginRequest,

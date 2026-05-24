@@ -87,9 +87,7 @@ export function useFavorites() {
         useSessionStore.setState((prev) => {
           if (!prev.data) return prev;
           const old = prev.data.favorites ?? [];
-          const updated = wasLiked
-            ? old.filter((id) => String(id) !== key)
-            : [...old, numId];
+          const updated = wasLiked ? old.filter((id) => String(id) !== key) : [...old, numId];
           return { ...prev, data: { ...prev.data, favorites: updated } };
         });
 

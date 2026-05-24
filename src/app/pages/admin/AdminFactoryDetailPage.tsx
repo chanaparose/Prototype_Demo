@@ -14,7 +14,12 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
-import { adminApi, adminConfigApi, adminFactoryConfigApi, adminSettlementApi } from '@/services/api/adminApi';
+import {
+  adminApi,
+  adminConfigApi,
+  adminFactoryConfigApi,
+  adminSettlementApi,
+} from '@/services/api/adminApi';
 import { mapFactoryApprovalStatus } from '@/domain/admin/mappers/mapAdminFactory';
 import type {
   IAdminSettlementListItemResponse,
@@ -735,7 +740,10 @@ function FactorySettlementsTab({ factoryId }: { factoryId: number }) {
     adminSettlementApi
       .listByFactory(factoryId, { limit: SETTLE_LIMIT, offset: page * SETTLE_LIMIT })
       .then((res) => {
-        const data = res as unknown as { settlements: IAdminSettlementListItemResponse[]; total: number };
+        const data = res as unknown as {
+          settlements: IAdminSettlementListItemResponse[];
+          total: number;
+        };
         setSettlements(data.settlements ?? []);
         setTotal(data.total ?? 0);
       })

@@ -113,21 +113,26 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
 
   return {
     recipientName:
-      String(order.customer_name ?? addr.recipient_name ?? addr.name ?? buyer.name ?? order.buyer_name ?? '').trim() ||
-      undefined,
+      String(
+        order.customer_name ??
+          addr.recipient_name ??
+          addr.name ??
+          buyer.name ??
+          order.buyer_name ??
+          '',
+      ).trim() || undefined,
     phone:
-      String(order.customer_phone ?? addr.phone ?? addr.tel ?? buyer.phone ?? order.buyer_phone ?? '').trim() || undefined,
+      String(
+        order.customer_phone ?? addr.phone ?? addr.tel ?? buyer.phone ?? order.buyer_phone ?? '',
+      ).trim() || undefined,
     addressLine:
       String(addr.address_detail ?? addr.address_line ?? addr.detail ?? '').trim() || undefined,
     subDistrict:
       String(addr.sub_district_name ?? addr.sub_district ?? addr.subdistrict ?? '').trim() ||
       undefined,
-    district:
-      String(addr.district_name ?? addr.district ?? '').trim() || undefined,
-    province:
-      String(addr.province_name ?? addr.province ?? '').trim() || undefined,
-    postalCode:
-      String(addr.zip_code ?? addr.postal_code ?? '').trim() || undefined,
+    district: String(addr.district_name ?? addr.district ?? '').trim() || undefined,
+    province: String(addr.province_name ?? addr.province ?? '').trim() || undefined,
+    postalCode: String(addr.zip_code ?? addr.postal_code ?? '').trim() || undefined,
   };
 }
 
@@ -298,19 +303,19 @@ function NextActionCard({
               {accepting ? 'กำลังบันทึก…' : guide.confirmLabel}
             </Button>
           ) : (
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={onUpdate}
-            className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)]'
-          >
-            <Package size={16} />
-            {step.update.status === 'IP'
-              ? 'อัปเดตและยืนยันขั้นนี้'
-              : step.update.status === 'RJ'
-                ? 'ส่งหลักฐานใหม่'
-                : guide.confirmLabel}
-          </Button>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={onUpdate}
+              className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)]'
+            >
+              <Package size={16} />
+              {step.update.status === 'IP'
+                ? 'อัปเดตและยืนยันขั้นนี้'
+                : step.update.status === 'RJ'
+                  ? 'ส่งหลักฐานใหม่'
+                  : guide.confirmLabel}
+            </Button>
           )
         ) : (
           <div className='rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-center'>
@@ -491,10 +496,10 @@ export function FactoryOrderDetailPage() {
   /** ชื่อโรงงาน (ผู้ส่ง) */
   const senderName = String(
     (order.factory as Record<string, unknown>)?.factory_name ??
-    (order.factory as Record<string, unknown>)?.name ??
-    user?.company ??
-    user?.name ??
-    'โรงงาน Tryly',
+      (order.factory as Record<string, unknown>)?.name ??
+      user?.company ??
+      user?.name ??
+      'โรงงาน Tryly',
   ).trim();
 
   /** เบอร์โทรโรงงาน (ผู้ส่ง) จาก factory.phone ที่ API ส่งมา */
@@ -507,7 +512,9 @@ export function FactoryOrderDetailPage() {
 
   /** Tracking number จาก description ของ step 4 (ถ้ามี) */
   const trackingNumber = step4?.update.description
-    ? (step4.update.description.match(/(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i)?.[1] ?? undefined)
+    ? (step4.update.description.match(
+        /(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i,
+      )?.[1] ?? undefined)
     : undefined;
 
   const customerShipping = useMemo(() => extractShippingInfo(order), [order]);
@@ -633,7 +640,9 @@ export function FactoryOrderDetailPage() {
                   },
                   {
                     label: 'กำหนดส่ง',
-                    value: formatDateTime(order.estimated_delivery as string | Date | null | undefined),
+                    value: formatDateTime(
+                      order.estimated_delivery as string | Date | null | undefined,
+                    ),
                   },
                   {
                     label: 'มูลค่ารวม',
@@ -647,7 +656,7 @@ export function FactoryOrderDetailPage() {
                   <div key={label} className='flex items-center justify-between gap-2'>
                     <span className='text-xs text-gray-500'>{label}</span>
                     <span className='text-sm font-medium text-right text-brand-navy'>{value}</span>
-                </div>
+                  </div>
                 ))}
               </section>
 
@@ -855,22 +864,24 @@ export function FactoryOrderDetailPage() {
                     ) : null}
 
                     {timelineMerged.length === 0 ? (
-                      <p className='text-sm text-gray-400 px-1'>รอยืนยันรับงานเพื่อเริ่มขั้นตอนการผลิต</p>
+                      <p className='text-sm text-gray-400 px-1'>
+                        รอยืนยันรับงานเพื่อเริ่มขั้นตอนการผลิต
+                      </p>
                     ) : (
                       <>
                         <ProductionHeader merged={timelineMerged} orderStatus={orderStatus} />
-                    <ProductionTimeline
+                        <ProductionTimeline
                           merged={timelineMerged}
-                      orderStatus={orderStatus}
-                      isFactory={!isCompleted}
-                      isCustomer={false}
-                      onOpenDrawer={(m) => {
-                        if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
-                      }}
+                          orderStatus={orderStatus}
+                          isFactory={!isCompleted}
+                          isCustomer={false}
+                          onOpenDrawer={(m) => {
+                            if (!isCompleted && factoryCanUpdateStep(m)) setDrawerStep(m);
+                          }}
                           onOpenReject={() => undefined}
                           onPhotoClick={() => undefined}
-                    />
-                  </>
+                        />
+                      </>
                     )}
                   </>
                 )}

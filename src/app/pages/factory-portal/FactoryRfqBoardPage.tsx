@@ -722,13 +722,14 @@ export function FactoryRfqBoardPage() {
                         onClick={() => navigate(`/factory/rfqs/${r.id}`)}
                         className='flex-1 min-w-0 text-left'
                       >
-                        <p className='text-[13px] font-semibold text-slate-700 truncate'>{r.title}</p>
+                        <p className='text-[13px] font-semibold text-slate-700 truncate'>
+                          {r.title}
+                        </p>
                         <p className='text-[11px] text-slate-400'>
                           #{r.id}
                           {r.categoryName ? ` · ${r.categoryName}` : ''}
                         </p>
                       </button>
-                       
                     </li>
                   ))}
                 </ul>

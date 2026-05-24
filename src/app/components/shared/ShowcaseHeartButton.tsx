@@ -9,7 +9,13 @@ type Props = {
   className?: string;
 };
 
-export function ShowcaseHeartButton({ showcaseId, isLiked, onToggle, size = 'sm', className = '' }: Props) {
+export function ShowcaseHeartButton({
+  showcaseId,
+  isLiked,
+  onToggle,
+  size = 'sm',
+  className = '',
+}: Props) {
   const iconSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-5 h-5';
   const btnSize = size === 'sm' ? 'w-6 h-6' : 'w-8 h-8';
 

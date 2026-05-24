@@ -90,10 +90,11 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
             const parsed = mapConversationToApiConversation(mapped);
             setApiConv({
               ...parsed,
-              rfq_title: pickScalarString(
-                (rawConv as Record<string, unknown>).rfq_title,
-                (rawConv as Record<string, unknown>).rfq_name,
-              ) || null,
+              rfq_title:
+                pickScalarString(
+                  (rawConv as Record<string, unknown>).rfq_title,
+                  (rawConv as Record<string, unknown>).rfq_name,
+                ) || null,
             });
             setHeader((h) => ({
               factoryId: String(mapped.factory_id) || h.factoryId,

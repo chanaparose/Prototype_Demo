@@ -23,7 +23,9 @@ export interface IExploreShowcaseResponse {
 }
 
 /** Grouped response: { PD: [...], MT: [...] } */
-export type IShowcasesGroupedResponse = Partial<Record<'PD' | 'PM' | 'ID' | 'MT', IExploreShowcaseResponse[]>>;
+export type IShowcasesGroupedResponse = Partial<
+  Record<'PD' | 'PM' | 'ID' | 'MT', IExploreShowcaseResponse[]>
+>;
 
 /** Response shape จาก GET /api/v1/categories?limit=N */
 export interface IExploreCategoryResponse {

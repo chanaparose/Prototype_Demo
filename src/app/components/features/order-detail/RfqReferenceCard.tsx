@@ -26,10 +26,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
   const categoryName = pickScalarString(data.category_name, rfq.category_name) || '-';
   const subCategoryName = pickScalarString(data.sub_category_name, data.subCategoryName);
   const subCategoryId = pickScalarNumber(data.sub_category_id, data.subCategoryId) ?? 0;
-  const shippingMethodName = pickScalarString(
-    data.shipping_method_name,
-    data.shippingMethodName,
-  );
+  const shippingMethodName = pickScalarString(data.shipping_method_name, data.shippingMethodName);
   const deliveryAddress = summarizeRfqAddress(data);
   const materialGrade = pickScalarString(data.material_grade, data.materialGrade);
   const tolerance = pickScalarString(data.tolerance);
@@ -332,7 +329,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                         -{formatTHB(discountAmount)}
                       </span>
                     </div>
-            ) : null}
+                  ) : null}
                   <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
                     <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
                     <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>

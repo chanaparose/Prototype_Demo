@@ -2,14 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
-import {
-  extractAdminFactoryRows,
-  mapAdminFactory,
-} from '@/domain/admin/mappers/mapAdminFactory';
-import type {
-  AdminFactory,
-  FactoryApprovalStatus,
-} from '@/domain/admin/types/adminFactory.model';
+import { extractAdminFactoryRows, mapAdminFactory } from '@/domain/admin/mappers/mapAdminFactory';
+import type { AdminFactory, FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';

@@ -1,9 +1,6 @@
 import { postLogin, postRegister } from '@/services/api/authApi';
 import { frontendApi } from '@/services/api/exploreApi';
-import {
-  mapAuthResponseToModel,
-  mapUserFromApi,
-} from '@/domain/auth/mappers/mapAuthResponse';
+import { mapAuthResponseToModel, mapUserFromApi } from '@/domain/auth/mappers/mapAuthResponse';
 import type { IAuthSession } from '@/domain/auth/types/auth.model';
 import type { IUser } from '@/domain/auth/types/user.model';
 import type {

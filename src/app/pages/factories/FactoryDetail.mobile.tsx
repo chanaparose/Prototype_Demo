@@ -12,7 +12,10 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { FactoryProfileHero } from '@/components/features/factory-profile/FactoryProfileHero';
-import { FactoryProfileTabContent, type TabId } from '@/components/features/factory-profile/FactoryProfileTabContent';
+import {
+  FactoryProfileTabContent,
+  type TabId,
+} from '@/components/features/factory-profile/FactoryProfileTabContent';
 import type { useFactoryProfile } from '@/components/features/factory/hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';

@@ -135,10 +135,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
         {items.map((c) => (
           <li key={c.id}>
             <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
-              <Checkbox
-                checked={selected.includes(c.id)}
-                onCheckedChange={() => toggle(c.id)}
-              />
+              <Checkbox checked={selected.includes(c.id)} onCheckedChange={() => toggle(c.id)} />
               {c.name}
             </Label>
           </li>
@@ -183,8 +180,10 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
           <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
         ) : !isError ? (
           <div className='space-y-4 max-h-[55vh] overflow-y-auto'>
-            {pdCategories.length > 0 && renderGroup('หมวดสินค้า (PD)', pdCategories, 'text-indigo-600')}
-            {mtCategories.length > 0 && renderGroup('หมวดวัตถุดิบ (MT)', mtCategories, 'text-emerald-600')}
+            {pdCategories.length > 0 &&
+              renderGroup('หมวดสินค้า (PD)', pdCategories, 'text-indigo-600')}
+            {mtCategories.length > 0 &&
+              renderGroup('หมวดวัตถุดิบ (MT)', mtCategories, 'text-emerald-600')}
           </div>
         ) : null}
       </FormField>

@@ -2,7 +2,10 @@ import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft, Package, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { FactoryProfileHero } from '@/components/features/factory-profile/FactoryProfileHero';
-import { FactoryProfileTabContent, type TabId } from '@/components/features/factory-profile/FactoryProfileTabContent';
+import {
+  FactoryProfileTabContent,
+  type TabId,
+} from '@/components/features/factory-profile/FactoryProfileTabContent';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { useFactoryProfile } from '@/components/features/factory/hooks/useFactoryProfile';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';

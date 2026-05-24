@@ -110,10 +110,7 @@ function mapProfileFromApi(
   };
 }
 
-function mapReviewFromApi(
-  r: Record<string, unknown>,
-  factoryId: string,
-): FactoryReview | null {
+function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): FactoryReview | null {
   const rid = pickScalarString(r.id, r.review_id);
   if (!rid) return null;
   const userId = pickScalarNumber(r.user_id, r.userId) ?? 0;

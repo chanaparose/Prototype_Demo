@@ -227,9 +227,12 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   const visibleItems = useMemo(() => {
     if (isFactoryTab) return [];
     if (selectedType === 'all') return filteredShowcases.filter((s) => s.contentType !== 'idea');
-    if (selectedType === 'product') return filteredShowcases.filter((s) => s.contentType === 'product');
-    if (selectedType === 'promotion') return filteredShowcases.filter((s) => s.contentType === 'promotion');
-    if (selectedType === 'material') return filteredShowcases.filter((s) => s.contentType === 'material');
+    if (selectedType === 'product')
+      return filteredShowcases.filter((s) => s.contentType === 'product');
+    if (selectedType === 'promotion')
+      return filteredShowcases.filter((s) => s.contentType === 'promotion');
+    if (selectedType === 'material')
+      return filteredShowcases.filter((s) => s.contentType === 'material');
     return filteredShowcases;
   }, [filteredShowcases, selectedType, isFactoryTab]);
 

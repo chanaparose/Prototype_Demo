@@ -74,10 +74,7 @@ export function CertUploadModal({
   }, [open, initial, fallbackCertId, reset]);
 
   const rootError = errors.root?.message;
-  const fieldError =
-    errors.cert_id?.message ||
-    errors.expire_date?.message ||
-    errors.file?.message;
+  const fieldError = errors.cert_id?.message || errors.expire_date?.message || errors.file?.message;
 
   const selectedFile = form.watch('file');
   let fileHelperText: string | undefined;
@@ -154,19 +151,14 @@ export function CertUploadModal({
         />
       }
     >
-      {rootError || fieldError ? (
-        <ErrorAlert>{rootError ?? fieldError}</ErrorAlert>
-      ) : null}
+      {rootError || fieldError ? <ErrorAlert>{rootError ?? fieldError}</ErrorAlert> : null}
 
       <FormField label='ประเภทใบรับรอง' required error={errors.cert_id?.message}>
         <Controller
           control={control}
           name='cert_id'
           render={({ field }) => (
-            <Select
-              value={String(field.value)}
-              onValueChange={(v) => field.onChange(Number(v))}
-            >
+            <Select value={String(field.value)} onValueChange={(v) => field.onChange(Number(v))}>
               <SelectTrigger className='w-full'>
                 <SelectValue placeholder='เลือกประเภทใบรับรอง' />
               </SelectTrigger>

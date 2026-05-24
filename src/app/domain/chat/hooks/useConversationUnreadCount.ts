@@ -13,8 +13,7 @@ export function useConversationUnreadCount(): number {
   return useMemo(() => {
     if (!enabled || currentUserId == null) return 0;
     return (conversationsQ.data ?? []).reduce((sum, conv) => {
-      const role =
-        conv.viewer_role ?? (conv.customer_id === currentUserId ? 'CT' : 'FT');
+      const role = conv.viewer_role ?? (conv.customer_id === currentUserId ? 'CT' : 'FT');
       return sum + unreadForViewer(conv, role);
     }, 0);
   }, [conversationsQ.data, currentUserId, enabled]);

@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useImperativeHandle, useRef, useState, forwardRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  forwardRef,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
@@ -84,9 +91,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
     const shipLabel =
       shippingMethodLabel ??
       shippingMethodNameHint ??
-      (form.watch('shipping_method_id') != null
-        ? `#${form.watch('shipping_method_id')}`
-        : '—');
+      (form.watch('shipping_method_id') != null ? `#${form.watch('shipping_method_id')}` : '—');
 
     const save = useCallback(
       async (values: QuotationEditFormValues): Promise<boolean> => {
@@ -254,7 +259,9 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
             เหตุผลการแก้ไข
           </p>
           <Label className='block'>
-            <span className='text-xs text-gray-500 mb-1.5 block'>เหตุผล * (บันทึกลง audit log)</span>
+            <span className='text-xs text-gray-500 mb-1.5 block'>
+              เหตุผล * (บันทึกลง audit log)
+            </span>
             <Textarea
               disabled={isLocked}
               rows={3}

@@ -8,11 +8,7 @@ import { rfqsApi } from '@/services/api/rfqApi';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { OfferItem } from '@/components/features/rfq-detail/RfqDetailOffersSection';
-import {
-  CLOSEABLE_STATUSES,
-  HISTORY_STATUSES,
-  STATUS_LABEL,
-} from '@/domain/rfq/constants';
+import { CLOSEABLE_STATUSES, HISTORY_STATUSES, STATUS_LABEL } from '@/domain/rfq/constants';
 import { QuotationHistoryPanel } from '@/components/features/rfq-detail/QuotationHistoryPanel';
 import { RfqDetailOffersSection } from '@/components/features/rfq-detail/RfqDetailOffersSection';
 import { RfqDetailSpecs } from '@/components/features/rfq-detail/RfqDetailSpecs';
@@ -35,7 +31,8 @@ export function RFQDetailDesktop() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { rfq, relatedOrder, quoteOrderMap, quoteHistories, loading, error, refetch } = useRfqDetail(id);
+  const { rfq, relatedOrder, quoteOrderMap, quoteHistories, loading, error, refetch } =
+    useRfqDetail(id);
 
   const [specsOpen, setSpecsOpen] = React.useState(true);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);

@@ -9,7 +9,8 @@ import type {
 export const conversationsApi = {
   list: () => httpClient.get<IConversationResponse[]>('/conversations'),
 
-  get: (convId: string | number) => httpClient.get<IConversationResponse>(`/conversations/${convId}`),
+  get: (convId: string | number) =>
+    httpClient.get<IConversationResponse>(`/conversations/${convId}`),
 
   create: (data: { customer_id?: number; factory_id?: number; rfq_id?: number }) =>
     httpClient.post<IConversationResponse>('/conversations', data),

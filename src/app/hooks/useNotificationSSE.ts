@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { getToken } from '@/services/api/tokenManager';
-import { setConversationReadInCache, incrementConversationUnreadInCache } from '@/domain/chat/chatCache';
+import {
+  setConversationReadInCache,
+  incrementConversationUnreadInCache,
+} from '@/domain/chat/chatCache';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { getCurrentUserId } from '@/utils/chatContract';
 
@@ -40,21 +43,27 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
       try {
         const data = JSON.parse(e.data as string) as { unread_count: number };
         setUnreadCount(data.unread_count);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     });
 
     es.addEventListener('new_notification', (e: MessageEvent) => {
       try {
         const noti = JSON.parse(e.data as string) as { unread_count: number };
         setUnreadCount(noti.unread_count);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     });
 
     es.addEventListener('read', (e: MessageEvent) => {
       try {
         const data = JSON.parse(e.data as string) as { unread_count: number };
         setUnreadCount(data.unread_count);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     });
 
     es.addEventListener('new_message', (e: MessageEvent) => {
@@ -67,7 +76,9 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
           incrementConversationUnreadInCache(convId, senderId);
         }
         sseCallbacks.onNewMessage?.(msg);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     });
 
     es.addEventListener('messages_read', (e: MessageEvent) => {
@@ -79,7 +90,9 @@ export function useNotificationSSE(enabled: boolean): { unreadCount: number } {
           setConversationReadInCache(data.conv_id);
         }
         sseCallbacks.onMessagesRead?.(data);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     });
 
     return () => {

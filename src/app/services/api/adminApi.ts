@@ -26,9 +26,7 @@ import type {
   IUpdatePlatformConfigRequest,
 } from '@/services/api/types/admin.types';
 
-export type {
-  IPlatformConfigResponse,
-} from '@/services/api/types/admin.types';
+export type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
 
 function qs(params: Record<string, string | number | boolean | undefined | null>): string {
   const search = new URLSearchParams();
@@ -75,7 +73,8 @@ export const adminFactoryConfigApi = {
 };
 
 export const adminApi = {
-  dashboardSummary: () => httpClient.get<IAdminDashboardSummaryResponse>('/admin/dashboard/summary'),
+  dashboardSummary: () =>
+    httpClient.get<IAdminDashboardSummaryResponse>('/admin/dashboard/summary'),
 
   dashboardRevenueChart: (params?: {
     date_from?: string;
@@ -251,7 +250,8 @@ export const adminCustomerApi = {
       })}`,
     ),
 
-  getDetail: (userId: number) => httpClient.get<IAdminCustomerDetailResponse>(`/admin/customers/${userId}`),
+  getDetail: (userId: number) =>
+    httpClient.get<IAdminCustomerDetailResponse>(`/admin/customers/${userId}`),
 
   getWallet: (userId: number) =>
     httpClient.get<IAdminCustomerWalletResponse>(`/admin/customers/${userId}/wallet`),

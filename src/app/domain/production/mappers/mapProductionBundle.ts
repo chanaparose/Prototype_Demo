@@ -35,8 +35,7 @@ export function mapStepTemplatesFromApi(raw: unknown): IProductionStepTemplate[]
     out.push({
       step_id,
       step_code: pickScalarString(r.step_code),
-      step_name_th:
-        pickScalarString(r.step_name_th, r.step_name, r.name_th) || `ขั้น #${step_id}`,
+      step_name_th: pickScalarString(r.step_name_th, r.step_name, r.name_th) || `ขั้น #${step_id}`,
       step_name_en: pickScalarString(r.step_name_en) || undefined,
       sort_order: pickScalarNumber(r.sort_order, r.sequence) ?? 0,
       min_photos: Math.max(0, pickScalarNumber(r.min_photos, r.minPhotos) ?? 0),
@@ -68,7 +67,8 @@ export function mapProductionUpdateRowFromApi(row: Record<string, unknown>): IPr
     image_urls,
     completed_at: pickScalarString(row.completed_at) || null,
     rejected_reason: pickScalarString(row.rejected_reason) || null,
-    updated_by_user_id: row.updated_by_user_id != null ? pickScalarNumber(row.updated_by_user_id) : null,
+    updated_by_user_id:
+      row.updated_by_user_id != null ? pickScalarNumber(row.updated_by_user_id) : null,
     last_updated_at: pickScalarString(row.last_updated_at) || null,
   };
 }

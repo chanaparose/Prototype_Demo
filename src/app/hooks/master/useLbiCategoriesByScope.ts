@@ -22,7 +22,10 @@ export function useLbiCategoriesByScope(scope: 'PD' | 'MT' | 'ALL') {
           const id = Number(r.category_id ?? r.id);
           const name = String(r.name ?? r.category_name ?? '').trim();
           if (!Number.isFinite(id) || id <= 0 || !name) return null;
-          const s = String(r.scope ?? '').trim().toUpperCase() || undefined;
+          const s =
+            String(r.scope ?? '')
+              .trim()
+              .toUpperCase() || undefined;
           return { id, name, scope: s };
         })
         .filter((x): x is CategoryOption => x != null)

@@ -43,13 +43,7 @@ type Props = {
   ) => Promise<void>;
 };
 
-export function UpdateStepDrawer({
-  open,
-  placement,
-  step,
-  onClose,
-  onSubmit,
-}: Props) {
+export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: Props) {
   const [notes, setNotes] = useState('');
   const [trackingNo, setTrackingNo] = useState('');
   const [courier, setCourier] = useState('');

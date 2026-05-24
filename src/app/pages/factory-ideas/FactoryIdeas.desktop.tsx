@@ -38,14 +38,14 @@ export function FactoryIdeasDesktop() {
     categoryMenuOpen,
     setCategoryMenuOpen,
     categoryMenuRef,
-        menuHighlightCategoryId,
+    menuHighlightCategoryId,
     setMenuHighlightCategoryId,
     panelSubs,
     panelSubsLoading,
     selectedSubCategoryId,
     setSelectedSubCategoryId,
     categoryFilters,
-          effectiveCategoryId,
+    effectiveCategoryId,
     applyCategory,
     isFactoryTab,
     isMaterialTab,
@@ -223,7 +223,7 @@ export function FactoryIdeasDesktop() {
                       </span>
                     </div>
                   )}
-                  </div>
+                </div>
                 <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                   <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                     {factory.name}
@@ -304,19 +304,19 @@ export function FactoryIdeasDesktop() {
                       alt={item.title}
                       className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                     />
-                      <span
+                    <span
                       className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--factory-idea-badge)] px-1.5 py-0.5 text-[8px] font-bold text-white'
                       style={{ '--factory-idea-badge': badgeColor } as React.CSSProperties}
-                      >
-                        {contentTypeLabel[item.contentType]}
-                      </span>
+                    >
+                      {contentTypeLabel[item.contentType]}
+                    </span>
                     <ShowcaseHeartButton
                       showcaseId={item.id}
                       isLiked={isLiked(item.id)}
                       onToggle={toggleFavorite}
                       className='absolute top-1 right-1 z-[1]'
                     />
-                    </div>
+                  </div>
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                     <div>
                       <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
@@ -327,8 +327,8 @@ export function FactoryIdeasDesktop() {
                         <span className='text-gray-500 text-[10px] truncate'>
                           {(factory?.provinceName ?? factory?.location ?? '').trim() || '—'}
                         </span>
+                      </div>
                     </div>
-                  </div>
                     <div className='mt-auto pt-1 border-t border-gray-50'>
                       <div className='flex items-center justify-between min-w-0'>
                         <div className='flex items-center gap-0.5 min-w-0'>
@@ -336,10 +336,10 @@ export function FactoryIdeasDesktop() {
                           <span className='text-gray-700 text-[10px] font-semibold'>
                             {item.factoryRating ?? 0}
                           </span>
-                    </div>
+                        </div>
                         <span className='text-gray-400 text-[8px] shrink-0'>
                           ขั้นต่ำ {item.minOrder}
-                          </span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -541,22 +541,22 @@ export function FactoryIdeasDesktop() {
                         <BadgeCheck className='w-2.5 h-2.5 text-brand-purple' />
                         <span className='text-[8px] font-medium text-[var(--brand-purple)]'>
                           ยืนยัน
-                    </span>
+                        </span>
                       </div>
                     )}
                   </div>
                   <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                     <div>
                       <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                      {factory.name}
-                    </h3>
+                        {factory.name}
+                      </h3>
                       <div className='flex items-center gap-0.5 mt-0.5'>
                         <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
                         <span className='text-gray-500 text-[10px] truncate'>
                           {(factory.provinceName ?? factory.location).trim() || '—'}
                         </span>
-                    </div>
                       </div>
+                    </div>
                     <div className='mt-auto pt-1 border-t border-gray-50'>
                       <div className='flex items-center justify-between min-w-0'>
                         <div className='flex items-center gap-0.5 min-w-0'>
@@ -567,11 +567,11 @@ export function FactoryIdeasDesktop() {
                           <span className='text-gray-400 text-[9px] truncate'>
                             ({factory.reviews})
                           </span>
-                    </div>
+                        </div>
                         <span className='text-gray-400 text-[8px] shrink-0'>
                           ขั้นต่ำ {factory.minOrder}
                         </span>
-                  </div>
+                      </div>
                     </div>
                   </div>
                 </div>

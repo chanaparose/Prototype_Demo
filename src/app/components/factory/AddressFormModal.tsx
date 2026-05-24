@@ -165,7 +165,8 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
                         subField.onChange(next.subDistrictId);
                       }}
                       onZipCodeAutoFill={(zip) => {
-                        if (/^\d{5}$/.test(zip)) setValue('zip_code', zip, { shouldValidate: true });
+                        if (/^\d{5}$/.test(zip))
+                          setValue('zip_code', zip, { shouldValidate: true });
                       }}
                       disabled={saving}
                     />
@@ -178,7 +179,12 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       </div>
 
       <div className='grid gap-3 sm:grid-cols-3 mb-4'>
-        <FormField label='รหัสไปรษณีย์' required className='sm:col-span-1' error={errors.zip_code?.message}>
+        <FormField
+          label='รหัสไปรษณีย์'
+          required
+          className='sm:col-span-1'
+          error={errors.zip_code?.message}
+        >
           <Input
             className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
             inputMode='numeric'
@@ -191,7 +197,12 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
             })}
           />
         </FormField>
-        <FormField label='ที่อยู่' required className='sm:col-span-2' error={errors.address_detail?.message}>
+        <FormField
+          label='ที่อยู่'
+          required
+          className='sm:col-span-2'
+          error={errors.address_detail?.message}
+        >
           <Textarea
             className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm min-h-[80px]'
             placeholder='บ้านเลขที่ หมู่ ซอย ถนน'

@@ -65,7 +65,10 @@ export function AdminCustomersPage() {
       .list({ search: debouncedSearch, is_active: isActive, limit: LIMIT, offset: page * LIMIT })
       .then((res) => {
         if (ac.signal.aborted) return;
-        const data = res as unknown as { customers: IAdminCustomerListItemResponse[]; total: number };
+        const data = res as unknown as {
+          customers: IAdminCustomerListItemResponse[];
+          total: number;
+        };
         setCustomers(data.customers ?? []);
         setTotal(data.total ?? 0);
       })

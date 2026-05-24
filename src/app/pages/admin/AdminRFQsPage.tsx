@@ -90,11 +90,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
   const detail = detailQ.data ?? null;
   const loading = detailQ.isLoading;
   const error =
-    detailQ.error instanceof Error
-      ? detailQ.error.message
-      : detailQ.error
-        ? 'โหลดไม่สำเร็จ'
-        : '';
+    detailQ.error instanceof Error ? detailQ.error.message : detailQ.error ? 'โหลดไม่สำเร็จ' : '';
 
   const rfq = (detail?.rfq ?? detail ?? {}) as Record<string, unknown>;
   const deliveryDate = pickScalarString(rfq.required_delivery_date, rfq.deadline);

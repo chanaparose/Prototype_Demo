@@ -29,9 +29,7 @@ export async function fetchAndMapOrderList(
   return (rawList as RawOrder[]).map((raw) => {
     const status = mapOrderStatusFromApi(String(raw.status ?? ''));
     const fName = factoryMap.get(String(raw.factory_id)) ?? `โรงงาน #${raw.factory_id}`;
-    const deliveryDate = raw.estimated_delivery
-      ? String(raw.estimated_delivery).split('T')[0]
-      : '';
+    const deliveryDate = raw.estimated_delivery ? String(raw.estimated_delivery).split('T')[0] : '';
     const createdDate = raw.created_at ? raw.created_at.split('T')[0] : '';
 
     let projectName = '';

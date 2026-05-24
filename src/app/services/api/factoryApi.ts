@@ -72,9 +72,10 @@ export const factoriesApi = {
     ),
 
   getSubCategories: (factoryId: string | number) =>
-    httpClient.get<{ data: { sub_category_id: number; category_id: number; name: string }[]; total: number }>(
-      `/factories/${factoryId}/sub-categories`,
-    ),
+    httpClient.get<{
+      data: { sub_category_id: number; category_id: number; name: string }[];
+      total: number;
+    }>(`/factories/${factoryId}/sub-categories`),
 
   removeCategory: (factoryId: string | number, categoryId: string | number) =>
     httpClient.delete<void>(`/factories/${factoryId}/categories/${categoryId}`),
@@ -140,8 +141,11 @@ export const showcasesApi = {
   addImage: (id: string | number, data: { image_url: string; sort_order?: number }) =>
     httpClient.post<Record<string, unknown>>(`/showcases/${id}/images`, data),
 
-  updateImage: (id: string | number, imageId: string | number, data: { sort_order?: number; caption?: string }) =>
-    httpClient.patch<Record<string, unknown>>(`/showcases/${id}/images/${imageId}`, data),
+  updateImage: (
+    id: string | number,
+    imageId: string | number,
+    data: { sort_order?: number; caption?: string },
+  ) => httpClient.patch<Record<string, unknown>>(`/showcases/${id}/images/${imageId}`, data),
 
   deleteImage: (id: string | number, imageId: string | number) =>
     httpClient.delete<void>(`/showcases/${id}/images/${imageId}`),
