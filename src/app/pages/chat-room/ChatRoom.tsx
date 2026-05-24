@@ -278,22 +278,20 @@ function ChatRoomBody({
         )) as unknown as Record<string, unknown>;
         const serverRow = rowToRoomMessage(res);
         if (serverRow && serverRow.key) {
-          setMessages((prev) =>
-            {
-              const optimistic = prev.find((m) => m.key === tempKey);
-              const mergedServerRow: RoomMessage = {
-                ...serverRow,
-                reference_title: serverRow.reference_title ?? optimistic?.reference_title,
-                status: 'ok' as const,
-              };
-              return sortMessagesByCreatedAt(
-                dedupeByKey([
-                  ...prev.filter((m) => m.key !== tempKey && m.key !== serverRow.key),
-                  mergedServerRow,
-                ]),
-              );
-            },
-          );
+          setMessages((prev) => {
+            const optimistic = prev.find((m) => m.key === tempKey);
+            const mergedServerRow: RoomMessage = {
+              ...serverRow,
+              reference_title: serverRow.reference_title ?? optimistic?.reference_title,
+              status: 'ok' as const,
+            };
+            return sortMessagesByCreatedAt(
+              dedupeByKey([
+                ...prev.filter((m) => m.key !== tempKey && m.key !== serverRow.key),
+                mergedServerRow,
+              ]),
+            );
+          });
         } else {
           const mid = String(res.message_id ?? res.id ?? tempKey);
           setMessages((prev) =>
@@ -398,14 +396,18 @@ function ChatRoomBody({
 
       const serverRow = rowToRoomMessage(res);
       setMessages((prev) => {
-        const withImage = serverRow
-          ? { ...serverRow, imageUrl, status: 'ok' as const }
-          : null;
+        const withImage = serverRow ? { ...serverRow, imageUrl, status: 'ok' as const } : null;
         const filtered = prev.filter((m) => m.key !== tempKey && m.key !== serverRow?.key);
         return withImage
           ? sortMessagesByCreatedAt(dedupeByKey([...filtered, withImage]))
           : sortMessagesByCreatedAt(
-              dedupeByKey(prev.map((m) => (m.key === tempKey ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const } : m))),
+              dedupeByKey(
+                prev.map((m) =>
+                  m.key === tempKey
+                    ? { ...m, key: String(res.message_id ?? tempKey), status: 'ok' as const }
+                    : m,
+                ),
+              ),
             );
       });
       URL.revokeObjectURL(localUrl);
@@ -788,9 +790,10 @@ function ChatRoomBody({
                 ? { ...sharedMessage, created_at: chatNowIso() }
                 : sharedMessage;
               const row = rowToRoomMessage(enriched);
-              if (row) setMessages((prev) =>
-                prev.some((m) => m.key === row.key) ? prev : insertMessageSorted(prev, row),
-              );
+              if (row)
+                setMessages((prev) =>
+                  prev.some((m) => m.key === row.key) ? prev : insertMessageSorted(prev, row),
+                );
             }
             setShowRFQPicker(false);
             void refreshThread();

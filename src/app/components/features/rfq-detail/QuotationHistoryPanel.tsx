@@ -52,11 +52,16 @@ function normalizeHistoryRow(row: unknown): IQuotationHistoryEntry | null {
   };
 }
 
-export function QuotationHistoryPanel({ quotationId, preloadedHistory }: QuotationHistoryPanelProps) {
+export function QuotationHistoryPanel({
+  quotationId,
+  preloadedHistory,
+}: QuotationHistoryPanelProps) {
   const [open, setOpen] = React.useState(false);
   const [history, setHistory] = React.useState<IQuotationHistoryEntry[]>(() =>
     preloadedHistory
-      ? preloadedHistory.map(normalizeHistoryRow).filter((v): v is IQuotationHistoryEntry => v != null)
+      ? preloadedHistory
+          .map(normalizeHistoryRow)
+          .filter((v): v is IQuotationHistoryEntry => v != null)
       : [],
   );
   const [loading, setLoading] = React.useState(false);

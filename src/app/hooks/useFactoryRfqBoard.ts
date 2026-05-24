@@ -33,16 +33,26 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
     const status = pickScalarString(inner.status, row.status).toUpperCase();
     const quantity = inner.quantity != null ? Number(inner.quantity) : null;
 
-    const totalBudgetRaw = Number(inner.target_price ?? inner.budget_total ?? inner.total_budget ?? 0);
-    const legacyBudgetPerPiece = inner.budget_per_piece != null ? Number(inner.budget_per_piece) : null;
+    const totalBudgetRaw = Number(
+      inner.target_price ?? inner.budget_total ?? inner.total_budget ?? 0,
+    );
+    const legacyBudgetPerPiece =
+      inner.budget_per_piece != null ? Number(inner.budget_per_piece) : null;
     const budgetPerPiece =
-      Number.isFinite(totalBudgetRaw) && totalBudgetRaw > 0 && quantity != null && Number.isFinite(quantity) && quantity > 0
+      Number.isFinite(totalBudgetRaw) &&
+      totalBudgetRaw > 0 &&
+      quantity != null &&
+      Number.isFinite(quantity) &&
+      quantity > 0
         ? totalBudgetRaw / quantity
         : legacyBudgetPerPiece;
     const revenueApprox =
       Number.isFinite(totalBudgetRaw) && totalBudgetRaw > 0
         ? totalBudgetRaw
-        : budgetPerPiece != null && quantity != null && Number.isFinite(budgetPerPiece) && Number.isFinite(quantity)
+        : budgetPerPiece != null &&
+            quantity != null &&
+            Number.isFinite(budgetPerPiece) &&
+            Number.isFinite(quantity)
           ? budgetPerPiece * quantity
           : null;
 
@@ -55,7 +65,10 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
 
     const shipIdRaw = inner.shipping_method_id ?? row.shipping_method_id;
     const shippingMethodId = shipIdRaw != null && Number(shipIdRaw) > 0 ? Number(shipIdRaw) : null;
-    const shippingMethodName = pickScalarString(inner.shipping_method_name, row.shipping_method_name).trim();
+    const shippingMethodName = pickScalarString(
+      inner.shipping_method_name,
+      row.shipping_method_name,
+    ).trim();
 
     const urls = inner.reference_images;
     let thumbUrl: string | null = null;
@@ -65,7 +78,8 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
     }
 
     const leadTargetDaysRaw = Number(inner.target_lead_time_days ?? 0);
-    const leadTargetDays = Number.isFinite(leadTargetDaysRaw) && leadTargetDaysRaw > 0 ? leadTargetDaysRaw : null;
+    const leadTargetDays =
+      Number.isFinite(leadTargetDaysRaw) && leadTargetDaysRaw > 0 ? leadTargetDaysRaw : null;
 
     const created = pickScalarString(inner.created_at, row.created_at).trim();
     const createdAtMs = created ? new Date(created).getTime() : 0;
@@ -123,7 +137,9 @@ export function useFactoryRfqBoard() {
     setError('');
     try {
       const board = await factoryRfqsApi.getRFQBoard();
-      setFactoryCategoryIds(Array.isArray(board.factory_category_ids) ? board.factory_category_ids : []);
+      setFactoryCategoryIds(
+        Array.isArray(board.factory_category_ids) ? board.factory_category_ids : [],
+      );
 
       const bases = parseRfqRows(board);
       const visible = bases.filter((b) => {

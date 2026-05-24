@@ -143,8 +143,7 @@ export function TransactionHistoryPage() {
                 <div className='flex-1 min-w-0'>
                   <p className='text-sm text-slate-800 truncate'>{t.description}</p>
                   <p className='text-[11px] text-slate-500'>
-                    {t.status_label} ·{' '}
-                    {t.created_at ? formatDateTime(t.created_at) : '-'}
+                    {t.status_label} · {t.created_at ? formatDateTime(t.created_at) : '-'}
                   </p>
                 </div>
                 <p

@@ -55,9 +55,7 @@ export function RFQPicker({ conversationId, receiverId, onSelect, onCancel }: Pr
     queryFn: async () => {
       const rows = (await rfqsApi.list()) as Record<string, unknown>[];
       const all = Array.isArray(rows) ? rows : [];
-      return all
-        .map(toOpenRfqItem)
-        .filter((x): x is OpenRfqItem => x !== null);
+      return all.map(toOpenRfqItem).filter((x): x is OpenRfqItem => x !== null);
     },
     staleTime: 60_000,
   });

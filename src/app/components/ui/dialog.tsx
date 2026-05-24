@@ -27,10 +27,7 @@ function DialogOverlay({
   return (
     <DialogPrimitive.Overlay
       data-slot='dialog-overlay'
-      className={cn(
-        'fixed inset-0 z-50 bg-black/45',
-        className,
-      )}
+      className={cn('fixed inset-0 z-50 bg-black/45', className)}
       {...props}
     />
   );
@@ -89,10 +86,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-function DialogTitle({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
       data-slot='dialog-title'

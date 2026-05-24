@@ -66,7 +66,10 @@ type RfqDetailOffersSectionProps = {
   /** จำนวนชิ้นจาก RFQ — ใช้ประมาณราคา/ชิ้นใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
   rfqQuantity?: number;
   /** quoteId → history entries pre-fetched from bundle endpoint */
-  quoteHistories?: Record<string, import('@/services/api/types/rfq.types').IQuotationHistoryEntry[]>;
+  quoteHistories?: Record<
+    string,
+    import('@/services/api/types/rfq.types').IQuotationHistoryEntry[]
+  >;
 };
 
 function formatTHB(n: number): string {

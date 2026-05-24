@@ -38,9 +38,7 @@ export function AppSheetDialog({
         <DialogHeader className='border-b border-gray-100 px-4 py-3 text-left'>
           <DialogTitle className='text-sm font-semibold'>{title}</DialogTitle>
         </DialogHeader>
-        <div className={cn('overflow-y-auto', bodyClassName ?? 'p-4 sm:p-5')}>
-          {children}
-        </div>
+        <div className={cn('overflow-y-auto', bodyClassName ?? 'p-4 sm:p-5')}>{children}</div>
         {footer ? (
           <DialogFooter className='border-t border-gray-100 p-4 sm:p-5 pt-2 sm:justify-stretch'>
             {footer}

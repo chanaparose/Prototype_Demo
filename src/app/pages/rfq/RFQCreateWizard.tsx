@@ -103,7 +103,7 @@ export function RFQCreateWizard() {
     };
   }, [draft.category_id]);
 
-  const scopeFilter = (draft.request_kind === 'MS' || draft.request_kind === 'MR') ? 'MT' : 'PD';
+  const scopeFilter = draft.request_kind === 'MS' || draft.request_kind === 'MR' ? 'MT' : 'PD';
   const modeCategories = React.useMemo(
     () => allCategories.filter((c) => !c.scope || c.scope === scopeFilter),
     [allCategories, scopeFilter],
@@ -123,7 +123,10 @@ export function RFQCreateWizard() {
   }, [draft.category_id, modeCategories, setDraft]);
 
   React.useEffect(() => {
-    if ((draft.request_kind === 'MS' || draft.request_kind === 'MR') && draft.sub_category_id != null) {
+    if (
+      (draft.request_kind === 'MS' || draft.request_kind === 'MR') &&
+      draft.sub_category_id != null
+    ) {
       setDraft({ sub_category_id: undefined });
     }
   }, [draft.request_kind, draft.sub_category_id, setDraft]);
@@ -216,7 +219,8 @@ export function RFQCreateWizard() {
     if (!withinKindQty) return false;
     if ((kind === 'PS' || kind === 'MS') && (draft.description?.trim()?.length ?? 0) < 20)
       return false;
-    if ((kind === 'MS' || kind === 'MR') && !matchingLoading && (matchCount ?? 0) <= 0) return false;
+    if ((kind === 'MS' || kind === 'MR') && !matchingLoading && (matchCount ?? 0) <= 0)
+      return false;
     return blockingIssues.length === 0;
   }, [blockingIssues, draft, matchingLoading, matchCount]);
 
@@ -362,7 +366,9 @@ export function RFQCreateWizard() {
                               : 'bg-white border-gray-200 hover:border-violet-300'
                           }`}
                         >
-                          <p className={`text-sm font-semibold ${active ? 'text-violet-700' : 'text-gray-700'}`}>
+                          <p
+                            className={`text-sm font-semibold ${active ? 'text-violet-700' : 'text-gray-700'}`}
+                          >
                             {opt.label}
                           </p>
                           <p className='text-[11px] text-gray-400 mt-0.5'>{opt.desc}</p>
@@ -403,7 +409,9 @@ export function RFQCreateWizard() {
                               : 'bg-white border-gray-200 hover:border-amber-300'
                           }`}
                         >
-                          <p className={`text-sm font-semibold ${active ? 'text-amber-700' : 'text-gray-700'}`}>
+                          <p
+                            className={`text-sm font-semibold ${active ? 'text-amber-700' : 'text-gray-700'}`}
+                          >
                             {opt.label}
                           </p>
                           <p className='text-[11px] text-gray-400 mt-0.5'>{opt.desc}</p>

@@ -1,6 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { masterKeys } from '@/lib/queryKeys';
-import { mapProvinceOption, type MasterAddressOption } from '@/domain/master/mappers/mapAddressMaster';
+import {
+  mapProvinceOption,
+  type MasterAddressOption,
+} from '@/domain/master/mappers/mapAddressMaster';
 import { masterApi } from '@/services/api/masterApi';
 
 type Row = Record<string, unknown>;

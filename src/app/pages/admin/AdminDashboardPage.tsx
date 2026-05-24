@@ -23,10 +23,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import {
-  formatCompactNumber,
-  formatCurrencyNoDecimals,
-} from '@/utils/formatting/formatCurrency';
+import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
 import { EMPTY_ADMIN_DASHBOARD } from '@/domain/admin/mappers/mapAdminDashboard';
 import { useAdminDashboardQuery } from '@/domain/admin/queries/useAdminDashboardQuery';

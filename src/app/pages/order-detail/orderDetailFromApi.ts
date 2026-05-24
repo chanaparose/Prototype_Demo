@@ -108,8 +108,7 @@ export function buildFallbackLockContext(
   schedule: PaymentScheduleItem[],
 ): ProductionLockContext {
   const fullPay = schedule.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');
-  const amount =
-    fullPay?.amount ?? pickScalarNumber(row.total_amount, row.deposit_amount) ?? 0;
+  const amount = fullPay?.amount ?? pickScalarNumber(row.total_amount, row.deposit_amount) ?? 0;
   const deposit_due_date =
     (fullPay?.due_date ??
       (row.deposit_due_date != null ? pickScalarString(row.deposit_due_date) : '')) ||

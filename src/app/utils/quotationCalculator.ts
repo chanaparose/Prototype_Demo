@@ -33,9 +33,9 @@ export function calculateQuotationBreakdown(
   const lineTotal = roundMoney(pricePerPiece * quantity);
   const subtotal = roundMoney(lineTotal - discount);
   const preVatBase = roundMoney(subtotal + shipping + packaging + tooling);
-  const vatAmount = roundMoney(preVatBase * config.vat_rate / 100);
+  const vatAmount = roundMoney((preVatBase * config.vat_rate) / 100);
   const grandTotal = roundMoney(preVatBase + vatAmount);
-  const commissionAmount = roundMoney(grandTotal * config.commission_rate / 100);
+  const commissionAmount = roundMoney((grandTotal * config.commission_rate) / 100);
   const factoryNet = roundMoney(grandTotal - commissionAmount);
 
   return {

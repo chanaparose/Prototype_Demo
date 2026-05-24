@@ -396,7 +396,7 @@ function OrderDetailMobileBody() {
               ภาพรวม
             </Button>
             <Button
-              data-tour='order-tabs' 
+              data-tour='order-tabs'
               variant='unstyled'
               type='button'
               onClick={() => setActiveSection('production')}

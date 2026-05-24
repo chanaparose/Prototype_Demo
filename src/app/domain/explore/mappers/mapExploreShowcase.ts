@@ -7,7 +7,10 @@ import {
   type IExploreShowcase,
   type IExploreSlide,
 } from '@/domain/explore/types/explore.model';
-import type { IExploreShowcaseResponse, IPromoSlideResponse } from '@/services/api/types/explore.types';
+import type {
+  IExploreShowcaseResponse,
+  IPromoSlideResponse,
+} from '@/services/api/types/explore.types';
 
 export type {
   IExploreArticle,
@@ -49,8 +52,12 @@ function normSlide(r: IPromoSlideResponse | Record<string, unknown>): IExploreSl
     title: String((r as IPromoSlideResponse).title ?? (r as Record<string, unknown>).title ?? ''),
     subtitle: String((r as Record<string, unknown>).subtitle ?? ''),
     code: String((r as Record<string, unknown>).code ?? ''),
-    image: String((r as IPromoSlideResponse).image_url ?? (r as Record<string, unknown>).image ?? ''),
-    linkTo: String((r as IPromoSlideResponse).link_to ?? (r as Record<string, unknown>).linkTo ?? ''),
+    image: String(
+      (r as IPromoSlideResponse).image_url ?? (r as Record<string, unknown>).image ?? '',
+    ),
+    linkTo: String(
+      (r as IPromoSlideResponse).link_to ?? (r as Record<string, unknown>).linkTo ?? '',
+    ),
   };
 }
 
@@ -60,11 +67,13 @@ export async function fetchExplorePageData(): Promise<IExplorePageData> {
   const s = data.showcases ?? {};
 
   return {
-    categories: (data.categories ?? []).map((c) => ({
-      id: String(c.category_id ?? c.id ?? ''),
-      name: c.name,
-      parentId: null,
-    })).filter((c) => c.id && c.name),
+    categories: (data.categories ?? [])
+      .map((c) => ({
+        id: String(c.category_id ?? c.id ?? ''),
+        name: c.name,
+        parentId: null,
+      }))
+      .filter((c) => c.id && c.name),
     pdShowcases: mapShowcaseList(Array.isArray(s.PD) ? s.PD! : []),
     mtShowcases: mapShowcaseList(Array.isArray(s.MT) ? s.MT! : []),
     pmShowcases: mapShowcaseList(Array.isArray(s.PM) ? s.PM! : []),

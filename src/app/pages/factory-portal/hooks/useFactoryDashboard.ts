@@ -57,12 +57,9 @@ function orderCreatedTs(row: Record<string, unknown>): number | null {
 
 function orderTotalAmount(row: Record<string, unknown>): number {
   const inner = (row.order as Record<string, unknown>) ?? row;
-  return pickScalarNumber(
-    inner.total_amount,
-    inner.totalAmount,
-    row.total_amount,
-    row.totalAmount,
-  ) ?? 0;
+  return (
+    pickScalarNumber(inner.total_amount, inner.totalAmount, row.total_amount, row.totalAmount) ?? 0
+  );
 }
 
 function rfqCreatedTs(r: Record<string, unknown>): number | null {
@@ -244,10 +241,16 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
         setMyQuotes(Array.isArray(p.quotations) ? (p.quotations as Record<string, unknown>[]) : []);
 
         // wallet object (good_fund / pending_fund)
-        setWallet(p.wallet && typeof p.wallet === 'object' ? (p.wallet as Record<string, unknown>) : null);
+        setWallet(
+          p.wallet && typeof p.wallet === 'object' ? (p.wallet as Record<string, unknown>) : null,
+        );
 
         // analytics object (total_orders, completed_orders, total_revenue, etc.)
-        setAnalyticsApi(p.analytics && typeof p.analytics === 'object' ? (p.analytics as Record<string, unknown>) : null);
+        setAnalyticsApi(
+          p.analytics && typeof p.analytics === 'object'
+            ? (p.analytics as Record<string, unknown>)
+            : null,
+        );
 
         // recent_rfqs for dashboard RFQ list
         setRecentRfqs(Array.isArray(p.recent_rfqs) ? (p.recent_rfqs as RecentRFQItem[]) : []);
@@ -293,7 +296,8 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
       fid != null
         ? myQuotes.filter(
             (q) =>
-              quoteFactoryId(q) === fid && (pickScalarString(q.status) || 'PD').toUpperCase() === 'PD',
+              quoteFactoryId(q) === fid &&
+              (pickScalarString(q.status) || 'PD').toUpperCase() === 'PD',
           ).length
         : 0;
 
@@ -321,7 +325,10 @@ export function useFactoryDashboard(timeframe: AnalyticsTimeframe) {
     // pending_quotations comes from analytics.pending_quotes (portal) or legacy dashboard fields.
     const pending_quotations_total = hasA
       ? (pickScalarNumber(A.pending_quotes, A.pending_quotations) ??
-          (hasD ? (pickScalarNumber(D.pending_quotations_total, D.pending_quotations) ?? pending_quotations_client) : pending_quotations_client))
+        (hasD
+          ? (pickScalarNumber(D.pending_quotations_total, D.pending_quotations) ??
+            pending_quotations_client)
+          : pending_quotations_client))
       : pending_quotations_client;
 
     return {

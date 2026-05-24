@@ -98,9 +98,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
       const session = sessionRes.status === 'fulfilled' ? sessionRes.value : null;
       const notificationModels = notifRes.status === 'fulfilled' ? notifRes.value : [];
 
-      const mappedNotifs: Notification[] = notificationModels.map(
-        mapNotificationToBootstrapModel,
-      );
+      const mappedNotifs: Notification[] = notificationModels.map(mapNotificationToBootstrapModel);
 
       useSessionStore.setState({
         data: session,
@@ -178,7 +176,8 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
               depositPaid: pickScalarNumber(o.depositPaid ?? o.deposit_paid) ?? 0,
               quantity: pickScalarNumber(o.quantity) ?? 0,
               createdAt: pickScalarString(o.createdAt ?? o.created_at),
-              estimatedDelivery: pickScalarString(o.estimatedDelivery ?? o.estimated_delivery) || '',
+              estimatedDelivery:
+                pickScalarString(o.estimatedDelivery ?? o.estimated_delivery) || '',
               timeline: [],
               currentStepId,
             } as Order;

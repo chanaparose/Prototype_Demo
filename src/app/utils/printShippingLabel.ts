@@ -382,7 +382,11 @@ function buildHtml(opts: ShippingLabelOptions): string {
 
 export function openShippingLabel(opts: ShippingLabelOptions): void {
   const html = buildHtml(opts);
-  const win = window.open('', '_blank', 'width=640,height=620,toolbar=0,menubar=0,scrollbars=1,resizable=1');
+  const win = window.open(
+    '',
+    '_blank',
+    'width=640,height=620,toolbar=0,menubar=0,scrollbars=1,resizable=1',
+  );
   if (!win) {
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);

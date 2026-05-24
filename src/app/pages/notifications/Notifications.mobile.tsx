@@ -37,30 +37,32 @@ export function NotificationsMobile() {
 
   const LIMIT = 20;
 
-  const load = useCallback(async (nextOffset: number, append: boolean) => {
-    if (append) setLoadingMore(true);
-    else setLoading(true);
-    setError('');
-    try {
-      const pageRes = await fetchNotificationsPage(tab, LIMIT, nextOffset);
-      setOffset(nextOffset);
-      setTotal(pageRes.total);
-      setNotifications((prev) => (append ? [...prev, ...pageRes.items] : pageRes.items));
-      setUnreadCount(pageRes.unreadCount);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลดการแจ้งเตือนไม่สำเร็จ');
-    } finally {
-      if (append) setLoadingMore(false);
-      else setLoading(false);
-    }
-  }, [tab]);
+  const load = useCallback(
+    async (nextOffset: number, append: boolean) => {
+      if (append) setLoadingMore(true);
+      else setLoading(true);
+      setError('');
+      try {
+        const pageRes = await fetchNotificationsPage(tab, LIMIT, nextOffset);
+        setOffset(nextOffset);
+        setTotal(pageRes.total);
+        setNotifications((prev) => (append ? [...prev, ...pageRes.items] : pageRes.items));
+        setUnreadCount(pageRes.unreadCount);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'โหลดการแจ้งเตือนไม่สำเร็จ');
+      } finally {
+        if (append) setLoadingMore(false);
+        else setLoading(false);
+      }
+    },
+    [tab],
+  );
 
   // Reload from beginning when tab changes
   useEffect(() => {
     setNotifications([]);
     void load(0, false);
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
-
 
   // Tab filtering is server-side; only apply local search and unread filter
   const filtered = useMemo(() => {

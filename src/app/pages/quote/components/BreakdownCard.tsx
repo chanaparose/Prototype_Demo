@@ -15,7 +15,11 @@ type Props = {
   platformConfig?: IPlatformConfigResponse | null;
 };
 
-function Row({ label, value, currency }: Readonly<{ label: string; value: number; currency: string }>) {
+function Row({
+  label,
+  value,
+  currency,
+}: Readonly<{ label: string; value: number; currency: string }>) {
   return (
     <div className='flex items-center justify-between text-sm'>
       <span className='text-gray-500'>{label}</span>

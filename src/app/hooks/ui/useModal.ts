@@ -32,13 +32,16 @@ export function useModal(initialIsOpen = false): UseModalReturn {
     setError('');
   }, []);
 
-  const setOpen = useCallback((open: boolean) => {
-    if (open) {
-      openModal();
-    } else {
-      closeModal();
-    }
-  }, [closeModal, openModal]);
+  const setOpen = useCallback(
+    (open: boolean) => {
+      if (open) {
+        openModal();
+      } else {
+        closeModal();
+      }
+    },
+    [closeModal, openModal],
+  );
 
   const setLoading = useCallback((loading: boolean) => {
     setIsLoading(loading);
@@ -48,7 +51,7 @@ export function useModal(initialIsOpen = false): UseModalReturn {
     setError('');
   }, []);
 
-  const runAsync = useCallback(async <T,>(fn: () => Promise<T>) => {
+  const runAsync = useCallback(async <T>(fn: () => Promise<T>) => {
     setIsLoading(true);
     setError('');
     try {

@@ -11,7 +11,9 @@ export function useFactorySubCategories(factoryId: number | string | null | unde
     queryFn: async () => {
       const raw = await factoriesApi.getSubCategories(factoryId as string | number);
       const rawObj = raw as Record<string, unknown>;
-      const arr = (Array.isArray(rawObj?.data) ? rawObj.data : Array.isArray(raw) ? raw : []) as Row[];
+      const arr = (
+        Array.isArray(rawObj?.data) ? rawObj.data : Array.isArray(raw) ? raw : []
+      ) as Row[];
       return arr
         .map((r) => Number(r.sub_category_id ?? r.row_id ?? r.id))
         .filter((n) => Number.isFinite(n) && n > 0);

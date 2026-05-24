@@ -57,10 +57,8 @@ export const ordersApi = {
   ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/payments`, data),
 
   /** POST /orders/:id/confirm-receipt — customer confirms goods received */
-  confirmReceipt: (
-    orderId: string | number,
-    data: { note?: string; received_at?: string },
-  ) => httpClient.post<Record<string, unknown>>(`/orders/${orderId}/confirm-receipt`, data),
+  confirmReceipt: (orderId: string | number, data: { note?: string; received_at?: string }) =>
+    httpClient.post<Record<string, unknown>>(`/orders/${orderId}/confirm-receipt`, data),
 
   /** DELETE /orders/:id — cancel an order */
   cancel: (orderId: string | number) =>

@@ -9,13 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -92,7 +86,12 @@ export function RejectConfirmModal({ open, stepNameTh, onClose, onConfirm }: Pro
               )}
             />
             <DialogFooter className='gap-2 sm:justify-end border-0 p-0'>
-              <Button variant='outline' type='button' onClick={onClose} disabled={form.formState.isSubmitting}>
+              <Button
+                variant='outline'
+                type='button'
+                onClick={onClose}
+                disabled={form.formState.isSubmitting}
+              >
                 ยกเลิก
               </Button>
               <Button

@@ -1,7 +1,4 @@
-import type {
-  AdminFactory,
-  FactoryApprovalStatus,
-} from '@/domain/admin/types/adminFactory.model';
+import type { AdminFactory, FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
 import { pickScalarString } from '@/utils/pickScalarString';
 
 export function mapFactoryApprovalStatus(raw: unknown): FactoryApprovalStatus {

@@ -151,9 +151,7 @@ export function OrderProductionTab({
   }
 
   if (isProductionError) {
-    return (
-      <ErrorAlert>{productionErrorMessage(productionError)}</ErrorAlert>
-    );
+    return <ErrorAlert>{productionErrorMessage(productionError)}</ErrorAlert>;
   }
 
   if (!templateSteps.length) {

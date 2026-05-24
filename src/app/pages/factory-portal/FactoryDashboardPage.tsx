@@ -682,9 +682,7 @@ export function FactoryDashboardPage() {
                   Icon: CheckCircle,
                   pct:
                     summary.total_orders_total > 0
-                      ? Math.round(
-                          (summary.closed_orders_total / summary.total_orders_total) * 100,
-                        )
+                      ? Math.round((summary.closed_orders_total / summary.total_orders_total) * 100)
                       : 0,
                   to: '/factory/orders',
                 },
@@ -746,7 +744,9 @@ export function FactoryDashboardPage() {
                 <p className='text-xs font-semibold text-amber-800'>
                   มี {summary.pending_quotations_total} RFQ รอการตอบกลับ
                 </p>
-                <p className='text-[11px] text-amber-600 mt-0.5'>ตอบเร็วเพื่อเพิ่มโอกาสได้ออเดอร์</p>
+                <p className='text-[11px] text-amber-600 mt-0.5'>
+                  ตอบเร็วเพื่อเพิ่มโอกาสได้ออเดอร์
+                </p>
               </div>
               <Button
                 variant='unstyled'
@@ -774,9 +774,7 @@ export function FactoryDashboardPage() {
                 Close Rate:{' '}
                 <span className='font-semibold text-gray-700'>
                   {summary.total_orders_total > 0
-                    ? Math.round(
-                        (summary.closed_orders_total / summary.total_orders_total) * 100,
-                      )
+                    ? Math.round((summary.closed_orders_total / summary.total_orders_total) * 100)
                     : 0}
                   %
                 </span>
@@ -838,10 +836,7 @@ export function FactoryDashboardPage() {
               </p>
               <p className='text-xl font-bold text-amber-600'>
                 {formatCompactNumber(
-                  Math.max(
-                    summary.total_orders_total - summary.closed_orders_total,
-                    0,
-                  ),
+                  Math.max(summary.total_orders_total - summary.closed_orders_total, 0),
                 )}
               </p>
               <p className='text-[10px] text-amber-400 mt-0.5'>ออเดอร์</p>
@@ -873,7 +868,8 @@ export function FactoryDashboardPage() {
               RFQ ที่ได้รับ vs การตอบกลับ
             </h3>
             <p className='text-xs text-gray-400 mt-0.5'>
-              จำนวนต่อ{timeframe === 'daily' ? 'วัน' : timeframe === 'weekly' ? 'สัปดาห์' : 'เดือน'} · ไม่ใช่ยอดสะสม
+              จำนวนต่อ{timeframe === 'daily' ? 'วัน' : timeframe === 'weekly' ? 'สัปดาห์' : 'เดือน'}{' '}
+              · ไม่ใช่ยอดสะสม
             </p>
           </div>
 

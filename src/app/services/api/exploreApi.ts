@@ -99,6 +99,5 @@ export const showcasesExploreApi = {
 
 /** @deprecated ใช้ exploreApi.get() แทน — เรียก /explore แล้วใช้ promoSlides field */
 export const promoSlidesApi = {
-  list: (limit = 5) =>
-    httpClient.get<IPromoSlideResponse[]>(`/promo-slides?limit=${limit}`),
+  list: (limit = 5) => httpClient.get<IPromoSlideResponse[]>(`/promo-slides?limit=${limit}`),
 };

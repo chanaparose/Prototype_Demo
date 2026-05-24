@@ -297,8 +297,8 @@ function FactoryHeroCard({
               className={`relative block w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-md cursor-pointer bg-violet-50 text-indigo-700 ring-4 ring-white group border-2 ${
                 imageUrl ? 'border-white' : 'border-dashed border-indigo-200'
               } ${uploadingImage ? 'pointer-events-none opacity-90' : 'hover:ring-indigo-100'}`}
-        >
-          {imageUrl ? (
+            >
+              {imageUrl ? (
                 <Image src={imageUrl} alt='' className='w-full h-full object-cover' />
               ) : (
                 <span className='w-full h-full flex flex-col items-center justify-center gap-1.5 p-2 text-center'>
@@ -333,7 +333,7 @@ function FactoryHeroCard({
                 }}
               />
             </Label>
-        </div>
+          </div>
 
           <div className='min-w-0 flex-1 pt-1 sm:pb-0.5'>
             <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
@@ -346,27 +346,27 @@ function FactoryHeroCard({
               {factoryName}
             </h1>
             <div className='mt-2 flex flex-wrap gap-2'>
-            {isVerified && (
+              {isVerified && (
                 <span className='inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100'>
                   <ShieldCheck size={12} className='text-emerald-600' />
-                ยืนยันแล้ว — พร้อมรับ RFQ
-              </span>
-            )}
-            {isRejected && (
+                  ยืนยันแล้ว — พร้อมรับ RFQ
+                </span>
+              )}
+              {isRejected && (
                 <span className='inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-800 border border-red-100'>
                   <XCircle size={12} className='text-red-600' />
-                ไม่ผ่านการตรวจสอบ
-              </span>
-            )}
-            {isPending && (
+                  ไม่ผ่านการตรวจสอบ
+                </span>
+              )}
+              {isPending && (
                 <span className='inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-100'>
                   <Clock size={12} className='text-amber-600' />
-                รอการอนุมัติจากแอดมิน
-              </span>
-            )}
+                  รอการอนุมัติจากแอดมิน
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );
@@ -383,8 +383,16 @@ export function FactoryProfilePage() {
   const factoryQ = {
     ...initQ,
     data: initQ.data?.factory as Record<string, unknown> | undefined,
-    categoryIds: ((initQ.data?.factory as Record<string, unknown>)?.categories as Array<{ category_id: number }> ?? []).map((c) => c.category_id),
-    subCategoryIds: ((initQ.data?.factory as Record<string, unknown>)?.sub_categories as Array<{ sub_category_id: number }> ?? []).map((s) => s.sub_category_id),
+    categoryIds: (
+      ((initQ.data?.factory as Record<string, unknown>)?.categories as Array<{
+        category_id: number;
+      }>) ?? []
+    ).map((c) => c.category_id),
+    subCategoryIds: (
+      ((initQ.data?.factory as Record<string, unknown>)?.sub_categories as Array<{
+        sub_category_id: number;
+      }>) ?? []
+    ).map((s) => s.sub_category_id),
     refetch: initQ.refetch,
   };
 
@@ -486,7 +494,7 @@ export function FactoryProfilePage() {
         sub_category_ids: normalizedSubCategoryIds,
       });
 
-    setSaving(false);
+      setSaving(false);
       setOkMsg('บันทึกข้อมูลเรียบร้อย');
       form.reset(saveDraftValues);
       await refreshUser();

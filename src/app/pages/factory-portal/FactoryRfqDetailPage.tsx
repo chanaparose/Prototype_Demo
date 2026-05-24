@@ -23,7 +23,11 @@ import { DismissRfqButton } from '@/components/features/factory-rfq/DismissRfqBu
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
-import { formatCompactNumber, formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import {
+  formatCompactNumber,
+  formatCurrency,
+  formatCurrencyNoDecimals,
+} from '@/utils/formatting/formatCurrency';
 
 type QuoteRow = IQuotationResponse & {
   factoryId?: number | string;
@@ -91,7 +95,10 @@ export function FactoryRfqDetailPage() {
   const [rfqBody, setRfqBody] = useState<Record<string, unknown>>({});
   const [quotes, setQuotes] = useState<QuoteRow[]>([]);
   const [subCategoryName, setSubCategoryName] = useState('');
-  const [commissionConfig, setCommissionConfig] = useState<{ vat_rate: number; commission_rate: number } | null>(null);
+  const [commissionConfig, setCommissionConfig] = useState<{
+    vat_rate: number;
+    commission_rate: number;
+  } | null>(null);
 
   const quoteFormRef = useRef<QuotationCreateFormHandle>(null);
 
@@ -468,9 +475,7 @@ export function FactoryRfqDetailPage() {
                 {budgetPerPiece != null ? (
                   <div>
                     <p className='text-[10px] text-slate-500 uppercase tracking-wide'>งบ/ชิ้น</p>
-                    <p className='font-semibold text-slate-900'>
-                      {formatCurrency(budgetPerPiece)}
-                    </p>
+                    <p className='font-semibold text-slate-900'>{formatCurrency(budgetPerPiece)}</p>
                   </div>
                 ) : null}
                 {quantity != null ? (

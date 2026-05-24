@@ -83,11 +83,9 @@ export const factoryRfqsApi = {
       commission_config: { vat_rate: number; commission_rate: number };
     }>(`/factory/rfqs/${rfqId}/detail`),
 
-  dismiss: (rfqId: string | number) =>
-    httpClient.post<void>(`/factory/rfqs/${rfqId}/dismiss`, {}),
+  dismiss: (rfqId: string | number) => httpClient.post<void>(`/factory/rfqs/${rfqId}/dismiss`, {}),
 
-  undismiss: (rfqId: string | number) =>
-    httpClient.delete<void>(`/factory/rfqs/${rfqId}/dismiss`),
+  undismiss: (rfqId: string | number) => httpClient.delete<void>(`/factory/rfqs/${rfqId}/dismiss`),
 };
 
 export const quotationsApi = {

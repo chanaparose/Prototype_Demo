@@ -96,9 +96,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
       };
       const code = e?.body?.error_code;
       if (code === 'INSUFFICIENT_WALLET_BALANCE') {
-        toast.error(
-          `ยอด Wallet ไม่พอ ขาดอีก ${formatCurrency(Number(e.body?.shortfall ?? 0))}`,
-        );
+        toast.error(`ยอด Wallet ไม่พอ ขาดอีก ${formatCurrency(Number(e.body?.shortfall ?? 0))}`);
       } else if (code === 'DEPOSIT_EXPIRED') {
         toast.error('หมดกำหนดชำระเงินแล้ว');
       } else if (code === 'DEPOSIT_ALREADY_PAID') {
@@ -180,9 +178,7 @@ export function DepositPaymentModal({ open, onClose, orderId, amount, onSuccess 
           onSelect={() => setMethod('WALLET')}
           icon={<Wallet size={18} style={{ color: PLUM }} />}
           title='Wallet ของฉัน'
-          subtitle={
-            wallet.isPending ? 'กำลังโหลดยอดคงเหลือ…' : `คงเหลือ ${formatCurrency(good)}`
-          }
+          subtitle={wallet.isPending ? 'กำลังโหลดยอดคงเหลือ…' : `คงเหลือ ${formatCurrency(good)}`}
           warning={
             method === 'WALLET' && !wallet.isPending && insufficient
               ? `ยอดไม่พอ ขาดอีก ${formatCurrency(shortfall)}`

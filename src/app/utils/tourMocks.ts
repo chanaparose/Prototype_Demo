@@ -205,9 +205,7 @@ const TOUR_CATEGORIES = [
   {
     category_id: 2,
     name: 'อาหารและเครื่องดื่ม',
-    sub_categories: [
-      { sub_category_id: 201, id: 201, name: 'ขนมขบเคี้ยว', sort_order: 1 },
-    ],
+    sub_categories: [{ sub_category_id: 201, id: 201, name: 'ขนมขบเคี้ยว', sort_order: 1 }],
   },
   {
     category_id: 3,
@@ -238,7 +236,8 @@ const TOUR_SHOWCASES_LIST = {
       content_type: 'PD',
       title: 'สายจูงสุนัข ไนลอนเกรด A',
       excerpt: 'สายจูงสุนัขไนลอนเกรด A ทนทาน ยาว 1.2 เมตร',
-      image_url: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=800&fit=crop',
+      image_url:
+        'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&h=800&fit=crop',
       category_id: 3,
       category_name: 'ของเล่นสัตว์เลี้ยง',
       base_price: 85,
@@ -248,7 +247,8 @@ const TOUR_SHOWCASES_LIST = {
       like_count: 9,
       created_at: '2026-04-20T10:00:00Z',
       factory_name: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร',
-      factory_image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop',
+      factory_image:
+        'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop',
       factory_rating: 4.6,
       factory_verified: false,
     },
@@ -258,7 +258,8 @@ const TOUR_SHOWCASES_LIST = {
       content_type: 'PM',
       title: 'โปรโมชัน ปลอกคอแมว ลด 20%',
       excerpt: 'ปลอกคอแมวหนังสังเคราะห์ ลาย Minimal ลด 20% สั่งขั้นต่ำ 50 ชิ้น',
-      image_url: 'https://images.unsplash.com/photo-1615497001839-b0a0eac3274c?w=800&h=800&fit=crop',
+      image_url:
+        'https://images.unsplash.com/photo-1615497001839-b0a0eac3274c?w=800&h=800&fit=crop',
       category_id: 3,
       category_name: 'ของเล่นสัตว์เลี้ยง',
       base_price: 120,
@@ -269,7 +270,8 @@ const TOUR_SHOWCASES_LIST = {
       like_count: 12,
       created_at: '2026-04-22T09:00:00Z',
       factory_name: 'ของเล่นสัตว์เลี้ยง แฮปปี้',
-      factory_image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=400&fit=crop',
+      factory_image:
+        'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=400&fit=crop',
       factory_rating: 4.8,
       factory_verified: true,
     },
@@ -349,7 +351,10 @@ const CREATE_RFQ_MOCKS: MockEntry[] = [
     ],
   },
   // GET /rfqs/preview-factories?...
-  { match: new RegExp('^/rfqs/preview-factories'), body: { match_count: 12, total: 12, count: 12 } },
+  {
+    match: new RegExp('^/rfqs/preview-factories'),
+    body: { match_count: 12, total: 12, count: 12 },
+  },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════

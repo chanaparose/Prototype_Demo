@@ -47,10 +47,7 @@ function zodFieldErrors(error: ZodError): FormFieldErrors {
   return fields;
 }
 
-export function toFormErrors(
-  error: unknown,
-  fallback = 'ดำเนินการไม่สำเร็จ',
-): FormErrorsResult {
+export function toFormErrors(error: unknown, fallback = 'ดำเนินการไม่สำเร็จ'): FormErrorsResult {
   if (error instanceof ZodError) {
     const fields = zodFieldErrors(error);
     const keys = Object.keys(fields);

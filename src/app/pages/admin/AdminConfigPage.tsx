@@ -118,7 +118,7 @@ export function AdminConfigPage() {
     defaultValues: {
       platform_name: 'baowu Manufacturing',
       contact_email: 'support@baowu.co.th',
-    support_phone: '-',
+      support_phone: '-',
     },
   });
   const [savingGeneral, setSavingGeneral] = useState(false);
@@ -298,135 +298,188 @@ export function AdminConfigPage() {
 
           {!loading && activeTab === 'general' ? (
             <Form {...generalForm}>
-            <div className='space-y-5 max-w-lg'>
-              {!isSA ? (
-                <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5'>
-                  เฉพาะ Super Admin เท่านั้นที่แก้ไขการตั้งค่าทั่วไปได้
-                </div>
-              ) : null}
-              <FormField
-                control={generalForm.control}
-                name='platform_name'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อแพลตฟอร์ม</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={generalForm.control}
-                name='contact_email'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='text-xs font-semibold text-slate-700'>อีเมลติดต่อ</FormLabel>
-                    <FormControl>
-                      <Input {...field} type='email' disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={generalForm.control}
-                name='support_phone'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='text-xs font-semibold text-slate-700'>โทรศัพท์สนับสนุน</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {isSA ? (
-                <SaveButton
-                  saving={savingGeneral}
-                  saved={savedGeneral}
-                  onClick={() => void onSaveGeneral()}
-                  text='บันทึกการตั้งค่าทั่วไป'
+              <div className='space-y-5 max-w-lg'>
+                {!isSA ? (
+                  <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5'>
+                    เฉพาะ Super Admin เท่านั้นที่แก้ไขการตั้งค่าทั่วไปได้
+                  </div>
+                ) : null}
+                <FormField
+                  control={generalForm.control}
+                  name='platform_name'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-xs font-semibold text-slate-700'>
+                        ชื่อแพลตฟอร์ม
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!isSA}
+                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              ) : null}
-            </div>
+                <FormField
+                  control={generalForm.control}
+                  name='contact_email'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-xs font-semibold text-slate-700'>
+                        อีเมลติดต่อ
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type='email'
+                          disabled={!isSA}
+                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={generalForm.control}
+                  name='support_phone'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='text-xs font-semibold text-slate-700'>
+                        โทรศัพท์สนับสนุน
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={!isSA}
+                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {isSA ? (
+                  <SaveButton
+                    saving={savingGeneral}
+                    saved={savedGeneral}
+                    onClick={() => void onSaveGeneral()}
+                    text='บันทึกการตั้งค่าทั่วไป'
+                  />
+                ) : null}
+              </div>
             </Form>
           ) : null}
 
           {!loading && activeTab === 'commission' ? (
             <Form {...defaultCommissionForm}>
-            <div className='space-y-5 max-w-xl'>
-              <div>
-                <h4 className='text-sm font-bold text-slate-900'>ค่าคอม & VAT — Config มาตรฐาน</h4>
-                <p className='text-xs text-slate-400 mt-1'>
-                  อัตรานี้ใช้กับโรงงานที่ไม่ได้รับ Config พิเศษ
-                </p>
-              </div>
-              {!isSA ? (
-                <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5'>
-                  เฉพาะ Super Admin เท่านั้นที่แก้ไขค่ามาตรฐานได้
+              <div className='space-y-5 max-w-xl'>
+                <div>
+                  <h4 className='text-sm font-bold text-slate-900'>
+                    ค่าคอม & VAT — Config มาตรฐาน
+                  </h4>
+                  <p className='text-xs text-slate-400 mt-1'>
+                    อัตรานี้ใช้กับโรงงานที่ไม่ได้รับ Config พิเศษ
+                  </p>
                 </div>
-              ) : null}
+                {!isSA ? (
+                  <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5'>
+                    เฉพาะ Super Admin เท่านั้นที่แก้ไขค่ามาตรฐานได้
+                  </div>
+                ) : null}
 
-              <FormField
-                control={defaultCommissionForm.control}
-                name='label'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อ Config</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled={!isSA} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50' />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <FormField
                   control={defaultCommissionForm.control}
-                  name='commission'
+                  name='label'
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='text-xs font-semibold text-slate-700'>ค่าคอมมิชชัน (%)</FormLabel>
+                      <FormLabel className='text-xs font-semibold text-slate-700'>
+                        ชื่อ Config
+                      </FormLabel>
                       <FormControl>
-                        <div className='relative'>
-                          <Input {...field} type='number' min={0} max={100} step={0.1} disabled={!isSA} className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50' />
-                          <Percent size={12} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400' />
-                      </div>
+                        <Input
+                          {...field}
+                          disabled={!isSA}
+                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={defaultCommissionForm.control}
-                  name='vat'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-xs font-semibold text-slate-700'>VAT (%)</FormLabel>
-                      <FormControl>
-                        <div className='relative'>
-                          <Input {...field} type='number' min={0} max={100} step={0.1} disabled={!isSA} className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50' />
-                          <Percent size={12} className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400' />
-                    </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                  <FormField
+                    control={defaultCommissionForm.control}
+                    name='commission'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-xs font-semibold text-slate-700'>
+                          ค่าคอมมิชชัน (%)
+                        </FormLabel>
+                        <FormControl>
+                          <div className='relative'>
+                            <Input
+                              {...field}
+                              type='number'
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              disabled={!isSA}
+                              className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50'
+                            />
+                            <Percent
+                              size={12}
+                              className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400'
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={defaultCommissionForm.control}
+                    name='vat'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className='text-xs font-semibold text-slate-700'>
+                          VAT (%)
+                        </FormLabel>
+                        <FormControl>
+                          <div className='relative'>
+                            <Input
+                              {...field}
+                              type='number'
+                              min={0}
+                              max={100}
+                              step={0.1}
+                              disabled={!isSA}
+                              className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50'
+                            />
+                            <Percent
+                              size={12}
+                              className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400'
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {isSA ? (
+                  <SaveButton
+                    saving={savingDefault}
+                    saved={savedDefault}
+                    onClick={() => void handleSaveDefault()}
+                    disabled={!defaultConfig}
+                    text='บันทึก Config มาตรฐาน'
+                  />
+                ) : null}
               </div>
-              {isSA ? (
-                <SaveButton
-                  saving={savingDefault}
-                  saved={savedDefault}
-                  onClick={() => void handleSaveDefault()}
-                  disabled={!defaultConfig}
-                  text='บันทึก Config มาตรฐาน'
-                />
-              ) : null}
-            </div>
             </Form>
           ) : null}
 
@@ -476,7 +529,10 @@ export function AdminConfigPage() {
                             {isDefault ? <span className='text-xs text-slate-400'>🔒</span> : null}
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm text-right tabular-nums text-indigo-700 font-bold'>
-                            {formatCompactNumber(pickScalarNumber(cfg.default_commission_rate) ?? 0)}%
+                            {formatCompactNumber(
+                              pickScalarNumber(cfg.default_commission_rate) ?? 0,
+                            )}
+                            %
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm text-right tabular-nums'>
                             {formatCompactNumber(pickScalarNumber(cfg.vat_rate) ?? 0)}%
@@ -507,77 +563,106 @@ export function AdminConfigPage() {
 
               {isSA ? (
                 <Form {...newConfigForm}>
-                <div className='bg-slate-50 rounded-xl border border-slate-200 p-4'>
-                  <p className='text-xs font-semibold text-slate-700 mb-3'>
-                    เพิ่ม Config พิเศษใหม่
-                  </p>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                    <FormField
-                      control={newConfigForm.control}
-                      name='label'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อ Config</FormLabel>
-                          <FormControl>
-                            <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={newConfigForm.control}
-                      name='effective_to'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>หมดอายุ</FormLabel>
-                          <FormControl>
-                            <Input {...field} type='date' className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={newConfigForm.control}
-                      name='default_commission_rate'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>ค่าคอม (%)</FormLabel>
-                          <FormControl>
-                            <Input {...field} type='number' min={0} max={100} step={0.1} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={newConfigForm.control}
-                      name='vat_rate'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>VAT (%)</FormLabel>
-                          <FormControl>
-                            <Input {...field} type='number' min={0} max={100} step={0.1} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                          />
-                        </div>
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() => void handleCreateConfig()}
-                    disabled={savingConfig}
-                    className='mt-3 flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
-                          >
-                            <Plus size={14} />
-                    {savingConfig ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
-                  </Button>
-                        </div>
+                  <div className='bg-slate-50 rounded-xl border border-slate-200 p-4'>
+                    <p className='text-xs font-semibold text-slate-700 mb-3'>
+                      เพิ่ม Config พิเศษใหม่
+                    </p>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                      <FormField
+                        control={newConfigForm.control}
+                        name='label'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-xs font-semibold text-slate-700'>
+                              ชื่อ Config
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={newConfigForm.control}
+                        name='effective_to'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-xs font-semibold text-slate-700'>
+                              หมดอายุ
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type='date'
+                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={newConfigForm.control}
+                        name='default_commission_rate'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-xs font-semibold text-slate-700'>
+                              ค่าคอม (%)
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type='number'
+                                min={0}
+                                max={100}
+                                step={0.1}
+                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={newConfigForm.control}
+                        name='vat_rate'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className='text-xs font-semibold text-slate-700'>
+                              VAT (%)
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type='number'
+                                min={0}
+                                max={100}
+                                step={0.1}
+                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      onClick={() => void handleCreateConfig()}
+                      disabled={savingConfig}
+                      className='mt-3 flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
+                    >
+                      <Plus size={14} />
+                      {savingConfig ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
+                    </Button>
+                  </div>
                 </Form>
-                ) : null}
+              ) : null}
             </div>
           ) : null}
 

@@ -1,11 +1,11 @@
-import React from "react";
-import { Link, useNavigate } from "react-router";
-import { Plus, FileText, AlertCircle, ChevronDown, History } from "lucide-react";
-import { BORDER_WARM, DEEP_PURPLE } from "@/components/features/rfq-and-orders/constants";
-import { type Rfq } from "@/stores/types";
-import { Button } from "@/components/ui/button";
-import { ActiveRfqCard } from "@/components/features/rfq-and-orders/components/ActiveRfqCard";
-import { HistoryRfqRow } from "@/components/features/rfq-and-orders/components/HistoryRfqRow";
+import React from 'react';
+import { Link, useNavigate } from 'react-router';
+import { Plus, FileText, AlertCircle, ChevronDown, History } from 'lucide-react';
+import { BORDER_WARM, DEEP_PURPLE } from '@/components/features/rfq-and-orders/constants';
+import { type Rfq } from '@/stores/types';
+import { Button } from '@/components/ui/button';
+import { ActiveRfqCard } from '@/components/features/rfq-and-orders/components/ActiveRfqCard';
+import { HistoryRfqRow } from '@/components/features/rfq-and-orders/components/HistoryRfqRow';
 
 export function RfqPanel({
   rfqs,

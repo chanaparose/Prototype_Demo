@@ -70,9 +70,7 @@ export function SubCategoryPickerModal({
               const inScopeIds = subs.filter((s) => working.includes(s.id)).map((s) => s.id);
               const parsed = parseSubCategorySelection(inScopeIds);
               if (!parsed.success) {
-                setConfirmError(
-                  parsed.error.issues[0]?.message ?? 'เลือกอย่างน้อย 1 หมวดหมู่ย่อย',
-                );
+                setConfirmError(parsed.error.issues[0]?.message ?? 'เลือกอย่างน้อย 1 หมวดหมู่ย่อย');
                 return;
               }
               onConfirm(working);
@@ -95,10 +93,7 @@ export function SubCategoryPickerModal({
             {subs.map((s) => (
               <li key={s.id}>
                 <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
-                  <Checkbox
-                    checked={working.includes(s.id)}
-                    onCheckedChange={() => toggle(s.id)}
-                  />
+                  <Checkbox checked={working.includes(s.id)} onCheckedChange={() => toggle(s.id)} />
                   {s.name}
                 </Label>
               </li>

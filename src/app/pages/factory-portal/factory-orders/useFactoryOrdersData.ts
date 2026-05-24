@@ -30,7 +30,8 @@ function toProductionSummary(raw: unknown): ProductionSummaryRow | null {
   if (!isObj(raw)) return null;
   const st = pickScalarString(raw.current_update_status).toUpperCase();
   return {
-    current_step_code: raw.current_step_code != null ? pickScalarString(raw.current_step_code) : null,
+    current_step_code:
+      raw.current_step_code != null ? pickScalarString(raw.current_step_code) : null,
     current_step_name_th:
       raw.current_step_name_th != null ? pickScalarString(raw.current_step_name_th) : null,
     current_step_id: Number.isFinite(Number(raw.current_step_id))

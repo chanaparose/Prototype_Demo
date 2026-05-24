@@ -186,11 +186,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   const embeddedReviews = detailQ.data?.reviews ?? null;
   const fetchLoading = detailQ.isLoading;
   const fetchError =
-    detailQ.error instanceof Error
-      ? detailQ.error.message
-      : detailQ.error
-        ? 'โหลดไม่สำเร็จ'
-        : null;
+    detailQ.error instanceof Error ? detailQ.error.message : detailQ.error ? 'โหลดไม่สำเร็จ' : null;
 
   useEffect(() => {
     viewedIdRef.current = '';

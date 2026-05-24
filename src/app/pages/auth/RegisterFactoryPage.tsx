@@ -17,7 +17,8 @@ import { Label } from '@/components/ui/label';
 
 const inputBase =
   'w-full px-4 py-2.5 md:py-3 rounded-xl border text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-shadow bg-gray-50/50 focus:bg-white';
-const inputNormal = 'border-gray-200 focus:ring-2 focus:ring-brand-purple/25 focus:border-brand-purple';
+const inputNormal =
+  'border-gray-200 focus:ring-2 focus:ring-brand-purple/25 focus:border-brand-purple';
 const inputError = 'border-red-400 focus:ring-2 focus:ring-red-200 focus:border-red-500';
 
 function inClass(err?: string) {
@@ -100,7 +101,8 @@ export function RegisterFactoryPage() {
           <div
             className='absolute inset-0 opacity-40 mix-blend-overlay'
             style={{
-              backgroundImage: 'url(https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=900)',
+              backgroundImage:
+                'url(https://images.unsplash.com/photo-1584867818838-5312e821fe15?w=900)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -152,7 +154,12 @@ export function RegisterFactoryPage() {
             <div className='bg-amber-50 text-amber-700 text-sm p-4 rounded-xl border border-amber-100 mb-6 flex items-center gap-3'>
               <AlertCircle className='w-4 h-4 shrink-0' />
               <span className='flex-1'>โหลดข้อมูลไม่สำเร็จ</span>
-              <Button variant='unstyled' type='button' onClick={retryMaster} className='underline text-amber-700 font-medium'>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={retryMaster}
+                className='underline text-amber-700 font-medium'
+              >
                 ลองใหม่
               </Button>
             </div>
@@ -199,13 +206,15 @@ export function RegisterFactoryPage() {
                     disabled={masterLoading}
                   >
                     <SelectTrigger className={inClass(errors.factory_type_id)}>
-                      <SelectValue placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกประเภท —'} />
+                      <SelectValue
+                        placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกประเภท —'}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='__empty'>— เลือกประเภท —</SelectItem>
-                    {factoryTypes.map((t) => (
+                      {factoryTypes.map((t) => (
                         <SelectItem key={t.factory_type_id} value={String(t.factory_type_id)}>
-                        {t.name_th}
+                          {t.name_th}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -225,7 +234,9 @@ export function RegisterFactoryPage() {
                     autoComplete='off'
                     maxLength={13}
                     value={form.tax_id}
-                    onChange={(e) => setField('tax_id', e.target.value.replace(/\D/g, '').slice(0, 13))}
+                    onChange={(e) =>
+                      setField('tax_id', e.target.value.replace(/\D/g, '').slice(0, 13))
+                    }
                     onBlur={() => blurField('tax_id')}
                     className={inClass(errors.tax_id)}
                     placeholder='เลข 13 หลัก'
@@ -249,7 +260,9 @@ export function RegisterFactoryPage() {
                     disabled={masterLoading}
                   >
                     <SelectTrigger className={inClass(errors.province_id)}>
-                      <SelectValue placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกจังหวัด —'} />
+                      <SelectValue
+                        placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกจังหวัด —'}
+                      />
                     </SelectTrigger>
                     <SelectContent className='max-h-64'>
                       <SelectItem value='__empty'>— เลือกจังหวัด —</SelectItem>
@@ -267,78 +280,102 @@ export function RegisterFactoryPage() {
             <div className='h-px bg-gray-100' />
 
             {/* ── Section 2: บัญชีผู้ดูแลระบบ ── */}
-                <div>
+            <div>
               <SectionHeading num={accountSection} label='บัญชีผู้ดูแลระบบ' />
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5'>
-                <FieldBlock label='อีเมล' error={errors.email} fieldKey='email' setFieldRef={setFieldRef} required>
+                <FieldBlock
+                  label='อีเมล'
+                  error={errors.email}
+                  fieldKey='email'
+                  setFieldRef={setFieldRef}
+                  required
+                >
                   <Input
                     type='email'
                     autoComplete='email'
-                        value={form.email}
-                        onChange={(e) => setField('email', e.target.value)}
-                        onBlur={() => blurField('email')}
-                        className={inClass(errors.email)}
+                    value={form.email}
+                    onChange={(e) => setField('email', e.target.value)}
+                    onBlur={() => blurField('email')}
+                    className={inClass(errors.email)}
                     placeholder='owner@factory.com'
-                      />
-                    </FieldBlock>
+                  />
+                </FieldBlock>
 
-                <FieldBlock label='เบอร์โทรศัพท์' error={errors.phone} fieldKey='phone' setFieldRef={setFieldRef} required>
+                <FieldBlock
+                  label='เบอร์โทรศัพท์'
+                  error={errors.phone}
+                  fieldKey='phone'
+                  setFieldRef={setFieldRef}
+                  required
+                >
                   <Input
                     type='tel'
                     autoComplete='tel'
-                        value={form.phone}
-                        onChange={(e) => setField('phone', e.target.value)}
-                        onBlur={() => blurField('phone')}
-                        className={inClass(errors.phone)}
+                    value={form.phone}
+                    onChange={(e) => setField('phone', e.target.value)}
+                    onBlur={() => blurField('phone')}
+                    className={inClass(errors.phone)}
                     placeholder='081-234-5678'
-                      />
-                    </FieldBlock>
+                  />
+                </FieldBlock>
 
-                <FieldBlock label='รหัสผ่าน' error={errors.password} fieldKey='password' setFieldRef={setFieldRef} required>
+                <FieldBlock
+                  label='รหัสผ่าน'
+                  error={errors.password}
+                  fieldKey='password'
+                  setFieldRef={setFieldRef}
+                  required
+                >
                   <div className='relative'>
                     <Input
-                          type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? 'text' : 'password'}
                       autoComplete='new-password'
-                          value={form.password}
-                          onChange={(e) => setField('password', e.target.value)}
-                          onBlur={() => blurField('password')}
-                          className={`${inClass(errors.password)} pr-10`}
+                      value={form.password}
+                      onChange={(e) => setField('password', e.target.value)}
+                      onBlur={() => blurField('password')}
+                      className={`${inClass(errors.password)} pr-10`}
                       placeholder='8 ตัวอักษรขึ้นไป'
-                        />
+                    />
                     <Button
                       variant='unstyled'
                       type='button'
-                          tabIndex={-1}
-                          onClick={() => setShowPassword((v) => !v)}
+                      tabIndex={-1}
+                      onClick={() => setShowPassword((v) => !v)}
                       className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple'
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </Button>
-                      </div>
-                    </FieldBlock>
+                  </div>
+                </FieldBlock>
 
-                <FieldBlock label='ยืนยันรหัสผ่าน' error={errors.confirmPassword} fieldKey='confirmPassword' setFieldRef={setFieldRef} required>
+                <FieldBlock
+                  label='ยืนยันรหัสผ่าน'
+                  error={errors.confirmPassword}
+                  fieldKey='confirmPassword'
+                  setFieldRef={setFieldRef}
+                  required
+                >
                   <div className='relative'>
                     <Input
-                          type={showConfirm ? 'text' : 'password'}
+                      type={showConfirm ? 'text' : 'password'}
                       autoComplete='new-password'
-                          value={form.confirmPassword}
-                          onChange={(e) => setField('confirmPassword', e.target.value)}
-                          onBlur={() => blurField('confirmPassword')}
-                          className={`${inClass(errors.confirmPassword)} pr-10`}
+                      value={form.confirmPassword}
+                      onChange={(e) => setField('confirmPassword', e.target.value)}
+                      onBlur={() => blurField('confirmPassword')}
+                      className={`${inClass(errors.confirmPassword)} pr-10`}
                       placeholder='กรอกอีกครั้ง'
-                        />
+                    />
                     <Button
                       variant='unstyled'
                       type='button'
-                          tabIndex={-1}
-                          onClick={() => setShowConfirm((v) => !v)}
+                      tabIndex={-1}
+                      onClick={() => setShowConfirm((v) => !v)}
                       className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand-purple'
-                        >
-                          {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                    >
+                      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                     </Button>
-                      </div>
-                    </FieldBlock>
+                  </div>
+                </FieldBlock>
               </div>
             </div>
 
@@ -347,7 +384,9 @@ export function RegisterFactoryPage() {
             {/* ── Section 3: หมวดหมู่ที่รับผลิต ── */}
             <div ref={setFieldRef('category_ids')}>
               <SectionHeading num={categorySection} label='หมวดหมู่สินค้าที่รับผลิต' />
-              <p className='text-xs text-gray-400 mb-3'>เลือกอย่างน้อย 1 หมวด — ระบบจะใช้จับคู่กับ RFQ ของลูกค้า</p>
+              <p className='text-xs text-gray-400 mb-3'>
+                เลือกอย่างน้อย 1 หมวด — ระบบจะใช้จับคู่กับ RFQ ของลูกค้า
+              </p>
 
               {masterLoading ? (
                 <div className='flex items-center gap-2 text-sm text-gray-400 py-4'>
@@ -486,7 +525,9 @@ export function RegisterFactoryPage() {
                       disabled={masterLoading}
                     >
                       <SelectTrigger className={inClass(errors.cert_id)}>
-                        <SelectValue placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกประเภท —'} />
+                        <SelectValue
+                          placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกประเภท —'}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value='__empty'>— เลือกประเภท —</SelectItem>
@@ -560,7 +601,10 @@ export function RegisterFactoryPage() {
 
           {/* ── Terms + Submit ── */}
           <div className='mt-8 space-y-6'>
-            <div ref={setFieldRef('acceptTerms')} className='bg-gray-50/50 p-4 rounded-xl border border-gray-100'>
+            <div
+              ref={setFieldRef('acceptTerms')}
+              className='bg-gray-50/50 p-4 rounded-xl border border-gray-100'
+            >
               <Label className='flex items-start gap-3 cursor-pointer text-sm text-gray-600'>
                 <Checkbox
                   checked={form.acceptTerms}
@@ -599,7 +643,10 @@ export function RegisterFactoryPage() {
 
             <p className='text-sm text-center text-gray-500 font-medium'>
               มีบัญชีผู้ใช้งานอยู่แล้ว?{' '}
-              <Link to='/login' className='text-brand-purple hover:text-brand-purple-hover transition-colors hover:underline'>
+              <Link
+                to='/login'
+                className='text-brand-purple hover:text-brand-purple-hover transition-colors hover:underline'
+              >
                 เข้าสู่ระบบที่นี่
               </Link>
             </p>

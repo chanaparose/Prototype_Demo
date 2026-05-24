@@ -32,7 +32,8 @@ export function mapNotificationFromApi(row: Record<string, unknown>): INotificat
     avatar: pickScalarString(row.avatar) || undefined,
     rfq_id: row.rfq_id != null ? pickScalarString(row.rfq_id) : undefined,
     order_id: row.order_id != null ? pickScalarString(row.order_id) : undefined,
-    conversation_id: row.conversation_id != null ? pickScalarString(row.conversation_id) : undefined,
+    conversation_id:
+      row.conversation_id != null ? pickScalarString(row.conversation_id) : undefined,
   };
 }
 
@@ -42,20 +43,24 @@ export function mapNotificationsFromApi(raw: unknown): INotificationModel[] {
     .filter((item): item is INotificationModel => item != null);
 }
 
-export function mapNotificationsPageFromApi(raw: unknown, fallbackPage: number): INotificationsPageModel {
-  const root = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+export function mapNotificationsPageFromApi(
+  raw: unknown,
+  fallbackPage: number,
+): INotificationsPageModel {
+  const root =
+    raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
   const items = mapNotificationsFromApi(raw);
   return {
     items,
     page: pickScalarNumber(root.page) ?? fallbackPage,
     total: pickScalarNumber(root.total) ?? items.length,
-    unreadCount: pickScalarNumber(root.unread_count, root.unreadCount) ?? items.filter((n) => !n.is_read).length,
+    unreadCount:
+      pickScalarNumber(root.unread_count, root.unreadCount) ??
+      items.filter((n) => !n.is_read).length,
   };
 }
 
-export function mapNotificationToBootstrapModel(
-  n: INotificationModel,
-): BootstrapNotificationModel {
+export function mapNotificationToBootstrapModel(n: INotificationModel): BootstrapNotificationModel {
   return {
     id: String(n.noti_id),
     type: n.type,

@@ -13,11 +13,7 @@ export function useRfqDetail(rfqId: string | undefined) {
   const detail = query.data ?? EMPTY_RFQ_DETAIL;
 
   const error =
-    query.error instanceof Error
-      ? query.error.message
-      : query.error
-        ? 'โหลดข้อมูลไม่สำเร็จ'
-        : null;
+    query.error instanceof Error ? query.error.message : query.error ? 'โหลดข้อมูลไม่สำเร็จ' : null;
 
   return {
     rfq: detail.rfq,

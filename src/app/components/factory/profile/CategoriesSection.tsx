@@ -32,7 +32,13 @@ interface Props {
   apiSubCategories?: ApiSubCategory[];
 }
 
-export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategories = [], apiSubCategories = [] }: Props) {
+export function CategoriesSection({
+  form,
+  factoryId,
+  onRegisterAdd,
+  apiCategories = [],
+  apiSubCategories = [],
+}: Props) {
   const { control } = form;
   const { data: allCategories = [] } = useProductCategories();
   const { data: pdCategories = [] } = useLbiCategoriesByScope('PD');
@@ -92,7 +98,9 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategorie
 
   const resolvedCategories = useMemo(() => {
     // Collect all category IDs: from form + from API (in case form hasn't been seeded yet)
-    const allIds = Array.from(new Set([...categoryIds, ...apiCategories.map((c) => c.category_id)]));
+    const allIds = Array.from(
+      new Set([...categoryIds, ...apiCategories.map((c) => c.category_id)]),
+    );
     return allIds
       .map((cid) => {
         const masterName = allCategories.find((c) => c.id === cid)?.name;
@@ -188,7 +196,11 @@ export function CategoriesSection({ form, factoryId, onRegisterAdd, apiCategorie
         </div>
       )}
 
-      <Controller control={control} name='category_ids' render={({ field }) => <input type='hidden' name={field.name} />} />
+      <Controller
+        control={control}
+        name='category_ids'
+        render={({ field }) => <input type='hidden' name={field.name} />}
+      />
       <Controller
         control={control}
         name='sub_category_ids'

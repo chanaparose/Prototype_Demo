@@ -136,8 +136,7 @@ function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
   const mergedImageUrls =
     image_entries.length > 0 ? image_entries.map((e) => e.url) : linked.imageUrls;
   const rawImageUrl = String(r.image_url ?? '').trim();
-  const image_url =
-    mergedImageUrls[0] ?? (/^https?:\/\//i.test(rawImageUrl) ? rawImageUrl : '');
+  const image_url = mergedImageUrls[0] ?? (/^https?:\/\//i.test(rawImageUrl) ? rawImageUrl : '');
   return {
     content_type: (ct === 'PM' || ct === 'ID' || ct === 'MT' ? ct : 'PD') as ShowcaseType,
     title: String(r.title ?? '').trim(),
@@ -289,14 +288,7 @@ export function FactoryShowcaseEditPage() {
         setPmScope('PD');
       }
     }
-  }, [
-    selectedCategoryId,
-    contentType,
-    idScope,
-    pmScope,
-    pdCategoriesQ.data,
-    mtCategoriesQ.data,
-  ]);
+  }, [selectedCategoryId, contentType, idScope, pmScope, pdCategoriesQ.data, mtCategoriesQ.data]);
 
   React.useEffect(() => {
     if (!id) return;

@@ -89,10 +89,7 @@ export function FactoryQuotationsPage() {
                     <p className='font-bold text-sm' style={{ color: 'var(--brand-navy)' }}>
                       {formatCurrencyNoDecimals(r.price_per_piece)}
                       {r.lead_time_days > 0 ? (
-                        <span className='font-normal text-gray-500'>
-                          {' '}
-                          · {r.lead_time_days} วัน
-                        </span>
+                        <span className='font-normal text-gray-500'> · {r.lead_time_days} วัน</span>
                       ) : null}
                     </p>
                     <span

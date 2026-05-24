@@ -6,7 +6,12 @@ import type { FactoryItem } from '@/components/features/explore/factoryItemTypes
 
 type UseExploreDataOptions = { enablePageApis?: boolean };
 
-export type { IExploreCategory, IExploreShowcase, IExploreArticle, IExploreSlide } from '@/domain/explore/types/explore.model';
+export type {
+  IExploreCategory,
+  IExploreShowcase,
+  IExploreArticle,
+  IExploreSlide,
+} from '@/domain/explore/types/explore.model';
 
 export function useExploreData(options?: UseExploreDataOptions) {
   const enablePageApis = options?.enablePageApis ?? true;
@@ -60,7 +65,9 @@ export function useExploreData(options?: UseExploreDataOptions) {
   const isLoading = enablePageApis && exploreQ.isFetching;
   const exploreCategoriesLoading = isLoading;
   const exploreCategoriesError = exploreQ.error ? String(exploreQ.error) : null;
-  const reloadExploreCategories = () => { void exploreQ.refetch(); };
+  const reloadExploreCategories = () => {
+    void exploreQ.refetch();
+  };
 
   return {
     searchText,

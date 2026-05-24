@@ -84,9 +84,7 @@ export function FactoryShowcasesPage() {
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const rows = allRows.filter(
-    (r) => String(r.content_type ?? '').toUpperCase() === activeType,
-  );
+  const rows = allRows.filter((r) => String(r.content_type ?? '').toUpperCase() === activeType);
 
   const changeType = (type: ShowcaseType) => {
     setActiveType(type);
@@ -130,9 +128,7 @@ export function FactoryShowcasesPage() {
   };
 
   if (fid == null) {
-    return (
-      <ErrorAlert>บัญชีนี้ไม่ใช่โรงงาน</ErrorAlert>
-    );
+    return <ErrorAlert>บัญชีนี้ไม่ใช่โรงงาน</ErrorAlert>;
   }
 
   const { btnLabel, empty, icon } = TAB_META[activeType];

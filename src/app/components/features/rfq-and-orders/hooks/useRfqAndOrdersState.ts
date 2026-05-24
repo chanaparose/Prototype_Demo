@@ -3,7 +3,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/stores/useAuthStore';
 import { type Rfq, type Order } from '@/stores/types';
 import { getRfqFilterId } from '@/components/features/rfq-and-orders/utils';
-import { type RfqFilterId, type OrderFilterId } from '@/components/features/rfq-and-orders/constants';
+import {
+  type RfqFilterId,
+  type OrderFilterId,
+} from '@/components/features/rfq-and-orders/constants';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
 import { rfqKeys } from '@/lib/queryKeys';
 
@@ -78,7 +81,8 @@ export function useRfqAndOrdersState(initial?: InitialState) {
   const orderTagCounts = React.useMemo(
     () => ({
       pendingPayment: orders.filter((o) => o.status === 'pending_payment').length,
-      inProduction: orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o)).length,
+      inProduction: orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o))
+        .length,
       shipped: orders.filter(isShippingOrder).length,
       completed: orders.filter((o) => o.status === 'completed').length,
       cancelledExpired: orders.filter((o) => o.status === 'cancelled_expired').length,

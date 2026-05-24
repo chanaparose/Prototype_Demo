@@ -4,7 +4,9 @@ export type MapRfqStatusOptions = {
 };
 
 export function mapRfqStatusFromApi(code: string, options: MapRfqStatusOptions = {}): string {
-  const u = String(code ?? '').trim().toUpperCase();
+  const u = String(code ?? '')
+    .trim()
+    .toUpperCase();
   const hasQuotes = (options.quoteCount ?? 0) > 0;
   const hasAccepted = options.hasAcceptedQuote ?? false;
 

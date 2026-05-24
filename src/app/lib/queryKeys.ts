@@ -68,8 +68,7 @@ export const adminKeys = {
   all: ['admin'] as const,
   dashboard: () => [...adminKeys.all, 'dashboard'] as const,
   topCustomers: (limit: number) => [...adminKeys.all, 'top-customers', limit] as const,
-  rfqList: (status: string, search: string) =>
-    [...adminKeys.all, 'rfqs', status, search] as const,
+  rfqList: (status: string, search: string) => [...adminKeys.all, 'rfqs', status, search] as const,
   rfqDetail: (id: string) => [...adminKeys.all, 'rfq', id] as const,
 };
 

@@ -53,7 +53,7 @@ type ExploreDesktopProps = {
 const FILTER_BUTTON_CLASS = cn(
   'px-4 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100',
   'flex items-center gap-1.5 text-xs font-medium shrink-0',
-  'text-brand-magenta hover:border-brand-magenta/30 transition-colors'
+  'text-brand-magenta hover:border-brand-magenta/30 transition-colors',
 );
 
 const PROMO_GRADIENT = {
@@ -96,13 +96,13 @@ const REGISTER_BUTTON_CLASS = cn(
   'transition-all duration-200 ease-out',
   'hover:shadow-xl hover:shadow-brand-purple/60 hover:-translate-y-0.5 hover:brightness-110',
   'active:translate-y-0 active:scale-[0.97]',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple'
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple',
 );
 
 /* ═══ Helper Functions ═══ */
 function getFactoryMeta(
   factoryId: string | number | undefined,
-  factories: FactoryItem[] | undefined
+  factories: FactoryItem[] | undefined,
 ) {
   const f = (factories ?? []).find((x) => String(x.id) === String(factoryId ?? ''));
   return {
@@ -214,11 +214,7 @@ export function ExploreDesktop({
               className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
             />
           </div>
-          <Button
-            variant='unstyled'
-            type='button'
-            className={FILTER_BUTTON_CLASS}
-          >
+          <Button variant='unstyled' type='button' className={FILTER_BUTTON_CLASS}>
             <SlidersHorizontal size={14} />
             ตัวกรอง
           </Button>
@@ -414,9 +410,7 @@ export function ExploreDesktop({
                       </h3>
                       <div className='flex items-center gap-0.5 mt-0.5'>
                         <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                        <span className='text-gray-500 text-[10px] truncate'>
-                          {meta.location}
-                        </span>
+                        <span className='text-gray-500 text-[10px] truncate'>{meta.location}</span>
                       </div>
                       <div className='mt-auto pt-1 border-t border-gray-50'>
                         <div className='flex items-center justify-between min-w-0'>
@@ -445,10 +439,7 @@ export function ExploreDesktop({
             className='absolute inset-0 rounded-xl pointer-events-none'
             style={{ opacity: 0.2 }}
           >
-            <div
-              className='absolute inset-0 rounded-xl'
-              style={SHIMMER_GRADIENT}
-            />
+            <div className='absolute inset-0 rounded-xl' style={SHIMMER_GRADIENT} />
           </div>
           <div className='relative z-[1] flex items-center justify-between mb-3'>
             <h2 className='text-base font-bold text-brand-navy-ink'>บทความ Idea</h2>
@@ -518,9 +509,7 @@ export function ExploreDesktop({
           className='xl:hidden relative z-0 w-full h-auto object-contain object-center pointer-events-none select-none'
         />
 
-        <div
-          className='z-10 flex justify-end items-center w-full xl:relative xl:mt-0 max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4 md:max-xl:right-8 md:max-xl:bottom-5'
-        >
+        <div className='z-10 flex justify-end items-center w-full xl:relative xl:mt-0 max-xl:absolute max-xl:w-auto max-xl:left-auto max-xl:right-4 max-xl:bottom-4 md:max-xl:right-8 md:max-xl:bottom-5'>
           <Button
             variant='unstyled'
             type='button'

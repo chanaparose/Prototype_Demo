@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { SHOWCASE_DETAIL_BRAND as BRAND, daysBetween, formatShowcaseTHB as formatTHB, formatShowcaseThaiDate as formatThaiDate, normalizeShowcaseMarkdown as normalizeMarkdownContent } from '@/components/features/showcase-detail/showcaseDetailShared';
+import {
+  SHOWCASE_DETAIL_BRAND as BRAND,
+  daysBetween,
+  formatShowcaseTHB as formatTHB,
+  formatShowcaseThaiDate as formatThaiDate,
+  normalizeShowcaseMarkdown as normalizeMarkdownContent,
+} from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,

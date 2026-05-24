@@ -31,7 +31,9 @@ export function useProfileInit() {
       const factoryTypes: FactoryTypeOption[] = (data.factory_types ?? [])
         .map((r): FactoryTypeOption | null => {
           const id = Number(r.factory_type_id ?? r.row_id ?? r.id);
-          const label = String(r.type_name ?? r.factory_type_name ?? r.name_th ?? r.name ?? '').trim();
+          const label = String(
+            r.type_name ?? r.factory_type_name ?? r.name_th ?? r.name ?? '',
+          ).trim();
           if (!Number.isFinite(id) || id <= 0 || !label) return null;
           return { id, label };
         })
@@ -85,7 +87,14 @@ export function useProfileInit() {
         const id = Number(s.sub_category_id ?? s.id);
         const categoryId = Number(s.category_id);
         const name = String(s.name ?? s.sub_category_name ?? '').trim();
-        if (!Number.isFinite(id) || id <= 0 || !name || !Number.isFinite(categoryId) || categoryId <= 0) continue;
+        if (
+          !Number.isFinite(id) ||
+          id <= 0 ||
+          !name ||
+          !Number.isFinite(categoryId) ||
+          categoryId <= 0
+        )
+          continue;
         const cid = String(categoryId);
         const list = byCat.get(cid) ?? [];
         list.push({ id, name, categoryId });

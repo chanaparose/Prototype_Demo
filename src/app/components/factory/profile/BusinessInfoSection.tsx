@@ -12,7 +12,11 @@ interface Props {
 }
 
 export function BusinessInfoSection({ form }: Props) {
-  const { register, control, formState: { errors } } = form;
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = form;
   const factoryTypesQ = useFactoryTypes();
 
   return (

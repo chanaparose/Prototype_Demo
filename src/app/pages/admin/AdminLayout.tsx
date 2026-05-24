@@ -139,9 +139,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       <div className='px-3 pb-4 shrink-0 border-t border-slate-200 pt-3'>
         <div className='flex items-center gap-3 px-2 py-2 rounded-lg bg-slate-50 mb-2'>
           <div className='w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0'>
-            {pickScalarString(user?.name, 'A')
-              .charAt(0)
-              .toUpperCase()}
+            {pickScalarString(user?.name, 'A').charAt(0).toUpperCase()}
           </div>
           <div className='flex-1 min-w-0'>
             <p className='text-xs font-semibold text-slate-900 truncate'>{user?.name ?? 'Admin'}</p>
@@ -241,9 +239,7 @@ export function AdminLayout() {
 
             <div className='flex items-center gap-2 pl-2 border-l border-slate-200'>
               <div className='w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm'>
-                {pickScalarString(user?.name, 'A')
-                  .charAt(0)
-                  .toUpperCase()}
+                {pickScalarString(user?.name, 'A').charAt(0).toUpperCase()}
               </div>
               <div className='hidden sm:block'>
                 <p className='text-xs font-semibold text-slate-900 leading-none'>

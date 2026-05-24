@@ -60,8 +60,7 @@ export function CertificatesSection({ factoryId, certs = [], onRegisterAdd }: Pr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ['factory', 'me'] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['factory', 'me'] });
 
   const submit = async (value: CertFormSubmitValue, keepOpen: boolean) => {
     modal.setLoading(true);

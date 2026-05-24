@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { SHOWCASE_DETAIL_BRAND as BRAND, formatShowcaseThaiDate as formatThaiDate } from '@/components/features/showcase-detail/showcaseDetailShared';
+import {
+  SHOWCASE_DETAIL_BRAND as BRAND,
+  formatShowcaseThaiDate as formatThaiDate,
+} from '@/components/features/showcase-detail/showcaseDetailShared';
 import { useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -310,10 +313,15 @@ export function IdeaDetailDesktop() {
                       </span>
                       <button
                         type='button'
-                        onClick={(e) => { e.stopPropagation(); void toggleFavorite(next.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void toggleFavorite(next.id);
+                        }}
                         className='flex items-center gap-0.5 shrink-0 tabular-nums'
                       >
-                        <Heart className={`w-2.5 h-2.5 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`} />
+                        <Heart
+                          className={`w-2.5 h-2.5 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`}
+                        />
                         {next.likes + (isLiked(next.id) ? 1 : 0)}
                       </button>
                     </div>

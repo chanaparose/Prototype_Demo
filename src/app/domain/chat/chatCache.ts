@@ -36,21 +36,18 @@ export function setConversationReadInCache(convId: string | number): void {
   const uid = getCurrentUserId(user);
   if (uid == null) return;
 
-  queryClient.setQueryData<IConversationResponse[]>(
-    chatKeys.conversations(),
-    (old) => {
-      if (!old) return old;
-      return old.map((conv) => {
-        if (conv.conv_id !== numId) return conv;
-        const role = viewerRole(conv, uid);
-        return {
-          ...conv,
-          unread_customer: role === 'CT' ? 0 : conv.unread_customer,
-          unread_factory: role === 'FT' ? 0 : conv.unread_factory,
-        };
-      });
-    },
-  );
+  queryClient.setQueryData<IConversationResponse[]>(chatKeys.conversations(), (old) => {
+    if (!old) return old;
+    return old.map((conv) => {
+      if (conv.conv_id !== numId) return conv;
+      const role = viewerRole(conv, uid);
+      return {
+        ...conv,
+        unread_customer: role === 'CT' ? 0 : conv.unread_customer,
+        unread_factory: role === 'FT' ? 0 : conv.unread_factory,
+      };
+    });
+  });
 }
 
 /**
@@ -62,19 +59,16 @@ export function incrementConversationUnreadInCache(convId: number, senderId: num
   const uid = getCurrentUserId(user);
   if (uid == null || senderId === uid) return;
 
-  queryClient.setQueryData<IConversationResponse[]>(
-    chatKeys.conversations(),
-    (old) => {
-      if (!old) return old;
-      return old.map((conv) => {
-        if (conv.conv_id !== convId) return conv;
-        const role = viewerRole(conv, uid);
-        return {
-          ...conv,
-          unread_customer: role === 'CT' ? conv.unread_customer + 1 : conv.unread_customer,
-          unread_factory: role === 'FT' ? conv.unread_factory + 1 : conv.unread_factory,
-        };
-      });
-    },
-  );
+  queryClient.setQueryData<IConversationResponse[]>(chatKeys.conversations(), (old) => {
+    if (!old) return old;
+    return old.map((conv) => {
+      if (conv.conv_id !== convId) return conv;
+      const role = viewerRole(conv, uid);
+      return {
+        ...conv,
+        unread_customer: role === 'CT' ? conv.unread_customer + 1 : conv.unread_customer,
+        unread_factory: role === 'FT' ? conv.unread_factory + 1 : conv.unread_factory,
+      };
+    });
+  });
 }
