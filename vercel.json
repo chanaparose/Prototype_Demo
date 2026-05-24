@@ -1,7 +1,7 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/proxy?path=$1" },
+    { "source": "/api/(.*)", "destination": "/api/proxy?path=api/$1" },
     { "source": "/health", "destination": "/api/proxy?path=health" },
     { "source": "/((?!assets/|api/|favicon|.*\\..*).*)", "destination": "/index.html" }
   ]
