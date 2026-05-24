@@ -575,7 +575,13 @@ const RFQ_28_BUNDLE = {
       created_at: '2026-04-28T14:00:00Z',
     },
   ],
-  quote_histories: {},
+  // preloaded history — ส่งค่าให้ QuotationHistoryPanel ตรงๆ ไม่ต้อง fetch GET /quotations/:id/history
+  // ใส่ array ว่างเพื่อซ่อน panel (panel จะ return null เมื่อ history.length <= 1)
+  quote_histories: {
+    '9101': [],
+    '9102': [],
+    '9103': [],
+  },
 };
 
 const RFQ_MOCKS: MockEntry[] = [
@@ -583,6 +589,9 @@ const RFQ_MOCKS: MockEntry[] = [
   { match: '/rfqs/28/detail', body: RFQ_28_BUNDLE },
   // Fallback in case older code calls GET /rfqs/28 directly
   { match: '/rfqs/28', body: RFQ_28_BUNDLE },
+  // Fallback: GET /quotations/:id/history — intercepted ถ้า preloadedHistory ไม่ถูกส่ง
+  // คืน array ว่าง → QuotationHistoryPanel จะ return null (history.length <= 1)
+  { match: /^\/quotations\/\d+\/history/, body: [] },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
