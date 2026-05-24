@@ -45,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 5. Forward request ไปยัง backend
     const fetchOptions: RequestInit = {
-      method: req.method,
+      method: req.method ?? 'GET',
       headers,
     };
 
