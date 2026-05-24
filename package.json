@@ -38,10 +38,8 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
-    "@types/node": "^25.9.1",
     "@types/react": "^19.2.3",
     "@types/react-dom": "^19.2.3",
-    "@vercel/node": "^5.8.4",
     "@vitejs/plugin-react": "4.7.0",
     "prettier": "^3.8.3",
     "tailwindcss": "4.1.12",

@@ -1,8 +1,8 @@
 {
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/proxy?path=api/$1" },
-    { "source": "/health", "destination": "/api/proxy?path=health" },
+    { "source": "/api/(.*)", "destination": "https://tryly-dev-server.onrender.com/api/$1" },
+    { "source": "/health", "destination": "https://tryly-dev-server.onrender.com/health" },
     { "source": "/((?!assets/|api/|favicon|.*\\..*).*)", "destination": "/index.html" }
   ]
 }
