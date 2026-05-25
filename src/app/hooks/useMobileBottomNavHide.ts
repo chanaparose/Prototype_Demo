@@ -36,3 +36,18 @@ export function mobileFabBottomOffset(bottomNavHidden: boolean): string {
     ? `calc(1.5rem + env(safe-area-inset-bottom, 0px))`
     : `calc(${MOBILE_BOTTOM_NAV_CLEARANCE} + ${MOBILE_FAB_GAP} + env(safe-area-inset-bottom, 0px))`;
 }
+
+/**
+ * Bottom offset สำหรับ fixed action bar (เช่น product-detail CTA bar)
+ * ชิดเหนือ bottom nav 8px — เลื่อนลงมาแนบ viewport เมื่อ nav ซ่อน
+ */
+export function mobileActionBarBottomOffset(bottomNavHidden: boolean): string {
+  return bottomNavHidden
+    ? `calc(0.5rem + env(safe-area-inset-bottom, 0px))`
+    : `calc(${MOBILE_BOTTOM_NAV_CLEARANCE} + 0.5rem + env(safe-area-inset-bottom, 0px))`;
+}
+
+/** Padding-bottom for in-flow bars above the mobile bottom nav (e.g. chat composer) */
+export function mobileBottomNavPadding(extra = '0.75rem'): string {
+  return `calc(${extra} + ${MOBILE_BOTTOM_NAV_CLEARANCE} + env(safe-area-inset-bottom, 0px))`;
+}

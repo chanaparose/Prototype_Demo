@@ -17,6 +17,30 @@ export function unreadForViewer(conv: IConversationResponse, role: 'CT' | 'FT') 
   return role === 'CT' ? conv.unread_customer : conv.unread_factory;
 }
 
+/** LINE-style list time: HH:mm today, เมื่อวาน, or short date */
+export function formatConversationListTime(iso: string): string {
+  if (!iso || !String(iso).trim()) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString('th-TH', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  }
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return 'เมื่อวาน';
+  const diff = now.getTime() - d.getTime();
+  const day = Math.floor(diff / (24 * 60 * 60 * 1000));
+  if (day < 7) {
+    return d.toLocaleDateString('th-TH', { weekday: 'short' });
+  }
+  return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+}
+
 /** Relative label for list timestamps (API ISO or free text fallback). */
 export function formatConversationTime(iso: string): string {
   if (!iso || !String(iso).trim()) return '';

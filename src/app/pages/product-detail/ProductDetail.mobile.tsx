@@ -22,6 +22,10 @@ import {
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
+import {
+  mobileActionBarBottomOffset,
+  useMobileBottomNavHide,
+} from '@/hooks/useMobileBottomNavHide';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -34,6 +38,7 @@ export function ProductDetailMobile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
+  const bottomNavHidden = useMobileBottomNavHide();
   const data = useData();
   const {
     item,
@@ -536,8 +541,11 @@ export function ProductDetailMobile() {
       </>
 
       <div
-        className='fixed inset-x-2 bottom-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-2xl shadow-[0_12px_30px_rgba(46,34,82,0.16)] overflow-hidden supports-[padding:max(0px)]:pb-[env(safe-area-inset-bottom)]'
-        style={{ borderColor: BRAND.divider }}
+        className='fixed inset-x-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-2xl shadow-[0_12px_30px_rgba(46,34,82,0.16)] overflow-hidden transition-[bottom] duration-300 ease-in-out'
+        style={{
+          borderColor: BRAND.divider,
+          bottom: mobileActionBarBottomOffset(bottomNavHidden),
+        }}
       >
         <Button
           variant='unstyled'

@@ -26,6 +26,7 @@ import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
 import { useMobileBottomNavHide } from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
+import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 
 // ─── Customer bottom nav (5 items) ─────────────────────────────────────────
 const customerNavLinks = [
@@ -94,6 +95,7 @@ export function Layout() {
   const isAdminRole = userRole === 'AM' || userRole === 'AD' || userRole === 'SA';
   const factoryApproved = factoryVerifyStatus(user) === 'AP';
   const bottomNavHidden = useMobileBottomNavHide();
+  const unreadMessages = useConversationUnreadCount();
 
   if (isAdminRole && !location.pathname.startsWith('/admin')) {
     return <Navigate to='/admin/dashboard' replace />;
@@ -107,12 +109,19 @@ export function Layout() {
   const brandActive = isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)';
   const brandActiveBg = isFactory ? '#EEF2FF' : 'rgba(162,56,255,0.08)';
 
+  /** Mobile FAB — whitelist only (Explore home = `/`) */
+  const createRfqFabPaths = [
+    '/',
+    '/factory-ideas',
+    '/orders',
+    '/messages',
+    '/profile',
+  ] as const;
+
   const showCreateRfqFab =
     !isFactory &&
     !isAdminRole &&
-    location.pathname !== '/create-rfq' &&
-    !location.pathname.startsWith('/login') &&
-    !location.pathname.startsWith('/register');
+    (createRfqFabPaths as readonly string[]).includes(location.pathname);
 
   return (
     <div className='min-h-screen flex bg-white w-full max-w-full overflow-x-hidden'>
@@ -124,11 +133,11 @@ export function Layout() {
           <div className='max-w-7xl mx-auto px-4 sm:px-6'>
             <div className='flex items-center justify-between h-14'>
               {/* Logo */}
-              <Link to='/' className='flex items-center gap-2 shrink-0'>
+              <Link to='/' className='flex items-center gap-2 shrink-0 py-1'>
                 <Image
                   src='/assets/tryly-logo.png'
                   alt='Tryly'
-                  className='h-9 w-auto object-contain'
+                  className='h-14 w-auto max-w-[9.5rem] object-contain'
                 />
               </Link>
 
@@ -206,11 +215,21 @@ export function Layout() {
                     }}
                     className='flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 disabled:opacity-40'
                   >
-                    <Icon
-                      size={23}
-                      strokeWidth={active ? 2.2 : 1.6}
-                      style={{ color: active ? brandActive : '#9CA3AF' }}
-                    />
+                    <div className='relative'>
+                      <Icon
+                        size={23}
+                        strokeWidth={active ? 2.2 : 1.6}
+                        style={{ color: active ? brandActive : '#9CA3AF' }}
+                      />
+                      {item.key === 'messages' && unreadMessages > 0 && (
+                        <span
+                          className='absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full text-white flex items-center justify-center text-[8px] border border-white tabular-nums'
+                          style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
+                        >
+                          {unreadMessages > 99 ? '99+' : unreadMessages}
+                        </span>
+                      )}
+                    </div>
                     <span
                       className='text-[10px] font-medium leading-tight truncate max-w-full px-1'
                       style={{ color: active ? brandActive : '#9CA3AF' }}
@@ -239,11 +258,21 @@ export function Layout() {
                     onClick={() => void navigate(target)}
                     className='flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 relative'
                   >
-                    <Icon
-                      size={23}
-                      strokeWidth={active ? 2.2 : 1.6}
-                      style={{ color: active ? brandActive : '#9CA3AF' }}
-                    />
+                    <div className='relative'>
+                      <Icon
+                        size={23}
+                        strokeWidth={active ? 2.2 : 1.6}
+                        style={{ color: active ? brandActive : '#9CA3AF' }}
+                      />
+                      {path === '/messages' && unreadMessages > 0 && (
+                        <span
+                          className='absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full text-white flex items-center justify-center text-[8px] border border-white tabular-nums'
+                          style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
+                        >
+                          {unreadMessages > 99 ? '99+' : unreadMessages}
+                        </span>
+                      )}
+                    </div>
                     <span
                       className='text-[10px] font-medium leading-tight truncate max-w-full px-1'
                       style={{ color: active ? brandActive : '#9CA3AF' }}

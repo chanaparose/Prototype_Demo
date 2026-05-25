@@ -1,12 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Search, RefreshCw } from 'lucide-react';
-import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
+import { BadgeCheck, RefreshCw } from 'lucide-react';
+import { cn } from '@lib/utils';
 import type { UiConversation } from '@/pages/messages/types';
-import { formatConversationTime } from '@/pages/messages/types';
+import { formatConversationListTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Input } from '@/components/ui/input';
+import { MobileSearchField } from '@/components/shared/MobileSearchField';
+import { Avatar } from '@/components/ui/avatar';
+import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
 
 type MessagesMobileProps = {
   searchText: string;
@@ -20,17 +22,19 @@ type MessagesMobileProps = {
 
 function ListSkeleton() {
   return (
-    <div className='space-y-3'>
-      {[0, 1, 2, 3, 4].map((i) => (
+    <div className='space-y-2 px-4'>
+      {[0, 1, 2, 3, 4, 5, 6].map((i) => (
         <div
           key={i}
-          className='bg-white rounded-2xl p-4 border border-gray-50 animate-pulse flex gap-3'
+          className='flex animate-pulse items-center gap-2.5 rounded-2xl border border-white/70 bg-white/85 px-3 py-2.5 shadow-[0_2px_14px_rgba(46,34,82,0.06)]'
         >
-          <div className='w-12 h-12 rounded-2xl bg-gray-200 shrink-0' />
-          <div className='flex-1 space-y-2'>
-            <div className='h-4 bg-gray-200 rounded w-1/2' />
-            <div className='h-3 bg-gray-100 rounded w-1/3' />
-            <div className='h-3 bg-gray-100 rounded w-4/5' />
+          <div className='h-11 w-11 shrink-0 rounded-full bg-[var(--brand-lavender)]' />
+          <div className='flex-1 space-y-1.5'>
+            <div className='flex justify-between gap-2'>
+              <div className='h-3.5 w-24 rounded-full bg-[var(--brand-lavender-muted)]' />
+              <div className='h-3 w-9 rounded-full bg-[var(--brand-lavender)]' />
+            </div>
+            <div className='h-3 w-[85%] rounded-full bg-[var(--brand-lavender)]' />
           </div>
         </div>
       ))}
@@ -50,51 +54,40 @@ export function MessagesMobile({
   const navigate = useNavigate();
 
   return (
-    <div className='px-4 pt-5 pb-4'>
-      <div className='flex items-center justify-between mb-5'>
-        <div>
-          <p
-            className='text-[10px] uppercase tracking-wider'
-            style={{ color: 'var(--brand-mauve)' }}
-          >
-            สื่อสาร
-          </p>
-          <div className='flex items-center gap-2'>
-            <h1 style={{ fontWeight: 700, color: 'var(--brand-navy)' }}>ข้อความ</h1>
-            {totalUnread > 0 && (
-              <span
-                className='w-5 h-5 rounded-full text-white flex items-center justify-center text-[10px]'
-                style={{ background: 'var(--brand-orange-deep)', fontWeight: 700 }}
-              >
-                {totalUnread}
-              </span>
-            )}
-          </div>
-        </div>
+    <div className='md:hidden flex min-h-full flex-col pb-20 bg-[linear-gradient(180deg,var(--brand-lavender)_0%,var(--brand-page)_45%,var(--neutral-white)_100%)]'>
+      <div className='px-4 pt-5 pb-3'>
+        <p className='text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-[#C4A484]'>
+          สื่อสาร
+        </p>
+        <h1 className='inline-flex items-center gap-2 text-xl font-bold text-brand-navy-deep'>
+          ข้อความ
+          {totalUnread > 0 ? (
+            <span className='inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-orange-deep px-1.5 text-[10px] font-bold leading-none text-white'>
+              {totalUnread > 99 ? '99+' : totalUnread}
+            </span>
+          ) : null}
+        </h1>
       </div>
 
-      <div className='flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 mb-5'>
-        <Search size={18} className='text-gray-400 shrink-0' />
-        <Input
-          type='text'
+      <div className='px-4 flex gap-2.5 items-stretch mb-4'>
+        <MobileSearchField
+          className='flex-1 min-w-0'
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder='ค้นหาการสนทนา...'
-          className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
+          onChange={setSearchText}
+          placeholder='ค้นหาการสนทนา…'
         />
       </div>
 
       {loading ? (
         <ListSkeleton />
       ) : error ? (
-        <div className='flex flex-col items-center justify-center py-12 text-center gap-3'>
-          <p className='text-sm text-gray-600 px-4'>{error}</p>
+        <div className='flex flex-col items-center justify-center gap-3 px-6 py-14 text-center'>
+          <p className='text-sm text-[var(--neutral-subtle)]'>{error}</p>
           <Button
             variant='unstyled'
             type='button'
             onClick={() => void onReload()}
-            className='inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white'
-            style={{ background: 'var(--brand-mauve)' }}
+            className='inline-flex items-center gap-2 rounded-xl bg-[var(--brand-mauve)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm'
           >
             <RefreshCw size={16} />
             ลองอีกครั้ง
@@ -103,9 +96,9 @@ export function MessagesMobile({
       ) : filtered.length === 0 ? (
         <MobileEmptyState />
       ) : (
-        <div className='space-y-3'>
+        <div className='space-y-2 px-4'>
           {filtered.map((conv) => (
-            <ConversationCard
+            <ConversationRow
               key={conv.id}
               conv={conv}
               onClick={() => navigate(`/chat-room/${conv.id}`)}
@@ -117,63 +110,84 @@ export function MessagesMobile({
   );
 }
 
-function ConversationCard({ conv, onClick }: { conv: UiConversation; onClick: () => void }) {
+function ConversationRow({
+  conv,
+  onClick,
+}: {
+  conv: UiConversation;
+  onClick: () => void;
+}) {
+  const time = formatConversationListTime(conv.lastMessageAt || conv.updatedAt);
+  const hasUnread = conv.unread > 0;
+
+  const preview = conv.hasQuote
+    ? 'มีใบเสนอราคาใหม่'
+    : conv.lastMessage?.trim() || conv.rfqName || '—';
+
   return (
-    <div
-      role='button'
-      tabIndex={0}
+    <Button
+      variant='unstyled'
+      type='button'
       onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClick();
-        }
-      }}
-      className='bg-white rounded-2xl p-4 shadow-sm border border-gray-50 cursor-pointer transition-all active:scale-[0.98]'
+      className='flex w-full items-center gap-2.5 rounded-2xl border border-white/75 bg-white/92 px-3 py-2.5 text-left shadow-[0_3px_14px_rgba(46,34,82,0.06)] transition-all hover:border-[var(--brand-violet-soft)] hover:shadow-[0_6px_18px_rgba(46,34,82,0.1)] active:scale-[0.995]'
     >
-      <div className='space-y-1.5'>
-        <ChatPartyHeader
-          view={conv.view}
-          density='row'
-          trailing={
-            <div className='flex flex-col items-end gap-1'>
-              <span className='text-[10px] text-gray-400'>
-                {formatConversationTime(conv.lastMessageAt || conv.updatedAt)}
-              </span>
-              {conv.unread > 0 ? (
-                <span className='px-1.5 py-0.5 rounded-full bg-brand-purple text-white text-[10px]'>
-                  {conv.unread}
-                </span>
-              ) : null}
-            </div>
-          }
+      <div className='relative shrink-0'>
+        <Avatar
+          src={conv.view.avatarUrl}
+          alt={conv.view.title}
+          fallbackSrc={FACTORY_FALLBACK_AVATAR}
+          fallback={conv.view.title.slice(0, 1)}
+          className='h-11 w-11 rounded-full ring-1 ring-white'
+          imageClassName='object-cover'
         />
-        <div className='pl-[56px]'>
-          <p className='text-[10px] mb-1 truncate' style={{ color: 'var(--brand-mauve)' }}>
-            {conv.rfqName}
-          </p>
+      </div>
+
+      <div className='min-h-[44px] min-w-0 flex-1'>
+        <div className='flex items-center justify-between gap-2'>
+          <div className='flex min-w-0 items-center gap-0.5'>
+            <p
+              className={cn(
+                'truncate text-[14px] leading-tight text-[var(--brand-navy)]',
+                hasUnread ? 'font-bold' : 'font-semibold',
+              )}
+            >
+              {conv.view.title}
+            </p>
+            {conv.view.verified ? (
+              <BadgeCheck size={12} className='shrink-0 text-[var(--brand-purple)]' />
+            ) : null}
+          </div>
+          {time ? (
+            <span className='shrink-0 text-[11px] tabular-nums leading-none text-[#9BB5C0]'>
+              {time}
+            </span>
+          ) : null}
+        </div>
+
+        <div className='mt-0.5 flex items-center justify-between gap-2'>
           <p
-            className='text-xs truncate max-w-[220px]'
-            style={{
-              color: conv.unread > 0 ? 'var(--neutral-text)' : 'var(--neutral-placeholder)',
-            }}
+            className={cn(
+              'min-w-0 flex-1 truncate text-[12px] leading-tight',
+              conv.hasQuote
+                ? 'font-medium text-[var(--brand-orange-deep)]'
+                : hasUnread
+                  ? 'text-[#5F7A88]'
+                  : 'text-[#8BAFBC]',
+            )}
           >
-            {conv.lastMessage}
+            {preview}
           </p>
+          {hasUnread ? (
+            <span
+              className='flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--brand-violet-soft)] px-1 text-[10px] font-bold leading-none text-[var(--brand-purple)]'
+              aria-label={`${conv.unread} ข้อความใหม่`}
+            >
+              {conv.unread > 99 ? '99+' : conv.unread}
+            </span>
+          ) : null}
         </div>
       </div>
-      {conv.hasQuote && (
-        <div
-          className='mt-3 flex items-center gap-2 px-3 py-2 rounded-xl'
-          style={{ background: 'var(--surface-orange-tint)' }}
-        >
-          <span className='text-sm'>💰</span>
-          <span className='text-xs' style={{ color: 'var(--brand-orange-deep)', fontWeight: 600 }}>
-            มีใบเสนอราคาใหม่ — กดเพื่อดู
-          </span>
-        </div>
-      )}
-    </div>
+    </Button>
   );
 }
 
@@ -184,7 +198,10 @@ function MobileEmptyState() {
       description='ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ'
       className='py-16'
       icon={
-        <span className='text-3xl' style={{ color: 'var(--brand-mauve)' }}>
+        <span
+          className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)] text-2xl'
+          style={{ color: 'var(--brand-mauve)' }}
+        >
           💬
         </span>
       }

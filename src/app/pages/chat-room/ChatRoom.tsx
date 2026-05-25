@@ -56,6 +56,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { mediaApi } from '@/services/api/factoryApi';
+import { cn } from '@lib/utils';
 
 function referenceLabel(ref: ChatReference): string {
   const t = ref.title?.trim();
@@ -182,6 +183,7 @@ function ChatRoomBody({
   const [quotationLoadingId, setQuotationLoadingId] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const seedConsumedRef = useRef(false);
@@ -503,13 +505,16 @@ function ChatRoomBody({
     [refreshThread],
   );
 
+  const isFullMobile = variant === 'full';
+
   return (
     <div
-      className={
-        variant === 'full'
-          ? 'h-[calc(100vh-4rem)] flex flex-col bg-white'
-          : 'h-full flex flex-col bg-white rounded-l-3xl overflow-hidden shadow-sm'
-      }
+      className={cn(
+        'flex min-h-0 flex-col bg-white',
+        isFullMobile
+          ? 'h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] max-lg:max-h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] lg:h-[calc(100vh-4rem)]'
+          : 'h-full overflow-hidden rounded-l-3xl shadow-sm',
+      )}
     >
       <div className='px-4 pt-5 pb-3 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm'>
         <div className='flex items-center justify-between mb-3'>
@@ -689,7 +694,13 @@ function ChatRoomBody({
         </div>
       ) : null}
 
-      <div className='px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-gray-100'>
+      <div
+        className={cn(
+          'shrink-0 border-t border-[color-mix(in_srgb,var(--brand-purple)_12%,var(--neutral-border))]',
+          'bg-white/95 backdrop-blur-md',
+          isFullMobile ? 'px-3 pt-2 pb-2.5 lg:px-4 lg:pb-3' : 'px-4 py-3',
+        )}
+      >
         {pendingRef ? (
           <div className='mb-2 flex flex-wrap items-center gap-2'>
             <ReferenceChip reference={pendingRef} />
@@ -708,7 +719,7 @@ function ChatRoomBody({
             ข้อความถัดไปจะแนบ: {referenceLabel(pendingRef)}
           </p>
         ) : null}
-        <div className='flex items-end gap-2'>
+        <div className='flex items-center gap-1.5'>
           <input
             ref={fileInputRef}
             type='file'
@@ -722,23 +733,34 @@ function ChatRoomBody({
             aria-label='แนบรูปภาพ'
             disabled={!apiConv || uploadingImage}
             onClick={() => fileInputRef.current?.click()}
-            className='w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 disabled:opacity-50'
+            className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--brand-lavender-chip)] text-[var(--brand-purple)] transition-colors hover:bg-[var(--brand-violet-soft)] disabled:opacity-50'
           >
             {uploadingImage ? (
-              <span className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin' />
+              <span className='h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--brand-purple)] border-t-transparent' />
             ) : (
-              <Paperclip size={18} className='text-gray-500' />
+              <Paperclip size={16} strokeWidth={2} />
             )}
           </Button>
-          <div className='flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 flex items-center gap-2'>
+          <div
+            className={cn(
+              'flex min-h-9 flex-1 items-center rounded-full border px-3 py-1',
+              'border-[color-mix(in_srgb,var(--brand-purple)_12%,var(--neutral-border))]',
+              'bg-[var(--neutral-warm-surface)]',
+              'transition-[border-color,box-shadow] duration-200',
+              'focus-within:border-[color-mix(in_srgb,var(--brand-purple)_32%,var(--neutral-border))]',
+              'focus-within:bg-white focus-within:shadow-[0_1px_6px_rgba(46,34,82,0.08)]',
+            )}
+          >
             <Input
+              ref={messageInputRef}
               type='text'
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={apiConv ? 'พิมพ์ข้อความ...' : 'รอโหลดห้องแชท...'}
+              onDoubleClick={(e) => e.currentTarget.select()}
+              placeholder={apiConv ? 'พิมพ์ข้อความ…' : 'รอโหลดห้องแชท…'}
               disabled={!apiConv}
-              className='flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none'
+              className='h-auto min-h-0 flex-1 select-text border-0 bg-transparent p-0 text-[13px] leading-[1.35] text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-[13px] placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
             />
           </div>
           {isBuyer ? (
@@ -747,11 +769,10 @@ function ChatRoomBody({
               type='button'
               onClick={() => setShowRFQPicker(true)}
               disabled={!apiConv}
-              className='h-10 rounded-xl px-2.5 text-xs font-medium border border-brand-mauve/30 text-brand-mauve hover:bg-brand-mauve/5 shrink-0 disabled:opacity-50'
+              className='flex h-9 shrink-0 items-center gap-0.5 rounded-full border border-[color-mix(in_srgb,var(--brand-purple)_18%,var(--neutral-border))] bg-[var(--brand-lavender-chip)] px-2 text-[10px] font-semibold text-[var(--brand-purple)] transition-colors hover:bg-[var(--brand-violet-soft)] disabled:opacity-50'
             >
-              <span className='inline-flex items-center gap-1'>
-                <FileText size={14} /> แนบ RFQ
-              </span>
+              <FileText size={13} strokeWidth={2} />
+              <span className='hidden min-[380px]:inline'>RFQ</span>
             </Button>
           ) : null}
           <Button
@@ -760,13 +781,19 @@ function ChatRoomBody({
             aria-label='ส่งข้อความ'
             onClick={() => void sendMessage()}
             disabled={!message.trim() || sending || !apiConv}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${
-              message.trim() && !sending && apiConv ? 'bg-brand-orange-deep' : 'bg-neutral-border'
-            }`}
+            className={cn(
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200',
+              message.trim() && !sending && apiConv
+                ? 'bg-[linear-gradient(135deg,#1A0F2E_0%,#4A267D_45%,var(--brand-purple)_100%)] shadow-[0_2px_10px_rgba(162,56,255,0.3)] active:scale-95'
+                : 'bg-[var(--neutral-muted)]',
+            )}
           >
             <Send
-              size={17}
-              className={message.trim() && !sending && apiConv ? 'text-white' : 'text-gray-400'}
+              size={16}
+              strokeWidth={2}
+              className={
+                message.trim() && !sending && apiConv ? 'text-white' : 'text-[var(--neutral-placeholder)]'
+              }
             />
           </Button>
         </div>
