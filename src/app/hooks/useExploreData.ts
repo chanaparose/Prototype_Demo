@@ -28,8 +28,21 @@ export function useExploreData(options?: UseExploreDataOptions) {
     [exploreData?.categories],
   );
 
-  // factories are not part of explore anymore (heavy data — load separately if needed)
-  const exploreFactories: FactoryItem[] = [];
+  // "โรงงานแนะนำ" — มาจาก /api/v1/explore โดยตรง (backend เรียง verified+rating แล้ว)
+  const exploreFactories = useMemo<FactoryItem[]>(
+    () =>
+      (exploreData?.factories ?? []).map((f) => ({
+        id: String(f.id),
+        name: f.name,
+        image: f.image,
+        location: f.location,
+        rating: f.rating,
+        reviews: f.reviews,
+        minOrder: f.minOrder,
+        verified: f.verified,
+      })),
+    [exploreData?.factories],
+  );
 
   const productShowcases = useMemo<IExploreShowcase[]>(
     () => exploreData?.pdShowcases ?? [],

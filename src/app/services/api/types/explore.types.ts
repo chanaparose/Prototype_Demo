@@ -58,11 +58,22 @@ export interface IExploreSubCategoryResponse {
   sort_order?: number;
 }
 
+export interface IExploreFactoryItem {
+  id: number;
+  name: string;
+  image: string;
+  location: string;
+  rating: number;
+  reviews: number;
+  min_order: number;
+  verified: boolean;
+}
+
 export interface IExploreResponse {
   products: IExploreShowcaseResponse[];
   promotions: IExploreShowcaseResponse[];
   promo_codes: unknown[];
-  factories: unknown[];
+  factories: IExploreFactoryItem[];
   idea_articles: IExploreShowcaseResponse[];
   categories: IExploreCategoryResponse[];
 }
@@ -75,11 +86,12 @@ export interface IPromoSlideResponse {
   link_to: string;
 }
 
-/** Response shape จาก GET /api/v1/explore — single call ที่รวม categories + showcases + promoSlides */
+/** Response shape จาก GET /api/v1/explore — single call ที่รวม categories + showcases + promoSlides + factories */
 export interface IExploreApiResponse {
   categories: IExploreCategoryResponse[];
   showcases: IShowcasesGroupedResponse;
   promoSlides: IPromoSlideResponse[];
+  factories: IExploreFactoryItem[];
 }
 
 /** Response shape จาก GET /api/v1/categories?include_sub=true */
