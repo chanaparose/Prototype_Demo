@@ -40,11 +40,11 @@ export function useFactoryIdeasCategoriesQuery(materialTab = false) {
   });
 }
 
-export function useFactoryIdeasFactoryListQuery(enabled: boolean) {
+export function useFactoryIdeasFactoryListQuery(enabled: boolean, scope?: 'PD' | 'MT') {
   return useQuery({
-    queryKey: factoryIdeasKeys.factoryList(),
+    queryKey: factoryIdeasKeys.factoryList(scope),
     queryFn: async () => {
-      const raw = await factoriesApi.list();
+      const raw = await factoriesApi.list(scope);
       const r = raw as unknown;
       const arr = (
         Array.isArray(r)

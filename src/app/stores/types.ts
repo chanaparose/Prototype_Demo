@@ -26,6 +26,8 @@ export type BootstrapFactoryModel = {
   completedOrders: number;
   priceRange: string;
   factoryTypeName?: string;
+  /** Distinct lbi_categories.scope values: "PD", "MT", or both */
+  categoryScopes?: string[];
 };
 
 export type BootstrapFactoryProfileModel = {

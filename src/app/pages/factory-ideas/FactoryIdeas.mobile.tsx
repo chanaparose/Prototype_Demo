@@ -57,6 +57,9 @@ export function FactoryIdeasMobile() {
     applyCategory,
     isFactoryTab,
     isMaterialTab,
+    isMtCategoryScope,
+    factoryScope,
+    setFactoryScope,
     showcasesLoading,
     factoriesLoading,
     visibleItems,
@@ -143,6 +146,35 @@ export function FactoryIdeasMobile() {
           })}
         </div>
 
+        {/* ── Factory type pills (factory tab only) ── */}
+        {isFactoryTab && (
+          <div className='flex items-center gap-2 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide'>
+            {(
+              [
+                { value: 'all', label: 'ทั้งหมด' },
+                { value: 'PD',  label: 'โรงงานผลิต' },
+                { value: 'MT',  label: 'โรงงานวัตถุดิบ' },
+              ] as const
+            ).map((opt) => {
+              const active = factoryScope === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type='button'
+                  onClick={() => setFactoryScope(opt.value)}
+                  className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-all ${
+                    active
+                      ? 'border-[var(--brand-purple)] bg-[var(--brand-purple)] text-white shadow-[0_2px_8px_rgba(162,56,255,0.28)]'
+                      : 'border-gray-200 bg-white text-gray-500 active:scale-95'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className='flex flex-wrap items-center gap-2 px-4 pb-3 mt-3'>
           <FactoryIdeasCategoryDropdown
             variant='mobile'
@@ -155,7 +187,7 @@ export function FactoryIdeasMobile() {
             effectiveCategoryId={effectiveCategoryId}
             selectedSubCategoryId={selectedSubCategoryId}
             setSelectedSubCategoryId={setSelectedSubCategoryId}
-            isMaterialTab={isMaterialTab}
+            isMaterialTab={isMtCategoryScope}
             categoryMenuTriggerLabel={categoryMenuTriggerLabel}
             menuHighlightCategoryId={menuHighlightCategoryId}
             setMenuHighlightCategoryId={setMenuHighlightCategoryId}

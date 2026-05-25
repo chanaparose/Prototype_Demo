@@ -9,7 +9,10 @@ import {
 } from '@/services/api/types/factory.types';
 
 export const factoriesApi = {
-  list: () => httpClient.get<IFactoryBaseResponse[]>('/factories'),
+  list: (scope?: 'PD' | 'MT') => {
+    const url = scope ? `/factories?scope=${scope}` : '/factories';
+    return httpClient.get<IFactoryBaseResponse[]>(url);
+  },
 
   get: (id: string | number) => httpClient.get<IFactoryWithDetailsResponse>(`/factories/${id}`),
 
