@@ -26,6 +26,7 @@ import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
 import { useMobileBottomNavHide } from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
+import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 
 // ─── Customer bottom nav (5 items) ─────────────────────────────────────────
 const customerNavLinks = [
@@ -94,6 +95,7 @@ export function Layout() {
   const isAdminRole = userRole === 'AM' || userRole === 'AD' || userRole === 'SA';
   const factoryApproved = factoryVerifyStatus(user) === 'AP';
   const bottomNavHidden = useMobileBottomNavHide();
+  const unreadMessages = useConversationUnreadCount();
 
   if (isAdminRole && !location.pathname.startsWith('/admin')) {
     return <Navigate to='/admin/dashboard' replace />;
@@ -213,11 +215,21 @@ export function Layout() {
                     }}
                     className='flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 disabled:opacity-40'
                   >
-                    <Icon
-                      size={23}
-                      strokeWidth={active ? 2.2 : 1.6}
-                      style={{ color: active ? brandActive : '#9CA3AF' }}
-                    />
+                    <div className='relative'>
+                      <Icon
+                        size={23}
+                        strokeWidth={active ? 2.2 : 1.6}
+                        style={{ color: active ? brandActive : '#9CA3AF' }}
+                      />
+                      {item.key === 'messages' && unreadMessages > 0 && (
+                        <span
+                          className='absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full text-white flex items-center justify-center text-[8px] border border-white tabular-nums'
+                          style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
+                        >
+                          {unreadMessages > 99 ? '99+' : unreadMessages}
+                        </span>
+                      )}
+                    </div>
                     <span
                       className='text-[10px] font-medium leading-tight truncate max-w-full px-1'
                       style={{ color: active ? brandActive : '#9CA3AF' }}
@@ -246,11 +258,21 @@ export function Layout() {
                     onClick={() => void navigate(target)}
                     className='flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 relative'
                   >
-                    <Icon
-                      size={23}
-                      strokeWidth={active ? 2.2 : 1.6}
-                      style={{ color: active ? brandActive : '#9CA3AF' }}
-                    />
+                    <div className='relative'>
+                      <Icon
+                        size={23}
+                        strokeWidth={active ? 2.2 : 1.6}
+                        style={{ color: active ? brandActive : '#9CA3AF' }}
+                      />
+                      {path === '/messages' && unreadMessages > 0 && (
+                        <span
+                          className='absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full text-white flex items-center justify-center text-[8px] border border-white tabular-nums'
+                          style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
+                        >
+                          {unreadMessages > 99 ? '99+' : unreadMessages}
+                        </span>
+                      )}
+                    </div>
                     <span
                       className='text-[10px] font-medium leading-tight truncate max-w-full px-1'
                       style={{ color: active ? brandActive : '#9CA3AF' }}
