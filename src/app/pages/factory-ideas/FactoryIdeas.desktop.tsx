@@ -16,7 +16,9 @@ import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
   factoryIdeasVisibleContentTypes as CONTENT_TYPES,
+  factoryIdeasTabOrder,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
@@ -171,6 +173,7 @@ export function FactoryIdeasDesktop() {
       </div>
 
       <div className='px-8 py-6'>
+        <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2'>
             <Loader2 className='h-8 w-8 animate-spin text-[var(--brand-mauve)]' />
@@ -613,6 +616,7 @@ export function FactoryIdeasDesktop() {
             </div>
           </div>
         )}
+        </TabSwipeContent>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { type FactoryShowcase } from '@/stores/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NotificationItemSkeleton } from '@/components/skeletons/PageSkeletons';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 
 type FavoritesTab = 'all' | 'product' | 'promotion' | 'idea';
 
@@ -19,6 +20,8 @@ const TABS: { id: FavoritesTab; label: string }[] = [
   { id: 'promotion', label: 'โปรโมชัน' },
   { id: 'idea', label: 'ไอเดีย' },
 ];
+
+const FAVORITES_TAB_ORDER = TABS.map((t) => t.id);
 
 function detailHref(item: FactoryShowcase): string {
   if (item.contentType === 'promotion')
@@ -131,6 +134,7 @@ export function FavoriteShowcasesPage() {
           <span className='text-[11px] text-slate-400'>{filtered.length} รายการ</span>
         </div>
 
+        <TabSwipeContent activeKey={tab} tabOrder={FAVORITES_TAB_ORDER}>
         <div className='space-y-3'>
           {loading ? (
             <>
@@ -163,6 +167,7 @@ export function FavoriteShowcasesPage() {
             ))
           )}
         </div>
+        </TabSwipeContent>
       </div>
     </div>
   );

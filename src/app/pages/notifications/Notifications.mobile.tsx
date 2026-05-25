@@ -21,6 +21,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatDateTime } from '@/utils/formatting/formatDate';
 import { NotificationItemSkeleton } from '@/components/skeletons/PageSkeletons';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
+
+const NOTIFICATION_TAB_ORDER = ['all', 'rfq', 'order'] as const;
 
 export function NotificationsMobile() {
   const navigate = useNavigate();
@@ -230,6 +233,7 @@ export function NotificationsMobile() {
           </div>
         ) : null}
 
+        <TabSwipeContent activeKey={tab} tabOrder={NOTIFICATION_TAB_ORDER}>
         <div className='space-y-3'>
           {loading ? (
             <>
@@ -304,6 +308,7 @@ export function NotificationsMobile() {
             </Button>
           </div>
         ) : null}
+        </TabSwipeContent>
       </div>
     </div>
   );
