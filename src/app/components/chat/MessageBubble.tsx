@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowRight, Check, CreditCard, FileText, X } from 'lucide-react';
+import { cn } from '@lib/utils';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { ChatReference, ChatReferenceType } from '@/utils/chatContract';
 import { ReferenceChip } from '@/components/chat/ReferenceChip';
@@ -8,6 +9,13 @@ import { normalizeIso } from '@/pages/messages/selectors';
 import { formatChatTime } from '@/utils/chatTime';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
+
+/** LINE-style: ข้อความที่ส่ง (ฝั่งเรา) */
+const SENT_TEXT_BG = 'var(--brand-violet-soft)';
+const SENT_TEXT_BORDER = 'color-mix(in srgb, var(--brand-purple) 22%, var(--neutral-border))';
+/** LINE-style: ข้อความที่รับ */
+const RECV_TEXT_BG = 'var(--surface-orange-wash)';
+const RECV_TEXT_BORDER = 'color-mix(in srgb, var(--brand-orange-deep) 28%, var(--neutral-border))';
 
 /** Tiny inline spinner for the "sending" status on optimistic bubbles. */
 function SendingSpinner({ color }: { color: string }) {
@@ -194,6 +202,92 @@ export function rowToRoomMessage(r: Record<string, unknown>): RoomMessage | null
   };
 }
 
+function PeerAvatar({ url }: { url: string }) {
+  return (
+    <ImageWithFallback
+      src={url}
+      alt=''
+      className='mt-auto h-7 w-7 shrink-0 rounded-full object-cover bg-gray-100'
+    />
+  );
+}
+
+function MessageTimeMeta({ msg, isMine }: { msg: RoomMessage; isMine: boolean }) {
+  return (
+    <span className='inline-flex shrink-0 items-center gap-0.5 text-[10px] leading-none text-gray-400'>
+      {msg.status === 'sending' ? (
+        <SendingSpinner color='var(--neutral-placeholder)' />
+      ) : null}
+      {isMine && msg.status === 'ok' && msg.is_read ? <span>Read </span> : null}
+      <span>{msg.display_time}</span>
+      {msg.status === 'error' ? <span className='text-red-500'>!</span> : null}
+      {isMine && msg.status === 'ok' ? (
+        <span
+          className='ml-0.5 inline-flex items-center text-gray-400'
+          aria-label={msg.is_read ? 'read' : 'unread'}
+          title={msg.is_read ? 'Read' : 'Unread'}
+        >
+          <Check className='h-3 w-3' strokeWidth={2.5} />
+          {msg.is_read ? <Check className='-ml-1.5 h-3 w-3' strokeWidth={2.5} /> : null}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+function TextBubbleBody({
+  msg,
+  isMine,
+  refChip,
+}: {
+  msg: RoomMessage;
+  isMine: boolean;
+  refChip: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn('flex min-w-0 max-w-[78%] flex-col gap-1', isMine ? 'items-end' : 'items-start')}
+    >
+      <div className={cn('flex items-end gap-1.5', isMine ? 'flex-row-reverse' : 'flex-row')}>
+        <div
+          className={cn(
+            'rounded-2xl border px-3 py-2 text-[13px] leading-[1.4] whitespace-pre-wrap break-words text-[var(--brand-navy)]',
+            isMine ? 'rounded-br-sm' : 'rounded-bl-sm',
+            msg.status === 'sending' && 'opacity-60',
+          )}
+          style={{
+            background: isMine ? SENT_TEXT_BG : RECV_TEXT_BG,
+            borderColor: isMine ? SENT_TEXT_BORDER : RECV_TEXT_BORDER,
+          }}
+        >
+          {msg.content}
+        </div>
+        <MessageTimeMeta msg={msg} isMine={isMine} />
+      </div>
+      {refChip}
+    </div>
+  );
+}
+
+function TextChatBubble({
+  msg,
+  isMine,
+  peerAvatarUrl,
+  refChip,
+}: {
+  msg: RoomMessage;
+  isMine: boolean;
+  peerAvatarUrl: string;
+  refChip: React.ReactNode;
+}) {
+  return (
+    <div className={cn('flex gap-2', isMine ? 'justify-end' : 'justify-start')}>
+      {!isMine ? <PeerAvatar url={peerAvatarUrl} /> : null}
+      <TextBubbleBody msg={msg} isMine={isMine} refChip={refChip} />
+    </div>
+  );
+}
+
 export function MessageBubble({
   msg,
   currentUserId,
@@ -347,61 +441,45 @@ export function MessageBubble({
   }
 
   if (msg.message_type === 'IM' && msg.imageUrl) {
+    const caption = msg.content.trim();
     return (
-      <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} gap-2`}>
-        {!isMine && (
-          <ImageWithFallback
-            src={peerAvatarUrl}
-            alt=''
-            className='w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100'
-          />
-        )}
+      <div className={cn('flex gap-2', isMine ? 'justify-end' : 'justify-start')}>
+        {!isMine ? <PeerAvatar url={peerAvatarUrl} /> : null}
         <div
-          className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}
+          className={cn(
+            'flex min-w-0 max-w-[78%] flex-col gap-1',
+            isMine ? 'items-end' : 'items-start',
+          )}
         >
           <div
-            className={`rounded-2xl overflow-hidden ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
-            style={{ background: isMine ? 'var(--brand-mauve)' : 'var(--neutral-muted)' }}
+            className={cn(
+              'overflow-hidden rounded-2xl',
+              isMine ? 'rounded-br-md' : 'rounded-bl-md',
+              msg.status === 'sending' && 'opacity-60',
+            )}
           >
             <ImageWithFallback
               src={msg.imageUrl}
               alt=''
-              className='max-w-full max-h-64 object-cover block'
+              className='block max-h-72 w-full max-w-[min(100%,280px)] object-cover'
             />
-            {msg.content.trim() ? (
-              <p
-                className='text-sm px-4 py-2 whitespace-pre-wrap break-words'
-                style={{ color: isMine ? 'var(--neutral-white)' : '#1F2937' }}
-              >
-                {msg.content}
-              </p>
-            ) : null}
-            <p
-              className='text-[10px] px-4 pb-2 flex items-center gap-1'
-              style={{
-                color: isMine ? 'rgba(255,255,255,0.5)' : 'var(--neutral-placeholder)',
-                justifyContent: isMine ? 'flex-end' : 'flex-start',
-              }}
-            >
-              {msg.status === 'sending' ? (
-                <SendingSpinner
-                  color={isMine ? 'var(--neutral-white)' : 'var(--neutral-placeholder)'}
-                />
-              ) : null}
-              <span>{msg.display_time}</span>
-              {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}
-              {isMine && msg.status === 'ok' ? (
-                <span
-                  className='ml-1 inline-flex items-center'
-                  aria-label={msg.is_read ? 'read' : 'unread'}
-                  title={msg.is_read ? 'Read' : 'Unread'}
-                >
-                  <Check className='w-3 h-3' strokeWidth={2.5} />
-                  {msg.is_read ? <Check className='w-3 h-3 -ml-1.5' strokeWidth={2.5} /> : null}
-                </span>
-              ) : null}
-            </p>
           </div>
+          {caption ? (
+            <TextBubbleBody
+              msg={{ ...msg, content: caption, message_type: 'TX' }}
+              isMine={isMine}
+              refChip={null}
+            />
+          ) : (
+            <div
+              className={cn(
+                'flex items-center gap-1.5 px-0.5',
+                isMine ? 'flex-row-reverse' : 'flex-row',
+              )}
+            >
+              <MessageTimeMeta msg={msg} isMine={isMine} />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -418,53 +496,6 @@ export function MessageBubble({
     ) : null;
 
   return (
-    <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} gap-2`}>
-      {!isMine && (
-        <ImageWithFallback
-          src={peerAvatarUrl}
-          alt=''
-          className='w-7 h-7 rounded-xl object-cover shrink-0 mt-auto bg-gray-100'
-        />
-      )}
-      <div className={`max-w-[70%] min-w-0 ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
-        <div
-          className={`px-4 py-2.5 rounded-2xl ${isMine ? 'rounded-br-md' : 'rounded-bl-md'} ${msg.status === 'sending' ? 'opacity-60' : ''}`}
-          style={{ background: isMine ? 'var(--brand-mauve)' : 'var(--neutral-muted)' }}
-        >
-          <p
-            className='text-sm whitespace-pre-wrap break-words'
-            style={{ color: isMine ? 'var(--neutral-white)' : '#1F2937' }}
-          >
-            {msg.content}
-          </p>
-          <p
-            className='text-[10px] mt-0.5 flex items-center gap-1'
-            style={{
-              color: isMine ? 'rgba(255,255,255,0.5)' : 'var(--neutral-placeholder)',
-              justifyContent: isMine ? 'flex-end' : 'flex-start',
-            }}
-          >
-            {msg.status === 'sending' ? (
-              <SendingSpinner
-                color={isMine ? 'var(--neutral-white)' : 'var(--neutral-placeholder)'}
-              />
-            ) : null}
-            <span>{msg.display_time}</span>
-            {msg.status === 'error' ? <span className='ml-1 text-red-200'>!</span> : null}
-            {isMine && msg.status === 'ok' ? (
-              <span
-                className='ml-1 inline-flex items-center'
-                aria-label={msg.is_read ? 'read' : 'unread'}
-                title={msg.is_read ? 'Read' : 'Unread'}
-              >
-                <Check className='w-3 h-3' strokeWidth={2.5} />
-                {msg.is_read ? <Check className='w-3 h-3 -ml-1.5' strokeWidth={2.5} /> : null}
-              </span>
-            ) : null}
-          </p>
-        </div>
-        {refChip}
-      </div>
-    </div>
+    <TextChatBubble msg={msg} isMine={isMine} peerAvatarUrl={peerAvatarUrl} refChip={refChip} />
   );
 }
