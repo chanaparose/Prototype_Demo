@@ -15,6 +15,8 @@ import { Step4QualityReview } from '@/pages/rfq/steps/Step4QualityReview';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/stores/useAuthStore';
+import { LogIn } from 'lucide-react';
 
 const step1Schema = z.object({
   title: z.string().min(1),
@@ -40,6 +42,7 @@ const STEPS = ['กรอกข้อมูล', 'สรุปข้อมูล
 export function RFQCreateWizard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isAuthenticated } = useAuth();
   const { draft, setDraft, reset } = useRFQDraft();
   const create = useCreateRFQ();
   const [step, setStep] = React.useState(0);
@@ -261,6 +264,12 @@ export function RFQCreateWizard() {
   }, [draft]);
 
   const submit = async () => {
+    // Guest gate — preserve draft in sessionStorage via useRFQDraft so it
+    // survives the login redirect, then return here automatically.
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/create-rfq');
+      return;
+    }
     if (!step1Schema.safeParse(draft).success) return;
     await create.mutateAsync({
       ...draft,
@@ -471,7 +480,7 @@ export function RFQCreateWizard() {
 
             <section className='rounded-xl border border-gray-100 p-3 sm:p-4'>
               <p className='text-sm font-semibold text-brand-navy mb-3'>เงื่อนไขส่งมอบ</p>
-              <Step3Commercial draft={draft} setDraft={setDraft} onLoaded={handleStep3Loaded} />
+              <Step3Commercial draft={draft} setDraft={setDraft} onLoaded={handleStep3Loaded} isGuest={!isAuthenticated} />
             </section>
 
             {!isSampleMode ? (
@@ -589,6 +598,16 @@ export function RFQCreateWizard() {
               className='px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold disabled:opacity-50'
             >
               ถัดไป: ตรวจสอบข้อมูล
+            </Button>
+          ) : !isAuthenticated ? (
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => navigate('/login?redirect=/create-rfq')}
+              className='flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold'
+            >
+              <LogIn size={15} />
+              ล็อกอินเพื่อส่งคำขอ
             </Button>
           ) : (
             <Button

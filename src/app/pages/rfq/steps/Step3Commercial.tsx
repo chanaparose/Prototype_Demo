@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 
 import React from 'react';
-import { CheckCircle2, MapPin, Plus, Truck } from 'lucide-react';
+import { CheckCircle2, LogIn, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import { mapAddressFromApi, type MappedAddress } from '@/domain/shared/mappers/mapAddressFromApi';
 import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
@@ -25,6 +25,7 @@ type Props = {
   draft: RFQDraft;
   setDraft: (next: Partial<RFQDraft>) => void;
   onLoaded?: (addressMap: Record<number, string>, shippingMap: Record<number, string>) => void;
+  isGuest?: boolean;
 };
 
 const FALLBACK_SHIPPING: ShippingMethod[] = [
@@ -34,10 +35,10 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
   { id: 4, name: 'รถบรรทุกโรงงาน' },
 ];
 
-export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) {
+export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: Readonly<Props>) {
   /* addresses */
   const [addresses, setAddresses] = React.useState<MappedAddress[]>([]);
-  const [addrLoading, setAddrLoading] = React.useState(true);
+  const [addrLoading, setAddrLoading] = React.useState(!isGuest);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const autoSelected = React.useRef(false);
@@ -70,6 +71,9 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
   }, []);
 
   React.useEffect(() => {
+    // Guests don't have addresses — skip API call entirely
+    if (isGuest) return;
+
     let shippingMapResult: Record<number, string> = {};
     let addressMapResult: Record<number, string> = {};
 
@@ -147,7 +151,19 @@ export function Step3Commercial({ draft, setDraft, onLoaded }: Readonly<Props>) 
           ที่อยู่จัดส่งสินค้า <span className='text-red-400 ml-0.5'>*</span>
         </p>
 
-        {addrLoading ? (
+        {isGuest ? (
+          <div className='flex items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/60 px-4 py-4'>
+            <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100'>
+              <LogIn size={18} className='text-violet-500' />
+            </div>
+            <div>
+              <p className='text-sm font-semibold text-violet-700'>ล็อกอินเพื่อเลือกที่อยู่จัดส่ง</p>
+              <p className='text-xs text-violet-500 mt-0.5'>
+                กรอกข้อมูลสินค้าได้เลย — ระบุที่อยู่ได้หลังจากล็อกอิน
+              </p>
+            </div>
+          </div>
+        ) : addrLoading ? (
           <div className='space-y-2'>
             <div className='h-14 rounded-xl bg-gray-100 animate-pulse' />
             <div className='h-14 rounded-xl bg-gray-100 animate-pulse opacity-50' />
