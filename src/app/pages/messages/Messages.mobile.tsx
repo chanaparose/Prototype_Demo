@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { Search, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Input } from '@/components/ui/input';
+import { MobileSearchField } from '@/components/shared/MobileSearchField';
 
 type MessagesMobileProps = {
   searchText: string;
@@ -73,16 +73,12 @@ export function MessagesMobile({
         </div>
       </div>
 
-      <div className='flex items-center gap-2 bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 mb-5'>
-        <Search size={18} className='text-gray-400 shrink-0' />
-        <Input
-          type='text'
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          placeholder='ค้นหาการสนทนา...'
-          className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
-        />
-      </div>
+      <MobileSearchField
+        className='mb-5'
+        value={searchText}
+        onChange={setSearchText}
+        placeholder='ค้นหาการสนทนา…'
+      />
 
       {loading ? (
         <ListSkeleton />

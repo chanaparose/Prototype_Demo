@@ -107,12 +107,19 @@ export function Layout() {
   const brandActive = isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)';
   const brandActiveBg = isFactory ? '#EEF2FF' : 'rgba(162,56,255,0.08)';
 
+  /** Mobile FAB — whitelist only (Explore home = `/`) */
+  const createRfqFabPaths = [
+    '/',
+    '/factory-ideas',
+    '/orders',
+    '/messages',
+    '/profile',
+  ] as const;
+
   const showCreateRfqFab =
     !isFactory &&
     !isAdminRole &&
-    location.pathname !== '/create-rfq' &&
-    !location.pathname.startsWith('/login') &&
-    !location.pathname.startsWith('/register');
+    (createRfqFabPaths as readonly string[]).includes(location.pathname);
 
   return (
     <div className='min-h-screen flex bg-white w-full max-w-full overflow-x-hidden'>
