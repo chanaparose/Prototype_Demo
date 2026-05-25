@@ -7,6 +7,7 @@ import {
   User,
   Lightbulb,
   Bell,
+  Heart,
   Wallet,
   LayoutDashboard,
   Images,
@@ -27,6 +28,7 @@ import { Image } from '@/components/ui/image';
 import { useMobileBottomNavHide } from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
+import { useFavorites } from '@/hooks/useFavorites';
 
 // ─── Customer bottom nav (5 items) ─────────────────────────────────────────
 const customerNavLinks = [
@@ -96,6 +98,12 @@ export function Layout() {
   const factoryApproved = factoryVerifyStatus(user) === 'AP';
   const bottomNavHidden = useMobileBottomNavHide();
   const unreadMessages = useConversationUnreadCount();
+  const { likedIds } = useFavorites();
+  const favoriteCount = likedIds.size;
+  const showCustomerFavorites = !isFactory && !isAdminRole;
+  const favoritesHref = isAuthenticated
+    ? '/profile/favorites'
+    : '/login?redirect=/profile/favorites';
 
   if (isAdminRole && !location.pathname.startsWith('/admin')) {
     return <Navigate to='/admin/dashboard' replace />;
@@ -158,6 +166,29 @@ export function Layout() {
                     </span>
                   </Link>
                 )}
+
+                {showCustomerFavorites ? (
+                  <Link
+                    to={favoritesHref}
+                    className='relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-gray-100'
+                    title='รายการโปรด'
+                    aria-label='รายการโปรด'
+                  >
+                    <Heart
+                      size={19}
+                      className={favoriteCount > 0 ? 'fill-current' : ''}
+                      style={{ color: 'var(--brand-purple)' }}
+                    />
+                    {isAuthenticated && favoriteCount > 0 ? (
+                      <span
+                        className='absolute top-0.5 right-0.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full border-2 border-white px-0.5 text-[9px] tabular-nums text-white'
+                        style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
+                      >
+                        {favoriteCount > 99 ? '99+' : favoriteCount}
+                      </span>
+                    ) : null}
+                  </Link>
+                ) : null}
 
                 {/* Bell */}
                 <Link
