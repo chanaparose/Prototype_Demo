@@ -84,7 +84,8 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   // Always fetch all types so switching tabs hits the cache instead of re-fetching
   const showcaseTypes = useMemo((): ('PD' | 'PM' | 'ID' | 'MT')[] => {
     if (isFactoryTab) return [];
-    return ['PD', 'PM', 'ID', 'MT'];
+    // PM disabled — do not fetch promotion showcases
+    return ['PD', 'ID', 'MT'];
   }, [isFactoryTab]);
 
   // filter params (categoryId, subCategoryId, keyword) ถูกกรองฝั่ง client แล้ว
@@ -107,9 +108,12 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
 
   useEffect(() => {
     const t = searchParams.get('type');
+    if (t === 'promotion') {
+      setSelectedType('product');
+      return;
+    }
     if (
       t === 'product' ||
-      t === 'promotion' ||
       t === 'idea' ||
       t === 'material' ||
       t === 'factory'
@@ -214,7 +218,7 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
       });
     }
 
-    return items;
+    return items.filter((s) => s.contentType !== 'promotion');
   }, [
     pageShowcases,
     effectiveCategoryId,
@@ -226,11 +230,13 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
 
   const visibleItems = useMemo(() => {
     if (isFactoryTab) return [];
-    if (selectedType === 'all') return filteredShowcases.filter((s) => s.contentType !== 'idea');
+    if (selectedType === 'all')
+      return filteredShowcases.filter(
+        (s) => s.contentType !== 'idea' && s.contentType !== 'promotion',
+      );
     if (selectedType === 'product')
       return filteredShowcases.filter((s) => s.contentType === 'product');
-    if (selectedType === 'promotion')
-      return filteredShowcases.filter((s) => s.contentType === 'promotion');
+    // if (selectedType === 'promotion') return … // PM tab disabled
     if (selectedType === 'material')
       return filteredShowcases.filter((s) => s.contentType === 'material');
     return filteredShowcases;

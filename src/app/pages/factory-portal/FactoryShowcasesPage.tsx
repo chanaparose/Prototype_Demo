@@ -21,6 +21,9 @@ const TAB_META = {
   MT: { icon: '🧱', label: 'วัตถุดิบ', btnLabel: 'เพิ่มวัตถุดิบ', empty: 'ยังไม่มีวัตถุดิบ' },
 } as const;
 
+/** PM tab disabled on /factory/showcases */
+const SHOWCASE_TAB_TYPES: ShowcaseType[] = ['PD', 'ID', 'MT'];
+
 const STATUS_META: Record<ShowcaseStatus, { label: string; bg: string; color: string }> = {
   DR: { label: 'ร่าง', bg: 'rgba(107,114,128,0.12)', color: 'var(--neutral-subtle)' },
   AC: { label: 'Active', bg: 'rgba(16,185,129,0.12)', color: 'var(--status-success)' },
@@ -75,7 +78,8 @@ export function FactoryShowcasesPage() {
 
   const initialType = ((): ShowcaseType => {
     const t = searchParams.get('type');
-    return t === 'PM' || t === 'ID' || t === 'MT' ? t : 'PD';
+    if (t === 'PM') return 'PD';
+    return t === 'ID' || t === 'MT' ? t : 'PD';
   })();
 
   const [activeType, setActiveType] = useState<ShowcaseType>(initialType);
@@ -112,6 +116,13 @@ export function FactoryShowcasesPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (searchParams.get('type') === 'PM') {
+      setActiveType('PD');
+      setSearchParams({ type: 'PD' }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const remove = async (r: Row) => {
     const id = rowId(r);
     if (!id || !window.confirm(`ลบ "${String(r.title ?? 'รายการนี้')}" ออก?`)) return;
@@ -144,7 +155,7 @@ export function FactoryShowcasesPage() {
       />
 
       <div className='flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200'>
-        {(['PD', 'PM', 'ID', 'MT'] as ShowcaseType[]).map((type) => {
+        {SHOWCASE_TAB_TYPES.map((type) => {
           const meta = TAB_META[type];
           const active = activeType === type;
           return (

@@ -23,11 +23,14 @@ export type FactoryIdeasContentType =
 export const factoryIdeasContentTypes: { id: FactoryIdeasContentType; label: string }[] = [
   { id: 'all', label: 'ทั้งหมด' },
   { id: 'product', label: 'สินค้า' },
-  { id: 'promotion', label: 'โปรโมชัน' },
+  // { id: 'promotion', label: 'โปรโมชัน' }, // PM disabled
   { id: 'material', label: 'วัตถุดิบ' },
   { id: 'idea', label: 'ไอเดีย' },
   { id: 'factory', label: 'โรงงาน' },
 ];
+
+/** Tabs rendered on /factory-ideas (excludes promotion/PM) */
+export const factoryIdeasVisibleContentTypes = factoryIdeasContentTypes;
 
 export const factoryIdeasContentTypeLabel: Record<
   Exclude<FactoryIdeasContentType, 'all'>,

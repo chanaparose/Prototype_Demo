@@ -47,13 +47,14 @@ export function useExploreData(options?: UseExploreDataOptions) {
   );
 
   const showcases = useMemo<IExploreShowcase[]>(() => {
-    const merged = [...productShowcases, ...promotionShowcases, ...materialShowcases];
+    // PM cards excluded from merged explore list while promotion UI is disabled
+    const merged = [...productShowcases, ...materialShowcases];
     const byId = new Map<string, IExploreShowcase>();
     for (const s of merged) {
       if (!byId.has(s.id)) byId.set(s.id, s);
     }
     return [...byId.values()];
-  }, [productShowcases, promotionShowcases, materialShowcases]);
+  }, [productShowcases, materialShowcases]);
 
   const ideaArticles = useMemo(
     () => (exploreData?.idShowcases ?? []).map(exploreShowcaseToArticle),
