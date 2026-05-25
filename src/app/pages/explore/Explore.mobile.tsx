@@ -84,16 +84,7 @@ export function ExploreMobile({
         />
       </div>
 
-      <div className='px-4 flex gap-2.5 items-stretch'>
-        <MobileSearchField
-          data-tour='search'
-          className='flex-1 min-w-0'
-          value={searchText}
-          onChange={setSearchText}
-          placeholder='ค้นหาโรงงาน ประเภทงาน หรือวัสดุ…'
-        />
-         
-      </div>
+       
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
 
