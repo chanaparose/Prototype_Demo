@@ -10,6 +10,13 @@ export const SHOWCASE_DETAIL_BRAND = {
   border: '#E7E2F0',
 } as const;
 
+/** Card section header — formal calm purple/blue with clear readability */
+export const SHOWCASE_SECTION_HEADER_CLASS =
+  'border-b border-[color-mix(in_srgb,var(--brand-indigo)_18%,var(--neutral-border))] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--brand-lavender-muted)_84%,var(--neutral-white))_0%,color-mix(in_srgb,var(--brand-lavender-muted)_72%,var(--brand-sky)_8%)_100%)] px-6 py-3';
+
+export const SHOWCASE_SECTION_HEADER_TITLE_CLASS =
+  'text-[14px] font-semibold tracking-[0.01em] text-[var(--brand-navy-ink)]';
+
 export function formatShowcaseThaiDate(date: string): string {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '-';

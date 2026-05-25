@@ -6,7 +6,6 @@ import {
   Plus,
   ShoppingBag,
   ChevronRight,
-  Tag,
   Leaf,
   MapPin,
   Star,
@@ -58,7 +57,7 @@ export function ExploreMobile({
   factories,
   ideaArticles,
   exploreProducts,
-  explorePromotions,
+  explorePromotions: _explorePromotions,
   exploreMatrials,
   explorePromoCodes,
   promoSlides,
@@ -67,11 +66,11 @@ export function ExploreMobile({
   const { isLiked, toggleFavorite } = useFavorites();
 
   const productShowcases = (exploreProducts ?? []).slice(0, 8);
-  const promoShowcases = (explorePromotions ?? []).slice(0, 4);
+  // const promoShowcases = (explorePromotions ?? []).slice(0, 4);
   const materialShowcases = (exploreMatrials ?? []).slice(0, 8);
 
   const hasProductShowcases = productShowcases.length > 0;
-  const hasPromoShowcases = promoShowcases.length > 0;
+  // const hasPromoShowcases = promoShowcases.length > 0;
   const hasMaterialShowcases = materialShowcases.length > 0;
 
   return (
@@ -336,99 +335,7 @@ export function ExploreMobile({
         />
       </div>
 
-      <div className='mb-3'>
-        <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
-          <h3 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
-            <Tag size={15} className='text-brand-orange-vivid' /> โปรโมชันแนะนำ
-          </h3>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/factory-ideas?type=promotion')}
-            className='text-brand-orange text-xs font-medium hover:text-brand-orange-vivid flex items-center gap-0.5 transition-colors'
-          >
-            ดูเพิ่มเติม <ChevronRight size={13} />
-          </Button>
-        </div>
-        <div className='px-3 space-y-2'>
-          {hasPromoShowcases ? (
-            <div
-              className='flex gap-2 overflow-x-auto pb-2 scrollbar-hide'
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {promoShowcases.map((item) => (
-                <div
-                  key={item.id}
-                  role='button'
-                  tabIndex={0}
-                  onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      navigate(`/factory-ideas/promotions/${item.id}`);
-                    }
-                  }}
-                  className='flex-shrink-0 w-[155px] bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer'
-                >
-                  <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.title}
-                      className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                    />
-                    <div className='absolute top-1.5 left-1.5 bg-brand-orange px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white uppercase tracking-wide'>
-                      โปรโมชัน
-                    </div>
-                    <ShowcaseHeartButton
-                      showcaseId={item.id}
-                      isLiked={isLiked(item.id)}
-                      onToggle={toggleFavorite}
-                      className='absolute top-1 right-1'
-                    />
-                  </div>
-                  <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                    <h4 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                      {item.title}
-                    </h4>
-                    <div className='flex items-center gap-0.5 mt-0.5'>
-                      <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                      <span className='text-gray-500 text-[10px] truncate'>
-                        {(item.location ?? '').trim() || '—'}
-                      </span>
-                    </div>
-                    <div className='mt-auto pt-1 border-t border-gray-50'>
-                      <div className='flex items-center justify-between min-w-0'>
-                        <div className='flex items-center gap-0.5 min-w-0'>
-                          <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                          <span className='text-gray-700 text-[10px] font-semibold'>
-                            {item.factoryRating ?? 0}
-                          </span>
-                        </div>
-                        <span className='text-gray-400 text-[8px] shrink-0'>
-                          ขั้นต่ำ {item.minOrder ?? 0}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className='rounded-xl border border-dashed border-brand-orange/25 bg-gradient-to-br from-orange-50/50 to-white px-4 py-5 text-center'>
-              <p className='text-sm font-medium text-gray-600'>ยังไม่มีโปรโมชันแนะนำในขณะนี้</p>
-              <p className='mt-1 text-xs text-gray-400'>ดูไอเดียโปรโมชันได้จากปุ่มด้านล่าง</p>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate('/factory-ideas?type=promotion')}
-                className='mt-3 w-full rounded-full border border-brand-orange/40 bg-white py-2 text-sm font-medium text-brand-orange-vivid hover:bg-orange-50/80 transition-colors'
-              >
-                ดูไอเดียโปรโมชัน
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* โปรโมชันแนะนำ (PM) — disabled */}
 
       <div className='mx-auto w-[78%] max-w-xs relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30 mt-8'>
         <Image

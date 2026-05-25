@@ -6,11 +6,8 @@ import {
   Copy,
   Gift,
   ChevronRight,
-  MapPin,
-  Star,
   Plus,
   Sparkles,
-  Tag,
 } from 'lucide-react';
 import { cn } from '@lib/utils';
 import { Button } from '@/components/ui/button';
@@ -77,11 +74,6 @@ const SHIMMER_GRADIENT = {
   animation: 'hiw-shimmer-bar 4s ease-in-out infinite',
 };
 
-const OVERLAY_GRADIENT = {
-  background:
-    'linear-gradient(to top right, rgba(0, 60, 100, 0.2), rgba(3, 153, 190, 0.1), transparent)',
-};
-
 const FAB_BUTTON_STYLE = {
   background: 'var(--brand-purple)',
   boxShadow: '0 6px 20px rgba(162,56,255,0.40)',
@@ -99,10 +91,6 @@ const REGISTER_BUTTON_CLASS = cn(
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-purple',
 );
 
-function showcaseLocationLabel(location?: string): string {
-  return (location ?? '').trim() || '—';
-}
-
 export function ExploreDesktop({
   searchText,
   setSearchText,
@@ -116,7 +104,7 @@ export function ExploreDesktop({
   factories,
   ideaArticles,
   exploreProducts,
-  explorePromotions,
+  explorePromotions: _explorePromotions,
   exploreMatrials,
   promoSlides,
 }: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
@@ -143,7 +131,7 @@ export function ExploreDesktop({
     [exploreProducts],
   );
 
-  const promoShowcases = useMemo(() => (explorePromotions ?? []).slice(0, 4), [explorePromotions]);
+  // const promoShowcases = useMemo(() => (explorePromotions ?? []).slice(0, 4), [explorePromotions]);
 
   const materialShowcases = useMemo(
     () =>
@@ -343,89 +331,9 @@ export function ExploreDesktop({
           />
         </div>
 
-        <section>
-          <div className='mt-[30px] flex items-center justify-between mb-3'>
-            <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
-              <Tag className='text-brand-orange-vivid' size={16} />
-              โปรโมชันแนะนำ
-            </h2>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate('/factory-ideas?type=promotion')}
-              className='text-brand-orange text-xs font-medium hover:text-brand-orange-vivid flex items-center transition-colors'
-            >
-              ดูเพิ่มเติม <ChevronRight size={14} />
-            </Button>
-          </div>
-
-          <div className='flex flex-col lg:flex-row gap-3'>
-            <div className='hidden lg:block lg:w-[40%] rounded-xl overflow-hidden relative min-h-[180px] flex-shrink-0 group cursor-pointer shadow-md'>
-              <ImageWithFallback
-                src='assets/tryly_service_banner_375x215.png'
-                alt='แบนเนอร์บริการ'
-                className='absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105'
-              />
-              <div
-                className='absolute inset-0 z-[1] flex flex-col justify-end p-5 pointer-events-none'
-                style={OVERLAY_GRADIENT}
-              ></div>
-            </div>
-
-            <div className='w-full lg:w-[60%] flex gap-3 overflow-x-auto snap-x hide-scrollbar pb-2'>
-              {promoShowcases.map((item) => {
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => navigate(`/factory-ideas/promotions/${item.id}`)}
-                    className='min-w-[180px] bg-white border border-gray-100 rounded-lg overflow-hidden snap-start shadow-sm hover:shadow-md transition-all group flex flex-col cursor-pointer'
-                  >
-                    <div className='aspect-[4/3] relative overflow-hidden bg-gray-100'>
-                      <ImageWithFallback
-                        src={item.image}
-                        alt={item.title}
-                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                      />
-                      <div className='absolute top-1 left-1 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
-                        โปรโมชัน
-                      </div>
-                      <ShowcaseHeartButton
-                        showcaseId={item.id}
-                        isLiked={isLiked(item.id)}
-                        onToggle={toggleFavorite}
-                        className='absolute top-1 right-1'
-                      />
-                    </div>
-                    <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                      <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                        {item.title}
-                      </h3>
-                      <div className='flex items-center gap-0.5 mt-0.5'>
-                        <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                        <span className='text-gray-500 text-[10px] truncate'>
-                          {showcaseLocationLabel(item.location)}
-                        </span>
-                      </div>
-                      <div className='mt-auto pt-1 border-t border-gray-50'>
-                        <div className='flex items-center justify-between min-w-0'>
-                          <div className='flex items-center gap-0.5 min-w-0'>
-                            <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                            <span className='text-gray-700 text-[10px] font-semibold'>
-                              {item.factoryRating ?? 0}
-                            </span>
-                          </div>
-                          <span className='text-gray-400 text-[8px] shrink-0'>
-                            ขั้นต่ำ {item.minOrder ?? 0}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        {/* โปรโมชันแนะนำ (PM) — disabled
+        <section>...</section>
+        */}
 
         <section className='relative -mx-8 px-8 py-5 rounded-xl overflow-hidden bg-neutral-cool-surface'>
           <div

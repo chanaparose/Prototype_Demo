@@ -17,7 +17,7 @@ import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasP
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
-  factoryIdeasContentTypes as CONTENT_TYPES,
+  factoryIdeasVisibleContentTypes as CONTENT_TYPES,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';

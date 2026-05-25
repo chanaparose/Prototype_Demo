@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
+  SHOWCASE_SECTION_HEADER_CLASS,
+  SHOWCASE_SECTION_HEADER_TITLE_CLASS,
   formatShowcaseTHB as formatTHB,
   formatShowcaseThaiDate as formatThaiDate,
   normalizeShowcaseMarkdown as normalizeMarkdownContent,
@@ -454,8 +456,8 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
-            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>ข้อมูลจำเพาะของสินค้า</p>
+          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
+            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>ข้อมูลจำเพาะของสินค้า</p>
           </div>
           <div className='p-6'>
             <StrictSpecsBlock
@@ -484,8 +486,8 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
-            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>รายละเอียดสินค้า</p>
+          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
+            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>รายละเอียดสินค้า</p>
           </div>
           <div className='p-6'>
             {markdown ? (
@@ -502,8 +504,8 @@ export function ProductDetailDesktop() {
         </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
-            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>คะแนนรีวิว</p>
+          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
+            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>คะแนนรีวิว</p>
           </div>
           <div className='p-6'>
             <div className='flex items-center gap-8'>
@@ -559,44 +561,11 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        <div className='flex items-center justify-between rounded-2xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] p-5 shadow-sm'>
-          <div className='min-w-0'>
-            <p className='text-[13px] text-[#EBD3FF]'>สนใจผลิตกับโรงงานนี้?</p>
-            <p className='text-[16px] font-bold text-white mt-0.5 truncate'>
-              แชทสอบถามรายละเอียด พร้อมขอใบเสนอราคาได้ทันที
-            </p>
-          </div>
-          <div className='flex items-center gap-2 shrink-0'>
-            {canChat ? (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={handleStartChat}
-                disabled={starting}
-                className='inline-flex h-11 items-center gap-2 rounded-md bg-[var(--brand-orange)] px-5 text-[13px] font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:opacity-70'
-              >
-                {starting ? (
-                  <span className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
-                ) : (
-                  <MessageCircle className='w-4 h-4' />
-                )}
-                แชทกับโรงงาน
-              </Button>
-            ) : null}
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate(`/factories/${item.factoryId}`)}
-              className='inline-flex h-11 items-center gap-2 rounded-md border border-white/45 px-5 text-[13px] font-semibold text-white transition-colors hover:bg-white/10'
-            >
-              <ArrowUpRight className='w-4 h-4' /> ดูโปรไฟล์โรงงาน
-            </Button>
-          </div>
-        </div>
+         
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
-          <div className='border-b border-[#E7E2F0] bg-[#F5F3FF] px-6 py-3'>
-            <p className='text-[14px] font-bold text-[var(--brand-ink)]'>สินค้าที่ใกล้เคียง</p>
+          <div className={SHOWCASE_SECTION_HEADER_CLASS}>
+            <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>สินค้าที่ใกล้เคียง</p>
           </div>
           {relatedProducts.length > 0 ? (
             <div className='p-6 grid grid-cols-4 gap-3'>
