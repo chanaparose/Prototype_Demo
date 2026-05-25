@@ -2,10 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
-  Search,
   BadgeCheck,
   Sparkles,
-  X,
   Loader2,
   LayoutGrid,
   List,
@@ -21,7 +19,7 @@ import {
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
-import { Input } from '@/components/ui/input';
+import { MobileSearchField } from '@/components/shared/MobileSearchField';
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
@@ -97,27 +95,11 @@ export function FactoryIdeasMobile() {
           </div>
         </div>
 
-        <div className='flex items-center gap-2 rounded-xl border border-[var(--neutral-border)] bg-[var(--neutral-warm-surface)] px-3 py-2 transition-all'>
-          <Search size={15} className='text-gray-400 shrink-0' />
-          <Input
-            type='text'
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder='ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…'
-            className='min-w-0 flex-1 bg-transparent text-[13px] text-[var(--brand-navy)] outline-none placeholder-gray-400'
-          />
-          {searchText && (
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setSearchText('')}
-              aria-label='ล้างข้อความค้นหา'
-              className='shrink-0 p-0.5'
-            >
-              <X size={13} className='text-gray-400' />
-            </Button>
-          )}
-        </div>
+        <MobileSearchField
+          value={searchText}
+          onChange={setSearchText}
+          placeholder='ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…'
+        />
       </div>
 
       <div className='bg-white border-b border-gray-100 sticky top-0 z-20'>

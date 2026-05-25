@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import {
-  Search,
   SlidersHorizontal,
   ShoppingBag,
   ChevronRight,
@@ -22,7 +21,7 @@ import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import type { CategoryItem } from '@/components/features/explore/ExploreCategories';
 import type { FactoryItem } from '@/components/features/explore/factoryItemTypes';
 import type { IdeaArticleItem } from '@/components/features/explore/ExploreIdeaArticles';
-import { Input } from '@/components/ui/input';
+import { MobileSearchField } from '@/components/shared/MobileSearchField';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -82,24 +81,15 @@ export function ExploreMobile({
         />
       </div>
 
-      <div data-tour='search' className='px-4 flex gap-2'>
-        <div className='flex-1 flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100'>
-          <Search size={16} className='text-gray-400 shrink-0' />
-          <Input
-            type='text'
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder='ค้นหาโรงงาน ประเภทงาน หรือ วัสดุ...'
-            className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
-          />
-        </div>
-        <Button
-          variant='unstyled'
-          type='button'
-          className='w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center shrink-0 hover:border-brand-magenta/30 transition-colors'
-        >
-          <SlidersHorizontal size={16} className='text-brand-magenta' />
-        </Button>
+      <div className='px-4 flex gap-2.5 items-stretch'>
+        <MobileSearchField
+          data-tour='search'
+          className='flex-1 min-w-0'
+          value={searchText}
+          onChange={setSearchText}
+          placeholder='ค้นหาโรงงาน ประเภทงาน หรือวัสดุ…'
+        />
+         
       </div>
 
       <ExplorePromoCarousel promoSlides={promoSlides} promoCodes={explorePromoCodes} />
