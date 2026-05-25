@@ -25,6 +25,10 @@ import {
   findTarget,
 } from '@/components/features/explore/product-tour/TourMockScreens';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
+import {
+  getTourTargetRect,
+  isTourTargetMostlyVisible,
+} from '@/components/features/explore/product-tour/tourTargetRect';
 
 const TOUR_KEY = 'tryly_tour_seen_v1';
 
@@ -106,7 +110,11 @@ export function ProductTour() {
     let cancelled = false;
     let rafId: ReturnType<typeof requestAnimationFrame> | null = null;
     let innerTimer: ReturnType<typeof setTimeout> | null = null;
+    let touchFollowUpTimer: ReturnType<typeof setTimeout> | null = null;
     let vvCleanup: (() => void) | null = null;
+    const isTouchDevice =
+      typeof window !== 'undefined' &&
+      ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
     const outerTimer = setTimeout(() => {
       if (cancelled) return;
@@ -115,42 +123,51 @@ export function ProductTour() {
         setTargetRect(null);
         return;
       }
-      // Non-animated scroll so position settles before we measure.
-      el.scrollIntoView({ behavior: 'auto', block: 'center' });
+      if (!isTourTargetMostlyVisible(el)) {
+        el.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+      }
 
-      // Measure after paint — double-rAF ensures the browser has finished
-      // layout and any URL-bar animation has settled on real mobile devices.
       const measure = () => {
         if (cancelled) return;
         if (rafId != null) cancelAnimationFrame(rafId);
         rafId = requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             if (cancelled) return;
-            setTargetRect(el.getBoundingClientRect());
+            setTargetRect(getTourTargetRect(el));
           });
         });
       };
 
-      // Give the mobile browser extra time to collapse/animate the URL bar.
-      innerTimer = setTimeout(measure, 300);
+      innerTimer = setTimeout(measure, isTouchDevice ? 450 : 280);
+      if (isTouchDevice) {
+        touchFollowUpTimer = window.setTimeout(measure, 850);
+      }
 
-      // Re-measure any time the visual viewport resizes (URL bar hide/show,
-      // soft keyboard, etc.) so the spotlight stays aligned on real devices.
       const vv = window.visualViewport;
+      const onViewportChange = () => measure();
       if (vv) {
-        vv.addEventListener('resize', measure);
-        vv.addEventListener('scroll', measure);
+        vv.addEventListener('resize', onViewportChange);
+        vv.addEventListener('scroll', onViewportChange);
         vvCleanup = () => {
-          vv.removeEventListener('resize', measure);
-          vv.removeEventListener('scroll', measure);
+          vv.removeEventListener('resize', onViewportChange);
+          vv.removeEventListener('scroll', onViewportChange);
         };
       }
-    }, 700);
+      window.addEventListener('resize', onViewportChange);
+      window.addEventListener('scroll', onViewportChange, { passive: true });
+      const prevVvCleanup = vvCleanup;
+      vvCleanup = () => {
+        prevVvCleanup?.();
+        window.removeEventListener('resize', onViewportChange);
+        window.removeEventListener('scroll', onViewportChange);
+      };
+    }, isTouchDevice ? 800 : 700);
 
     return () => {
       cancelled = true;
       clearTimeout(outerTimer);
       if (innerTimer != null) clearTimeout(innerTimer);
+      if (touchFollowUpTimer != null) clearTimeout(touchFollowUpTimer);
       if (rafId != null) cancelAnimationFrame(rafId);
       vvCleanup?.();
     };
@@ -248,6 +265,7 @@ export function ProductTour() {
         rect={targetRect}
         color={def.badgeColor}
         radius={def.spotlightRadius ?? 12}
+        pad={def.spotlightPad ?? 10}
         onClickOutside={handleClose}
       />
       <TourCard

@@ -2,14 +2,16 @@ export function SpotlightOverlay({
   rect,
   color,
   radius,
+  pad = 10,
   onClickOutside,
 }: {
   rect: DOMRect | null;
   color: string;
   radius: number;
+  pad?: number;
   onClickOutside: () => void;
 }) {
-  const PAD = 10;
+  const PAD = pad;
   const uniqueId = `tour-mask-${color.replace(/[^a-zA-Z0-9]/g, '')}`;
   const glowId = `tour-glow-${uniqueId}`;
   return (
