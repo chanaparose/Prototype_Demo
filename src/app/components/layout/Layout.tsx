@@ -1,5 +1,6 @@
 import React from 'react';
-import { Outlet, useNavigate, useLocation, Link, Navigate } from 'react-router';
+import { useNavigate, useLocation, Link, Navigate } from 'react-router';
+import { AnimatedOutlet } from '@/components/layout/AnimatedOutlet';
 import {
   Home,
   ClipboardList,
@@ -257,8 +258,10 @@ export function Layout() {
 
         {/* ── Main content ────────────────────────────────────────────────── */}
         <main className='flex-1 min-w-0 overflow-x-hidden pb-16 lg:pb-0'>
-          <div className='max-w-7xl mx-auto'>
-            <Outlet />
+          {/* `relative` gives AnimatePresence a positioned ancestor so the
+              exiting element doesn't escape the content column. */}
+          <div className='relative max-w-7xl mx-auto'>
+            <AnimatedOutlet />
           </div>
         </main>
       </div>
