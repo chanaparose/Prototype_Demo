@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router';
-import { Plus, FileText, AlertCircle, ChevronDown, History } from 'lucide-react';
+import { Link } from 'react-router';
+import { FileText, AlertCircle, ChevronDown, History } from 'lucide-react';
 import { BORDER_WARM, DEEP_PURPLE } from '@/components/features/rfq-and-orders/constants';
 import { type Rfq } from '@/stores/types';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,6 @@ export function RfqPanel({
   isMobile?: boolean;
   isDesktop?: boolean;
 }) {
-  const navigate = useNavigate();
   const [historyOpen, setHistoryOpen] = React.useState(false);
 
   const activeRfqs = rfqs.filter(
@@ -32,16 +31,6 @@ export function RfqPanel({
 
   return (
     <div className={isMobile ? '' : 'px-4 pb-4 pt-2'}>
-      {isMobile && (
-        <Button
-          variant='unstyled'
-          onClick={() => navigate('/create-rfq')}
-          className='fixed bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#1A0F2E_0%,#4A267D_45%,var(--brand-purple)_100%)] shadow-[0_6px_20px_rgba(162,56,255,0.35)] transition-transform active:scale-95'
-        >
-          <Plus size={24} className='text-white' />
-        </Button>
-      )}
-
       <div
         className={`mb-3 flex items-center justify-between ${isDesktop ? 'min-h-[56px] rounded-xl border border-[rgba(196,164,132,0.4)] bg-[#F9F8FC] px-3 py-2' : ''}`}
       >
