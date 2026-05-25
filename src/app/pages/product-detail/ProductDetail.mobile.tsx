@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
+import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import {
   mobileActionBarBottomOffset,
@@ -72,14 +73,7 @@ export function ProductDetailMobile() {
   }, [item?.id]);
 
   if (loading) {
-    return (
-      <div className='flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8'>
-        <span
-          className='h-9 w-9 animate-spin rounded-full border-2 border-violet-600 border-t-transparent'
-          aria-hidden
-        />
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!item || !resolvedId) {

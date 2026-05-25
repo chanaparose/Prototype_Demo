@@ -34,6 +34,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { type FactoryShowcase } from '@/stores/types';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 
 function promoMeta(startDate?: string, endDate?: string) {
   const now = new Date();
@@ -86,14 +87,7 @@ export function PromotionDetailMobile() {
   }, [item?.id]);
 
   if (loading) {
-    return (
-      <div className='flex min-h-[50vh] items-center justify-center px-4 pb-20 pt-8'>
-        <span
-          className='h-9 w-9 animate-spin rounded-full border-2 border-rose-500 border-t-transparent'
-          aria-hidden
-        />
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!item || !resolvedId) {

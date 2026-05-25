@@ -23,6 +23,7 @@ const PAGE_LIMIT = 80;
 
 type UseFactoryIdeasPageStateOptions = {
   layout: 'desktop' | 'mobile';
+  initialType?: FactoryIdeasContentType;
 };
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -34,10 +35,10 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOptions) {
+export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
   const [searchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
-  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>('all');
+  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>(initialType ?? 'all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
@@ -45,6 +46,7 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   const skipSubResetOnNextCategoryChangeRef = useRef(false);
   const [menuHighlightCategoryId, setMenuHighlightCategoryId] = useState<string | null>(null);
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
+  const [factoryScope, setFactoryScope] = useState<'PD' | 'MT' | 'all'>('all');
   const [page, setPage] = useState(1);
 
   const debouncedSearchText = useDebounce(searchText, 400);
@@ -53,12 +55,15 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   const favorites = useFavorites();
   const isFactoryTab = selectedType === 'factory';
   const isMaterialTab = selectedType === 'material';
+  /** MT categories: แท็บวัตถุดิบ หรือแท็บโรงงาน + pill โรงงานวัตถุดิบ */
+  const isMtCategoryScope = isMaterialTab || (isFactoryTab && factoryScope === 'MT');
 
-  const categoriesQ = useFactoryIdeasCategoriesQuery();
+  const categoriesQ = useFactoryIdeasCategoriesQuery(isMtCategoryScope);
   const apiCategoriesAll = categoriesQ.data ?? [];
 
   const loadFactories = selectedType === 'all' || selectedType === 'factory';
-  const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories);
+  const apiFactoryScope = factoryScope === 'all' ? undefined : factoryScope;
+  const factoriesQ = useFactoryIdeasFactoryListQuery(loadFactories, apiFactoryScope);
   const factoryList = factoriesQ.data ?? [];
   const factoriesLoading = factoriesQ.isLoading;
 
@@ -69,14 +74,14 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
 
   // Sub-categories are now embedded in the categories response — no separate queries
   const panelSubs = useMemo(() => {
-    if (!menuHighlightCategoryId || menuHighlightCategoryId === 'all' || isMaterialTab) return [];
+    if (!menuHighlightCategoryId || menuHighlightCategoryId === 'all' || isMtCategoryScope) return [];
     return apiCategoriesAll.find((c) => c.id === menuHighlightCategoryId)?.subCategories ?? [];
-  }, [menuHighlightCategoryId, apiCategoriesAll, isMaterialTab]);
+  }, [menuHighlightCategoryId, apiCategoriesAll, isMtCategoryScope]);
 
   const subCategories = useMemo(() => {
-    if (isMaterialTab || !effectiveCategoryId || effectiveCategoryId === 'all') return [];
+    if (isMtCategoryScope || !effectiveCategoryId || effectiveCategoryId === 'all') return [];
     return apiCategoriesAll.find((c) => c.id === effectiveCategoryId)?.subCategories ?? [];
-  }, [effectiveCategoryId, apiCategoriesAll, isMaterialTab]);
+  }, [effectiveCategoryId, apiCategoriesAll, isMtCategoryScope]);
 
   const panelSubsLoading = false;
   const subCategoriesLoading = false;
@@ -127,17 +132,17 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     return [{ id: 'all', name: 'ทุกหมวดหมู่' }, ...rest];
   }, [apiCategoriesAll]);
 
-  const prevIsMaterialTabRef = useRef<boolean | null>(null);
+  const prevMtCategoryScopeRef = useRef<boolean | null>(null);
   useEffect(() => {
-    if (prevIsMaterialTabRef.current === null) {
-      prevIsMaterialTabRef.current = isMaterialTab;
+    if (prevMtCategoryScopeRef.current === null) {
+      prevMtCategoryScopeRef.current = isMtCategoryScope;
       return;
     }
-    if (prevIsMaterialTabRef.current === isMaterialTab) return;
-    prevIsMaterialTabRef.current = isMaterialTab;
+    if (prevMtCategoryScopeRef.current === isMtCategoryScope) return;
+    prevMtCategoryScopeRef.current = isMtCategoryScope;
     applyCategory('all');
     setSelectedSubCategoryId(null);
-  }, [isMaterialTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isMtCategoryScope]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!categoryMenuOpen) return;
@@ -166,7 +171,7 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
   }, [categoryMenuOpen, layout]);
 
   useEffect(() => {
-    if (isMaterialTab) {
+    if (isMtCategoryScope) {
       setSelectedSubCategoryId(null);
       return;
     }
@@ -175,16 +180,16 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     } else {
       setSelectedSubCategoryId(null);
     }
-  }, [effectiveCategoryId, isMaterialTab]);
+  }, [effectiveCategoryId, isMtCategoryScope]);
 
   const categoryMenuTriggerLabel = useMemo(() => {
     if (effectiveCategoryId === 'all') return 'ทุกหมวดหมู่';
     const catName = categoryFilters.find((c) => c.id === effectiveCategoryId)?.name ?? 'หมวด';
-    if (isMaterialTab) return catName;
+    if (isMtCategoryScope) return catName;
     if (!selectedSubCategoryId) return `${catName} › ทุกหมวดย่อย`;
     const subName = subCategories.find((s) => s.id === selectedSubCategoryId)?.name;
     return subName ? `${catName} › ${subName}` : `${catName} › หมวดย่อย`;
-  }, [effectiveCategoryId, selectedSubCategoryId, categoryFilters, subCategories, isMaterialTab]);
+  }, [effectiveCategoryId, selectedSubCategoryId, categoryFilters, subCategories, isMtCategoryScope]);
 
   // Client-side filter fallback (in case the server doesn't honour category/keyword params)
   const filteredShowcases = useMemo(() => {
@@ -320,6 +325,9 @@ export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOpt
     applyCategory,
     isFactoryTab,
     isMaterialTab,
+    isMtCategoryScope,
+    factoryScope,
+    setFactoryScope,
     showcasesLoading,
     factoriesLoading,
     visibleItems,

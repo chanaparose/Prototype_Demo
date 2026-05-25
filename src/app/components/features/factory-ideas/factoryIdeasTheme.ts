@@ -71,6 +71,7 @@ export function normalizeFactoryIdeaFactory(r: Record<string, unknown>): Factory
     verified: Boolean(r.is_verified ?? r.verified ?? false),
     completedOrders: Number(r.completed_orders ?? r.completedOrders ?? 0),
     priceRange: String(r.price_range ?? r.priceRange ?? ''),
+    categoryScopes: Array.isArray(r.category_scopes) ? r.category_scopes.map(String) : [],
   };
 }
 

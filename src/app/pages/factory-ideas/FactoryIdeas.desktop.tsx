@@ -49,6 +49,7 @@ export function FactoryIdeasDesktop() {
     applyCategory,
     isFactoryTab,
     isMaterialTab,
+    isMtCategoryScope,
     showcasesLoading,
     factoriesLoading,
     visibleItems,
@@ -120,7 +121,7 @@ export function FactoryIdeasDesktop() {
               effectiveCategoryId={effectiveCategoryId}
               selectedSubCategoryId={selectedSubCategoryId}
               setSelectedSubCategoryId={setSelectedSubCategoryId}
-              isMaterialTab={isMaterialTab}
+              isMaterialTab={isMtCategoryScope}
               categoryMenuTriggerLabel={categoryMenuTriggerLabel}
               menuHighlightCategoryId={menuHighlightCategoryId}
               setMenuHighlightCategoryId={setMenuHighlightCategoryId}

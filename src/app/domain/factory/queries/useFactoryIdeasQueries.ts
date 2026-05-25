@@ -15,11 +15,11 @@ export type FactoryIdeasCategoryRow = {
   subCategories: SubCategoryRow[];
 };
 
-export function useFactoryIdeasCategoriesQuery() {
+export function useFactoryIdeasCategoriesQuery(materialTab = false) {
   return useQuery({
-    queryKey: factoryIdeasKeys.categories(false),
+    queryKey: factoryIdeasKeys.categories(materialTab),
     queryFn: async (): Promise<FactoryIdeasCategoryRow[]> => {
-      const raw = await categoriesApi.listWithSubs();
+      const raw = await categoriesApi.listWithSubs(materialTab ? 'MT' : undefined);
       return raw
         .map((c) => ({
           id: String(c.category_id),
@@ -40,11 +40,11 @@ export function useFactoryIdeasCategoriesQuery() {
   });
 }
 
-export function useFactoryIdeasFactoryListQuery(enabled: boolean) {
+export function useFactoryIdeasFactoryListQuery(enabled: boolean, scope?: 'PD' | 'MT') {
   return useQuery({
-    queryKey: factoryIdeasKeys.factoryList(),
+    queryKey: factoryIdeasKeys.factoryList(scope),
     queryFn: async () => {
-      const raw = await factoriesApi.list();
+      const raw = await factoriesApi.list(scope);
       const r = raw as unknown;
       const arr = (
         Array.isArray(r)

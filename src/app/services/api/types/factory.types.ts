@@ -26,6 +26,8 @@ export interface IFactoryBaseResponse {
   completedOrders?: number;
   price_range?: string;
   priceRange?: string;
+  /** Distinct lbi_categories.scope values from map_factory_categories ("PD", "MT") */
+  category_scopes?: string[];
 }
 
 export interface IFactoryProfileResponse extends IFactoryBaseResponse {
