@@ -56,6 +56,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { mediaApi } from '@/services/api/factoryApi';
+import { cn } from '@lib/utils';
 
 function referenceLabel(ref: ChatReference): string {
   const t = ref.title?.trim();
@@ -503,13 +504,16 @@ function ChatRoomBody({
     [refreshThread],
   );
 
+  const isFullMobile = variant === 'full';
+
   return (
     <div
-      className={
-        variant === 'full'
-          ? 'h-[calc(100vh-4rem)] flex flex-col bg-white'
-          : 'h-full flex flex-col bg-white rounded-l-3xl overflow-hidden shadow-sm'
-      }
+      className={cn(
+        'flex min-h-0 flex-col bg-white',
+        isFullMobile
+          ? 'h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] max-lg:max-h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] lg:h-[calc(100vh-4rem)]'
+          : 'h-full overflow-hidden rounded-l-3xl shadow-sm',
+      )}
     >
       <div className='px-4 pt-5 pb-3 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm'>
         <div className='flex items-center justify-between mb-3'>
@@ -689,7 +693,13 @@ function ChatRoomBody({
         </div>
       ) : null}
 
-      <div className='px-4 py-3 bg-white/95 backdrop-blur-sm border-t border-gray-100'>
+      <div
+        className={cn(
+          'shrink-0 border-t border-[color-mix(in_srgb,var(--brand-purple)_12%,var(--neutral-border))]',
+          'bg-white/95 backdrop-blur-md',
+          isFullMobile ? 'px-3 pt-2 pb-2.5 lg:px-4 lg:pb-3' : 'px-4 py-3',
+        )}
+      >
         {pendingRef ? (
           <div className='mb-2 flex flex-wrap items-center gap-2'>
             <ReferenceChip reference={pendingRef} />
@@ -722,23 +732,33 @@ function ChatRoomBody({
             aria-label='แนบรูปภาพ'
             disabled={!apiConv || uploadingImage}
             onClick={() => fileInputRef.current?.click()}
-            className='w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center shrink-0 disabled:opacity-50'
+            className='flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-lavender-chip)] text-[var(--brand-purple)] transition-colors hover:bg-[var(--brand-violet-soft)] disabled:opacity-50'
           >
             {uploadingImage ? (
-              <span className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin' />
+              <span className='h-4 w-4 animate-spin rounded-full border-2 border-[var(--brand-purple)] border-t-transparent' />
             ) : (
-              <Paperclip size={18} className='text-gray-500' />
+              <Paperclip size={18} strokeWidth={2.25} />
             )}
           </Button>
-          <div className='flex-1 bg-gray-100 rounded-2xl px-4 py-2.5 flex items-center gap-2'>
+          <div
+            className={cn(
+              'flex min-h-11 flex-1 items-center gap-2 rounded-2xl border px-3',
+              'border-[color-mix(in_srgb,var(--brand-purple)_14%,var(--neutral-border))]',
+              'bg-white shadow-[0_1px_3px_rgba(46,34,82,0.06)]',
+              'transition-[border-color,box-shadow] duration-200',
+              'focus-within:border-[color-mix(in_srgb,var(--brand-purple)_38%,var(--neutral-border))]',
+              'focus-within:shadow-[0_2px_14px_rgba(162,56,255,0.14)]',
+              'focus-within:ring-[3px] focus-within:ring-[rgba(162,56,255,0.1)]',
+            )}
+          >
             <Input
               type='text'
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={apiConv ? 'พิมพ์ข้อความ...' : 'รอโหลดห้องแชท...'}
+              placeholder={apiConv ? 'พิมพ์ข้อความ…' : 'รอโหลดห้องแชท…'}
               disabled={!apiConv}
-              className='flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none'
+              className='h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-[15px] leading-snug text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
             />
           </div>
           {isBuyer ? (
@@ -747,11 +767,10 @@ function ChatRoomBody({
               type='button'
               onClick={() => setShowRFQPicker(true)}
               disabled={!apiConv}
-              className='h-10 rounded-xl px-2.5 text-xs font-medium border border-brand-mauve/30 text-brand-mauve hover:bg-brand-mauve/5 shrink-0 disabled:opacity-50'
+              className='flex h-11 shrink-0 items-center gap-1 rounded-2xl border border-[color-mix(in_srgb,var(--brand-purple)_22%,var(--neutral-border))] bg-[var(--brand-lavender-chip)] px-2.5 text-[11px] font-semibold text-[var(--brand-purple)] transition-colors hover:bg-[var(--brand-violet-soft)] disabled:opacity-50'
             >
-              <span className='inline-flex items-center gap-1'>
-                <FileText size={14} /> แนบ RFQ
-              </span>
+              <FileText size={14} strokeWidth={2.25} />
+              <span className='hidden min-[380px]:inline'>RFQ</span>
             </Button>
           ) : null}
           <Button
@@ -760,13 +779,19 @@ function ChatRoomBody({
             aria-label='ส่งข้อความ'
             onClick={() => void sendMessage()}
             disabled={!message.trim() || sending || !apiConv}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${
-              message.trim() && !sending && apiConv ? 'bg-brand-orange-deep' : 'bg-neutral-border'
-            }`}
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-all duration-200',
+              message.trim() && !sending && apiConv
+                ? 'bg-[linear-gradient(135deg,#1A0F2E_0%,#4A267D_45%,var(--brand-purple)_100%)] shadow-[0_4px_14px_rgba(162,56,255,0.35)] active:scale-95'
+                : 'bg-[var(--neutral-muted)]',
+            )}
           >
             <Send
-              size={17}
-              className={message.trim() && !sending && apiConv ? 'text-white' : 'text-gray-400'}
+              size={18}
+              strokeWidth={2.25}
+              className={
+                message.trim() && !sending && apiConv ? 'text-white' : 'text-[var(--neutral-placeholder)]'
+              }
             />
           </Button>
         </div>

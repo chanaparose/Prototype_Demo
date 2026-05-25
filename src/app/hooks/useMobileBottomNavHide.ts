@@ -46,3 +46,8 @@ export function mobileActionBarBottomOffset(bottomNavHidden: boolean): string {
     ? `calc(0.5rem + env(safe-area-inset-bottom, 0px))`
     : `calc(${MOBILE_BOTTOM_NAV_CLEARANCE} + 0.5rem + env(safe-area-inset-bottom, 0px))`;
 }
+
+/** Padding-bottom for in-flow bars above the mobile bottom nav (e.g. chat composer) */
+export function mobileBottomNavPadding(extra = '0.75rem'): string {
+  return `calc(${extra} + ${MOBILE_BOTTOM_NAV_CLEARANCE} + env(safe-area-inset-bottom, 0px))`;
+}
