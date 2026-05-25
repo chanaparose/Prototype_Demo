@@ -4,12 +4,17 @@ import { Button } from '@/components/ui/button';
 import {
   BadgeCheck,
   Sparkles,
-  Loader2,
   LayoutGrid,
   List,
   MapPin,
   Star,
 } from 'lucide-react';
+import {
+  ShowcaseGridCardSkeleton,
+  ShowcaseListItemSkeleton,
+  IdeaListItemSkeleton,
+  FactoryGridCardSkeleton,
+} from '@/components/skeletons/PageSkeletons';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
 import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasPageState';
 import {
@@ -236,10 +241,23 @@ export function FactoryIdeasMobile() {
 
       <div className='px-4 pt-4'>
         {showcasesLoading || factoriesLoading ? (
-          <div className='flex items-center justify-center py-12'>
-            <Loader2 className='h-6 w-6 animate-spin text-[var(--brand-mauve)]' />
-            <span className='ml-2 text-sm text-gray-500'>กำลังโหลด...</span>
-          </div>
+          isFactoryTab ? (
+            <div className='grid grid-cols-2 gap-2'>
+              {[...Array(6)].map((_, i) => <FactoryGridCardSkeleton key={i} />)}
+            </div>
+          ) : selectedType === 'idea' ? (
+            <div className='grid grid-cols-1 gap-2'>
+              {[...Array(4)].map((_, i) => <IdeaListItemSkeleton key={i} />)}
+            </div>
+          ) : viewMode === 'list' ? (
+            <div className='space-y-3'>
+              {[...Array(5)].map((_, i) => <ShowcaseListItemSkeleton key={i} />)}
+            </div>
+          ) : (
+            <div className='grid grid-cols-2 gap-2'>
+              {[...Array(6)].map((_, i) => <ShowcaseGridCardSkeleton key={i} />)}
+            </div>
+          )
         ) : totalCount === 0 ? (
           <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
             <p className='text-3xl mb-2'>🔍</p>

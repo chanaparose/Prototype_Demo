@@ -20,6 +20,7 @@ import type { INotificationModel } from '@/domain/notifications/types/notificati
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatDateTime } from '@/utils/formatting/formatDate';
+import { NotificationItemSkeleton } from '@/components/skeletons/PageSkeletons';
 
 export function NotificationsMobile() {
   const navigate = useNavigate();
@@ -231,7 +232,11 @@ export function NotificationsMobile() {
 
         <div className='space-y-3'>
           {loading ? (
-            <div className='text-center py-12 text-slate-500 text-sm'>กำลังโหลด...</div>
+            <>
+              {[...Array(6)].map((_, i) => (
+                <NotificationItemSkeleton key={i} />
+              ))}
+            </>
           ) : filtered.length === 0 ? (
             <div className='text-center py-12 text-slate-500 text-sm'>ไม่พบการแจ้งเตือน</div>
           ) : (

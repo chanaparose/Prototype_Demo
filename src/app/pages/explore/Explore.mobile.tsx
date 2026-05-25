@@ -25,6 +25,7 @@ import { MobileSearchField } from '@/components/shared/MobileSearchField';
 import { Image } from '@/components/ui/image';
 import type { IExploreShowcase, IExploreSlide } from '@/domain/explore/types/explore.model';
 import { useFavorites } from '@/hooks/useFavorites';
+import { ProductCardSkeleton } from '@/components/skeletons/PageSkeletons';
 
 type ExploreMobileProps = {
   searchText: string;
@@ -42,6 +43,7 @@ type ExploreMobileProps = {
   exploreMatrials?: IExploreShowcase[];
   explorePromoCodes: IExploreSlide[];
   promoSlides: IExploreSlide[];
+  isLoading?: boolean;
 };
 
 export function ExploreMobile({
@@ -59,6 +61,7 @@ export function ExploreMobile({
   exploreMatrials,
   explorePromoCodes,
   promoSlides,
+  isLoading = false,
 }: ExploreMobileProps) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
@@ -119,7 +122,15 @@ export function ExploreMobile({
           </Button>
         </div>
 
-        {hasProductShowcases ? (
+        {isLoading ? (
+          <div
+            className='flex gap-2 overflow-x-auto pb-2 pl-3'
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
+            <div className='flex-shrink-0 w-3' aria-hidden />
+          </div>
+        ) : hasProductShowcases ? (
           <div
             className='flex gap-2 overflow-x-auto pb-2 pl-3'
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -220,7 +231,15 @@ export function ExploreMobile({
           </Button>
         </div>
 
-        {hasMaterialShowcases ? (
+        {isLoading ? (
+          <div
+            className='flex gap-2 overflow-x-auto pb-2 pl-3'
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {[...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)}
+            <div className='flex-shrink-0 w-3' aria-hidden />
+          </div>
+        ) : hasMaterialShowcases ? (
           <div
             className='flex gap-2 overflow-x-auto pb-2 pl-3'
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
