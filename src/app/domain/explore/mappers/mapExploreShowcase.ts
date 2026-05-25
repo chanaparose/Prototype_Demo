@@ -3,11 +3,13 @@ import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
 import {
   EMPTY_EXPLORE_PAGE_DATA,
   type IExploreArticle,
+  type IExploreFactory,
   type IExplorePageData,
   type IExploreShowcase,
   type IExploreSlide,
 } from '@/domain/explore/types/explore.model';
 import type {
+  IExploreFactoryItem,
   IExploreShowcaseResponse,
   IPromoSlideResponse,
 } from '@/services/api/types/explore.types';
@@ -63,6 +65,19 @@ function normSlide(r: IPromoSlideResponse | Record<string, unknown>): IExploreSl
   };
 }
 
+function mapExploreFactory(f: IExploreFactoryItem): IExploreFactory {
+  return {
+    id: f.id,
+    name: f.name,
+    image: f.image,
+    location: f.location,
+    rating: f.rating,
+    reviews: f.reviews,
+    minOrder: f.min_order,
+    verified: f.verified,
+  };
+}
+
 export async function fetchExplorePageData(): Promise<IExplorePageData> {
   // Single call to GET /api/v1/explore — replaces 6 separate calls
   const data = await exploreApi.get();
@@ -84,6 +99,7 @@ export async function fetchExplorePageData(): Promise<IExplorePageData> {
       .map(normSlide)
       .filter((sl) => sl.id && sl.title),
     promoCodes: [],
+    factories: (Array.isArray(data.factories) ? data.factories : []).map(mapExploreFactory),
   };
 }
 

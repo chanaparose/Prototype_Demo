@@ -28,6 +28,18 @@ export type IExploreShowcase = {
   location?: string;
 };
 
+/** Factory card ที่ได้จาก GET /api/v1/explore → factories[] */
+export type IExploreFactory = {
+  id: number;
+  name: string;
+  image: string;
+  location: string;
+  rating: number;
+  reviews: number;
+  minOrder: number;
+  verified: boolean;
+};
+
 export type IExploreArticle = {
   id: string;
   title: string;
@@ -55,6 +67,7 @@ export type IExplorePageData = {
   mtShowcases: IExploreShowcase[];
   promoSlides: IExploreSlide[];
   promoCodes: IExploreSlide[];
+  factories: IExploreFactory[];
 };
 
 export const EMPTY_EXPLORE_PAGE_DATA: IExplorePageData = {
@@ -65,4 +78,5 @@ export const EMPTY_EXPLORE_PAGE_DATA: IExplorePageData = {
   mtShowcases: [],
   promoSlides: [],
   promoCodes: [],
+  factories: [],
 };
