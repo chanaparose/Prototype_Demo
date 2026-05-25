@@ -55,7 +55,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const isFactoryTab = selectedType === 'factory';
   const isMaterialTab = selectedType === 'material';
 
-  const categoriesQ = useFactoryIdeasCategoriesQuery();
+  const categoriesQ = useFactoryIdeasCategoriesQuery(isMaterialTab);
   const apiCategoriesAll = categoriesQ.data ?? [];
 
   const loadFactories = selectedType === 'all' || selectedType === 'factory';

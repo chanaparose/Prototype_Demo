@@ -15,11 +15,11 @@ export type FactoryIdeasCategoryRow = {
   subCategories: SubCategoryRow[];
 };
 
-export function useFactoryIdeasCategoriesQuery() {
+export function useFactoryIdeasCategoriesQuery(materialTab = false) {
   return useQuery({
-    queryKey: factoryIdeasKeys.categories(false),
+    queryKey: factoryIdeasKeys.categories(materialTab),
     queryFn: async (): Promise<FactoryIdeasCategoryRow[]> => {
-      const raw = await categoriesApi.listWithSubs();
+      const raw = await categoriesApi.listWithSubs(materialTab ? 'MT' : undefined);
       return raw
         .map((c) => ({
           id: String(c.category_id),
