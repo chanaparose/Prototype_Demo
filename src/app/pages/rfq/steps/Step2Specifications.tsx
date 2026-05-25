@@ -32,35 +32,41 @@ export function Step2Specifications({ draft, setDraft }: Props) {
     setDraft({ reference_images: draft.reference_images.filter((_, i) => i !== index) });
   };
 
+  const fieldClass =
+    'w-full rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2.5 text-sm focus:border-brand-violet-deep focus:bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.12)]';
+
   return (
     <div className='space-y-3'>
+      <label className='block'>
+        <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>เกรด / วัตถุดิบ</span>
+      <Input
+        value={draft.material_grade}
+        onChange={(e) => setDraft({ material_grade: e.target.value })}
+        placeholder='เช่น PP, สแตนเลส 304'
+        className={fieldClass}
+      />
+      </label>
       <Button
         variant='unstyled'
         type='button'
         onClick={() => setAdvanced((v) => !v)}
-        className='text-xs font-semibold text-violet-600'
+        className='text-[11px] font-semibold text-brand-violet-deep'
       >
-        {advanced ? 'Basic' : 'Advanced'}
+        {advanced ? 'ซ่อนสเปกขั้นสูง' : '+ สเปกขั้นสูง (ขนาด สี บรรจุภัณฑ์)'}
       </Button>
-      <Input
-        value={draft.material_grade}
-        onChange={(e) => setDraft({ material_grade: e.target.value })}
-        placeholder='วัตถุดิบ'
-        className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-      />
       {advanced ? (
         <>
           <Input
             value={draft.tolerance}
             onChange={(e) => setDraft({ tolerance: e.target.value })}
-            placeholder='Tolerance'
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+            placeholder='ความคลาดเคลื่อน (Tolerance)'
+            className={fieldClass}
           />
           <Input
             value={draft.color_finish}
             onChange={(e) => setDraft({ color_finish: e.target.value })}
-            placeholder='Color / Finish'
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+            placeholder='สี / ผิวสำเร็จ'
+            className={fieldClass}
           />
           <DimensionInput
             value={draft.dimension_spec}
@@ -69,13 +75,14 @@ export function Step2Specifications({ draft, setDraft }: Props) {
           <Input
             value={draft.packaging_spec}
             onChange={(e) => setDraft({ packaging_spec: e.target.value })}
-            placeholder='Packaging spec'
-            className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+            placeholder='บรรจุภัณฑ์'
+            className={fieldClass}
           />
         </>
       ) : null}
 
       <div className='space-y-2'>
+        <p className='text-[11px] font-semibold text-brand-navy-deep'>รูป / เอกสารอ้างอิง</p>
         <Input
           ref={ref}
           type='file'
@@ -92,13 +99,13 @@ export function Step2Specifications({ draft, setDraft }: Props) {
           type='button'
           onClick={() => ref.current?.click()}
           disabled={uploading || draft.reference_images.length >= 5}
-          className='rounded-xl border border-dashed border-gray-300 px-3 py-2 text-sm w-full'
+          className='rounded-xl border border-dashed border-brand-mauve-light/60 bg-brand-lavender-chip/50 px-3 py-3 text-[12px] font-medium text-brand-violet-deep w-full'
         >
           {uploading
             ? 'กำลังอัปโหลด...'
             : draft.reference_images.length >= 5
-              ? 'อัปโหลดครบ 5 ไฟล์แล้ว'
-              : 'อัปโหลดไฟล์อ้างอิง (สูงสุด 5 ไฟล์)'}
+              ? 'ครบ 5 ไฟล์แล้ว'
+              : `เพิ่มไฟล์ (${draft.reference_images.length}/5)`}
         </Button>
         {draft.reference_images.length > 0 ? (
           <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
