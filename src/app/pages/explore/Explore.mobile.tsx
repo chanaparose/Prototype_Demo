@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router';
 import {
   Search,
   SlidersHorizontal,
-  Plus,
   ShoppingBag,
   ChevronRight,
   Leaf,
@@ -373,17 +372,6 @@ export function ExploreMobile({
       </div>
 
       <ExploreFooter />
-
-      <Button
-        variant='unstyled'
-        data-tour='fab'
-        type='button'
-        onClick={() => navigate('/create-rfq')}
-        className='fixed bottom-6 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 z-30'
-        style={{ background: 'var(--brand-purple)', boxShadow: '0 6px 20px rgba(162,56,255,0.40)' }}
-      >
-        <Plus size={20} className='text-white' />
-      </Button>
     </div>
   );
 }
