@@ -186,22 +186,7 @@ export function ExploreDesktop({
           />
         </section>
 
-        <div data-tour='search' className='flex gap-2.5'>
-          <div className='flex-1 flex items-center gap-2.5 bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100'>
-            <Search size={16} className='text-gray-400 shrink-0' />
-            <Input
-              type='text'
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder='ค้นหาโรงงาน ประเภทงาน หรือ วัสดุ...'
-              className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
-            />
-          </div>
-          <Button variant='unstyled' type='button' className={FILTER_BUTTON_CLASS}>
-            <SlidersHorizontal size={14} />
-            ตัวกรอง
-          </Button>
-        </div>
+         
 
         {/* ═══ 3. โค้ดส่วนลดพิเศษ (Promo Codes) — แสดงเฉพาะเมื่อมีจาก API ═══ */}
         {/*

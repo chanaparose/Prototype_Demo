@@ -1,11 +1,11 @@
 import React from 'react';
-import { Search, MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
+import { MessageCircle, MessageSquareDot, RefreshCw } from 'lucide-react';
 import { ChatRoomEmbedded } from '@/pages/chat-room';
 import { ChatPartyHeader } from '@/components/features/chat/ChatPartyHeader';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationTime } from '@/pages/messages/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { MobileSearchField } from '@/components/shared/MobileSearchField';
 
 type MessagesDesktopProps = {
   searchText: string;
@@ -67,16 +67,11 @@ export function MessagesDesktop({
             )}
           </div>
 
-          <div className='flex items-center gap-2 bg-gray-50 rounded-xl px-3.5 py-2.5 border border-gray-100'>
-            <Search size={15} className='text-gray-400 shrink-0' />
-            <Input
-              type='text'
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder='ค้นหาการสนทนา...'
-              className='flex-1 text-sm bg-transparent outline-none text-gray-700 placeholder-gray-400'
-            />
-          </div>
+          <MobileSearchField
+            value={searchText}
+            onChange={setSearchText}
+            placeholder='ค้นหาการสนทนา…'
+          />
         </div>
 
         <div className='flex-1 overflow-y-auto'>
@@ -131,6 +126,14 @@ export function MessagesDesktop({
                       <ChatPartyHeader
                         view={conv.view}
                         density='row'
+                        previewLine={
+                          conv.hasQuote
+                            ? 'มีใบเสนอราคาใหม่'
+                            : conv.lastMessage?.trim() || undefined
+                        }
+                        previewEmphasis={
+                          conv.hasQuote ? 'quote' : conv.unread > 0 ? 'unread' : 'muted'
+                        }
                         trailing={
                           <div className='flex flex-col items-end gap-1'>
                             <span className='text-[10px] text-gray-400 shrink-0 ml-2'>
@@ -144,26 +147,6 @@ export function MessagesDesktop({
                           </div>
                         }
                       />
-                      <p
-                        className='text-[10px] mb-0.5 truncate'
-                        style={{ color: 'var(--brand-mauve)' }}
-                      >
-                        {conv.rfqName}
-                      </p>
-                      <div className='flex items-center justify-between'>
-                        <p
-                          className='text-xs truncate'
-                          style={{
-                            color:
-                              conv.unread > 0
-                                ? 'var(--neutral-text)'
-                                : 'var(--neutral-placeholder)',
-                            fontWeight: conv.unread > 0 ? 500 : 400,
-                          }}
-                        >
-                          {conv.lastMessage}
-                        </p>
-                      </div>
                     </div>
                   </Button>
                 );
