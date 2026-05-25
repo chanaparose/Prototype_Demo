@@ -103,17 +103,57 @@ export function ProductTour() {
       return;
     }
 
-    const t = setTimeout(() => {
+    let cancelled = false;
+    let rafId: ReturnType<typeof requestAnimationFrame> | null = null;
+    let innerTimer: ReturnType<typeof setTimeout> | null = null;
+    let vvCleanup: (() => void) | null = null;
+
+    const outerTimer = setTimeout(() => {
+      if (cancelled) return;
       const el = findTarget(def);
       if (!el) {
         setTargetRect(null);
         return;
       }
-      // Use non-animated scroll so the measured rect matches final position.
+      // Non-animated scroll so position settles before we measure.
       el.scrollIntoView({ behavior: 'auto', block: 'center' });
-      setTimeout(() => setTargetRect(el.getBoundingClientRect()), 120);
+
+      // Measure after paint — double-rAF ensures the browser has finished
+      // layout and any URL-bar animation has settled on real mobile devices.
+      const measure = () => {
+        if (cancelled) return;
+        if (rafId != null) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (cancelled) return;
+            setTargetRect(el.getBoundingClientRect());
+          });
+        });
+      };
+
+      // Give the mobile browser extra time to collapse/animate the URL bar.
+      innerTimer = setTimeout(measure, 300);
+
+      // Re-measure any time the visual viewport resizes (URL bar hide/show,
+      // soft keyboard, etc.) so the spotlight stays aligned on real devices.
+      const vv = window.visualViewport;
+      if (vv) {
+        vv.addEventListener('resize', measure);
+        vv.addEventListener('scroll', measure);
+        vvCleanup = () => {
+          vv.removeEventListener('resize', measure);
+          vv.removeEventListener('scroll', measure);
+        };
+      }
     }, 700);
-    return () => clearTimeout(t);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(outerTimer);
+      if (innerTimer != null) clearTimeout(innerTimer);
+      if (rafId != null) cancelAnimationFrame(rafId);
+      vvCleanup?.();
+    };
   }, [open, step, location.pathname, location.search]);
 
   const isPublicRoute = useCallback((path: string) => {
