@@ -15,11 +15,19 @@ import { useFactoryIdeasPageState } from '@/pages/factory-ideas/useFactoryIdeasP
 import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
-  factoryIdeasVisibleContentTypes as CONTENT_TYPES,
+  type FactoryIdeasContentType,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
+
+const MOBILE_TABS: { id: FactoryIdeasContentType; label: string }[] = [
+  { id: 'all',      label: 'ทั้งหมด' },
+  { id: 'product',  label: 'สินค้า'  },
+  { id: 'material', label: 'วัตถุดิบ' },
+  { id: 'idea',     label: 'ไอเดีย'  },
+  { id: 'factory',  label: 'โรงงาน'  },
+];
 
 export function FactoryIdeasMobile() {
   const navigate = useNavigate();
@@ -61,7 +69,7 @@ export function FactoryIdeasMobile() {
     pickSubCategory,
     categoryOptionSelected,
     getDetailPath,
-  } = useFactoryIdeasPageState({ layout: 'mobile' });
+  } = useFactoryIdeasPageState({ layout: 'mobile', initialType: 'all' });
 
   return (
     <div className='min-h-screen bg-[var(--brand-page)] pb-24'>
@@ -102,30 +110,40 @@ export function FactoryIdeasMobile() {
         />
       </div>
 
-      <div className='bg-white border-b border-gray-100 sticky top-0 z-20'>
-        <div className='flex touch-pan-x items-center gap-1.5 overflow-x-auto px-4 pb-2 pt-3 scrollbar-hide'>
-          {CONTENT_TYPES.map((type) => {
-            const active = selectedType === type.id;
+      <div className='bg-white sticky top-14 z-20 border-b border-gray-200'>
+        {/* ── Lezhin-style tab bar ── */}
+        <div className='flex overflow-x-auto scrollbar-hide'>
+          {MOBILE_TABS.map((tab) => {
+            const active = selectedType === tab.id;
             return (
-              <Button
-                variant='unstyled'
-                key={type.id}
+              <button
+                key={tab.id}
                 type='button'
-                data-tour={`tab-${type.id}`}
-                onClick={() => setSelectedType(type.id)}
-                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[12px] transition-all ${
-                  active
-                    ? 'bg-[var(--brand-orange-deep)] font-bold text-[var(--neutral-white)] shadow-[0_2px_8px_rgba(227,136,68,0.30)]'
-                    : 'bg-[rgba(46,34,82,0.07)] font-medium text-[var(--brand-navy)] active:scale-95'
-                }`}
+                data-tour={`tab-${tab.id}`}
+                onClick={() => setSelectedType(tab.id)}
+                className='relative flex-1 min-w-0 shrink-0 py-3 px-2 text-center'
               >
-                {type.label}
-              </Button>
+                <span
+                  className={`text-[14px] leading-none whitespace-nowrap ${
+                    active
+                      ? 'font-bold text-[var(--brand-navy)]'
+                      : 'font-medium text-gray-400'
+                  }`}
+                >
+                  {tab.label}
+                </span>
+                {active && (
+                  <span
+                    className='absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full'
+                    style={{ background: 'var(--brand-purple)' }}
+                  />
+                )}
+              </button>
             );
           })}
         </div>
 
-        <div className='flex flex-wrap items-center gap-2 px-4 pb-3'>
+        <div className='flex flex-wrap items-center gap-2 px-4 pb-3 mt-3'>
           <FactoryIdeasCategoryDropdown
             variant='mobile'
             categoryMenuRef={categoryMenuRef}
@@ -422,198 +440,6 @@ export function FactoryIdeasMobile() {
           </div>
         )}
 
-        {selectedType === 'all' && visibleMaterialItems.length > 0 && (
-          <div className='mt-6'>
-            <div className='flex items-center justify-between mb-3'>
-              <h3 className='flex items-center gap-1.5 text-sm font-bold text-[var(--brand-navy)]'>
-                <Sparkles className='h-4 w-4 text-[var(--brand-teal-light)]' />
-                วัตถุดิบแนะนำ
-              </h3>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => setSelectedType('material')}
-                className='text-[11px] font-medium text-[var(--brand-mauve)]'
-              >
-                ดูทั้งหมด ({visibleMaterialItems.length})
-              </Button>
-            </div>
-            <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
-              {visibleMaterialItems.slice(0, 4).map((item) => {
-                const factory = data.factories.find((f) => f.id === item.factoryId);
-                return (
-                  <article
-                    key={`mt-top-${item.id}`}
-                    className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]'
-                    onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-                  >
-                    <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-                      <ImageWithFallback
-                        src={item.image}
-                        alt={item.title}
-                        className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                      />
-                      <span className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--brand-teal-light)] px-1.5 py-0.5 text-[8px] font-bold text-white'>
-                        วัตถุดิบ
-                      </span>
-                      <ShowcaseHeartButton
-                        showcaseId={item.id}
-                        isLiked={isLiked(item.id)}
-                        onToggle={toggleFavorite}
-                        className='absolute top-1 right-1 z-[1]'
-                      />
-                    </div>
-                    <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                      <h3 className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                        {item.title}
-                      </h3>
-                      <div className='flex items-center gap-0.5 mt-0.5'>
-                        <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                        <span className='text-gray-500 text-[10px] truncate'>
-                          {(item.location ?? '').trim() || '—'}
-                        </span>
-                      </div>
-                      <div className='mt-auto pt-1 border-t border-gray-50'>
-                        <div className='flex items-center justify-between min-w-0'>
-                          <div className='flex items-center gap-0.5 min-w-0'>
-                            <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                            <span className='text-gray-700 text-[10px] font-semibold'>
-                              {item.factoryRating ?? 0}
-                            </span>
-                          </div>
-                          <span className='text-gray-400 text-[8px] shrink-0'>
-                            ขั้นต่ำ {item.minOrder}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {selectedType === 'all' && visibleFactories.length > 0 && (
-          <div className='mt-6'>
-            <div className='flex items-center justify-between mb-3'>
-              <h3 className='flex items-center gap-1.5 text-sm font-bold text-[var(--brand-navy)]'>
-                <MapPin className='h-4 w-4 text-[var(--brand-teal)]' />
-                โรงงานแนะนำ
-              </h3>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => setSelectedType('factory')}
-                className='text-[11px] font-medium text-[var(--brand-mauve)]'
-              >
-                ดูทั้งหมด ({visibleFactories.length})
-              </Button>
-            </div>
-            <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
-              {visibleFactories.slice(0, 4).map((factory) => (
-                <div
-                  key={`fac-${factory.id}`}
-                  onClick={() => navigate(`/factories/${factory.id}`)}
-                  className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]'
-                >
-                  <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
-                    <ImageWithFallback
-                      src={factory.image}
-                      alt={factory.name}
-                      className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                    />
-                    {factory.verified === true && (
-                      <div className='absolute top-1 left-1 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5'>
-                        <BadgeCheck className='h-2.5 w-2.5 shrink-0 text-[var(--brand-purple)]' />
-                        <span className='text-[8px] font-medium text-[var(--brand-purple)]'>
-                          ยืนยัน
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
-                    <div>
-                      <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
-                        {factory.name}
-                      </p>
-                      <div className='flex items-center gap-0.5'>
-                        <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                        <span className='text-gray-500 text-[10px] truncate'>
-                          {(factory.provinceName ?? factory.location).trim() || '—'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className='flex items-center justify-between pt-1 border-t border-gray-50'>
-                      <div className='flex items-center gap-0.5 min-w-0'>
-                        <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                        <span className='text-gray-700 text-[10px] font-semibold'>
-                          {factory.rating}
-                        </span>
-                        <span className='text-gray-400 text-[9px] truncate'>
-                          ({factory.reviews})
-                        </span>
-                      </div>
-                      <span className='text-gray-400 text-[8px] shrink-0'>
-                        ขั้นต่ำ {factory.minOrder}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {selectedType === 'all' && visibleIdeaItems.length > 0 && (
-          <div className='mt-6'>
-            <div className='flex items-center justify-between mb-3'>
-              <h3 className='flex items-center gap-1.5 text-sm font-bold text-[var(--brand-navy)]'>
-                <Sparkles className='h-4 w-4 text-[var(--brand-mauve)]' />
-                บทความ Idea
-              </h3>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => setSelectedType('idea')}
-                className='text-[11px] font-medium text-[var(--brand-mauve)]'
-              >
-                ดูทั้งหมด ({visibleIdeaItems.length})
-              </Button>
-            </div>
-            <div className='grid grid-cols-1 gap-2'>
-              {visibleIdeaItems.slice(0, 4).map((item) => {
-                const factory = data.factories.find((f) => f.id === item.factoryId);
-                return (
-                  <article
-                    key={`idea-${item.id}`}
-                    className='relative bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3 pr-10'
-                    onClick={() => navigate(getDetailPath(item.contentType, item.id))}
-                  >
-                    <ShowcaseHeartButton
-                      showcaseId={item.id}
-                      isLiked={isLiked(item.id)}
-                      onToggle={toggleFavorite}
-                      className='absolute top-2 right-2 z-[1]'
-                    />
-                    <div className='flex items-center gap-2 mb-1.5'>
-                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
-                        ไอเดีย
-                      </span>
-                      <span className='text-[10px] text-gray-400 truncate'>{item.factoryName}</span>
-                    </div>
-                    <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug'>
-                      {item.title}
-                    </h3>
-                    <p className='text-[12px] text-gray-500 line-clamp-2'>{item.excerpt || ' '}</p>
-                    <div className='mt-2 pt-1.5 border-t border-gray-100'>
-                      <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

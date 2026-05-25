@@ -23,6 +23,7 @@ const PAGE_LIMIT = 80;
 
 type UseFactoryIdeasPageStateOptions = {
   layout: 'desktop' | 'mobile';
+  initialType?: FactoryIdeasContentType;
 };
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -34,10 +35,10 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-export function useFactoryIdeasPageState({ layout }: UseFactoryIdeasPageStateOptions) {
+export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
   const [searchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
-  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>('all');
+  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>(initialType ?? 'all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
