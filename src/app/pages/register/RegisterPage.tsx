@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/select';
 import { mediaApi } from '@/services/api/factoryApi';
 import { checkEmail } from '@/services/api/authApi';
+import { DatePicker } from '@/components/ui/date-picker';
 
 /* ─────────────────────────────────────────────────── */
 /* Schemas                                             */
@@ -1042,12 +1043,16 @@ function FactoryTab() {
               <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
                 วันหมดอายุเอกสาร <span className='text-red-500'>*</span>
               </Label>
-              <Input
-                type='date'
+              <DatePicker
                 value={form.cert_expire_date}
-                onChange={(e) => setField('cert_expire_date', e.target.value)}
+                onChange={(v) => {
+                  setField('cert_expire_date', v);
+                  blurField('cert_expire_date', { cert_expire_date: v });
+                }}
                 onBlur={() => blurField('cert_expire_date')}
-                className={inClass(errors.cert_expire_date)}
+                placeholder='เลือกวันหมดอายุเอกสาร'
+                minDate={new Date()}
+                error={!!errors.cert_expire_date}
               />
               {errors.cert_expire_date && <p className='text-xs text-red-600'>{errors.cert_expire_date}</p>}
             </div>
