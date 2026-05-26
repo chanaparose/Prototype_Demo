@@ -171,7 +171,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
       </div>
 
       <div className='flex-1 px-8 py-6'>
-        <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm'>
+        <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm pt-0'>
           <FactoryProfileTabContent
             activeTab={activeTab}
             onTabChange={setActiveTab as (tab: TabId) => void}

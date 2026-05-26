@@ -14,6 +14,13 @@ export const factoriesApi = {
     return httpClient.get<IFactoryBaseResponse[]>(url);
   },
 
+  /** ค้นหาโรงงานตามชื่อ — ใช้ใน RFQ targeting autocomplete */
+  search: (q: string, scope?: 'PD' | 'MT') => {
+    const params = new URLSearchParams({ search: q.trim() });
+    if (scope) params.set('scope', scope);
+    return httpClient.get<IFactoryBaseResponse[]>(`/factories?${params.toString()}`);
+  },
+
   get: (id: string | number) => httpClient.get<IFactoryWithDetailsResponse>(`/factories/${id}`),
 
   create: (data: IFactoryProfileResponse) =>

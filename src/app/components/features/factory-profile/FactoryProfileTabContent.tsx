@@ -3,13 +3,10 @@ import {
   Building2,
   ChevronDown,
   ChevronRight,
-  Factory,
   Search,
   ThumbsUp,
   MapPin,
   Package,
-  Percent,
-  Newspaper,
   ShieldCheck,
   Star,
 } from 'lucide-react';
@@ -62,12 +59,12 @@ export type ReviewItem = {
   optionText?: string;
 };
 
-const TABS: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'products', label: 'สินค้า', icon: Package },
-  { id: 'promotions', label: 'โปรโมชัน', icon: Percent },
-  { id: 'materials', label: 'วัตถุดิบ', icon: Package },
-  { id: 'articles', label: 'บทความ', icon: Newspaper },
-  { id: 'about', label: 'โรงงาน', icon: Factory },
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'products', label: 'สินค้า' },
+  { id: 'promotions', label: 'โปรโมชัน' },
+  { id: 'materials', label: 'วัตถุดิบ' },
+  { id: 'articles', label: 'บทความ' },
+  { id: 'about', label: 'โรงงาน' },
 ];
 
 type FactoryProfileTabContentProps = {
@@ -110,6 +107,16 @@ export function FactoryProfileTabContent({
   onIdeaClick,
 }: FactoryProfileTabContentProps) {
   const [showCategorySubs, setShowCategorySubs] = useState(false);
+  const tabCounts = useMemo(
+    () => ({
+      products: productItems.length,
+      promotions: promotionItems.length,
+      materials: materialItems.length,
+      articles: articleShowcases.length,
+      about: 0,
+    }),
+    [productItems.length, promotionItems.length, materialItems.length, articleShowcases.length],
+  );
   const groupedCategorySubs = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const p of factorySubCategoryPairs) {
@@ -180,32 +187,51 @@ export function FactoryProfileTabContent({
   );
 
   return (
-    <div className='px-4 pt-4 space-y-3'>
-      <div className='flex gap-2 overflow-x-auto pb-1 scrollbar-hide'>
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const active = activeTab === tab.id;
-          return (
-            <Button
-              variant='unstyled'
-              key={tab.id}
-              type='button'
-              onClick={() => onTabChange(tab.id)}
-              className='shrink-0 px-3.5 py-2 rounded-xl text-sm flex items-center gap-1.5'
-              style={{
-                background: active ? 'var(--brand-royal)' : 'var(--neutral-white)',
-                color: active ? 'var(--neutral-white)' : 'var(--neutral-subtle)',
-                border: active ? 'none' : '1px solid var(--neutral-border)',
-                fontWeight: active ? 600 : 500,
-              }}
-            >
-              <Icon className='w-3.5 h-3.5' />
-              {tab.label}
-            </Button>
-          );
-        })}
+    <div className='space-y-3'>
+      {/* ── Lezhin-style tab bar ── */}
+      <div className='-mx-4 sticky top-14 z-20 bg-white border-b border-gray-200 lg:mx-0 lg:static lg:z-auto lg:border-b lg:border-gray-100'>
+        <div className='flex overflow-x-auto scrollbar-hide'>
+          {TABS.map((tab) => {
+            const active = activeTab === tab.id;
+            const count = tab.id !== 'about' ? tabCounts[tab.id] : 0;
+            return (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={() => onTabChange(tab.id)}
+                className='relative flex-1 min-w-0 shrink-0 py-3 px-2 text-center'
+              >
+                <span
+                  className={`text-[14px] leading-none whitespace-nowrap ${
+                    active
+                      ? 'font-bold text-[var(--brand-navy)]'
+                      : 'font-medium text-gray-400'
+                  }`}
+                >
+                  {tab.label}
+                  {count > 0 ? (
+                    <span
+                      className={`ml-1 text-[12px] tabular-nums ${
+                        active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  ) : null}
+                </span>
+                {active && (
+                  <span
+                    className='absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full'
+                    style={{ background: 'var(--brand-purple)' }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
+      <div className='px-0 lg:px-6 pt-1 space-y-3'>
       {activeTab === 'products' && (
         <div>
           {productItems.length === 0 ? (
@@ -230,6 +256,12 @@ export function FactoryProfileTabContent({
 
       {activeTab === 'promotions' && (
         <div>
+          <div className='mb-3 rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2.5'>
+            <p className='text-[12px] font-semibold text-amber-800'>หมายเหตุโปรโมชัน</p>
+            <p className='mt-0.5 text-[11px] text-amber-700'>
+              ราคาและเงื่อนไขโปรโมชันอาจมีการเปลี่ยนแปลงตามช่วงเวลา กรุณาแชทสอบถามโรงงานก่อนสั่งซื้อทุกครั้ง
+            </p>
+          </div>
           {promotionItems.length === 0 ? (
             <div className='bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีโปรโมชัน
@@ -460,6 +492,7 @@ export function FactoryProfileTabContent({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
