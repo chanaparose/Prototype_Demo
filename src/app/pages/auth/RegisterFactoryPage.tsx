@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
-import { Eye, EyeOff, Factory, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  Factory,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  CalendarDays,
+  X,
+} from 'lucide-react';
 import { useRegisterFactory } from '@/pages/auth/useRegisterFactory';
 import type { FormState } from '@/pages/auth/useRegisterFactory';
 import { Button } from '@/components/ui/button';
@@ -87,6 +96,7 @@ export function RegisterFactoryPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [dateFocused, setDateFocused] = useState(false);
 
   const bizSection = 1;
   const accountSection = 2;
@@ -540,21 +550,61 @@ export function RegisterFactoryPage() {
                     </Select>
                   </FieldBlock>
 
-                  <FieldBlock
-                    label='วันหมดอายุเอกสาร'
-                    error={errors.cert_expire_date}
-                    fieldKey='cert_expire_date'
-                    setFieldRef={setFieldRef}
-                    required
-                  >
-                    <Input
-                      type='date'
-                      value={form.cert_expire_date}
-                      onChange={(e) => setField('cert_expire_date', e.target.value)}
-                      onBlur={() => blurField('cert_expire_date')}
-                      className={inClass(errors.cert_expire_date)}
-                    />
-                  </FieldBlock>
+                <FieldBlock
+                  label='วันหมดอายุเอกสาร'
+                  error={errors.cert_expire_date}
+                  fieldKey='cert_expire_date'
+                  setFieldRef={setFieldRef}
+                  required
+                >
+                  <div className='space-y-2'>
+                    <div className='relative'>
+                      <CalendarDays
+                        size={16}
+                        className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${
+                          dateFocused ? 'text-brand-purple' : 'text-gray-400'
+                        }`}
+                      />
+                      <Input
+                        type='date'
+                        value={form.cert_expire_date}
+                        onChange={(e) => setField('cert_expire_date', e.target.value)}
+                        onBlur={() => {
+                          blurField('cert_expire_date');
+                          setDateFocused(false);
+                        }}
+                        onFocus={() => setDateFocused(true)}
+                        className={`${inClass(errors.cert_expire_date)} pl-10 pr-10`}
+                      />
+                      {form.cert_expire_date ? (
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          className='absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                          onClick={() => setField('cert_expire_date', '', { validate: true })}
+                          aria-label='ล้างวันที่'
+                        >
+                          <X size={14} />
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        className='rounded-full border border-brand-purple/20 bg-brand-purple/5 px-2.5 py-1 text-[11px] font-semibold text-brand-purple hover:bg-brand-purple/10'
+                        onClick={() =>
+                          setField('cert_expire_date', new Date().toISOString().slice(0, 10), {
+                            validate: true,
+                          })
+                        }
+                      >
+                        วันนี้
+                      </Button>
+                      <span className='text-[11px] text-gray-500'>เลือกจากปฏิทินหรือกด Today ได้</span>
+                    </div>
+                  </div>
+                </FieldBlock>
                 </div>
 
                 <FieldBlock

@@ -256,7 +256,7 @@ export function DesktopSidebar() {
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => openLoginModal()}
+              onClick={() => navigate('/register')}
               className='flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white'
               style={{
                 background:
