@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router';
-import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send } from 'lucide-react';
+import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send, Crosshair } from 'lucide-react';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
 import { formatCurrency, formatCompactNumber } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
@@ -23,6 +23,8 @@ export type RfqCardModel = {
   myQuotedPrice: number | null;
   myQuoteStatus: string | null;
   hasMyQuote: boolean;
+  /** true when the buyer sent this RFQ specifically to this factory */
+  isTargeted?: boolean;
 };
 
 type BoqStatusInfo = {
@@ -146,11 +148,17 @@ export function RfqCard({
             )}
           </div>
           <div className='flex-1 min-w-0 py-0.5'>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 flex-wrap'>
               <p className='text-[11px] text-gray-400 font-medium'>#{row.id}</p>
               <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100'>
                 {requestKindLabel(row.requestKind)}
               </span>
+              {row.isTargeted ? (
+                <span className='inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200'>
+                  <Crosshair size={10} />
+                  ส่งถึงคุณโดยตรง
+                </span>
+              ) : null}
             </div>
             <p className='font-bold text-gray-900 truncate text-sm sm:text-base'>{row.title}</p>
             <p className='text-xs text-gray-500 mt-0.5'>{breadcrumb}</p>
@@ -198,11 +206,17 @@ export function RfqCard({
         )}
       </div>
       <div className='flex-1 min-w-0 py-0.5'>
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2 flex-wrap'>
           <p className='text-[11px] text-gray-400 font-medium'>#{row.id}</p>
           <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100'>
             {requestKindLabel(row.requestKind)}
           </span>
+          {row.isTargeted ? (
+            <span className='inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200'>
+              <Crosshair size={10} />
+              ส่งถึงคุณโดยตรง
+            </span>
+          ) : null}
         </div>
         <p className='font-bold text-gray-900 truncate text-sm sm:text-base'>{row.title}</p>
         <p className='text-xs text-gray-600 mt-0.5 line-clamp-2'>{breadcrumb}</p>

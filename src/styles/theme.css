@@ -178,4 +178,22 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+
+  /* ──── Prevent iOS auto-zoom on input focus ──── */
+  /* iOS Safari zooms when font-size < 16px. Force 16px on all
+     focusable form controls so the page stays at its original scale. */
+  @media screen and (max-width: 767px) {
+    input[type='text'],
+    input[type='number'],
+    input[type='email'],
+    input[type='tel'],
+    input[type='password'],
+    input[type='search'],
+    input[type='url'],
+    input:not([type]),
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
 }
