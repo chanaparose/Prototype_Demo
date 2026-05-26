@@ -1,6 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { rfqsApi } from '@/services/api/rfqApi';
-import { type IRfqWizardCreateInput } from '@/services/api/types/rfq.types';
+import {
+  type IRfqCreateRequest,
+  type IRfqWizardCreateInput,
+} from '@/services/api/types/rfq.types';
 
 export function useCreateRFQ() {
   return useMutation({
@@ -60,7 +63,16 @@ export function useCreateRFQ() {
         body.sub_category_id = Number(payload.sub_category_id);
       }
 
-      return rfqsApi.create(body);
+      const targeting = payload.targeting ?? 'all';
+      body.targeting = targeting;
+      if (targeting === 'specific' && Array.isArray(payload.factory_ids)) {
+        const ids = payload.factory_ids
+          .map((id) => Number(id))
+          .filter((id) => Number.isFinite(id) && id > 0);
+        if (ids.length > 0) body.factory_ids = ids;
+      }
+
+      return rfqsApi.create(body as IRfqCreateRequest);
     },
   });
 }

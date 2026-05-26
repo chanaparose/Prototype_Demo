@@ -147,7 +147,7 @@ export function ProductDetailDesktop() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={handleBack}
+          onClick={handleBack}
             className='inline-flex items-center gap-1 font-medium text-[var(--brand-purple)] hover:opacity-80'
           >
             <ArrowLeft className='w-3.5 h-3.5' /> กลับ
@@ -159,7 +159,7 @@ export function ProductDetailDesktop() {
               <Chevron className='w-3 h-3 text-gray-300' />
               <span>{subName}</span>
             </>
-          ) : null}
+        ) : null}
           <Chevron className='w-3 h-3 text-gray-300' />
           <span className='max-w-[32rem] truncate text-[var(--brand-ink)]'>{item.title}</span>
         </div>
@@ -232,7 +232,7 @@ export function ProductDetailDesktop() {
                 {subName && !isMaterial ? (
                   <SubCategoryTag name={subName} size='sm' showSubPrefix />
                 ) : null}
-              </div>
+          </div>
 
               <h1 className='text-[20px] font-medium leading-snug text-[var(--brand-ink)]'>
                 {item.title}
@@ -257,7 +257,7 @@ export function ProductDetailDesktop() {
                 </span>
                 <span className='h-3 w-px bg-gray-200' />
                 <span>เผยแพร่ {formatThaiDate(item.postedAt)}</span>
-              </div>
+                          </div>
 
               <div className='mt-4 rounded-xl border border-[#F8DEC1] bg-[var(--surface-paper-warm)] px-4 py-4'>
                 {priceText ? (
@@ -279,7 +279,7 @@ export function ProductDetailDesktop() {
                 <p className='text-[11px] text-gray-500 mt-2'>
                   ราคาต่อชิ้นอาจแตกต่างตามปริมาณสั่งผลิต กรุณาแชทเพื่อขอใบเสนอราคา
                 </p>
-              </div>
+                </div>
 
               <div className='mt-5 grid grid-cols-[120px_1fr] gap-y-3 gap-x-4 text-[13px]'>
                 <span className='text-gray-400'>ขั้นต่ำผลิต</span>
@@ -331,7 +331,7 @@ export function ProductDetailDesktop() {
                     className='inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-5 text-[14px] font-semibold text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
                   >
                     {starting ? (
-                      <span
+              <span
                         className='w-4 h-4 border-2 border-t-transparent rounded-full animate-spin'
                         style={{ borderColor: BRAND.orangeDark }}
                       />
@@ -501,7 +501,7 @@ export function ProductDetailDesktop() {
               <p className='text-[13px] text-gray-400'>ยังไม่มีรายละเอียดเพิ่มเติม</p>
             )}
           </div>
-        </div>
+          </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
@@ -554,7 +554,7 @@ export function ProductDetailDesktop() {
                     <p className='text-[12px] text-gray-600 mt-1 line-clamp-2'>
                       {r.comment || '-'}
                     </p>
-                  </div>
+                </div>
                 ))
               )}
             </div>

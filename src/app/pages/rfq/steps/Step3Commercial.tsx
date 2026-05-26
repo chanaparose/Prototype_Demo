@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { CheckCircle2, LogIn, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import { mapAddressFromApi, type MappedAddress } from '@/domain/shared/mappers/mapAddressFromApi';
@@ -36,6 +37,8 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
 ];
 
 export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: Readonly<Props>) {
+  const navigate = useNavigate();
+
   /* addresses */
   const [addresses, setAddresses] = React.useState<MappedAddress[]>([]);
   const [addrLoading, setAddrLoading] = React.useState(!isGuest);
@@ -70,16 +73,41 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
     }
   }, []);
 
+  // ── Load shipping methods — ทำงานทั้ง guest และ logged-in (endpoint ไม่ต้อง auth) ──
   React.useEffect(() => {
-    // Guests don't have addresses — skip API call entirely
+    let active = true;
+    void masterApi
+      .getShippingMethods()
+      .then((raw) => {
+        if (!active) return;
+        const normalized = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as Record<string, unknown>)?.data)
+            ? ((raw as Record<string, unknown>).data as unknown[])
+            : [];
+        const mapped = mapShippingMethodsList(normalized);
+        if (mapped.length > 0) {
+          setShippingMethods(mapped);
+          onLoadedRef.current?.(
+            {},
+            Object.fromEntries(mapped.map((m) => [m.id, m.name])),
+          );
+        }
+      })
+      .catch(() => {
+        if (active) setShippingMethods(FALLBACK_SHIPPING);
+      });
+    return () => { active = false; };
+  }, []);
+
+  // ── Load addresses (logged-in only) ──
+  React.useEffect(() => {
     if (isGuest) return;
 
-    let shippingMapResult: Record<number, string> = {};
-    let addressMapResult: Record<number, string> = {};
-
-    // โหลด addresses + auto-select default
+    let active = true;
     void loadAddresses().then((mapped) => {
-      addressMapResult = Object.fromEntries(
+      if (!active) return;
+      const addressMapResult = Object.fromEntries(
         mapped.map((a) => {
           const label = [a.addressDetail, a.subDistrict, a.district, a.province, a.zipCode]
             .filter(Boolean)
@@ -87,7 +115,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
           return [a.id, label || `ที่อยู่ #${a.id}`];
         }),
       );
-      onLoadedRef.current?.(addressMapResult, shippingMapResult);
+      onLoadedRef.current?.(addressMapResult, {});
 
       if (autoSelected.current || draft.delivery_address_id) return;
       const def = mapped.find((a) => a.isDefault) ?? mapped[0];
@@ -96,24 +124,8 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
         autoSelected.current = true;
       }
     });
-
-    void masterApi
-      .getShippingMethods()
-      .then((raw) => {
-        const normalized = Array.isArray(raw)
-          ? raw
-          : Array.isArray((raw as Record<string, unknown>)?.data)
-            ? ((raw as Record<string, unknown>).data as unknown[])
-            : [];
-        const mapped = mapShippingMethodsList(normalized);
-        if (mapped.length > 0) setShippingMethods(mapped);
-        shippingMapResult = Object.fromEntries(mapped.map((m) => [m.id, m.name]));
-        onLoadedRef.current?.(addressMapResult, shippingMapResult);
-      })
-      .catch(() => {
-        setShippingMethods(FALLBACK_SHIPPING);
-      });
-  }, [loadAddresses, setDraft]);
+    return () => { active = false; };
+  }, [isGuest, loadAddresses, setDraft]);
 
   const handleAddAddress = React.useCallback(
     async (payload: AddressFormPayload) => {
@@ -152,7 +164,12 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
         </p>
 
         {isGuest ? (
-          <div className='flex items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/60 px-4 py-4'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate('/login?redirect=/create-rfq')}
+            className='flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/60 px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]'
+          >
             <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100'>
               <LogIn size={18} className='text-violet-500' />
             </div>
@@ -162,7 +179,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                 กรอกข้อมูลสินค้าได้เลย — ระบุที่อยู่ได้หลังจากล็อกอิน
               </p>
             </div>
-          </div>
+          </Button>
         ) : addrLoading ? (
           <div className='space-y-2'>
             <div className='h-14 rounded-xl bg-gray-100 animate-pulse' />

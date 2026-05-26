@@ -117,6 +117,11 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
           onChat={handleChat}
           chatLoading={starting}
           showChat={canChat}
+          profile={profile}
+          factoryCategoryNames={factoryCategoryNames}
+          factorySubCategoryNames={factorySubCategoryNames}
+          factorySubCategoryPairs={factorySubCategoryPairs}
+          apiCertificates={apiCertificates}
         />
       </div>
 
@@ -135,22 +140,6 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
               </div>
             ))}
           </div>
-
-          {profile && (profile.certificates ?? []).length > 0 && (
-            <>
-              <div className='h-8 w-px shrink-0 bg-gray-100' />
-              <div className='flex flex-wrap items-center gap-2'>
-                {(profile.certificates ?? []).map((c) => (
-                  <span
-                    key={c}
-                    className='rounded-full border border-purple-100 bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700'
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
 
           {factory.tags && factory.tags.length > 0 && (
             <>
@@ -171,7 +160,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
       </div>
 
       <div className='flex-1 px-8 py-6'>
-        <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm'>
+        <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm pt-0'>
           <FactoryProfileTabContent
             activeTab={activeTab}
             onTabChange={setActiveTab as (tab: TabId) => void}
@@ -190,12 +179,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
               rating: factory.rating,
               reviews: factory.reviews,
             }}
-            profile={profile}
             reviews={reviews}
-            factoryCategoryNames={factoryCategoryNames}
-            factorySubCategoryNames={factorySubCategoryNames}
-            factorySubCategoryPairs={factorySubCategoryPairs}
-            apiCertificates={apiCertificates}
             onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
             onPromotionClick={(itemId) => navigate(`/factory-ideas/promotions/${itemId}`)}
             onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}

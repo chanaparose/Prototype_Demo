@@ -59,8 +59,8 @@ export function RfqAndOrders() {
       <div className='lg:hidden flex flex-col min-h-full pb-20'>
         <div className='px-4 pt-5 pb-3'>
           <p className='text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-[#C4A484]'>
-            คำขอ
-          </p>
+                คำขอ
+              </p>
           <h1 className='text-xl font-bold text-brand-navy-deep'>คำขอราคา & คำสั่งซื้อ</h1>
         </div>
 
@@ -70,7 +70,7 @@ export function RfqAndOrders() {
               variant='unstyled'
               onClick={() => setPrimaryTab('rfq')}
               className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                primaryTab === 'rfq'
+                  primaryTab === 'rfq'
                   ? 'bg-white/95 text-brand-violet-deep shadow-[0_2px_14px_rgba(109,40,217,0.18)]'
                   : 'text-neutral-subtle'
               }`}
@@ -81,7 +81,7 @@ export function RfqAndOrders() {
               variant='unstyled'
               onClick={() => setPrimaryTab('orders')}
               className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative ${
-                primaryTab === 'orders'
+                  primaryTab === 'orders'
                   ? 'bg-white/95 text-brand-orange-vivid shadow-[0_2px_14px_rgba(242,120,48,0.22)]'
                   : 'text-neutral-subtle'
               }`}
@@ -92,20 +92,20 @@ export function RfqAndOrders() {
               )}
             </Button>
           </div>
-        </div>
+          </div>
 
         <div className='px-4 flex-1'>
           <TabSwipeContent activeKey={primaryTab} tabOrder={RFQ_ORDERS_TAB_ORDER}>
-            {primaryTab === 'rfq' ? (
+          {primaryTab === 'rfq' ? (
               <RfqPanel rfqs={rfqs} isMobile />
             ) : (
               <OrderPanel
-                orderFilter={orderFilter}
-                setOrderFilter={setOrderFilter}
-                filteredOrders={filteredOrders}
-                orderTagCounts={orderTagCounts}
-              />
-            )}
+              orderFilter={orderFilter}
+              setOrderFilter={setOrderFilter}
+              filteredOrders={filteredOrders}
+              orderTagCounts={orderTagCounts}
+            />
+          )}
           </TabSwipeContent>
         </div>
       </div>
@@ -118,13 +118,13 @@ export function RfqAndOrders() {
             </p>
             <h1 className='text-2xl font-bold text-brand-navy-deep'>คำขอราคา &amp; คำสั่งซื้อ</h1>
           </div>
-          <Link
+            <Link
             to='/create-rfq'
             className='flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 shadow-md bg-[linear-gradient(135deg,var(--brand-purple)_0%,var(--brand-orange)_100%)] shadow-[0_6px_20px_rgba(162,56,255,0.35)]'
-          >
-            <Plus size={16} />
+            >
+              <Plus size={16} />
             สร้างคำขอราคา
-          </Link>
+            </Link>
         </div>
 
         <div className='grid grid-cols-2 gap-6 flex-1 min-h-0'>
@@ -144,14 +144,14 @@ export function RfqAndOrders() {
                         r.status !== 'completed',
                     ).length
                   }
-                </span>
+                            </span>
               </div>
             </div>
 
             <div className='overflow-y-auto flex-1 p-4'>
               <RfqPanel rfqs={rfqs} isDesktop />
-            </div>
-          </div>
+                  </div>
+                </div>
 
           <div className='bg-white rounded-2xl border border-[rgba(196,164,132,0.4)] border-t-[3px] border-t-brand-orange overflow-hidden flex flex-col'>
             <div className='flex items-center justify-between px-5 py-4 border-b shrink-0 border-[rgba(196,164,132,0.4)] bg-surface-peach'>
@@ -168,9 +168,9 @@ export function RfqAndOrders() {
                 <span className='flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse bg-surface-orange-soft text-brand-orange-vivid'>
                   <AlertTriangle size={10} />
                   {orderTagCounts.pendingPayment} รอชำระ
-                </span>
-              )}
-            </div>
+                        </span>
+                      )}
+              </div>
 
             <div className='overflow-y-auto flex-1 p-4'>
               <OrderPanel
@@ -180,8 +180,8 @@ export function RfqAndOrders() {
                 orderTagCounts={orderTagCounts}
                 isDesktop
               />
+              </div>
             </div>
-          </div>
         </div>
       </div>
     </>

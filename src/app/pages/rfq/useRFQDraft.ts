@@ -2,8 +2,17 @@ import React from 'react';
 
 const KEY = 'rfq_draft_v1';
 
+export type TargetFactory = {
+  id: number;
+  name: string;
+};
+
 export type RFQDraft = {
   request_kind?: 'PR' | 'PS' | 'MS' | 'MR';
+  /** 'all' = broadcast ทุกโรงงาน (default) | 'specific' = เลือกเอง */
+  targeting?: 'all' | 'specific';
+  /** รายชื่อโรงงานที่เลือก — ใช้เมื่อ targeting === 'specific' */
+  target_factories?: TargetFactory[];
   title: string;
   description: string;
   category_id: number | null;

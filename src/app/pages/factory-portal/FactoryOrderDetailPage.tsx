@@ -604,8 +604,8 @@ export function FactoryOrderDetailPage() {
                         aria-label='ความคืบหน้าการผลิต'
                       />
                     </div>
-                  </div>
-                ) : null}
+        </div>
+      ) : null}
 
                 <div className='grid grid-cols-3 gap-3'>
                   <div className='rounded-xl bg-slate-50 px-3 py-2.5'>
@@ -753,7 +753,7 @@ export function FactoryOrderDetailPage() {
                           {trackingNumber}
                         </span>
                       </div>
-                    ) : null}
+      ) : null}
 
                     {/* print button */}
                     <Button
@@ -769,8 +769,8 @@ export function FactoryOrderDetailPage() {
                     <p className='text-[10px] text-slate-400 text-center'>
                       เปิด tab ใหม่ • พิมพ์หรือบันทึก PDF ได้เลย
                     </p>
-                  </div>
-                </section>
+              </div>
+            </section>
               ) : null}
 
               <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
@@ -889,7 +889,7 @@ export function FactoryOrderDetailPage() {
             </aside>
           </div>
         )}
-      </div>
+        </div>
 
       <UpdateStepDrawer
         open={drawerStep != null}

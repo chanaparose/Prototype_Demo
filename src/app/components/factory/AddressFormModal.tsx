@@ -126,14 +126,13 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
           control={control}
           name='address_type'
           render={({ field }) => (
-            <Select value={field.value} onValueChange={(v) => field.onChange(v as 'M' | 'B' | 'S')}>
+            <Select value={field.value} onValueChange={(v) => field.onChange(v as 'M' | 'S')}>
               <SelectTrigger className='w-full'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='M'>ที่อยู่หลัก</SelectItem>
-                <SelectItem value='B'>ออกใบกำกับภาษี</SelectItem>
-                <SelectItem value='S'>จัดส่ง</SelectItem>
+                <SelectItem value='S'>ที่อยู่จัดส่ง</SelectItem>
               </SelectContent>
             </Select>
           )}

@@ -56,6 +56,13 @@ export const rfqsApi = {
   close: (id: string | number) => httpClient.patch<{ message: string }>(`/rfqs/${id}/close`, {}),
 
   cancel: (id: string | number) => httpClient.patch<{ message: string }>(`/rfqs/${id}/cancel`, {}),
+
+  /**
+   * แก้ไขรายชื่อโรงงาน target หลังสร้าง RFQ แล้ว
+   * Backend guard: status NOT IN ('CC','CL') → 403
+   */
+  updateTargets: (rfqId: string | number, factory_ids: number[]) =>
+    httpClient.put<void>(`/rfqs/${rfqId}/targets`, { factory_ids }),
 };
 
 export const factoryRfqsApi = {

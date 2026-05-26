@@ -1,18 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import {
-  Building2,
-  ChevronDown,
-  ChevronRight,
-  Factory,
-  Search,
-  ThumbsUp,
-  MapPin,
-  Package,
-  Percent,
-  Newspaper,
-  ShieldCheck,
-  Star,
-} from 'lucide-react';
+import React, { useMemo } from 'react';
+import { ChevronRight, Search, ThumbsUp, MapPin, Star } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
@@ -20,7 +7,7 @@ import { formatThaiDate } from '@/components/features/factory-profile/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export type TabId = 'products' | 'promotions' | 'materials' | 'articles' | 'about';
+export type TabId = 'products' | 'promotions' | 'materials' | 'articles' | 'review';
 
 import type { IFactoryProfileShowcase } from '@/domain/factory/types/factoryProfile.model';
 
@@ -62,12 +49,12 @@ export type ReviewItem = {
   optionText?: string;
 };
 
-const TABS: { id: TabId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'products', label: 'สินค้า', icon: Package },
-  { id: 'promotions', label: 'โปรโมชัน', icon: Percent },
-  { id: 'materials', label: 'วัตถุดิบ', icon: Package },
-  { id: 'articles', label: 'บทความ', icon: Newspaper },
-  { id: 'about', label: 'โรงงาน', icon: Factory },
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'products', label: 'สินค้า' },
+  { id: 'promotions', label: 'โปรโมชัน' },
+  { id: 'materials', label: 'วัตถุดิบ' },
+  { id: 'articles', label: 'บทความ' },
+  { id: 'review', label: 'รีวิว' },
 ];
 
 type FactoryProfileTabContentProps = {
@@ -79,12 +66,7 @@ type FactoryProfileTabContentProps = {
   articleShowcases: IFactoryProfileShowcase[];
   factory: FactoryAbout;
   factoryId?: string;
-  profile: FactoryProfileExtra | null | undefined;
   reviews: ReviewItem[];
-  factoryCategoryNames?: string[];
-  factorySubCategoryNames?: string[];
-  factorySubCategoryPairs?: { categoryLabel: string; subLabel: string }[];
-  apiCertificates?: Record<string, unknown>[];
   onProductClick: (id: string) => void;
   onPromotionClick: (id: string) => void;
   onIdeaClick: (id: string) => void;
@@ -99,35 +81,27 @@ export function FactoryProfileTabContent({
   articleShowcases,
   factory,
   factoryId,
-  profile,
   reviews,
-  factoryCategoryNames = [],
-  factorySubCategoryNames = [],
-  factorySubCategoryPairs = [],
-  apiCertificates = [],
   onProductClick,
   onPromotionClick,
   onIdeaClick,
 }: FactoryProfileTabContentProps) {
-  const [showCategorySubs, setShowCategorySubs] = useState(false);
-  const groupedCategorySubs = useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (const p of factorySubCategoryPairs) {
-      const cat = String(p.categoryLabel ?? '').trim();
-      const sub = String(p.subLabel ?? '').trim();
-      if (!cat || !sub) continue;
-      const prev = map.get(cat) ?? [];
-      if (!prev.includes(sub)) prev.push(sub);
-      map.set(cat, prev);
-    }
-    if (map.size === 0 && factoryCategoryNames.length > 0) {
-      for (const c of factoryCategoryNames) map.set(c, []);
-    }
-    if (map.size === 0 && factorySubCategoryNames.length > 0) {
-      map.set('หมวดย่อย', [...factorySubCategoryNames]);
-    }
-    return Array.from(map.entries());
-  }, [factorySubCategoryPairs, factoryCategoryNames, factorySubCategoryNames]);
+  const tabCounts = useMemo(
+    () => ({
+      products: productItems.length,
+      promotions: promotionItems.length,
+      materials: materialItems.length,
+      articles: articleShowcases.length,
+      review: reviews.length,
+    }),
+    [
+      productItems.length,
+      promotionItems.length,
+      materialItems.length,
+      articleShowcases.length,
+      reviews.length,
+    ],
+  );
 
   const ShowcaseGridCard = ({
     item,
@@ -180,32 +154,51 @@ export function FactoryProfileTabContent({
   );
 
   return (
-    <div className='px-4 pt-4 space-y-3'>
-      <div className='flex gap-2 overflow-x-auto pb-1 scrollbar-hide'>
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const active = activeTab === tab.id;
-          return (
-            <Button
-              variant='unstyled'
-              key={tab.id}
-              type='button'
-              onClick={() => onTabChange(tab.id)}
-              className='shrink-0 px-3.5 py-2 rounded-xl text-sm flex items-center gap-1.5'
-              style={{
-                background: active ? 'var(--brand-royal)' : 'var(--neutral-white)',
-                color: active ? 'var(--neutral-white)' : 'var(--neutral-subtle)',
-                border: active ? 'none' : '1px solid var(--neutral-border)',
-                fontWeight: active ? 600 : 500,
-              }}
-            >
-              <Icon className='w-3.5 h-3.5' />
-              {tab.label}
-            </Button>
-          );
-        })}
+    <div className='space-y-3'>
+      {/* ── Lezhin-style tab bar ── */}
+      <div className='-mx-4 sticky top-14 z-20 bg-white border-b border-gray-200 lg:mx-0 lg:static lg:z-auto lg:border-b lg:border-gray-100'>
+        <div className='flex overflow-x-auto scrollbar-hide'>
+          {TABS.map((tab) => {
+            const active = activeTab === tab.id;
+            const count = tabCounts[tab.id];
+            return (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={() => onTabChange(tab.id)}
+                className='relative flex-1 min-w-0 shrink-0 py-3 px-2 text-center'
+              >
+                <span
+                  className={`text-[14px] leading-none whitespace-nowrap ${
+                    active
+                      ? 'font-bold text-[var(--brand-navy)]'
+                      : 'font-medium text-gray-400'
+                  }`}
+                >
+                  {tab.label}
+                  {count > 0 ? (
+                    <span
+                      className={`ml-1 text-[12px] tabular-nums ${
+                        active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  ) : null}
+                </span>
+                {active && (
+                  <span
+                    className='absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full'
+                    style={{ background: 'var(--brand-purple)' }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
+      <div className='px-0 lg:px-6 pt-1 space-y-3'>
       {activeTab === 'products' && (
         <div>
           {productItems.length === 0 ? (
@@ -230,6 +223,12 @@ export function FactoryProfileTabContent({
 
       {activeTab === 'promotions' && (
         <div>
+          <div className='mb-3 rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2.5'>
+            <p className='text-[12px] font-semibold text-amber-800'>หมายเหตุโปรโมชัน</p>
+            <p className='mt-0.5 text-[11px] text-amber-700'>
+              ราคาและเงื่อนไขโปรโมชันอาจมีการเปลี่ยนแปลงตามช่วงเวลา กรุณาแชทสอบถามโรงงานก่อนสั่งซื้อทุกครั้ง
+            </p>
+          </div>
           {promotionItems.length === 0 ? (
             <div className='bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีโปรโมชัน
@@ -308,83 +307,8 @@ export function FactoryProfileTabContent({
         </div>
       )}
 
-      {activeTab === 'about' && (
+      {activeTab === 'review' && (
         <div className='space-y-3'>
-          <div className='bg-white rounded-2xl p-4 border border-gray-100 shadow-sm'>
-            <p className='text-sm text-gray-900 mb-2' style={{ fontWeight: 700 }}>
-              รายละเอียดโรงงาน
-            </p>
-            <div className='space-y-2 text-sm text-gray-600'>
-              <p className='flex items-start gap-2'>
-                <Building2 className='w-4 h-4 mt-0.5 text-purple-600' />
-                ชื่อโรงงาน: {factory.name}
-              </p>
-              <p className='flex items-start gap-2'>
-                <MapPin className='w-4 h-4 mt-0.5 text-purple-600' />
-                ที่อยู่: {profile?.address ?? factory.location}
-              </p>
-              {groupedCategorySubs.length > 0 ? (
-                <div className='pt-1'>
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() => setShowCategorySubs((v) => !v)}
-                    className='flex w-full max-w-xl items-center justify-between gap-2 rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2 text-left'
-                  >
-                    <span className='text-[12px] font-semibold text-violet-800'>
-                      หมวดหมู่ที่รับผลิต
-                    </span>
-                    <div className='inline-flex items-center gap-1.5 text-[11px] text-violet-700 shrink-0'>
-                      <span>{groupedCategorySubs.length} หมวดหลัก</span>
-                      <ChevronDown
-                        className={`h-3.5 w-3.5 transition-transform ${showCategorySubs ? 'rotate-180' : ''}`}
-                      />
-                    </div>
-                  </Button>
-                  {showCategorySubs ? (
-                    <div className='mt-2 max-h-80 overflow-auto rounded-xl border border-violet-100 bg-white p-2 shadow-sm space-y-1.5'>
-                      {groupedCategorySubs.map(([cat, subs]) => (
-                        <div
-                          key={`cat-group-${cat}`}
-                          className='rounded-lg bg-violet-50/50 px-2.5 py-2'
-                        >
-                          <p className='text-[11px] font-bold text-violet-900'>{cat}</p>
-                          <p className='mt-0.5 text-[11px] text-violet-700'>
-                            {subs.length > 0 ? subs.join(', ') : 'ไม่มีหมวดย่อย'}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-              <div className='flex items-start gap-2'>
-                <ShieldCheck className='w-4 h-4 mt-0.5 text-purple-600' />
-                <div>
-                  <p>มาตรฐาน/ใบรับรอง</p>
-                  <div className='mt-1 flex flex-wrap gap-1.5'>
-                    {(profile?.certificates ?? []).map((c) => (
-                      <StatusBadge key={c} variant='active' size='sm'>
-                        {c}
-                      </StatusBadge>
-                    ))}
-                    {apiCertificates.map((c, i) => (
-                      <StatusBadge
-                        key={String(c.map_id ?? c.cert_id ?? c.id ?? i)}
-                        variant='success'
-                        size='sm'
-                      >
-                        {String(c.cert_name ?? c.name_th ?? c.cert_number ?? 'ใบรับรอง')}
-                      </StatusBadge>
-                    ))}
-                    {(profile?.certificates ?? []).length === 0 && apiCertificates.length === 0 ? (
-                      <span>-</span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
           <div className='bg-white rounded-2xl p-4 border border-gray-100 shadow-sm'>
             <div className='flex items-center justify-between mb-2.5'>
               <p
@@ -460,6 +384,7 @@ export function FactoryProfileTabContent({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

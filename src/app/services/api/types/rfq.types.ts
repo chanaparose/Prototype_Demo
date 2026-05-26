@@ -25,6 +25,10 @@ export interface IRfqListItem {
   target_lead_time_days?: number;
   required_delivery_date?: string;
   certifications_required?: string[];
+  /** 'all' = broadcast | 'specific' = เลือกโรงงานเฉพาะ */
+  targeting?: 'all' | 'specific';
+  /** รายชื่อโรงงานที่ส่ง RFQ ให้ (เมื่อ targeting === 'specific') */
+  target_factories?: { factory_id: number; factory_name: string }[];
 }
 
 export interface IRfqDetailResponse {
@@ -42,6 +46,10 @@ export interface IRfqCreateRequest {
   target_lead_time_days?: number;
   required_delivery_date?: string;
   certifications_required?: string[];
+  /** 'all' (default) | 'specific' */
+  targeting?: 'all' | 'specific';
+  /** ใช้เมื่อ targeting === 'specific' */
+  factory_ids?: number[];
 }
 
 export interface IQuotationResponse {
@@ -138,4 +146,8 @@ export interface IRfqWizardCreateInput {
   certifications_required?: string[];
   request_kind?: string;
   source_showcase_id?: number;
+  /** 'all' (default) | 'specific' */
+  targeting?: 'all' | 'specific';
+  /** ใช้เมื่อ targeting === 'specific' */
+  factory_ids?: number[];
 }

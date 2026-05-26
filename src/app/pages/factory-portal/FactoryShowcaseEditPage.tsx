@@ -316,19 +316,19 @@ export function FactoryShowcaseEditPage() {
 
   const save = useCallback(
     async (submitStatus: 'DR' | 'AC') => {
-      if (!id) return;
-      const v = form.getValues();
-      if (!v.title.trim()) {
+    if (!id) return;
+    const v = form.getValues();
+    if (!v.title.trim()) {
         setError('กรุณากรอกชื่อรายการ');
         return;
       }
       if (submitStatus === 'AC' && v.content_type !== 'ID') {
         if (imageUrls.length === 0 || !String(imageUrls[0] ?? '').trim()) {
           setError('กรุณาอัปโหลดภาพปกอย่างน้อย 1 รูปก่อนเผยแพร่');
-          return;
+      return;
         }
-      }
-      if (v.content_type === 'PM') {
+    }
+    if (v.content_type === 'PM') {
         if (submitStatus === 'AC') {
           if (v.promo_price == null || Number(v.promo_price) <= 0) {
             setError('กรุณากรอกราคาโปรโมชันให้มากกว่า 0');
@@ -343,28 +343,28 @@ export function FactoryShowcaseEditPage() {
             return;
           }
         }
-        if (!v.start_date || !v.end_date) {
-          setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
-          return;
-        }
-        if (v.end_date < v.start_date) {
-          setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
-          return;
-        }
+      if (!v.start_date || !v.end_date) {
+        setError('โปรโมชันต้องมีวันเริ่มและวันสิ้นสุด');
+        return;
       }
-      setSaving(true);
-      setError('');
+      if (v.end_date < v.start_date) {
+        setError('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม');
+        return;
+      }
+    }
+    setSaving(true);
+    setError('');
       setLinkedShowcaseError('');
       const coverUrl = imageUrls[0] ?? '';
       const base = {
         content_type: v.content_type,
         status: submitStatus,
-        title: v.title.trim(),
+      title: v.title.trim(),
         excerpt: v.content_type === 'ID' ? undefined : v.excerpt.trim() || undefined,
         content: v.content.trim() || undefined,
         image_url: coverUrl || undefined,
-        category_id: v.category_id ?? undefined,
-        sub_category_id: v.sub_category_id ?? undefined,
+      category_id: v.category_id ?? undefined,
+      sub_category_id: v.sub_category_id ?? undefined,
         lead_time_days: v.lead_time_days ?? undefined,
         linked_showcases: [...imageUrls, ...selectedShowcaseIds],
       };
@@ -387,8 +387,8 @@ export function FactoryShowcaseEditPage() {
                 base_price: v.base_price ?? undefined,
               };
 
-      try {
-        await showcasesApi.update(id, payload);
+    try {
+      await showcasesApi.update(id, payload);
         const existingRaw = await showcasesApi.listImages(id).catch(() => []);
         const existing = (Array.isArray(existingRaw) ? existingRaw : [])
           .map((r) => {
@@ -445,19 +445,19 @@ export function FactoryShowcaseEditPage() {
           }),
         );
 
-        await Promise.all([
-          qc.invalidateQueries({ queryKey: ['showcase', id] }),
-          qc.invalidateQueries({ queryKey: ['showcases'] }),
-        ]);
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['showcase', id] }),
+        qc.invalidateQueries({ queryKey: ['showcases'] }),
+      ]);
         navigate('/factory/showcases', { replace: true });
-      } catch (e) {
+    } catch (e) {
         const msg = e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ';
         const linkedMsg = mapLinkedShowcasesErrorToThai(msg);
         if (linkedMsg) setLinkedShowcaseError(linkedMsg);
         setError(msg);
-      } finally {
-        setSaving(false);
-      }
+    } finally {
+      setSaving(false);
+    }
     },
     [id, form, qc, imageUrls, selectedShowcaseIds, navigate, backPath],
   );
@@ -563,7 +563,7 @@ export function FactoryShowcaseEditPage() {
                 onPickImage={(file) => void onPickImage(file)}
                 onRemoveImage={(url) => void removeImage(url)}
               />
-            ) : null}
+      ) : null}
 
             <div className='flex-1 min-w-0 space-y-5'>
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
@@ -571,8 +571,8 @@ export function FactoryShowcaseEditPage() {
                 <Input
                   className='w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
                   placeholder='ชื่อ *'
-                  {...form.register('title', { required: true })}
-                />
+            {...form.register('title', { required: true })}
+          />
               </section>
 
               <ShowcaseCategoryFields
@@ -673,9 +673,9 @@ export function FactoryShowcaseEditPage() {
                         {...form.register('end_date')}
                       />
                     </Label>
-                  </div>
+        </div>
                 )}
-              </section>
+      </section>
             </div>
           </div>
 
@@ -785,7 +785,7 @@ export function FactoryShowcaseEditPage() {
             </section>
           ) : null}
         </div>
-      </div>
+          </div>
 
       <div className='sticky xl:hidden bottom-0 z-10 bg-white border-t border-gray-100 px-4 py-3 flex gap-3'>
         <Button

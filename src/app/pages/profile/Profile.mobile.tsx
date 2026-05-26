@@ -203,7 +203,7 @@ export function ProfileMobile() {
     setAddingAddress(true);
     try {
       await addressesApi.create({
-        address_type: 'shipping',
+        address_type: 'S',
         address_detail: newAddress.trim(),
         sub_district_id: 0,
         district_id: 0,

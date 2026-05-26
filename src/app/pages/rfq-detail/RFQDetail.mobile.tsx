@@ -75,6 +75,33 @@ export function RFQDetailMobile() {
     [user, navigate, id, rfq?.projectName],
   );
 
+  if (loading) {
+    return (
+      <div className='min-h-screen flex flex-col' style={{ backgroundColor: COLORS.lightPurpleBg }}>
+        <div className='flex items-center px-4 pt-5 pb-4 bg-white border-b border-gray-100'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate('/orders')}
+            className='w-10 h-10 rounded-xl shadow-sm flex items-center justify-center'
+            style={{ backgroundColor: COLORS.lightPurpleBg }}
+          >
+            <ChevronLeft size={22} style={{ color: COLORS.blue }} />
+          </Button>
+        </div>
+        <div className='flex-1 flex flex-col items-center justify-center px-6 pb-24 text-center'>
+          <div
+            className='w-10 h-10 rounded-full border-[3px] animate-spin mb-3'
+            style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
+          />
+          <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
+            กำลังโหลด RFQ...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!rfq) {
     return (
       <div className='min-h-screen flex flex-col' style={{ backgroundColor: COLORS.lightPurpleBg }}>
@@ -90,17 +117,7 @@ export function RFQDetailMobile() {
           </Button>
         </div>
         <div className='flex-1 flex flex-col items-center justify-center px-6 pb-24 text-center'>
-          {loading ? (
-            <>
-              <div
-                className='w-10 h-10 rounded-full border-3 animate-spin mb-3'
-                style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
-              />
-              <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
-                กำลังโหลด RFQ...
-              </p>
-            </>
-          ) : error ? (
+          {error ? (
             <>
               <p className='text-sm font-semibold text-red-600 mb-2'>{error}</p>
               <Button

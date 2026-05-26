@@ -18,13 +18,12 @@ type Props = {
 
 const TYPE_LABEL: Record<string, string> = {
   M: 'ที่อยู่หลัก',
-  B: 'ออกใบกำกับภาษี',
-  S: 'จัดส่ง',
+  S: 'ที่อยู่จัดส่ง',
 };
 
-function rowType(row: Row): 'M' | 'B' | 'S' {
+function rowType(row: Row): 'M' | 'S' {
   const t = mapAddressFromApi(row)?.addressType ?? '';
-  if (t === 'B' || t === 'S') return t;
+  if (t === 'S') return 'S';
   return 'M';
 }
 
@@ -35,7 +34,7 @@ function displayLocation(row: Row): string {
 
 export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefault }: Props) {
   const grouped = useMemo(() => {
-    const map: Record<'M' | 'B' | 'S', Row[]> = { M: [], B: [], S: [] };
+    const map: Record<'M' | 'S', Row[]> = { M: [], S: [] };
     for (const a of addresses) {
       map[rowType(a)].push(a);
     }
@@ -64,7 +63,7 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
         <p className='text-sm text-gray-400'>ยังไม่มีที่อยู่ในระบบ</p>
       ) : null}
 
-      {(['M', 'B', 'S'] as const).map((type) => (
+      {(['M', 'S'] as const).map((type) => (
         <div key={type} className='space-y-2'>
           <p className='text-xs font-semibold text-gray-600'>{TYPE_LABEL[type]}</p>
           {grouped[type].length === 0 ? (

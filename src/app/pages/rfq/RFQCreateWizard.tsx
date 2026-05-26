@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { categoriesApi } from '@/services/api/masterApi';
+import { factoriesApi } from '@/services/api/factoryApi';
+import type { TargetFactory } from '@/pages/rfq/useRFQDraft';
 import type { ISubCategoryResponse } from '@/services/api/types/master.types';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { pickScalarString } from '@/utils/pickScalarString';
@@ -12,6 +14,7 @@ import { Step1Basic } from '@/pages/rfq/steps/Step1Basic';
 import { Step2Specifications } from '@/pages/rfq/steps/Step2Specifications';
 import { Step3Commercial } from '@/pages/rfq/steps/Step3Commercial';
 import { Step4QualityReview } from '@/pages/rfq/steps/Step4QualityReview';
+import { RfqTargetingSelector } from '@/pages/rfq/steps/RfqTargetingSelector';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -63,6 +66,7 @@ export function RFQCreateWizard() {
   const [acceptSampleTerms, setAcceptSampleTerms] = React.useState(false);
   const [addressMap, setAddressMap] = React.useState<Record<number, string>>({});
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
+  const [allFactories, setAllFactories] = React.useState<TargetFactory[]>([]);
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
 
   React.useEffect(() => {
@@ -79,6 +83,27 @@ export function RFQCreateWizard() {
       setDraft({ source_showcase_id: showcaseId });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load full factory list once so RfqTargetingSelector can filter client-side.
+  React.useEffect(() => {
+    let active = true;
+    void factoriesApi
+      .list()
+      .then((raw) => {
+        if (!active) return;
+        const arr = Array.isArray(raw) ? raw : ((raw as { data?: unknown[] }).data ?? []);
+        setAllFactories(
+          (arr as Record<string, unknown>[])
+            .map((f) => ({
+              id: Number(f.factory_id ?? f.id ?? 0),
+              name: String(f.factory_name ?? f.name ?? ''),
+            }))
+            .filter((f) => f.id > 0 && f.name),
+        );
+      })
+      .catch(() => {/* silently ignore — targeting selector just shows empty results */});
+    return () => { active = false; };
   }, []);
 
   React.useEffect(() => {
@@ -219,6 +244,9 @@ export function RFQCreateWizard() {
     if (!draft.shipping_method_id || Number(draft.shipping_method_id) <= 0) {
       issues.push('เลือกวิธีจัดส่ง');
     }
+    if (draft.targeting === 'specific' && (!draft.target_factories || draft.target_factories.length === 0)) {
+      issues.push('เพิ่มโรงงานที่ต้องการส่ง RFQ อย่างน้อย 1 รายการ');
+    }
     return issues;
   }, [draft]);
 
@@ -287,8 +315,12 @@ export function RFQCreateWizard() {
       description: draft.description,
       category_id: Number(draft.category_id),
       qty: Number(draft.qty),
-
       sub_category_id: draft.sub_category_id,
+      targeting: draft.targeting ?? 'all',
+      factory_ids:
+        draft.targeting === 'specific'
+          ? (draft.target_factories ?? []).map((f) => f.id)
+          : undefined,
     });
     reset();
     navigate('/orders');
@@ -390,6 +422,21 @@ export function RFQCreateWizard() {
             ) : null}
 
             <RfqFormSection
+              title='ส่งถึงโรงงาน'
+              hint='เลือกว่าจะส่ง RFQ ให้ใคร'
+            >
+              <RfqTargetingSelector
+                targeting={draft.targeting ?? 'all'}
+                targetFactories={draft.target_factories ?? []}
+                allFactories={allFactories}
+                onTargetingChange={(t) =>
+                  setDraft({ targeting: t, target_factories: t === 'all' ? [] : draft.target_factories ?? [] })
+                }
+                onFactoriesChange={(factories) => setDraft({ target_factories: factories })}
+              />
+            </RfqFormSection>
+
+            <RfqFormSection
               title='จัดส่ง'
               hint='ที่อยู่และวิธีขนส่งที่ต้องการ'
               required
@@ -402,12 +449,15 @@ export function RFQCreateWizard() {
               />
             </RfqFormSection>
 
-            <RfqCollapsibleSection title='สเปกและไฟล์แนบ'>
+            <RfqCollapsibleSection title='ประเภทวัตถุดิบ'>
               <Step2Specifications draft={draft} setDraft={setDraft} />
             </RfqCollapsibleSection>
 
             {!isSampleMode ? (
-              <RfqCollapsibleSection title='มาตรฐานคุณภาพ'>
+              <RfqCollapsibleSection
+                title='มาตรฐานคุณภาพ'
+                hint='ค่าตรวจคุณภาพจะคิดแยกตามมาตรฐานที่เลือก — เรตและเงื่อนไขขึ้นอยู่กับแต่ละโรงงาน (ไม่รวมในราคาผลิตที่เสนอใน RFQ)'
+              >
                 <Step4QualityReview draft={draft} setDraft={setDraft} />
               </RfqCollapsibleSection>
             ) : null}
@@ -435,6 +485,23 @@ export function RFQCreateWizard() {
               <RfqSummaryItem label='หมวดย่อย' value={subCategoryName} />
               <RfqSummaryItem label='จำนวน' value={draft.qty != null ? String(draft.qty) : undefined} />
               <RfqSummaryItem label='รายละเอียด' value={draft.description} />
+            </RfqSummaryCard>
+
+            <RfqSummaryCard title='ส่งถึงโรงงาน'>
+              <RfqSummaryItem
+                label='วิธีส่ง'
+                value={
+                  (draft.targeting ?? 'all') === 'all'
+                    ? 'ส่งให้ทุกโรงงานที่รับงานประเภทนี้'
+                    : `เลือกเฉพาะ ${(draft.target_factories ?? []).length} โรงงาน`
+                }
+              />
+              {(draft.targeting ?? 'all') === 'specific' && (draft.target_factories ?? []).length > 0 && (
+                <RfqSummaryItem
+                  label='รายชื่อโรงงาน'
+                  value={(draft.target_factories ?? []).map((f) => f.name).join(', ')}
+                />
+              )}
             </RfqSummaryCard>
 
             <RfqSummaryCard title='จัดส่งและงบ'>

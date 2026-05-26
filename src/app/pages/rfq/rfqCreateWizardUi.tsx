@@ -136,12 +136,14 @@ export function RfqMatchStrip({ loading, count, isMaterialKind }: RfqMatchStripP
 
 type RfqCollapsibleSectionProps = {
   title: string;
+  hint?: string;
   defaultOpen?: boolean;
   children: React.ReactNode;
 };
 
 export function RfqCollapsibleSection({
   title,
+  hint,
   defaultOpen = false,
   children,
 }: RfqCollapsibleSectionProps) {
@@ -161,7 +163,14 @@ export function RfqCollapsibleSection({
           />
         </span>
       </summary>
-      <div className='border-t border-gray-100 px-3.5 pb-3.5 pt-3'>{children}</div>
+      <div className='border-t border-gray-100 px-3.5 pb-3.5 pt-3'>
+        {hint ? (
+          <p className='mb-3 rounded-xl border border-violet-100 bg-violet-50/60 px-3 py-2 text-[11px] leading-snug text-violet-800'>
+            {hint}
+          </p>
+        ) : null}
+        {children}
+      </div>
     </details>
   );
 }
