@@ -136,6 +136,11 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
           onChat={handleChat}
           chatLoading={starting}
           showChat={canChat}
+          profile={profile}
+          factoryCategoryNames={factoryCategoryNames}
+          factorySubCategoryNames={factorySubCategoryNames}
+          factorySubCategoryPairs={factorySubCategoryPairs}
+          apiCertificates={apiCertificates}
         />
       </div>
 
@@ -171,12 +176,7 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
             rating: factory.rating,
             reviews: factory.reviews,
           }}
-          profile={profile}
           reviews={reviews}
-          factoryCategoryNames={factoryCategoryNames}
-          factorySubCategoryNames={factorySubCategoryNames}
-          factorySubCategoryPairs={factorySubCategoryPairs}
-          apiCertificates={apiCertificates}
           onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
           onPromotionClick={(itemId) => navigate(`/factory-ideas/promotions/${itemId}`)}
           onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}
