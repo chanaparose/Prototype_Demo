@@ -4,6 +4,7 @@ import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { ApiHttpError } from '@/services/api/httpClient';
 import { masterApi } from '@/services/api/masterApi';
 import { mediaApi } from '@/services/api/factoryApi';
+import { digitsOnlyPhone, isValidThaiPhone } from '@/utils/formatting/formatPhone';
 
 export interface FormState {
   factory_name: string;
@@ -244,8 +245,9 @@ export function useRegisterFactory() {
           return !EMAIL_RE.test(e) ? 'รูปแบบอีเมลไม่ถูกต้อง' : undefined;
         }
         case 'phone': {
-          const p = values.phone.replace(/\s/g, '');
-          return !PHONE_RE.test(p) ? 'เบอร์โทรไม่ถูกต้อง (10 หลัก เริ่ม 06–09)' : undefined;
+          return !isValidThaiPhone(values.phone)
+            ? 'เบอร์โทรไม่ถูกต้อง (10 หลัก เริ่ม 06–09)'
+            : undefined;
         }
         case 'password': {
           if (values.password.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัว';
@@ -345,7 +347,7 @@ export function useRegisterFactory() {
       await register({
         role: 'FT',
         email: snapshot.email.trim(),
-        phone: snapshot.phone.replace(/\s/g, ''),
+        phone: digitsOnlyPhone(snapshot.phone),
         password: snapshot.password,
         factory_name: snapshot.factory_name.trim(),
         factory_type_id: snapshot.factory_type_id,

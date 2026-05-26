@@ -14,7 +14,9 @@ export function postRegister(request: IRegisterCustomerRequest | IRegisterFactor
   return httpClient.post<IAuthResponse>('/auth/register', request);
 }
 
-export type EmailCheckResult = { exists: false; role: null } | { exists: true; role: string };
+export type EmailCheckResult =
+  | { exists: false; role: null; has_factory?: false }
+  | { exists: true; role: string; has_factory?: boolean };
 
 export async function checkEmail(email: string): Promise<EmailCheckResult> {
   const result = await httpClient.get<EmailCheckResult>(

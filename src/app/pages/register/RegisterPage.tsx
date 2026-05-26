@@ -38,6 +38,11 @@ import { mediaApi } from '@/services/api/factoryApi';
 import { checkEmail } from '@/services/api/authApi';
 import type { IRegisterFactoryRequest } from '@/services/api/types/auth.types';
 import { DatePicker } from '@/components/ui/date-picker';
+import {
+  digitsOnlyPhone,
+  formatThaiPhoneDisplay,
+  isValidThaiPhone,
+} from '@/utils/formatting/formatPhone';
 
 /* ─────────────────────────────────────────────────── */
 /* Schemas                                             */
@@ -48,7 +53,11 @@ const ctSchema = z
     first_name: z.string().trim().min(1, 'กรุณากรอกชื่อ'),
     last_name: z.string().trim().min(1, 'กรุณากรอกนามสกุล'),
     email: z.string().trim().min(1, 'กรุณากรอกอีเมล').email('รูปแบบอีเมลไม่ถูกต้อง'),
-    phone: z.string().trim().min(9, 'กรุณากรอกเบอร์โทรศัพท์').max(15, 'เบอร์โทรศัพท์ไม่ถูกต้อง'),
+    phone: z
+      .string()
+      .trim()
+      .min(1, 'กรุณากรอกเบอร์โทรศัพท์')
+      .refine((v) => isValidThaiPhone(v), 'เบอร์โทรไม่ถูกต้อง (10 หลัก เริ่ม 06–09)'),
     password: z.string().trim().min(8, 'รหัสผ่านอย่างน้อย 8 ตัวอักษร'),
     confirmPassword: z.string().trim().min(1, 'กรุณายืนยันรหัสผ่าน'),
   })
@@ -139,7 +148,7 @@ function CustomerTab() {
       await register({
         role: 'CT',
         email: values.email,
-        phone: values.phone,
+        phone: digitsOnlyPhone(values.phone),
         password: values.password,
         first_name: values.first_name,
         last_name: values.last_name,
@@ -234,10 +243,16 @@ function CustomerTab() {
                 <FormControl>
                   <Input
                     type='tel'
-                    placeholder='08x-xxx-xxxx'
+                    inputMode='tel'
                     autoComplete='tel'
+                    placeholder='098-889-3983'
+                    maxLength={12}
                     className={inClass(form.formState.errors.phone?.message)}
-                    {...field}
+                    value={field.value}
+                    name={field.name}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    onChange={(e) => field.onChange(formatThaiPhoneDisplay(e.target.value))}
                   />
                 </FormControl>
                 <FormMessage className='text-xs' />
@@ -332,7 +347,7 @@ function CustomerTab() {
 
 function FactoryTab() {
   const navigate = useNavigate();
-  const { login, register, upgradeToFactory, user, isAuthenticated } = useAuth();
+  const { login, register, upgradeToFactory, switchRole, user, isAuthenticated } = useAuth();
 
   // True when a logged-in CT user is upgrading their existing account to FT
   const isCTUpgrade = isAuthenticated && String(user?.role ?? '').toUpperCase() === 'CT';
@@ -360,7 +375,7 @@ function FactoryTab() {
   useEffect(() => {
     if (isCTUpgrade && user) {
       if (user.email) setField('email', user.email);
-      if (user.phone) setField('phone', user.phone);
+      if (user.phone) setField('phone', formatThaiPhoneDisplay(user.phone));
     }
   }, [isCTUpgrade, user, setField]);
 
@@ -375,11 +390,13 @@ function FactoryTab() {
   const [showUpgradePw, setShowUpgradePw] = useState(false);
   const [upgradeError, setUpgradeError] = useState('');
   const [upgradeSubmitting, setUpgradeSubmitting] = useState(false);
+  // Track if password was verified for CT upgrade
+  const [ctPasswordVerified, setCtPasswordVerified] = useState(false);
   // Stash FT form data for re-submission after password verification
   const [pendingFtData, setPendingFtData] = useState<Parameters<typeof register>[0] | null>(null);
 
   // Email on-blur existence check
-  type EmailStatus = 'idle' | 'checking' | 'ct' | 'ft' | 'free';
+  type EmailStatus = 'idle' | 'checking' | 'ct' | 'ft' | 'cf' | 'free';
   const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
   const lastCheckedEmail = React.useRef('');
 
@@ -395,6 +412,9 @@ function FactoryTab() {
       const result = await checkEmail(email);
       if (!result.exists) {
         setEmailStatus('free');
+      } else if (result.role === 'CT' && result.has_factory) {
+        // CT user that already has a factory profile — both roles exist
+        setEmailStatus('cf');
       } else if (result.role === 'CT') {
         setEmailStatus('ct');
         setUpgradeEmail(email);
@@ -416,9 +436,10 @@ function FactoryTab() {
 
     // For CT upgrade: email comes from the authenticated session, not the form
     const resolvedEmail = isCTUpgrade && user?.email ? user.email : form.email.trim();
+    let certUrl = '';
 
     try {
-      const certUrl = form.cert_file ? (await mediaApi.upload(form.cert_file)).url : '';
+      certUrl = form.cert_file ? (await mediaApi.upload(form.cert_file)).url : '';
       const factoryPayload = {
         factory_name: form.factory_name.trim(),
         factory_type_id: form.factory_type_id,
@@ -432,30 +453,37 @@ function FactoryTab() {
         cert_expire_date: form.cert_expire_date || undefined,
       };
 
-      if (isCTUpgrade) {
-        // Authenticated CT user — call upgrade endpoint directly (JWT already valid)
-        await upgradeToFactory(factoryPayload);
+      if (isCTUpgrade || (emailStatus === 'ct' && ctPasswordVerified)) {
+        try {
+          await upgradeToFactory(factoryPayload);
+        } catch (upgradeErr) {
+          if (upgradeErr instanceof ApiHttpError && upgradeErr.status === 409) {
+            // Factory profile already exists — just switch role to FT
+            await switchRole('FT');
+          } else {
+            throw upgradeErr;
+          }
+        }
         navigate('/factory', { replace: true });
         return;
       }
 
-      // Guest path — try fresh registration
+      // Fresh FT registration
       await register({
         role: 'FT' as const,
         email: resolvedEmail,
-        phone: form.phone.replace(/\s/g, ''),
+        phone: digitsOnlyPhone(form.phone),
         password: form.password,
         ...factoryPayload,
       });
       navigate('/factory', { replace: true });
     } catch (err) {
       if (err instanceof ApiHttpError && err.status === 409) {
-        // Email already exists as CT — stash factory data and ask for password
-        const certUrl = form.cert_file ? (await mediaApi.upload(form.cert_file)).url : '';
+        // Email already exists as CT — prompt for password
         setPendingFtData({
           role: 'FT' as const,
           email: resolvedEmail,
-          phone: form.phone.replace(/\s/g, ''),
+          phone: digitsOnlyPhone(form.phone),
           password: form.password,
           factory_name: form.factory_name.trim(),
           factory_type_id: form.factory_type_id,
@@ -478,49 +506,20 @@ function FactoryTab() {
     }
   };
 
-  const handleUpgrade = async () => {
+  const handleVerifyCtPassword = async () => {
     if (!upgradePassword) return;
     setUpgradeError('');
     setUpgradeSubmitting(true);
     try {
-      // 1. Login with CT credentials — this gives us a valid JWT
+      // Login with CT credentials — this gives us a valid JWT
       await login({ email: upgradeEmail, password: upgradePassword });
-      // 2. Call upgrade endpoint (JWT now has CT role, backend will upgrade to FT)
-      const upgradePayload = pendingFtData
-        ? (() => {
-            const ftData = pendingFtData as IRegisterFactoryRequest;
-            return {
-            factory_name: ftData.factory_name,
-            factory_type_id: ftData.factory_type_id,
-            tax_id: ftData.tax_id,
-            province_id: ftData.province_id,
-            category_ids: ftData.category_ids,
-            sub_category_ids: ftData.sub_category_ids ?? [],
-            cert_id: ftData.cert_id,
-            document_url: ftData.document_url,
-            cert_number: ftData.cert_number,
-            cert_expire_date: ftData.cert_expire_date,
-            };
-          })()
-        : {
-            factory_name: form.factory_name.trim(),
-            factory_type_id: form.factory_type_id,
-            tax_id: form.tax_id.replace(/\D/g, ''),
-            province_id: form.province_id || undefined,
-            category_ids: form.category_ids,
-            sub_category_ids: form.sub_category_ids,
-            cert_id: form.cert_id,
-            document_url: '',
-            cert_number: form.cert_number.trim() || undefined,
-            cert_expire_date: form.cert_expire_date || undefined,
-          };
-      await upgradeToFactory(upgradePayload);
-      navigate('/factory', { replace: true });
+      setCtPasswordVerified(true);
+      setUpgradePassword(''); // clear password after verification
     } catch (err) {
       if (err instanceof ApiHttpError && err.status === 401) {
         setUpgradeError('รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่');
       } else {
-        setUpgradeError(getErrorMessage(err, 'อัปเกรดบัญชีไม่สำเร็จ กรุณาลองใหม่'));
+        setUpgradeError(getErrorMessage(err, 'ยืนยันรหัสผ่านไม่สำเร็จ กรุณาลองใหม่'));
       }
     } finally {
       setUpgradeSubmitting(false);
@@ -665,12 +664,14 @@ function FactoryTab() {
               </Label>
               <Input
                 type='tel'
+                inputMode='tel'
                 autoComplete='tel'
+                maxLength={12}
                 value={form.phone}
-                onChange={(e) => setField('phone', e.target.value)}
+                onChange={(e) => setField('phone', formatThaiPhoneDisplay(e.target.value))}
                 onBlur={() => blurField('phone')}
                 className={inClass(errors.phone)}
-                placeholder='081-234-5678'
+                placeholder='098-889-3983'
               />
               {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
               <p className='text-[11px] text-gray-400'>เบอร์โทรที่ใช้ติดต่อธุรกิจ (แก้ไขได้)</p>
@@ -721,8 +722,22 @@ function FactoryTab() {
                 </div>
               )}
 
+              {/* ── Email has both CT + FT profiles ── */}
+              {!errors.email && emailStatus === 'cf' && (
+                <div className='flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-800'>
+                  <CheckCircle2 size={13} className='mt-0.5 shrink-0 text-emerald-500' />
+                  <span>
+                    อีเมลนี้มีทั้งบัญชีลูกค้าและบัญชีโรงงานครบแล้ว{' '}
+                    <Link to='/login' className='font-semibold underline'>
+                      เข้าสู่ระบบ
+                    </Link>{' '}
+                    เพื่อใช้งานหรือสลับบัญชีได้เลย
+                  </span>
+                </div>
+              )}
+
               {/* ── Inline CT→FT upgrade card ── */}
-              {!errors.email && emailStatus === 'ct' && (
+              {!errors.email && emailStatus === 'ct' && !ctPasswordVerified && (
                 <div className='mt-1 space-y-3 rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-white p-4 shadow-[0_4px_16px_rgba(245,158,11,0.08)]'>
                   {/* Header */}
                   <div className='flex items-start gap-3'>
@@ -732,7 +747,7 @@ function FactoryTab() {
                     <div>
                       <p className='text-sm font-semibold text-amber-800'>อีเมลนี้มีบัญชีลูกค้าอยู่แล้ว</p>
                       <p className='mt-0.5 text-xs text-amber-700 leading-relaxed'>
-                        กรอกรหัสผ่านของบัญชีนั้นเพื่อยืนยันตัวตนและอัปเกรดเป็นบัญชีโรงงาน
+                        กรอกรหัสผ่านเพื่อยืนยันตัวตนก่อนเพิ่มข้อมูลโรงงาน
                       </p>
                     </div>
                   </div>
@@ -749,7 +764,7 @@ function FactoryTab() {
                         type={showUpgradePw ? 'text' : 'password'}
                         value={upgradePassword}
                         onChange={(e) => setUpgradePassword(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') void handleUpgrade(); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') void handleVerifyCtPassword(); }}
                         placeholder='รหัสผ่านบัญชีลูกค้าของคุณ'
                         autoComplete='current-password'
                         className={`${inputBase} ${inputNormal} pr-10`}
@@ -786,23 +801,39 @@ function FactoryTab() {
                       variant='unstyled'
                       type='button'
                       disabled={!upgradePassword || upgradeSubmitting}
-                      onClick={() => void handleUpgrade()}
+                      onClick={() => void handleVerifyCtPassword()}
                       className='flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold text-white disabled:opacity-60 transition-all'
                       style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}
                     >
                       {upgradeSubmitting ? (
                         <><Loader2 size={14} className='animate-spin' />กำลังยืนยัน...</>
                       ) : (
-                        <><ShieldCheck size={14} />ยืนยันและอัปเกรด</>
+                        <><ShieldCheck size={14} />ยืนยันรหัสผ่าน</>
                       )}
                     </Button>
                   </div>
                 </div>
               )}
+
+              {/* ── Success message after password verified ── */}
+              {!errors.email && emailStatus === 'ct' && ctPasswordVerified && (
+                <div className='mt-1 flex items-start gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-3.5'>
+                  <div className='mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600'>
+                    <ShieldCheck size={16} />
+                  </div>
+                  <div className='min-w-0'>
+                    <p className='text-xs font-semibold text-indigo-800'>เข้าสู่ระบบสำเร็จ — อัปเกรดบัญชีนี้เป็นโรงงาน</p>
+                    <p className='mt-0.5 truncate text-sm font-bold text-indigo-900'>{upgradeEmail}</p>
+                    <p className='mt-0.5 text-[11px] text-indigo-500'>
+                      กรอกข้อมูลโรงงานด้านบนให้ครบ แล้วกดปุ่มส่งเพื่ออัปเกรดบัญชี
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Phone / Password / Confirm — hidden when CT upgrade (uses existing account) */}
-            {emailStatus !== 'ct' && (
+            {/* Phone / Password / Confirm — hidden when CT upgrade or CT password verified */}
+            {emailStatus !== 'ct' && !ctPasswordVerified && (
               <>
                 <div ref={setFieldRef('phone')} className='space-y-1.5'>
                   <Label className='text-xs font-medium text-gray-600'>
@@ -810,12 +841,14 @@ function FactoryTab() {
                   </Label>
                   <Input
                     type='tel'
+                    inputMode='tel'
                     autoComplete='tel'
+                    maxLength={12}
                     value={form.phone}
-                    onChange={(e) => setField('phone', e.target.value)}
+                    onChange={(e) => setField('phone', formatThaiPhoneDisplay(e.target.value))}
                     onBlur={() => blurField('phone')}
                     className={inClass(errors.phone)}
-                    placeholder='081-234-5678'
+                    placeholder='098-889-3983'
                   />
                   {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
                 </div>
@@ -1114,6 +1147,8 @@ function FactoryTab() {
           <><Loader2 size={16} className='animate-spin' />กำลังดำเนินการ...</>
         ) : isCTUpgrade ? (
           <><ShieldCheck size={16} />อัปเกรดเป็นบัญชีโรงงาน</>
+        ) : emailStatus === 'ct' && ctPasswordVerified ? (
+          <><ShieldCheck size={16} />ยืนยันและอัปเกรด</>
         ) : (
           'สมัครและส่งข้อมูลเพื่อรับการอนุมัติ'
         )}
