@@ -146,4 +146,8 @@ export interface IRfqWizardCreateInput {
   certifications_required?: string[];
   request_kind?: string;
   source_showcase_id?: number;
+  /** 'all' (default) | 'specific' */
+  targeting?: 'all' | 'specific';
+  /** ใช้เมื่อ targeting === 'specific' */
+  factory_ids?: number[];
 }

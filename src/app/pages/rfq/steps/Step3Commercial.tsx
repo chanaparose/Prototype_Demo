@@ -73,16 +73,41 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
     }
   }, []);
 
+  // ── Load shipping methods — ทำงานทั้ง guest และ logged-in (endpoint ไม่ต้อง auth) ──
   React.useEffect(() => {
-    // Guests don't have addresses — skip API call entirely
+    let active = true;
+    void masterApi
+      .getShippingMethods()
+      .then((raw) => {
+        if (!active) return;
+        const normalized = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as Record<string, unknown>)?.data)
+            ? ((raw as Record<string, unknown>).data as unknown[])
+            : [];
+        const mapped = mapShippingMethodsList(normalized);
+        if (mapped.length > 0) {
+          setShippingMethods(mapped);
+          onLoadedRef.current?.(
+            {},
+            Object.fromEntries(mapped.map((m) => [m.id, m.name])),
+          );
+        }
+      })
+      .catch(() => {
+        if (active) setShippingMethods(FALLBACK_SHIPPING);
+      });
+    return () => { active = false; };
+  }, []);
+
+  // ── Load addresses (logged-in only) ──
+  React.useEffect(() => {
     if (isGuest) return;
 
-    let shippingMapResult: Record<number, string> = {};
-    let addressMapResult: Record<number, string> = {};
-
-    // โหลด addresses + auto-select default
+    let active = true;
     void loadAddresses().then((mapped) => {
-      addressMapResult = Object.fromEntries(
+      if (!active) return;
+      const addressMapResult = Object.fromEntries(
         mapped.map((a) => {
           const label = [a.addressDetail, a.subDistrict, a.district, a.province, a.zipCode]
             .filter(Boolean)
@@ -90,7 +115,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
           return [a.id, label || `ที่อยู่ #${a.id}`];
         }),
       );
-      onLoadedRef.current?.(addressMapResult, shippingMapResult);
+      onLoadedRef.current?.(addressMapResult, {});
 
       if (autoSelected.current || draft.delivery_address_id) return;
       const def = mapped.find((a) => a.isDefault) ?? mapped[0];
@@ -99,24 +124,8 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
         autoSelected.current = true;
       }
     });
-
-    void masterApi
-      .getShippingMethods()
-      .then((raw) => {
-        const normalized = Array.isArray(raw)
-          ? raw
-          : Array.isArray((raw as Record<string, unknown>)?.data)
-            ? ((raw as Record<string, unknown>).data as unknown[])
-            : [];
-        const mapped = mapShippingMethodsList(normalized);
-        if (mapped.length > 0) setShippingMethods(mapped);
-        shippingMapResult = Object.fromEntries(mapped.map((m) => [m.id, m.name]));
-        onLoadedRef.current?.(addressMapResult, shippingMapResult);
-      })
-      .catch(() => {
-        setShippingMethods(FALLBACK_SHIPPING);
-      });
-  }, [loadAddresses, setDraft]);
+    return () => { active = false; };
+  }, [isGuest, loadAddresses, setDraft]);
 
   const handleAddAddress = React.useCallback(
     async (payload: AddressFormPayload) => {

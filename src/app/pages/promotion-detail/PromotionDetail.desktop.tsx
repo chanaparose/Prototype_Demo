@@ -158,7 +158,7 @@ export function PromotionDetailDesktop() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={handleBack}
+          onClick={handleBack}
             className='inline-flex items-center gap-1 font-medium hover:opacity-80'
             style={{ color: BRAND.purple }}
           >
@@ -171,7 +171,7 @@ export function PromotionDetailDesktop() {
               <ChevronRight className='w-3 h-3 text-gray-300' />
               <span>{subName}</span>
             </>
-          ) : null}
+        ) : null}
           <ChevronRight className='w-3 h-3 text-gray-300' />
           <span className='truncate max-w-[32rem]' style={{ color: BRAND.ink }}>
             {item.title}
@@ -285,7 +285,7 @@ export function PromotionDetailDesktop() {
                   />
                   {likeCount} คนสนใจ
                 </Button>
-              </div>
+                      </div>
 
               <div
                 className='mt-4 px-4 py-3 rounded-xl border'
@@ -304,7 +304,7 @@ export function PromotionDetailDesktop() {
                     {formatTHB(item.basePrice)}
                   </p>
                 ) : null}
-              </div>
+                  </div>
 
               <div className='mt-5 rounded-xl border border-rose-100 bg-rose-50 px-4 py-3'>
                 <div className='flex items-center justify-between gap-2'>
@@ -326,7 +326,7 @@ export function PromotionDetailDesktop() {
                     <p className='font-semibold text-gray-800'>
                       {item.endDate ? formatThaiDate(item.endDate) : '-'}
                     </p>
-                  </div>
+                    </div>
                 </div>
               </div>
 
@@ -338,7 +338,7 @@ export function PromotionDetailDesktop() {
                     onClick={handleStartChat}
                     disabled={starting}
                     className='flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 rounded-md text-[14px] font-semibold'
-                    style={{
+                  style={{
                       background: BRAND.orangeSoft,
                       color: BRAND.orange,
                       border: `1px solid ${BRAND.orange}`,
@@ -447,7 +447,7 @@ export function PromotionDetailDesktop() {
               <p className='text-[13px] text-gray-400'>ยังไม่มีรายละเอียดเพิ่มเติม</p>
             )}
           </div>
-        </div>
+          </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div
@@ -508,12 +508,12 @@ export function PromotionDetailDesktop() {
                     <p className='text-[12px] text-gray-600 mt-1 line-clamp-2'>
                       {r.comment || '-'}
                     </p>
-                  </div>
+                </div>
                 ))
               )}
             </div>
+            </div>
           </div>
-        </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div

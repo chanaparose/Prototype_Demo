@@ -15,12 +15,16 @@ export function useRfqDetail(rfqId: string | undefined) {
   const error =
     query.error instanceof Error ? query.error.message : query.error ? 'โหลดข้อมูลไม่สำเร็จ' : null;
 
+  const loading =
+    query.isPlaceholderData ||
+    (query.isFetching && detail.rfq == null && !query.isError);
+
   return {
     rfq: detail.rfq,
     relatedOrder: detail.relatedOrder,
     quoteOrderMap: detail.quoteOrderMap,
     quoteHistories: detail.quoteHistories,
-    loading: query.isLoading,
+    loading,
     error,
     refetch: query.refetch,
     acceptOffer: async (quoteId: string) => acceptMutation.mutateAsync(quoteId),

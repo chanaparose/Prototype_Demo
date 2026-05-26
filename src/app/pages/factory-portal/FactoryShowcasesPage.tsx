@@ -214,7 +214,7 @@ export function FactoryShowcasesPage() {
       ) : (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {rows.map((r) => {
-            const id = rowId(r);
+                const id = rowId(r);
             const img = firstImage(r);
             const statusKey = String(r.status ?? 'DR').toUpperCase() as ShowcaseStatus;
             const {
@@ -233,9 +233,9 @@ export function FactoryShowcasesPage() {
             const reviews = asPositiveInt(r.review_count ?? r.reviews ?? 0);
             const moq = asPositiveInt(r.moq ?? 0);
 
-            return (
+                return (
               <article
-                key={id}
+                    key={id}
                 className={
                   isIdea
                     ? 'group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
@@ -274,7 +274,7 @@ export function FactoryShowcasesPage() {
                             ? 'โปรโมชัน'
                             : 'สินค้า'}
                       </span>
-                    </div>
+                      </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                       <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                         {String(r.title ?? '—')}
@@ -294,7 +294,7 @@ export function FactoryShowcasesPage() {
                           </div>
                           <span className='text-gray-400 text-[8px] shrink-0'>ขั้นต่ำ {moq}</span>
                         </div>
-                      </div>
+                    </div>
                     </div>
                   </>
                 ) : (
@@ -311,8 +311,8 @@ export function FactoryShowcasesPage() {
                       </span>
                     </div>
                     <p className='font-semibold text-sm line-clamp-2 leading-snug text-slate-900 min-h-[40px]'>
-                      {String(r.title ?? '—')}
-                    </p>
+                            {String(r.title ?? '—')}
+                          </p>
                     <div className='border-t border-gray-100 mt-3 pt-2'>
                       <div className='flex items-center justify-between gap-2 text-[11px] text-gray-500'>
                         <p className='min-w-0 flex-1 text-xs font-semibold text-brand-navy line-clamp-1'>
@@ -322,7 +322,7 @@ export function FactoryShowcasesPage() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                          </div>
                 )}
 
                 <div className='flex gap-2 px-3 pb-3'>
@@ -353,8 +353,8 @@ export function FactoryShowcasesPage() {
                   </Button>
                 </div>
               </article>
-            );
-          })}
+                      );
+                    })}
         </div>
       )}
     </div>

@@ -449,12 +449,15 @@ export function RFQCreateWizard() {
               />
             </RfqFormSection>
 
-            <RfqCollapsibleSection title='สเปกและไฟล์แนบ'>
+            <RfqCollapsibleSection title='ประเภทวัตถุดิบ'>
               <Step2Specifications draft={draft} setDraft={setDraft} />
             </RfqCollapsibleSection>
 
             {!isSampleMode ? (
-              <RfqCollapsibleSection title='มาตรฐานคุณภาพ'>
+              <RfqCollapsibleSection
+                title='มาตรฐานคุณภาพ'
+                hint='ค่าตรวจคุณภาพจะคิดแยกตามมาตรฐานที่เลือก — เรตและเงื่อนไขขึ้นอยู่กับแต่ละโรงงาน (ไม่รวมในราคาผลิตที่เสนอใน RFQ)'
+              >
                 <Step4QualityReview draft={draft} setDraft={setDraft} />
               </RfqCollapsibleSection>
             ) : null}

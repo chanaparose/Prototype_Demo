@@ -72,6 +72,33 @@ export function RFQDetailDesktop() {
     [user, navigate, id, rfq?.projectName],
   );
 
+  if (loading) {
+    return (
+      <div
+        className='hidden lg:block min-h-[60vh]'
+        style={{ backgroundColor: COLORS.lightPurpleBg }}
+      >
+        <div className='max-w-6xl mx-auto px-8 py-14 flex flex-col items-center gap-4 text-center'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate('/orders')}
+            className='w-10 h-10 rounded-xl flex items-center justify-center border border-gray-200 bg-white self-start'
+          >
+            <ArrowLeft size={18} style={{ color: COLORS.blue }} />
+          </Button>
+          <div
+            className='w-10 h-10 rounded-full border-[3px] animate-spin'
+            style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
+          />
+          <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
+            กำลังโหลด RFQ...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!rfq) {
     return (
       <div
@@ -87,17 +114,7 @@ export function RFQDetailDesktop() {
           >
             <ArrowLeft size={18} style={{ color: COLORS.blue }} />
           </Button>
-          {loading ? (
-            <>
-              <div
-                className='w-10 h-10 rounded-full border-3 animate-spin'
-                style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
-              />
-              <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
-                กำลังโหลด RFQ...
-              </p>
-            </>
-          ) : error ? (
+          {error ? (
             <>
               <p className='text-sm font-semibold text-red-600 mb-2'>{error}</p>
               <Button

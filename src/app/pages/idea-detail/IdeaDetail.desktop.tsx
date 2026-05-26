@@ -122,7 +122,7 @@ export function IdeaDetailDesktop() {
           <Button
             variant='unstyled'
             type='button'
-            onClick={handleBack}
+          onClick={handleBack}
             className='inline-flex items-center gap-1 font-medium hover:opacity-80'
             style={{ color: BRAND.purple }}
           >
@@ -135,7 +135,7 @@ export function IdeaDetailDesktop() {
               <Chevron className='w-3 h-3 text-gray-300' />
               <span>{subName}</span>
             </>
-          ) : null}
+        ) : null}
           <Chevron className='w-3 h-3 text-gray-300' />
           <span className='truncate max-w-[32rem]' style={{ color: BRAND.ink }}>
             {item.title}
@@ -323,7 +323,7 @@ export function IdeaDetailDesktop() {
                           className={`w-2.5 h-2.5 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`}
                         />
                         {next.likes + (isLiked(next.id) ? 1 : 0)}
-                      </button>
+            </button>
                     </div>
                   </div>
                 </article>
