@@ -35,27 +35,11 @@ export function Explore() {
     return <ManualApiDevGate pageLabel='Explore' onLoad={() => setPageApisReady(true)} />;
   }
 
-  const guestLoading = !isAuthenticated && isLoading;
-  const connectBanner = guestLoading ? (
-    <div className='mx-4 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3'>
-      <span
-        className='mt-0.5 inline-block h-4 w-4 rounded-full border-2 border-amber-500 border-t-transparent animate-spin'
-        aria-hidden
-      />
-      <div>
-        <p className='text-sm font-semibold text-amber-700'>Guest View กำลังเชื่อมต่อเซิร์ฟเวอร์</p>
-        <p className='text-xs text-amber-700/80'>
-          รอสักครู่ก่อน คุณสามารถดูแท็บต่าง ๆ เช่น แนะนำโรงงานได้ทันทีเมื่อโหลดเสร็จ
-        </p>
-      </div>
-    </div>
-  ) : null;
+  const guestConnecting = !isAuthenticated && isLoading;
 
   if (isDesktop) {
     return (
-      <>
-        {connectBanner}
-        <ExploreDesktop
+      <ExploreDesktop
           searchText={searchText}
           setSearchText={setSearchText}
           copiedId={copiedId}
@@ -75,15 +59,13 @@ export function Explore() {
           exploreMatrials={materialShowcases}
           explorePromoCodes={[]}
           promoSlides={promoSlides}
+          guestConnecting={guestConnecting}
         />
-      </>
     );
   }
 
   return (
-    <>
-      {connectBanner}
-      <ExploreMobile
+    <ExploreMobile
         searchText={searchText}
         setSearchText={setSearchText}
         categories={exploreBootstrapCategories}
@@ -100,7 +82,7 @@ export function Explore() {
         explorePromoCodes={[]}
         promoSlides={promoSlides}
         isLoading={isLoading}
+        guestConnecting={guestConnecting}
       />
-    </>
   );
 }

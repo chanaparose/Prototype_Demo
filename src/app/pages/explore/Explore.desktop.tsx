@@ -44,6 +44,7 @@ type ExploreDesktopProps = {
   exploreMatrials?: IExploreShowcase[];
   explorePromoCodes: IExploreSlide[];
   promoSlides: IExploreSlide[];
+  guestConnecting?: boolean;
 };
 
 /* ═══ Style Constants ═══ */
@@ -107,6 +108,7 @@ export function ExploreDesktop({
   explorePromotions: _explorePromotions,
   exploreMatrials,
   promoSlides,
+  guestConnecting = false,
 }: Readonly<Omit<ExploreDesktopProps, 'activeRFQs' | 'recentOrders'>>) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
@@ -278,6 +280,7 @@ export function ExploreDesktop({
             apiLoading={exploreCategoriesLoading}
             apiError={exploreCategoriesError}
             onRetryCategoriesApi={reloadExploreCategories}
+            guestConnecting={guestConnecting}
           />
         </div>
 

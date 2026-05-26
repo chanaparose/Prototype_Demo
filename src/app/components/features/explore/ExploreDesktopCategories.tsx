@@ -13,6 +13,7 @@ type ExploreDesktopCategoriesProps = {
   apiLoading: boolean;
   apiError: string | null;
   onRetryCategoriesApi: () => void;
+  guestConnecting?: boolean;
 };
 
 export function ExploreDesktopCategories({
@@ -21,6 +22,7 @@ export function ExploreDesktopCategories({
   apiLoading,
   apiError,
   onRetryCategoriesApi,
+  guestConnecting = false,
 }: ExploreDesktopCategoriesProps) {
   const navigate = useNavigate();
   const tiles = useMemo(
@@ -44,20 +46,36 @@ export function ExploreDesktopCategories({
           กำลังโหลดชื่อหมวดจากฐานข้อมูล…
         </p>
       )}
-      {apiError && !apiLoading && (
+      {!apiLoading && (guestConnecting || apiError) && (
         <div
-          className='mb-4 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-sm text-amber-900'
-          role='alert'
+          className='mb-4 rounded-xl border border-amber-200 bg-amber-50/80 px-3 py-2 flex items-start gap-3 text-sm text-amber-900'
+          role={guestConnecting ? 'status' : 'alert'}
+          aria-live={guestConnecting ? 'polite' : undefined}
         >
-          <span>{apiError}</span>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => void onRetryCategoriesApi()}
-            className='ml-2 font-semibold text-brand-purple underline hover:no-underline'
-          >
-            ลองอีกครั้ง
-          </Button>
+          <span
+            className={`mt-0.5 inline-block h-4 w-4 shrink-0 rounded-full border-2 border-amber-500 border-t-transparent ${guestConnecting ? 'animate-spin' : 'opacity-0 pointer-events-none'}`}
+            aria-hidden
+          />
+          {guestConnecting ? (
+            <div>
+              <p className='font-semibold text-amber-700'>Guest View กำลังเชื่อมต่อเซิร์ฟเวอร์</p>
+              <p className='mt-0.5 text-xs text-amber-800/90'>
+                รอสักครู่ก่อน คุณสามารถดูแท็บต่าง ๆ เช่น แนะนำโรงงานได้ทันทีเมื่อโหลดเสร็จ
+              </p>
+            </div>
+          ) : (
+            <div>
+              <span>{apiError}</span>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => void onRetryCategoriesApi()}
+                className='ml-2 font-semibold text-brand-purple underline hover:no-underline'
+              >
+                ลองอีกครั้ง
+              </Button>
+            </div>
+          )}
         </div>
       )}
       <div className='grid grid-cols-3 md:grid-cols-6 gap-2.5'>

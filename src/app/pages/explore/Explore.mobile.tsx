@@ -44,6 +44,7 @@ type ExploreMobileProps = {
   explorePromoCodes: IExploreSlide[];
   promoSlides: IExploreSlide[];
   isLoading?: boolean;
+  guestConnecting?: boolean;
 };
 
 export function ExploreMobile({
@@ -62,6 +63,7 @@ export function ExploreMobile({
   explorePromoCodes,
   promoSlides,
   isLoading = false,
+  guestConnecting = false,
 }: ExploreMobileProps) {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
@@ -95,6 +97,7 @@ export function ExploreMobile({
           apiLoading={exploreCategoriesLoading}
           apiError={exploreCategoriesError}
           onRetryCategoriesApi={reloadExploreCategories}
+          guestConnecting={guestConnecting}
         />
       </div>
 
