@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { CheckCircle2, LogIn, MapPin, Plus, Truck } from 'lucide-react';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import { mapAddressFromApi, type MappedAddress } from '@/domain/shared/mappers/mapAddressFromApi';
@@ -36,6 +37,8 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
 ];
 
 export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: Readonly<Props>) {
+  const navigate = useNavigate();
+
   /* addresses */
   const [addresses, setAddresses] = React.useState<MappedAddress[]>([]);
   const [addrLoading, setAddrLoading] = React.useState(!isGuest);
@@ -152,7 +155,12 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
         </p>
 
         {isGuest ? (
-          <div className='flex items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/60 px-4 py-4'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate('/login?redirect=/create-rfq')}
+            className='flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/60 px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]'
+          >
             <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100'>
               <LogIn size={18} className='text-violet-500' />
             </div>
@@ -162,7 +170,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                 กรอกข้อมูลสินค้าได้เลย — ระบุที่อยู่ได้หลังจากล็อกอิน
               </p>
             </div>
-          </div>
+          </Button>
         ) : addrLoading ? (
           <div className='space-y-2'>
             <div className='h-14 rounded-xl bg-gray-100 animate-pulse' />
