@@ -33,15 +33,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { mediaApi } from '@/services/api/factoryApi';
 import { checkEmail } from '@/services/api/authApi';
+import type { IRegisterFactoryRequest } from '@/services/api/types/auth.types';
 import { DatePicker } from '@/components/ui/date-picker';
 
 /* ─────────────────────────────────────────────────── */
@@ -335,11 +330,9 @@ function CustomerTab() {
 /* FT Tab                                              */
 /* ─────────────────────────────────────────────────── */
 
-type UpgradeStep = 'form' | 'verify-password' | 'done';
-
 function FactoryTab() {
   const navigate = useNavigate();
-  const { login, register, user, isAuthenticated } = useAuth();
+  const { login, register, upgradeToFactory, user, isAuthenticated } = useAuth();
 
   // True when a logged-in CT user is upgrading their existing account to FT
   const isCTUpgrade = isAuthenticated && String(user?.role ?? '').toUpperCase() === 'CT';
@@ -377,7 +370,6 @@ function FactoryTab() {
   const [apiError, setApiError] = useState<string | null>(null);
 
   // Upgrade flow (for guest who enters an existing CT email)
-  const [upgradeStep, setUpgradeStep] = useState<UpgradeStep>('form');
   const [upgradeEmail, setUpgradeEmail] = useState('');
   const [upgradePassword, setUpgradePassword] = useState('');
   const [showUpgradePw, setShowUpgradePw] = useState(false);
@@ -405,9 +397,7 @@ function FactoryTab() {
         setEmailStatus('free');
       } else if (result.role === 'CT') {
         setEmailStatus('ct');
-        // Jump straight to verify-password step — no need to fill the whole form first
         setUpgradeEmail(email);
-        setUpgradeStep('verify-password');
       } else {
         // FT or any other registered role already exists
         setEmailStatus('ft');
@@ -415,7 +405,7 @@ function FactoryTab() {
     } catch {
       setEmailStatus('idle'); // silently ignore network errors
     }
-  }, [form.email, blurField, setUpgradeEmail, setUpgradeStep]);
+  }, [form.email, blurField, setUpgradeEmail]);
 
   const isProcessing = submitting || localSubmitting;
 
@@ -429,11 +419,7 @@ function FactoryTab() {
 
     try {
       const certUrl = form.cert_file ? (await mediaApi.upload(form.cert_file)).url : '';
-      const ftPayload = {
-        role: 'FT' as const,
-        email: resolvedEmail,
-        phone: form.phone.replace(/\s/g, ''),
-        password: form.password,
+      const factoryPayload = {
         factory_name: form.factory_name.trim(),
         factory_type_id: form.factory_type_id,
         tax_id: form.tax_id.replace(/\D/g, ''),
@@ -446,11 +432,26 @@ function FactoryTab() {
         cert_expire_date: form.cert_expire_date || undefined,
       };
 
-      await register(ftPayload);
+      if (isCTUpgrade) {
+        // Authenticated CT user — call upgrade endpoint directly (JWT already valid)
+        await upgradeToFactory(factoryPayload);
+        navigate('/factory', { replace: true });
+        return;
+      }
+
+      // Guest path — try fresh registration
+      await register({
+        role: 'FT' as const,
+        email: resolvedEmail,
+        phone: form.phone.replace(/\s/g, ''),
+        password: form.password,
+        ...factoryPayload,
+      });
       navigate('/factory', { replace: true });
     } catch (err) {
       if (err instanceof ApiHttpError && err.status === 409) {
-        // Email already exists as CT — offer upgrade
+        // Email already exists as CT — stash factory data and ask for password
+        const certUrl = form.cert_file ? (await mediaApi.upload(form.cert_file)).url : '';
         setPendingFtData({
           role: 'FT' as const,
           email: resolvedEmail,
@@ -463,12 +464,12 @@ function FactoryTab() {
           category_ids: form.category_ids,
           sub_category_ids: form.sub_category_ids,
           cert_id: form.cert_id,
-          document_url: '',
+          document_url: certUrl,
           cert_number: form.cert_number.trim() || undefined,
           cert_expire_date: form.cert_expire_date || undefined,
         });
         setUpgradeEmail(resolvedEmail);
-        setUpgradeStep('verify-password');
+        setEmailStatus('ct');
       } else {
         setApiError(getErrorMessage(err, 'เกิดข้อผิดพลาด กรุณาลองใหม่'));
       }
@@ -478,14 +479,42 @@ function FactoryTab() {
   };
 
   const handleUpgrade = async () => {
-    if (!upgradePassword || !pendingFtData) return;
+    if (!upgradePassword) return;
     setUpgradeError('');
     setUpgradeSubmitting(true);
     try {
-      // 1. Verify CT credentials
+      // 1. Login with CT credentials — this gives us a valid JWT
       await login({ email: upgradeEmail, password: upgradePassword });
-      // 2. Re-submit FT registration (backend should handle CT→FT upgrade)
-      await register({ ...pendingFtData, password: upgradePassword });
+      // 2. Call upgrade endpoint (JWT now has CT role, backend will upgrade to FT)
+      const upgradePayload = pendingFtData
+        ? (() => {
+            const ftData = pendingFtData as IRegisterFactoryRequest;
+            return {
+            factory_name: ftData.factory_name,
+            factory_type_id: ftData.factory_type_id,
+            tax_id: ftData.tax_id,
+            province_id: ftData.province_id,
+            category_ids: ftData.category_ids,
+            sub_category_ids: ftData.sub_category_ids ?? [],
+            cert_id: ftData.cert_id,
+            document_url: ftData.document_url,
+            cert_number: ftData.cert_number,
+            cert_expire_date: ftData.cert_expire_date,
+            };
+          })()
+        : {
+            factory_name: form.factory_name.trim(),
+            factory_type_id: form.factory_type_id,
+            tax_id: form.tax_id.replace(/\D/g, ''),
+            province_id: form.province_id || undefined,
+            category_ids: form.category_ids,
+            sub_category_ids: form.sub_category_ids,
+            cert_id: form.cert_id,
+            document_url: '',
+            cert_number: form.cert_number.trim() || undefined,
+            cert_expire_date: form.cert_expire_date || undefined,
+          };
+      await upgradeToFactory(upgradePayload);
       navigate('/factory', { replace: true });
     } catch (err) {
       if (err instanceof ApiHttpError && err.status === 401) {
@@ -497,89 +526,6 @@ function FactoryTab() {
       setUpgradeSubmitting(false);
     }
   };
-
-  /* ── Upgrade: verify password step ── */
-  if (upgradeStep === 'verify-password') {
-    return (
-      <div className='space-y-5'>
-        <div className='rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-white px-5 py-4 text-sm shadow-[0_4px_16px_rgba(245,158,11,0.08)]'>
-          <div className='flex items-start gap-3'>
-            <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100'>
-              <ShieldCheck size={20} className='text-amber-700' />
-            </span>
-            <div>
-              <p className='font-semibold text-amber-800'>อีเมลนี้มีบัญชีลูกค้าอยู่แล้ว</p>
-              <p className='mt-1 text-xs text-amber-700 leading-relaxed'>
-                <span className='font-medium'>{upgradeEmail}</span> ถูกใช้เป็นบัญชีลูกค้าแล้ว
-                กรอกรหัสผ่านของบัญชีนั้นเพื่อยืนยันตัวตนและอัปเกรดเป็นบัญชีโรงงาน
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {upgradeError ? <FormAlert>{upgradeError}</FormAlert> : null}
-
-        <div className='space-y-3'>
-          <Label className='text-xs font-medium text-gray-600'>
-            รหัสผ่านบัญชีปัจจุบัน <span className='text-red-500'>*</span>
-          </Label>
-          <div className='relative'>
-            <Input
-              type={showUpgradePw ? 'text' : 'password'}
-              value={upgradePassword}
-              onChange={(e) => setUpgradePassword(e.target.value)}
-              placeholder='รหัสผ่านบัญชีลูกค้าของคุณ'
-              autoComplete='current-password'
-              className={`${inputBase} ${inputNormal} pr-10`}
-            />
-            <Button
-              variant='unstyled'
-              type='button'
-              tabIndex={-1}
-              onClick={() => setShowUpgradePw((v) => !v)}
-              className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-            >
-              {showUpgradePw ? <EyeOff size={16} /> : <Eye size={16} />}
-            </Button>
-          </div>
-        </div>
-
-        <div className='flex gap-3'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => {
-              setUpgradeStep('form');
-              setUpgradePassword('');
-              setUpgradeError('');
-              setEmailStatus('idle');
-              lastCheckedEmail.current = '';
-            }}
-            className='flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors'
-          >
-            ย้อนกลับ
-          </Button>
-          <Button
-            variant='unstyled'
-            type='button'
-            disabled={!upgradePassword || upgradeSubmitting}
-            onClick={() => void handleUpgrade()}
-            className='flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-60 transition-all'
-            style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}
-          >
-            {upgradeSubmitting ? (
-              <><Loader2 size={15} className='animate-spin' />กำลังยืนยัน...</>
-            ) : (
-              <>
-                <ShieldCheck size={15} />
-                ยืนยันและอัปเกรด
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   /* ── Factory registration form ── */
   return (
@@ -626,26 +572,24 @@ function FactoryTab() {
             <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
               ประเภทโรงงาน <span className='text-red-500'>*</span>
             </Label>
-            <Select
+            <SearchableSelect
               value={form.factory_type_id ? String(form.factory_type_id) : ''}
+              options={factoryTypes.map((t) => ({
+                value: String(t.factory_type_id),
+                label: t.name_th,
+              }))}
+              placeholder='— เลือกประเภท —'
+              searchPlaceholder='ค้นหาประเภทโรงงาน…'
+              loading={masterLoading}
+              disabled={masterLoading}
               onValueChange={(v) => {
-                const id = v === '__empty' ? 0 : Number(v);
+                const id = v ? Number(v) : 0;
                 setField('factory_type_id', id, { validate: true });
               }}
-              disabled={masterLoading}
-            >
-              <SelectTrigger className={inClass(errors.factory_type_id)}>
-                <SelectValue placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกประเภท —'} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='__empty'>— เลือกประเภท —</SelectItem>
-                {factoryTypes.map((t) => (
-                  <SelectItem key={t.factory_type_id} value={String(t.factory_type_id)}>
-                    {t.name_th}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onBlur={() => blurField('factory_type_id')}
+              className={inClass(errors.factory_type_id)}
+              aria-invalid={Boolean(errors.factory_type_id)}
+            />
             {errors.factory_type_id && <p className='text-xs text-red-600'>{errors.factory_type_id}</p>}
           </div>
 
@@ -670,26 +614,22 @@ function FactoryTab() {
             <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
               จังหวัดที่ตั้งโรงงาน <span className='text-red-500'>*</span>
             </Label>
-            <Select
+            <SearchableSelect
               value={form.province_id ? String(form.province_id) : ''}
+              options={provinces.map((p) => ({ value: String(p.id), label: p.name }))}
+              placeholder='— เลือกจังหวัด —'
+              searchPlaceholder='ค้นหาชื่อจังหวัด…'
+              emptyMessage='ไม่พบจังหวัด'
+              loading={masterLoading}
+              disabled={masterLoading}
               onValueChange={(v) => {
-                const id = v === '__empty' ? 0 : Number(v);
+                const id = v ? Number(v) : 0;
                 setField('province_id', id, { validate: true });
               }}
-              disabled={masterLoading}
-            >
-              <SelectTrigger className={inClass(errors.province_id)}>
-                <SelectValue placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกจังหวัด —'} />
-              </SelectTrigger>
-              <SelectContent className='max-h-64'>
-                <SelectItem value='__empty'>— เลือกจังหวัด —</SelectItem>
-                {provinces.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onBlur={() => blurField('province_id')}
+              className={inClass(errors.province_id)}
+              aria-invalid={Boolean(errors.province_id)}
+            />
             {errors.province_id && <p className='text-xs text-red-600'>{errors.province_id}</p>}
           </div>
         </div>
@@ -718,55 +658,22 @@ function FactoryTab() {
               </div>
             </div>
 
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-              {/* Phone — pre-filled but editable */}
-              <div ref={setFieldRef('phone')} className='space-y-1.5 sm:col-span-2'>
-                <Label className='text-xs font-medium text-gray-600'>
-                  เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
-                </Label>
-                <Input
-                  type='tel'
-                  autoComplete='tel'
-                  value={form.phone}
-                  onChange={(e) => setField('phone', e.target.value)}
-                  onBlur={() => blurField('phone')}
-                  className={inClass(errors.phone)}
-                  placeholder='081-234-5678'
-                />
-                {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
-                <p className='text-[11px] text-gray-400'>เบอร์โทรที่ใช้ติดต่อธุรกิจ (แก้ไขได้)</p>
-              </div>
-
-              {/* Verify current password — identity confirmation */}
-              <div ref={setFieldRef('password')} className='space-y-1.5 sm:col-span-2'>
-                <Label className='text-xs font-medium text-gray-600'>
-                  ยืนยันรหัสผ่านบัญชีปัจจุบัน <span className='text-red-500'>*</span>
-                </Label>
-                <div className='relative'>
-                  <Input
-                    type={showPw ? 'text' : 'password'}
-                    autoComplete='current-password'
-                    value={form.password}
-                    onChange={(e) => setField('password', e.target.value)}
-                    onBlur={() => blurField('password')}
-                    className={`${inClass(errors.password)} pr-10`}
-                    placeholder='กรอกรหัสผ่านเดิมของคุณ'
-                  />
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    tabIndex={-1}
-                    onClick={() => setShowPw((v) => !v)}
-                    className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                  >
-                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </Button>
-                </div>
-                {errors.password && <p className='text-xs text-red-600'>{errors.password}</p>}
-                <p className='text-[11px] text-gray-400'>
-                  ใช้เพื่อยืนยันตัวตนก่อนอัปเกรดบัญชี ไม่ใช่การตั้งรหัสใหม่
-                </p>
-              </div>
+            {/* Phone — pre-filled but editable */}
+            <div ref={setFieldRef('phone')} className='space-y-1.5'>
+              <Label className='text-xs font-medium text-gray-600'>
+                เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
+              </Label>
+              <Input
+                type='tel'
+                autoComplete='tel'
+                value={form.phone}
+                onChange={(e) => setField('phone', e.target.value)}
+                onBlur={() => blurField('phone')}
+                className={inClass(errors.phone)}
+                placeholder='081-234-5678'
+              />
+              {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
+              <p className='text-[11px] text-gray-400'>เบอร์โทรที่ใช้ติดต่อธุรกิจ (แก้ไขได้)</p>
             </div>
           </div>
         ) : (
@@ -813,77 +720,161 @@ function FactoryTab() {
                   </span>
                 </div>
               )}
+
+              {/* ── Inline CT→FT upgrade card ── */}
+              {!errors.email && emailStatus === 'ct' && (
+                <div className='mt-1 space-y-3 rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-white p-4 shadow-[0_4px_16px_rgba(245,158,11,0.08)]'>
+                  {/* Header */}
+                  <div className='flex items-start gap-3'>
+                    <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100'>
+                      <ShieldCheck size={17} className='text-amber-700' />
+                    </span>
+                    <div>
+                      <p className='text-sm font-semibold text-amber-800'>อีเมลนี้มีบัญชีลูกค้าอยู่แล้ว</p>
+                      <p className='mt-0.5 text-xs text-amber-700 leading-relaxed'>
+                        กรอกรหัสผ่านของบัญชีนั้นเพื่อยืนยันตัวตนและอัปเกรดเป็นบัญชีโรงงาน
+                      </p>
+                    </div>
+                  </div>
+
+                  {upgradeError && <FormAlert>{upgradeError}</FormAlert>}
+
+                  {/* Password input */}
+                  <div className='space-y-1.5'>
+                    <Label className='text-xs font-medium text-gray-600'>
+                      รหัสผ่านบัญชีปัจจุบัน <span className='text-red-500'>*</span>
+                    </Label>
+                    <div className='relative'>
+                      <Input
+                        type={showUpgradePw ? 'text' : 'password'}
+                        value={upgradePassword}
+                        onChange={(e) => setUpgradePassword(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') void handleUpgrade(); }}
+                        placeholder='รหัสผ่านบัญชีลูกค้าของคุณ'
+                        autoComplete='current-password'
+                        className={`${inputBase} ${inputNormal} pr-10`}
+                      />
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        tabIndex={-1}
+                        onClick={() => setShowUpgradePw((v) => !v)}
+                        className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                      >
+                        {showUpgradePw ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className='flex gap-2'>
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      onClick={() => {
+                        setEmailStatus('idle');
+                        setUpgradePassword('');
+                        setUpgradeError('');
+                        lastCheckedEmail.current = '';
+                        setField('email', '');
+                      }}
+                      className='flex-1 rounded-xl border border-gray-200 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'
+                    >
+                      ใช้อีเมลอื่น
+                    </Button>
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      disabled={!upgradePassword || upgradeSubmitting}
+                      onClick={() => void handleUpgrade()}
+                      className='flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold text-white disabled:opacity-60 transition-all'
+                      style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}
+                    >
+                      {upgradeSubmitting ? (
+                        <><Loader2 size={14} className='animate-spin' />กำลังยืนยัน...</>
+                      ) : (
+                        <><ShieldCheck size={14} />ยืนยันและอัปเกรด</>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div ref={setFieldRef('phone')} className='space-y-1.5'>
-              <Label className='text-xs font-medium text-gray-600'>
-                เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
-              </Label>
-              <Input
-                type='tel'
-                autoComplete='tel'
-                value={form.phone}
-                onChange={(e) => setField('phone', e.target.value)}
-                onBlur={() => blurField('phone')}
-                className={inClass(errors.phone)}
-                placeholder='081-234-5678'
-              />
-              {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
-            </div>
+            {/* Phone / Password / Confirm — hidden when CT upgrade (uses existing account) */}
+            {emailStatus !== 'ct' && (
+              <>
+                <div ref={setFieldRef('phone')} className='space-y-1.5'>
+                  <Label className='text-xs font-medium text-gray-600'>
+                    เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
+                  </Label>
+                  <Input
+                    type='tel'
+                    autoComplete='tel'
+                    value={form.phone}
+                    onChange={(e) => setField('phone', e.target.value)}
+                    onBlur={() => blurField('phone')}
+                    className={inClass(errors.phone)}
+                    placeholder='081-234-5678'
+                  />
+                  {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
+                </div>
 
-            <div ref={setFieldRef('password')} className='space-y-1.5'>
-              <Label className='text-xs font-medium text-gray-600'>
-                รหัสผ่าน <span className='text-red-500'>*</span>
-              </Label>
-              <div className='relative'>
-                <Input
-                  type={showPw ? 'text' : 'password'}
-                  autoComplete='new-password'
-                  value={form.password}
-                  onChange={(e) => setField('password', e.target.value)}
-                  onBlur={() => blurField('password')}
-                  className={`${inClass(errors.password)} pr-10`}
-                  placeholder='8 ตัวอักษรขึ้นไป'
-                />
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  tabIndex={-1}
-                  onClick={() => setShowPw((v) => !v)}
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                >
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                </Button>
-              </div>
-              {errors.password && <p className='text-xs text-red-600'>{errors.password}</p>}
-            </div>
+                <div ref={setFieldRef('password')} className='space-y-1.5'>
+                  <Label className='text-xs font-medium text-gray-600'>
+                    รหัสผ่าน <span className='text-red-500'>*</span>
+                  </Label>
+                  <div className='relative'>
+                    <Input
+                      type={showPw ? 'text' : 'password'}
+                      autoComplete='new-password'
+                      value={form.password}
+                      onChange={(e) => setField('password', e.target.value)}
+                      onBlur={() => blurField('password')}
+                      className={`${inClass(errors.password)} pr-10`}
+                      placeholder='8 ตัวอักษรขึ้นไป'
+                    />
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      tabIndex={-1}
+                      onClick={() => setShowPw((v) => !v)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                    >
+                      {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </Button>
+                  </div>
+                  {errors.password && <p className='text-xs text-red-600'>{errors.password}</p>}
+                </div>
 
-            <div ref={setFieldRef('confirmPassword')} className='space-y-1.5'>
-              <Label className='text-xs font-medium text-gray-600'>
-                ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
-              </Label>
-              <div className='relative'>
-                <Input
-                  type={showConfirm ? 'text' : 'password'}
-                  autoComplete='new-password'
-                  value={form.confirmPassword}
-                  onChange={(e) => setField('confirmPassword', e.target.value)}
-                  onBlur={() => blurField('confirmPassword')}
-                  className={`${inClass(errors.confirmPassword)} pr-10`}
-                  placeholder='กรอกอีกครั้ง'
-                />
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  tabIndex={-1}
-                  onClick={() => setShowConfirm((v) => !v)}
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                >
-                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                </Button>
-              </div>
-              {errors.confirmPassword && <p className='text-xs text-red-600'>{errors.confirmPassword}</p>}
-            </div>
+                <div ref={setFieldRef('confirmPassword')} className='space-y-1.5'>
+                  <Label className='text-xs font-medium text-gray-600'>
+                    ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
+                  </Label>
+                  <div className='relative'>
+                    <Input
+                      type={showConfirm ? 'text' : 'password'}
+                      autoComplete='new-password'
+                      value={form.confirmPassword}
+                      onChange={(e) => setField('confirmPassword', e.target.value)}
+                      onBlur={() => blurField('confirmPassword')}
+                      className={`${inClass(errors.confirmPassword)} pr-10`}
+                      placeholder='กรอกอีกครั้ง'
+                    />
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      tabIndex={-1}
+                      onClick={() => setShowConfirm((v) => !v)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                    >
+                      {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </Button>
+                  </div>
+                  {errors.confirmPassword && <p className='text-xs text-red-600'>{errors.confirmPassword}</p>}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -1016,26 +1007,21 @@ function FactoryTab() {
               <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
                 ประเภทใบรับรอง <span className='text-red-500'>*</span>
               </Label>
-              <Select
+              <SearchableSelect
                 value={form.cert_id ? String(form.cert_id) : ''}
+                options={certTypes.map((c) => ({ value: String(c.id), label: c.label }))}
+                placeholder='— เลือกประเภท —'
+                searchPlaceholder='ค้นหาประเภทใบรับรอง…'
+                loading={masterLoading}
+                disabled={masterLoading}
                 onValueChange={(v) => {
-                  const id = v === '__empty' ? 0 : Number(v);
+                  const id = v ? Number(v) : 0;
                   setField('cert_id', id, { validate: true });
                 }}
-                disabled={masterLoading}
-              >
-                <SelectTrigger className={inClass(errors.cert_id)}>
-                  <SelectValue placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกประเภท —'} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='__empty'>— เลือกประเภท —</SelectItem>
-                  {certTypes.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onBlur={() => blurField('cert_id')}
+                className={inClass(errors.cert_id)}
+                aria-invalid={Boolean(errors.cert_id)}
+              />
               {errors.cert_id && <p className='text-xs text-red-600'>{errors.cert_id}</p>}
             </div>
 

@@ -22,3 +22,17 @@ export async function checkEmail(email: string): Promise<EmailCheckResult> {
   );
   return result;
 }
+
+export function postUpgradeToFactory(
+  request: Omit<IRegisterFactoryRequest, 'role' | 'email' | 'phone' | 'password'>,
+) {
+  return httpClient.post<IAuthResponse>('/auth/upgrade-to-factory', request);
+}
+
+export function postSwitchRole(role: string) {
+  return httpClient.post<IAuthResponse>('/auth/switch-role', { role });
+}
+
+export function getAvailableRoles() {
+  return httpClient.get<{ roles: string[] }>('/auth/available-roles');
+}

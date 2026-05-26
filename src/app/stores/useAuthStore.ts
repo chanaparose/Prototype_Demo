@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import { fetchCurrentUserAction, loginAction, registerAction } from '@/domain/auth/api/authActions';
+import { fetchCurrentUserAction, loginAction, registerAction, upgradeToFactoryAction, switchRoleAction } from '@/domain/auth/api/authActions';
 import { getToken, setToken, removeToken } from '@/services/api/tokenManager';
 import type {
   ILoginRequest,
   IRegisterCustomerRequest,
   IRegisterFactoryRequest,
 } from '@/services/api/types/auth.types';
+type UpgradeToFactoryRequest = Omit<IRegisterFactoryRequest, 'role' | 'email' | 'phone' | 'password'>;
 import type { IUser } from '@/domain/auth/types/user.model';
 import type { IAuthSession } from '@/domain/auth/types/auth.model';
 import { isTourActive, subscribeTourActive, TOUR_GUEST_USER } from '@/utils/tourMocks';
@@ -20,6 +21,8 @@ export interface IAuthState {
 export interface IAuthActions {
   login: (request: ILoginRequest) => Promise<IAuthSession>;
   register: (request: IRegisterCustomerRequest | IRegisterFactoryRequest) => Promise<IAuthSession>;
+  upgradeToFactory: (request: UpgradeToFactoryRequest) => Promise<IAuthSession>;
+  switchRole: (role: string) => Promise<IAuthSession>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   setLoading: (loading: boolean) => void;
@@ -84,6 +87,30 @@ export const useAuthStore = create<IAuthState & IAuthActions>((set) => {
 
     register: async (request: IRegisterCustomerRequest | IRegisterFactoryRequest) => {
       const session = await registerAction(request);
+      setToken(session.token);
+      set({
+        user: session.user,
+        token: session.token,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      return session;
+    },
+
+    upgradeToFactory: async (request: UpgradeToFactoryRequest) => {
+      const session = await upgradeToFactoryAction(request);
+      setToken(session.token);
+      set({
+        user: session.user,
+        token: session.token,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      return session;
+    },
+
+    switchRole: async (role: string) => {
+      const session = await switchRoleAction(role);
       setToken(session.token);
       set({
         user: session.user,
