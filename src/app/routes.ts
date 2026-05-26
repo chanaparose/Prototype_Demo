@@ -22,6 +22,7 @@ import { Notifications } from '@/pages/notifications';
 import { FactoriesList } from '@/pages/factories/FactoriesList';
 import { Login } from '@/pages/login';
 import { RegisterFactoryPage } from '@/pages/auth/RegisterFactoryPage';
+import { RegisterPage } from '@/pages/register/RegisterPage';
 import { QuoteBuilder, QuoteDetailCustomer } from '@/pages/quote';
 import {
   CommissionConfig,
@@ -59,6 +60,11 @@ export const router = createBrowserRouter([
     Component: Login,
   },
   {
+    path: '/register',
+    Component: RegisterPage,
+  },
+  {
+    // Legacy factory registration route — redirect to new unified register page
     path: '/register/factory',
     Component: RegisterFactoryPage,
   },

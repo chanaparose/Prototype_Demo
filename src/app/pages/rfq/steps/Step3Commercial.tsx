@@ -1,8 +1,8 @@
 import { Input } from '@/components/ui/input';
 
 import React from 'react';
-import { useNavigate } from 'react-router';
 import { CheckCircle2, LogIn, MapPin, Plus, Truck } from 'lucide-react';
+import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import { mapAddressFromApi, type MappedAddress } from '@/domain/shared/mappers/mapAddressFromApi';
 import { mapShippingMethodsList } from '@/domain/master/mappers/mapShippingMethod';
@@ -37,7 +37,7 @@ const FALLBACK_SHIPPING: ShippingMethod[] = [
 ];
 
 export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: Readonly<Props>) {
-  const navigate = useNavigate();
+  const { open: openLoginModal } = useAuthModalStore();
 
   /* addresses */
   const [addresses, setAddresses] = React.useState<MappedAddress[]>([]);
@@ -167,7 +167,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/login?redirect=/create-rfq')}
+            onClick={() => openLoginModal('/create-rfq')}
             className='flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/60 px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]'
           >
             <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100'>

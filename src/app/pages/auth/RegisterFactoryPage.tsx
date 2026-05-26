@@ -200,8 +200,8 @@ export function RegisterFactoryPage() {
                   <Select
                     value={form.factory_type_id ? String(form.factory_type_id) : ''}
                     onValueChange={(v) => {
-                      setField('factory_type_id', v === '__empty' ? 0 : Number(v));
-                      blurField('factory_type_id');
+                      const id = v === '__empty' ? 0 : Number(v);
+                      setField('factory_type_id', id, { validate: true });
                     }}
                     disabled={masterLoading}
                   >
@@ -254,8 +254,8 @@ export function RegisterFactoryPage() {
                   <Select
                     value={form.province_id ? String(form.province_id) : ''}
                     onValueChange={(v) => {
-                      setField('province_id', v === '__empty' ? 0 : Number(v));
-                      blurField('province_id');
+                      const id = v === '__empty' ? 0 : Number(v);
+                      setField('province_id', id, { validate: true });
                     }}
                     disabled={masterLoading}
                   >
@@ -418,7 +418,7 @@ export function RegisterFactoryPage() {
                               const next = e.target.checked
                                 ? [...form.category_ids, cat.id]
                                 : form.category_ids.filter((id) => id !== cat.id);
-                              setField('category_ids', next);
+                              setField('category_ids', next, { validate: true });
                               if (!e.target.checked) {
                                 const subIds = (lbiSubCategories[cat.id] ?? []).map((s) => s.id);
                                 if (subIds.length > 0) {
@@ -519,8 +519,8 @@ export function RegisterFactoryPage() {
                     <Select
                       value={form.cert_id ? String(form.cert_id) : ''}
                       onValueChange={(v) => {
-                        setField('cert_id', v === '__empty' ? 0 : Number(v));
-                        blurField('cert_id');
+                        const id = v === '__empty' ? 0 : Number(v);
+                        setField('cert_id', id, { validate: true });
                       }}
                       disabled={masterLoading}
                     >
@@ -584,8 +584,7 @@ export function RegisterFactoryPage() {
                     className='w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-purple/10 file:text-brand-purple hover:file:bg-brand-purple/20 cursor-pointer'
                     onChange={(e) => {
                       const f = e.target.files?.[0] ?? null;
-                      setField('cert_file', f);
-                      if (f) blurField('cert_file');
+                      setField('cert_file', f, { validate: true });
                     }}
                   />
                   {form.cert_file && (

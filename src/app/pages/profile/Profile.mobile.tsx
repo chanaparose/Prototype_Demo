@@ -578,7 +578,7 @@ export function ProfileMobile() {
           variant='unstyled'
           onClick={() => {
             logout();
-            navigate('/login', { replace: true });
+            navigate('/', { replace: true });
           }}
           className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]'
           style={{ color: 'var(--status-danger)', fontWeight: 600 }}

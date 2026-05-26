@@ -13,3 +13,12 @@ export function postLogin(request: ILoginRequest) {
 export function postRegister(request: IRegisterCustomerRequest | IRegisterFactoryRequest) {
   return httpClient.post<IAuthResponse>('/auth/register', request);
 }
+
+export type EmailCheckResult = { exists: false; role: null } | { exists: true; role: string };
+
+export async function checkEmail(email: string): Promise<EmailCheckResult> {
+  const result = await httpClient.get<EmailCheckResult>(
+    `/auth/email-check?email=${encodeURIComponent(email)}`,
+  );
+  return result;
+}

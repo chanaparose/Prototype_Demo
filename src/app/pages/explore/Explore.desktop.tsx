@@ -403,7 +403,7 @@ export function ExploreDesktop({
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/register/factory')}
+            onClick={() => navigate('/register?tab=ft')}
             className={REGISTER_BUTTON_CLASS}
           >
             <Sparkles

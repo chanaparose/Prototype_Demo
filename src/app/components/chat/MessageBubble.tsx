@@ -1,6 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, Check, CreditCard, FileText, X } from 'lucide-react';
+import {
+  ArrowRight,
+  Calendar,
+  Check,
+  Clock,
+  CreditCard,
+  FileText,
+  X,
+} from 'lucide-react';
 import { cn } from '@lib/utils';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { ChatReference, ChatReferenceType } from '@/utils/chatContract';
@@ -288,6 +296,219 @@ function TextChatBubble({
   );
 }
 
+const CHAT_CARD_SHELL =
+  'w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-violet-200/80 bg-white text-left shadow-[0_14px_36px_rgba(46,34,82,0.18)] transition-all';
+
+function RfqChatCard({
+  rfqId,
+  title,
+  viewerRole,
+  onOpen,
+}: {
+  rfqId: number;
+  title: string;
+  viewerRole: 'CT' | 'FT';
+  onOpen: () => void;
+}) {
+  const canOpen = Number.isFinite(rfqId) && rfqId > 0;
+  return (
+    <div className='flex justify-center px-1'>
+      <article className={CHAT_CARD_SHELL}>
+        <div
+          className='h-[3px] w-full'
+          style={{
+            background:
+              'linear-gradient(90deg, var(--brand-mauve) 0%, var(--brand-purple) 55%, var(--brand-violet-soft) 100%)',
+          }}
+        />
+        <div className='p-4'>
+          <div className='mb-3 flex items-start gap-3'>
+            <span
+              className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
+              style={{
+                background:
+                  'linear-gradient(145deg, color-mix(in srgb, var(--brand-mauve) 24%, white), color-mix(in srgb, var(--brand-purple) 18%, white))',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 10px rgba(79,70,229,0.18)',
+              }}
+            >
+              <FileText size={18} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
+            </span>
+            <div className='min-w-0 flex-1 pt-0.5'>
+              <p className='text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
+                คำขอ RFQ
+              </p>
+              <p className='mt-1 line-clamp-3 text-[15px] font-bold leading-snug text-[var(--brand-navy)]'>
+                {title}
+              </p>
+            </div>
+          </div>
+          <div className='mb-3 rounded-lg border border-violet-100 bg-violet-50/55 px-2.5 py-2'>
+            <p className='text-[11px] font-medium text-violet-900 line-clamp-2'>
+              เอกสารอ้างอิง: <span className='font-semibold'>{title}</span>
+            </p>
+          </div>
+          <Button
+            variant='unstyled'
+            type='button'
+            disabled={!canOpen}
+            onClick={onOpen}
+              className={cn(
+                'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
+                'disabled:cursor-not-allowed disabled:opacity-45',
+                canOpen && 'hover:brightness-[1.03] active:scale-[0.99]',
+              )}
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
+                boxShadow: '0 8px 20px rgba(79,70,229,0.34)',
+              }}
+            >
+            {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'}
+            <ArrowRight size={15} strokeWidth={2.5} />
+          </Button>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function QuotationStatusPill({ status, viewerRole }: { status: string; viewerRole: 'CT' | 'FT' }) {
+  const s = status.toLowerCase();
+  if (s === 'accepted' || s === 'ac') {
+    return (
+      <span className='inline-flex items-center gap-1 rounded-full border border-emerald-200/80 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-800'>
+        <Check size={11} strokeWidth={2.5} />
+        ยืนยันแล้ว
+      </span>
+    );
+  }
+  if (s === 'rejected' || s === 'rj') {
+    return (
+      <span className='inline-flex items-center gap-1 rounded-full border border-red-200/80 bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-700'>
+        <X size={11} strokeWidth={2.5} />
+        ปฏิเสธแล้ว
+      </span>
+    );
+  }
+  if (s === 'expired') {
+    return (
+      <span className='rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600'>
+        หมดอายุ
+      </span>
+    );
+  }
+  return (
+    <span className='rounded-full border border-amber-200/90 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-900'>
+      {viewerRole === 'FT' ? 'รอลูกค้ายืนยัน' : 'รอตรวจสอบ'}
+    </span>
+  );
+}
+
+function QuotationChatCard({
+  msg,
+  quote,
+  viewerRole,
+  disabled,
+  onOpen,
+}: {
+  msg: RoomMessage;
+  quote: NonNullable<RoomMessage['quoteData']>;
+  viewerRole: 'CT' | 'FT';
+  disabled: boolean;
+  onOpen: () => void;
+}) {
+  const qStatus = String(quote.status ?? 'pending').toLowerCase();
+
+  return (
+    <div className='flex justify-center px-1'>
+      <Button
+        variant='unstyled'
+        type='button'
+        disabled={disabled}
+        onClick={onOpen}
+        className={cn(
+          CHAT_CARD_SHELL,
+          'disabled:cursor-default disabled:opacity-90',
+          !disabled && 'hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(46,34,82,0.14)] active:scale-[0.995]',
+        )}
+        aria-label='ดูรายละเอียดใบเสนอราคา'
+      >
+        <div
+          className='h-[3px] w-full'
+          style={{
+            background:
+              'linear-gradient(90deg, var(--brand-indigo) 0%, var(--brand-purple) 50%, #a78bfa 100%)',
+          }}
+        />
+        <div className='p-4'>
+          <div className='mb-3 flex items-start justify-between gap-2'>
+            <div className='flex min-w-0 items-center gap-2.5'>
+              <span
+                className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
+                style={{
+                  background:
+                    'linear-gradient(145deg, color-mix(in srgb, var(--brand-indigo) 12%, white), var(--brand-lavender))',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.85)',
+                }}
+              >
+                <CreditCard size={18} className='text-[var(--brand-indigo)]' strokeWidth={2.2} />
+              </span>
+              <div className='min-w-0'>
+                <p className='text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--brand-indigo)]'>
+                  ใบเสนอราคาทางการ
+                </p>
+              </div>
+            </div>
+            <QuotationStatusPill status={qStatus} viewerRole={viewerRole} />
+          </div>
+
+          <div className='mb-3 grid grid-cols-2 gap-2'>
+            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-3 py-2.5 text-center'>
+              <p className='text-[15px] font-bold tabular-nums text-[var(--brand-navy)]'>
+                {formatCurrency(quote.price, 'THB')}
+              </p>
+              <p className='mt-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
+                ราคารวม
+              </p>
+            </div>
+            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-3 py-2.5 text-center'>
+              <p className='text-[15px] font-bold tabular-nums text-[var(--brand-navy)]'>
+                {quote.leadTime}{' '}
+                <span className='text-[11px] font-semibold text-[var(--neutral-subtle)]'>วัน</span>
+              </p>
+              <p className='mt-0.5 flex items-center justify-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
+                <Clock size={9} />
+                lead time
+              </p>
+            </div>
+          </div>
+
+          <div className='flex items-center justify-center gap-1.5 rounded-lg border border-violet-100 bg-violet-50 px-2.5 py-2 text-[10px] text-[var(--brand-navy)]'>
+            <Calendar size={11} className='shrink-0 text-violet-700' />
+            <span>
+              ใช้ได้ถึง{' '}
+              <span className='font-semibold'>{quote.validUntil || '-'}</span>
+            </span>
+          </div>
+
+          {!disabled ? (
+            <div className='mt-3 flex items-center justify-center gap-1 text-[12px] font-semibold text-[var(--brand-purple)]'>
+              <span>ดูรายละเอียด</span>
+              <ArrowRight size={13} strokeWidth={2.5} />
+            </div>
+          ) : null}
+
+          {msg.display_time ? (
+            <p className='mt-2 text-center text-[9px] tabular-nums text-[var(--neutral-placeholder)]'>
+              {msg.display_time}
+            </p>
+          ) : null}
+        </div>
+      </Button>
+    </div>
+  );
+}
+
 export function MessageBubble({
   msg,
   currentUserId,
@@ -312,131 +533,46 @@ export function MessageBubble({
 
   if (msg.message_type === 'rfq_card') {
     const rfqId = Number(msg.reference_id ?? 0);
+    const title = msg.reference_title || msg.content || `RFQ #${rfqId}`;
     return (
-      <div className='flex justify-center'>
-        <div className='bg-white border-l-4 border-brand-mauve rounded-2xl p-4 shadow-sm max-w-[320px] w-full'>
-          <p className='text-[10px] font-semibold text-brand-mauve uppercase tracking-wide mb-1'>
-            คำขอ RFQ
-          </p>
-          <p className='text-sm font-bold text-gray-900'>
-            {msg.reference_title || msg.content || `RFQ #${rfqId}`}
-          </p>
-          <div className='border-t border-gray-100 my-3' />
-          <Button
-            variant='unstyled'
-            type='button'
-            className='text-sm font-semibold text-brand-mauve flex items-center gap-1 hover:underline'
-            onClick={() => {
-              if (!Number.isFinite(rfqId) || rfqId <= 0) return;
-              navigate(viewerRole === 'FT' ? `/factory/rfqs/${rfqId}` : `/rfqs/${rfqId}`);
-            }}
-          >
-            {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'} <ArrowRight size={14} />
-          </Button>
-        </div>
-      </div>
+      <RfqChatCard
+        rfqId={rfqId}
+        title={title}
+        viewerRole={viewerRole}
+        onOpen={() => {
+          if (!Number.isFinite(rfqId) || rfqId <= 0) return;
+          navigate(viewerRole === 'FT' ? `/factory/rfqs/${rfqId}` : `/rfqs/${rfqId}`);
+        }}
+      />
     );
   }
 
   if ((msg.message_type === 'quotation_card' || msg.message_type === 'QT') && msg.quoteData) {
     const q = msg.quoteData;
-    // For message_type 'QT', reference_id is always the RFQ id — derive navigation
-    // targets from message_type alone, not from reference_type.
     const qId = Number(q.quotationId ?? 0);
     const rfqId = Number(q.rfqId ?? msg.reference_id ?? 0);
     const factoryId = Number(q.factoryId ?? 0);
-    const qStatus = String(q.status ?? 'pending').toLowerCase();
     const canOpen = qId > 0;
     const quotationPath = viewerRole === 'FT' ? `/factory/quotations/${qId}` : `/quotations/${qId}`;
 
-    const statusPill = (() => {
-      if (qStatus === 'accepted' || qStatus === 'ac') {
-        return (
-          <span className='text-[11px] px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-50 inline-flex items-center gap-1'>
-            <Check size={12} /> ยืนยันแล้ว
-          </span>
-        );
-      }
-      if (qStatus === 'rejected' || qStatus === 'rj') {
-        return (
-          <span className='text-[11px] px-2.5 py-1 rounded-full bg-red-400/20 text-red-50 inline-flex items-center gap-1'>
-            <X size={12} /> ปฏิเสธแล้ว
-          </span>
-        );
-      }
-      if (qStatus === 'expired') {
-        return (
-          <span className='text-[11px] px-2.5 py-1 rounded-full bg-white/15 text-white/80'>
-            หมดอายุ
-          </span>
-        );
-      }
-      // pending / pd
-      return (
-        <span className='text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-white'>
-          {viewerRole === 'FT' ? 'รอลูกค้ายืนยัน' : 'รอตรวจสอบ'}
-        </span>
-      );
-    })();
-
     return (
-      <div className='flex justify-center'>
-        <Button
-          variant='unstyled'
-          type='button'
-          disabled={viewerRole === 'CT' ? rfqId <= 0 : !canOpen}
-          onClick={() => {
-            if (viewerRole === 'CT' && rfqId > 0) {
-              const qs = new URLSearchParams();
-              if (qId > 0) qs.set('quote_id', String(qId));
-              if (factoryId > 0) qs.set('factory_id', String(factoryId));
-              const suffix = qs.toString();
-              navigate(`/rfqs/${rfqId}${suffix ? `?${suffix}` : ''}`);
-              return;
-            }
-            if (canOpen) navigate(quotationPath);
-          }}
-          className='w-full max-w-[320px] rounded-2xl overflow-hidden shadow-sm text-left disabled:cursor-default enabled:hover:shadow-md enabled:active:scale-[0.99] transition-all'
-          style={{ background: 'linear-gradient(135deg, var(--brand-royal), #8B5CF6)' }}
-          aria-label='ดูรายละเอียดใบเสนอราคา'
-        >
-          <div className='p-4'>
-            <div className='flex items-center justify-between mb-3'>
-              <div className='flex items-center gap-2'>
-                <CreditCard size={16} className='text-yellow-300' />
-                <span className='text-white text-xs' style={{ fontWeight: 700 }}>
-                  ใบเสนอราคาทางการ
-                </span>
-              </div>
-              {statusPill}
-            </div>
-            <div className='flex gap-3 mb-4'>
-              <div className='flex-1 bg-white/20 rounded-xl p-2.5 text-center'>
-                <p className='text-white' style={{ fontWeight: 700 }}>
-                  {formatCurrency(q.price, 'THB')}
-                </p>
-                <p className='text-white/70 text-[9px]'>ราคารวม</p>
-              </div>
-              <div className='flex-1 bg-white/20 rounded-xl p-2.5 text-center'>
-                <p className='text-white' style={{ fontWeight: 700 }}>
-                  {q.leadTime} วัน
-                </p>
-                <p className='text-white/70 text-[9px]'>lead time</p>
-              </div>
-            </div>
-            <p className='text-white/60 text-[10px] text-center'>ใช้ได้ถึง {q.validUntil || '-'}</p>
-            {canOpen ? (
-              <div className='mt-3 flex items-center justify-center gap-1 text-[11px] text-white/90 font-semibold'>
-                <span>ดูรายละเอียด</span>
-                <ArrowRight size={12} />
-              </div>
-            ) : null}
-            {msg.display_time ? (
-              <p className='text-white/40 text-[9px] text-center mt-2'>{msg.display_time}</p>
-            ) : null}
-          </div>
-        </Button>
-      </div>
+      <QuotationChatCard
+        msg={msg}
+        quote={q}
+        viewerRole={viewerRole}
+        disabled={viewerRole === 'CT' ? rfqId <= 0 : !canOpen}
+        onOpen={() => {
+          if (viewerRole === 'CT' && rfqId > 0) {
+            const qs = new URLSearchParams();
+            if (qId > 0) qs.set('quote_id', String(qId));
+            if (factoryId > 0) qs.set('factory_id', String(factoryId));
+            const suffix = qs.toString();
+            navigate(`/rfqs/${rfqId}${suffix ? `?${suffix}` : ''}`);
+            return;
+          }
+          if (canOpen) navigate(quotationPath);
+        }}
+      />
     );
   }
 

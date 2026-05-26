@@ -352,7 +352,7 @@ export function ExploreMobile({
           <Button
             variant='unstyled'
             type='button'
-            onClick={() => navigate('/register/factory')}
+            onClick={() => navigate('/register?tab=ft')}
             className='group relative w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm text-white whitespace-nowrap
                        bg-gradient-to-r from-brand-purple via-brand-purple-hover to-brand-violet-deep
                        shadow-lg shadow-brand-purple/40

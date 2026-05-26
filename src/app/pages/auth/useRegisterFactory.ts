@@ -107,16 +107,18 @@ const FIELD_ORDER_FULL: (keyof FormState)[] = [
 
 export function useRegisterFactory() {
   const navigate = useNavigate();
-  const { register, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { register, isAuthenticated, isLoading: authLoading, user } = useAuth();
 
-  // Redirect already-authenticated FT users away from registration page
+  // Only redirect already-registered FT users — CT users may be here to upgrade
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    const role = String(user?.role ?? '').toUpperCase();
+    if (!authLoading && isAuthenticated && role === 'FT') {
       navigate('/factory', { replace: true });
     }
-  }, [authLoading, isAuthenticated, navigate]);
+  }, [authLoading, isAuthenticated, user, navigate]);
 
   const [form, setForm] = useState<FormState>(initial);
+  const formRef = useRef<FormState>(initial);
   const [errors, setErrors] = useState<FormErrors>({});
   const [factoryTypes, setFactoryTypes] = useState<FactoryTypeOption[]>([]);
   const [provinces, setProvinces] = useState<ProvinceOption[]>([]);
@@ -206,12 +208,6 @@ export function useRegisterFactory() {
     fetchMaster();
   }, [fetchMaster]);
 
-  const setField = useCallback(<K extends keyof FormState>(k: K, v: FormState[K]) => {
-    setForm((s) => ({ ...s, [k]: v }));
-    setErrors((e) => ({ ...e, [k]: undefined }));
-    setApiError(null);
-  }, []);
-
   const validateField = useCallback(
     (k: keyof FormState, values: FormState = form): string | undefined => {
       const authOnly = ['email', 'phone', 'password', 'confirmPassword'] as (keyof FormState)[];
@@ -268,6 +264,24 @@ export function useRegisterFactory() {
     [form, isAuthenticated],
   );
 
+  const setField = useCallback(
+    <K extends keyof FormState>(k: K, v: FormState[K], opts?: { validate?: boolean }) => {
+      setForm((s) => {
+        const next = { ...s, [k]: v };
+        formRef.current = next;
+        if (opts?.validate) {
+          const msg = validateField(k, next);
+          setErrors((e) => ({ ...e, [k]: msg }));
+        } else {
+          setErrors((e) => ({ ...e, [k]: undefined }));
+        }
+        return next;
+      });
+      setApiError(null);
+    },
+    [validateField],
+  );
+
   const activeFieldOrder = FIELD_ORDER_FULL;
 
   const scrollToFirstError = useCallback(
@@ -283,18 +297,35 @@ export function useRegisterFactory() {
   );
 
   const blurField = useCallback(
-    (k: keyof FormState) => {
-      const msg = validateField(k, form);
+    (k: keyof FormState, override?: Partial<FormState>) => {
+      const snapshot = { ...formRef.current, ...override };
+      const msg = validateField(k, snapshot);
       setErrors((prev) => ({ ...prev, [k]: msg }));
     },
-    [form, validateField],
+    [validateField],
   );
+
+  const validateAll = useCallback((): boolean => {
+    const snapshot = formRef.current;
+    const e: FormErrors = {};
+    for (const k of activeFieldOrder) {
+      const msg = validateField(k, snapshot);
+      if (msg) e[k] = msg;
+    }
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      scrollToFirstError(e);
+      return false;
+    }
+    return true;
+  }, [activeFieldOrder, scrollToFirstError, validateField]);
 
   const submit = async () => {
     setApiError(null);
+    const snapshot = formRef.current;
     const e: FormErrors = {};
     for (const k of activeFieldOrder) {
-      const msg = validateField(k, form);
+      const msg = validateField(k, snapshot);
       if (msg) e[k] = msg;
     }
     if (Object.keys(e).length > 0) {
@@ -305,27 +336,27 @@ export function useRegisterFactory() {
 
     setSubmitting(true);
     try {
-      const taxDigits = form.tax_id.replace(/\D/g, '');
+      const taxDigits = snapshot.tax_id.replace(/\D/g, '');
 
       // Upload cert file first (same for both paths)
-      const { url: certUrl } = await mediaApi.upload(form.cert_file!);
+      const { url: certUrl } = await mediaApi.upload(snapshot.cert_file!);
 
       // Guest registration: factory + cert created atomically in one TX
       await register({
         role: 'FT',
-        email: form.email.trim(),
-        phone: form.phone.replace(/\s/g, ''),
-        password: form.password,
-        factory_name: form.factory_name.trim(),
-        factory_type_id: form.factory_type_id,
+        email: snapshot.email.trim(),
+        phone: snapshot.phone.replace(/\s/g, ''),
+        password: snapshot.password,
+        factory_name: snapshot.factory_name.trim(),
+        factory_type_id: snapshot.factory_type_id,
         tax_id: taxDigits,
-        province_id: form.province_id || undefined,
-        category_ids: form.category_ids,
-        sub_category_ids: form.sub_category_ids,
-        cert_id: form.cert_id,
+        province_id: snapshot.province_id || undefined,
+        category_ids: snapshot.category_ids,
+        sub_category_ids: snapshot.sub_category_ids,
+        cert_id: snapshot.cert_id,
         document_url: certUrl,
-        cert_number: form.cert_number.trim() || undefined,
-        cert_expire_date: form.cert_expire_date || undefined,
+        cert_number: snapshot.cert_number.trim() || undefined,
+        cert_expire_date: snapshot.cert_expire_date || undefined,
       } as Parameters<typeof register>[0]);
 
       navigate('/factory', { replace: true });
@@ -365,6 +396,7 @@ export function useRegisterFactory() {
     setField,
     submit,
     blurField,
+    validateAll,
     setFieldRef,
   };
 }
