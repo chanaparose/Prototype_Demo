@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { categoriesApi } from '@/services/api/masterApi';
+import { factoriesApi } from '@/services/api/factoryApi';
+import type { TargetFactory } from '@/pages/rfq/useRFQDraft';
 import type { ISubCategoryResponse } from '@/services/api/types/master.types';
 import { useLbiCategoriesByScope } from '@/hooks/master/useLbiCategoriesByScope';
 import { pickScalarString } from '@/utils/pickScalarString';
@@ -64,6 +66,7 @@ export function RFQCreateWizard() {
   const [acceptSampleTerms, setAcceptSampleTerms] = React.useState(false);
   const [addressMap, setAddressMap] = React.useState<Record<number, string>>({});
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
+  const [allFactories, setAllFactories] = React.useState<TargetFactory[]>([]);
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
 
   React.useEffect(() => {
@@ -80,6 +83,27 @@ export function RFQCreateWizard() {
       setDraft({ source_showcase_id: showcaseId });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load full factory list once so RfqTargetingSelector can filter client-side.
+  React.useEffect(() => {
+    let active = true;
+    void factoriesApi
+      .list()
+      .then((raw) => {
+        if (!active) return;
+        const arr = Array.isArray(raw) ? raw : ((raw as { data?: unknown[] }).data ?? []);
+        setAllFactories(
+          (arr as Record<string, unknown>[])
+            .map((f) => ({
+              id: Number(f.factory_id ?? f.id ?? 0),
+              name: String(f.factory_name ?? f.name ?? ''),
+            }))
+            .filter((f) => f.id > 0 && f.name),
+        );
+      })
+      .catch(() => {/* silently ignore — targeting selector just shows empty results */});
+    return () => { active = false; };
   }, []);
 
   React.useEffect(() => {
@@ -404,6 +428,7 @@ export function RFQCreateWizard() {
               <RfqTargetingSelector
                 targeting={draft.targeting ?? 'all'}
                 targetFactories={draft.target_factories ?? []}
+                allFactories={allFactories}
                 onTargetingChange={(t) =>
                   setDraft({ targeting: t, target_factories: t === 'all' ? [] : draft.target_factories ?? [] })
                 }

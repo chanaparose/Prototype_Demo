@@ -1,59 +1,15 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Building2, Users, Search, X } from 'lucide-react';
-import { factoriesApi } from '@/services/api/factoryApi';
 import type { TargetFactory } from '@/pages/rfq/useRFQDraft';
-
-// ─── Factory search hook (debounced) ─────────────────────────────────────────
-
-function useFactorySearch(query: string) {
-  const [results, setResults] = React.useState<TargetFactory[]>([]);
-  const [loading, setLoading] = React.useState(false);
-
-  React.useEffect(() => {
-    const q = query.trim();
-    if (q.length < 2) {
-      setResults([]);
-      return;
-    }
-    let active = true;
-    const timer = setTimeout(() => {
-      setLoading(true);
-      void factoriesApi
-        .search(q)
-        .then((raw) => {
-          if (!active) return;
-          const arr = Array.isArray(raw) ? raw : ((raw as { data?: unknown[] }).data ?? []);
-          setResults(
-            (arr as Record<string, unknown>[])
-              .slice(0, 8)
-              .map((f) => ({
-                id: Number(f.factory_id ?? f.id ?? 0),
-                name: String(f.factory_name ?? f.name ?? ''),
-              }))
-              .filter((f) => f.id > 0 && f.name),
-          );
-        })
-        .catch(() => {
-          if (active) setResults([]);
-        })
-        .finally(() => {
-          if (active) setLoading(false);
-        });
-    }, 280);
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [query]);
-
-  return { results, loading };
-}
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 type Props = {
   targeting: 'all' | 'specific';
   targetFactories: TargetFactory[];
+  /** Full factory list loaded once on page mount — used for client-side filtering. */
+  allFactories: TargetFactory[];
   onTargetingChange: (t: 'all' | 'specific') => void;
   onFactoriesChange: (factories: TargetFactory[]) => void;
 };
@@ -63,13 +19,42 @@ type Props = {
 export function RfqTargetingSelector({
   targeting,
   targetFactories,
+  allFactories,
   onTargetingChange,
   onFactoriesChange,
 }: Readonly<Props>) {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [showDropdown, setShowDropdown] = React.useState(false);
-  const { results, loading } = useFactorySearch(searchQuery);
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Client-side filter — instant, no debounce needed.
+  const results = React.useMemo<TargetFactory[]>(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 1) return [];
+    return allFactories
+      .filter((f) => f.name.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [searchQuery, allFactories]);
+  const anchorRef = React.useRef<HTMLDivElement>(null);
+  const [dropdownRect, setDropdownRect] = React.useState<DOMRect | null>(null);
+
+  // Recompute position whenever the dropdown opens or window scrolls/resizes.
+  React.useEffect(() => {
+    if (!showDropdown || !anchorRef.current) {
+      setDropdownRect(null);
+      return;
+    }
+    const update = () => {
+      if (anchorRef.current) setDropdownRect(anchorRef.current.getBoundingClientRect());
+    };
+    update();
+    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update, true);
+      window.removeEventListener('resize', update);
+    };
+  }, [showDropdown]);
 
   const addFactory = React.useCallback(
     (f: TargetFactory) => {
@@ -161,7 +146,7 @@ export function RfqTargetingSelector({
           )}
 
           {/* Search input */}
-          <div className='relative'>
+          <div ref={anchorRef}>
             <div className='flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 transition-all focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400/30'>
               <Search size={14} className='shrink-0 text-gray-400' />
               <input
@@ -177,15 +162,23 @@ export function RfqTargetingSelector({
                 placeholder='ค้นหาชื่อโรงงาน…'
                 className='flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-400'
               />
-              {loading && (
-                <span className='inline-block h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-violet-400 border-t-transparent' />
-              )}
             </div>
+          </div>
 
-            {/* Dropdown */}
-            {showDropdown && searchQuery.trim().length >= 2 && (
-              <div className='absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'>
-                {results.length === 0 && !loading ? (
+          {/* Dropdown — rendered via portal to escape overflow:hidden ancestors */}
+          {showDropdown && searchQuery.trim().length >= 1 && dropdownRect &&
+            createPortal(
+              <div
+                style={{
+                  position: 'fixed',
+                  top: dropdownRect.bottom + 4,
+                  left: dropdownRect.left,
+                  width: dropdownRect.width,
+                  zIndex: 9999,
+                }}
+                className='overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'
+              >
+                {results.length === 0 ? (
                   <p className='px-4 py-3 text-[12px] text-gray-400'>ไม่พบโรงงานที่ค้นหา</p>
                 ) : (
                   results.map((f) => {
@@ -211,9 +204,10 @@ export function RfqTargetingSelector({
                     );
                   })
                 )}
-              </div>
-            )}
-          </div>
+              </div>,
+              document.body,
+            )
+          }
 
           {/* Warning when no factories selected */}
           {targetFactories.length === 0 && (
