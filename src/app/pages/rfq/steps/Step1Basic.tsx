@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
+import { mediaApi } from '@/services/api/factoryApi';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Image } from '@/components/ui/image';
 import {
   Select,
   SelectContent,
@@ -33,6 +36,25 @@ export function Step1Basic({
   subCategoriesLoading = false,
   mode = 'PR',
 }: Props) {
+  const [uploading, setUploading] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadOne = async (f: File) => {
+    if (draft.reference_images.length >= 5) return;
+    setUploading(true);
+    try {
+      const res = await mediaApi.upload(f);
+      setDraft({ reference_images: [...draft.reference_images, res.url].slice(0, 5) });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeReference = (index: number) => {
+    setDraft({ reference_images: draft.reference_images.filter((_, i) => i !== index) });
+  };
+
   const descriptionPlaceholder =
     mode === 'MS'
       ? 'ระบุชื่อวัตถุดิบ, เกรด, แหล่งที่มา, ขนาด pack (อย่างน้อย 20 ตัวอักษร) *'
@@ -69,6 +91,67 @@ export function Step1Basic({
           className={`${fieldClass} min-h-[4.5rem] resize-y`}
         />
       </label>
+
+      <div className='space-y-2'>
+        <p className='text-[11px] font-semibold text-brand-navy-deep'>รูป / เอกสารอ้างอิง</p>
+        <Input
+          ref={fileInputRef}
+          type='file'
+          accept='image/*,.pdf'
+          className='hidden'
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void uploadOne(f);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+          }}
+        />
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading || draft.reference_images.length >= 5}
+          className='w-full rounded-xl border border-dashed border-brand-mauve-light/60 bg-brand-lavender-chip/50 px-3 py-3 text-[12px] font-medium text-brand-violet-deep'
+        >
+          {uploading
+            ? 'กำลังอัปโหลด...'
+            : draft.reference_images.length >= 5
+              ? 'ครบ 5 ไฟล์แล้ว'
+              : `เพิ่มไฟล์ (${draft.reference_images.length}/5)`}
+        </Button>
+        {draft.reference_images.length > 0 ? (
+          <div className='grid grid-cols-2 gap-2 sm:grid-cols-3'>
+            {draft.reference_images.map((u, idx) => (
+              <div
+                key={u + idx}
+                className='relative aspect-square overflow-hidden rounded-xl border border-gray-100 bg-gray-100'
+              >
+                {!brokenImages[idx] ? (
+                  <Image
+                    src={u}
+                    alt={`reference-${idx + 1}`}
+                    className='h-full w-full object-cover'
+                    onError={() => setBrokenImages((prev) => ({ ...prev, [idx]: true }))}
+                  />
+                ) : (
+                  <div className='flex h-full w-full items-center justify-center px-2 text-center text-[11px] text-gray-600'>
+                    เอกสารอ้างอิง #{idx + 1}
+                  </div>
+                )}
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => removeReference(idx)}
+                  className='absolute right-1 top-1 h-6 w-6 rounded-full bg-black/60 text-xs leading-none text-white'
+                  aria-label={`ลบไฟล์อ้างอิง ${idx + 1}`}
+                >
+                  ×
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
       <div
         className={`grid gap-2.5 ${showSubCategory ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'}`}
       >
