@@ -25,6 +25,11 @@ import {
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
 import { MobileSearchField } from '@/components/shared/MobileSearchField';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
+import {
+  factoryIdeasTabOrder,
+  factoryIdeasFactoryScopeOrder,
+} from '@/components/features/factory-ideas/factoryIdeasTheme';
 
 const MOBILE_TABS: { id: FactoryIdeasContentType; label: string }[] = [
   { id: 'all',      label: 'ทั้งหมด' },
@@ -240,6 +245,7 @@ export function FactoryIdeasMobile() {
       </div>
 
       <div className='px-4 pt-4'>
+        <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           isFactoryTab ? (
             <div className='grid grid-cols-2 gap-2'>
@@ -267,6 +273,7 @@ export function FactoryIdeasMobile() {
             <p className='text-xs text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
           </div>
         ) : isFactoryTab ? (
+          <TabSwipeContent activeKey={factoryScope} tabOrder={factoryIdeasFactoryScopeOrder}>
           <div className='grid grid-cols-2 md:grid-cols-3 gap-2'>
             {visibleFactories.map((factory) => (
               <article
@@ -319,6 +326,7 @@ export function FactoryIdeasMobile() {
               </article>
             ))}
           </div>
+          </TabSwipeContent>
         ) : selectedType === 'idea' ? (
           <div className='grid grid-cols-1 gap-2'>
             {visibleIdeaItems.map((item) => {
@@ -489,7 +497,7 @@ export function FactoryIdeasMobile() {
             })}
           </div>
         )}
-
+        </TabSwipeContent>
       </div>
     </div>
   );

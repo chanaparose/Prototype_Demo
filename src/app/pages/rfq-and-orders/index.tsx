@@ -5,6 +5,9 @@ import { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks
 import { Button } from '@/components/ui/button';
 import { OrderPanel } from '@/components/features/rfq-and-orders/components/OrderPanel';
 import { RfqPanel } from '@/components/features/rfq-and-orders/components/RfqPanel';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
+
+const RFQ_ORDERS_TAB_ORDER = ['rfq', 'orders'] as const;
 
 export function RfqAndOrders() {
   const {
@@ -92,16 +95,18 @@ export function RfqAndOrders() {
         </div>
 
         <div className='px-4 flex-1'>
-          {primaryTab === 'rfq' ? (
-            <RfqPanel rfqs={rfqs} isMobile />
-          ) : (
-            <OrderPanel
-              orderFilter={orderFilter}
-              setOrderFilter={setOrderFilter}
-              filteredOrders={filteredOrders}
-              orderTagCounts={orderTagCounts}
-            />
-          )}
+          <TabSwipeContent activeKey={primaryTab} tabOrder={RFQ_ORDERS_TAB_ORDER}>
+            {primaryTab === 'rfq' ? (
+              <RfqPanel rfqs={rfqs} isMobile />
+            ) : (
+              <OrderPanel
+                orderFilter={orderFilter}
+                setOrderFilter={setOrderFilter}
+                filteredOrders={filteredOrders}
+                orderTagCounts={orderTagCounts}
+              />
+            )}
+          </TabSwipeContent>
         </div>
       </div>
 

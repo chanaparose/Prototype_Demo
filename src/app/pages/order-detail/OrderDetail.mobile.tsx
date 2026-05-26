@@ -381,7 +381,10 @@ function OrderDetailMobileBody() {
             </div>
           ) : null}
 
-          <div className='flex border-b border-gray-100 bg-white -mx-4 px-0'>
+          <div
+            data-tour='order-tabs'
+            className='flex border-b border-gray-100 bg-white -mx-4 px-0'
+          >
             <Button
               variant='unstyled'
               type='button'
@@ -396,7 +399,6 @@ function OrderDetailMobileBody() {
               ภาพรวม
             </Button>
             <Button
-              data-tour='order-tabs'
               variant='unstyled'
               type='button'
               onClick={() => setActiveSection('production')}

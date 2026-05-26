@@ -25,6 +25,10 @@ import {
   findTarget,
 } from '@/components/features/explore/product-tour/TourMockScreens';
 import type { TourStepDef } from '@/components/features/explore/product-tour/tourTypes';
+import {
+  getTourTargetRect,
+  isTourTargetMostlyVisible,
+} from '@/components/features/explore/product-tour/tourTargetRect';
 
 const TOUR_KEY = 'tryly_tour_seen_v1';
 
@@ -103,17 +107,70 @@ export function ProductTour() {
       return;
     }
 
-    const t = setTimeout(() => {
+    let cancelled = false;
+    let rafId: ReturnType<typeof requestAnimationFrame> | null = null;
+    let innerTimer: ReturnType<typeof setTimeout> | null = null;
+    let touchFollowUpTimer: ReturnType<typeof setTimeout> | null = null;
+    let vvCleanup: (() => void) | null = null;
+    const isTouchDevice =
+      typeof window !== 'undefined' &&
+      ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
+    const outerTimer = setTimeout(() => {
+      if (cancelled) return;
       const el = findTarget(def);
       if (!el) {
         setTargetRect(null);
         return;
       }
-      // Use non-animated scroll so the measured rect matches final position.
-      el.scrollIntoView({ behavior: 'auto', block: 'center' });
-      setTimeout(() => setTargetRect(el.getBoundingClientRect()), 120);
-    }, 700);
-    return () => clearTimeout(t);
+      if (!isTourTargetMostlyVisible(el)) {
+        el.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+      }
+
+      const measure = () => {
+        if (cancelled) return;
+        if (rafId != null) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (cancelled) return;
+            setTargetRect(getTourTargetRect(el));
+          });
+        });
+      };
+
+      innerTimer = setTimeout(measure, isTouchDevice ? 450 : 280);
+      if (isTouchDevice) {
+        touchFollowUpTimer = window.setTimeout(measure, 850);
+      }
+
+      const vv = window.visualViewport;
+      const onViewportChange = () => measure();
+      if (vv) {
+        vv.addEventListener('resize', onViewportChange);
+        vv.addEventListener('scroll', onViewportChange);
+        vvCleanup = () => {
+          vv.removeEventListener('resize', onViewportChange);
+          vv.removeEventListener('scroll', onViewportChange);
+        };
+      }
+      window.addEventListener('resize', onViewportChange);
+      window.addEventListener('scroll', onViewportChange, { passive: true });
+      const prevVvCleanup = vvCleanup;
+      vvCleanup = () => {
+        prevVvCleanup?.();
+        window.removeEventListener('resize', onViewportChange);
+        window.removeEventListener('scroll', onViewportChange);
+      };
+    }, isTouchDevice ? 800 : 700);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(outerTimer);
+      if (innerTimer != null) clearTimeout(innerTimer);
+      if (touchFollowUpTimer != null) clearTimeout(touchFollowUpTimer);
+      if (rafId != null) cancelAnimationFrame(rafId);
+      vvCleanup?.();
+    };
   }, [open, step, location.pathname, location.search]);
 
   const isPublicRoute = useCallback((path: string) => {
@@ -208,6 +265,7 @@ export function ProductTour() {
         rect={targetRect}
         color={def.badgeColor}
         radius={def.spotlightRadius ?? 12}
+        pad={def.spotlightPad ?? 10}
         onClickOutside={handleClose}
       />
       <TourCard

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Outlet, useNavigate, useLocation, Link, Navigate } from 'react-router';
+import { useNavigate, useLocation, Link, Navigate } from 'react-router';
+import { AnimatedOutlet } from '@/components/layout/AnimatedOutlet';
 import {
   Home,
   ClipboardList,
@@ -7,6 +8,7 @@ import {
   User,
   Lightbulb,
   Bell,
+  Heart,
   Wallet,
   LayoutDashboard,
   Images,
@@ -27,6 +29,63 @@ import { Image } from '@/components/ui/image';
 import { useMobileBottomNavHide } from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
+import { useFavorites } from '@/hooks/useFavorites';
+
+type HeaderIconTone = 'purple' | 'indigo' | 'rose';
+
+const headerIconToneClass: Record<HeaderIconTone, string> = {
+  purple:
+    'border-violet-100/90 bg-gradient-to-b from-violet-50/90 to-white text-brand-violet-deep hover:border-violet-200 hover:shadow-[0_2px_10px_rgba(109,40,217,0.14)]',
+  indigo:
+    'border-indigo-100/90 bg-gradient-to-b from-indigo-50/90 to-white text-brand-indigo hover:border-indigo-200 hover:shadow-[0_2px_10px_rgba(79,70,229,0.14)]',
+  rose: 'border-rose-100/90 bg-gradient-to-b from-rose-50/90 to-white text-rose-500 hover:border-rose-200 hover:shadow-[0_2px_10px_rgba(244,63,94,0.12)]',
+};
+
+function HeaderIconLink({
+  to,
+  title,
+  ariaLabel,
+  tone,
+  active,
+  badge,
+  children,
+}: {
+  to: string;
+  title: string;
+  ariaLabel: string;
+  tone: HeaderIconTone;
+  active?: boolean;
+  badge?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      title={title}
+      aria-label={ariaLabel}
+      aria-current={active ? 'page' : undefined}
+      className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all active:scale-95 ${headerIconToneClass[tone]} ${
+        active
+          ? tone === 'indigo'
+            ? 'ring-2 ring-offset-1 ring-indigo-200'
+            : tone === 'rose'
+              ? 'ring-2 ring-offset-1 ring-rose-200'
+              : 'ring-2 ring-offset-1 ring-violet-200'
+          : ''
+      }`}
+    >
+      {children}
+      {badge != null && badge > 0 ? (
+        <span
+          className='absolute -right-0.5 -top-0.5 flex h-[15px] min-w-[15px] items-center justify-center rounded-full border-2 border-white px-0.5 text-[8px] font-bold tabular-nums text-white'
+          style={{ background: 'var(--brand-orange)' }}
+        >
+          {badge > 99 ? '99+' : badge}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
 
 // ─── Customer bottom nav (5 items) ─────────────────────────────────────────
 const customerNavLinks = [
@@ -96,6 +155,14 @@ export function Layout() {
   const factoryApproved = factoryVerifyStatus(user) === 'AP';
   const bottomNavHidden = useMobileBottomNavHide();
   const unreadMessages = useConversationUnreadCount();
+  const { likedIds } = useFavorites();
+  const showCustomerFavorites = !isFactory && !isAdminRole;
+  const favoritesHref = isAuthenticated
+    ? '/profile/favorites'
+    : '/login?redirect=/profile/favorites';
+  const onFavoritesPage = location.pathname === '/profile/favorites';
+  const onNotificationsPage = location.pathname === '/notifications';
+  const headerIconTone: HeaderIconTone = isFactory ? 'indigo' : 'purple';
 
   if (isAdminRole && !location.pathname.startsWith('/admin')) {
     return <Navigate to='/admin/dashboard' replace />;
@@ -137,46 +204,53 @@ export function Layout() {
                 <Image
                   src='/assets/tryly-logo.png'
                   alt='Tryly'
-                  className='h-14 w-auto max-w-[9.5rem] object-contain'
+                  className='h-16 w-auto max-w-[9.5rem] object-contain'
                 />
               </Link>
 
               {/* Right actions */}
-              <div className='flex items-center gap-1.5'>
-                {isFactory && (
+              <div className='flex items-center gap-2'>
+                {isFactory ? (
                   <Link
                     to='/factory/wallet'
-                    className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors border border-indigo-100/80'
+                    className='flex max-w-[8.5rem] items-center gap-1.5 rounded-full border border-indigo-100/90 bg-gradient-to-b from-indigo-50/90 to-white py-1 pl-1 pr-2.5 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all hover:border-indigo-200 active:scale-[0.98]'
                     title='กระเป๋าเงิน'
                   >
-                    <Wallet size={17} style={{ color: 'var(--brand-indigo)' }} />
-                    <span
-                      className='text-xs font-bold tabular-nums max-w-[4.5rem] truncate'
-                      style={{ color: '#0F172A' }}
-                    >
+                    <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-indigo-100/80 bg-white text-brand-indigo'>
+                      <Wallet size={16} strokeWidth={2.2} />
+                    </span>
+                    <span className='truncate text-xs font-bold tabular-nums text-slate-900'>
                       {formatCurrencyNoDecimals(data.currentUser?.walletBalance ?? 0)}
                     </span>
                   </Link>
-                )}
+                ) : null}
 
-                {/* Bell */}
-                <Link
+                {showCustomerFavorites ? (
+                  <HeaderIconLink
+                    to={favoritesHref}
+                    title='รายการโปรด'
+                    ariaLabel='รายการโปรด'
+                    tone='rose'
+                    active={onFavoritesPage}
+                  >
+                    <Heart
+                      size={15}
+                      strokeWidth={2}
+                      className={likedIds.size > 0 ? 'fill-current' : ''}
+                    />
+                  </HeaderIconLink>
+                ) : null}
+
+                <HeaderIconLink
                   to='/notifications'
-                  className='relative w-9 h-9 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors'
+                  title='การแจ้งเตือน'
+                  ariaLabel='การแจ้งเตือน'
+                  tone={headerIconTone}
+                  active={onNotificationsPage}
+                  badge={unreadNotifications}
                 >
-                  <Bell
-                    size={19}
-                    style={{ color: isFactory ? 'var(--brand-indigo)' : 'var(--brand-purple)' }}
-                  />
-                  {unreadNotifications > 0 && (
-                    <span
-                      className='absolute top-0.5 right-0.5 min-w-[16px] h-[16px] px-0.5 rounded-full text-white flex items-center justify-center text-[9px] border-2 border-white tabular-nums'
-                      style={{ background: 'var(--brand-orange)', fontWeight: 700 }}
-                    >
-                      {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                    </span>
-                  )}
-                </Link>
+                  <Bell size={15} strokeWidth={2} />
+                </HeaderIconLink>
               </div>
             </div>
           </div>
@@ -184,8 +258,10 @@ export function Layout() {
 
         {/* ── Main content ────────────────────────────────────────────────── */}
         <main className='flex-1 min-w-0 overflow-x-hidden pb-16 lg:pb-0'>
-          <div className='max-w-7xl mx-auto'>
-            <Outlet />
+          {/* `relative` gives AnimatePresence a positioned ancestor so the
+              exiting element doesn't escape the content column. */}
+          <div className='relative max-w-7xl mx-auto'>
+            <AnimatedOutlet />
           </div>
         </main>
       </div>

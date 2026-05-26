@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router';
+import { NavLink, useNavigate, useLocation } from 'react-router';
+import { AnimatedOutlet } from '@/components/layout/AnimatedOutlet';
 import {
   LayoutDashboard,
   Factory,
@@ -257,7 +258,7 @@ export function AdminLayout() {
 
         <main className='flex-1 min-w-0 overflow-x-hidden'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 py-8'>
-            <Outlet />
+            <AnimatedOutlet />
           </div>
         </main>
       </div>

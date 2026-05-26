@@ -81,6 +81,9 @@ export const router = createBrowserRouter([
           { path: 'factory-ideas/ideas/:id', Component: IdeaDetail },
           { path: 'orders', Component: RfqAndOrders },
           { path: 'messages', Component: Messages },
+          // create-rfq is intentionally outside AuthGuard — guests can browse the
+          // form freely; the submit button handles the auth gate inline.
+          { path: 'create-rfq', Component: CreateRfq },
           {
             Component: AuthGuard,
             children: [
@@ -91,7 +94,6 @@ export const router = createBrowserRouter([
               { path: 'profile/transactions', Component: TransactionHistoryPage },
               { path: 'profile/reviews', Component: MyReviewsPage },
               { path: 'profile/favorites', Component: FavoriteShowcasesPage },
-              { path: 'create-rfq', Component: CreateRfq },
               { path: 'notifications', Component: Notifications },
               { path: 'quotations/:id', Component: QuoteDetailCustomer },
               { path: 'rfqs/:id', Component: RFQDetail },

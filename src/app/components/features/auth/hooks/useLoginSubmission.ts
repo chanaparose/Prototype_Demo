@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useAuth } from '@/stores/useAuthStore';
 import type {
   AuthLoginFormValues,
@@ -7,12 +7,22 @@ import type {
 } from '@/domain/auth/schemas/authForm.schema';
 import { getErrorMessage } from '@/lib/apiError';
 
-function navigateByRole(navigate: ReturnType<typeof useNavigate>, role?: string) {
+function navigateAfterLogin(
+  navigate: ReturnType<typeof useNavigate>,
+  role?: string,
+  redirectTo?: string,
+) {
+  if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+    navigate(redirectTo, { replace: true });
+    return;
+  }
   navigate(String(role ?? '').toUpperCase() === 'FT' ? '/factory' : '/', { replace: true });
 }
 
 export function useLoginSubmission() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') ?? undefined;
   const { login, register } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -23,7 +33,7 @@ export function useLoginSubmission() {
       setError('');
       try {
         const session = await login(values);
-        navigateByRole(navigate, session?.user?.role);
+        navigateAfterLogin(navigate, session?.user?.role, redirectTo);
         return true;
       } catch (err) {
         setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'));
@@ -32,7 +42,7 @@ export function useLoginSubmission() {
         setIsSubmitting(false);
       }
     },
-    [login, navigate],
+    [login, navigate, redirectTo],
   );
 
   const submitRegister = useCallback(
@@ -48,7 +58,7 @@ export function useLoginSubmission() {
           first_name: values.first_name,
           last_name: values.last_name,
         });
-        navigateByRole(navigate, session?.user?.role);
+        navigateAfterLogin(navigate, session?.user?.role, redirectTo);
         return true;
       } catch (err) {
         setError(getErrorMessage(err, 'สมัครสมาชิกไม่สำเร็จ'));
@@ -57,7 +67,7 @@ export function useLoginSubmission() {
         setIsSubmitting(false);
       }
     },
-    [register, navigate],
+    [register, navigate, redirectTo],
   );
 
   const clearError = useCallback(() => setError(''), []);

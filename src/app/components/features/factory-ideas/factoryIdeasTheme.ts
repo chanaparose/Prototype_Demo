@@ -32,6 +32,12 @@ export const factoryIdeasContentTypes: { id: FactoryIdeasContentType; label: str
 /** Tabs rendered on /factory-ideas (excludes promotion/PM) */
 export const factoryIdeasVisibleContentTypes = factoryIdeasContentTypes;
 
+/** Tab order for horizontal swipe animation on /factory-ideas */
+export const factoryIdeasTabOrder: FactoryIdeasContentType[] =
+  factoryIdeasVisibleContentTypes.map((t) => t.id);
+
+export const factoryIdeasFactoryScopeOrder = ['all', 'PD', 'MT'] as const;
+
 export const factoryIdeasContentTypeLabel: Record<
   Exclude<FactoryIdeasContentType, 'all'>,
   string

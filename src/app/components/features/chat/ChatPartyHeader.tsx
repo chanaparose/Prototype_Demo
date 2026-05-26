@@ -8,11 +8,21 @@ import { Avatar } from '@/components/ui/avatar';
 interface Props {
   view: CounterpartyView;
   density?: 'row' | 'header';
+  /** ข้อความล่าสุด (แทน view.subtitle เช่น specialization) */
+  previewLine?: string;
+  previewEmphasis?: 'muted' | 'unread' | 'quote';
   trailing?: React.ReactNode;
   onClick?: () => void;
 }
 
-export function ChatPartyHeader({ view, density = 'row', trailing, onClick }: Props) {
+export function ChatPartyHeader({
+  view,
+  density = 'row',
+  previewLine,
+  previewEmphasis = 'muted',
+  trailing,
+  onClick,
+}: Props) {
   const size = density === 'header' ? 40 : 44;
   const frameClass = density === 'header' ? 'h-10 w-10' : 'h-11 w-11';
   return (
@@ -39,7 +49,19 @@ export function ChatPartyHeader({ view, density = 'row', trailing, onClick }: Pr
           </p>
           {view.verified ? <BadgeCheck size={14} className='text-brand-purple' /> : null}
         </div>
-        {view.subtitle ? <p className='truncate text-xs text-gray-500'>{view.subtitle}</p> : null}
+        {previewLine ? (
+          <p
+            className={`truncate text-xs leading-snug ${
+              previewEmphasis === 'quote'
+                ? 'font-medium text-[var(--brand-orange-deep)]'
+                : previewEmphasis === 'unread'
+                  ? 'font-medium text-[var(--neutral-text)]'
+                  : 'text-gray-500'
+            }`}
+          >
+            {previewLine}
+          </p>
+        ) : null}
       </div>
       {trailing}
     </Button>

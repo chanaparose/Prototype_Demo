@@ -2,12 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
-  Search,
   BadgeCheck,
   Sparkles,
   LayoutGrid,
   List,
-  X,
   Loader2,
   MapPin,
   Star,
@@ -18,10 +16,12 @@ import {
   factoryIdeasContentTypeBadge as contentTypeBadge,
   factoryIdeasContentTypeLabel as contentTypeLabel,
   factoryIdeasVisibleContentTypes as CONTENT_TYPES,
+  factoryIdeasTabOrder,
 } from '@/components/features/factory-ideas/factoryIdeasTheme';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { ShowcaseHeartButton } from '@/components/shared/ShowcaseHeartButton';
-import { Input } from '@/components/ui/input';
+import { MobileSearchField } from '@/components/shared/MobileSearchField';
 
 export function FactoryIdeasDesktop() {
   const navigate = useNavigate();
@@ -133,27 +133,12 @@ export function FactoryIdeasDesktop() {
               categoryOptionSelected={categoryOptionSelected}
             />
 
-            <div className='flex w-64 items-center gap-2 rounded-xl border border-[var(--neutral-border)] bg-[var(--neutral-warm-surface)] px-3.5 py-2.5 transition-all'>
-              <Search size={14} className='text-gray-400 shrink-0' />
-              <Input
-                type='text'
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder='ค้นหาไอเดีย, สินค้า, โรงงาน…'
-                className='flex-1 bg-transparent text-[13px] text-[var(--brand-navy)] outline-none placeholder-gray-400'
-              />
-              {searchText && (
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => setSearchText('')}
-                  aria-label='ล้างข้อความค้นหา'
-                  className='text-gray-400 hover:text-gray-600'
-                >
-                  <X size={12} />
-                </Button>
-              )}
-            </div>
+            <MobileSearchField
+              className='w-64 shrink-0'
+              value={searchText}
+              onChange={setSearchText}
+              placeholder='ค้นหาไอเดีย สินค้า หรือชื่อโรงงาน…'
+            />
 
             <div className='flex-1' />
 
@@ -188,6 +173,7 @@ export function FactoryIdeasDesktop() {
       </div>
 
       <div className='px-8 py-6'>
+        <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2'>
             <Loader2 className='h-8 w-8 animate-spin text-[var(--brand-mauve)]' />
@@ -630,6 +616,7 @@ export function FactoryIdeasDesktop() {
             </div>
           </div>
         )}
+        </TabSwipeContent>
       </div>
     </div>
   );
