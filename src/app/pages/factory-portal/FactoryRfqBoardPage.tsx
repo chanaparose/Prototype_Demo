@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Check,
   ClipboardList,
+  Crosshair,
   EyeOff,
 } from 'lucide-react';
 import { factoryRfqsApi } from '@/services/api/rfqApi';
@@ -23,7 +24,8 @@ import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPage
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-type TabKey = 'all' | 'open' | 'quoted' | 'closing' | 'pr' | 'ps' | 'ms' | 'mr';
+type TabKey = 'open' | 'quoted' | 'closing' | 'direct' | 'pr' | 'ps' | 'ms' | 'mr';
+type ReachFilter = '' | 'direct' | 'broadcast';
 type SortKey = 'new' | 'deadline' | 'budget' | 'qty';
 
 type DropdownOption = { value: string; label: string };
@@ -129,12 +131,17 @@ function tabCounts(rows: FactoryBoardRow[]) {
       r.daysLeft >= 0 &&
       r.daysLeft <= 3,
   ).length;
-  return { all, open, quoted, closing };
+  /** ส่งตรง + ยังไม่เสนอ BOQ — เสนอแล้วไปแท็บ quoted */
+  const direct = rows.filter((r) => r.isTargeted && !r.hasMyQuote && r.status === 'OP').length;
+  return { all, open, quoted, closing, direct };
+}
+
+function isDirectPending(row: FactoryBoardRow): boolean {
+  return Boolean(row.isTargeted && !row.hasMyQuote && row.status === 'OP');
 }
 
 function applyTab(rows: FactoryBoardRow[], tab: TabKey): FactoryBoardRow[] {
-  // "ทั้งหมด" = ยังไม่เสนอ (OP) + เสนอแล้ว (non-AC) → hook กรอง AC ออกแล้ว
-  if (tab === 'all') return rows;
+  if (tab === 'direct') return rows.filter(isDirectPending);
   // ยังไม่เสนอ: เฉพาะ OP ที่ไม่มีการส่ง quotation
   if (tab === 'open') return rows.filter((r) => !r.hasMyQuote && r.status === 'OP');
 
@@ -176,6 +183,7 @@ function applyFilters(
   catId: string,
   rfqSt: string,
   shipId: string,
+  reach: ReachFilter,
 ): FactoryBoardRow[] {
   let out = rows;
   const qq = q.trim().toLowerCase();
@@ -199,6 +207,8 @@ function applyFilters(
     const sid = Number(shipId);
     out = out.filter((r) => r.shippingMethodId === sid);
   }
+  if (reach === 'direct') out = out.filter((r) => r.isTargeted);
+  if (reach === 'broadcast') out = out.filter((r) => !r.isTargeted);
   return out;
 }
 
@@ -247,6 +257,7 @@ export function FactoryRfqBoardPage() {
   const [filterCat, setFilterCat] = useState('');
   const [filterRfqStatus, setFilterRfqStatus] = useState('');
   const [filterShip, setFilterShip] = useState('');
+  const [filterReach, setFilterReach] = useState<ReachFilter>('');
   const [sort, setSort] = useState<SortKey>('new');
   const [showDismissed, setShowDismissed] = useState(false);
   const [undismissBusy, setUndismissBusy] = useState<string | null>(null);
@@ -320,19 +331,25 @@ export function FactoryRfqBoardPage() {
 
   const pipeline = useMemo(() => {
     const t = applyTab(rows, tab);
-    const f = applyFilters(t, search, filterCat, filterRfqStatus, filterShip);
+    const reach: ReachFilter = tab === 'direct' ? '' : filterReach;
+    const f = applyFilters(t, search, filterCat, filterRfqStatus, filterShip, reach);
     return sortRows(f, sort);
-  }, [rows, tab, search, filterCat, filterRfqStatus, filterShip, sort]);
+  }, [rows, tab, search, filterCat, filterRfqStatus, filterShip, filterReach, sort]);
 
   const noFactoryCategories = fid != null && factoryCategoryIds.length === 0;
   const hasFilters =
-    search.trim() !== '' || filterCat !== '' || filterRfqStatus !== '' || filterShip !== '';
+    search.trim() !== '' ||
+    filterCat !== '' ||
+    filterRfqStatus !== '' ||
+    filterShip !== '' ||
+    (tab !== 'direct' && filterReach !== '');
 
   const clearFilters = () => {
     setSearch('');
     setFilterCat('');
     setFilterRfqStatus('');
     setFilterShip('');
+    setFilterReach('');
   };
 
   const toggleDismissed = () => {
@@ -360,10 +377,10 @@ export function FactoryRfqBoardPage() {
     [rows],
   );
 
-  const tabDefs: { key: TabKey; label: string; count: number; warn?: boolean }[] = [
+  const tabDefs: { key: TabKey; label: string; count: number; warn?: boolean; icon?: boolean }[] = [
+    { key: 'direct', label: 'ส่งถึงคุณโดยตรง', count: counts.direct, icon: true },
     { key: 'open', label: 'ยังไม่ได้เสนอ', count: counts.open },
     { key: 'quoted', label: 'ติดตาม BOQ ที่เสนอ', count: counts.quoted },
-    { key: 'all', label: 'ทั้งหมด', count: counts.all },
   ];
   const kindTabs: {
     key: Extract<TabKey, 'pr' | 'ps' | 'ms' | 'mr'>;
@@ -548,6 +565,7 @@ export function FactoryRfqBoardPage() {
                       boxShadow: on ? '0 2px 8px rgba(227,136,68,0.35)' : 'none',
                     }}
                   >
+                    {t.icon ? <Crosshair size={14} className='shrink-0' /> : null}
                     {t.label}
                     <span className='text-[11px] opacity-80'>({t.count})</span>
                     {t.warn && t.key === 'closing' ? ' ⚠' : ''}
@@ -602,6 +620,19 @@ export function FactoryRfqBoardPage() {
               <span className='inline-flex items-center gap-1 text-xs text-gray-500 shrink-0 sm:hidden'>
                 <SlidersHorizontal size={14} /> กรอง
               </span>
+              {tab !== 'direct' ? (
+                <FilterDropdown
+                  label='ช่องทาง RFQ'
+                  value={filterReach}
+                  onChange={(v) => setFilterReach(v as ReachFilter)}
+                  options={[
+                    { value: '', label: 'ทุกช่องทาง' },
+                    { value: 'direct', label: 'ส่งถึงคุณโดยตรง' },
+                    { value: 'broadcast', label: 'ประกาศทั่วไป (หมวดหมู่)' },
+                  ]}
+                  className='shrink-0 min-w-[12rem]'
+                />
+              ) : null}
               <FilterDropdown
                 label='หมวดหมู่'
                 value={filterCat}
@@ -692,6 +723,26 @@ export function FactoryRfqBoardPage() {
                     วิธีจัดส่ง ✕
                   </Button>
                 ) : null}
+                {tab !== 'direct' && filterReach === 'direct' ? (
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => setFilterReach('')}
+                    className='rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] text-amber-800'
+                  >
+                    ส่งถึงคุณโดยตรง ✕
+                  </Button>
+                ) : null}
+                {tab !== 'direct' && filterReach === 'broadcast' ? (
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => setFilterReach('')}
+                    className='rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-600'
+                  >
+                    ประกาศทั่วไป ✕
+                  </Button>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -741,14 +792,18 @@ export function FactoryRfqBoardPage() {
             <div className='rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
               <div className='text-5xl'>🔍</div>
               <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
-                {rows.length === 0
-                  ? 'ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ'
-                  : 'ไม่พบ RFQ ตามเงื่อนไข'}
+                {tab === 'direct'
+                  ? 'ยังไม่มี RFQ ที่ส่งถึงคุณโดยตรง'
+                  : rows.length === 0
+                    ? 'ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ'
+                    : 'ไม่พบ RFQ ตามเงื่อนไข'}
               </p>
               <p className='text-sm text-gray-400'>
-                {rows.length === 0
-                  ? 'ระบบจะแสดงรายการใหม่ที่ตรงกับหมวดหมู่ทันทีเมื่อมี RFQ เข้า'
-                  : 'ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง'}
+                {tab === 'direct'
+                  ? 'ลูกค้าเลือกส่งคำขอมาที่โรงงานของคุณโดยเฉพาะ — รายการจะปรากฏที่นี่'
+                  : rows.length === 0
+                    ? 'ระบบจะแสดงรายการใหม่ที่ตรงกับหมวดหมู่ทันทีเมื่อมี RFQ เข้า'
+                    : 'ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง'}
               </p>
               {hasFilters ? (
                 <Button

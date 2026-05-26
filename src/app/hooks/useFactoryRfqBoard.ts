@@ -92,6 +92,10 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
     const myQuotedPriceRaw = Number(inner.my_quoted_price ?? row.my_quoted_price ?? NaN);
     const myQuotedPrice = hasMyQuote && Number.isFinite(myQuotedPriceRaw) ? myQuotedPriceRaw : null;
 
+    const targeting = pickScalarString(inner.targeting, row.targeting).toLowerCase();
+    const isTargeted =
+      Boolean(inner.is_targeted ?? row.is_targeted) || targeting === 'specific';
+
     bases.push({
       id,
       title,
@@ -110,6 +114,7 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
       myQuotedPrice,
       myQuoteStatus,
       hasMyQuote,
+      isTargeted,
       categoryId: Number.isFinite(categoryId) && categoryId > 0 ? categoryId : 0,
       shippingMethodId,
       createdAtMs: Number.isFinite(createdAtMs) ? createdAtMs : 0,
