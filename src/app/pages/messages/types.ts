@@ -17,6 +17,15 @@ export function unreadForViewer(conv: IConversationResponse, role: 'CT' | 'FT') 
   return role === 'CT' ? conv.unread_customer : conv.unread_factory;
 }
 
+/** Unread for the signed-in user (handles viewer_unread + party counters). */
+export function resolveUnreadCount(conv: IConversationResponse, currentUserId: number): number {
+  if (conv.viewer_unread != null && conv.viewer_unread > 0) {
+    return conv.viewer_unread;
+  }
+  const role = conv.viewer_role ?? (conv.customer_id === currentUserId ? 'CT' : 'FT');
+  return unreadForViewer(conv, role);
+}
+
 /** LINE-style list time: HH:mm today, เมื่อวาน, or short date */
 export function formatConversationListTime(iso: string): string {
   if (!iso || !String(iso).trim()) return '';

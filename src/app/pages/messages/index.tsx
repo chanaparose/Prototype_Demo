@@ -19,9 +19,11 @@ export function Messages() {
     setSelectedId(id);
   }, []);
 
+  // Desktop split view: pre-select first thread (marks read in cache). Mobile list only — no auto-select.
   React.useEffect(() => {
+    if (!isDesktop) return;
     if (!selectedId && items.length > 0) handleSelectId(items[0].id);
-  }, [items, selectedId, handleSelectId]);
+  }, [isDesktop, items, selectedId, handleSelectId]);
 
   React.useEffect(() => {
     if (selectedId && items.length > 0 && !items.some((c) => c.id === selectedId)) {

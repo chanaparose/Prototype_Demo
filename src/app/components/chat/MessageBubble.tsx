@@ -218,7 +218,7 @@ function MessageTimeMeta({ msg, isMine }: { msg: RoomMessage; isMine: boolean })
       {msg.status === 'sending' ? (
         <SendingSpinner color='var(--neutral-placeholder)' />
       ) : null}
-      {isMine && msg.status === 'ok' && msg.is_read ? <span>Read </span> : null}
+     
       <span>{msg.display_time}</span>
       {msg.status === 'error' ? <span className='text-red-500'>!</span> : null}
       {isMine && msg.status === 'ok' ? (

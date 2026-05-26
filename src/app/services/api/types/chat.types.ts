@@ -20,6 +20,8 @@ export interface IConversationResponse {
   last_message: string;
   unread_customer: number;
   unread_factory: number;
+  /** When API returns a single viewer-scoped unread without splitting by party */
+  viewer_unread?: number;
   has_quote: boolean;
   updated_at: string;
   customer: ICustomerPartyInfoResponse;
