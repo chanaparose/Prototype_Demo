@@ -378,11 +378,11 @@ function RfqChatCard({
             className={cn(
               'flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[13px] font-bold text-white',
               'disabled:cursor-not-allowed disabled:opacity-40',
-              canOpen && 'hover:brightness-105 active:scale-[0.98]',
+              canOpen && 'hover:brightness-[1.02] active:scale-[0.995]',
             )}
             style={{
               background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-              boxShadow: '0 4px 14px rgba(109,40,217,0.38)',
+              boxShadow: '0 2px 8px rgba(109,40,217,0.22)',
             }}
           >
             {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'}
@@ -451,7 +451,7 @@ function QuotationChatCard({
         className={cn(
           CHAT_CARD_SHELL,
           'disabled:cursor-default disabled:opacity-90',
-          !disabled && 'hover:-translate-y-0.5 active:scale-[0.98]',
+          !disabled && 'hover:-translate-y-0.5 active:scale-[0.995]',
         )}
         aria-label='ดูรายละเอียดใบเสนอราคา'
         style={{
@@ -555,7 +555,7 @@ function QuotationChatCard({
               className='flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white'
               style={{
                 background: 'linear-gradient(135deg, #4338ca 0%, #6366f1 100%)',
-                boxShadow: '0 4px 14px rgba(67,56,202,0.36)',
+                boxShadow: '0 2px 8px rgba(67,56,202,0.22)',
               }}
             >
               <span>ดูรายละเอียด</span>
