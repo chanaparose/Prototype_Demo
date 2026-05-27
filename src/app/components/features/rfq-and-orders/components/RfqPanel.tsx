@@ -28,7 +28,7 @@ export function RfqPanel({
   return (
     <div className={isMobile ? '' : 'px-4 pb-4 pt-2'}>
       <div
-        className={`mb-3 flex items-center justify-between ${isDesktop ? 'min-h-[56px] rounded-xl border border-[rgba(196,164,132,0.4)] bg-[#F9F8FC] px-3 py-2' : ''}`}
+        className={`mb-3 p-[5px] flex items-center justify-between ${isDesktop ? 'min-h-[56px] rounded-xl border border-[rgba(196,164,132,0.4)] bg-[#F9F8FC] px-3 py-2' : ''}`}
       >
         <div className='flex items-center gap-2.5 flex-wrap'>
           <h3 className='text-sm font-bold text-[var(--brand-navy-deep)]'>กำลังดำเนินการ</h3>
@@ -44,16 +44,16 @@ export function RfqPanel({
         </div>
         {historyRfqs.length > 0 ? (
           <button
-            type='button'
-            onClick={() => setHistoryOpen(true)}
-            aria-label='เปิดประวัติใบขอราคา'
-            className='relative inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--brand-lavender-muted)] bg-white text-[var(--brand-violet-deep)] transition-colors hover:bg-[var(--brand-lavender)]/40'
-          >
-            <History size={15} />
-            <span className='absolute -right-1 -top-1 rounded-full bg-[var(--brand-violet-soft)] px-1 py-0.5 text-[9px] font-bold leading-none text-[var(--brand-violet-deep)]'>
-              {historyRfqs.length}
-            </span>
-          </button>
+          type='button'
+          onClick={() => setHistoryOpen(true)}
+          aria-label='เปิดประวัติใบขอราคา'
+          className='relative inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--brand-lavender-muted)] bg-white text-[var(--brand-violet-deep)] transition-colors hover:bg-[var(--brand-lavender)]/40'
+        >
+          <History size={15} />
+          <span className='absolute -top-1.5 -right-1.5 rounded-full bg-[var(--brand-violet-soft)] px-1 py-0.5 text-[9px] font-bold leading-none text-[var(--brand-violet-deep)] ring-2 ring-white'>
+            {historyRfqs.length}
+          </span>
+        </button>
         ) : null}
       </div>
 
