@@ -297,7 +297,7 @@ function TextChatBubble({
 }
 
 const CHAT_CARD_SHELL =
-  'relative w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-white/70 bg-[linear-gradient(155deg,rgba(255,255,255,0.92),rgba(248,245,255,0.86))] text-left shadow-[0_18px_42px_rgba(46,34,82,0.18),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl transition-all';
+  'relative w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-white/70 bg-[linear-gradient(155deg,rgba(255,255,255,0.92),rgba(248,245,255,0.86))] text-left backdrop-blur-xl transition-all';
 
 function RfqChatCard({
   rfqId,
@@ -313,13 +313,18 @@ function RfqChatCard({
   const canOpen = Number.isFinite(rfqId) && rfqId > 0;
   return (
     <div className='flex justify-center px-1'>
-      <article className={CHAT_CARD_SHELL}>
+      <article
+        className={cn(
+          CHAT_CARD_SHELL,
+          'max-w-[min(100%,304px)] border-violet-200/80',
+          canOpen &&
+            'hover:-translate-y-0.5 active:scale-[0.995]',
+        )}
+      >
         <div
           className='pointer-events-none absolute inset-0 rounded-2xl'
           style={{
-            border: '1px solid rgba(255,255,255,0.55)',
-            boxShadow:
-              'inset 0 0 0 1px rgba(162,56,255,0.08), inset 0 16px 34px rgba(255,255,255,0.22)',
+            border: '1px solid rgba(139,92,246,0.24)',
           }}
         />
         <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
@@ -330,29 +335,28 @@ function RfqChatCard({
               'linear-gradient(90deg, var(--brand-mauve) 0%, var(--brand-purple) 55%, var(--brand-violet-soft) 100%)',
           }}
         />
-        <div className='relative z-[1] p-4'>
-          <div className='mb-3 flex items-start gap-3'>
+        <div className='relative z-[1] p-3.5'>
+          <div className='mb-2.5 flex items-start gap-2'>
             <span
-              className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
+              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl'
               style={{
                 background:
                   'linear-gradient(145deg, color-mix(in srgb, var(--brand-mauve) 24%, white), color-mix(in srgb, var(--brand-purple) 18%, white))',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 10px rgba(79,70,229,0.18)',
               }}
             >
-              <FileText size={18} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
+              <FileText size={16} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
             </span>
             <div className='min-w-0 flex-1 pt-0.5'>
-              <p className='text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
+              <p className='text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
                 คำขอ RFQ
               </p>
-              <p className='mt-1 line-clamp-3 text-[15px] font-bold leading-snug text-[var(--brand-navy)]'>
+              <p className='mt-1 line-clamp-3 text-[13px] font-bold leading-snug text-[var(--brand-navy)]'>
                 {title}
               </p>
             </div>
           </div>
-          <div className='mb-3 rounded-lg border border-violet-100 bg-violet-50/55 px-2.5 py-2'>
-            <p className='text-[11px] font-medium text-violet-900 line-clamp-2'>
+          <div className='mb-2.5 rounded-lg border border-violet-100 bg-violet-50/55 px-2 py-1.5'>
+            <p className='text-[10px] font-medium text-violet-900 line-clamp-2'>
               เอกสารอ้างอิง: <span className='font-semibold'>{title}</span>
             </p>
           </div>
@@ -362,14 +366,13 @@ function RfqChatCard({
             disabled={!canOpen}
             onClick={onOpen}
               className={cn(
-                'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
+                'flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
                 'disabled:cursor-not-allowed disabled:opacity-45',
-                canOpen && 'hover:brightness-[1.03] active:scale-[0.99]',
+                canOpen && 'hover:brightness-[1.02] active:scale-[0.995]',
               )}
               style={{
                 background:
                   'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
-                boxShadow: '0 8px 20px rgba(79,70,229,0.34)',
               }}
             >
             {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'}
@@ -437,19 +440,17 @@ function QuotationChatCard({
         onClick={onOpen}
         className={cn(
           CHAT_CARD_SHELL,
-          'max-w-[min(100%,304px)]',
+          'max-w-[min(100%,304px)] border-indigo-200/80',
           'disabled:cursor-default disabled:opacity-90',
           !disabled &&
-            'hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(46,34,82,0.12)] active:scale-[0.995]',
+            'hover:-translate-y-0.5 active:scale-[0.995]',
         )}
         aria-label='ดูรายละเอียดใบเสนอราคา'
       >
         <div
           className='pointer-events-none absolute inset-0 rounded-2xl'
           style={{
-            border: '1px solid rgba(255,255,255,0.55)',
-            boxShadow:
-              'inset 0 0 0 1px rgba(99,102,241,0.08), inset 0 16px 34px rgba(255,255,255,0.24)',
+            border: '1px solid rgba(99,102,241,0.24)',
           }}
         />
         <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
@@ -468,7 +469,6 @@ function QuotationChatCard({
                 style={{
                   background:
                     'linear-gradient(145deg, color-mix(in srgb, var(--brand-indigo) 12%, white), var(--brand-lavender))',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.85)',
                 }}
               >
                 <CreditCard size={16} className='text-[var(--brand-indigo)]' strokeWidth={2.2} />
