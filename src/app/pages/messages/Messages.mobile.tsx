@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BadgeCheck, RefreshCw, Search } from 'lucide-react';
 import { cn } from '@lib/utils';
@@ -8,6 +8,15 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Avatar } from '@/components/ui/avatar';
 import { FACTORY_FALLBACK_AVATAR } from '@/utils/counterparty';
+import { TabSwipeContent } from '@/components/layout/TabSwipeContent';
+
+const MESSAGE_TAB_ORDER = ['all', 'unread'] as const;
+type MessageTab = (typeof MESSAGE_TAB_ORDER)[number];
+
+const MESSAGE_TABS: { id: MessageTab; label: string }[] = [
+  { id: 'all', label: 'ทั้งหมด' },
+  { id: 'unread', label: 'ยังไม่อ่าน' },
+];
 
 type MessagesMobileProps = {
   searchText: string;
@@ -21,9 +30,15 @@ type MessagesMobileProps = {
 
 function ListSkeleton() {
   return (
-    <div className='space-y-0 px-4'>
+    <div className='bg-white'>
       {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-        <div key={i} className='flex animate-pulse items-center gap-3.5 py-3'>
+        <div
+          key={i}
+          className={cn(
+            'flex animate-pulse items-center gap-3.5 px-4 py-3.5',
+            i < 6 && 'border-b border-gray-100',
+          )}
+        >
           <div className='h-12 w-12 shrink-0 rounded-full bg-[var(--brand-lavender)]' />
           <div className='flex-1 space-y-1.5'>
             <div className='flex justify-between gap-2'>
@@ -48,11 +63,17 @@ export function MessagesMobile({
   onReload,
 }: MessagesMobileProps) {
   const navigate = useNavigate();
+  const [tab, setTab] = useState<MessageTab>('all');
+
+  const tabFiltered = useMemo(() => {
+    if (tab === 'unread') return filtered.filter((c) => c.unread > 0);
+    return filtered;
+  }, [filtered, tab]);
 
   return (
     <div
       className={cn(
-        'md:hidden flex flex-col pb-20',
+        'md:hidden flex min-h-0 flex-1 flex-col pb-20',
         'min-h-[calc(100dvh-3.5rem-4rem-env(safe-area-inset-bottom,0px))]',
         'bg-[linear-gradient(180deg,var(--brand-lavender)_0%,var(--brand-page)_42%,var(--neutral-white)_100%)]',
       )}
@@ -79,7 +100,7 @@ export function MessagesMobile({
 
       {/* ── Search bar ── */}
       <div className='px-4 pb-3'>
-        <label className='flex items-center gap-2 rounded-full bg-[var(--brand-lavender-muted)]/60 px-4 py-2.5 border border-[var(--brand-lavender-muted)]'>
+        <label className='flex items-center gap-2 rounded-full border border-[var(--brand-lavender-muted)] bg-white/80 px-4 py-2.5'>
           <Search size={15} className='shrink-0 text-[var(--neutral-placeholder)]' />
           <input
             type='search'
@@ -91,44 +112,106 @@ export function MessagesMobile({
         </label>
       </div>
 
-      {/* ── List ── */}
-      {loading ? (
-        <ListSkeleton />
-      ) : error ? (
-        <div className='flex flex-col items-center justify-center gap-3 px-6 py-14 text-center'>
-          <p className='text-sm text-[var(--neutral-subtle)]'>{error}</p>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => void onReload()}
-            className='inline-flex items-center gap-2 rounded-xl bg-[var(--brand-mauve)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm'
-          >
-            <RefreshCw size={16} />
-            ลองอีกครั้ง
-          </Button>
+      {/* ── Tabs (แบบ factory-ideas) ── */}
+      <div className='sticky top-14 z-20 border-b border-gray-200 bg-white'>
+        <div className='flex'>
+          {MESSAGE_TABS.map((t) => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type='button'
+                onClick={() => setTab(t.id)}
+                className='relative min-w-0 flex-1 px-2 py-3 text-center'
+              >
+                <span
+                  className={cn(
+                    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-[14px] leading-none',
+                    active ? 'font-bold text-[var(--brand-navy)]' : 'font-medium text-gray-400',
+                  )}
+                >
+                  {t.label}
+                  {t.id === 'unread' && totalUnread > 0 ? (
+                    <span
+                      className={cn(
+                        'min-w-[18px] rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none',
+                        active
+                          ? 'bg-[var(--brand-purple)] text-white'
+                          : 'bg-gray-100 text-gray-500',
+                      )}
+                    >
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </span>
+                  ) : null}
+                </span>
+                {active ? (
+                  <span
+                    className='absolute bottom-0 left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full'
+                    style={{ background: 'var(--brand-purple)' }}
+                  />
+                ) : null}
+              </button>
+            );
+          })}
         </div>
-      ) : filtered.length === 0 ? (
-        <MobileEmptyState />
-      ) : (
-        <div className='px-4 divide-y divide-[var(--brand-lavender-muted)]/50'>
-          {filtered.map((conv) => (
-            <ConversationRow
-              key={conv.id}
-              conv={conv}
-              onClick={() => navigate(`/chat-room/${conv.id}`)}
-            />
-          ))}
-        </div>
-      )}
+      </div>
+
+      {/* ── List (พื้นขาวเต็มพื้นที่ที่เหลือ) ── */}
+      <div
+        className={cn(
+          'flex min-h-0 flex-1 flex-col bg-white',
+          'min-h-[calc(100dvh-3.5rem-4rem-10.5rem-env(safe-area-inset-bottom,0px))]',
+        )}
+      >
+        <TabSwipeContent
+          activeKey={tab}
+          tabOrder={MESSAGE_TAB_ORDER}
+          className='flex min-h-0 flex-1 flex-col'
+        >
+          <div className='flex min-h-0 flex-1 flex-col bg-white'>
+            {loading ? (
+              <ListSkeleton />
+            ) : error ? (
+              <div className='flex flex-1 flex-col items-center justify-center gap-3 px-6 py-14 text-center'>
+                <p className='text-sm text-[var(--neutral-subtle)]'>{error}</p>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => void onReload()}
+                  className='inline-flex items-center gap-2 rounded-xl bg-[var(--brand-mauve)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm'
+                >
+                  <RefreshCw size={16} />
+                  ลองอีกครั้ง
+                </Button>
+              </div>
+            ) : tabFiltered.length === 0 ? (
+              <MobileEmptyState tab={tab} />
+            ) : (
+              <>
+                {tabFiltered.map((conv, index) => (
+                  <ConversationRow
+                    key={conv.id}
+                    conv={conv}
+                    isLast={index === tabFiltered.length - 1}
+                    onClick={() => navigate(`/chat-room/${conv.id}`)}
+                  />
+                ))}
+              </>
+            )}
+          </div>
+        </TabSwipeContent>
+      </div>
     </div>
   );
 }
 
 function ConversationRow({
   conv,
+  isLast,
   onClick,
 }: {
   conv: UiConversation;
+  isLast?: boolean;
   onClick: () => void;
 }) {
   const time = formatConversationListTime(conv.lastMessageAt || conv.updatedAt);
@@ -143,7 +226,10 @@ function ConversationRow({
       variant='unstyled'
       type='button'
       onClick={onClick}
-      className='flex w-full items-center gap-3.5 py-3 text-left transition-opacity active:opacity-70'
+      className={cn(
+        'flex w-full items-center gap-3.5 border-gray-100 px-4 py-3.5 text-left transition-opacity active:bg-gray-50/80',
+        !isLast && 'border-b',
+      )}
     >
       {/* Avatar */}
       <div className='relative shrink-0'>
@@ -218,20 +304,27 @@ function ConversationRow({
   );
 }
 
-function MobileEmptyState() {
+function MobileEmptyState({ tab }: { tab: MessageTab }) {
+  const isUnreadTab = tab === 'unread';
   return (
-    <EmptyState
-      title='ยังไม่มีข้อความ'
-      description='ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ'
-      className='py-16'
-      icon={
-        <span
-          className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)] text-2xl'
-          style={{ color: 'var(--brand-mauve)' }}
-        >
-          💬
-        </span>
-      }
-    />
+    <div className='flex min-h-0 flex-1 flex-col items-center justify-center bg-white px-4'>
+      <EmptyState
+        title={isUnreadTab ? 'ไม่มีข้อความที่ยังไม่อ่าน' : 'ยังไม่มีข้อความ'}
+        description={
+          isUnreadTab
+            ? 'ข้อความใหม่จะแสดงในแท็บนี้'
+            : 'ข้อความจากโรงงานจะปรากฏที่นี่หลังจากที่คุณส่ง RFQ'
+        }
+        className='py-10'
+        icon={
+          <span
+            className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)] text-2xl'
+            style={{ color: 'var(--brand-mauve)' }}
+          >
+            💬
+          </span>
+        }
+      />
+    </div>
   );
 }
