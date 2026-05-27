@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const addressFormSchema = z.object({
-  address_type: z.enum(['M', 'S']),
+  address_type: z.enum(['B', 'S']),
   province_id: z.string().min(1, 'กรุณาเลือกจังหวัด'),
   district_id: z.string().min(1, 'กรุณาเลือกอำเภอ/เขต'),
   sub_district_id: z.string().min(1, 'กรุณาเลือกตำบล/แขวง'),
@@ -16,7 +16,7 @@ export const addressFormSchema = z.object({
 export type AddressFormValues = z.infer<typeof addressFormSchema>;
 
 export type AddressFormPayload = {
-  address_type: 'M' | 'S';
+  address_type: 'B' | 'S';
   address_detail: string;
   sub_district_id: number;
   district_id: number;
@@ -26,7 +26,7 @@ export type AddressFormPayload = {
 };
 
 export const defaultAddressFormValues: AddressFormValues = {
-  address_type: 'M',
+  address_type: 'B',
   province_id: '',
   district_id: '',
   sub_district_id: '',
@@ -40,7 +40,7 @@ export function addressFormValuesFromRow(
 ): AddressFormValues {
   const t = String(row?.address_type ?? '').toUpperCase();
   return {
-    address_type: t === 'S' ? 'S' : 'M',
+    address_type: t === 'S' ? 'S' : 'B',
     province_id: String(row?.province_id ?? '').trim(),
     district_id: String(row?.district_id ?? '').trim(),
     sub_district_id: String(row?.sub_district_id ?? '').trim(),
