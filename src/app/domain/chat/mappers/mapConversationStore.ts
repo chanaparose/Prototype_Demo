@@ -9,11 +9,13 @@ export function mapConversationToStoreModel(
   viewerRole?: 'CT' | 'FT',
 ): Conversation {
   const unread =
-    viewerRole === 'FT'
-      ? conv.unread_factory
-      : viewerRole === 'CT'
-        ? conv.unread_customer
-        : Math.max(conv.unread_customer, conv.unread_factory);
+    conv.viewer_unread != null && conv.viewer_unread > 0
+      ? conv.viewer_unread
+      : viewerRole === 'FT'
+        ? conv.unread_factory
+        : viewerRole === 'CT'
+          ? conv.unread_customer
+          : Math.max(conv.unread_customer, conv.unread_factory);
 
   return {
     id: String(conv.conv_id),

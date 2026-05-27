@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/stores/useAuthStore';
+import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { AlertCircle, LogIn } from 'lucide-react';
 import {
   RfqCollapsibleSection,
@@ -54,6 +55,7 @@ export function RFQCreateWizard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
+  const { open: openLoginModal } = useAuthModalStore();
   const { draft, setDraft, reset } = useRFQDraft();
   const create = useCreateRFQ();
   const [step, setStep] = React.useState(0);
@@ -303,7 +305,7 @@ export function RFQCreateWizard() {
     // Guest gate — preserve draft in sessionStorage via useRFQDraft so it
     // survives the login redirect, then return here automatically.
     if (!isAuthenticated) {
-      navigate('/login?redirect=/create-rfq');
+      openLoginModal('/create-rfq');
       return;
     }
     if (!step1Schema.safeParse(draft).success) return;
@@ -585,7 +587,7 @@ export function RFQCreateWizard() {
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => navigate('/login?redirect=/create-rfq')}
+              onClick={() => openLoginModal('/create-rfq')}
               className='flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(109,40,217,0.35)]'
             >
               <LogIn size={15} />

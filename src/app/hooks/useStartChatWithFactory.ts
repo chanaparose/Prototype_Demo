@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '@/stores/useAuthStore';
+import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { openChatSession } from '@/utils/openChatSession';
 import { getCurrentUserId, type ChatReference } from '@/utils/chatContract';
 
@@ -10,6 +11,7 @@ export type { ChatReference };
 export function useStartChatWithFactory() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { open: openLoginModal } = useAuthModalStore();
   const [starting, setStarting] = useState(false);
   const inFlightRef = useRef(false);
 
@@ -17,7 +19,7 @@ export function useStartChatWithFactory() {
     async (factoryEntityId: number | string, reference?: ChatReference | null) => {
       if (!isAuthenticated || !user) {
         const redirect = `${window.location.pathname}${window.location.search}`;
-        navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
+        openLoginModal(redirect);
         return null;
       }
       if (starting || inFlightRef.current) return null;
@@ -53,7 +55,7 @@ export function useStartChatWithFactory() {
         setStarting(false);
       }
     },
-    [isAuthenticated, user, navigate, starting],
+    [isAuthenticated, user, navigate, openLoginModal, starting],
   );
 
   return { startChat, starting };

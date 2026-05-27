@@ -1,15 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router';
+import React, { useEffect } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuth } from '@/stores/useAuthStore';
+import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
+import { useState } from 'react';
 
 export function AuthGuard() {
   const { isAuthenticated, isLoading } = useAuth();
-  // While the ProductTour is walking the user through protected routes
+  const location = useLocation();
+  const { open: openModal } = useAuthModalStore();
 
-  // see the demo. Mocks installed by the tour provide canned data.
   const [tourOn, setTourOn] = useState<boolean>(isTourActive());
   useEffect(() => subscribeTourActive(setTourOn), []);
+
+  // Open the login modal when unauthenticated (instead of hard redirect)
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && !tourOn) {
+      openModal(location.pathname + location.search);
+    }
+  }, [isAuthenticated, isLoading, tourOn, openModal, location.pathname, location.search]);
 
   if (isLoading) {
     return (
@@ -25,8 +34,15 @@ export function AuthGuard() {
     );
   }
 
-  if (!isAuthenticated && !tourOn) {
+  // Admin routes don't have Layout (no LoginModal mounted there), so keep hard redirect
+  const isAdminPath = location.pathname.startsWith('/admin');
+  if (!isAuthenticated && !tourOn && isAdminPath) {
     return <Navigate to='/login' replace />;
+  }
+
+  // For non-admin protected routes: render nothing — the modal opens via useEffect above
+  if (!isAuthenticated && !tourOn) {
+    return null;
   }
 
   return <Outlet />;

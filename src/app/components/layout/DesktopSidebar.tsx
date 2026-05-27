@@ -9,9 +9,14 @@ import {
   Bell,
   Wallet,
   Lock,
+  ArrowLeftRight,
+  Factory,
+  User,
+  Loader2,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
-import { useAuth } from '@/stores/useAuthStore';
+import { useAuth, useAuthStore } from '@/stores/useAuthStore';
+import { getAvailableRoles } from '@/services/api/authApi';
 import { isFactoryRole } from '@/utils/factoryUser';
 import {
   FACTORY_SIDEBAR_NAV,
@@ -27,6 +32,7 @@ import { isTourActive, subscribeTourActive } from '@/utils/tourMocks';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { useAuthModalStore } from '@/stores/useAuthModalStore';
 
 /** รูปโปรไฟล์เริ่มต้นเมื่อไม่มี avatar จาก API */
 const DEFAULT_USER_AVATAR_SRC =
@@ -46,6 +52,62 @@ const customerNavLinks = [
   { path: '/messages', icon: MessageCircle, label: 'ข้อความ' },
 ];
 
+function RoleSwitcher({ isFactory }: { isFactory: boolean }) {
+  const navigate = useNavigate();
+  const switchRole = useAuthStore((s) => s.switchRole);
+  const [roles, setRoles] = React.useState<string[]>([]);
+  const [switching, setSwitching] = React.useState(false);
+  const loaded = React.useRef(false);
+
+  React.useEffect(() => {
+    if (loaded.current) return;
+    loaded.current = true;
+    getAvailableRoles()
+      .then((r) => setRoles(r.roles))
+      .catch(() => {});
+  }, []);
+
+  // Only show if user has both CT and FT
+  if (!roles.includes('CT') || !roles.includes('FT')) return null;
+
+  const targetRole = isFactory ? 'CT' : 'FT';
+  const targetLabel = isFactory ? 'ลูกค้า' : 'โรงงาน';
+  const TargetIcon = isFactory ? User : Factory;
+
+  const handleSwitch = async () => {
+    setSwitching(true);
+    try {
+      await switchRole(targetRole);
+      navigate(targetRole === 'FT' ? '/factory' : '/', { replace: true });
+      window.location.reload();
+    } catch {
+      setSwitching(false);
+    }
+  };
+
+  return (
+    <div className='mx-3 mb-2'>
+      <Button
+        variant='unstyled'
+        type='button'
+        disabled={switching}
+        onClick={() => void handleSwitch()}
+        className='flex items-center gap-2 w-full px-3 py-2.5 rounded-xl border border-dashed border-gray-300 text-xs font-medium text-gray-600 hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 transition-all'
+      >
+        {switching ? (
+          <Loader2 size={15} className='animate-spin shrink-0' />
+        ) : (
+          <ArrowLeftRight size={15} className='shrink-0' />
+        )}
+        <span className='flex-1 text-left'>
+          สลับเป็นบัญชี<strong>{targetLabel}</strong>
+        </span>
+        <TargetIcon size={15} className='shrink-0 opacity-60' />
+      </Button>
+    </div>
+  );
+}
+
 export function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,6 +118,7 @@ export function DesktopSidebar() {
   const factoryApproved = factoryVerifyStatus(authUser) === 'AP';
   // Tour state persisted with localStorage and synchronized via subscription
   const { value: tourOn, setValue: setTourOn } = useLocalStorage('tourActive', isTourActive());
+  const { open: openLoginModal } = useAuthModalStore();
   React.useEffect(() => subscribeTourActive((active) => setTourOn(active)), [setTourOn]);
 
   const isActivePath = (path: string) =>
@@ -245,7 +308,7 @@ export function DesktopSidebar() {
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => navigate('/login')}
+              onClick={() => openLoginModal()}
               className='flex-1 rounded-lg bg-white border border-brand-purple/25 px-2 py-1.5 text-[11px] font-semibold'
               style={{ color: 'var(--brand-purple)' }}
             >
@@ -254,7 +317,7 @@ export function DesktopSidebar() {
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/register')}
               className='flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white'
               style={{
                 background:
@@ -286,6 +349,9 @@ export function DesktopSidebar() {
           </Button>
         </div>
       ) : null}
+
+      {/* Role switcher — shown when user has both CT and FT profiles */}
+      {isAuthenticated && <RoleSwitcher isFactory={isFactory} />}
 
       <div className='border-t border-gray-100 px-3 py-3 shrink-0'>
         {isAuthenticated ? (
@@ -354,7 +420,7 @@ export function DesktopSidebar() {
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => navigate('/login')}
+              onClick={() => openLoginModal()}
               className='text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-brand-purple/25 bg-white'
               style={{ color: 'var(--brand-purple)' }}
             >

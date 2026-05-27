@@ -19,9 +19,13 @@ import {
   MapPin,
   Plus,
   Home,
+  ArrowLeftRight,
+  Factory,
+  Loader2,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
-import { useAuth } from '@/stores/useAuthStore';
+import { useAuth, useAuthStore } from '@/stores/useAuthStore';
+import { getAvailableRoles } from '@/services/api/authApi';
 import { profileApi } from '@/services/api/userApi';
 import { addressesApi } from '@/services/api/masterApi';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
@@ -172,6 +176,55 @@ function normTransaction(r: Record<string, unknown>, isCustomer: boolean): Walle
     date,
     type,
   };
+}
+
+function MobileRoleSwitcher() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const switchRole = useAuthStore((s) => s.switchRole);
+  const [roles, setRoles] = React.useState<string[]>([]);
+  const [switching, setSwitching] = React.useState(false);
+  const loaded = React.useRef(false);
+  const isFactory = String(user?.role ?? '').toUpperCase() === 'FT';
+
+  React.useEffect(() => {
+    if (loaded.current) return;
+    loaded.current = true;
+    getAvailableRoles()
+      .then((r) => setRoles(r.roles))
+      .catch(() => {});
+  }, []);
+
+  if (!roles.includes('CT') || !roles.includes('FT')) return null;
+
+  const targetRole = isFactory ? 'CT' : 'FT';
+  const targetLabel = isFactory ? 'ลูกค้า' : 'โรงงาน';
+  const TargetIcon = isFactory ? User : Factory;
+
+  const handleSwitch = async () => {
+    setSwitching(true);
+    try {
+      await switchRole(targetRole);
+      navigate(targetRole === 'FT' ? '/factory' : '/', { replace: true });
+      window.location.reload();
+    } catch {
+      setSwitching(false);
+    }
+  };
+
+  return (
+    <Button
+      variant='unstyled'
+      disabled={switching}
+      onClick={() => void handleSwitch()}
+      className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]'
+      style={{ color: 'var(--brand-indigo)', fontWeight: 600 }}
+    >
+      {switching ? <Loader2 size={18} className='animate-spin' /> : <ArrowLeftRight size={18} />}
+      สลับเป็นบัญชี{targetLabel}
+      <TargetIcon size={16} className='opacity-60' />
+    </Button>
+  );
 }
 
 export function ProfileMobile() {
@@ -574,11 +627,13 @@ export function ProfileMobile() {
           )}
         </div>
 
+        <MobileRoleSwitcher />
+
         <Button
           variant='unstyled'
           onClick={() => {
             logout();
-            navigate('/login', { replace: true });
+            navigate('/', { replace: true });
           }}
           className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]'
           style={{ color: 'var(--status-danger)', fontWeight: 600 }}

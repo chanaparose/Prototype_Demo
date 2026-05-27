@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
-import { Eye, EyeOff, Factory, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  Factory,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  CalendarDays,
+  X,
+} from 'lucide-react';
 import { useRegisterFactory } from '@/pages/auth/useRegisterFactory';
 import type { FormState } from '@/pages/auth/useRegisterFactory';
 import { Button } from '@/components/ui/button';
@@ -87,6 +96,7 @@ export function RegisterFactoryPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [dateFocused, setDateFocused] = useState(false);
 
   const bizSection = 1;
   const accountSection = 2;
@@ -200,8 +210,8 @@ export function RegisterFactoryPage() {
                   <Select
                     value={form.factory_type_id ? String(form.factory_type_id) : ''}
                     onValueChange={(v) => {
-                      setField('factory_type_id', v === '__empty' ? 0 : Number(v));
-                      blurField('factory_type_id');
+                      const id = v === '__empty' ? 0 : Number(v);
+                      setField('factory_type_id', id, { validate: true });
                     }}
                     disabled={masterLoading}
                   >
@@ -254,8 +264,8 @@ export function RegisterFactoryPage() {
                   <Select
                     value={form.province_id ? String(form.province_id) : ''}
                     onValueChange={(v) => {
-                      setField('province_id', v === '__empty' ? 0 : Number(v));
-                      blurField('province_id');
+                      const id = v === '__empty' ? 0 : Number(v);
+                      setField('province_id', id, { validate: true });
                     }}
                     disabled={masterLoading}
                   >
@@ -418,7 +428,7 @@ export function RegisterFactoryPage() {
                               const next = e.target.checked
                                 ? [...form.category_ids, cat.id]
                                 : form.category_ids.filter((id) => id !== cat.id);
-                              setField('category_ids', next);
+                              setField('category_ids', next, { validate: true });
                               if (!e.target.checked) {
                                 const subIds = (lbiSubCategories[cat.id] ?? []).map((s) => s.id);
                                 if (subIds.length > 0) {
@@ -519,8 +529,8 @@ export function RegisterFactoryPage() {
                     <Select
                       value={form.cert_id ? String(form.cert_id) : ''}
                       onValueChange={(v) => {
-                        setField('cert_id', v === '__empty' ? 0 : Number(v));
-                        blurField('cert_id');
+                        const id = v === '__empty' ? 0 : Number(v);
+                        setField('cert_id', id, { validate: true });
                       }}
                       disabled={masterLoading}
                     >
@@ -540,21 +550,61 @@ export function RegisterFactoryPage() {
                     </Select>
                   </FieldBlock>
 
-                  <FieldBlock
-                    label='วันหมดอายุเอกสาร'
-                    error={errors.cert_expire_date}
-                    fieldKey='cert_expire_date'
-                    setFieldRef={setFieldRef}
-                    required
-                  >
-                    <Input
-                      type='date'
-                      value={form.cert_expire_date}
-                      onChange={(e) => setField('cert_expire_date', e.target.value)}
-                      onBlur={() => blurField('cert_expire_date')}
-                      className={inClass(errors.cert_expire_date)}
-                    />
-                  </FieldBlock>
+                <FieldBlock
+                  label='วันหมดอายุเอกสาร'
+                  error={errors.cert_expire_date}
+                  fieldKey='cert_expire_date'
+                  setFieldRef={setFieldRef}
+                  required
+                >
+                  <div className='space-y-2'>
+                    <div className='relative'>
+                      <CalendarDays
+                        size={16}
+                        className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${
+                          dateFocused ? 'text-brand-purple' : 'text-gray-400'
+                        }`}
+                      />
+                      <Input
+                        type='date'
+                        value={form.cert_expire_date}
+                        onChange={(e) => setField('cert_expire_date', e.target.value)}
+                        onBlur={() => {
+                          blurField('cert_expire_date');
+                          setDateFocused(false);
+                        }}
+                        onFocus={() => setDateFocused(true)}
+                        className={`${inClass(errors.cert_expire_date)} pl-10 pr-10`}
+                      />
+                      {form.cert_expire_date ? (
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          className='absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                          onClick={() => setField('cert_expire_date', '', { validate: true })}
+                          aria-label='ล้างวันที่'
+                        >
+                          <X size={14} />
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        className='rounded-full border border-brand-purple/20 bg-brand-purple/5 px-2.5 py-1 text-[11px] font-semibold text-brand-purple hover:bg-brand-purple/10'
+                        onClick={() =>
+                          setField('cert_expire_date', new Date().toISOString().slice(0, 10), {
+                            validate: true,
+                          })
+                        }
+                      >
+                        วันนี้
+                      </Button>
+                      <span className='text-[11px] text-gray-500'>เลือกจากปฏิทินหรือกด Today ได้</span>
+                    </div>
+                  </div>
+                </FieldBlock>
                 </div>
 
                 <FieldBlock
@@ -584,8 +634,7 @@ export function RegisterFactoryPage() {
                     className='w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-purple/10 file:text-brand-purple hover:file:bg-brand-purple/20 cursor-pointer'
                     onChange={(e) => {
                       const f = e.target.files?.[0] ?? null;
-                      setField('cert_file', f);
-                      if (f) blurField('cert_file');
+                      setField('cert_file', f, { validate: true });
                     }}
                   />
                   {form.cert_file && (

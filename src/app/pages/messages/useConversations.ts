@@ -4,7 +4,7 @@ import type { IConversationResponse } from '@/types/api';
 import { useConversationsQuery } from '@/domain/chat/queries/useConversationsQuery';
 import { getCurrentUserId } from '@/utils/chatContract';
 import { resolveCounterparty } from '@/utils/counterparty';
-import { unreadForViewer } from '@/pages/messages/types';
+import { resolveUnreadCount } from '@/pages/messages/types';
 import { sortConversations } from '@/pages/messages/selectors';
 
 export function useConversations() {
@@ -26,7 +26,7 @@ export function useConversations() {
           lastMessage: conv.last_message ?? '',
           lastMessageAt: conv.updated_at ?? '',
           updatedAt: conv.updated_at ?? '',
-          unread: unreadForViewer(conv, view.viewerRole),
+          unread: resolveUnreadCount(conv, currentUserId),
           hasQuote: Boolean(conv.has_quote),
         };
       }),

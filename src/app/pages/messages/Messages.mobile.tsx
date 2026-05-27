@@ -61,11 +61,7 @@ export function MessagesMobile({
         </p>
         <h1 className='inline-flex items-center gap-2 text-xl font-bold text-brand-navy-deep'>
           ข้อความ
-          {totalUnread > 0 ? (
-            <span className='inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-orange-deep px-1.5 text-[10px] font-bold leading-none text-white'>
-              {totalUnread > 99 ? '99+' : totalUnread}
-            </span>
-          ) : null}
+           
         </h1>
       </div>
 

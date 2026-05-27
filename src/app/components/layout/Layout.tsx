@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation, Link, Navigate } from 'react-router';
+import { LoginModal } from '@/components/auth/LoginModal';
 import { AnimatedOutlet } from '@/components/layout/AnimatedOutlet';
 import {
   Home,
@@ -30,6 +31,7 @@ import { useMobileBottomNavHide } from '@/hooks/useMobileBottomNavHide';
 import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useAuthModalStore } from '@/stores/useAuthModalStore';
 
 type HeaderIconTone = 'purple' | 'indigo' | 'rose';
 
@@ -48,6 +50,7 @@ function HeaderIconLink({
   tone,
   active,
   badge,
+  onClick,
   children,
 }: {
   to: string;
@@ -56,6 +59,7 @@ function HeaderIconLink({
   tone: HeaderIconTone;
   active?: boolean;
   badge?: number;
+  onClick?: (e: React.MouseEvent) => void;
   children: React.ReactNode;
 }) {
   return (
@@ -64,6 +68,7 @@ function HeaderIconLink({
       title={title}
       aria-label={ariaLabel}
       aria-current={active ? 'page' : undefined}
+      onClick={onClick}
       className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all active:scale-95 ${headerIconToneClass[tone]} ${
         active
           ? tone === 'indigo'
@@ -156,10 +161,9 @@ export function Layout() {
   const bottomNavHidden = useMobileBottomNavHide();
   const unreadMessages = useConversationUnreadCount();
   const { likedIds } = useFavorites();
+  const { open: openLoginModal } = useAuthModalStore();
   const showCustomerFavorites = !isFactory && !isAdminRole;
-  const favoritesHref = isAuthenticated
-    ? '/profile/favorites'
-    : '/login?redirect=/profile/favorites';
+  const favoritesHref = isAuthenticated ? '/profile/favorites' : '#';
   const onFavoritesPage = location.pathname === '/profile/favorites';
   const onNotificationsPage = location.pathname === '/notifications';
   const headerIconTone: HeaderIconTone = isFactory ? 'indigo' : 'purple';
@@ -232,6 +236,7 @@ export function Layout() {
                     ariaLabel='รายการโปรด'
                     tone='rose'
                     active={onFavoritesPage}
+                    onClick={!isAuthenticated ? (e: React.MouseEvent) => { e.preventDefault(); openLoginModal('/profile/favorites'); } : undefined}
                   >
                     <Heart
                       size={15}
@@ -325,13 +330,17 @@ export function Layout() {
               customerNavLinks.map(({ path, icon: Icon, label }) => {
                 const active = isActive(path);
                 // Profile item: show login if guest
-                const target =
-                  path === '/profile' && !isAuthenticated ? '/login' : path;
                 return (
                   <button
                     key={path}
                     type='button'
-                    onClick={() => void navigate(target)}
+                    onClick={() => {
+                      if (path === '/profile' && !isAuthenticated) {
+                        openLoginModal('/profile');
+                        return;
+                      }
+                      void navigate(path);
+                    }}
                     className='flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 relative'
                   >
                     <div className='relative'>
@@ -376,6 +385,9 @@ export function Layout() {
 
       {/* Product Tour */}
       <ProductTour />
+
+      {/* Global login modal — available on all layout-wrapped routes */}
+      <LoginModal />
     </div>
   );
 }

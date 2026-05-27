@@ -50,8 +50,6 @@ export function Explore() {
           exploreCategoriesError={exploreCategoriesError}
           reloadExploreCategories={reloadExploreCategories}
           factories={exploreFactories}
-          activeRFQs={[]}
-          recentOrders={[]}
           ideaArticles={ideaArticles}
           factoryShowcases={showcases}
           exploreProducts={productShowcases}
