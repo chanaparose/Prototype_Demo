@@ -419,7 +419,7 @@ function OrderDetailMobileBody() {
                 <OrderBOQCard quotation={quotation} factoryName={order.factoryName} />
               ) : null}
               {rfq ? (
-                <RfqReferenceCard rfq={rfq} variant='accordion' quotation={quotation} />
+                <RfqReferenceCard rfq={rfq} variant='accordion' defaultOpen={false} />
               ) : null}
               <OrderOverviewSection
                 order={{

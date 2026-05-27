@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
+import type { IRfqNestedResponse } from '@/types/api';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
@@ -12,11 +12,9 @@ interface Props {
   rfq: IRfqNestedResponse;
   variant?: 'accordion';
   defaultOpen?: boolean;
-  /** Optional quotation details to show alongside the RFQ spec */
-  quotation?: IQuoteNestedResponse | null;
 }
 
-export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) {
+export function RfqReferenceCard({ rfq, defaultOpen = true }: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   // Use enriched data from GET /orders/:id — no extra API calls needed.
@@ -213,148 +211,6 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
         </div>
       ) : null}
 
-      {quotation ? (
-        <div className='border-t border-gray-200 pt-4 mt-1'>
-          <p className='text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2'>
-            รายละเอียดใบเสนอราคา
-          </p>
-          {(() => {
-            const q = quotation as unknown as IQuoteNestedResponse & Record<string, unknown>;
-            const pricePerPiece = Number(q.price_per_piece ?? 0);
-            const qty = Math.max(0, Number(data.quantity ?? rfq.quantity ?? 0) || 0);
-            const subtotalRaw = Number(q.subtotal ?? 0);
-            const subtotal = subtotalRaw > 0 ? subtotalRaw : Math.max(0, pricePerPiece * qty);
-            const shippingCost = Number(q.shipping_cost ?? 0);
-            const packagingCost = Number(q.packaging_cost ?? 0);
-            const toolingMoldCost = Number(
-              q.tooling_mold_cost ?? q.mold_cost ?? quotation.mold_cost ?? 0,
-            );
-            const discountAmount = Number(q.discount_amount ?? 0);
-            const vatRate = Number(q.vat_rate ?? 0);
-            const vatAmountRaw = Number(q.vat_amount ?? 0);
-            const vatAmount =
-              vatAmountRaw > 0
-                ? vatAmountRaw
-                : Math.max(
-                    0,
-                    ((subtotal - discountAmount + shippingCost + packagingCost + toolingMoldCost) *
-                      vatRate) /
-                      100,
-                  );
-            const grandTotalRaw = Number(q.grand_total ?? 0);
-            const grandTotal =
-              grandTotalRaw > 0
-                ? grandTotalRaw
-                : Math.max(
-                    0,
-                    subtotal -
-                      discountAmount +
-                      shippingCost +
-                      packagingCost +
-                      toolingMoldCost +
-                      vatAmount,
-                  );
-            const leadTimeDays = Number(q.lead_time_days ?? quotation.lead_time_days ?? 0);
-            const validityDays = Math.max(0, Number(q.validity_days ?? 0));
-            const formatTHB = (n: number) => formatCurrency(n, 'THB');
-
-            return (
-              <>
-                <div className='grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2'>
-                  <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                    <p
-                      className='text-sm text-brand-navy'
-                      style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
-                    >
-                      {formatTHB(pricePerPiece)}
-                    </p>
-                    <p className='text-[12px] text-gray-500'>ราคาต่อชิ้น</p>
-                  </div>
-                  <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                    <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
-                      {leadTimeDays > 0 ? leadTimeDays : '-'}
-                    </p>
-                    <p className='text-[12px] text-gray-500'>Lead time (วัน)</p>
-                  </div>
-                  <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                    <p
-                      className='text-sm text-brand-navy'
-                      style={{ fontWeight: 700, color: 'var(--brand-mauve)' }}
-                    >
-                      {formatTHB(grandTotal)}
-                    </p>
-                    <p className='text-[12px] text-gray-500'>ราคารวมเสนอ</p>
-                  </div>
-                  <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
-                    <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
-                      {validityDays > 0 ? `${validityDays}` : '-'}
-                    </p>
-                    <p className='text-[12px] text-gray-500'>อายุใบเสนอราคา (วัน)</p>
-                  </div>
-                </div>
-
-                <div className='rounded-xl border border-gray-100 bg-gray-50/40 px-3 py-2 mb-3'>
-                  <div className='flex items-center justify-between text-[11px] text-gray-600'>
-                    <span>ค่าสินค้ารวม</span>
-                    <span className='font-semibold text-brand-navy'>{formatTHB(subtotal)}</span>
-                  </div>
-                  {shippingCost > 0 ? (
-                    <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                      <span>ค่าขนส่ง</span>
-                      <span className='font-semibold text-brand-navy'>
-                        {formatTHB(shippingCost)}
-                      </span>
-                    </div>
-                  ) : null}
-                  {packagingCost > 0 ? (
-                    <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                      <span>ค่าบรรจุภัณฑ์</span>
-                      <span className='font-semibold text-brand-navy'>
-                        {formatTHB(packagingCost)}
-                      </span>
-                    </div>
-                  ) : null}
-                  {toolingMoldCost > 0 ? (
-                    <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                      <span>ค่าแม่พิมพ์</span>
-                      <span className='font-semibold text-brand-navy'>
-                        {formatTHB(toolingMoldCost)}
-                      </span>
-                    </div>
-                  ) : null}
-                  {discountAmount > 0 ? (
-                    <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                      <span>ส่วนลด</span>
-                      <span className='font-semibold text-emerald-700'>
-                        -{formatTHB(discountAmount)}
-                      </span>
-                    </div>
-                  ) : null}
-                  <div className='flex items-center justify-between text-[11px] text-gray-600 mt-1'>
-                    <span>VAT {vatRate > 0 ? `${vatRate}%` : ''}</span>
-                    <span className='font-semibold text-brand-navy'>{formatTHB(vatAmount)}</span>
-                  </div>
-                  <div className='border-t border-gray-200 mt-2 pt-2 flex items-center justify-between text-[12px]'>
-                    <span className='font-semibold text-brand-navy'>รวมทั้งหมด</span>
-                    <span className='font-bold text-brand-mauve'>{formatTHB(grandTotal)}</span>
-                  </div>
-                </div>
-
-                {pickScalarString(q.factory_highlight, q.highlight) ? (
-                  <div className='rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2 mb-2'>
-                    <p className='text-[12px] font-semibold text-violet-700 mb-0.5'>
-                      จุดเด่นจากโรงงาน
-                    </p>
-                    <p className='text-[11px] text-violet-900 leading-relaxed'>
-                      {pickScalarString(q.factory_highlight, q.highlight)}
-                    </p>
-                  </div>
-                ) : null}
-              </>
-            );
-          })()}
-        </div>
-      ) : null}
     </div>
   );
 
