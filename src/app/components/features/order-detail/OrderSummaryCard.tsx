@@ -61,13 +61,13 @@ export function OrderSummaryCard({
 
   return (
     <div
-      className='rounded-2xl p-4 relative overflow-hidden'
+      className='relative overflow-hidden rounded-2xl p-4 sm:p-5'
       style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
     >
       <div className='absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white' />
       <div className='relative z-10'>
-        <div className='flex items-center justify-between mb-3 gap-3'>
-          <div className='flex items-center gap-3 min-w-0 flex-1'>
+        <div className='mb-3 flex items-start justify-between gap-3'>
+          <div className='flex min-w-0 flex-1 items-center gap-3'>
             {relatedFactory?.image && (
               <Image
                 src={relatedFactory.image}
@@ -75,15 +75,15 @@ export function OrderSummaryCard({
                 className='w-12 h-12 rounded-xl object-cover shrink-0'
               />
             )}
-            <div className='min-w-0'>
-              <p className='text-white/80 text-[10px] truncate'>{order.factoryName}</p>
-              <p className='text-white truncate' style={{ fontWeight: 700 }}>
+            <div className='min-w-0 space-y-0.5'>
+              <p className='truncate text-[10px] text-white/80'>{order.factoryName}</p>
+              <p className='truncate text-sm text-white' style={{ fontWeight: 700 }}>
                 {order.projectName}
               </p>
             </div>
           </div>
           <span
-            className='px-2.5 py-1 rounded-full text-[10px]'
+            className='shrink-0 rounded-full px-2.5 py-1 text-[10px]'
             style={{
               background: 'rgba(255,255,255,0.2)',
               color: 'var(--neutral-white)',
@@ -93,7 +93,7 @@ export function OrderSummaryCard({
             {badgeLabel}
           </span>
         </div>
-        <div className='space-y-1.5 mb-3'>
+        <div className='mb-3 space-y-1.5'>
           <div className='flex justify-between text-xs text-white/80'>
             <span>ความคืบหน้า</span>
             <span style={{ fontWeight: 700, color: 'var(--neutral-white)' }}>
@@ -107,26 +107,24 @@ export function OrderSummaryCard({
             />
           </div>
         </div>
-        <div className='flex gap-4'>
-          <div>
-            <p className='text-white text-sm' style={{ fontWeight: 700 }}>
+        <div className='grid grid-cols-3 gap-2 rounded-xl bg-white/10 p-2.5'>
+          <div className='min-w-0'>
+            <p className='truncate text-sm text-white' style={{ fontWeight: 700 }}>
               {formatCurrency(order.totalAmount)}
             </p>
-            <p className='text-white/70 text-[10px]'>มูลค่ารวม</p>
+            <p className='text-[10px] text-white/70'>มูลค่ารวม</p>
           </div>
-          <div className='w-px bg-white/30' />
-          <div>
-            <p className='text-white text-sm' style={{ fontWeight: 700 }}>
+          <div className='min-w-0 border-l border-white/20 pl-2'>
+            <p className='truncate text-sm text-white' style={{ fontWeight: 700 }}>
               {qtyText}
             </p>
-            <p className='text-white/70 text-[10px]'>จำนวน</p>
+            <p className='text-[10px] text-white/70'>จำนวน</p>
           </div>
-          <div className='w-px bg-white/30' />
-          <div>
-            <p className='text-white text-sm' style={{ fontWeight: 700 }}>
+          <div className='min-w-0 border-l border-white/20 pl-2'>
+            <p className='truncate text-sm text-white' style={{ fontWeight: 700 }}>
               {formatDateTh(order.estimatedDelivery)}
             </p>
-            <p className='text-white/70 text-[10px]'>กำหนดส่ง</p>
+            <p className='text-[10px] text-white/70'>กำหนดส่ง</p>
           </div>
         </div>
       </div>

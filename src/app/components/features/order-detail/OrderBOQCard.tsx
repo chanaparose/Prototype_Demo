@@ -4,7 +4,9 @@ import type { IQuoteNestedResponse } from '@/types/api';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { CollapsibleCard } from '@/shared/ui/cards/CollapsibleCard';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
+import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
+import { openImageLightbox } from '@/stores/useLightboxStore';
 
 interface Props {
   quotation: IQuoteNestedResponse;
@@ -56,10 +58,10 @@ export function OrderBOQCard({ quotation, factoryName }: Props) {
           </StatusBadge>
         </div>
       }
-      className='rounded-2xl border border-gray-100 bg-white overflow-hidden'
+      className='mb-3 rounded-2xl border border-gray-100 bg-white overflow-hidden'
     >
       <div className='space-y-4'>
-        <div className='flex items-center gap-2.5 -mt-1'>
+        <div className='flex items-center gap-2.5 pt-2'>
           <div className='w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-base shrink-0'>
             🏭
           </div>
@@ -67,7 +69,7 @@ export function OrderBOQCard({ quotation, factoryName }: Props) {
             <p className='text-sm font-semibold text-gray-900 truncate'>
               {factoryName ?? 'โรงงาน'}
             </p>
-            <p className='text-[10px] text-gray-400'>ผู้รับผลิต · #{quotation.quote_id}</p>
+            
           </div>
         </div>
 
@@ -149,9 +151,16 @@ export function OrderBOQCard({ quotation, factoryName }: Props) {
             </p>
             <div className='grid grid-cols-3 gap-2'>
               {imageUrls.map((url) => (
-                <div key={url} className='aspect-square rounded-xl overflow-hidden bg-gray-100'>
+                <Button
+                  key={url}
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => openImageLightbox(url)}
+                  className='aspect-square rounded-xl overflow-hidden bg-gray-100 focus:outline-none active:opacity-80'
+                  aria-label='ดูรูปขนาดใหญ่'
+                >
                   <Image src={url} alt='' className='w-full h-full object-cover' />
-                </div>
+                </Button>
               ))}
             </div>
           </div>

@@ -380,7 +380,7 @@ export async function fetchAndMapRfqDetail(
       return {
         id: String(q.quote_id),
         factoryId: String(q.factory_id),
-        factoryName: factoryMap.get(pickScalarString(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
+        factoryName: pickScalarString(q.factory_name) || factoryMap.get(pickScalarString(q.factory_id)) || `โรงงาน #${q.factory_id}`,
         price: Math.round(grandTotal),
         leadTime: q.lead_time_days,
         rating: 0,
@@ -394,7 +394,7 @@ export async function fetchAndMapRfqDetail(
         quoteStatus: q.status,
         quotationDetail: {
           quote_id: q.quote_id,
-          factory_name: factoryMap.get(pickScalarString(q.factory_id)) ?? `โรงงาน #${q.factory_id}`,
+          factory_name: pickScalarString(q.factory_name) || factoryMap.get(pickScalarString(q.factory_id)) || `โรงงาน #${q.factory_id}`,
           price_per_piece: q.price_per_piece,
           mold_cost: toolingMoldCost,
           moq: qty > 0 ? qty : undefined,

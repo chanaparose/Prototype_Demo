@@ -264,10 +264,10 @@ export function Layout() {
         </header>
 
         {/* ── Main content ────────────────────────────────────────────────── */}
-        <main className='flex-1 min-w-0 overflow-x-hidden pb-16 lg:pb-0'>
+        <main className='flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)] pb-16 lg:pb-0'>
           {/* `relative` gives AnimatePresence a positioned ancestor so the
               exiting element doesn't escape the content column. */}
-          <div className='relative max-w-7xl mx-auto'>
+          <div className='relative max-w-7xl mx-auto min-h-full'>
             <AnimatedOutlet />
           </div>
         </main>

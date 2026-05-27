@@ -34,7 +34,7 @@ export function RFQDetailDesktop() {
   const { rfq, relatedOrder, quoteOrderMap, quoteHistories, loading, error, refetch } =
     useRfqDetail(id);
 
-  const [specsOpen, setSpecsOpen] = React.useState(true);
+  const [specsOpen, setSpecsOpen] = React.useState(false);
   const [selectedOffer, setSelectedOffer] = React.useState<string | null>(null);
   const [closing, setClosing] = React.useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();

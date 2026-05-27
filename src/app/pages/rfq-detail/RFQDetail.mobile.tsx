@@ -37,7 +37,7 @@ export function RFQDetailMobile() {
     error,
     refetch,
   } = useRfqDetail(id);
-  const [specsOpen, setSpecsOpen] = useState(true);
+  const [specsOpen, setSpecsOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();

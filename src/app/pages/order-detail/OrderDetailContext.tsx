@@ -54,7 +54,7 @@ function mapApiOrderToOrder(
 ): Order {
   const fid = String(row.factory_id ?? '');
   const st = mapOrderStatusFromApi(String(row.status ?? ''));
-  const fName = factories.find((f) => f.id === fid)?.name ?? `โรงงาน #${fid}`;
+  const fName = factories.find((f) => f.id === fid)?.name ?? 'โรงงาน';
   const rfqObj =
     row.rfq && typeof row.rfq === 'object' && !Array.isArray(row.rfq)
       ? (row.rfq as Record<string, unknown>)
@@ -235,6 +235,9 @@ export function OrderDetailProvider({ orderId, factories, children }: ProviderPr
     const mappedOrder = mapApiOrderToOrder(row, factories, {
       productionUpdates: production.updates,
     });
+    if (reviewState?.factory_name) {
+      mappedOrder.factoryName = reviewState.factory_name;
+    }
     const payableAmount = (() => {
       const staged = paymentSchedule.find(
         (s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT',
