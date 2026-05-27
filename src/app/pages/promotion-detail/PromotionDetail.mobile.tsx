@@ -170,9 +170,9 @@ export function PromotionDetailMobile() {
       <div className='relative w-full aspect-[4/3] bg-white overflow-hidden'>
         <div className='absolute inset-0 flex items-center justify-center'>
           <div className='relative h-full max-h-full max-w-full aspect-square'>
-            <ImageWithFallback
+        <ImageWithFallback
               src={gallery[activeImage] ?? item.image}
-              alt={item.title}
+          alt={item.title}
               className='absolute inset-0 h-full w-full object-cover'
             />
           </div>
@@ -265,8 +265,8 @@ export function PromotionDetailMobile() {
         </div>
 
         <h1 className='mt-2 text-[15px] font-medium leading-snug' style={{ color: BRAND.ink }}>
-          {item.title}
-        </h1>
+            {item.title}
+          </h1>
 
         <div className='flex items-baseline gap-2 flex-wrap mt-2'>
           {priceText ? (
@@ -457,7 +457,7 @@ export function PromotionDetailMobile() {
               const count = Number(breakdown[String(star)] ?? 0);
               const intensity =
                 reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
-              return (
+                    return (
                 <div key={star} className='flex items-center gap-2'>
                   <span className='w-8 text-[10px] text-gray-500'>{star}★</span>
                   <div className='h-1.5 flex-1 rounded-full bg-gray-100 overflow-hidden'>
@@ -470,10 +470,10 @@ export function PromotionDetailMobile() {
                     />
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                    );
+                  })}
+                </div>
+              </div>
         <div className='mt-4 pt-3 border-t border-gray-100 space-y-2'>
           <p className='text-[12px] font-semibold' style={{ color: BRAND.ink }}>
             รีวิวล่าสุดจากลูกค้า
@@ -491,8 +491,8 @@ export function PromotionDetailMobile() {
               </div>
             ))
           )}
-        </div>
-      </div>
+              </div>
+            </div>
 
       <>
         <div className='h-2' style={{ background: 'var(--brand-panel)' }} />
@@ -527,9 +527,9 @@ export function PromotionDetailMobile() {
                         alt={rp.title}
                         className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                       />
-                      <span
+              <span
                         className='absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                        style={{
+                style={{
                           backgroundColor: isPromo ? BRAND.orange : '#2563EB',
                         }}
                       >
@@ -559,10 +559,10 @@ export function PromotionDetailMobile() {
                           </div>
                           <span className='text-gray-400 text-[8px] shrink-0'>
                             ขั้นต่ำ {rp.minOrder}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+              </span>
+          </div>
+        </div>
+              </div>
                   </Button>
                 );
               })}

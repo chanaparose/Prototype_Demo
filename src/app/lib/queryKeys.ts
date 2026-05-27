@@ -74,8 +74,8 @@ export const adminKeys = {
 
 export const factoryIdeasKeys = {
   all: ['factory-ideas'] as const,
-  categories: (materialTab: boolean) =>
-    [...factoryIdeasKeys.all, 'categories', materialTab ? 'MT' : 'PD'] as const,
+  categories: (scope: boolean | string) =>
+    [...factoryIdeasKeys.all, 'categories', typeof scope === 'string' ? scope : scope ? 'MT' : 'PD'] as const,
   factoryList: (scope?: string) => [...factoryIdeasKeys.all, 'factories', scope ?? 'ALL'] as const,
   showcasesPaginated: (params: Record<string, unknown>) =>
     [...factoryIdeasKeys.all, 'showcases-paginated', params] as const,

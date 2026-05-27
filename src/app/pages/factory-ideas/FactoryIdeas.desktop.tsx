@@ -45,6 +45,7 @@ export function FactoryIdeasDesktop() {
     selectedSubCategoryId,
     setSelectedSubCategoryId,
     categoryFilters,
+    categoriesWithSubs,
     effectiveCategoryId,
     applyCategory,
     isFactoryTab,
@@ -111,28 +112,33 @@ export function FactoryIdeasDesktop() {
               ))}
             </div>
 
-            <div className='w-px h-6 bg-gray-200' />
+            {!isFactoryTab && (
+              <>
+                <div className='w-px h-6 bg-gray-200' />
 
-            <FactoryIdeasCategoryDropdown
-              variant='desktop'
-              categoryMenuRef={categoryMenuRef}
-              categoryMenuOpen={categoryMenuOpen}
-              setCategoryMenuOpen={setCategoryMenuOpen}
-              categoryFilters={categoryFilters}
-              effectiveCategoryId={effectiveCategoryId}
-              selectedSubCategoryId={selectedSubCategoryId}
-              setSelectedSubCategoryId={setSelectedSubCategoryId}
-              isMaterialTab={isMtCategoryScope}
-              categoryMenuTriggerLabel={categoryMenuTriggerLabel}
-              menuHighlightCategoryId={menuHighlightCategoryId}
-              setMenuHighlightCategoryId={setMenuHighlightCategoryId}
-              panelSubs={panelSubs}
-              panelSubsLoading={panelSubsLoading}
-              applyCategory={applyCategory}
-              closeCategoryMenu={closeCategoryMenu}
-              pickSubCategory={pickSubCategory}
-              categoryOptionSelected={categoryOptionSelected}
-            />
+                <FactoryIdeasCategoryDropdown
+                  variant='desktop'
+                  categoryMenuRef={categoryMenuRef}
+                  categoryMenuOpen={categoryMenuOpen}
+                  setCategoryMenuOpen={setCategoryMenuOpen}
+                  categoryFilters={categoryFilters}
+                  effectiveCategoryId={effectiveCategoryId}
+                  selectedSubCategoryId={selectedSubCategoryId}
+                  setSelectedSubCategoryId={setSelectedSubCategoryId}
+                  isMaterialTab={isMtCategoryScope}
+                  categoryMenuTriggerLabel={categoryMenuTriggerLabel}
+                  menuHighlightCategoryId={menuHighlightCategoryId}
+                  setMenuHighlightCategoryId={setMenuHighlightCategoryId}
+                  panelSubs={panelSubs}
+                  panelSubsLoading={panelSubsLoading}
+                  applyCategory={applyCategory}
+                  closeCategoryMenu={closeCategoryMenu}
+                  pickSubCategory={pickSubCategory}
+                  categoryOptionSelected={categoryOptionSelected}
+                  categoriesWithSubs={categoriesWithSubs}
+                />
+              </>
+            )}
 
             <MobileSearchField
               className='w-64 shrink-0'
