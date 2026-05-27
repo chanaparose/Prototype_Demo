@@ -32,6 +32,7 @@ import { MobileCreateRfqFab } from '@/components/layout/MobileCreateRfqFab';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
+import { ImageLightbox } from '@/components/common/ImageLightbox';
 
 type HeaderIconTone = 'purple' | 'indigo' | 'rose';
 
@@ -196,6 +197,7 @@ export function Layout() {
 
   return (
     <div className='min-h-screen flex bg-white w-full max-w-full overflow-x-hidden'>
+      <ImageLightbox />
       <DesktopSidebar />
 
       <div className='flex-1 flex flex-col lg:pl-64 min-w-0'>

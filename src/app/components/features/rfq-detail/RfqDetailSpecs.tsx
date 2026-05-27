@@ -1,4 +1,5 @@
 import React from 'react';
+import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
@@ -105,15 +106,15 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
               <p className='text-xs text-gray-500 mb-2'>รูปอ้างอิง / แนบมากับ RFQ</p>
               <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
                 {imageUrls.map((url, idx) => (
-                  <a
+                  <button
                     key={`${url}-${idx}`}
-                    href={url}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='block aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100'
+                    type='button'
+                    onClick={() => openImageLightbox(url)}
+                    className='block aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100 focus:outline-none active:opacity-80'
+                    aria-label='ดูรูปขนาดใหญ่'
                   >
                     <ImageWithFallback src={url} alt='' className='w-full h-full object-cover' />
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>

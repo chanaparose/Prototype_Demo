@@ -1,4 +1,5 @@
 import React from 'react';
+import { openImageLightbox } from '@/stores/useLightboxStore';
 import { BadgeCheck, Calendar, Package, Shield, Truck } from 'lucide-react';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
@@ -167,15 +168,15 @@ export function QuotationBOQDetailsPanel({
           </div>
           <div className='grid grid-cols-3 sm:grid-cols-5 gap-2'>
             {q.image_urls.slice(0, 5).map((url, idx) => (
-              <a
+              <button
                 key={`${url}-${idx}`}
-                href={url}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='block aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-50'
+                type='button'
+                onClick={() => openImageLightbox(url)}
+                className='block aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-50 focus:outline-none active:opacity-80'
+                aria-label='ดูรูปขนาดใหญ่'
               >
                 <ImageWithFallback src={url} alt='' className='w-full h-full object-cover' />
-              </a>
+              </button>
             ))}
           </div>
         </div>

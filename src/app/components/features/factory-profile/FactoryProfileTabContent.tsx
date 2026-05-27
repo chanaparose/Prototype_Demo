@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { openImageLightbox } from '@/stores/useLightboxStore';
 import { ChevronRight, Search, ThumbsUp, MapPin, Star } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
@@ -364,7 +365,7 @@ export function FactoryProfileTabContent({
                       <div className='mt-2'>
                         <ReviewImageAttachments
                           urls={review.imageUrls}
-                          onPreviewUrl={(u) => window.open(u, '_blank', 'noopener,noreferrer')}
+                          onPreviewUrl={(u) => openImageLightbox(u)}
                         />
                       </div>
                     ) : null}
