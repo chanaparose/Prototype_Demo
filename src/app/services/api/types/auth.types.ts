@@ -28,6 +28,11 @@ export interface IRegisterFactoryRequest {
   document_url?: string;
   cert_number?: string;
   cert_expire_date?: string;
+  // Address fields — creates a default address row
+  address_detail?: string;
+  sub_district_id?: number;
+  district_id?: number;
+  zip_code?: string;
 }
 
 export interface IAuthResponse {

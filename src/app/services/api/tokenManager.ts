@@ -4,7 +4,7 @@
  */
 
 const TOKEN_ISSUED_AT_KEY = 'auth_token_issued_at';
-const TOKEN_MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours
+const TOKEN_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours — matches BE JWT expiry
 
 function normalizeToken(raw: unknown): string {
   if (typeof raw !== 'string') return '';

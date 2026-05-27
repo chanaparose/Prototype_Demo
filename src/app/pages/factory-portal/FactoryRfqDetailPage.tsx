@@ -377,8 +377,8 @@ export function FactoryRfqDetailPage() {
     if (!qid) return;
     setCancelBusy(true);
     setError('');
-    try {
-      await quotationsApi.delete(qid);
+      try {
+        await quotationsApi.delete(qid);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ยกเลิกใบเสนอราคาไม่สำเร็จ');
@@ -450,15 +450,15 @@ export function FactoryRfqDetailPage() {
       </div>
 
       <div className='w-full max-w-lg lg:max-w-5xl mx-auto px-4 pt-4'>
-        {loading ? (
+      {loading ? (
           <div className='flex justify-center py-12'>
             <div className='w-10 h-10 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin' />
-          </div>
-        ) : null}
+        </div>
+      ) : null}
 
         {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
 
-        {!loading ? (
+      {!loading ? (
           <div className='space-y-4'>
             <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
               <div className='flex items-center justify-between mb-2'>
@@ -506,7 +506,7 @@ export function FactoryRfqDetailPage() {
                   <StatusBadge variant={quoteStatusVariant(myStatus)} size='md'>
                     {quoteStatusLabel(myStatus)}
                   </StatusBadge>
-                </div>
+              </div>
               </section>
             ) : (
               <section className='rounded-2xl bg-white border border-amber-100 shadow-sm p-4'>
@@ -516,31 +516,31 @@ export function FactoryRfqDetailPage() {
 
             <div className={twoCol}>
               <div className='space-y-4 mb-4 lg:mb-0 min-w-0'>
-                {imageUrls.length > 0 ? (
+            {imageUrls.length > 0 ? (
                   <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
                     <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
                       รูปอ้างอิง
                     </p>
                     <div className='flex flex-wrap gap-2'>
-                      {imageUrls.slice(0, 5).map((url, i) => (
+                  {imageUrls.slice(0, 5).map((url, i) => (
                         <Button
                           variant='unstyled'
-                          key={url}
+                      key={url}
                           type='button'
-                          onClick={() => setLightbox(i)}
+                      onClick={() => setLightbox(i)}
                           className='w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-indigo'
-                        >
+                    >
                           <Image src={url} alt='' className='w-full h-full' />
                         </Button>
-                      ))}
-                      {imageUrls.length > 5 ? (
+                  ))}
+                  {imageUrls.length > 5 ? (
                         <div className='w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-500'>
-                          +{imageUrls.length - 5}
-                        </div>
-                      ) : null}
+                      +{imageUrls.length - 5}
                     </div>
-                  </section>
-                ) : null}
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
 
                 <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
                   <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
@@ -549,7 +549,7 @@ export function FactoryRfqDetailPage() {
                   <div className='flex items-start justify-between gap-2'>
                     <span className='text-xs text-gray-500'>หมวดหมู่</span>
                     <span className='text-sm font-medium text-right text-brand-navy'>
-                      {breadcrumb}
+                {breadcrumb}
                     </span>
                   </div>
                   <div className='flex items-start justify-between gap-2'>
@@ -605,27 +605,27 @@ export function FactoryRfqDetailPage() {
                         : '-'}
                     </span>
                   </div>
-                  {targetDaysCustomer != null ? (
+              {targetDaysCustomer != null ? (
                     <div className='flex items-start justify-between gap-2'>
                       <span className='text-xs text-gray-500'>Lead time ที่ต้องการ</span>
                       <span className='text-sm font-medium text-right text-brand-navy'>
-                        {targetDaysCustomer} วัน
+                  {targetDaysCustomer} วัน
                       </span>
                     </div>
-                  ) : null}
+              ) : null}
                   <div className='pt-1'>
-                    <ShippingMethodLockedField
+                <ShippingMethodLockedField
                       label='วิธีจัดส่ง (ลูกค้าเลือก)'
-                      methodName={customerShipLabel || '—'}
+                  methodName={customerShipLabel || '—'}
                       hint='ล็อกตาม RFQ — โรงงานเปลี่ยนไม่ได้'
                       emptyFallback='—'
-                    />
-                  </div>
-                  {addressSummary ? (
+                />
+              </div>
+              {addressSummary ? (
                     <div className='flex items-start justify-between gap-2'>
                       <span className='text-xs text-gray-500'>ที่อยู่ปลายทาง</span>
                       <span className='text-sm font-medium text-right break-words text-brand-navy'>
-                        {addressSummary}
+                  {addressSummary}
                       </span>
                     </div>
                   ) : (
@@ -634,7 +634,7 @@ export function FactoryRfqDetailPage() {
                       <span className='text-sm font-medium text-right text-brand-navy'>—</span>
                     </div>
                   )}
-                </section>
+            </section>
 
                 <div className='rounded-2xl bg-white border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between'>
                   <span className='text-xs text-gray-500'>คู่แข่งที่เสนอราคา</span>
@@ -642,7 +642,7 @@ export function FactoryRfqDetailPage() {
                     <span className='text-sm font-bold text-brand-navy'>{competitorCount} ราย</span>
                     <span className='text-[11px] text-gray-400'>(ซ่อนราคา)</span>
                   </div>
-                </div>
+          </div>
               </div>
 
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3 min-w-0 lg:sticky lg:top-20'>
@@ -662,31 +662,31 @@ export function FactoryRfqDetailPage() {
                 </h2>
 
                 {fid != null ? (
-                  <QuotationCreateForm
-                    key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
-                    ref={quoteFormRef}
-                    rfqId={id}
-                    factoryId={fid}
+              <QuotationCreateForm
+                key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
+                ref={quoteFormRef}
+                rfqId={id}
+                factoryId={fid}
                     lockedShippingMethodId={rfqShipId ?? 0}
                     lockedShippingMethodName={customerShipLabel || undefined}
                     rfqQuantity={quantity}
-                    patchQuotationId={
-                      myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
-                    }
-                    initial={
-                      myQuote
-                        ? {
-                            price_per_piece: String(myQuote.price_per_piece ?? ''),
+                patchQuotationId={
+                  myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
+                }
+                initial={
+                  myQuote
+                    ? {
+                        price_per_piece: String(myQuote.price_per_piece ?? ''),
                             tooling_mold_cost: String(
                               myQuote.tooling_mold_cost ?? myQuote.mold_cost ?? '',
                             ),
                             shipping_cost: String(myQuote.shipping_cost ?? ''),
                             packaging_cost: String(myQuote.packaging_cost ?? ''),
-                            lead_time_days: String(myQuote.lead_time_days ?? ''),
+                        lead_time_days: String(myQuote.lead_time_days ?? ''),
                             validity_days: String(myQuote.validity_days ?? '14'),
-                          }
-                        : undefined
-                    }
+                      }
+                    : undefined
+                }
                     initialImageUrls={
                       myQuote
                         ? (() => {
@@ -706,28 +706,28 @@ export function FactoryRfqDetailPage() {
                           )
                         : ''
                     }
-                    submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
-                    readOnly={Boolean(myQuote && !canEdit)}
-                    showHeading={false}
-                    budgetPerPiece={budgetPerPiece}
-                    targetDaysCustomer={targetDaysCustomer}
-                    deadlineIso={deadlineIso}
+                submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
+                readOnly={Boolean(myQuote && !canEdit)}
+                showHeading={false}
+                budgetPerPiece={budgetPerPiece}
+                targetDaysCustomer={targetDaysCustomer}
+                deadlineIso={deadlineIso}
                     commissionConfig={commissionConfig}
-                    onSubmitted={async () => {
-                      await load();
-                    }}
-                  />
-                ) : null}
+                onSubmitted={async () => {
+                  await load();
+                }}
+              />
+            ) : null}
 
                 {canEdit ? (
                   <Button
                     variant='unstyled'
                     type='button'
-                    disabled={cancelBusy}
-                    onClick={() => void cancelQuote()}
+                disabled={cancelBusy}
+                onClick={() => void cancelQuote()}
                     className='w-full py-3 rounded-xl border border-red-200 text-red-600 text-sm font-semibold disabled:opacity-50'
-                  >
-                    ถอนใบเสนอราคา
+              >
+                ถอนใบเสนอราคา
                   </Button>
                 ) : null}
                 {!dismissBusy ? (
@@ -739,11 +739,11 @@ export function FactoryRfqDetailPage() {
                     onDismiss={dismissRfq}
                     onUndismiss={undismissRfq}
                   />
-                ) : null}
-              </section>
-            </div>
+            ) : null}
+          </section>
+        </div>
 
-            {customerId > 0 && fid != null ? (
+      {customerId > 0 && fid != null ? (
               <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
                 <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1'>
                   ติดต่อลูกค้า
@@ -756,24 +756,24 @@ export function FactoryRfqDetailPage() {
                   <Button
                     variant='unstyled'
                     type='button'
-                    disabled={chatBusy}
-                    onClick={() => void openChatToCustomer()}
+              disabled={chatBusy}
+              onClick={() => void openChatToCustomer()}
                     className='flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold text-sm disabled:opacity-50'
-                  >
-                    ส่งข้อความหาลูกค้า
+            >
+              ส่งข้อความหาลูกค้า
                   </Button>
                   <Button
                     variant='unstyled'
                     type='button'
-                    disabled={chatBusy}
-                    onClick={() => void sendQuoteMessageToCustomer()}
+              disabled={chatBusy}
+              onClick={() => void sendQuoteMessageToCustomer()}
                     className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)]'
-                  >
-                    ส่งใบเสนอราคาในแชท (QT)
+            >
+              ส่งใบเสนอราคาในแชท (QT)
                   </Button>
-                </div>
-              </section>
-            ) : null}
+          </div>
+        </section>
+      ) : null}
 
             {myQuote && quoteIdOf(myQuote) ? (
               <QuotationHistoryPanel quotationId={quoteIdOf(myQuote)} />

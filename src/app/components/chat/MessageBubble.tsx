@@ -297,7 +297,7 @@ function TextChatBubble({
 }
 
 const CHAT_CARD_SHELL =
-  'w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-violet-200/80 bg-white text-left shadow-[0_14px_36px_rgba(46,34,82,0.18)] transition-all';
+  'relative w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-white/70 bg-[linear-gradient(155deg,rgba(255,255,255,0.92),rgba(248,245,255,0.86))] text-left backdrop-blur-xl transition-all';
 
 function RfqChatCard({
   rfqId,
@@ -313,37 +313,50 @@ function RfqChatCard({
   const canOpen = Number.isFinite(rfqId) && rfqId > 0;
   return (
     <div className='flex justify-center px-1'>
-      <article className={CHAT_CARD_SHELL}>
+      <article
+        className={cn(
+          CHAT_CARD_SHELL,
+          'max-w-[min(100%,304px)] border-violet-200/80',
+          canOpen &&
+            'hover:-translate-y-0.5 active:scale-[0.995]',
+        )}
+      >
         <div
-          className='h-[3px] w-full'
+          className='pointer-events-none absolute inset-0 rounded-2xl'
+          style={{
+            border: '1px solid rgba(139,92,246,0.24)',
+          }}
+        />
+        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
+        <div
+          className='relative z-[1] h-[3px] w-full'
           style={{
             background:
               'linear-gradient(90deg, var(--brand-mauve) 0%, var(--brand-purple) 55%, var(--brand-violet-soft) 100%)',
           }}
         />
-        <div className='p-4'>
-          <div className='mb-3 flex items-start gap-3'>
+        <div className='relative z-[1] p-3.5'>
+          <div className='mb-2.5 flex items-start gap-2'>
             <span
-              className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
+              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl'
               style={{
                 background:
                   'linear-gradient(145deg, color-mix(in srgb, var(--brand-mauve) 24%, white), color-mix(in srgb, var(--brand-purple) 18%, white))',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 10px rgba(79,70,229,0.18)',
               }}
             >
-              <FileText size={18} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
+              <FileText size={16} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
             </span>
             <div className='min-w-0 flex-1 pt-0.5'>
-              <p className='text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
+              <p className='text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
                 คำขอ RFQ
               </p>
-              <p className='mt-1 line-clamp-3 text-[15px] font-bold leading-snug text-[var(--brand-navy)]'>
+              <p className='mt-1 line-clamp-3 text-[13px] font-bold leading-snug text-[var(--brand-navy)]'>
                 {title}
               </p>
             </div>
           </div>
-          <div className='mb-3 rounded-lg border border-violet-100 bg-violet-50/55 px-2.5 py-2'>
-            <p className='text-[11px] font-medium text-violet-900 line-clamp-2'>
+          <div className='mb-2.5 rounded-lg border border-violet-100 bg-violet-50/55 px-2 py-1.5'>
+            <p className='text-[10px] font-medium text-violet-900 line-clamp-2'>
               เอกสารอ้างอิง: <span className='font-semibold'>{title}</span>
             </p>
           </div>
@@ -353,14 +366,13 @@ function RfqChatCard({
             disabled={!canOpen}
             onClick={onOpen}
               className={cn(
-                'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
+                'flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
                 'disabled:cursor-not-allowed disabled:opacity-45',
-                canOpen && 'hover:brightness-[1.03] active:scale-[0.99]',
+                canOpen && 'hover:brightness-[1.02] active:scale-[0.995]',
               )}
               style={{
                 background:
                   'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
-                boxShadow: '0 8px 20px rgba(79,70,229,0.34)',
               }}
             >
             {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'}
@@ -428,33 +440,41 @@ function QuotationChatCard({
         onClick={onOpen}
         className={cn(
           CHAT_CARD_SHELL,
+          'max-w-[min(100%,304px)] border-indigo-200/80',
           'disabled:cursor-default disabled:opacity-90',
-          !disabled && 'hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(46,34,82,0.14)] active:scale-[0.995]',
+          !disabled &&
+            'hover:-translate-y-0.5 active:scale-[0.995]',
         )}
         aria-label='ดูรายละเอียดใบเสนอราคา'
       >
         <div
-          className='h-[3px] w-full'
+          className='pointer-events-none absolute inset-0 rounded-2xl'
+          style={{
+            border: '1px solid rgba(99,102,241,0.24)',
+          }}
+        />
+        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
+        <div
+          className='relative z-[1] h-[3px] w-full'
           style={{
             background:
               'linear-gradient(90deg, var(--brand-indigo) 0%, var(--brand-purple) 50%, #a78bfa 100%)',
           }}
         />
-        <div className='p-4'>
-          <div className='mb-3 flex items-start justify-between gap-2'>
-            <div className='flex min-w-0 items-center gap-2.5'>
+        <div className='relative z-[1] p-3.5'>
+          <div className='mb-2.5 flex items-start justify-between gap-2'>
+            <div className='flex min-w-0 items-center gap-2'>
               <span
-                className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
+                className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl'
                 style={{
                   background:
                     'linear-gradient(145deg, color-mix(in srgb, var(--brand-indigo) 12%, white), var(--brand-lavender))',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.85)',
                 }}
               >
-                <CreditCard size={18} className='text-[var(--brand-indigo)]' strokeWidth={2.2} />
+                <CreditCard size={16} className='text-[var(--brand-indigo)]' strokeWidth={2.2} />
               </span>
               <div className='min-w-0'>
-                <p className='text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--brand-indigo)]'>
+                <p className='text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--brand-indigo)]'>
                   ใบเสนอราคาทางการ
                 </p>
               </div>
@@ -462,29 +482,29 @@ function QuotationChatCard({
             <QuotationStatusPill status={qStatus} viewerRole={viewerRole} />
           </div>
 
-          <div className='mb-3 grid grid-cols-2 gap-2'>
-            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-3 py-2.5 text-center'>
-              <p className='text-[15px] font-bold tabular-nums text-[var(--brand-navy)]'>
+          <div className='mb-2.5 grid grid-cols-2 gap-1.5'>
+            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-2.5 py-2 text-center'>
+              <p className='text-[14px] font-bold tabular-nums text-[var(--brand-navy)]'>
                 {formatCurrency(quote.price, 'THB')}
               </p>
-              <p className='mt-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
+              <p className='mt-0.5 text-[8px] font-semibold uppercase tracking-wide text-violet-700'>
                 ราคารวม
               </p>
             </div>
-            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-3 py-2.5 text-center'>
-              <p className='text-[15px] font-bold tabular-nums text-[var(--brand-navy)]'>
+            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-2.5 py-2 text-center'>
+              <p className='text-[14px] font-bold tabular-nums text-[var(--brand-navy)]'>
                 {quote.leadTime}{' '}
-                <span className='text-[11px] font-semibold text-[var(--neutral-subtle)]'>วัน</span>
+                <span className='text-[10px] font-semibold text-[var(--neutral-subtle)]'>วัน</span>
               </p>
-              <p className='mt-0.5 flex items-center justify-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
-                <Clock size={9} />
+              <p className='mt-0.5 flex items-center justify-center gap-0.5 text-[8px] font-semibold uppercase tracking-wide text-violet-700'>
+                <Clock size={8} />
                 lead time
               </p>
             </div>
           </div>
 
-          <div className='flex items-center justify-center gap-1.5 rounded-lg border border-violet-100 bg-violet-50 px-2.5 py-2 text-[10px] text-[var(--brand-navy)]'>
-            <Calendar size={11} className='shrink-0 text-violet-700' />
+          <div className='flex items-center justify-center gap-1 rounded-lg border border-violet-100 bg-violet-50 px-2 py-1.5 text-[9px] text-[var(--brand-navy)]'>
+            <Calendar size={10} className='shrink-0 text-violet-700' />
             <span>
               ใช้ได้ถึง{' '}
               <span className='font-semibold'>{quote.validUntil || '-'}</span>
@@ -497,12 +517,7 @@ function QuotationChatCard({
               <ArrowRight size={13} strokeWidth={2.5} />
             </div>
           ) : null}
-
-          {msg.display_time ? (
-            <p className='mt-2 text-center text-[9px] tabular-nums text-[var(--neutral-placeholder)]'>
-              {msg.display_time}
-            </p>
-          ) : null}
+ 
         </div>
       </Button>
     </div>

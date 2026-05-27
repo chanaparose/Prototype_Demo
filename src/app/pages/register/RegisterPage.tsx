@@ -38,6 +38,8 @@ import { mediaApi } from '@/services/api/factoryApi';
 import { checkEmail } from '@/services/api/authApi';
 import type { IRegisterFactoryRequest } from '@/services/api/types/auth.types';
 import { DatePicker } from '@/components/ui/date-picker';
+import { LbiAddressPicker } from '@/components/common/LbiAddressPicker';
+import { Textarea } from '@/components/ui/textarea';
 import {
   digitsOnlyPhone,
   formatThaiPhoneDisplay,
@@ -58,7 +60,11 @@ const ctSchema = z
       .trim()
       .min(1, 'กรุณากรอกเบอร์โทรศัพท์')
       .refine((v) => isValidThaiPhone(v), 'เบอร์โทรไม่ถูกต้อง (10 หลัก เริ่ม 06–09)'),
-    password: z.string().trim().min(8, 'รหัสผ่านอย่างน้อย 8 ตัวอักษร'),
+    password: z
+      .string()
+      .trim()
+      .min(8, 'รหัสผ่านต้องมีอย่างน้อย 8 ตัว')
+      .refine((v) => /\d/.test(v) && /[a-zA-Z]/.test(v), 'รหัสผ่านต้องมีทั้งตัวเลขและตัวอักษร'),
     confirmPassword: z.string().trim().min(1, 'กรุณายืนยันรหัสผ่าน'),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -147,7 +153,7 @@ function CustomerTab() {
   const form = useForm<CtFormValues>({
     resolver: zodResolver(ctSchema),
     defaultValues: { first_name: '', last_name: '', email: '', phone: '', password: '', confirmPassword: '' },
-    mode: 'onSubmit',
+    mode: 'onBlur',
   });
 
   const isSubmitting = form.formState.isSubmitting || localSubmitting;
@@ -319,12 +325,12 @@ function CustomerTab() {
                 </FormLabel>
                 <FormControl>
                   <div className='relative'>
-                    <Input
-                      type='email'
-                      placeholder='email@example.com'
-                      autoComplete='email'
-                      className={inClass(form.formState.errors.email?.message)}
-                      {...field}
+                  <Input
+                    type='email'
+                    placeholder='email@example.com'
+                    autoComplete='email'
+                    className={inClass(form.formState.errors.email?.message)}
+                    {...field}
                       onChange={(e) => {
                         field.onChange(e);
                         if (e.target.value.trim() !== ctLastChecked.current) {
@@ -467,106 +473,106 @@ function CustomerTab() {
           {/* Hide phone/password when upgrading FT account */}
           {ctEmailStatus !== 'ft' && (
             <>
-              <FormField
-                control={form.control}
-                name='phone'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='text-xs font-medium text-gray-600'>
-                      เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type='tel'
+          <FormField
+            control={form.control}
+            name='phone'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-xs font-medium text-gray-600'>
+                  เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type='tel'
                         inputMode='tel'
-                        autoComplete='tel'
+                    autoComplete='tel'
                         placeholder='098-889-3983'
                         maxLength={12}
-                        className={inClass(form.formState.errors.phone?.message)}
+                    className={inClass(form.formState.errors.phone?.message)}
                         value={field.value}
                         name={field.name}
                         ref={field.ref}
                         onBlur={field.onBlur}
                         onChange={(e) => field.onChange(formatThaiPhoneDisplay(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage className='text-xs' />
-                  </FormItem>
-                )}
-              />
+                  />
+                </FormControl>
+                <FormMessage className='text-xs' />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name='password'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='text-xs font-medium text-gray-600'>
-                      รหัสผ่าน <span className='text-red-500'>*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className='relative'>
-                        <Input
-                          type={showPw ? 'text' : 'password'}
-                          placeholder='อย่างน้อย 8 ตัวอักษร'
-                          autoComplete='new-password'
-                          className={`${inClass(form.formState.errors.password?.message)} pr-10`}
-                          {...field}
-                        />
-                        <Button
-                          variant='unstyled'
-                          type='button'
-                          tabIndex={-1}
-                          onClick={() => setShowPw((v) => !v)}
-                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                        >
-                          {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className='text-xs' />
-                  </FormItem>
-                )}
-              />
+          <FormField
+            control={form.control}
+            name='password'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-xs font-medium text-gray-600'>
+                  รหัสผ่าน <span className='text-red-500'>*</span>
+                </FormLabel>
+                <FormControl>
+                  <div className='relative'>
+                    <Input
+                      type={showPw ? 'text' : 'password'}
+                      placeholder='อย่างน้อย 8 ตัวอักษร'
+                      autoComplete='new-password'
+                      className={`${inClass(form.formState.errors.password?.message)} pr-10`}
+                      {...field}
+                    />
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      tabIndex={-1}
+                      onClick={() => setShowPw((v) => !v)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                    >
+                      {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage className='text-xs' />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name='confirmPassword'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='text-xs font-medium text-gray-600'>
-                      ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <div className='relative'>
-                        <Input
-                          type={showConfirm ? 'text' : 'password'}
-                          placeholder='กรอกรหัสผ่านอีกครั้ง'
-                          autoComplete='new-password'
-                          className={`${inClass(form.formState.errors.confirmPassword?.message)} pr-10`}
-                          {...field}
-                        />
-                        <Button
-                          variant='unstyled'
-                          type='button'
-                          tabIndex={-1}
-                          onClick={() => setShowConfirm((v) => !v)}
-                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                        >
-                          {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage className='text-xs' />
-                  </FormItem>
-                )}
-              />
+          <FormField
+            control={form.control}
+            name='confirmPassword'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='text-xs font-medium text-gray-600'>
+                  ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
+                </FormLabel>
+                <FormControl>
+                  <div className='relative'>
+                    <Input
+                      type={showConfirm ? 'text' : 'password'}
+                      placeholder='กรอกรหัสผ่านอีกครั้ง'
+                      autoComplete='new-password'
+                      className={`${inClass(form.formState.errors.confirmPassword?.message)} pr-10`}
+                      {...field}
+                    />
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      tabIndex={-1}
+                      onClick={() => setShowConfirm((v) => !v)}
+                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                    >
+                      {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage className='text-xs' />
+              </FormItem>
+            )}
+          />
             </>
           )}
 
           <Button
             variant='unstyled'
             type='submit'
-            disabled={isSubmitting || (ctEmailStatus === 'ft' && !ftPasswordVerified)}
+            disabled={isSubmitting || ctEmailStatus === 'cf' || (ctEmailStatus === 'ft' && !ftPasswordVerified)}
             className={cn(PRIMARY_BTN, 'mt-2')}
             style={PRIMARY_BTN_BG}
           >
@@ -692,6 +698,10 @@ function FactoryTab() {
         document_url: certUrl,
         cert_number: form.cert_number.trim() || undefined,
         cert_expire_date: form.cert_expire_date || undefined,
+        address_detail: form.address_detail.trim() || undefined,
+        sub_district_id: form.sub_district_id || undefined,
+        district_id: form.district_id || undefined,
+        zip_code: form.zip_code.trim() || undefined,
       };
 
       if (isCTUpgrade || (emailStatus === 'ct' && ctPasswordVerified)) {
@@ -736,6 +746,10 @@ function FactoryTab() {
           document_url: certUrl,
           cert_number: form.cert_number.trim() || undefined,
           cert_expire_date: form.cert_expire_date || undefined,
+          address_detail: form.address_detail.trim() || undefined,
+          sub_district_id: form.sub_district_id || undefined,
+          district_id: form.district_id || undefined,
+          zip_code: form.zip_code.trim() || undefined,
         });
         setUpgradeEmail(resolvedEmail);
         setEmailStatus('ct');
@@ -768,7 +782,7 @@ function FactoryTab() {
   };
 
   /* ── Factory registration form ── */
-  return (
+    return (
     <div className='space-y-6'>
       {(apiError ?? factoryApiError) ? <FormAlert>{apiError ?? factoryApiError}</FormAlert> : null}
 
@@ -782,8 +796,8 @@ function FactoryTab() {
               onClick={retryMaster}
               className='font-semibold text-amber-900 underline'
             >
-              ลองใหม่
-            </Button>
+            ลองใหม่
+          </Button>
           </span>
         </FormAlert>
       ) : null}
@@ -850,27 +864,70 @@ function FactoryTab() {
             {errors.tax_id && <p className='text-xs text-red-600'>{errors.tax_id}</p>}
           </div>
 
-          <div ref={setFieldRef('province_id')} className='sm:col-span-2 space-y-1.5'>
-            <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
-              จังหวัดที่ตั้งโรงงาน <span className='text-red-500'>*</span>
+        </div>
+
+        {/* ── ที่อยู่โรงงาน ── */}
+        <div className='sm:col-span-2 space-y-3 mt-2'>
+          <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
+            ที่อยู่โรงงาน <span className='text-red-500'>*</span>
             </Label>
-            <SearchableSelect
-              value={form.province_id ? String(form.province_id) : ''}
-              options={provinces.map((p) => ({ value: String(p.id), label: p.name }))}
-              placeholder='— เลือกจังหวัด —'
-              searchPlaceholder='ค้นหาชื่อจังหวัด…'
-              emptyMessage='ไม่พบจังหวัด'
-              loading={masterLoading}
-              disabled={masterLoading}
-              onValueChange={(v) => {
-                const id = v ? Number(v) : 0;
-                setField('province_id', id, { validate: true });
+          <div ref={setFieldRef('province_id')}>
+            <LbiAddressPicker
+              value={{
+                provinceId: form.province_id ? String(form.province_id) : '',
+                districtId: form.district_id ? String(form.district_id) : '',
+                subDistrictId: form.sub_district_id ? String(form.sub_district_id) : '',
               }}
-              onBlur={() => blurField('province_id')}
-              className={inClass(errors.province_id)}
-              aria-invalid={Boolean(errors.province_id)}
+              onChange={(next) => {
+                const pId = next.provinceId ? Number(next.provinceId) : 0;
+                const dId = next.districtId ? Number(next.districtId) : 0;
+                const sId = next.subDistrictId ? Number(next.subDistrictId) : 0;
+                setField('province_id', pId, { validate: true });
+                setField('district_id', dId);
+                setField('sub_district_id', sId);
+              }}
+              onZipCodeAutoFill={(zip) => {
+                if (/^\d{5}$/.test(zip)) setField('zip_code', zip, { validate: true });
+              }}
+              disabled={masterLoading}
             />
-            {errors.province_id && <p className='text-xs text-red-600'>{errors.province_id}</p>}
+            {(errors.province_id || errors.district_id || errors.sub_district_id) && (
+              <p className='text-xs text-red-600 mt-1'>
+                {errors.province_id || errors.district_id || errors.sub_district_id}
+              </p>
+            )}
+          </div>
+
+          <div className='grid gap-3 sm:grid-cols-3'>
+            <div ref={setFieldRef('zip_code')} className='space-y-1.5'>
+              <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
+                รหัสไปรษณีย์ <span className='text-red-500'>*</span>
+              </Label>
+              <Input
+                type='text'
+                inputMode='numeric'
+                maxLength={5}
+                value={form.zip_code}
+                onChange={(e) => setField('zip_code', e.target.value.replace(/\D/g, '').slice(0, 5))}
+                onBlur={() => blurField('zip_code')}
+                className={inClass(errors.zip_code)}
+                placeholder='10110'
+              />
+              {errors.zip_code && <p className='text-xs text-red-600'>{errors.zip_code}</p>}
+            </div>
+            <div ref={setFieldRef('address_detail')} className='sm:col-span-2 space-y-1.5'>
+              <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
+                ที่อยู่ (บ้านเลขที่ หมู่ ซอย ถนน) <span className='text-red-500'>*</span>
+              </Label>
+              <Textarea
+                value={form.address_detail}
+                onChange={(e) => setField('address_detail', e.target.value)}
+                onBlur={() => blurField('address_detail')}
+                className={cn('min-h-[80px] text-sm', inClass(errors.address_detail))}
+                placeholder='บ้านเลขที่ หมู่ ซอย ถนน'
+              />
+              {errors.address_detail && <p className='text-xs text-red-600'>{errors.address_detail}</p>}
+            </div>
           </div>
         </div>
       </div>
@@ -920,16 +977,16 @@ function FactoryTab() {
           </div>
         ) : (
           /* ── Guest mode: full account section ── */
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <div ref={setFieldRef('email')} className='space-y-1.5 sm:col-span-2'>
-              <Label className='text-xs font-medium text-gray-600'>
-                อีเมล <span className='text-red-500'>*</span>
-              </Label>
+            <Label className='text-xs font-medium text-gray-600'>
+              อีเมล <span className='text-red-500'>*</span>
+            </Label>
               <div className='relative'>
-                <Input
-                  type='email'
-                  autoComplete='email'
-                  value={form.email}
+            <Input
+              type='email'
+              autoComplete='email'
+              value={form.email}
                   onChange={(e) => {
                     setField('email', e.target.value);
                     // Reset status when user edits the email
@@ -938,9 +995,9 @@ function FactoryTab() {
                     }
                   }}
                   onBlur={() => void handleEmailBlur()}
-                  className={inClass(errors.email)}
-                  placeholder='owner@factory.com'
-                />
+              className={inClass(errors.email)}
+              placeholder='owner@factory.com'
+            />
                 {emailStatus === 'checking' && (
                   <Loader2 size={14} className='absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-gray-400' />
                 )}
@@ -948,7 +1005,7 @@ function FactoryTab() {
                   <CheckCircle2 size={14} className='absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500' />
                 )}
               </div>
-              {errors.email && <p className='text-xs text-red-600'>{errors.email}</p>}
+            {errors.email && <p className='text-xs text-red-600'>{errors.email}</p>}
               {/* Inline email-exists hints (only shown when no format error) */}
               {!errors.email && emailStatus === 'ft' && (
                 <div className='flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-800'>
@@ -960,7 +1017,7 @@ function FactoryTab() {
                     </Link>{' '}
                     หรือใช้อีเมลอื่น
                   </span>
-                </div>
+          </div>
               )}
 
               {/* ── Email has both CT + FT profiles ── */}
@@ -1076,80 +1133,80 @@ function FactoryTab() {
             {/* Phone / Password / Confirm — hidden when CT upgrade or CT password verified */}
             {emailStatus !== 'ct' && !ctPasswordVerified && (
               <>
-                <div ref={setFieldRef('phone')} className='space-y-1.5'>
-                  <Label className='text-xs font-medium text-gray-600'>
-                    เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
-                  </Label>
-                  <Input
-                    type='tel'
+          <div ref={setFieldRef('phone')} className='space-y-1.5'>
+            <Label className='text-xs font-medium text-gray-600'>
+              เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
+            </Label>
+            <Input
+              type='tel'
                     inputMode='tel'
-                    autoComplete='tel'
+              autoComplete='tel'
                     maxLength={12}
-                    value={form.phone}
+              value={form.phone}
                     onChange={(e) => setField('phone', formatThaiPhoneDisplay(e.target.value))}
-                    onBlur={() => blurField('phone')}
-                    className={inClass(errors.phone)}
+              onBlur={() => blurField('phone')}
+              className={inClass(errors.phone)}
                     placeholder='098-889-3983'
-                  />
-                  {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
-                </div>
+            />
+            {errors.phone && <p className='text-xs text-red-600'>{errors.phone}</p>}
+          </div>
 
-                <div ref={setFieldRef('password')} className='space-y-1.5'>
-                  <Label className='text-xs font-medium text-gray-600'>
-                    รหัสผ่าน <span className='text-red-500'>*</span>
-                  </Label>
-                  <div className='relative'>
-                    <Input
-                      type={showPw ? 'text' : 'password'}
-                      autoComplete='new-password'
-                      value={form.password}
-                      onChange={(e) => setField('password', e.target.value)}
-                      onBlur={() => blurField('password')}
-                      className={`${inClass(errors.password)} pr-10`}
-                      placeholder='8 ตัวอักษรขึ้นไป'
-                    />
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      tabIndex={-1}
-                      onClick={() => setShowPw((v) => !v)}
-                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                    >
-                      {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </Button>
-                  </div>
-                  {errors.password && <p className='text-xs text-red-600'>{errors.password}</p>}
-                </div>
+          <div ref={setFieldRef('password')} className='space-y-1.5'>
+            <Label className='text-xs font-medium text-gray-600'>
+              รหัสผ่าน <span className='text-red-500'>*</span>
+            </Label>
+            <div className='relative'>
+              <Input
+                type={showPw ? 'text' : 'password'}
+                autoComplete='new-password'
+                value={form.password}
+                onChange={(e) => setField('password', e.target.value)}
+                onBlur={() => blurField('password')}
+                className={`${inClass(errors.password)} pr-10`}
+                placeholder='8 ตัวอักษรขึ้นไป'
+              />
+              <Button
+                variant='unstyled'
+                type='button'
+                tabIndex={-1}
+                onClick={() => setShowPw((v) => !v)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+              >
+                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </Button>
+            </div>
+            {errors.password && <p className='text-xs text-red-600'>{errors.password}</p>}
+          </div>
 
-                <div ref={setFieldRef('confirmPassword')} className='space-y-1.5'>
-                  <Label className='text-xs font-medium text-gray-600'>
-                    ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
-                  </Label>
-                  <div className='relative'>
-                    <Input
-                      type={showConfirm ? 'text' : 'password'}
-                      autoComplete='new-password'
-                      value={form.confirmPassword}
-                      onChange={(e) => setField('confirmPassword', e.target.value)}
-                      onBlur={() => blurField('confirmPassword')}
-                      className={`${inClass(errors.confirmPassword)} pr-10`}
-                      placeholder='กรอกอีกครั้ง'
-                    />
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      tabIndex={-1}
-                      onClick={() => setShowConfirm((v) => !v)}
-                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                    >
-                      {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </Button>
-                  </div>
-                  {errors.confirmPassword && <p className='text-xs text-red-600'>{errors.confirmPassword}</p>}
-                </div>
+          <div ref={setFieldRef('confirmPassword')} className='space-y-1.5'>
+            <Label className='text-xs font-medium text-gray-600'>
+              ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
+            </Label>
+            <div className='relative'>
+              <Input
+                type={showConfirm ? 'text' : 'password'}
+                autoComplete='new-password'
+                value={form.confirmPassword}
+                onChange={(e) => setField('confirmPassword', e.target.value)}
+                onBlur={() => blurField('confirmPassword')}
+                className={`${inClass(errors.confirmPassword)} pr-10`}
+                placeholder='กรอกอีกครั้ง'
+              />
+              <Button
+                variant='unstyled'
+                type='button'
+                tabIndex={-1}
+                onClick={() => setShowConfirm((v) => !v)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+              >
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </Button>
+            </div>
+            {errors.confirmPassword && <p className='text-xs text-red-600'>{errors.confirmPassword}</p>}
+          </div>
               </>
             )}
-          </div>
+        </div>
         )}
       </div>
 
@@ -1231,6 +1288,10 @@ function FactoryTab() {
                       <div className='flex flex-wrap gap-1.5'>
                         {(lbiSubCategories[cat.id] ?? []).map((sub) => {
                           const sel = form.sub_category_ids.includes(sub.id);
+                          const subsInCat = lbiSubCategories[cat.id] ?? [];
+                          const allItem = subsInCat.find((s) => s.sort_order === 99);
+                          const isAll = sub.sort_order === 99;
+                          const allSelected = allItem ? form.sub_category_ids.includes(allItem.id) : false;
                           return (
                             <label
                               key={sub.id}
@@ -1239,6 +1300,7 @@ function FactoryTab() {
                                 sel
                                   ? 'border-[var(--brand-purple)] bg-[var(--brand-purple)] font-semibold text-white shadow-sm'
                                   : 'border-[var(--brand-lavender-muted)] bg-white text-[var(--neutral-subtle)] hover:border-[var(--brand-mauve)] hover:text-[var(--brand-purple)]',
+                                !isAll && allSelected && 'opacity-40 pointer-events-none',
                               )}
                             >
                               <input
@@ -1246,9 +1308,23 @@ function FactoryTab() {
                                 className='sr-only'
                                 checked={sel}
                                 onChange={(e) => {
-                                  const next = e.target.checked
-                                    ? [...form.sub_category_ids, sub.id]
-                                    : form.sub_category_ids.filter((id) => id !== sub.id);
+                                  const catSubIds = subsInCat.map((s) => s.id);
+                                  let next: number[];
+                                  if (isAll && e.target.checked) {
+                                    next = [
+                                      ...form.sub_category_ids.filter((id) => !catSubIds.includes(id)),
+                                      sub.id,
+                                    ];
+                                  } else if (!isAll && e.target.checked && allItem) {
+                                    next = [
+                                      ...form.sub_category_ids.filter((id) => id !== allItem.id),
+                                      sub.id,
+                                    ];
+                                  } else {
+                                    next = e.target.checked
+                                      ? [...form.sub_category_ids, sub.id]
+                                      : form.sub_category_ids.filter((id) => id !== sub.id);
+                                  }
                                   setField('sub_category_ids', next);
                                 }}
                               />
@@ -1379,7 +1455,7 @@ function FactoryTab() {
       <Button
         variant='unstyled'
         type='button'
-        disabled={isProcessing || masterLoading}
+        disabled={isProcessing || masterLoading || emailStatus === 'cf'}
         onClick={() => void handleSubmit()}
         className={cn(PRIMARY_BTN, 'py-3.5')}
         style={PRIMARY_BTN_BG}
@@ -1577,7 +1653,7 @@ export function RegisterPage() {
   return (
     <div
       className='relative flex min-h-screen items-start justify-center overflow-hidden px-4 py-6 md:py-10'
-      style={{
+            style={{
         background:
           'linear-gradient(180deg, var(--brand-lavender) 0%, var(--brand-page) 48%, var(--neutral-white) 100%)',
       }}
@@ -1600,9 +1676,9 @@ export function RegisterPage() {
         <div className='flex min-w-0 flex-col overflow-hidden rounded-3xl border border-white/80 bg-white/90 shadow-[0_24px_64px_rgba(46,34,82,0.12)] backdrop-blur-md'>
             <header className='border-b border-[var(--brand-lavender-muted)]/60 px-5 pb-4 pt-5 sm:px-8 sm:pt-6'>
               <div className='mb-4 flex items-center justify-between gap-3'>
-                <Image
-                  src='/assets/tryly-logo.png'
-                  alt='Tryly'
+            <Image
+              src='/assets/tryly-logo.png'
+              alt='Tryly'
                   className='h-9 w-auto object-contain'
                 />
                 <Link
@@ -1611,22 +1687,22 @@ export function RegisterPage() {
                 >
                   เข้าสู่ระบบ
                 </Link>
-              </div>
+        </div>
 
               <div>
                 {isCTUpgrade ? (
                   /* CT upgrade: back = go home (not choose-role, they're already logged in) */
-                  <Link
-                    to='/'
+              <Link
+                to='/'
                     className='inline-flex items-center gap-1.5 text-xs font-medium text-[var(--neutral-subtle)] transition-colors hover:text-[var(--brand-purple)]'
-                  >
-                    <ArrowLeft size={14} />
+              >
+                <ArrowLeft size={14} />
                     ยกเลิก — กลับหน้าแรก
-                  </Link>
+              </Link>
                 ) : step === 'form' ? (
                   <Button
                     variant='unstyled'
-                    type='button'
+                type='button'
                     onClick={() => setStep('choose-role')}
                     className='inline-flex items-center gap-1.5 text-xs font-medium text-[var(--neutral-subtle)] transition-colors hover:text-[var(--brand-purple)]'
                   >
@@ -1642,7 +1718,7 @@ export function RegisterPage() {
                     กลับหน้าแรก
                   </Link>
                 )}
-              </div>
+            </div>
 
               <h2 className='mt-3 text-xl font-bold text-[var(--brand-navy)] sm:text-2xl'>
                 {isCTUpgrade
@@ -1680,7 +1756,7 @@ export function RegisterPage() {
               ) : role === 'ft' ? (
                 <FactoryTab />
               ) : null}
-            </div>
+          </div>
         </div>
       </div>
     </div>

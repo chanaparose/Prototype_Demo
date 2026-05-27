@@ -146,11 +146,7 @@ export function NotificationsMobile() {
             <h1 className='text-[13px] text-gray-900 truncate' style={{ fontWeight: 700 }}>
               การแจ้งเตือน
             </h1>
-            {unreadCount > 0 ? (
-              <span className='min-w-[18px] h-[18px] px-1 rounded-full bg-brand-purple text-white flex items-center justify-center text-[9px] font-bold'>
-                {unreadCount}
-              </span>
-            ) : null}
+             
           </div>
         </div>
         {unreadCount > 0 ? (

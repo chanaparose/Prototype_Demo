@@ -11,6 +11,10 @@ export interface FormState {
   factory_type_id: number;
   tax_id: string;
   province_id: number;
+  district_id: number;
+  sub_district_id: number;
+  zip_code: string;
+  address_detail: string;
   category_ids: number[];
   sub_category_ids: number[];
   cert_id: number;
@@ -29,6 +33,10 @@ const initial: FormState = {
   factory_type_id: 0,
   tax_id: '',
   province_id: 0,
+  district_id: 0,
+  sub_district_id: 0,
+  zip_code: '',
+  address_detail: '',
   category_ids: [],
   sub_category_ids: [],
   cert_id: 0,
@@ -45,7 +53,7 @@ const initial: FormState = {
 export type FactoryTypeOption = { factory_type_id: number; name_th: string };
 export type ProvinceOption = { id: number; name: string };
 export type CategoryOption = { id: number; name: string; scope?: string };
-export type SubCategoryOption = { id: number; name: string };
+export type SubCategoryOption = { id: number; name: string; sort_order?: number };
 export type CertTypeOption = { id: number; label: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -95,6 +103,10 @@ const FIELD_ORDER_FULL: (keyof FormState)[] = [
   'factory_type_id',
   'tax_id',
   'province_id',
+  'district_id',
+  'sub_district_id',
+  'zip_code',
+  'address_detail',
   'category_ids',
   'cert_id',
   'cert_file',
@@ -191,9 +203,11 @@ export function useRegisterFactory() {
             for (const r of subArr) {
               const row = mapRow(r, ['sub_category_id', 'id'], ['name_th', 'name']);
               if (!row) continue;
-              const catId = Number((r as Record<string, unknown>).category_id ?? 0);
+              const o = r as Record<string, unknown>;
+              const catId = Number(o.category_id ?? 0);
               if (!catId) continue;
-              (subMap[catId] ??= []).push(row);
+              const sortOrder = Number(o.sort_order ?? 0);
+              (subMap[catId] ??= []).push({ ...row, sort_order: sortOrder });
             }
             setLbiSubCategories(subMap);
           })
@@ -228,7 +242,15 @@ export function useRegisterFactory() {
           return !/^\d{13}$/.test(id) ? 'เลขภาษีต้องเป็นตัวเลข 13 หลัก' : undefined;
         }
         case 'province_id':
-          return !values.province_id ? 'กรุณาเลือกจังหวัดที่ตั้งโรงงาน' : undefined;
+          return !values.province_id ? 'กรุณาเลือกจังหวัด' : undefined;
+        case 'district_id':
+          return !values.district_id ? 'กรุณาเลือกเขต/อำเภอ' : undefined;
+        case 'sub_district_id':
+          return !values.sub_district_id ? 'กรุณาเลือกแขวง/ตำบล' : undefined;
+        case 'zip_code':
+          return !/^\d{5}$/.test(values.zip_code) ? 'รหัสไปรษณีย์ต้องเป็นตัวเลข 5 หลัก' : undefined;
+        case 'address_detail':
+          return !values.address_detail.trim() ? 'กรุณากรอกที่อยู่' : undefined;
         case 'category_ids':
           return values.category_ids.length === 0
             ? 'กรุณาเลือกหมวดหมู่ที่รับผลิตอย่างน้อย 1 หมวด'
@@ -343,7 +365,7 @@ export function useRegisterFactory() {
       // Upload cert file first (same for both paths)
       const { url: certUrl } = await mediaApi.upload(snapshot.cert_file!);
 
-      // Guest registration: factory + cert created atomically in one TX
+      // Guest registration: factory + cert + address created atomically in one TX
       await register({
         role: 'FT',
         email: snapshot.email.trim(),
@@ -359,6 +381,10 @@ export function useRegisterFactory() {
         document_url: certUrl,
         cert_number: snapshot.cert_number.trim() || undefined,
         cert_expire_date: snapshot.cert_expire_date || undefined,
+        address_detail: snapshot.address_detail.trim() || undefined,
+        sub_district_id: snapshot.sub_district_id || undefined,
+        district_id: snapshot.district_id || undefined,
+        zip_code: snapshot.zip_code.trim() || undefined,
       } as Parameters<typeof register>[0]);
 
       navigate('/factory', { replace: true });
