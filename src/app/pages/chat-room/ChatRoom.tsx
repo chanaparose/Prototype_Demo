@@ -213,15 +213,25 @@ function ChatRoomBody({
     const el = scrollContainerRef.current;
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    const near = distanceFromBottom < 80;
+    const near = distanceFromBottom < 150;
     setIsNearBottom(near);
     if (near) setUnseenNewCount(0);
   }, []);
 
   // Initial mount: snap to bottom (no animation), reset counters.
+  // Use rAF + timeout to ensure large cards (quotation, rfq) have rendered.
   useEffect(() => {
     scrollToBottom(false);
+    // Double-rAF ensures layout is complete even for large card renders
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom(false);
+      });
+    });
+    // Additional fallback for slow image/card paints
+    const t = setTimeout(() => scrollToBottom(false), 150);
     prevMessagesCountRef.current = messages.length;
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conv.id]);
 
@@ -237,6 +247,8 @@ function ChatRoomBody({
       // I just sent a message — always pin to bottom.
       justSentRef.current = false;
       scrollToBottom(false);
+      // Re-scroll after card render completes
+      requestAnimationFrame(() => scrollToBottom(false));
       setUnseenNewCount(0);
       return;
     }
@@ -244,6 +256,8 @@ function ChatRoomBody({
     if (grew) {
       if (isNearBottom) {
         scrollToBottom(true);
+        // Ensure large cards (quotation/rfq) are fully laid out before final scroll
+        requestAnimationFrame(() => scrollToBottom(true));
       } else {
         setUnseenNewCount((n) => n + (curCount - prevCount));
       }
@@ -622,7 +636,7 @@ function ChatRoomBody({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className='flex-1 overflow-y-auto px-4 py-4 space-y-3 relative'
+        className='flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3 relative'
       >
         {!apiConv && (
           <p className='text-center text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2'>
