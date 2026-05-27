@@ -297,7 +297,7 @@ function TextChatBubble({
 }
 
 const CHAT_CARD_SHELL =
-  'w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-violet-200/80 bg-white text-left shadow-[0_14px_36px_rgba(46,34,82,0.18)] transition-all';
+  'relative w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-white/70 bg-[linear-gradient(155deg,rgba(255,255,255,0.92),rgba(248,245,255,0.86))] text-left shadow-[0_18px_42px_rgba(46,34,82,0.18),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl transition-all';
 
 function RfqChatCard({
   rfqId,
@@ -315,13 +315,22 @@ function RfqChatCard({
     <div className='flex justify-center px-1'>
       <article className={CHAT_CARD_SHELL}>
         <div
-          className='h-[3px] w-full'
+          className='pointer-events-none absolute inset-0 rounded-2xl'
+          style={{
+            border: '1px solid rgba(255,255,255,0.55)',
+            boxShadow:
+              'inset 0 0 0 1px rgba(162,56,255,0.08), inset 0 16px 34px rgba(255,255,255,0.22)',
+          }}
+        />
+        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
+        <div
+          className='relative z-[1] h-[3px] w-full'
           style={{
             background:
               'linear-gradient(90deg, var(--brand-mauve) 0%, var(--brand-purple) 55%, var(--brand-violet-soft) 100%)',
           }}
         />
-        <div className='p-4'>
+        <div className='relative z-[1] p-4'>
           <div className='mb-3 flex items-start gap-3'>
             <span
               className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
@@ -434,13 +443,22 @@ function QuotationChatCard({
         aria-label='ดูรายละเอียดใบเสนอราคา'
       >
         <div
-          className='h-[3px] w-full'
+          className='pointer-events-none absolute inset-0 rounded-2xl'
+          style={{
+            border: '1px solid rgba(255,255,255,0.55)',
+            boxShadow:
+              'inset 0 0 0 1px rgba(99,102,241,0.08), inset 0 16px 34px rgba(255,255,255,0.24)',
+          }}
+        />
+        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
+        <div
+          className='relative z-[1] h-[3px] w-full'
           style={{
             background:
               'linear-gradient(90deg, var(--brand-indigo) 0%, var(--brand-purple) 50%, #a78bfa 100%)',
           }}
         />
-        <div className='p-4'>
+        <div className='relative z-[1] p-4'>
           <div className='mb-3 flex items-start justify-between gap-2'>
             <div className='flex min-w-0 items-center gap-2.5'>
               <span
