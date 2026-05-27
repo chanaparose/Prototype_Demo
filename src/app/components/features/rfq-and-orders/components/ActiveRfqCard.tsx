@@ -3,11 +3,6 @@ import { FileText, Calendar, Factory, ChevronRight, Layers } from 'lucide-react'
 import {
   PRIMARY_BG,
   PRIMARY_COLOR,
-  PLUM,
-  PLUM_SOFT_BG,
-  ACCENT_ORANGE_DEEP,
-  ACCENT_ORANGE,
-  PEACH_MIST,
   BORDER_WARM,
   RFQ_STATUS_DISPLAY,
 } from '@/components/features/rfq-and-orders/constants';
@@ -21,10 +16,8 @@ import { type Rfq } from '@/stores/types';
 export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
   const { totalOffers, accepted, pending } = getRfqActivityCounts(rfq);
   const remaining = Math.max(totalOffers - accepted, 0);
-  const iconBgs = [PRIMARY_BG, PEACH_MIST, PLUM_SOFT_BG] as const;
-  const iconColors = [PRIMARY_COLOR, ACCENT_ORANGE_DEEP, PLUM] as const;
-  const ib = iconBgs[idx % 3];
-  const ic = iconColors[idx % 3];
+  const ib = PRIMARY_BG;
+  const ic = PRIMARY_COLOR;
 
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
     label: rfq.status,
@@ -36,11 +29,9 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
   return (
     <Link to={`/rfqs/${rfq.id}`} className='block group'>
       <div
-        className='rounded-2xl p-4 border bg-white transition-all group-hover:shadow-md active:scale-[0.99]'
+        className='rounded-2xl border bg-white px-4 py-3.5 transition-colors group-hover:border-[var(--brand-lavender-muted)] active:scale-[0.99]'
         style={{
-          borderColor: hasNewOffers ? ACCENT_ORANGE : BORDER_WARM,
-          borderLeftWidth: hasNewOffers ? '3px' : '1px',
-          borderLeftColor: hasNewOffers ? ACCENT_ORANGE : BORDER_WARM,
+          borderColor: BORDER_WARM,
         }}
       >
         <div className='flex items-start justify-between gap-2 mb-3'>
@@ -52,7 +43,10 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
               {rfq.categoryIcon ?? <Layers size={20} style={{ color: ic }} />}
             </div>
             <div className='min-w-0 flex-1'>
-              <p className='text-[10px] mb-0.5 font-semibold' style={{ color: ic }}>
+              <p
+                className='text-[10px] mb-0.5 font-semibold'
+                style={{ color: 'var(--neutral-subtle)' }}
+              >
                 {rfq.category}
               </p>
               <h3 className='text-gray-900 font-bold text-sm leading-tight truncate'>
@@ -60,10 +54,7 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
               </h3>
             </div>
           </div>
-          <span
-            className='shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full'
-            style={{ background: statusCfg.bg, color: statusCfg.color }}
-          >
+          <span className='shrink-0 rounded-full bg-[var(--brand-lavender)] px-3 py-1 text-[11px] font-bold text-[var(--brand-purple)]'>
             {statusCfg.label}
           </span>
         </div>
@@ -76,12 +67,12 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
         ) : (
           <div className='mb-3'>
             <div className='flex items-center gap-2 mb-2 flex-wrap'>
-              <span className='inline-flex items-center gap-1.5 rounded-full bg-[#EDE9FB] px-2.5 py-1 text-xs font-bold text-[var(--brand-violet-deep)]'>
+              <span className='inline-flex items-center gap-1.5 rounded-full bg-[var(--brand-lavender)] px-2.5 py-1 text-xs font-bold text-[var(--brand-purple)]'>
                 <Factory size={11} />
                 {totalOffers} โรงงานตอบแล้ว
               </span>
             </div>
-            <div className='text-[11px] text-gray-500 flex items-center gap-2'>
+            <div className='text-[11px] text-[var(--neutral-subtle)] flex items-center gap-2'>
               <span>
                 ตอบรับแล้ว <span className='font-bold text-emerald-700'>{accepted}</span>
               </span>
@@ -93,8 +84,8 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
           </div>
         )}
 
-        <div className='flex items-center justify-between border-t border-[rgba(196,164,132,0.4)] pt-2 text-xs'>
-          <div className='flex items-center gap-3 text-gray-500'>
+        <div className='flex items-center justify-between border-t border-[var(--brand-lavender-muted)] pt-2.5 text-xs'>
+          <div className='flex items-center gap-3 text-[var(--neutral-subtle)]'>
             <span className='flex items-center gap-1'>
               <FileText size={11} className='text-gray-300' />
               {formatBudget(rfq.budget)}
@@ -104,7 +95,10 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
               {formatDate(rfq.createdAt)}
             </span>
           </div>
-          <span className='flex items-center gap-0.5 font-semibold' style={{ color: ic }}>
+          <span
+            className='flex items-center gap-0.5 font-semibold'
+            style={{ color: 'var(--brand-indigo)' }}
+          >
             {totalOffers > 0 ? 'ดูใบเสนอราคา' : 'รายละเอียด'}
             <ChevronRight size={13} />
           </span>

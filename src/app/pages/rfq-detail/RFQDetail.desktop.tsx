@@ -148,7 +148,8 @@ export function RFQDetailDesktop() {
     );
   }
 
-  const isClosedRequest = rfq.status === 'completed' || rfq.status === 'cancelled';
+  const isClosedRequest =
+    rfq.status === 'completed' || rfq.status === 'cancelled' || rfq.status === 'closed';
   const isHistoryView =
     HISTORY_STATUSES.includes(rfq.status as (typeof HISTORY_STATUSES)[number]) && !isClosedRequest;
 
@@ -167,7 +168,9 @@ export function RFQDetailDesktop() {
   const statusLabel = isClosedRequest
     ? rfq.status === 'completed'
       ? 'ปิดคำขอแล้ว'
-      : 'ยกเลิกคำขอแล้ว'
+      : rfq.status === 'closed'
+        ? 'ปิดรับคำขอแล้ว'
+        : 'ยกเลิกคำขอแล้ว'
     : isHistoryView
       ? (STATUS_LABEL[rfq.status] ?? rfq.status)
       : `${rfq.offerCount} ใบเสนอราคา`;

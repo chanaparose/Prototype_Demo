@@ -1,11 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { FileText, AlertCircle, ChevronDown, History } from 'lucide-react';
-import { BORDER_WARM, DEEP_PURPLE } from '@/components/features/rfq-and-orders/constants';
+import { FileText, AlertCircle, History } from 'lucide-react';
+import { BORDER_WARM } from '@/components/features/rfq-and-orders/constants';
 import { type Rfq } from '@/stores/types';
-import { Button } from '@/components/ui/button';
 import { ActiveRfqCard } from '@/components/features/rfq-and-orders/components/ActiveRfqCard';
-import { HistoryRfqRow } from '@/components/features/rfq-and-orders/components/HistoryRfqRow';
+import { HistoryRfqPopup } from './HistoryRfqPopup';
 
 export function RfqPanel({
   rfqs,
@@ -18,12 +17,9 @@ export function RfqPanel({
 }) {
   const [historyOpen, setHistoryOpen] = React.useState(false);
 
-  const activeRfqs = rfqs.filter(
-    (r) => r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'completed',
-  );
-  const historyRfqs = rfqs.filter(
-    (r) => r.status === 'cancelled' || r.status === 'expired' || r.status === 'completed',
-  );
+  const HISTORY_STATUSES = ['cancelled', 'expired', 'completed', 'closed'] as const;
+  const activeRfqs = rfqs.filter((r) => !(HISTORY_STATUSES as readonly string[]).includes(r.status));
+  const historyRfqs = rfqs.filter((r) => (HISTORY_STATUSES as readonly string[]).includes(r.status));
 
   const totalPendingReview = activeRfqs.reduce((sum, rfq) => {
     return sum + (rfq.offers ?? []).filter((o) => o.quoteStatus === 'PD').length;
@@ -32,12 +28,12 @@ export function RfqPanel({
   return (
     <div className={isMobile ? '' : 'px-4 pb-4 pt-2'}>
       <div
-        className={`mb-3 flex items-center justify-between ${isDesktop ? 'min-h-[56px] rounded-xl border border-[rgba(196,164,132,0.4)] bg-[#F9F8FC] px-3 py-2' : ''}`}
+        className={`mb-3 p-[5px] flex items-center justify-between ${isDesktop ? 'min-h-[56px] rounded-xl border border-[rgba(196,164,132,0.4)] bg-[#F9F8FC] px-3 py-2' : ''}`}
       >
-        <div className='flex items-center gap-2 flex-wrap'>
+        <div className='flex items-center gap-2.5 flex-wrap'>
           <h3 className='text-sm font-bold text-[var(--brand-navy-deep)]'>กำลังดำเนินการ</h3>
-          <span className='rounded-full bg-[var(--brand-lavender)] px-2 py-0.5 text-[10px] font-bold text-[var(--brand-purple)]'>
-            {activeRfqs.length}
+          <span className='shrink-0 rounded-md bg-[rgba(46,34,82,0.06)] px-2 py-1 text-[11px] font-semibold text-[var(--brand-navy)] tabular-nums'>
+            {activeRfqs.length} รายการ
           </span>
           {totalPendingReview > 0 && (
             <span className='flex items-center gap-1 rounded-full bg-[var(--surface-peach-mist)] px-2 py-0.5 text-[10px] font-bold text-[var(--brand-orange-vivid)]'>
@@ -46,6 +42,19 @@ export function RfqPanel({
             </span>
           )}
         </div>
+        {historyRfqs.length > 0 ? (
+          <button
+          type='button'
+          onClick={() => setHistoryOpen(true)}
+          aria-label='เปิดประวัติใบขอราคา'
+          className='relative inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--brand-lavender-muted)] bg-white text-[var(--brand-violet-deep)] transition-colors hover:bg-[var(--brand-lavender)]/40'
+        >
+          <History size={15} />
+          <span className='absolute -top-1.5 -right-1.5 rounded-full bg-[var(--brand-violet-soft)] px-1 py-0.5 text-[9px] font-bold leading-none text-[var(--brand-violet-deep)] ring-2 ring-white'>
+            {historyRfqs.length}
+          </span>
+        </button>
+        ) : null}
       </div>
 
       {activeRfqs.length === 0 ? (
@@ -72,42 +81,11 @@ export function RfqPanel({
         </div>
       )}
 
-      {historyRfqs.length > 0 && (
-        <div>
-          <Button
-            variant='unstyled'
-            onClick={() => setHistoryOpen((v) => !v)}
-            className='w-full flex items-center justify-between py-2.5 px-3 rounded-xl border text-sm font-semibold transition-all'
-            style={{
-              background: historyOpen ? '#F0EBF8' : '#F9F8FC',
-              borderColor: BORDER_WARM,
-              color: DEEP_PURPLE,
-            }}
-          >
-            <span className='flex items-center gap-2'>
-              <History size={14} className='text-[var(--brand-violet-deep)]' />
-              ประวัติใบขอราคา
-              <span className='rounded-full bg-[var(--brand-violet-soft)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--brand-violet-deep)]'>
-                {historyRfqs.length}
-              </span>
-            </span>
-            <ChevronDown
-              size={16}
-              className={`text-[var(--brand-violet-deep)] transition-transform duration-200 ${
-                historyOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </Button>
-
-          {historyOpen && (
-            <div className='mt-2 space-y-1.5'>
-              {historyRfqs.map((rfq) => (
-                <HistoryRfqRow key={rfq.id} rfq={rfq} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <HistoryRfqPopup
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        historyRfqs={historyRfqs}
+      />
     </div>
   );
 }

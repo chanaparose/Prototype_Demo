@@ -45,12 +45,14 @@ export function FactoryIdeasDesktop() {
     selectedSubCategoryId,
     setSelectedSubCategoryId,
     categoryFilters,
+    categoriesWithSubs,
     effectiveCategoryId,
     applyCategory,
     isFactoryTab,
     isMaterialTab,
     isMtCategoryScope,
     showcasesLoading,
+    showcasesFetching,
     factoriesLoading,
     visibleItems,
     visibleIdeaItems,
@@ -110,28 +112,33 @@ export function FactoryIdeasDesktop() {
               ))}
             </div>
 
-            <div className='w-px h-6 bg-gray-200' />
+            {!isFactoryTab && (
+              <>
+                <div className='w-px h-6 bg-gray-200' />
 
-            <FactoryIdeasCategoryDropdown
-              variant='desktop'
-              categoryMenuRef={categoryMenuRef}
-              categoryMenuOpen={categoryMenuOpen}
-              setCategoryMenuOpen={setCategoryMenuOpen}
-              categoryFilters={categoryFilters}
-              effectiveCategoryId={effectiveCategoryId}
-              selectedSubCategoryId={selectedSubCategoryId}
-              setSelectedSubCategoryId={setSelectedSubCategoryId}
-              isMaterialTab={isMtCategoryScope}
-              categoryMenuTriggerLabel={categoryMenuTriggerLabel}
-              menuHighlightCategoryId={menuHighlightCategoryId}
-              setMenuHighlightCategoryId={setMenuHighlightCategoryId}
-              panelSubs={panelSubs}
-              panelSubsLoading={panelSubsLoading}
-              applyCategory={applyCategory}
-              closeCategoryMenu={closeCategoryMenu}
-              pickSubCategory={pickSubCategory}
-              categoryOptionSelected={categoryOptionSelected}
-            />
+                <FactoryIdeasCategoryDropdown
+                  variant='desktop'
+                  categoryMenuRef={categoryMenuRef}
+                  categoryMenuOpen={categoryMenuOpen}
+                  setCategoryMenuOpen={setCategoryMenuOpen}
+                  categoryFilters={categoryFilters}
+                  effectiveCategoryId={effectiveCategoryId}
+                  selectedSubCategoryId={selectedSubCategoryId}
+                  setSelectedSubCategoryId={setSelectedSubCategoryId}
+                  isMaterialTab={isMtCategoryScope}
+                  categoryMenuTriggerLabel={categoryMenuTriggerLabel}
+                  menuHighlightCategoryId={menuHighlightCategoryId}
+                  setMenuHighlightCategoryId={setMenuHighlightCategoryId}
+                  panelSubs={panelSubs}
+                  panelSubsLoading={panelSubsLoading}
+                  applyCategory={applyCategory}
+                  closeCategoryMenu={closeCategoryMenu}
+                  pickSubCategory={pickSubCategory}
+                  categoryOptionSelected={categoryOptionSelected}
+                  categoriesWithSubs={categoriesWithSubs}
+                />
+              </>
+            )}
 
             <MobileSearchField
               className='w-64 shrink-0'
@@ -172,7 +179,7 @@ export function FactoryIdeasDesktop() {
         </div>
       </div>
 
-      <div className='px-8 py-6'>
+      <div className={`px-8 py-6 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2'>

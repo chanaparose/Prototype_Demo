@@ -12,18 +12,22 @@ export type SubCategoryRow = { id: string; name: string; sortOrder: number };
 export type FactoryIdeasCategoryRow = {
   id: string;
   name: string;
+  scope: string;
   subCategories: SubCategoryRow[];
 };
 
-export function useFactoryIdeasCategoriesQuery(materialTab = false) {
+export function useFactoryIdeasCategoriesQuery(_materialTab = false) {
+  // Always fetch ALL categories (no scope filter) in a single request.
+  // MT vs PD filtering is done client-side via the `scope` field on each row.
   return useQuery({
-    queryKey: factoryIdeasKeys.categories(materialTab),
+    queryKey: factoryIdeasKeys.categories('all'),
     queryFn: async (): Promise<FactoryIdeasCategoryRow[]> => {
-      const raw = await categoriesApi.listWithSubs(materialTab ? 'MT' : undefined);
+      const raw = await categoriesApi.listWithSubs('ALL');
       return raw
         .map((c) => ({
           id: String(c.category_id),
           name: c.name,
+          scope: c.scope ?? '',
           subCategories: (c.sub_categories ?? [])
             .map((s) => ({
               id: String(s.sub_category_id ?? s.id ?? ''),

@@ -28,6 +28,8 @@ type FactoryIdeasCategoryDropdownProps = {
   closeCategoryMenu: () => void;
   pickSubCategory: (subId: string | null, categoryIdForApply: string) => void;
   categoryOptionSelected: (effectiveCategoryId: string, optionId: string) => boolean;
+  /** IDs of categories that have ≥1 sub-category */
+  categoriesWithSubs?: ReadonlySet<string>;
 };
 
 export function FactoryIdeasCategoryDropdown({
@@ -51,7 +53,9 @@ export function FactoryIdeasCategoryDropdown({
   closeCategoryMenu,
   pickSubCategory,
   categoryOptionSelected,
+  categoriesWithSubs,
 }: FactoryIdeasCategoryDropdownProps) {
+  const hasSubs = (catId: string) => categoriesWithSubs?.has(catId) ?? !isMaterialTab;
   if (variant === 'mobile') {
     return (
       <div ref={categoryMenuRef} className='relative flex-1 min-w-[min(100%,10rem)] z-30'>
@@ -89,12 +93,17 @@ export function FactoryIdeasCategoryDropdown({
                         applyCategory('all');
                         setSelectedSubCategoryId(null);
                         closeCategoryMenu();
-                      } else if (isMaterialTab) {
+                      } else if (!hasSubs(cat.id)) {
+                        // No sub-categories (e.g. MT scope) → apply immediately
                         applyCategory(cat.id);
                         setSelectedSubCategoryId(null);
                         closeCategoryMenu();
                       } else {
-                        applyCategory(cat.id);
+                        // Has sub-categories → navigate to subs panel.
+                        // Don't call applyCategory here — the URL change it triggers
+                        // can cause a re-render that resets categoryMenuStep back to
+                        // 'categories' before the subs panel renders.
+                        // The category will be applied later inside pickSubCategory().
                         setMenuHighlightCategoryId(cat.id);
                         setCategoryMenuStep?.('subs');
                       }
@@ -107,7 +116,7 @@ export function FactoryIdeasCategoryDropdown({
                     }}
                   >
                     <span className='truncate'>{cat.name}</span>
-                    {!isAll && (
+                    {!isAll && hasSubs(cat.id) && (
                       <ChevronRight size={16} className='shrink-0 text-gray-400' aria-hidden />
                     )}
                   </Button>
@@ -145,9 +154,9 @@ export function FactoryIdeasCategoryDropdown({
                       }}
                       className='w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50'
                       style={{
-                        color: !selectedSubCategoryId ? COLORS.purple : 'var(--neutral-text)',
-                        fontWeight: !selectedSubCategoryId ? 600 : 400,
-                        backgroundColor: !selectedSubCategoryId
+                        color: !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId ? COLORS.purple : 'var(--neutral-text)',
+                        fontWeight: !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId ? 600 : 400,
+                        backgroundColor: !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId
                           ? COLORS.lightPurpleBg
                           : 'transparent',
                       }}
@@ -155,7 +164,7 @@ export function FactoryIdeasCategoryDropdown({
                       ทุกหมวดย่อย
                     </Button>
                     {panelSubs.map((s) => {
-                      const selected = selectedSubCategoryId === s.id;
+                      const selected = selectedSubCategoryId === s.id && effectiveCategoryId === menuHighlightCategoryId;
                       return (
                         <Button
                           variant='unstyled'
@@ -215,7 +224,7 @@ export function FactoryIdeasCategoryDropdown({
       {categoryMenuOpen ? (
         <div className='absolute top-full mt-1.5 left-0 flex rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden max-w-[calc(100vw-4rem)]'>
           <div
-            className={`max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0 ${isMaterialTab ? 'w-56 sm:w-64' : 'w-44 sm:w-52 border-r border-gray-100'}`}
+            className={`max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0 ${menuHighlightCategoryId && hasSubs(menuHighlightCategoryId) ? 'w-44 sm:w-52 border-r border-gray-100' : 'w-56 sm:w-64'}`}
           >
             {categoryFilters.map((cat) => {
               const selected = categoryOptionSelected(effectiveCategoryId, cat.id);
@@ -234,7 +243,7 @@ export function FactoryIdeasCategoryDropdown({
                       applyCategory('all');
                       setSelectedSubCategoryId(null);
                       closeCategoryMenu();
-                    } else if (isMaterialTab) {
+                    } else if (!hasSubs(cat.id)) {
                       applyCategory(cat.id);
                       setSelectedSubCategoryId(null);
                       closeCategoryMenu();
@@ -251,14 +260,14 @@ export function FactoryIdeasCategoryDropdown({
                   }}
                 >
                   <span className='truncate'>{cat.name}</span>
-                  {cat.id !== 'all' ? (
+                  {cat.id !== 'all' && hasSubs(cat.id) ? (
                     <ChevronRight size={14} className='shrink-0 opacity-40' aria-hidden />
                   ) : null}
                 </Button>
               );
             })}
           </div>
-          {!isMaterialTab && (
+          {menuHighlightCategoryId && hasSubs(menuHighlightCategoryId) ? (
             <div className='w-44 sm:w-52 max-h-[min(75vh,22rem)] overflow-y-auto py-1 shrink-0'>
               {!menuHighlightCategoryId ? (
                 <p className='px-3 py-4 text-[11px] text-gray-400 leading-relaxed'>
@@ -322,7 +331,7 @@ export function FactoryIdeasCategoryDropdown({
                 </>
               )}
             </div>
-          )}
+          ) : null}
         </div>
       ) : null}
     </div>

@@ -23,7 +23,9 @@ export function AnimatedOutlet({ className }: AnimatedOutletProps) {
   const outlet = useOutlet();
   const isDesktop = useIsDesktop();
   const reduceMotion = usePrefersReducedMotion();
-  const routeKey = `${location.pathname}${location.search}`;
+  // Use pathname only — search params change when filters/tabs update
+  // and should NOT trigger the full page enter/exit animation.
+  const routeKey = location.pathname;
 
   // Scroll to top on every route change so new pages start at the top.
   useEffect(() => {

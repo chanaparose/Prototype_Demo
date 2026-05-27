@@ -131,7 +131,7 @@ export function DesktopSidebar() {
   const { data: rfqListResult } = useRfqListQuery();
   const rfqList = rfqListResult?.rfqs ?? [];
   const activeRfqCount = rfqList.filter(
-    (r) => r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired',
+    (r) => r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'closed',
   ).length;
 
   const avatarSrc = isFactory

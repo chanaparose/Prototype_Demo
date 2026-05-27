@@ -63,6 +63,7 @@ export function FactoryIdeasMobile() {
     selectedSubCategoryId,
     setSelectedSubCategoryId,
     categoryFilters,
+    categoriesWithSubs,
     effectiveCategoryId,
     applyCategory,
     isFactoryTab,
@@ -71,6 +72,7 @@ export function FactoryIdeasMobile() {
     factoryScope,
     setFactoryScope,
     showcasesLoading,
+    showcasesFetching,
     factoriesLoading,
     visibleItems,
     visibleIdeaItems,
@@ -85,7 +87,7 @@ export function FactoryIdeasMobile() {
   } = useFactoryIdeasPageState({ layout: 'mobile', initialType: 'all' });
 
   return (
-    <div className='min-h-screen bg-[var(--brand-page)] pb-24'>
+    <div className='min-h-[100dvh] bg-[var(--brand-page)] pb-24'>
       <div className='bg-white px-4 pt-4 pb-3 border-b border-gray-100'>
         <div className='mb-2.5'>
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-orange-deep)]'>
@@ -158,93 +160,127 @@ export function FactoryIdeasMobile() {
 
         {/* ── Factory type pills (factory tab only) ── */}
         {isFactoryTab && (
-          <div className='flex items-center gap-2 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide'>
-            {(
-              [
-                { value: 'all', label: 'ทั้งหมด' },
-                { value: 'PD',  label: 'โรงงานผลิต' },
-                { value: 'MT',  label: 'โรงงานวัตถุดิบ' },
-              ] as const
-            ).map((opt) => {
-              const active = factoryScope === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type='button'
-                  onClick={() => setFactoryScope(opt.value)}
-                  className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-all ${
-                    active
-                      ? 'border-[var(--brand-purple)] bg-[var(--brand-purple)] text-white shadow-[0_2px_8px_rgba(162,56,255,0.28)]'
-                      : 'border-gray-200 bg-white text-gray-500 active:scale-95'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
+          <div className='flex items-center gap-2 px-4 pt-3 pb-1'>
+            <div className='min-w-0 flex-1 overflow-x-auto scrollbar-hide'>
+              <div className='flex items-center gap-2'>
+                {(
+                  [
+                    { value: 'all', label: 'ทั้งหมด' },
+                    { value: 'PD', label: 'โรงงานผลิต' },
+                    { value: 'MT', label: 'โรงงานวัตถุดิบ' },
+                  ] as const
+                ).map((opt) => {
+                  const active = factoryScope === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type='button'
+                      onClick={() => setFactoryScope(opt.value)}
+                      className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-all ${
+                        active
+                          ? 'border-[var(--brand-purple)] bg-[var(--brand-purple)] text-white shadow-[0_2px_8px_rgba(162,56,255,0.28)]'
+                          : 'border-gray-200 bg-white text-gray-500 active:scale-95'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className='flex shrink-0 items-center gap-0.5 rounded-lg border border-gray-200 bg-[var(--neutral-warm-surface)] p-0.5'>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => setViewMode('grid')}
+                className={`rounded-md p-1.5 transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
+                    : 'text-[var(--neutral-placeholder)]'
+                }`}
+                aria-label='มุมมองตาราง'
+              >
+                <LayoutGrid size={14} />
+              </Button>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => setViewMode('list')}
+                className={`rounded-md p-1.5 transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
+                    : 'text-[var(--neutral-placeholder)]'
+                }`}
+                aria-label='มุมมองรายการ'
+              >
+                <List size={14} />
+              </Button>
+            </div>
           </div>
         )}
 
         <div className='flex flex-wrap items-center gap-2 px-4 pb-3 mt-3'>
-          <FactoryIdeasCategoryDropdown
-            variant='mobile'
-            categoryMenuRef={categoryMenuRef}
-            categoryMenuOpen={categoryMenuOpen}
-            setCategoryMenuOpen={setCategoryMenuOpen}
-            categoryMenuStep={categoryMenuStep}
-            setCategoryMenuStep={setCategoryMenuStep}
-            categoryFilters={categoryFilters}
-            effectiveCategoryId={effectiveCategoryId}
-            selectedSubCategoryId={selectedSubCategoryId}
-            setSelectedSubCategoryId={setSelectedSubCategoryId}
-            isMaterialTab={isMtCategoryScope}
-            categoryMenuTriggerLabel={categoryMenuTriggerLabel}
-            menuHighlightCategoryId={menuHighlightCategoryId}
-            setMenuHighlightCategoryId={setMenuHighlightCategoryId}
-            panelSubs={panelSubs}
-            panelSubsLoading={panelSubsLoading}
-            applyCategory={applyCategory}
-            closeCategoryMenu={closeCategoryMenu}
-            pickSubCategory={pickSubCategory}
-            categoryOptionSelected={categoryOptionSelected}
-          />
-
-          <span className='shrink-0 rounded-md bg-[rgba(46,34,82,0.06)] px-2 py-1 text-[11px] font-semibold text-[var(--brand-navy)] tabular-nums'>
-            {totalCount} รายการ
-          </span>
-
-          <div className='flex shrink-0 items-center gap-0.5 rounded-lg border border-gray-200 bg-[var(--neutral-warm-surface)] p-0.5'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setViewMode('grid')}
-              className={`rounded-md p-1.5 transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
-                  : 'text-[var(--neutral-placeholder)]'
-              }`}
-              aria-label='มุมมองตาราง'
-            >
-              <LayoutGrid size={14} />
-            </Button>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => setViewMode('list')}
-              className={`rounded-md p-1.5 transition-all ${
-                viewMode === 'list'
-                  ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
-                  : 'text-[var(--neutral-placeholder)]'
-              }`}
-              aria-label='มุมมองรายการ'
-            >
-              <List size={14} />
-            </Button>
-          </div>
+          {!isFactoryTab && (
+            <FactoryIdeasCategoryDropdown
+              variant='mobile'
+              categoryMenuRef={categoryMenuRef}
+              categoryMenuOpen={categoryMenuOpen}
+              setCategoryMenuOpen={setCategoryMenuOpen}
+              categoryMenuStep={categoryMenuStep}
+              setCategoryMenuStep={setCategoryMenuStep}
+              categoryFilters={categoryFilters}
+              effectiveCategoryId={effectiveCategoryId}
+              selectedSubCategoryId={selectedSubCategoryId}
+              setSelectedSubCategoryId={setSelectedSubCategoryId}
+              isMaterialTab={isMtCategoryScope}
+              categoryMenuTriggerLabel={categoryMenuTriggerLabel}
+              menuHighlightCategoryId={menuHighlightCategoryId}
+              setMenuHighlightCategoryId={setMenuHighlightCategoryId}
+              panelSubs={panelSubs}
+              panelSubsLoading={panelSubsLoading}
+              applyCategory={applyCategory}
+              closeCategoryMenu={closeCategoryMenu}
+              pickSubCategory={pickSubCategory}
+              categoryOptionSelected={categoryOptionSelected}
+              categoriesWithSubs={categoriesWithSubs}
+            />
+          )}
+ 
+          {!isFactoryTab && (
+            <div className='flex shrink-0 items-center gap-0.5 rounded-lg border border-gray-200 bg-[var(--neutral-warm-surface)] p-0.5'>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => setViewMode('grid')}
+                className={`rounded-md p-1.5 transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
+                    : 'text-[var(--neutral-placeholder)]'
+                }`}
+                aria-label='มุมมองตาราง'
+              >
+                <LayoutGrid size={14} />
+              </Button>
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => setViewMode('list')}
+                className={`rounded-md p-1.5 transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-[var(--neutral-white)] text-[var(--brand-mauve)] shadow-sm'
+                    : 'text-[var(--neutral-placeholder)]'
+                }`}
+                aria-label='มุมมองรายการ'
+              >
+                <List size={14} />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className='px-4 pt-4'>
+      <div className={`px-4 pt-4 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           isFactoryTab ? (

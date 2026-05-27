@@ -17,6 +17,7 @@ import { normalizeIso } from '@/pages/messages/selectors';
 import { formatChatTime } from '@/utils/chatTime';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Button } from '@/components/ui/button';
+import { openImageLightbox } from '@/stores/useLightboxStore';
 
 /** LINE-style: ข้อความที่ส่ง (ฝั่งเรา) */
 const SENT_TEXT_BG = 'var(--brand-violet-soft)';
@@ -602,19 +603,22 @@ export function MessageBubble({
             isMine ? 'items-end' : 'items-start',
           )}
         >
-          <div
+          <button
+            type='button'
+            onClick={() => msg.imageUrl && openImageLightbox(msg.imageUrl)}
             className={cn(
-              'overflow-hidden rounded-2xl',
+              'overflow-hidden rounded-2xl focus:outline-none active:opacity-80',
               isMine ? 'rounded-br-md' : 'rounded-bl-md',
               msg.status === 'sending' && 'opacity-60',
             )}
+            aria-label='ดูรูปขนาดใหญ่'
           >
             <ImageWithFallback
               src={msg.imageUrl}
               alt=''
               className='block max-h-72 w-full max-w-[min(100%,280px)] object-cover'
             />
-          </div>
+          </button>
           {caption ? (
             <TextBubbleBody
               msg={{ ...msg, content: caption, message_type: 'TX' }}
