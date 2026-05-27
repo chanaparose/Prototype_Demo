@@ -297,7 +297,7 @@ function TextChatBubble({
 }
 
 const CHAT_CARD_SHELL =
-  'relative w-full max-w-[min(100%,332px)] overflow-hidden rounded-2xl border border-white/70 bg-[linear-gradient(155deg,rgba(255,255,255,0.92),rgba(248,245,255,0.86))] text-left shadow-[0_18px_42px_rgba(46,34,82,0.18),inset_0_1px_0_rgba(255,255,255,0.95)] backdrop-blur-xl transition-all';
+  'relative w-full max-w-[min(100%,300px)] overflow-hidden rounded-[20px] text-left transition-all';
 
 function RfqChatCard({
   rfqId,
@@ -313,67 +313,80 @@ function RfqChatCard({
   const canOpen = Number.isFinite(rfqId) && rfqId > 0;
   return (
     <div className='flex justify-center px-1'>
-      <article className={CHAT_CARD_SHELL}>
+      <article
+        className={CHAT_CARD_SHELL}
+        style={{
+          background: 'linear-gradient(160deg, rgba(255,255,255,0.96) 0%, rgba(245,243,255,0.93) 100%)',
+          boxShadow: '0 8px 32px rgba(109,40,217,0.13), 0 1.5px 6px rgba(109,40,217,0.07)',
+          border: '1.5px solid rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        {/* Liquid glass inner border highlight */}
         <div
-          className='pointer-events-none absolute inset-0 rounded-2xl'
+          className='pointer-events-none absolute inset-0 rounded-[20px]'
           style={{
-            border: '1px solid rgba(255,255,255,0.55)',
-            boxShadow:
-              'inset 0 0 0 1px rgba(162,56,255,0.08), inset 0 16px 34px rgba(255,255,255,0.22)',
+            background: 'linear-gradient(160deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%)',
+            border: '1px solid rgba(255,255,255,0.6)',
           }}
         />
-        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
-        <div
-          className='relative z-[1] h-[3px] w-full'
-          style={{
-            background:
-              'linear-gradient(90deg, var(--brand-mauve) 0%, var(--brand-purple) 55%, var(--brand-violet-soft) 100%)',
-          }}
-        />
+        {/* Top shimmer */}
+        <div className='pointer-events-none absolute left-4 right-8 top-1.5 h-5 rounded-full bg-white/50 blur-lg' />
+
         <div className='relative z-[1] p-4'>
-          <div className='mb-3 flex items-start gap-3'>
+          {/* Header */}
+          <div className='mb-3 flex items-center gap-3'>
             <span
-              className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
+              className='flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl'
               style={{
-                background:
-                  'linear-gradient(145deg, color-mix(in srgb, var(--brand-mauve) 24%, white), color-mix(in srgb, var(--brand-purple) 18%, white))',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 10px rgba(79,70,229,0.18)',
+                background: 'linear-gradient(145deg, #ede9fe, #ddd6fe)',
+                boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.9), 0 3px 10px rgba(109,40,217,0.15)',
               }}
             >
-              <FileText size={18} className='text-[var(--brand-purple)]' strokeWidth={2.2} />
+              <FileText size={19} className='text-violet-700' strokeWidth={2} />
             </span>
-            <div className='min-w-0 flex-1 pt-0.5'>
-              <p className='text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--brand-purple)]'>
+            <div className='min-w-0 flex-1'>
+              <p className='text-[10px] font-extrabold uppercase tracking-[0.12em] text-violet-500'>
                 คำขอ RFQ
               </p>
-              <p className='mt-1 line-clamp-3 text-[15px] font-bold leading-snug text-[var(--brand-navy)]'>
+              <p className='mt-0.5 line-clamp-2 text-[13px] font-bold leading-snug text-[var(--brand-navy)]'>
                 {title}
               </p>
             </div>
           </div>
-          <div className='mb-3 rounded-lg border border-violet-100 bg-violet-50/55 px-2.5 py-2'>
-            <p className='text-[11px] font-medium text-violet-900 line-clamp-2'>
-              เอกสารอ้างอิง: <span className='font-semibold'>{title}</span>
-            </p>
+
+          {/* Divider */}
+          <div
+            className='mb-3 h-px w-full'
+            style={{ background: 'linear-gradient(90deg, rgba(139,92,246,0.18), rgba(139,92,246,0.04))' }}
+          />
+
+          {/* RFQ ID badge */}
+          <div className='mb-3 flex items-center gap-1.5 rounded-xl bg-violet-50/80 px-3 py-2'>
+            <FileText size={11} className='shrink-0 text-violet-400' />
+            <span className='text-[11px] font-medium text-violet-800 truncate'>
+              เลขที่อ้างอิง: <span className='font-bold'>RFQ-{rfqId > 0 ? rfqId : '-'}</span>
+            </span>
           </div>
+
+          {/* CTA */}
           <Button
             variant='unstyled'
             type='button'
             disabled={!canOpen}
             onClick={onOpen}
-              className={cn(
-                'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-bold text-white',
-                'disabled:cursor-not-allowed disabled:opacity-45',
-                canOpen && 'hover:brightness-[1.03] active:scale-[0.99]',
-              )}
-              style={{
-                background:
-                  'linear-gradient(135deg, var(--brand-mauve) 0%, var(--brand-purple) 100%)',
-                boxShadow: '0 8px 20px rgba(79,70,229,0.34)',
-              }}
-            >
+            className={cn(
+              'flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[13px] font-bold text-white',
+              'disabled:cursor-not-allowed disabled:opacity-40',
+              canOpen && 'hover:brightness-105 active:scale-[0.98]',
+            )}
+            style={{
+              background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+              boxShadow: '0 4px 14px rgba(109,40,217,0.38)',
+            }}
+          >
             {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'}
-            <ArrowRight size={15} strokeWidth={2.5} />
+            <ArrowRight size={14} strokeWidth={2.5} />
           </Button>
         </div>
       </article>
@@ -385,30 +398,30 @@ function QuotationStatusPill({ status, viewerRole }: { status: string; viewerRol
   const s = status.toLowerCase();
   if (s === 'accepted' || s === 'ac') {
     return (
-      <span className='inline-flex items-center gap-1 rounded-full border border-emerald-200/80 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-800'>
-        <Check size={11} strokeWidth={2.5} />
+      <span className='inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700'>
+        <Check size={10} strokeWidth={3} />
         ยืนยันแล้ว
       </span>
     );
   }
   if (s === 'rejected' || s === 'rj') {
     return (
-      <span className='inline-flex items-center gap-1 rounded-full border border-red-200/80 bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-700'>
-        <X size={11} strokeWidth={2.5} />
+      <span className='inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600'>
+        <X size={10} strokeWidth={3} />
         ปฏิเสธแล้ว
       </span>
     );
   }
   if (s === 'expired') {
     return (
-      <span className='rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-600'>
+      <span className='rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500'>
         หมดอายุ
       </span>
     );
   }
   return (
-    <span className='rounded-full border border-amber-200/90 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-900'>
-      {viewerRole === 'FT' ? 'รอลูกค้ายืนยัน' : 'รอตรวจสอบ'}
+    <span className='rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700'>
+      {viewerRole === 'FT' ? 'รอยืนยัน' : 'รอตรวจสอบ'}
     </span>
   );
 }
@@ -438,88 +451,116 @@ function QuotationChatCard({
         className={cn(
           CHAT_CARD_SHELL,
           'disabled:cursor-default disabled:opacity-90',
-          !disabled && 'hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(46,34,82,0.14)] active:scale-[0.995]',
+          !disabled && 'hover:-translate-y-0.5 active:scale-[0.98]',
         )}
         aria-label='ดูรายละเอียดใบเสนอราคา'
+        style={{
+          background: 'linear-gradient(160deg, rgba(255,255,255,0.97) 0%, rgba(238,242,255,0.93) 100%)',
+          boxShadow: '0 8px 32px rgba(67,56,202,0.12), 0 1.5px 6px rgba(67,56,202,0.07)',
+          border: '1.5px solid rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(20px)',
+        }}
       >
+        {/* Liquid glass inner border highlight */}
         <div
-          className='pointer-events-none absolute inset-0 rounded-2xl'
+          className='pointer-events-none absolute inset-0 rounded-[20px]'
           style={{
-            border: '1px solid rgba(255,255,255,0.55)',
-            boxShadow:
-              'inset 0 0 0 1px rgba(99,102,241,0.08), inset 0 16px 34px rgba(255,255,255,0.24)',
+            background: 'linear-gradient(160deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 55%)',
+            border: '1px solid rgba(255,255,255,0.6)',
           }}
         />
-        <div className='pointer-events-none absolute left-3 right-3 top-2 h-8 rounded-full bg-white/45 blur-md' />
-        <div
-          className='relative z-[1] h-[3px] w-full'
-          style={{
-            background:
-              'linear-gradient(90deg, var(--brand-indigo) 0%, var(--brand-purple) 50%, #a78bfa 100%)',
-          }}
-        />
+        {/* Top shimmer */}
+        <div className='pointer-events-none absolute left-4 right-8 top-1.5 h-5 rounded-full bg-white/50 blur-lg' />
+
         <div className='relative z-[1] p-4'>
-          <div className='mb-3 flex items-start justify-between gap-2'>
-            <div className='flex min-w-0 items-center gap-2.5'>
+          {/* Header row */}
+          <div className='mb-3 flex items-center justify-between gap-2'>
+            <div className='flex items-center gap-2.5'>
               <span
-                className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl'
+                className='flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl'
                 style={{
-                  background:
-                    'linear-gradient(145deg, color-mix(in srgb, var(--brand-indigo) 12%, white), var(--brand-lavender))',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.85)',
+                  background: 'linear-gradient(145deg, #e0e7ff, #c7d2fe)',
+                  boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.9), 0 3px 10px rgba(67,56,202,0.15)',
                 }}
               >
-                <CreditCard size={18} className='text-[var(--brand-indigo)]' strokeWidth={2.2} />
+                <CreditCard size={19} className='text-indigo-700' strokeWidth={2} />
               </span>
-              <div className='min-w-0'>
-                <p className='text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--brand-indigo)]'>
-                  ใบเสนอราคาทางการ
+              <div>
+                <p className='text-[10px] font-extrabold uppercase tracking-[0.12em] text-indigo-400'>
+                  ใบเสนอราคา
                 </p>
+                <QuotationStatusPill status={qStatus} viewerRole={viewerRole} />
               </div>
             </div>
-            <QuotationStatusPill status={qStatus} viewerRole={viewerRole} />
+            {msg.display_time ? (
+              <span className='shrink-0 text-[10px] tabular-nums text-gray-400'>{msg.display_time}</span>
+            ) : null}
           </div>
 
+          {/* Divider */}
+          <div
+            className='mb-3 h-px w-full'
+            style={{ background: 'linear-gradient(90deg, rgba(99,102,241,0.18), rgba(99,102,241,0.04))' }}
+          />
+
+          {/* Price & Lead time */}
           <div className='mb-3 grid grid-cols-2 gap-2'>
-            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-3 py-2.5 text-center'>
-              <p className='text-[15px] font-bold tabular-nums text-[var(--brand-navy)]'>
+            <div
+              className='rounded-2xl px-3 py-2.5 text-center'
+              style={{
+                background: 'linear-gradient(145deg, rgba(238,242,255,0.9), rgba(224,231,255,0.7))',
+                border: '1px solid rgba(199,210,254,0.6)',
+              }}
+            >
+              <p className='text-[16px] font-extrabold tabular-nums text-[var(--brand-navy)] leading-tight'>
                 {formatCurrency(quote.price, 'THB')}
               </p>
-              <p className='mt-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
+              <p className='mt-0.5 text-[9px] font-bold uppercase tracking-widest text-indigo-500'>
                 ราคารวม
               </p>
             </div>
-            <div className='rounded-xl border border-violet-200 bg-violet-50/65 px-3 py-2.5 text-center'>
-              <p className='text-[15px] font-bold tabular-nums text-[var(--brand-navy)]'>
-                {quote.leadTime}{' '}
-                <span className='text-[11px] font-semibold text-[var(--neutral-subtle)]'>วัน</span>
+            <div
+              className='rounded-2xl px-3 py-2.5 text-center'
+              style={{
+                background: 'linear-gradient(145deg, rgba(238,242,255,0.9), rgba(224,231,255,0.7))',
+                border: '1px solid rgba(199,210,254,0.6)',
+              }}
+            >
+              <p className='text-[16px] font-extrabold tabular-nums text-[var(--brand-navy)] leading-tight'>
+                {quote.leadTime}
+                <span className='ml-0.5 text-[11px] font-semibold text-gray-400'>วัน</span>
               </p>
-              <p className='mt-0.5 flex items-center justify-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-700'>
+              <p className='mt-0.5 flex items-center justify-center gap-0.5 text-[9px] font-bold uppercase tracking-widest text-indigo-500'>
                 <Clock size={9} />
-                lead time
+                Lead Time
               </p>
             </div>
           </div>
 
-          <div className='flex items-center justify-center gap-1.5 rounded-lg border border-violet-100 bg-violet-50 px-2.5 py-2 text-[10px] text-[var(--brand-navy)]'>
-            <Calendar size={11} className='shrink-0 text-violet-700' />
-            <span>
+          {/* Valid until */}
+          <div
+            className='mb-3 flex items-center gap-1.5 rounded-xl px-3 py-2'
+            style={{ background: 'rgba(238,242,255,0.7)', border: '1px solid rgba(199,210,254,0.5)' }}
+          >
+            <Calendar size={11} className='shrink-0 text-indigo-400' />
+            <span className='text-[11px] text-gray-600'>
               ใช้ได้ถึง{' '}
-              <span className='font-semibold'>{quote.validUntil || '-'}</span>
+              <span className='font-semibold text-[var(--brand-navy)]'>{quote.validUntil || '-'}</span>
             </span>
           </div>
 
+          {/* View detail link */}
           {!disabled ? (
-            <div className='mt-3 flex items-center justify-center gap-1 text-[12px] font-semibold text-[var(--brand-purple)]'>
+            <div
+              className='flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white'
+              style={{
+                background: 'linear-gradient(135deg, #4338ca 0%, #6366f1 100%)',
+                boxShadow: '0 4px 14px rgba(67,56,202,0.36)',
+              }}
+            >
               <span>ดูรายละเอียด</span>
-              <ArrowRight size={13} strokeWidth={2.5} />
+              <ArrowRight size={14} strokeWidth={2.5} />
             </div>
-          ) : null}
-
-          {msg.display_time ? (
-            <p className='mt-2 text-center text-[9px] tabular-nums text-[var(--neutral-placeholder)]'>
-              {msg.display_time}
-            </p>
           ) : null}
         </div>
       </Button>
