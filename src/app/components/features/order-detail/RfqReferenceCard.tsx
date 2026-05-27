@@ -2,9 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { IQuoteNestedResponse, IRfqNestedResponse } from '@/types/api';
 import { summarizeRfqAddress } from '@/utils/rfqAddressSummary';
-import { OrderPhotoGallery } from '@/components/features/order-detail/OrderPhotoGallery';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { pickScalarNumber, pickScalarString } from '@/utils/pickScalarString';
+import { openImageLightbox } from '@/stores/useLightboxStore';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 
@@ -18,7 +18,6 @@ interface Props {
 
 export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) {
   const [open, setOpen] = useState(defaultOpen);
-  const [lightbox, setLightbox] = useState<string | null>(null);
 
   // Use enriched data from GET /orders/:id — no extra API calls needed.
   const data = rfq as unknown as Record<string, unknown>;
@@ -176,8 +175,9 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
                 variant='unstyled'
                 key={url}
                 type='button'
-                onClick={() => setLightbox(url)}
-                className='aspect-square rounded-lg overflow-hidden bg-gray-100'
+                onClick={() => openImageLightbox(url)}
+                className='aspect-square rounded-lg overflow-hidden bg-gray-100 focus:outline-none active:opacity-80'
+                aria-label='ดูรูปขนาดใหญ่'
               >
                 <Image src={url} alt='' className='w-full h-full object-cover' />
               </Button>
@@ -214,7 +214,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
       ) : null}
 
       {quotation ? (
-        <div>
+        <div className='border-t border-gray-200 pt-4 mt-1'>
           <p className='text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2'>
             รายละเอียดใบเสนอราคา
           </p>
@@ -355,12 +355,11 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, quotation }: Props) 
           })()}
         </div>
       ) : null}
-      <OrderPhotoGallery photoUrl={lightbox} onClose={() => setLightbox(null)} />
     </div>
   );
 
   return (
-    <section className='rounded-2xl border border-gray-100 bg-white'>
+    <section className='my-3 rounded-2xl border border-gray-100 bg-white'>
       <Button
         variant='unstyled'
         type='button'
