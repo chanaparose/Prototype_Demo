@@ -208,11 +208,7 @@ export function FactoryIdeasMobile() {
             pickSubCategory={pickSubCategory}
             categoryOptionSelected={categoryOptionSelected}
           />
-
-          <span className='shrink-0 rounded-md bg-[rgba(46,34,82,0.06)] px-2 py-1 text-[11px] font-semibold text-[var(--brand-navy)] tabular-nums'>
-            {totalCount} รายการ
-          </span>
-
+ 
           <div className='flex shrink-0 items-center gap-0.5 rounded-lg border border-gray-200 bg-[var(--neutral-warm-surface)] p-0.5'>
             <Button
               variant='unstyled'
