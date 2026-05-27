@@ -317,7 +317,7 @@ function RfqChatCard({
         className={CHAT_CARD_SHELL}
         style={{
           background: 'linear-gradient(160deg, rgba(255,255,255,0.96) 0%, rgba(245,243,255,0.93) 100%)',
-          boxShadow: '0 8px 32px rgba(109,40,217,0.13), 0 1.5px 6px rgba(109,40,217,0.07)',
+          boxShadow: '0 5px 32px rgba(109,40,217,0.13), 0 1px 6px rgba(109,40,217,0.07)',
           border: '1.5px solid rgba(255,255,255,0.85)',
           backdropFilter: 'blur(20px)',
         }}
@@ -340,7 +340,7 @@ function RfqChatCard({
               className='flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl'
               style={{
                 background: 'linear-gradient(145deg, #ede9fe, #ddd6fe)',
-                boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.9), 0 3px 10px rgba(109,40,217,0.15)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 5px rgba(109,40,217,0.15)',
               }}
             >
               <FileText size={19} className='text-violet-700' strokeWidth={2} />
@@ -382,7 +382,7 @@ function RfqChatCard({
             )}
             style={{
               background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-              boxShadow: '0 2px 8px rgba(109,40,217,0.22)',
+              boxShadow: '0 1px 5px rgba(109,40,217,0.22)',
             }}
           >
             {viewerRole === 'FT' ? 'สร้างใบเสนอราคา' : 'ดู RFQ'}
@@ -456,7 +456,7 @@ function QuotationChatCard({
         aria-label='ดูรายละเอียดใบเสนอราคา'
         style={{
           background: 'linear-gradient(160deg, rgba(255,255,255,0.97) 0%, rgba(238,242,255,0.93) 100%)',
-          boxShadow: '0 8px 32px rgba(67,56,202,0.12), 0 1.5px 6px rgba(67,56,202,0.07)',
+          boxShadow: '0 5px 32px rgba(67,56,202,0.12), 0 1px 6px rgba(67,56,202,0.07)',
           border: '1.5px solid rgba(255,255,255,0.85)',
           backdropFilter: 'blur(20px)',
         }}
@@ -480,7 +480,7 @@ function QuotationChatCard({
                 className='flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl'
                 style={{
                   background: 'linear-gradient(145deg, #e0e7ff, #c7d2fe)',
-                  boxShadow: 'inset 0 1.5px 0 rgba(255,255,255,0.9), 0 3px 10px rgba(67,56,202,0.15)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9), 0 1.5px 10px rgba(67,56,202,0.15)',
                 }}
               >
                 <CreditCard size={19} className='text-indigo-700' strokeWidth={2} />
@@ -492,9 +492,7 @@ function QuotationChatCard({
                 <QuotationStatusPill status={qStatus} viewerRole={viewerRole} />
               </div>
             </div>
-            {msg.display_time ? (
-              <span className='shrink-0 text-[10px] tabular-nums text-gray-400'>{msg.display_time}</span>
-            ) : null}
+             
           </div>
 
           {/* Divider */}
@@ -555,7 +553,7 @@ function QuotationChatCard({
               className='flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-[13px] font-bold text-white'
               style={{
                 background: 'linear-gradient(135deg, #4338ca 0%, #6366f1 100%)',
-                boxShadow: '0 2px 8px rgba(67,56,202,0.22)',
+                boxShadow: '0 1px 4px rgba(67,56,202,0.22)',
               }}
             >
               <span>ดูรายละเอียด</span>
