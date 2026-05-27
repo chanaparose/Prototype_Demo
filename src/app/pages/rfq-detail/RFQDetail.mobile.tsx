@@ -151,7 +151,8 @@ export function RFQDetailMobile() {
     );
   }
 
-  const isClosedRequest = rfq.status === 'completed' || rfq.status === 'cancelled';
+  const isClosedRequest =
+    rfq.status === 'completed' || rfq.status === 'cancelled' || rfq.status === 'closed';
   const isHistoryView =
     HISTORY_STATUSES.includes(rfq.status as (typeof HISTORY_STATUSES)[number]) && !isClosedRequest;
   const canClose = CLOSEABLE_STATUSES.has(rfq.status);
@@ -165,13 +166,17 @@ export function RFQDetailMobile() {
     : isClosedRequest
       ? rfq.status === 'completed'
         ? { background: '#E8F7EE', color: '#0F9F6E' }
-        : { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
+        : rfq.status === 'closed'
+          ? { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
+          : { background: 'var(--neutral-slate-muted)', color: 'var(--neutral-slate-subtle)' }
       : { background: COLORS.lightPurpleBg, color: COLORS.purple };
 
   const statusLabel = isClosedRequest
     ? rfq.status === 'completed'
       ? 'ปิดคำขอแล้ว'
-      : 'ยกเลิกคำขอแล้ว'
+      : rfq.status === 'closed'
+        ? 'ปิดรับคำขอแล้ว'
+        : 'ยกเลิกคำขอแล้ว'
     : isHistoryView
       ? (STATUS_LABEL[rfq.status] ?? rfq.status)
       : `${rfq.offerCount} ใบเสนอราคา`;

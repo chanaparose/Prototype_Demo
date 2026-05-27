@@ -94,7 +94,7 @@ export function RfqDetailOffersSection({
   quoteHistories,
 }: RfqDetailOffersSectionProps) {
   const isRequestClosed =
-    rfqStatus === 'completed' || rfqStatus === 'cancelled' || rfqStatus === 'expired';
+    rfqStatus === 'completed' || rfqStatus === 'cancelled' || rfqStatus === 'expired' || rfqStatus === 'closed';
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [flowError, setFlowError] = useState<string | null>(null);
   const [expandedBoqOfferId, setExpandedBoqOfferId] = useState<string | null>(null);
@@ -251,13 +251,27 @@ export function RfqDetailOffersSection({
           </div>
         )}
 
+        {rfqStatus === 'closed' && (
+          <div className='bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3'>
+            <div className='w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center shrink-0'>
+              <XCircle size={24} className='text-slate-500' />
+            </div>
+            <div>
+              <p className='text-sm font-bold text-slate-800'>ปิดรับคำขอแล้ว</p>
+              <p className='text-xs text-slate-500 mt-0.5'>
+                คำขอนี้ถูกปิดรับแล้ว ไม่สามารถรับใบเสนอราคาเพิ่มเติมได้
+              </p>
+            </div>
+          </div>
+        )}
+
         {rfqStatus === 'expired' && (
           <div className='bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0'>
               <AlertCircle size={24} className='text-amber-600' />
             </div>
             <div>
-              <p className='text-sm font-bold text-amber-900'>ไม่มีการส่งคำสั่งในเวลาที่กำหนด</p>
+              <p className='text-sm font-bold text-amber-900'>หมดอายุ</p>
               <p className='text-xs text-amber-700 mt-0.5'>
                 หมดระยะเวลาตอบรับใบเสนอราคา คุณสามารถสร้างคำขอราคาใหม่ได้
               </p>
@@ -282,13 +296,24 @@ export function RfqDetailOffersSection({
             </div>
           </div>
         )}
+        {rfqStatus === 'closed' && (
+          <div className='bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3'>
+            <div className='w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center shrink-0'>
+              <XCircle size={24} className='text-slate-500' />
+            </div>
+            <div>
+              <p className='text-sm font-bold text-slate-800'>ปิดรับคำขอแล้ว</p>
+              <p className='text-xs text-slate-500 mt-0.5'>คำขอนี้ถูกปิดรับแล้ว</p>
+            </div>
+          </div>
+        )}
         {rfqStatus === 'expired' && (
           <div className='bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0'>
               <AlertCircle size={24} className='text-amber-600' />
             </div>
             <div>
-              <p className='text-sm font-bold text-amber-900'>ไม่มีการส่งคำสั่งในเวลาที่กำหนด</p>
+              <p className='text-sm font-bold text-amber-900'>หมดอายุ</p>
               <p className='text-xs text-amber-700 mt-0.5'>
                 หมดระยะเวลารอใบเสนอราคา คุณสามารถสร้างคำขอราคาใหม่ได้
               </p>
@@ -723,8 +748,10 @@ export function RfqDetailOffersSection({
                         {rfqStatus === 'cancelled'
                           ? 'ยกเลิกคำขอแล้ว'
                           : rfqStatus === 'expired'
-                            ? 'หมดระยะเวลารับใบเสนอราคา'
-                            : 'ปิดคำขอแล้ว'}
+                            ? 'หมดอายุ'
+                            : rfqStatus === 'closed'
+                              ? 'ปิดรับคำขอแล้ว'
+                              : 'ปิดคำขอแล้ว'}
                       </Button>
                     ) : (
                       <Button
@@ -755,18 +782,28 @@ export function RfqDetailOffersSection({
     );
   }
 
+  const isClosed = rfqStatus === 'closed';
+
   return (
     <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
       <div
         className='w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3'
-        style={{ background: 'var(--neutral-muted)' }}
+        style={{ background: isClosed ? 'var(--neutral-slate-muted)' : 'var(--neutral-muted)' }}
       >
-        <Clock size={28} className='text-gray-400' />
+        {isClosed ? (
+          <XCircle size={28} className='text-slate-400' />
+        ) : (
+          <Clock size={28} className='text-gray-400' />
+        )}
       </div>
       <p className='text-sm text-gray-700' style={{ fontWeight: 600 }}>
-        กำลังรอใบเสนอราคา
+        {isClosed ? 'คำขอราคานี้ถูกปิดแล้ว' : 'กำลังรอใบเสนอราคา'}
       </p>
-      <p className='text-xs text-gray-400 mt-1'>โรงงานจะตอบกลับภายใน 2-4 ชั่วโมง</p>
+      <p className='text-xs text-gray-400 mt-1'>
+        {isClosed
+          ? 'ไม่สามารถรับใบเสนอราคาใหม่ได้อีกต่อไป'
+          : 'โรงงานจะตอบกลับภายใน 2-4 ชั่วโมง'}
+      </p>
     </div>
   );
 }

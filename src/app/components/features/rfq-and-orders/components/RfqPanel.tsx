@@ -18,12 +18,9 @@ export function RfqPanel({
 }) {
   const [historyOpen, setHistoryOpen] = React.useState(false);
 
-  const activeRfqs = rfqs.filter(
-    (r) => r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'completed',
-  );
-  const historyRfqs = rfqs.filter(
-    (r) => r.status === 'cancelled' || r.status === 'expired' || r.status === 'completed',
-  );
+  const HISTORY_STATUSES = ['cancelled', 'expired', 'completed', 'closed'] as const;
+  const activeRfqs = rfqs.filter((r) => !(HISTORY_STATUSES as readonly string[]).includes(r.status));
+  const historyRfqs = rfqs.filter((r) => (HISTORY_STATUSES as readonly string[]).includes(r.status));
 
   const totalPendingReview = activeRfqs.reduce((sum, rfq) => {
     return sum + (rfq.offers ?? []).filter((o) => o.quoteStatus === 'PD').length;

@@ -14,9 +14,9 @@ export function mapRfqStatusFromApi(code: string, options: MapRfqStatusOptions =
     return hasQuotes ? 'offers_received' : 'pending';
   }
   if (u === 'CL') {
-    return hasAccepted ? 'completed' : 'expired';
+    return hasAccepted ? 'completed' : 'closed';
   }
-  if (u === 'CC') return 'cancelled';
+  if (u === 'CC') return 'expired';
   if (u === 'EX' || u === 'EXPIRED') return 'expired';
 
   const lower = String(code).toLowerCase();
@@ -27,6 +27,7 @@ export function mapRfqStatusFromApi(code: string, options: MapRfqStatusOptions =
     'completed',
     'cancelled',
     'expired',
+    'closed',
   ] as const;
   if ((known as readonly string[]).includes(lower)) return lower;
   return lower || 'pending';

@@ -92,6 +92,8 @@ export const RFQ_STATUS_DISPLAY: Record<string, { label: string; color: string; 
   },
   cancelled: { label: 'ยกเลิก', color: '#5B5470', bg: LILAC_MUTED },
   expired: { label: 'หมดอายุ', color: '#9A3412', bg: '#F5E6D8' },
+  /** RFQ.status = CL (Closed) ปิดรับคำขอ แต่ยังไม่มีการยอมรับใบเสนอราคา */
+  closed: { label: 'ปิดรับคำขอแล้ว', color: '#5B5470', bg: LILAC_MUTED },
 };
 
 export const ORDER_STATUS_CONFIG: Record<
