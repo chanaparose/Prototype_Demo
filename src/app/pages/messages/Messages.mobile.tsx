@@ -50,7 +50,13 @@ export function MessagesMobile({
   const navigate = useNavigate();
 
   return (
-    <div className='md:hidden flex min-h-full flex-col pb-20 bg-[var(--brand-page)]'>
+    <div
+      className={cn(
+        'md:hidden flex flex-col pb-20',
+        'min-h-[calc(100dvh-3.5rem-4rem-env(safe-area-inset-bottom,0px))]',
+        'bg-[linear-gradient(180deg,var(--brand-lavender)_0%,var(--brand-page)_42%,var(--neutral-white)_100%)]',
+      )}
+    >
       {/* ── Header ── */}
       <div className='px-4 pt-5 pb-2 flex items-center justify-between'>
         {/* Left: placeholder (avatar / back button) */}
@@ -151,7 +157,7 @@ function ConversationRow({
         />
         {/* Unread dot on avatar */}
         {hasUnread ? (
-          <span className='absolute bottom-0 right-0 h-3 w-3 rounded-full bg-[var(--brand-purple)] ring-2 ring-[var(--brand-page)]' />
+          <span className='absolute bottom-0 right-0 h-3 w-3 rounded-full bg-[var(--brand-purple)] ring-2 ring-white' />
         ) : null}
       </div>
 
