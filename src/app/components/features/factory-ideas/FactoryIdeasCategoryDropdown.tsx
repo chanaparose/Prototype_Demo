@@ -94,7 +94,10 @@ export function FactoryIdeasCategoryDropdown({
                         setSelectedSubCategoryId(null);
                         closeCategoryMenu();
                       } else {
-                        applyCategory(cat.id);
+                        // Don't call applyCategory here — the URL change it triggers
+                        // can cause a re-render that resets categoryMenuStep back to
+                        // 'categories' before the subs panel renders.  The category
+                        // will be applied later inside pickSubCategory().
                         setMenuHighlightCategoryId(cat.id);
                         setCategoryMenuStep?.('subs');
                       }

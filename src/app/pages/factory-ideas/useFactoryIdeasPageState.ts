@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { useData } from '@/stores/useDataStore';
@@ -36,9 +36,39 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
-  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>(initialType ?? 'all');
+
+  // ── selectedType driven by URL so it survives setSearchParams from other hooks ──
+  const selectedType = useMemo<FactoryIdeasContentType>(() => {
+    const t = searchParams.get('type');
+    if (t === 'promotion') return 'product';
+    if (
+      t === 'product' ||
+      t === 'idea' ||
+      t === 'material' ||
+      t === 'factory'
+    ) return t;
+    return initialType ?? 'all';
+  }, [searchParams, initialType]);
+
+  const setSelectedType = useCallback(
+    (next: FactoryIdeasContentType) => {
+      setSearchParams(
+        (prev) => {
+          const p = new URLSearchParams(prev);
+          if (next === 'all' || next === (initialType ?? 'all')) {
+            p.delete('type');
+          } else {
+            p.set('type', next);
+          }
+          return p;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams, initialType],
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
@@ -111,21 +141,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     setPage(1);
   }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText]);
 
-  useEffect(() => {
-    const t = searchParams.get('type');
-    if (t === 'promotion') {
-      setSelectedType('product');
-      return;
-    }
-    if (
-      t === 'product' ||
-      t === 'idea' ||
-      t === 'material' ||
-      t === 'factory'
-    ) {
-      setSelectedType(t);
-    }
-  }, [searchParams]);
+  // selectedType is now derived from URL (useMemo above) — no sync effect needed
 
   const categoryFilters = useMemo(() => {
     const rest = [...apiCategoriesAll].sort((a, b) => a.name.localeCompare(b.name, 'th'));
