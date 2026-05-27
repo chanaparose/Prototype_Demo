@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -128,11 +128,21 @@ function SectionHeading({ num, label }: { num: number; label: string }) {
 /* ─────────────────────────────────────────────────── */
 
 function CustomerTab() {
-  const { register } = useAuth();
+  const { register, login, switchRole } = useAuth();
   const navigate = useNavigate();
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [apiError, setApiError] = useState('');
+  type CtEmailStatus = 'idle' | 'checking' | 'free' | 'ft' | 'ct' | 'cf';
+  const [ctEmailStatus, setCtEmailStatus] = useState<CtEmailStatus>('idle');
+  const [ftPasswordVerified, setFtPasswordVerified] = useState(false);
+  const [upgradeEmail, setUpgradeEmail] = useState('');
+  const [verifyPw, setVerifyPw] = useState('');
+  const [showVerifyPw, setShowVerifyPw] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [localSubmitting, setLocalSubmitting] = useState(false);
+  const ctLastChecked = useRef('');
 
   const form = useForm<CtFormValues>({
     resolver: zodResolver(ctSchema),
@@ -140,10 +150,86 @@ function CustomerTab() {
     mode: 'onSubmit',
   });
 
-  const isSubmitting = form.formState.isSubmitting;
+  const isSubmitting = form.formState.isSubmitting || localSubmitting;
+
+  const handleCtEmailBlur = React.useCallback(async () => {
+    const email = form.getValues('email').trim();
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!EMAIL_RE.test(email) || email === ctLastChecked.current) return;
+    ctLastChecked.current = email;
+    setCtEmailStatus('checking');
+    try {
+      const result = await checkEmail(email);
+      if (!result.exists) {
+        setCtEmailStatus('free');
+      } else if (result.role === 'FT' && result.has_customer) {
+        setCtEmailStatus('cf');
+      } else if (result.role === 'CT' && result.has_factory) {
+        setCtEmailStatus('cf');
+      } else if (result.role === 'FT') {
+        // FT user without customer profile — can add CT
+        setCtEmailStatus('ft');
+        setUpgradeEmail(email);
+      } else {
+        // CT already exists
+        setCtEmailStatus('ct');
+      }
+    } catch {
+      setCtEmailStatus('idle');
+    }
+  }, [form]);
+
+  const handleVerifyFtPassword = async () => {
+    if (!verifyPw) return;
+    setVerifyError('');
+    setVerifyLoading(true);
+    try {
+      await login({ email: upgradeEmail, password: verifyPw });
+      setFtPasswordVerified(true);
+      setVerifyPw('');
+    } catch (err) {
+      if (err instanceof ApiHttpError && err.status === 401) {
+        setVerifyError('รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่');
+      } else {
+        setVerifyError(getErrorMessage(err, 'ยืนยันรหัสผ่านไม่สำเร็จ กรุณาลองใหม่'));
+      }
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
 
   const onSubmit = async (values: CtFormValues) => {
     setApiError('');
+
+    // FT user upgrading to add CT profile
+    if (ctEmailStatus === 'ft' && ftPasswordVerified) {
+      setLocalSubmitting(true);
+      try {
+        const { postUpgradeToCustomer } = await import('@/services/api/authApi');
+        await postUpgradeToCustomer({
+          first_name: values.first_name,
+          last_name: values.last_name,
+        });
+        navigate('/', { replace: true });
+      } catch (err: any) {
+        // 409 = already has customer → just switch role
+        if (err?.response?.status === 409 || err?.status === 409) {
+          try {
+            await switchRole('CT');
+            navigate('/', { replace: true });
+            return;
+          } catch {
+            // fall through
+          }
+        }
+        setApiError(getErrorMessage(err, 'อัปเกรดบัญชีไม่สำเร็จ'));
+      } finally {
+        setLocalSubmitting(false);
+      }
+      return;
+    }
+
+    // Normal CT registration
     try {
       await register({
         role: 'CT',
@@ -164,7 +250,20 @@ function CustomerTab() {
       {apiError ? <FormAlert>{apiError}</FormAlert> : null}
 
       <Form {...form}>
-        <form onSubmit={(e) => void form.handleSubmit(onSubmit)(e)} className='space-y-3' noValidate>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          if (ctEmailStatus === 'ft' && ftPasswordVerified) {
+            // Bypass zod validation for upgrade — only need first_name + last_name
+            const vals = form.getValues();
+            if (!vals.first_name.trim() || !vals.last_name.trim()) {
+              void form.trigger(['first_name', 'last_name']);
+              return;
+            }
+            void onSubmit(vals);
+          } else {
+            void form.handleSubmit(onSubmit)(e);
+          }
+        }} className='space-y-3' noValidate>
           <div className='grid grid-cols-2 gap-3'>
             <FormField
               control={form.control}
@@ -219,121 +318,263 @@ function CustomerTab() {
                   อีเมล <span className='text-red-500'>*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    type='email'
-                    placeholder='email@example.com'
-                    autoComplete='email'
-                    className={inClass(form.formState.errors.email?.message)}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className='text-xs' />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='phone'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-xs font-medium text-gray-600'>
-                  เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type='tel'
-                    inputMode='tel'
-                    autoComplete='tel'
-                    placeholder='098-889-3983'
-                    maxLength={12}
-                    className={inClass(form.formState.errors.phone?.message)}
-                    value={field.value}
-                    name={field.name}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    onChange={(e) => field.onChange(formatThaiPhoneDisplay(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage className='text-xs' />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='password'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-xs font-medium text-gray-600'>
-                  รหัสผ่าน <span className='text-red-500'>*</span>
-                </FormLabel>
-                <FormControl>
                   <div className='relative'>
                     <Input
-                      type={showPw ? 'text' : 'password'}
-                      placeholder='อย่างน้อย 8 ตัวอักษร'
-                      autoComplete='new-password'
-                      className={`${inClass(form.formState.errors.password?.message)} pr-10`}
+                      type='email'
+                      placeholder='email@example.com'
+                      autoComplete='email'
+                      className={inClass(form.formState.errors.email?.message)}
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (e.target.value.trim() !== ctLastChecked.current) {
+                          setCtEmailStatus('idle');
+                          setFtPasswordVerified(false);
+                          setVerifyPw('');
+                          setVerifyError('');
+                        }
+                      }}
+                      onBlur={(e) => {
+                        field.onBlur();
+                        void handleCtEmailBlur();
+                      }}
                     />
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      tabIndex={-1}
-                      onClick={() => setShowPw((v) => !v)}
-                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                    >
-                      {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </Button>
+                    {ctEmailStatus === 'checking' && (
+                      <Loader2 size={14} className='absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-gray-400' />
+                    )}
                   </div>
                 </FormControl>
+                {/* CT already exists — go login */}
+                {!form.formState.errors.email && ctEmailStatus === 'ct' && (
+                  <div className='mt-1 rounded-lg border border-amber-200 bg-amber-50 p-3'>
+                    <p className='text-sm text-amber-800'>
+                      <CheckCircle2 size={14} className='mr-1 inline text-amber-500' />
+                      อีเมลนี้มีบัญชีลูกค้าอยู่แล้ว{' '}
+                      <Link to='/login' className='font-semibold text-amber-700 underline'>
+                        เข้าสู่ระบบ
+                      </Link>
+                    </p>
+                  </div>
+                )}
+                {/* Both CT+FT exist — go login */}
+                {!form.formState.errors.email && ctEmailStatus === 'cf' && (
+                  <div className='mt-1 rounded-lg border border-emerald-200 bg-emerald-50 p-3'>
+                    <p className='text-sm text-emerald-800'>
+                      <CheckCircle2 size={14} className='mr-1 inline text-emerald-500' />
+                      อีเมลนี้มีทั้งบัญชีลูกค้าและบัญชีโรงงานครบแล้ว{' '}
+                      <Link to='/login' className='font-semibold text-emerald-700 underline'>
+                        เข้าสู่ระบบ
+                      </Link>{' '}
+                      เพื่อใช้งานหรือสลับบัญชีได้เลย
+                    </p>
+                  </div>
+                )}
+                {/* FT only — can upgrade, verify password first */}
+                {!form.formState.errors.email && ctEmailStatus === 'ft' && !ftPasswordVerified && (
+                  <div className='mt-1 space-y-3 rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-white p-4 shadow-[0_4px_16px_rgba(245,158,11,0.08)]'>
+                    <div className='flex items-start gap-3'>
+                      <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100'>
+                        <ShieldCheck size={17} className='text-amber-700' />
+                      </span>
+                      <div>
+                        <p className='text-sm font-semibold text-amber-800'>อีเมลนี้มีบัญชีโรงงานอยู่แล้ว</p>
+                        <p className='mt-0.5 text-xs text-amber-700 leading-relaxed'>
+                          กรอกรหัสผ่านเพื่อยืนยันตัวตนก่อนเพิ่มบัญชีลูกค้า
+                        </p>
+                      </div>
+                    </div>
+
+                    {verifyError && <FormAlert>{verifyError}</FormAlert>}
+
+                    <div className='space-y-1.5'>
+                      <Label className='text-xs font-medium text-gray-600'>
+                        รหัสผ่านบัญชีปัจจุบัน <span className='text-red-500'>*</span>
+                      </Label>
+                      <div className='relative'>
+                        <Input
+                          type={showVerifyPw ? 'text' : 'password'}
+                          value={verifyPw}
+                          onChange={(e) => setVerifyPw(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') void handleVerifyFtPassword(); }}
+                          placeholder='รหัสผ่านบัญชีโรงงานของคุณ'
+                          autoComplete='current-password'
+                          className={`${inputBase} ${inputNormal} pr-10`}
+                        />
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          tabIndex={-1}
+                          onClick={() => setShowVerifyPw((v) => !v)}
+                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                        >
+                          {showVerifyPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className='flex gap-2'>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        onClick={() => {
+                          setCtEmailStatus('idle');
+                          setVerifyPw('');
+                          setVerifyError('');
+                          ctLastChecked.current = '';
+                          form.setValue('email', '');
+                        }}
+                        className='flex-1 rounded-xl border border-gray-200 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors'
+                      >
+                        ใช้อีเมลอื่น
+                      </Button>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        disabled={!verifyPw || verifyLoading}
+                        onClick={() => void handleVerifyFtPassword()}
+                        className='flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold text-white disabled:opacity-60 transition-all'
+                        style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)' }}
+                      >
+                        {verifyLoading ? (
+                          <><Loader2 size={14} className='animate-spin' />กำลังยืนยัน...</>
+                        ) : (
+                          <><ShieldCheck size={14} />ยืนยันรหัสผ่าน</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {/* FT password verified — show success banner */}
+                {!form.formState.errors.email && ctEmailStatus === 'ft' && ftPasswordVerified && (
+                  <div className='mt-1 flex items-start gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-3.5'>
+                    <div className='mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600'>
+                      <ShieldCheck size={16} />
+                    </div>
+                    <div className='min-w-0'>
+                      <p className='text-xs font-semibold text-indigo-800'>เข้าสู่ระบบสำเร็จ — เพิ่มบัญชีลูกค้าให้กับบัญชีนี้</p>
+                      <p className='mt-0.5 truncate text-sm font-bold text-indigo-900'>{upgradeEmail}</p>
+                      <p className='mt-0.5 text-[11px] text-indigo-500'>
+                        ข้อมูลลูกค้าจะผูกกับบัญชีนี้ — ไม่สามารถเปลี่ยนอีเมลได้
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <FormMessage className='text-xs' />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name='confirmPassword'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='text-xs font-medium text-gray-600'>
-                  ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
-                </FormLabel>
-                <FormControl>
-                  <div className='relative'>
-                    <Input
-                      type={showConfirm ? 'text' : 'password'}
-                      placeholder='กรอกรหัสผ่านอีกครั้ง'
-                      autoComplete='new-password'
-                      className={`${inClass(form.formState.errors.confirmPassword?.message)} pr-10`}
-                      {...field}
-                    />
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      tabIndex={-1}
-                      onClick={() => setShowConfirm((v) => !v)}
-                      className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
-                    >
-                      {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </Button>
-                  </div>
-                </FormControl>
-                <FormMessage className='text-xs' />
-              </FormItem>
-            )}
-          />
+          {/* Hide phone/password when upgrading FT account */}
+          {ctEmailStatus !== 'ft' && (
+            <>
+              <FormField
+                control={form.control}
+                name='phone'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs font-medium text-gray-600'>
+                      เบอร์โทรศัพท์ <span className='text-red-500'>*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type='tel'
+                        inputMode='tel'
+                        autoComplete='tel'
+                        placeholder='098-889-3983'
+                        maxLength={12}
+                        className={inClass(form.formState.errors.phone?.message)}
+                        value={field.value}
+                        name={field.name}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        onChange={(e) => field.onChange(formatThaiPhoneDisplay(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage className='text-xs' />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='password'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs font-medium text-gray-600'>
+                      รหัสผ่าน <span className='text-red-500'>*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className='relative'>
+                        <Input
+                          type={showPw ? 'text' : 'password'}
+                          placeholder='อย่างน้อย 8 ตัวอักษร'
+                          autoComplete='new-password'
+                          className={`${inClass(form.formState.errors.password?.message)} pr-10`}
+                          {...field}
+                        />
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          tabIndex={-1}
+                          onClick={() => setShowPw((v) => !v)}
+                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                        >
+                          {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage className='text-xs' />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name='confirmPassword'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='text-xs font-medium text-gray-600'>
+                      ยืนยันรหัสผ่าน <span className='text-red-500'>*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className='relative'>
+                        <Input
+                          type={showConfirm ? 'text' : 'password'}
+                          placeholder='กรอกรหัสผ่านอีกครั้ง'
+                          autoComplete='new-password'
+                          className={`${inClass(form.formState.errors.confirmPassword?.message)} pr-10`}
+                          {...field}
+                        />
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          tabIndex={-1}
+                          onClick={() => setShowConfirm((v) => !v)}
+                          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400'
+                        >
+                          {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage className='text-xs' />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
 
           <Button
             variant='unstyled'
             type='submit'
-            disabled={isSubmitting}
+            disabled={isSubmitting || (ctEmailStatus === 'ft' && !ftPasswordVerified)}
             className={cn(PRIMARY_BTN, 'mt-2')}
             style={PRIMARY_BTN_BG}
           >
-            {isSubmitting ? <><Loader2 size={16} className='animate-spin' />กำลังสมัคร...</> : 'สมัครสมาชิก'}
+            {isSubmitting
+              ? <><Loader2 size={16} className='animate-spin' />กำลังดำเนินการ...</>
+              : ctEmailStatus === 'ft' && ftPasswordVerified
+                ? 'ยืนยันและเพิ่มบัญชีลูกค้า'
+                : 'สมัครสมาชิก'}
           </Button>
         </form>
       </Form>
