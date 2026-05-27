@@ -660,9 +660,7 @@ export function FactoryOrderDetailPage() {
                 ))}
               </section>
 
-              {rfq ? (
-                <RfqReferenceCard rfq={rfq} quotation={quotation} variant='accordion' />
-              ) : null}
+              {rfq ? <RfqReferenceCard rfq={rfq} variant='accordion' /> : null}
             </div>
 
             <aside className='space-y-4 xl:sticky xl:top-20'>
