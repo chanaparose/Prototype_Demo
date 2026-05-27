@@ -71,6 +71,7 @@ export function FactoryIdeasMobile() {
     factoryScope,
     setFactoryScope,
     showcasesLoading,
+    showcasesFetching,
     factoriesLoading,
     visibleItems,
     visibleIdeaItems,
@@ -240,7 +241,7 @@ export function FactoryIdeasMobile() {
         </div>
       </div>
 
-      <div className='px-4 pt-4'>
+      <div className={`px-4 pt-4 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           isFactoryTab ? (

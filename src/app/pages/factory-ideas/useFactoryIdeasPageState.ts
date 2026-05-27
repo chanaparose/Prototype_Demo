@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { useData } from '@/stores/useDataStore';
@@ -36,39 +36,10 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdeasPageStateOptions) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
 
-  // ── selectedType driven by URL so it survives setSearchParams from other hooks ──
-  const selectedType = useMemo<FactoryIdeasContentType>(() => {
-    const t = searchParams.get('type');
-    if (t === 'promotion') return 'product';
-    if (
-      t === 'product' ||
-      t === 'idea' ||
-      t === 'material' ||
-      t === 'factory'
-    ) return t;
-    return initialType ?? 'all';
-  }, [searchParams, initialType]);
-
-  const setSelectedType = useCallback(
-    (next: FactoryIdeasContentType) => {
-      setSearchParams(
-        (prev) => {
-          const p = new URLSearchParams(prev);
-          if (next === 'all' || next === (initialType ?? 'all')) {
-            p.delete('type');
-          } else {
-            p.set('type', next);
-          }
-          return p;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams, initialType],
-  );
+  const [selectedType, setSelectedType] = useState<FactoryIdeasContentType>(initialType ?? 'all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [categoryMenuStep, setCategoryMenuStep] = useState<'categories' | 'subs'>('categories');
@@ -134,14 +105,18 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
   const showcasesQ = useFactoryIdeasShowcasesPaginatedQuery(showcaseParams, !isFactoryTab);
   const pageShowcases = showcasesQ.data?.items ?? [];
   const totalShowcases = showcasesQ.data?.total ?? 0;
-  const showcasesLoading = showcasesQ.isLoading || showcasesQ.isFetching;
+  // Show skeleton only on the very first load (no cached data yet).
+  // Subsequent fetches (page change, tab switch) keep stale content visible
+  // thanks to placeholderData in the query hook.
+  const showcasesLoading = showcasesQ.isLoading && !showcasesQ.isPlaceholderData;
+  // Subtle indicator (opacity / progress bar) while background-refetching
+  const showcasesFetching = showcasesQ.isFetching && !showcasesLoading;
 
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [selectedType, effectiveCategoryId, selectedSubCategoryId, debouncedSearchText]);
 
-  // selectedType is now derived from URL (useMemo above) — no sync effect needed
 
   const categoryFilters = useMemo(() => {
     const rest = [...apiCategoriesAll].sort((a, b) => a.name.localeCompare(b.name, 'th'));
@@ -300,7 +275,6 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
 
   const pickSubCategory = (subId: string | null, categoryIdForApply: string) => {
     if (
-      layout === 'desktop' &&
       categoryIdForApply &&
       categoryIdForApply !== 'all' &&
       categoryIdForApply !== effectiveCategoryId
@@ -345,6 +319,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     factoryScope,
     setFactoryScope,
     showcasesLoading,
+    showcasesFetching,
     factoriesLoading,
     visibleItems,
     visibleIdeaItems,

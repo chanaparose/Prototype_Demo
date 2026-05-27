@@ -110,7 +110,7 @@ export function FactoryIdeasCategoryDropdown({
                     }}
                   >
                     <span className='truncate'>{cat.name}</span>
-                    {!isAll && (
+                    {!isAll && !isMaterialTab && (
                       <ChevronRight size={16} className='shrink-0 text-gray-400' aria-hidden />
                     )}
                   </Button>
@@ -148,9 +148,9 @@ export function FactoryIdeasCategoryDropdown({
                       }}
                       className='w-full px-4 py-2.5 text-left text-[12px] transition-colors active:bg-gray-50'
                       style={{
-                        color: !selectedSubCategoryId ? COLORS.purple : 'var(--neutral-text)',
-                        fontWeight: !selectedSubCategoryId ? 600 : 400,
-                        backgroundColor: !selectedSubCategoryId
+                        color: !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId ? COLORS.purple : 'var(--neutral-text)',
+                        fontWeight: !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId ? 600 : 400,
+                        backgroundColor: !selectedSubCategoryId && effectiveCategoryId === menuHighlightCategoryId
                           ? COLORS.lightPurpleBg
                           : 'transparent',
                       }}
@@ -158,7 +158,7 @@ export function FactoryIdeasCategoryDropdown({
                       ทุกหมวดย่อย
                     </Button>
                     {panelSubs.map((s) => {
-                      const selected = selectedSubCategoryId === s.id;
+                      const selected = selectedSubCategoryId === s.id && effectiveCategoryId === menuHighlightCategoryId;
                       return (
                         <Button
                           variant='unstyled'
@@ -254,7 +254,7 @@ export function FactoryIdeasCategoryDropdown({
                   }}
                 >
                   <span className='truncate'>{cat.name}</span>
-                  {cat.id !== 'all' ? (
+                  {cat.id !== 'all' && !isMaterialTab ? (
                     <ChevronRight size={14} className='shrink-0 opacity-40' aria-hidden />
                   ) : null}
                 </Button>

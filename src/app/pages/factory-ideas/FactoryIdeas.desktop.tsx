@@ -51,6 +51,7 @@ export function FactoryIdeasDesktop() {
     isMaterialTab,
     isMtCategoryScope,
     showcasesLoading,
+    showcasesFetching,
     factoriesLoading,
     visibleItems,
     visibleIdeaItems,
@@ -172,7 +173,7 @@ export function FactoryIdeasDesktop() {
         </div>
       </div>
 
-      <div className='px-8 py-6'>
+      <div className={`px-8 py-6 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2'>
