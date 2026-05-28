@@ -1,14 +1,28 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import { ChevronRight, ImageIcon, CheckCircle2, Clock4, XCircle, Send, Crosshair } from 'lucide-react';
-import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
-import { formatCurrency, formatCompactNumber } from '@/utils/formatting/formatCurrency';
+import {
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Crosshair,
+  ImageIcon,
+} from 'lucide-react';
+import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { Image } from '@/components/ui/image';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export type RfqCardModel = {
   id: string;
   title: string;
-  requestKind?: 'PR' | 'PS' | 'MS' | string;
+  requestKind?: 'PR' | 'PS' | 'MS' | 'MR' | string;
   status: string;
   categoryName: string;
   subCategoryName: string;
@@ -23,245 +37,307 @@ export type RfqCardModel = {
   myQuotedPrice: number | null;
   myQuoteStatus: string | null;
   hasMyQuote: boolean;
-  /** true when the buyer sent this RFQ specifically to this factory */
   isTargeted?: boolean;
 };
 
-type BoqStatusInfo = {
-  label: string;
-  bg: string;
-  text: string;
-  border: string;
-  icon: React.ReactNode;
-};
+export type RfqTableRow = RfqCardModel & { createdAtMs?: number };
 
-function boqStatusInfo(status: string | null): BoqStatusInfo {
-  if (status === 'AC')
-    return {
-      label: 'ลูกค้ายอมรับใบเสนอราคาแล้ว',
-      bg: '#DCFCE7',
-      text: '#15803D',
-      border: '#86EFAC',
-      icon: <CheckCircle2 size={13} />,
-    };
-  if (status === 'RJ')
-    return {
-      label: 'ใบเสนอราคาถูกปฏิเสธ',
-      bg: 'var(--status-danger-soft)',
-      text: 'var(--status-danger-deep)',
-      border: '#FCA5A5',
-      icon: <XCircle size={13} />,
-    };
-  return {
-    label: 'รอลูกค้าตัดสินใจ',
-    bg: 'var(--status-warning-soft)',
-    text: '#B45309',
-    border: '#FCD34D',
-    icon: <Clock4 size={13} />,
-  };
-}
+type StatusPill = { label: string; className: string };
 
 function requestKindLabel(kind?: string): string {
   const k = String(kind ?? '').toUpperCase();
-  if (k === 'PS') return 'ขอตัวอย่างสินค้า';
-  if (k === 'MS') return 'ขอตัวอย่างวัสดุ';
-  return 'ขอราคาผลิต OEM';
+  if (k === 'PS') return 'ตัวอย่างสินค้า';
+  if (k === 'MS') return 'ตัวอย่างวัสดุ';
+  if (k === 'MR') return 'สั่งวัตถุดิบ';
+  return 'OEM';
 }
 
 function formatBaht(n: number): string {
   return formatCurrency(Math.round(n), 'THB');
 }
 
-export function RfqCard({
-  row,
-  variant = 'board',
-}: {
-  row: RfqCardModel;
-  variant?: 'board' | 'boq';
-}) {
-  const location = useLocation();
-  const breadcrumb =
-    row.categoryName && row.subCategoryName
-      ? `${row.categoryName} › ${row.subCategoryName}`
-      : row.subCategoryName || row.categoryName || '—';
+function categoryLabel(row: RfqCardModel): string {
+  if (row.categoryName && row.subCategoryName) {
+    return `${row.categoryName} › ${row.subCategoryName}`;
+  }
+  return row.subCategoryName || row.categoryName || '—';
+}
 
-  const budgetStr =
+function priceLabel(row: RfqCardModel): string {
+  if (row.revenueApprox != null && Number.isFinite(row.revenueApprox)) {
+    return formatBaht(row.revenueApprox);
+  }
+  const budget =
     row.budgetPerPiece != null && Number.isFinite(row.budgetPerPiece)
       ? `${formatCompactNumber(row.budgetPerPiece)} บ./ชิ้น`
-      : '—';
-  const qtyStr =
+      : null;
+  const qty =
     row.quantity != null && Number.isFinite(row.quantity)
       ? `${formatCompactNumber(row.quantity)} ชิ้น`
-      : '—';
-  const rev =
-    row.revenueApprox != null && Number.isFinite(row.revenueApprox)
-      ? `≈ ${formatBaht(row.revenueApprox)}`
       : null;
+  if (budget && qty) return `${budget} × ${qty}`;
+  if (budget) return budget;
+  return '—';
+}
 
-  const statusLabel = row.hasMyQuote
-    ? row.myQuoteStatus === 'PD'
-      ? `เสนอแล้ว ${row.myQuotedPrice != null ? `${formatCompactNumber(row.myQuotedPrice)} บ./ชิ้น` : ''} · รอลูกค้าตอบ`
-      : row.myQuoteStatus === 'AC'
-        ? 'ลูกค้ารับใบเสนอราคาแล้ว'
-        : row.myQuoteStatus === 'RJ'
-          ? 'ใบเสนอราคาถูกปฏิเสธ'
-          : 'เสนอราคาแล้ว'
-    : 'ยังไม่ได้เสนอ';
+function formatCreatedAt(ms?: number): string {
+  if (!ms || !Number.isFinite(ms) || ms <= 0) return '—';
+  return new Date(ms).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
-  const boqInfo = boqStatusInfo(row.myQuoteStatus);
+function boardStatusPill(row: RfqCardModel): StatusPill {
+  if (row.hasMyQuote) {
+    if (row.myQuoteStatus === 'AC') {
+      return { label: 'ลูกค้ารับแล้ว', className: 'bg-emerald-50 text-emerald-700' };
+    }
+    if (row.myQuoteStatus === 'RJ') {
+      return { label: 'ถูกปฏิเสธ', className: 'bg-rose-50 text-rose-600' };
+    }
+    return { label: 'รอลูกค้าตอบ', className: 'bg-amber-50 text-amber-700' };
+  }
+  if (row.status === 'OP') {
+    return { label: 'รอเสนอราคา', className: 'bg-amber-50 text-amber-700' };
+  }
+  if (row.status === 'CL') {
+    return { label: 'ปิดรับแล้ว', className: 'bg-slate-100 text-slate-600' };
+  }
+  if (row.status === 'CC') {
+    return { label: 'ยกเลิก', className: 'bg-rose-50 text-rose-600' };
+  }
+  return { label: row.status || '—', className: 'bg-slate-100 text-slate-600' };
+}
 
-  if (variant === 'boq') {
-    return (
-      <Link
-        to={`/factory/rfqs/${row.id}`}
-        state={{ from: `${location.pathname}${location.search}` }}
-        className='flex flex-col bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow min-w-0 text-left'
-      >
-        <div
-          className='flex items-center gap-2 px-4 py-2.5 text-[12px] font-semibold border-b'
-          style={{ background: boqInfo.bg, color: boqInfo.text, borderColor: boqInfo.border }}
+function boqStatusPill(row: RfqCardModel): StatusPill {
+  if (row.myQuoteStatus === 'AC') {
+    return { label: 'ลูกค้ารับแล้ว', className: 'bg-emerald-50 text-emerald-700' };
+  }
+  if (row.myQuoteStatus === 'RJ') {
+    return { label: 'ถูกปฏิเสธ', className: 'bg-rose-50 text-rose-600' };
+  }
+  return { label: 'รอลูกค้าตอบ', className: 'bg-amber-50 text-amber-700' };
+}
+
+function SortableHead({ children }: { children: React.ReactNode }) {
+  return (
+    <TableHead className='normal-case tracking-normal text-[13px] font-medium text-slate-500'>
+      <span className='inline-flex items-center gap-1.5'>
+        {children}
+        <ArrowUpDown className='h-3.5 w-3.5 text-slate-400' aria-hidden />
+      </span>
+    </TableHead>
+  );
+}
+
+function RfqTablePagination({
+  page,
+  totalPages,
+  total,
+  pageSize,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  total: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+}) {
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages = new Set<number>([1, totalPages, page, page - 1, page + 1]);
+    return [...pages].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+  }, [page, totalPages]);
+
+  if (total === 0) return null;
+
+  return (
+    <div className='flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between'>
+      <p className='text-sm text-slate-600'>
+        แสดง <span className='font-semibold text-slate-900'>{start}</span> ถึง{' '}
+        <span className='font-semibold text-slate-900'>{end}</span> จาก{' '}
+        <span className='font-semibold text-slate-900'>{total}</span> รายการ
+      </p>
+      <div className='flex items-center gap-1'>
+        <Button
+          variant='unstyled'
+          type='button'
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          className='flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          aria-label='หน้าก่อน'
         >
-          {boqInfo.icon}
-          <span>{boqInfo.label}</span>
-          {row.myQuotedPrice != null ? (
-            <span
-              className='ml-auto flex items-center gap-1 text-[13px] font-bold'
-              style={{ color: boqInfo.text }}
-            >
-              <Send size={11} />
-              BOQ: {formatBaht(row.myQuotedPrice)}/ชิ้น
-            </span>
-          ) : null}
-        </div>
+          <ChevronLeft className='h-4 w-4' />
+        </Button>
+        {pageNumbers.map((p) => (
+          <Button
+            key={p}
+            variant='unstyled'
+            type='button'
+            onClick={() => onPageChange(p)}
+            className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-semibold transition-colors ${
+              p === page
+                ? 'bg-indigo-600 text-white'
+                : 'text-slate-600 hover:bg-slate-50'
+            }`}
+            aria-current={p === page ? 'page' : undefined}
+          >
+            {p}
+          </Button>
+        ))}
+        <Button
+          variant='unstyled'
+          type='button'
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className='flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          aria-label='หน้าถัดไป'
+        >
+          <ChevronRight className='h-4 w-4' />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
-        <div className='flex gap-3 sm:gap-4 p-3 sm:p-4'>
-          <div className='w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'>
+function RfqTableRowLink({
+  row,
+  variant,
+  from,
+}: {
+  row: RfqTableRow;
+  variant: 'board' | 'boq';
+  from: string;
+}) {
+  const pill = variant === 'boq' ? boqStatusPill(row) : boardStatusPill(row);
+
+  return (
+    <TableRow className='border-b border-slate-100 transition-colors last:border-b-0 hover:bg-slate-50/80'>
+      <TableCell className='min-w-[220px]'>
+        <Link
+          to={`/factory/rfqs/${row.id}`}
+          state={{ from }}
+          className='flex items-center gap-3 min-w-0 group'
+        >
+          <div className='h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center'>
             {row.thumbUrl ? (
               <Image
                 src={row.thumbUrl}
                 alt=''
-                className='w-full h-full object-cover'
+                className='h-full w-full object-cover'
                 loading='lazy'
               />
             ) : (
-              <ImageIcon className='text-gray-300' size={24} aria-hidden />
+              <ImageIcon className='text-slate-300' size={20} aria-hidden />
             )}
           </div>
-          <div className='flex-1 min-w-0 py-0.5'>
-            <div className='flex items-center gap-2 flex-wrap'>
-              <p className='text-[11px] text-gray-400 font-medium'>#{row.id}</p>
-              <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100'>
-                {requestKindLabel(row.requestKind)}
-              </span>
+          <div className='min-w-0'>
+            <p className='truncate text-sm font-semibold text-slate-900 group-hover:text-indigo-700'>
+              {row.title}
+            </p>
+            <div className='mt-0.5 flex flex-wrap items-center gap-1.5'>
+              <span className='text-[11px] text-slate-400'>#{row.id}</span>
               {row.isTargeted ? (
-                <span className='inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200'>
-                  <Crosshair size={10} />
-                  ส่งถึงคุณโดยตรง
+                <span className='inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700'>
+                  <Crosshair size={9} />
+                  ส่งตรง
                 </span>
               ) : null}
-            </div>
-            <p className='font-bold text-gray-900 truncate text-sm sm:text-base'>{row.title}</p>
-            <p className='text-xs text-gray-500 mt-0.5'>{breadcrumb}</p>
-            <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-700'>
-              <span>
-                <span className='text-gray-500'>💰</span>{' '}
-                <span className='font-semibold'>
-                  งบ {budgetStr} × {qtyStr}
-                </span>
-                {rev ? <span className='text-gray-500'> · {rev}</span> : null}
-              </span>
-              {row.deadlineIso ? (
-                <span className='inline-flex items-center gap-1'>
-                  <span className='text-gray-500'>📅</span>
-                  <DeadlineBadge deadlineIso={row.deadlineIso} />
-                </span>
-              ) : null}
-            </div>
-            <div className='mt-3 flex items-center justify-end'>
-              <span
-                className='inline-flex items-center gap-1 text-xs font-semibold'
-                style={{ color: 'var(--brand-indigo)' }}
-              >
-                ดูรายละเอียด BOQ
-                <ChevronRight size={15} className='text-indigo-400' />
-              </span>
             </div>
           </div>
-        </div>
-      </Link>
-    );
-  }
+        </Link>
+      </TableCell>
+      <TableCell className='min-w-[140px] text-sm text-slate-700'>{categoryLabel(row)}</TableCell>
+      <TableCell className='min-w-[100px] text-sm text-slate-700'>
+        {requestKindLabel(row.requestKind)}
+      </TableCell>
+      <TableCell className='min-w-[120px] text-sm font-medium text-slate-900 tabular-nums'>
+        {priceLabel(row)}
+      </TableCell>
+      <TableCell className='min-w-[120px]'>
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${pill.className}`}
+        >
+          {pill.label}
+        </span>
+        {variant === 'boq' && row.myQuotedPrice != null ? (
+          <p className='mt-1 text-[11px] text-slate-500 tabular-nums'>
+            BOQ {formatBaht(row.myQuotedPrice)}/ชิ้น
+          </p>
+        ) : null}
+      </TableCell>
+      <TableCell className='min-w-[110px] text-sm text-slate-600 whitespace-nowrap'>
+        {formatCreatedAt(row.createdAtMs)}
+      </TableCell>
+    </TableRow>
+  );
+}
+
+/** @deprecated Use RfqTable — kept as alias */
+export const RfqCard = RfqTable;
+
+export function RfqTable({
+  rows,
+  variant = 'board',
+  pageSize = 7,
+}: {
+  rows: RfqTableRow[];
+  variant?: 'board' | 'boq';
+  pageSize?: number;
+}) {
+  const location = useLocation();
+  const from = `${location.pathname}${location.search}`;
+  const [page, setPage] = useState(1);
+
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  useEffect(() => {
+    setPage(1);
+  }, [rows, variant, pageSize]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const pageRows = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return rows.slice(start, start + pageSize);
+  }, [rows, page, pageSize]);
 
   return (
-    <Link
-      to={`/factory/rfqs/${row.id}`}
-      state={{ from: `${location.pathname}${location.search}` }}
-      className='flex gap-3 sm:gap-4 bg-white rounded-2xl border border-gray-100 p-3 sm:p-4 hover:shadow-md transition-shadow min-w-0 text-left'
-    >
-      <div className='w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center'>
-        {row.thumbUrl ? (
-          <Image src={row.thumbUrl} alt='' className='w-full h-full object-cover' loading='lazy' />
-        ) : (
-          <ImageIcon className='text-gray-300' size={28} aria-hidden />
-        )}
+    <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white'>
+      <div className='overflow-x-auto'>
+        <Table>
+          <TableHeader>
+            <TableRow className='border-b border-slate-100 transition-colors last:border-b-0 hover:bg-transparent'>
+              <SortableHead>RFQ</SortableHead>
+              <SortableHead>หมวดหมู่</SortableHead>
+              <SortableHead>ประเภท</SortableHead>
+              <SortableHead>งบประมาณ</SortableHead>
+              <SortableHead>สถานะ</SortableHead>
+              <SortableHead>วันที่สร้าง</SortableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {pageRows.map((row) => (
+              <RfqTableRowLink key={row.id} row={row} variant={variant} from={from} />
+            ))}
+          </TableBody>
+        </Table>
       </div>
-      <div className='flex-1 min-w-0 py-0.5'>
-        <div className='flex items-center gap-2 flex-wrap'>
-          <p className='text-[11px] text-gray-400 font-medium'>#{row.id}</p>
-          <span className='text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100'>
-            {requestKindLabel(row.requestKind)}
-          </span>
-          {row.isTargeted ? (
-            <span className='inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200'>
-              <Crosshair size={10} />
-              ส่งถึงคุณโดยตรง
-            </span>
-          ) : null}
-        </div>
-        <p className='font-bold text-gray-900 truncate text-sm sm:text-base'>{row.title}</p>
-        <p className='text-xs text-gray-600 mt-0.5 line-clamp-2'>{breadcrumb}</p>
-        <div className='mt-2 space-y-1 text-xs text-gray-700'>
-          <p>
-            <span className='text-gray-500'>💰</span>{' '}
-            <span className='font-semibold text-gray-900'>
-              งบ {budgetStr} × {qtyStr}
-            </span>
-            {rev ? <span className='text-gray-600'> · {rev}</span> : null}
-          </p>
-          <p className='flex flex-wrap items-center gap-x-2 gap-y-1'>
-            {row.leadTargetDays != null && row.leadTargetDays > 0 ? (
-              <span>
-                <span className='text-gray-500'>⏱</span> ต้องการ {row.leadTargetDays} วัน
-              </span>
-            ) : null}
-            {row.deadlineIso ? (
-              <span className='inline-flex items-center gap-1'>
-                <span className='text-gray-500'>📅</span>
-                <DeadlineBadge deadlineIso={row.deadlineIso} />
-              </span>
-            ) : null}
-          </p>
-          <p>
-            <span className='text-gray-500'>🚚</span> {row.shippingMethodName || '—'}
-          </p>
-        </div>
-        <div className='mt-3 flex flex-wrap items-center justify-between gap-2'>
-          <span
-            className={`text-[11px] font-semibold px-2 py-1 rounded-lg ${
-              row.hasMyQuote ? 'bg-violet-100 text-violet-800' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            สถานะ: {statusLabel}
-          </span>
-          <span
-            className='inline-flex items-center gap-1 text-xs font-semibold shrink-0'
-            style={{ color: 'var(--brand-purple)' }}
-          >
-            {row.hasMyQuote ? 'ดู →' : 'ดูและเสนอราคา →'}
-            <ChevronRight size={16} className='text-violet-400' />
-          </span>
-        </div>
-      </div>
-    </Link>
+      <RfqTablePagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={pageSize}
+        onPageChange={setPage}
+      />
+    </div>
   );
 }

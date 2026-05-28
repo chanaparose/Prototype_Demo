@@ -11,10 +11,9 @@ import {
   EyeOff,
   Mail,
   Send,
-  ArrowUpDown,
 } from 'lucide-react';
 import { factoryRfqsApi } from '@/services/api/rfqApi';
-import { RfqCard, type RfqCardModel } from '@/components/factory/RfqCard';
+import { RfqTable } from '@/components/factory/RfqCard';
 import { useFactoryRfqBoard, type FactoryBoardRow } from '@/hooks/useFactoryRfqBoard';
 import { useDisclosure } from '@/hooks/ui/useDisclosure';
 import { useToggle } from '@/hooks/ui/useToggle';
@@ -127,7 +126,7 @@ function tabCounts(rows: FactoryBoardRow[]) {
       r.daysLeft >= 0 &&
       r.daysLeft <= 3,
   ).length;
-  /** ส่งตรง + ยังไม่เสนอ BOQ — เสนอแล้วไปแท็บ quoted */
+  /** ส่งตรง + ยังไม่เสนอ BOQ — รอการตอบรับไปแท็บ quoted */
   const direct = rows.filter((r) => r.isTargeted && !r.hasMyQuote && r.status === 'OP').length;
   return { all, open, quoted, closing, direct };
 }
@@ -188,11 +187,9 @@ function applyFilters(
   return out;
 }
 
-function sortRows(rows: FactoryBoardRow[], sortDir: 'desc' | 'asc'): FactoryBoardRow[] {
+function sortRows(rows: FactoryBoardRow[]): FactoryBoardRow[] {
   const copy = [...rows];
-  copy.sort((a, b) =>
-    sortDir === 'desc' ? b.createdAtMs - a.createdAtMs : a.createdAtMs - b.createdAtMs,
-  );
+  copy.sort((a, b) => b.createdAtMs - a.createdAtMs);
   return copy;
 }
 
@@ -219,7 +216,6 @@ export function FactoryRfqBoardPage() {
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('');
   const [filterShip, setFilterShip] = useState('');
-  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [showDismissed, setShowDismissed] = useState(false);
   const [undismissBusy, setUndismissBusy] = useState<string | null>(null);
 
@@ -293,8 +289,8 @@ export function FactoryRfqBoardPage() {
   const pipeline = useMemo(() => {
     const t = applyBoardFilter(rows, statusTab, kindFilter);
     const f = applyFilters(t, search, filterCat, filterShip);
-    return sortRows(f, sortDir);
-  }, [rows, statusTab, kindFilter, search, filterCat, filterShip, sortDir]);
+    return sortRows(f);
+  }, [rows, statusTab, kindFilter, search, filterCat, filterShip]);
 
   const noFactoryCategories = fid != null && factoryCategoryIds.length === 0;
   const hasFilters = search.trim() !== '' || filterCat !== '' || filterShip !== '';
@@ -353,8 +349,8 @@ export function FactoryRfqBoardPage() {
     },
     {
       key: 'quoted',
-      label: 'เสนอแล้ว',
-      shortLabel: 'เสนอแล้ว',
+      label: 'รอการตอบรับ',
+      shortLabel: 'รอการตอบรับ',
       count: counts.quoted,
       icon: <Send size={14} className='shrink-0' />,
     },
@@ -379,7 +375,6 @@ export function FactoryRfqBoardPage() {
           subtitle='Factory / RFQ'
           icon={FileText}
           count={`${counts.all} รายการ`}
-          action={{ label: 'ดูใบเสนอราคา', to: '/factory/quotations' }}
         />
         <div className='flex justify-center items-start pt-8'>
           <div
@@ -398,7 +393,6 @@ export function FactoryRfqBoardPage() {
         subtitle='Factory / RFQ'
         icon={FileText}
         count={`${counts.all} รายการ`}
-        action={{ label: 'ดูใบเสนอราคา', to: '/factory/quotations' }}
       />
 
       {error ? (
@@ -534,7 +528,7 @@ export function FactoryRfqBoardPage() {
               ) : null}
 
               <div className='space-y-2.5 border-b border-slate-100 px-4 py-3 transition-all'>
-                <div className='flex gap-2'>
+                <div className='flex gap-2 border-b border-slate-100 pb-2.5 transition-colors'>
                   <div className='relative flex-1'>
                     <Search
                       size={14}
@@ -548,16 +542,6 @@ export function FactoryRfqBoardPage() {
                       className='h-9 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-xs placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100 sm:text-[13px]'
                     />
                   </div>
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-                    className='inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50'
-                    title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
-                  >
-                    <ArrowUpDown className='h-4 w-4' />
-                    {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
-                  </Button>
                 </div>
 
                 <div className='mt-2 flex items-center gap-2'>
@@ -734,19 +718,13 @@ export function FactoryRfqBoardPage() {
                   ) : null}
                 </div>
               ) : (
-                <ul className='mt-3 space-y-3'>
-                  {pipeline.map((r) => (
-                    <li
-                      key={r.id}
-                      className='rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 overflow-hidden'
-                    >
-                      <RfqCard
-                        row={r as RfqCardModel}
-                        variant={statusTab === 'quoted' ? 'boq' : 'board'}
-                      />
-                    </li>
-                  ))}
-                </ul>
+                <div className='mt-3'>
+                  <RfqTable
+                    rows={pipeline}
+                    variant={statusTab === 'quoted' ? 'boq' : 'board'}
+                    pageSize={7}
+                  />
+                </div>
               )}
             </div>
           </div>
