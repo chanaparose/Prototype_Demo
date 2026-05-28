@@ -228,23 +228,15 @@ export function FactoryShowcaseNewPage() {
 
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
-        <div className='grid auto-rows-min gap-5 lg:grid-cols-2'>
-          {/* Image — col 1 */}
-          {contentType !== 'ID' ? (
-            <div>
-              <ShowcaseImageManager
-                imageUrls={imageUrls}
-                uploading={uploading}
-                onPickImage={(file) => void onPickImage(file)}
-                onRemoveImage={(_, index) => removeImage(index)}
-              />
-            </div>
-          ) : null}
-
-          {/* Merged form fields — col 2 (or full-width for ID) */}
+        <div
+          className={`grid auto-rows-min gap-5 ${
+            contentType === 'ID' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
+          }`}
+        >
+          {/* Col 2: Form fields */}
           <section
             className={`rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-5 ${
-              contentType !== 'ID' ? 'lg:col-span-1' : 'lg:col-span-2'
+              contentType === 'ID' ? 'lg:col-span-2' : ''
             }`}
           >
             <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
@@ -290,17 +282,51 @@ export function FactoryShowcaseNewPage() {
               subOptions={subOptions}
               subCategoriesLoading={subsResult.isLoading}
             />
+          </section>
 
-            {/* ราคา / MOQ / Lead time */}
-            {contentType !== 'ID' ? (
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-gray-100'>
+          {/* Col 1: Image manager (PD/MT) or RelatedShowcasePicker (ID) */}
+          <div className={contentType === 'ID' ? 'lg:col-span-1 lg:h-full' : ''}>
+            {contentType === 'ID' && myFactoryId != null ? (
+              <section className='h-full rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-3'>
+                <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+                  <p className='text-sm font-bold text-gray-800'>อ้างอิงสินค้า / โปรโมชัน</p>
+                </div>
+                <p className='text-xs text-gray-500'>
+                  เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
+                </p>
+                <RelatedShowcasePicker
+                  factoryId={myFactoryId}
+                  value={selectedShowcaseIds}
+                  onChange={setSelectedShowcaseIds}
+                  max={5}
+                  disabled={saving}
+                  errorText={linkedShowcaseError}
+                />
+              </section>
+            ) : (
+              <ShowcaseImageManager
+                imageUrls={imageUrls}
+                uploading={uploading}
+                onPickImage={(file) => void onPickImage(file)}
+                onRemoveImage={(_, index) => removeImage(index)}
+              />
+            )}
+          </div>
+
+          {/* ราคา / MOQ / Lead time — separate card, full width (non-ID only) */}
+          {contentType !== 'ID' ? (
+            <section className='lg:col-span-2 rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-5'>
+              <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+                <p className='text-sm font-bold text-gray-800'>ราคา & การผลิต</p>
+              </div>
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
                   <Input
                     type='number'
                     step='0.01'
                     placeholder='0.00'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
                     value={form.base_price}
                     onChange={(e) => setField('base_price', e.target.value)}
                   />
@@ -310,7 +336,7 @@ export function FactoryShowcaseNewPage() {
                   <Input
                     type='number'
                     placeholder='500'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
                     value={form.moq}
                     onChange={(e) => setField('moq', e.target.value)}
                   />
@@ -320,49 +346,48 @@ export function FactoryShowcaseNewPage() {
                   <Input
                     type='number'
                     placeholder='30'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
                     value={form.lead_time_days}
                     onChange={(e) => setField('lead_time_days', e.target.value)}
                   />
                 </Label>
               </div>
-            ) : null}
 
-            {/* โปรโมชัน extra fields */}
-            {contentType === 'PM' ? (
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-dashed border-purple-100'>
-                <Label className='block'>
-                  <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
-                  <Input
-                    type='number'
-                    step='0.01'
-                    placeholder='0.00'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
-                    value={form.promo_price}
-                    onChange={(e) => setField('promo_price', e.target.value)}
-                  />
-                </Label>
-                <Label className='block'>
-                  <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
-                  <Input
-                    type='date'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
-                    value={form.start_date}
-                    onChange={(e) => setField('start_date', e.target.value)}
-                  />
-                </Label>
-                <Label className='block'>
-                  <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
-                  <Input
-                    type='date'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
-                    value={form.end_date}
-                    onChange={(e) => setField('end_date', e.target.value)}
-                  />
-                </Label>
-              </div>
-            ) : null}
-          </section>
+              {contentType === 'PM' ? (
+                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-dashed border-purple-100'>
+                  <Label className='block'>
+                    <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
+                    <Input
+                      type='number'
+                      step='0.01'
+                      placeholder='0.00'
+                      className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                      value={form.promo_price}
+                      onChange={(e) => setField('promo_price', e.target.value)}
+                    />
+                  </Label>
+                  <Label className='block'>
+                    <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
+                    <Input
+                      type='date'
+                      className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                      value={form.start_date}
+                      onChange={(e) => setField('start_date', e.target.value)}
+                    />
+                  </Label>
+                  <Label className='block'>
+                    <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
+                    <Input
+                      type='date'
+                      className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                      value={form.end_date}
+                      onChange={(e) => setField('end_date', e.target.value)}
+                    />
+                  </Label>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
 
           {/* Markdown — full width */}
           <section className='lg:col-span-3'>
@@ -373,26 +398,6 @@ export function FactoryShowcaseNewPage() {
               minHeight={300}
             />
           </section>
-
-           
-          {contentType === 'ID' && myFactoryId != null ? (
-            <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
-              <Label className='block text-sm font-semibold text-brand-navy'>
-                อ้างอิงสินค้า / โปรโมชัน (ไม่บังคับ)
-              </Label>
-              <p className='text-xs text-gray-500'>
-                เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
-              </p>
-              <RelatedShowcasePicker
-                factoryId={myFactoryId}
-                value={selectedShowcaseIds}
-                onChange={setSelectedShowcaseIds}
-                max={5}
-                disabled={saving}
-                errorText={linkedShowcaseError}
-              />
-            </section>
-          ) : null}
         </div>
       </div>
 
