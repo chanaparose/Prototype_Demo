@@ -390,7 +390,7 @@ export function FactoryShowcaseNewPage() {
           ) : null}
 
           {/* Markdown — full width */}
-          <section className='lg:col-span-3'>
+          <section className='lg:order-3 lg:col-span-3'>
             <MarkdownEditor
               label='รายละเอียด (Markdown)'
               value={form.content}

@@ -167,8 +167,6 @@ export function ShowcaseCategoryFields({
   categoriesQ,
   subOptions,
   subCategoriesLoading,
-  statusValue,
-  onStatusChange,
 }: {
   contentType: ShowcaseType;
   idScope: ShowcaseScope;
@@ -182,8 +180,6 @@ export function ShowcaseCategoryFields({
   categoriesQ: UseQueryResult<Option[]>;
   subOptions: Option[];
   subCategoriesLoading?: boolean;
-  statusValue?: ShowcaseStatus;
-  onStatusChange?: (value: ShowcaseStatus) => void;
 }) {
   const hideSubCat =
     contentType === 'MT' ||
@@ -227,7 +223,7 @@ export function ShowcaseCategoryFields({
         : null}
 
       <div
-        className={`grid grid-cols-1 gap-3 ${hideSubCat ? (onStatusChange ? 'sm:grid-cols-2' : '') : onStatusChange ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}
+        className={`grid grid-cols-1 gap-3 ${hideSubCat ? '' : 'sm:grid-cols-2'}`}
       >
         <LookupSelect
           label='หมวดหมู่'
@@ -284,33 +280,6 @@ export function ShowcaseCategoryFields({
           </Label>
         ) : null}
 
-        {onStatusChange ? (
-          <Label className='block'>
-            <span className='text-xs text-gray-500 mb-1.5 block'>สถานะ</span>
-            <Select
-              value={statusValue ?? 'DR'}
-              onValueChange={(next) => onStatusChange(next as ShowcaseStatus)}
-            >
-              <SelectTrigger className='w-full h-10 text-xs'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className='text-xs'>
-                <SelectItem value='DR' className='text-xs'>
-                  ร่าง
-                </SelectItem>
-                <SelectItem value='AC' className='text-xs'>
-                  Active
-                </SelectItem>
-                <SelectItem value='HI' className='text-xs'>
-                  Hidden
-                </SelectItem>
-                <SelectItem value='AR' className='text-xs'>
-                  เก็บเข้าคลัง
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </Label>
-        ) : null}
       </div>
     </section>
   );
