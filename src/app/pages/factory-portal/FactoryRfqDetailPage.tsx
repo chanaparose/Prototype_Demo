@@ -435,21 +435,23 @@ export function FactoryRfqDetailPage() {
   }
 
   return (
-    <div className='min-h-screen pb-24 bg-brand-page'>
-      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center gap-3'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate(backPath)}
-          className='flex items-center gap-1 text-sm font-medium text-brand-indigo-dark'
-        >
-          <ChevronLeft size={18} /> กลับ
-        </Button>
-        <span className='flex-1 text-center text-sm font-bold text-brand-navy'>รายละเอียด RFQ</span>
-        <span className='text-xs font-medium text-gray-400'>#{id}</span>
-      </div>
+    <div className='min-h-screen pb-24' style={{ backgroundColor: 'var(--brand-page)' }}>
+      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
+        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate(backPath)}
+            className='flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+          >
+            <ChevronLeft size={18} />
+            กลับ
+          </Button>
+           
+        </div>
+      </header>
 
-      <div className='w-full max-w-lg lg:max-w-5xl mx-auto px-4 pt-4'>
+      <div className='w-full max-w-lg lg:max-w-5xl mx-auto px-4 py-5'>
       {loading ? (
           <div className='flex justify-center py-12'>
             <div className='w-10 h-10 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin' />
@@ -460,6 +462,23 @@ export function FactoryRfqDetailPage() {
 
       {!loading ? (
           <div className='space-y-4'>
+            {myQuote ? (
+              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
+                <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
+                  สถานะใบเสนอราคาของคุณ
+                </p>
+                <div className='flex items-center gap-2'>
+                  <StatusBadge variant={quoteStatusVariant(myStatus)} size='md'>
+                    {quoteStatusLabel(myStatus)}
+                  </StatusBadge>
+                </div>
+              </section>
+            ) : (
+              <section className='rounded-2xl bg-white border border-amber-100 shadow-sm p-4'>
+                <p className='text-sm text-amber-800'>คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
+              </section>
+            )}
+
             <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
               <div className='flex items-center justify-between mb-2'>
                 <span className='text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200'>
@@ -496,23 +515,6 @@ export function FactoryRfqDetailPage() {
                 ) : null}
               </div>
             </div>
-
-            {myQuote ? (
-              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4'>
-                <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-3'>
-                  สถานะใบเสนอราคาของคุณ
-                </p>
-                <div className='flex items-center gap-2'>
-                  <StatusBadge variant={quoteStatusVariant(myStatus)} size='md'>
-                    {quoteStatusLabel(myStatus)}
-                  </StatusBadge>
-              </div>
-              </section>
-            ) : (
-              <section className='rounded-2xl bg-white border border-amber-100 shadow-sm p-4'>
-                <p className='text-sm text-amber-800'>คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
-              </section>
-            )}
 
             <div className={twoCol}>
               <div className='space-y-4 mb-4 lg:mb-0 min-w-0'>
