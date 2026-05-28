@@ -127,6 +127,7 @@ export function MarkdownEditor({
   disabled,
 }: MarkdownEditorProps) {
   const [tab, setTab] = useState<'write' | 'preview'>('write');
+  const textareaMinHeight = Math.max(minHeight, 500);
 
   // Upload and focus states
   const { state: uploading, toggle: toggleUploading, close: closeUploading } = useToggle(false);
@@ -431,7 +432,7 @@ export function MarkdownEditor({
             <Textarea
               ref={textareaRef}
               className='mb-0 block w-full resize-y border-0 px-3 pt-3 pb-0 font-mono text-sm leading-relaxed text-gray-700 outline-none'
-              style={{ minHeight: `${minHeight}px` }}
+              style={{ minHeight: `${textareaMinHeight}px` }}
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder || 'พิมพ์เนื้อหาของคุณที่นี่ รองรับ Markdown...'}
