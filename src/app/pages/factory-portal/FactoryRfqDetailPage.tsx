@@ -715,32 +715,37 @@ export function FactoryRfqDetailPage() {
               </section>
             </div>
 
-            {/* Send QT in chat */}
-            {customerId > 0 && fid != null ? (
-              <div className='w-full lg:max-w-[calc(50%-0.625rem)] lg:ml-auto rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3'>
-                <div className='flex items-center justify-between gap-3'>
-                  <div className='min-w-0'>
-                    <p className='text-[13px] font-semibold text-slate-800'>ส่งใบเสนอราคาให้ลูกค้า</p>
-                    <p className='text-[11px] text-slate-500'>แชร์ BOQ ล่าสุดเข้าแชทลูกค้าโดยตรง</p>
+            {/* Send QT in chat + Quotation history — same row, same height */}
+            {(customerId > 0 && fid != null) || (myQuote && quoteIdOf(myQuote)) ? (
+              <div className='flex flex-col lg:flex-row gap-5 items-stretch'>
+                {/* Send QT in chat */}
+                {customerId > 0 && fid != null ? (
+                  <div className='flex-1 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3 flex flex-col justify-center'>
+                    <div className='flex items-center justify-between gap-3'>
+                      <div className='min-w-0'>
+                        <p className='text-[13px] font-semibold text-slate-800'>ส่งใบเสนอราคาให้ลูกค้า</p>
+                        <p className='text-[11px] text-slate-500'>แชร์ BOQ ล่าสุดเข้าแชทลูกค้าโดยตรง</p>
+                      </div>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        disabled={chatBusy || !myQuote}
+                        onClick={() => void sendQuoteMessageToCustomer()}
+                        className='shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)]'
+                      >
+                        <MessageCircle size={15} />
+                        ส่งในแชท
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    variant='unstyled'
-                    type='button'
-                    disabled={chatBusy || !myQuote}
-                    onClick={() => void sendQuoteMessageToCustomer()}
-                    className='shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)]'
-                  >
-                    <MessageCircle size={15} />
-                    ส่งในแชท
-                  </Button>
-                </div>
-              </div>
-            ) : null}
+                ) : null}
 
-            {/* Quotation history */}
-            {myQuote && quoteIdOf(myQuote) ? (
-              <div className='min-w-0 lg:max-w-[calc(50%-0.625rem)]'>
-                <QuotationHistoryPanel quotationId={quoteIdOf(myQuote)} />
+                {/* Quotation history */}
+                {myQuote && quoteIdOf(myQuote) ? (
+                  <div className='flex-1 min-w-0'>
+                    <QuotationHistoryPanel quotationId={quoteIdOf(myQuote)} />
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
