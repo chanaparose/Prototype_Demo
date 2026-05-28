@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Pencil, Trash2, Plus, MapPin, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   formatAddressLocation,
@@ -19,6 +19,21 @@ type Props = {
 const TYPE_LABEL: Record<string, string> = {
   B: 'ที่อยู่กำกับภาษี',
   S: 'ที่อยู่จัดส่ง',
+};
+
+const TYPE_COLOR: Record<string, { bg: string; text: string; border: string; dot: string }> = {
+  B: {
+    bg: 'bg-indigo-50',
+    text: 'text-indigo-700',
+    border: 'border-indigo-200',
+    dot: 'bg-indigo-500',
+  },
+  S: {
+    bg: 'bg-violet-50',
+    text: 'text-violet-700',
+    border: 'border-violet-200',
+    dot: 'bg-violet-500',
+  },
 };
 
 function rowType(row: Row): 'B' | 'S' {
@@ -42,92 +57,132 @@ export function AddressList({ addresses, onCreate, onEdit, onDelete, onSetDefaul
   }, [addresses]);
 
   return (
-    <div className='space-y-4'>
-      <div className='flex items-center justify-between gap-2'>
-        <h3 className='text-sm font-semibold text-gray-800'>รายการที่อยู่</h3>
+    <div className='space-y-5'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div className='flex items-center gap-2'>
+          <MapPin size={16} className='text-indigo-500 shrink-0' />
+          <h3 className='text-sm font-semibold text-gray-800'>รายการที่อยู่</h3>
+          {addresses.length > 0 && (
+            <span className='inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 text-[10px] font-bold'>
+              {addresses.length}
+            </span>
+          )}
+        </div>
         <Button
           variant='unstyled'
           type='button'
           onClick={onCreate}
-          className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white'
+          className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90'
           style={{
-            background: 'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-violet) 100%)',
+            background: 'linear-gradient(135deg, #3C50E0 0%, #6366f1 100%)',
           }}
         >
-          <Plus size={14} />
+          <Plus size={13} />
           เพิ่มที่อยู่
         </Button>
       </div>
 
-      {addresses.length === 0 ? (
-        <p className='text-sm text-gray-400'>ยังไม่มีที่อยู่ในระบบ</p>
-      ) : null}
-
-      {(['B', 'S'] as const).map((type) => (
-        <div key={type} className='space-y-2'>
-          <p className='text-xs font-semibold text-gray-600'>{TYPE_LABEL[type]}</p>
-          {grouped[type].length === 0 ? (
-            <p className='text-xs text-gray-400'>ไม่มีรายการ</p>
-          ) : (
-            grouped[type].map((row, idx) => {
-              const address = mapAddressFromApi(row);
-              const id = String(address?.id ?? `${type}-${idx}`);
-              const isDefault = Boolean(address?.isDefault);
-              return (
-                <div
-                  key={id}
-                  className='rounded-xl border border-gray-100 px-3 py-3 bg-white flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2'
-                >
-                  <div className='min-w-0'>
-                    <div className='flex items-center gap-2 flex-wrap'>
-                      <span className='text-sm font-medium text-gray-900'>{TYPE_LABEL[type]}</span>
-                      {isDefault ? (
-                        <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200'>
-                          ค่าเริ่มต้น
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className='text-sm text-gray-700 mt-1 whitespace-pre-line'>
-                      {address?.addressDetail || '—'}
-                    </p>
-                    <p className='text-xs text-gray-500 mt-1'>{displayLocation(row)}</p>
-                  </div>
-                  <div className='flex items-center gap-1.5 shrink-0'>
-                    {!isDefault ? (
-                      <Button
-                        variant='unstyled'
-                        type='button'
-                        onClick={() => onSetDefault(row)}
-                        className='px-2.5 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 text-xs font-semibold hover:bg-emerald-50'
-                      >
-                        ตั้งเป็นค่าเริ่มต้น
-                      </Button>
-                    ) : null}
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      onClick={() => onEdit(row)}
-                      className='p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50'
-                      aria-label='แก้ไขที่อยู่'
-                    >
-                      <Pencil size={14} />
-                    </Button>
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      onClick={() => onDelete(row)}
-                      className='p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50'
-                      aria-label='ลบที่อยู่'
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })
-          )}
+      {/* Empty state */}
+      {addresses.length === 0 && (
+        <div className='flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-gray-200 bg-gray-50 text-center'>
+          <MapPin size={28} className='text-gray-300 mb-2' />
+          <p className='text-sm font-medium text-gray-500'>ยังไม่มีที่อยู่ในระบบ</p>
+          <p className='text-xs text-gray-400 mt-1'>กดปุ่ม "เพิ่มที่อยู่" เพื่อเพิ่มที่อยู่ใหม่</p>
         </div>
-      ))}
+      )}
+
+      {/* Groups */}
+      {(['B', 'S'] as const).map((type) => {
+        const color = TYPE_COLOR[type];
+        return (
+          <div key={type} className='space-y-2.5'>
+            {/* Group label */}
+            <div className='flex items-center gap-2'>
+              <span className={`inline-block w-2 h-2 rounded-full ${color.dot}`} />
+              <p className='text-xs font-semibold text-gray-600 uppercase tracking-wide'>
+                {TYPE_LABEL[type]}
+              </p>
+              <span className='text-xs text-gray-400'>({grouped[type].length})</span>
+            </div>
+
+            {grouped[type].length === 0 ? (
+              <p className='text-xs text-gray-400 pl-4'>ไม่มีรายการ</p>
+            ) : (
+              <div className='space-y-2'>
+                {grouped[type].map((row, idx) => {
+                  const address = mapAddressFromApi(row);
+                  const id = String(address?.id ?? `${type}-${idx}`);
+                  const isDefault = Boolean(address?.isDefault);
+                  return (
+                    <div
+                      key={id}
+                      className={`rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md ${
+                        isDefault ? `border-l-4 ${color.border} border-l-${type === 'B' ? 'indigo' : 'violet'}-400` : 'border-gray-100'
+                      }`}
+                    >
+                      <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 px-4 py-3.5'>
+                        {/* Content */}
+                        <div className='min-w-0 flex-1'>
+                          <div className='flex flex-wrap items-center gap-2 mb-1'>
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${color.bg} ${color.text} ${color.border} border`}
+                            >
+                              {TYPE_LABEL[type]}
+                            </span>
+                            {isDefault && (
+                              <span className='inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-200'>
+                                <Star size={9} className='fill-amber-500 text-amber-500' />
+                                ค่าเริ่มต้น
+                              </span>
+                            )}
+                          </div>
+                          <p className='text-sm text-gray-800 font-medium leading-relaxed whitespace-pre-line'>
+                            {address?.addressDetail || '—'}
+                          </p>
+                          <p className='text-xs text-gray-500 mt-1'>{displayLocation(row)}</p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className='flex items-center gap-1.5 shrink-0 sm:pt-0.5'>
+                          {!isDefault && (
+                            <Button
+                              variant='unstyled'
+                              type='button'
+                              onClick={() => onSetDefault(row)}
+                              className='px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-medium hover:border-amber-300 hover:text-amber-600 hover:bg-amber-50 transition-colors'
+                            >
+                              ตั้งค่าเริ่มต้น
+                            </Button>
+                          )}
+                          <Button
+                            variant='unstyled'
+                            type='button'
+                            onClick={() => onEdit(row)}
+                            className='p-2 rounded-lg border border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors'
+                            aria-label='แก้ไขที่อยู่'
+                          >
+                            <Pencil size={13} />
+                          </Button>
+                          <Button
+                            variant='unstyled'
+                            type='button'
+                            onClick={() => onDelete(row)}
+                            className='p-2 rounded-lg border border-gray-100 text-gray-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-colors'
+                            aria-label='ลบที่อยู่'
+                          >
+                            <Trash2 size={13} />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
