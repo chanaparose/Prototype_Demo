@@ -4,10 +4,6 @@ import {
   Search,
   SlidersHorizontal,
   FileText,
-  Factory,
-  PackageSearch,
-  FlaskConical,
-  Wheat,
   ChevronDown,
   Check,
   ClipboardList,
@@ -26,7 +22,8 @@ import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 
-type TabKey = 'open' | 'quoted' | 'closing' | 'direct' | 'pr' | 'ps' | 'ms' | 'mr';
+type BoardTabKey = 'open' | 'quoted' | 'direct';
+type KindFilterKey = 'pr' | 'ps' | 'ms' | 'mr';
 type DropdownOption = { value: string; label: string };
 function FilterDropdown({
   label,
@@ -60,7 +57,7 @@ function FilterDropdown({
         variant='unstyled'
         type='button'
         onClick={onToggle}
-        className='w-full h-[42px] rounded-xl border border-slate-200 bg-white px-3.5 text-left shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100'
+        className='w-full h-[42px] rounded-xl border border-slate-200 bg-white px-3.5 text-left hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100'
       >
         <div className='flex items-center justify-between gap-2'>
           <span className='text-[11px] text-slate-500 shrink-0'>{label}</span>
@@ -139,41 +136,28 @@ function isDirectPending(row: FactoryBoardRow): boolean {
   return Boolean(row.isTargeted && !row.hasMyQuote && row.status === 'OP');
 }
 
-function applyTab(rows: FactoryBoardRow[], tab: TabKey): FactoryBoardRow[] {
-  if (tab === 'direct') return rows.filter(isDirectPending);
-  // ยังไม่เสนอ: เฉพาะ OP ที่ไม่มีการส่ง quotation
-  if (tab === 'open') return rows.filter((r) => !r.hasMyQuote && r.status === 'OP');
+function matchesKind(row: FactoryBoardRow, kind: KindFilterKey): boolean {
+  const k = String(row.requestKind ?? 'PR').toUpperCase();
+  if (kind === 'pr') return k === 'PR';
+  if (kind === 'ps') return k === 'PS';
+  if (kind === 'ms') return k === 'MS';
+  return k === 'MR';
+}
 
-  if (tab === 'quoted') return rows.filter((r) => r.hasMyQuote);
+function applyStatusTab(rows: FactoryBoardRow[], statusTab: BoardTabKey): FactoryBoardRow[] {
+  if (statusTab === 'direct') return rows.filter(isDirectPending);
+  if (statusTab === 'quoted') return rows.filter((r) => r.hasMyQuote);
+  return rows.filter((r) => !r.hasMyQuote && r.status === 'OP');
+}
 
-  if (tab === 'pr')
-    return rows.filter(
-      (r) =>
-        !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? 'PR').toUpperCase() === 'PR',
-    );
-  if (tab === 'ps')
-    return rows.filter(
-      (r) =>
-        !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'PS',
-    );
-  if (tab === 'ms')
-    return rows.filter(
-      (r) =>
-        !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MS',
-    );
-  if (tab === 'mr')
-    return rows.filter(
-      (r) =>
-        !r.hasMyQuote && r.status === 'OP' && String(r.requestKind ?? '').toUpperCase() === 'MR',
-    );
-  return rows.filter(
-    (r) =>
-      !r.hasMyQuote &&
-      r.status === 'OP' &&
-      r.daysLeft != null &&
-      r.daysLeft >= 0 &&
-      r.daysLeft <= 3,
-  );
+function applyBoardFilter(
+  rows: FactoryBoardRow[],
+  statusTab: BoardTabKey,
+  kindFilter: KindFilterKey | '',
+): FactoryBoardRow[] {
+  const byStatus = applyStatusTab(rows, statusTab);
+  if (!kindFilter) return byStatus;
+  return byStatus.filter((r) => matchesKind(r, kindFilter));
 }
 
 function applyFilters(
@@ -230,7 +214,8 @@ export function FactoryRfqBoardPage() {
   const narrowTabs = useNarrowTabs(400);
   const navigate = useNavigate();
 
-  const [tab, setTab] = useState<TabKey>('open');
+  const [statusTab, setStatusTab] = useState<BoardTabKey>('open');
+  const [kindFilter, setKindFilter] = useState<KindFilterKey | ''>('');
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('');
   const [filterShip, setFilterShip] = useState('');
@@ -306,10 +291,10 @@ export function FactoryRfqBoardPage() {
   }, [rows, shipNameById]);
 
   const pipeline = useMemo(() => {
-    const t = applyTab(rows, tab);
+    const t = applyBoardFilter(rows, statusTab, kindFilter);
     const f = applyFilters(t, search, filterCat, filterShip);
     return sortRows(f, sortDir);
-  }, [rows, tab, search, filterCat, filterShip, sortDir]);
+  }, [rows, statusTab, kindFilter, search, filterCat, filterShip, sortDir]);
 
   const noFactoryCategories = fid != null && factoryCategoryIds.length === 0;
   const hasFilters = search.trim() !== '' || filterCat !== '' || filterShip !== '';
@@ -346,7 +331,7 @@ export function FactoryRfqBoardPage() {
   );
 
   const tabDefs: {
-    key: TabKey;
+    key: BoardTabKey;
     label: string;
     shortLabel: string;
     count: number;
@@ -375,34 +360,15 @@ export function FactoryRfqBoardPage() {
     },
   ];
   const kindTabs: {
-    key: Extract<TabKey, 'pr' | 'ps' | 'ms' | 'mr'>;
+    key: KindFilterKey;
     label: string;
     count: number;
-    icon: React.ComponentType<{ size?: number; className?: string }>;
     hint: string;
   }[] = [
-    { key: 'pr', label: 'OEM', count: unansweredByKind.pr, icon: Factory, hint: 'ขอราคาการผลิต' },
-    {
-      key: 'ps',
-      label: 'ตัวอย่างสินค้า',
-      count: unansweredByKind.ps,
-      icon: PackageSearch,
-      hint: 'ขอสินค้าทดลอง',
-    },
-    {
-      key: 'ms',
-      label: 'ตัวอย่างวัสดุ',
-      count: unansweredByKind.ms,
-      icon: FlaskConical,
-      hint: 'ขอวัสดุทดลอง',
-    },
-    {
-      key: 'mr',
-      label: 'สั่งวัตถุดิบ',
-      count: unansweredByKind.mr,
-      icon: Wheat,
-      hint: 'ขอวัตถุดิบ',
-    },
+    { key: 'pr', label: 'OEM', count: unansweredByKind.pr, hint: 'ขอราคาการผลิต' },
+    { key: 'mr', label: 'สั่งวัตถุดิบ', count: unansweredByKind.mr, hint: 'ขอวัตถุดิบ' },
+    { key: 'ps', label: 'ตัวอย่างสินค้า', count: unansweredByKind.ps, hint: 'ขอสินค้าทดลอง' },
+    { key: 'ms', label: 'ตัวอย่างวัสดุ', count: unansweredByKind.ms, hint: 'ขอวัสดุทดลอง' },
   ];
 
   if (loading) {
@@ -471,52 +437,39 @@ export function FactoryRfqBoardPage() {
 
       {!noFactoryCategories ? (
         <>
-          <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
+          <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
             {kindTabs.map((k) => {
-              const active = tab === k.key;
+              const active = kindFilter === k.key;
               const pending = unansweredByKind[k.key];
               return (
                 <Button
                   variant='unstyled'
                   key={k.key}
                   type='button'
-                  onClick={() => setTab(k.key)}
-                  className='rounded-2xl border px-3 py-2.5 text-left transition-all'
-                  style={{
-                    borderColor: active ? 'var(--brand-indigo)' : 'var(--neutral-border)',
-                    background: active ? '#EEF2FF' : 'var(--neutral-white)',
-                    boxShadow: active ? '0 2px 10px rgba(79,70,229,0.12)' : 'none',
-                  }}
+                  onClick={() => setKindFilter((prev) => (prev === k.key ? '' : k.key))}
+                  className={`rounded-2xl border bg-white p-3 text-left transition-colors ${
+                    active
+                      ? 'border-indigo-400 ring-2 ring-indigo-100'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
                 >
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-2'>
-                      <span className='w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100'>
-                        <k.icon
-                          size={15}
-                          className={active ? 'text-indigo-600' : 'text-slate-500'}
-                        />
+                  <p className='text-xs text-slate-500'>{k.label}</p>
+                  <div className='mt-2 flex items-end justify-between gap-2'>
+                    <p className='text-xl font-bold tabular-nums leading-none text-slate-900'>{k.count}</p>
+                    <div className='flex min-w-0 items-center gap-1.5'>
+                      {pending > 0 ? (
+                        <span className='shrink-0 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-600'>
+                          {pending}
+                        </span>
+                      ) : (
+                        <span className='shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-600'>
+                          ครบ
+                        </span>
+                      )}
+                      <span className='truncate text-[11px] text-slate-400'>
+                        {pending > 0 ? k.hint : 'ตอบครบแล้ว'}
                       </span>
-                      <div>
-                        <p className='text-[13px] font-semibold text-slate-900 leading-none'>
-                          {k.label}
-                        </p>
-                        <p className='text-[11px] text-slate-500 mt-1'>{k.hint}</p>
-                        <p
-                          className={`text-[11px] mt-1 font-medium ${pending > 0 ? 'text-amber-700' : 'text-emerald-700'}`}
-                        >
-                          {pending > 0 ? `ยังไม่ตอบ ${pending}/${k.count}` : 'ตอบครบแล้ว'}
-                        </p>
-                      </div>
                     </div>
-                    <span
-                      className='text-xs font-bold rounded-full px-2 py-0.5'
-                      style={{
-                        background: active ? 'var(--brand-indigo)' : '#EEF2FF',
-                        color: active ? 'var(--neutral-white)' : 'var(--brand-indigo)',
-                      }}
-                    >
-                      {k.count}
-                    </span>
                   </div>
                 </Button>
               );
@@ -527,8 +480,8 @@ export function FactoryRfqBoardPage() {
             <div className='flex items-center gap-2'>
               <FilterDropdown
                 label='ชุดรายการ'
-                value={tab}
-                onChange={(v) => setTab(v as TabKey)}
+                value={statusTab}
+                onChange={(v) => setStatusTab(v as BoardTabKey)}
                 options={tabDefs.map((t) => ({ value: t.key, label: `${t.label} (${t.count})` }))}
                 className='flex-1'
               />
@@ -536,7 +489,7 @@ export function FactoryRfqBoardPage() {
           ) : null}
 
           <div className='sticky top-14 z-[5] bg-brand-page py-2 -my-1'>
-            <div className='rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm'>
+            <div className='rounded-2xl border border-slate-200 bg-white overflow-hidden'>
               {!narrowTabs ? (
                 <div
                   className='flex overflow-x-auto overflow-y-hidden border-b border-slate-100 [&::-webkit-scrollbar]:hidden'
@@ -545,14 +498,14 @@ export function FactoryRfqBoardPage() {
                   aria-label='สถานะใบเสนอราคา'
                 >
                   {tabDefs.map((t) => {
-                    const on = tab === t.key;
+                    const on = statusTab === t.key;
                     return (
                       <button
                         key={t.key}
                         type='button'
                         role='tab'
                         aria-selected={on}
-                        onClick={() => setTab(t.key)}
+                        onClick={() => setStatusTab(t.key)}
                         className='flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3.5 text-[13px] -mb-px transition-colors focus:outline-none'
                         style={{
                           borderBottomColor: on ? 'var(--brand-indigo)' : 'transparent',
@@ -739,14 +692,14 @@ export function FactoryRfqBoardPage() {
                 <div className='mt-3 rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
                   <div className='text-5xl'>🔍</div>
                   <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
-                    {tab === 'direct'
+                    {statusTab === 'direct'
                       ? 'ยังไม่มี RFQ ที่ส่งถึงคุณโดยตรง'
                       : rows.length === 0
                         ? 'ยังไม่มี RFQ ที่ตรงกับหมวดหมู่โรงงานของคุณ'
                         : 'ไม่พบ RFQ ตามเงื่อนไข'}
                   </p>
                   <p className='text-sm text-gray-400'>
-                    {tab === 'direct'
+                    {statusTab === 'direct'
                       ? 'ลูกค้าเลือกส่งคำขอมาที่โรงงานของคุณโดยเฉพาะ — รายการจะปรากฏที่นี่'
                       : rows.length === 0
                         ? 'ระบบจะแสดงรายการใหม่ที่ตรงกับหมวดหมู่ทันทีเมื่อมี RFQ เข้า'
@@ -787,7 +740,10 @@ export function FactoryRfqBoardPage() {
                       key={r.id}
                       className='rounded-2xl border border-gray-100 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 overflow-hidden'
                     >
-                      <RfqCard row={r as RfqCardModel} variant={tab === 'quoted' ? 'boq' : 'board'} />
+                      <RfqCard
+                        row={r as RfqCardModel}
+                        variant={statusTab === 'quoted' ? 'boq' : 'board'}
+                      />
                     </li>
                   ))}
                 </ul>
