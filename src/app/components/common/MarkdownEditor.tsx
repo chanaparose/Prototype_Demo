@@ -211,13 +211,17 @@ export function MarkdownEditor({
 
   return (
     <div className='relative'>
-      {label ? <p className='text-xs text-gray-500 mb-1'>{label}</p> : null}
       <div
         className={`rounded-xl border bg-white overflow-hidden ${
           focused ? 'border-orange-300 shadow-[inset_2px_0_0_#fb923c]' : 'border-gray-200'
         }`}
       >
-        <div className='px-3 pt-2 pb-2 flex items-center justify-end border-b border-gray-100'>
+        <div
+          className={`px-3 pt-2 pb-2 flex items-center border-b border-gray-100 ${
+            label ? 'justify-between' : 'justify-end'
+          }`}
+        >
+          {label ? <p className='text-xs text-gray-500'>{label}</p> : null}
           <div className='flex items-center gap-2'>
             <Button
               onClick={() => setTab('write')}

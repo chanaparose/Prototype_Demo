@@ -210,132 +210,144 @@ export function FactoryShowcaseNewPage() {
 
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
-        <div className='space-y-5 min-w-0'>
-          <div className='flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5'>
-            {contentType !== 'ID' ? (
+        <div className='grid auto-rows-min gap-5 lg:grid-cols-2'>
+          {/* Image — col 1 */}
+          {contentType !== 'ID' ? (
+            <div>
               <ShowcaseImageManager
                 imageUrls={imageUrls}
                 uploading={uploading}
                 onPickImage={(file) => void onPickImage(file)}
                 onRemoveImage={(_, index) => removeImage(index)}
               />
+            </div>
+          ) : null}
+
+          {/* Merged form fields — col 2 (or full-width for ID) */}
+          <section
+            className={`rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-5 ${
+              contentType !== 'ID' ? 'lg:col-span-1' : 'lg:col-span-2'
+            }`}
+          >
+            <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+              <p className='text-sm font-bold text-gray-800'>รายละเอียดสินค้า</p>
+              <ShowcaseTypeBadge type={contentType} />
+            </div>
+
+            {/* ชื่อ */}
+            <Label className='block'>
+              <span className='text-xs text-gray-500 font-medium'>ชื่อ *</span>
+              <Input
+                className='mt-1 w-full text-base font-semibold text-gray-900 placeholder-gray-300 rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
+                placeholder='ชื่อสินค้า / ไอเดีย'
+                value={form.title}
+                onChange={(e) => setField('title', e.target.value)}
+              />
+            </Label>
+
+            {/* หมวดหมู่ */}
+            <ShowcaseCategoryFields
+              contentType={contentType}
+              idScope={idScope}
+              pmScope={pmScope}
+              onIdScopeChange={(scope) => {
+                setIdScope(scope);
+                setField('category_id', '');
+                setField('sub_category_id', '');
+              }}
+              onPmScopeChange={(scope) => {
+                setPmScope(scope);
+                setField('category_id', '');
+                setField('sub_category_id', '');
+              }}
+              categoryValue={form.category_id ? Number(form.category_id) : null}
+              subCategoryValue={form.sub_category_id ? Number(form.sub_category_id) : null}
+              onCategoryChange={(value) =>
+                setField('category_id', value != null ? String(value) : '')
+              }
+              onSubCategoryChange={(value) =>
+                setField('sub_category_id', value != null ? String(value) : '')
+              }
+              categoriesQ={categoriesQ}
+              subOptions={subOptions}
+              subCategoriesLoading={subsResult.isLoading}
+            />
+
+            {/* ราคา / MOQ / Lead time */}
+            {contentType !== 'ID' ? (
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-gray-100'>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
+                  <Input
+                    type='number'
+                    step='0.01'
+                    placeholder='0.00'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    value={form.base_price}
+                    onChange={(e) => setField('base_price', e.target.value)}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
+                  <Input
+                    type='number'
+                    placeholder='500'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    value={form.moq}
+                    onChange={(e) => setField('moq', e.target.value)}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>Lead time (วัน)</span>
+                  <Input
+                    type='number'
+                    placeholder='30'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    value={form.lead_time_days}
+                    onChange={(e) => setField('lead_time_days', e.target.value)}
+                  />
+                </Label>
+              </div>
             ) : null}
 
-            <div className='flex-1 min-w-0 space-y-5'>
-              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
-                <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
-                <Input
-                  className='w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
-                  placeholder='ชื่อ *'
-                  value={form.title}
-                  onChange={(e) => setField('title', e.target.value)}
-                />
-              </section>
+            {/* โปรโมชัน extra fields */}
+            {contentType === 'PM' ? (
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-dashed border-purple-100'>
+                <Label className='block'>
+                  <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
+                  <Input
+                    type='number'
+                    step='0.01'
+                    placeholder='0.00'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    value={form.promo_price}
+                    onChange={(e) => setField('promo_price', e.target.value)}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
+                  <Input
+                    type='date'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    value={form.start_date}
+                    onChange={(e) => setField('start_date', e.target.value)}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
+                  <Input
+                    type='date'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    value={form.end_date}
+                    onChange={(e) => setField('end_date', e.target.value)}
+                  />
+                </Label>
+              </div>
+            ) : null}
+          </section>
 
-              <ShowcaseCategoryFields
-                contentType={contentType}
-                idScope={idScope}
-                pmScope={pmScope}
-                onIdScopeChange={(scope) => {
-                  setIdScope(scope);
-                  setForm((prev) => ({ ...prev, category_id: '', sub_category_id: '' }));
-                }}
-                onPmScopeChange={(scope) => {
-                  setPmScope(scope);
-                  setForm((prev) => ({ ...prev, category_id: '', sub_category_id: '' }));
-                }}
-                categoryValue={form.category_id ? Number(form.category_id) : null}
-                subCategoryValue={form.sub_category_id ? Number(form.sub_category_id) : null}
-                onCategoryChange={(value) =>
-                  setField('category_id', value != null ? String(value) : '')
-                }
-                onSubCategoryChange={(value) =>
-                  setField('sub_category_id', value != null ? String(value) : '')
-                }
-                categoriesQ={categoriesQ}
-                subOptions={subOptions}
-                subCategoriesLoading={subsResult.isLoading}
-              />
-
-              <section className='bg-white rounded-2xl border border-gray-100 p-4 space-y-4 shadow-sm'>
-                {contentType !== 'ID' ? (
-                  <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
-                      <Input
-                        type='number'
-                        step='0.01'
-                        placeholder='0.00'
-                        className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-                        value={form.base_price}
-                        onChange={(e) => setField('base_price', e.target.value)}
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
-                      <Input
-                        type='number'
-                        placeholder='500'
-                        className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-                        value={form.moq}
-                        onChange={(e) => setField('moq', e.target.value)}
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500'>Lead time (วัน)</span>
-                      <Input
-                        type='number'
-                        placeholder='30'
-                        className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-                        value={form.lead_time_days}
-                        onChange={(e) => setField('lead_time_days', e.target.value)}
-                      />
-                    </Label>
-                  </div>
-                ) : null}
-
-                {contentType === 'PM' ? (
-                  <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-dashed border-purple-100'>
-                    <Label className='block'>
-                      <span className='text-xs font-medium text-indigo-600'>
-                        ราคาโปรโมชัน (฿) *
-                      </span>
-                      <Input
-                        type='number'
-                        step='0.01'
-                        placeholder='0.00'
-                        className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none'
-                        value={form.promo_price}
-                        onChange={(e) => setField('promo_price', e.target.value)}
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
-                      <Input
-                        type='date'
-                        className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none'
-                        value={form.start_date}
-                        onChange={(e) => setField('start_date', e.target.value)}
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs font-medium text-indigo-600'>
-                        วันที่สิ้นสุดโปร *
-                      </span>
-                      <Input
-                        type='date'
-                        className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo- focus:outline-none'
-                        value={form.end_date}
-                        onChange={(e) => setField('end_date', e.target.value)}
-                      />
-                    </Label>
-                  </div>
-                ) : null}
-              </section>
-            </div>
-          </div>
-
-          <section>
+          {/* Markdown — full width */}
+          <section className='lg:col-span-3'>
             <MarkdownEditor
               label='รายละเอียด (Markdown)'
               value={form.content}
