@@ -240,6 +240,9 @@ export function ShowcaseCategoryFields({
           getId={(option) => option.id}
           getLabel={(option) => option.name}
           placeholder='เลือกหมวดหมู่'
+          triggerClassName='text-xs'
+          contentClassName='text-xs'
+          itemClassName='text-xs'
         />
 
         {!hideSubCat ? (
@@ -252,7 +255,7 @@ export function ShowcaseCategoryFields({
                 onSubCategoryChange(next === '__empty' ? null : Number(next))
               }
             >
-              <SelectTrigger className='w-full h-10 disabled:bg-gray-50 disabled:text-gray-400'>
+              <SelectTrigger className='w-full h-10 text-xs disabled:bg-gray-50 disabled:text-gray-400'>
                 <SelectValue
                   placeholder={
                     categoryValue == null
@@ -263,8 +266,8 @@ export function ShowcaseCategoryFields({
                   }
                 />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='__empty'>
+              <SelectContent className='text-xs'>
+                <SelectItem value='__empty' className='text-xs'>
                   {categoryValue == null
                     ? '— เลือกหมวดหมู่ก่อน —'
                     : subCategoriesLoading
@@ -272,7 +275,7 @@ export function ShowcaseCategoryFields({
                       : '— เลือกหมวดย่อย —'}
                 </SelectItem>
                 {subOptions.map((option) => (
-                  <SelectItem key={option.id} value={String(option.id)}>
+                  <SelectItem key={option.id} value={String(option.id)} className='text-xs'>
                     {option.name}
                   </SelectItem>
                 ))}
@@ -288,14 +291,22 @@ export function ShowcaseCategoryFields({
               value={statusValue ?? 'DR'}
               onValueChange={(next) => onStatusChange(next as ShowcaseStatus)}
             >
-              <SelectTrigger className='w-full h-10'>
+              <SelectTrigger className='w-full h-10 text-xs'>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='DR'>ร่าง</SelectItem>
-                <SelectItem value='AC'>Active</SelectItem>
-                <SelectItem value='HI'>Hidden</SelectItem>
-                <SelectItem value='AR'>เก็บเข้าคลัง</SelectItem>
+              <SelectContent className='text-xs'>
+                <SelectItem value='DR' className='text-xs'>
+                  ร่าง
+                </SelectItem>
+                <SelectItem value='AC' className='text-xs'>
+                  Active
+                </SelectItem>
+                <SelectItem value='HI' className='text-xs'>
+                  Hidden
+                </SelectItem>
+                <SelectItem value='AR' className='text-xs'>
+                  เก็บเข้าคลัง
+                </SelectItem>
               </SelectContent>
             </Select>
           </Label>

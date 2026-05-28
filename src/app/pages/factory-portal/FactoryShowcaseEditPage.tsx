@@ -596,7 +596,7 @@ export function FactoryShowcaseEditPage() {
             <Label className='block'>
               <span className='text-xs text-gray-500 font-medium'>ชื่อ *</span>
               <Input
-                className='mt-1 w-full text-base font-semibold text-gray-900 placeholder-gray-300 rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
+                className='mt-1 w-full text-sm font-semibold text-gray-900 placeholder-gray-300 rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
                 placeholder='ชื่อสินค้า / ไอเดีย'
                 {...form.register('title', { required: true })}
               />
@@ -641,7 +641,7 @@ export function FactoryShowcaseEditPage() {
                   <Input
                     type='number'
                     step='0.01'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
                     {...form.register('base_price', {
                       setValueAs: (v) => (v === '' ? null : Number(v)),
                     })}
@@ -651,7 +651,7 @@ export function FactoryShowcaseEditPage() {
                   <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
                   <Input
                     type='number'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
                     {...form.register('moq', {
                       setValueAs: (v) => (v === '' ? null : Number(v)),
                     })}
@@ -661,7 +661,7 @@ export function FactoryShowcaseEditPage() {
                   <span className='text-xs text-gray-500'>Lead time (วัน)</span>
                   <Input
                     type='number'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
                     {...form.register('lead_time_days', {
                       setValueAs: (v) => (v === '' ? null : Number(v)),
                     })}
@@ -677,7 +677,7 @@ export function FactoryShowcaseEditPage() {
                   <Input
                     type='number'
                     placeholder='0.00'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
                     {...form.register('promo_price', {
                       setValueAs: (v) => (v === '' ? null : Number(v)),
                     })}
@@ -687,7 +687,7 @@ export function FactoryShowcaseEditPage() {
                   <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
                   <Input
                     type='date'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
                     {...form.register('start_date')}
                   />
                 </Label>
@@ -695,7 +695,7 @@ export function FactoryShowcaseEditPage() {
                   <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
                   <Input
                     type='date'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
                     {...form.register('end_date')}
                   />
                 </Label>

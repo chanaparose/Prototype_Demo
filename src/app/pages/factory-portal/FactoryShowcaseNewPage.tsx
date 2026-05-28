@@ -256,7 +256,7 @@ export function FactoryShowcaseNewPage() {
             <Label className='block'>
               <span className='text-xs text-gray-500 font-medium'>ชื่อ *</span>
               <Input
-                className='mt-1 w-full text-base font-semibold text-gray-900 placeholder-gray-300 rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
+                className='mt-1 w-full text-sm font-semibold text-gray-900 placeholder-gray-300 rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
                 placeholder='ชื่อสินค้า / ไอเดีย'
                 value={form.title}
                 onChange={(e) => setField('title', e.target.value)}
@@ -300,7 +300,7 @@ export function FactoryShowcaseNewPage() {
                     type='number'
                     step='0.01'
                     placeholder='0.00'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
                     value={form.base_price}
                     onChange={(e) => setField('base_price', e.target.value)}
                   />
@@ -310,7 +310,7 @@ export function FactoryShowcaseNewPage() {
                   <Input
                     type='number'
                     placeholder='500'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
                     value={form.moq}
                     onChange={(e) => setField('moq', e.target.value)}
                   />
@@ -320,7 +320,7 @@ export function FactoryShowcaseNewPage() {
                   <Input
                     type='number'
                     placeholder='30'
-                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-xs'
                     value={form.lead_time_days}
                     onChange={(e) => setField('lead_time_days', e.target.value)}
                   />
@@ -337,7 +337,7 @@ export function FactoryShowcaseNewPage() {
                     type='number'
                     step='0.01'
                     placeholder='0.00'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
                     value={form.promo_price}
                     onChange={(e) => setField('promo_price', e.target.value)}
                   />
@@ -346,7 +346,7 @@ export function FactoryShowcaseNewPage() {
                   <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
                   <Input
                     type='date'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
                     value={form.start_date}
                     onChange={(e) => setField('start_date', e.target.value)}
                   />
@@ -355,7 +355,7 @@ export function FactoryShowcaseNewPage() {
                   <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
                   <Input
                     type='date'
-                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-xs focus:ring-1 focus:ring-indigo-300 focus:outline-none'
                     value={form.end_date}
                     onChange={(e) => setField('end_date', e.target.value)}
                   />
