@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, MessageCircle, X } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
+import type { IConversationResponse } from '@/services/api/types/chat.types';
 import type { IQuotationResponse } from '@/services/api/types/rfq.types';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { factoryRfqsApi, quotationsApi } from '@/services/api/rfqApi';
@@ -49,6 +50,18 @@ function quoteFid(q: QuoteRow): number | null {
       factoryObj?.id,
   );
   return Number.isFinite(n) ? n : null;
+}
+
+function normalizeConversationList(raw: unknown): IConversationResponse[] {
+  if (Array.isArray(raw)) return raw as IConversationResponse[];
+  if (raw && typeof raw === 'object') {
+    const root = raw as Record<string, unknown>;
+    for (const key of ['conversations', 'data', 'items', 'results'] as const) {
+      const nested = root[key];
+      if (Array.isArray(nested)) return nested as unknown as IConversationResponse[];
+    }
+  }
+  return [];
 }
 
 function quoteIdOf(q: QuoteRow): string {
@@ -113,7 +126,9 @@ export function FactoryRfqDetailPage() {
       const rfq = (detail.rfq ?? {}) as Record<string, unknown>;
       setRfqTitle(String(rfq.title ?? ''));
       setRfqBody(rfq);
-      setQuotes(Array.isArray(detail.quotations) ? (detail.quotations as QuoteRow[]) : []);
+      setQuotes(
+        Array.isArray(detail.quotations) ? (detail.quotations as unknown as QuoteRow[]) : [],
+      );
       setSubCategoryName(String(rfq.sub_category_name ?? '').trim());
       if (detail.commission_config) setCommissionConfig(detail.commission_config);
     } catch (e) {
@@ -222,45 +237,15 @@ export function FactoryRfqDetailPage() {
   );
 
   const findExistingConvId = async (): Promise<number | null> => {
-    const convsRaw = await conversationsApi.list();
-    const convs = (() => {
-      if (Array.isArray(convsRaw)) return convsRaw as Array<Record<string, unknown>>;
-      if (convsRaw && typeof convsRaw === 'object') {
-        const root = convsRaw as Record<string, unknown>;
-        const c1 = root.conversations;
-        if (Array.isArray(c1)) return c1 as Array<Record<string, unknown>>;
-        const c2 = root.data;
-        if (Array.isArray(c2)) return c2 as Array<Record<string, unknown>>;
-        const c3 = root.items;
-        if (Array.isArray(c3)) return c3 as Array<Record<string, unknown>>;
-        const c4 = root.results;
-        if (Array.isArray(c4)) return c4 as Array<Record<string, unknown>>;
-      }
-      return [] as Array<Record<string, unknown>>;
-    })();
+    const convs = normalizeConversationList(await conversationsApi.list());
 
-    const customerIdOf = (c: Record<string, unknown>): number =>
-      Number(
-        c.customer_id ??
-          c.customerId ??
-          (c.customer as Record<string, unknown> | undefined)?.user_id ??
-          0,
-      );
-    const factoryIdOf = (c: Record<string, unknown>): number =>
-      Number(
-        c.factory_id ??
-          c.factoryId ??
-          (c.factory as Record<string, unknown> | undefined)?.user_id ??
-          0,
-      );
-
-    let hit = convs.find((c) => customerIdOf(c) === customerId && factoryIdOf(c) === fid);
+    let hit = convs.find((c) => c.customer_id === customerId && c.factory_id === fid);
 
     if (!hit && customerId > 0) {
-      hit = convs.find((c) => customerIdOf(c) === customerId);
+      hit = convs.find((c) => c.customer_id === customerId);
     }
 
-    const convId = Number(hit?.conv_id ?? hit?.conversation_id ?? hit?.id ?? 0);
+    const convId = hit?.conv_id ?? 0;
 
     return Number.isFinite(convId) && convId > 0 ? convId : null;
   };
@@ -443,21 +428,6 @@ export function FactoryRfqDetailPage() {
             <ChevronLeft size={18} />
             กลับ
           </Button>
- 
-
-          {/* Chat button — top-right */}
-          {customerId > 0 && fid != null ? (
-            <Button
-              variant='unstyled'
-              type='button'
-              disabled={chatBusy}
-              onClick={() => void openChatToCustomer()}
-              className='flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-50 transition-colors'
-            >
-              <MessageCircle size={15} />
-              แชทลูกค้า
-            </Button>
-          ) : null}
         </div>
       </header>
 
@@ -471,36 +441,33 @@ export function FactoryRfqDetailPage() {
         {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
 
         {!loading ? (
-          <div className='grid auto-rows-min gap-5 lg:grid-cols-2'>
+          <div className='flex flex-col gap-5'>
 
-            {/* ══════════════════════════════════════
-                LEFT COLUMN  (50%)
-            ══════════════════════════════════════ */}
-            <div className='min-w-0 space-y-5'>
+            {/* My-quote status banner */}
+            {myQuote ? (
+              <div
+                className='flex items-center gap-3 rounded-2xl border px-4 py-3'
+                style={{
+                  borderColor: myStatus === 'AC' ? '#86efac' : myStatus === 'RJ' ? '#fca5a5' : '#fde68a',
+                  backgroundColor: myStatus === 'AC' ? '#f0fdf4' : myStatus === 'RJ' ? '#fff1f2' : '#fffbeb',
+                }}
+              >
+                <StatusBadge variant={quoteStatusVariant(myStatus)} size='md'>
+                  {quoteStatusLabel(myStatus)}
+                </StatusBadge>
+                <p className='text-xs text-gray-600'>สถานะใบเสนอราคาของคุณ</p>
+              </div>
+            ) : (
+              <div className='flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3'>
+                <span className='text-lg'>📋</span>
+                <p className='text-sm font-medium text-amber-800'>คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
+              </div>
+            )}
 
-              {/* My-quote status banner */}
-              {myQuote ? (
-                <div
-                  className='flex items-center gap-3 rounded-2xl border px-4 py-3'
-                  style={{
-                    borderColor: myStatus === 'AC' ? '#86efac' : myStatus === 'RJ' ? '#fca5a5' : '#fde68a',
-                    backgroundColor: myStatus === 'AC' ? '#f0fdf4' : myStatus === 'RJ' ? '#fff1f2' : '#fffbeb',
-                  }}
-                >
-                  <StatusBadge variant={quoteStatusVariant(myStatus)} size='md'>
-                    {quoteStatusLabel(myStatus)}
-                  </StatusBadge>
-                  <p className='text-xs text-gray-600'>สถานะใบเสนอราคาของคุณ</p>
-                </div>
-              ) : (
-                <div className='flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3'>
-                  <span className='text-lg'>📋</span>
-                  <p className='text-sm font-medium text-amber-800'>คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
-                </div>
-              )}
-
+            {/* RFQ card + quote form — equal height on lg */}
+            <div className='grid min-w-0 gap-5 lg:grid-cols-2 lg:items-stretch [&>*]:min-h-0'>
               {/* ── Main RFQ card (merged: overview + detail + conditions) ── */}
-              <section className='rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
+              <section className='flex min-h-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
                 {/* Card header */}
                 <div className='flex items-center justify-between border-b border-slate-100 px-5 py-4'>
                   <div className='flex items-center gap-2'>
@@ -513,15 +480,27 @@ export function FactoryRfqDetailPage() {
                       </span>
                     ) : null}
                   </div>
-                  <div className='flex items-center gap-3'>
+                  {customerId > 0 && fid != null ? (
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      disabled={chatBusy}
+                      onClick={() => void openChatToCustomer()}
+                      className='flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-50'
+                    >
+                      <MessageCircle size={15} />
+                      แชทลูกค้า
+                    </Button>
+                  ) : null}
+                </div>
+
+                <div className='flex flex-1 flex-col px-5 pt-4 pb-5 space-y-5'>
+                  {/* Title */}
+                  <h1 className='text-lg font-bold text-slate-900 leading-snug'>{rfqTitle || '—'}</h1>
+                  <div className='flex flex-wrap items-center gap-3'>
                     {deadlineIso ? <DeadlineBadge deadlineIso={deadlineIso} /> : null}
                     <span className='text-xs text-slate-400'>#{id}</span>
                   </div>
-                </div>
-
-                <div className='px-5 pt-4 pb-5 space-y-5'>
-                  {/* Title */}
-                  <h1 className='text-lg font-bold text-slate-900 leading-snug'>{rfqTitle || '—'}</h1>
 
                   {/* Highlight metric boxes */}
                   <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
@@ -641,28 +620,30 @@ export function FactoryRfqDetailPage() {
                 </div>
               </section>
 
-              {/* Quotation history */}
-              {myQuote && quoteIdOf(myQuote) ? (
-                <QuotationHistoryPanel quotationId={quoteIdOf(myQuote)} />
-              ) : null}
-            </div>
-
-            {/* ══════════════════════════════════════
-                RIGHT COLUMN  (50% sticky)
-            ══════════════════════════════════════ */}
-            <div className='min-w-0 space-y-4 lg:sticky lg:top-20 lg:self-start'>
-
               {/* Quote form card */}
-              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
+              <section className='flex min-h-0 flex-col rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
                 <div className='flex items-center justify-between gap-2'>
                   <p className='text-xs font-semibold uppercase tracking-wide text-gray-400'>
                     {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ดูใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                   </p>
+                  <div className='w-full max-w-[6rem] shrink-0 sm:max-w-[8rem]'>
+                    {!dismissBusy ? (
+                      <DismissRfqButton
+                        rfqId={Number(id)}
+                        rfqCode={`#${id}`}
+                        canDismiss={canDismiss}
+                        disabledReason={dismissDisabledReason}
+                        onDismiss={dismissRfq}
+                        onUndismiss={undismissRfq}
+                      />
+                    ) : null}
+                  </div>
                 </div>
                 <h2 className='font-bold text-brand-navy text-sm'>
                   {myQuote && canEdit ? 'แก้ไขใบเสนอราคา' : myQuote ? 'ใบเสนอราคาของคุณ' : 'กรอกใบเสนอราคา'}
                 </h2>
 
+                <div className='flex min-h-0 flex-1 flex-col gap-3'>
                 {fid != null ? (
                   <QuotationCreateForm
                     key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
@@ -730,33 +711,30 @@ export function FactoryRfqDetailPage() {
                     ถอนใบเสนอราคา
                   </Button>
                 ) : null}
-
-                {!dismissBusy ? (
-                  <DismissRfqButton
-                    rfqId={Number(id)}
-                    rfqCode={`#${id}`}
-                    canDismiss={canDismiss}
-                    disabledReason={dismissDisabledReason}
-                    onDismiss={dismissRfq}
-                    onUndismiss={undismissRfq}
-                  />
-                ) : null}
+                </div>
               </section>
-
-              {/* Send QT in chat */}
-              {customerId > 0 && fid != null ? (
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  disabled={chatBusy}
-                  onClick={() => void sendQuoteMessageToCustomer()}
-                  className='w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)]'
-                >
-                  <MessageCircle size={16} />
-                  ส่งใบเสนอราคาในแชท (QT)
-                </Button>
-              ) : null}
             </div>
+
+            {/* Send QT in chat */}
+            {customerId > 0 && fid != null ? (
+              <Button
+                variant='unstyled'
+                type='button'
+                disabled={chatBusy}
+                onClick={() => void sendQuoteMessageToCustomer()}
+                className='w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)] lg:max-w-[calc(50%-0.625rem)] lg:ml-auto'
+              >
+                <MessageCircle size={16} />
+                ส่งใบเสนอราคาในแชท (QT)
+              </Button>
+            ) : null}
+
+            {/* Quotation history */}
+            {myQuote && quoteIdOf(myQuote) ? (
+              <div className='min-w-0 lg:max-w-[calc(50%-0.625rem)]'>
+                <QuotationHistoryPanel quotationId={quoteIdOf(myQuote)} />
+              </div>
+            ) : null}
 
           </div>
         ) : null}
