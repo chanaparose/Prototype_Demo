@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Path, type PathValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate, useSearchParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
@@ -81,8 +81,10 @@ export function FactoryShowcaseNewPage() {
       ? (subsResult.byCategory.get(selectedCategoryId) ?? [])
       : [];
 
-  const setField = <K extends keyof ShowcaseFormValues>(key: K, value: ShowcaseFormValues[K]) =>
-    setValue(key, value);
+  const setField = <K extends Path<ShowcaseFormValues>>(
+    key: K,
+    value: PathValue<ShowcaseFormValues, K>,
+  ) => setValue(key, value);
 
   const onPickImage = async (file: File | null) => {
     if (!file || imageUrls.length >= 5) return;
@@ -158,7 +160,7 @@ export function FactoryShowcaseNewPage() {
 
   return (
     <div className='max-w-6xl mx-auto pb-28'>
-      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3'>
+      <div className='sticky top-0 z-10 flex h-14 items-center justify-between gap-3 border-b border-gray-100 bg-white/95 px-4 backdrop-blur'>
         <Button
           variant='unstyled'
           type='button'
@@ -171,15 +173,30 @@ export function FactoryShowcaseNewPage() {
 
         <ShowcaseTypeBadge type={contentType} />
 
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => void onSubmit('DR')}
-          disabled={saving}
-          className='text-sm text-gray-600 font-medium hover:text-gray-900 disabled:opacity-40 transition-colors whitespace-nowrap'
-        >
-          บันทึกร่าง
-        </Button>
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => void onSubmit('DR')}
+            disabled={saving}
+            className='rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-50'
+          >
+            {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
+          </Button>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => void onSubmit('AC')}
+            disabled={saving || !canPublish}
+            className='rounded-lg px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-50'
+            style={{
+              background:
+                'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+            }}
+          >
+            {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
+          </Button>
+        </div>
       </div>
 
       <div className='px-4 py-5'>
@@ -356,75 +373,7 @@ export function FactoryShowcaseNewPage() {
             />
           </section>
 
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-            <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm'>
-              <p className='text-sm font-semibold text-gray-900'>การเผยแพร่</p>
-              <p className='mt-1 text-xs text-gray-500'>
-                {contentType === 'ID'
-                  ? 'กรอกชื่อและเนื้อหาให้ครบก่อนเผยแพร่'
-                  : 'กรอกชื่อและอัปโหลดภาพปกก่อนเผยแพร่'}
-              </p>
-              <div className='mt-4 space-y-2'>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => void onSubmit('DR')}
-                  disabled={saving}
-                  className='w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50 hover:bg-gray-50 transition-colors'
-                >
-                  {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
-                </Button>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => void onSubmit('AC')}
-                  disabled={saving || !canPublish}
-                  className='w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm transition-all'
-                  style={{
-                    background:
-                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                  }}
-                >
-                  {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
-                </Button>
-              </div>
-            </div>
-
-            <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm'>
-              <p className='text-xs font-semibold text-gray-400 uppercase tracking-wide'>
-                สถานะฟอร์ม
-              </p>
-              <div className='mt-3 space-y-2 text-sm text-gray-700'>
-                <div className='flex items-center justify-between'>
-                  <span>ชื่อรายการ</span>
-                  <span
-                    className={
-                      form.title.trim()
-                        ? 'text-emerald-600 font-semibold'
-                        : 'text-amber-600 font-semibold'
-                    }
-                  >
-                    {form.title.trim() ? 'พร้อม' : 'ยังไม่ครบ'}
-                  </span>
-                </div>
-                {contentType !== 'ID' ? (
-                  <div className='flex items-center justify-between'>
-                    <span>ภาพปก</span>
-                    <span
-                      className={
-                        imageUrls.length > 0
-                          ? 'text-emerald-600 font-semibold'
-                          : 'text-amber-600 font-semibold'
-                      }
-                    >
-                      {imageUrls.length > 0 ? `${imageUrls.length}/5` : 'ยังไม่เพิ่ม'}
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
+           
           {contentType === 'ID' && myFactoryId != null ? (
             <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
               <Label className='block text-sm font-semibold text-brand-navy'>
@@ -446,30 +395,6 @@ export function FactoryShowcaseNewPage() {
         </div>
       </div>
 
-      <div className='fixed xl:hidden bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur border-t border-gray-100 px-4 py-3 flex gap-3'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => void onSubmit('DR')}
-          disabled={saving}
-          className='flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 disabled:opacity-50 hover:bg-gray-50 transition-colors'
-        >
-          {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
-        </Button>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => void onSubmit('AC')}
-          disabled={saving || !canPublish}
-          className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm active:scale-95 transition-all'
-          style={{
-            background:
-              'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-          }}
-        >
-          {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
-        </Button>
-      </div>
     </div>
   );
 }
