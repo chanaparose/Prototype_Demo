@@ -123,10 +123,10 @@ function boqStatusPill(row: RfqCardModel): StatusPill {
 
 function SortableHead({ children }: { children: React.ReactNode }) {
   return (
-    <TableHead>
-      <span className='inline-flex items-center gap-1.5'>
+    <TableHead className='py-2 text-[10px]'>
+      <span className='inline-flex items-center gap-1'>
         {children}
-        <ArrowUpDown className='h-3 w-3 text-slate-400' aria-hidden />
+        <ArrowUpDown className='h-2.5 w-2.5 text-slate-400' aria-hidden />
       </span>
     </TableHead>
   );
@@ -157,8 +157,8 @@ function RfqTablePagination({
   if (total === 0) return null;
 
   return (
-    <div className='flex flex-col gap-3 border-t border-slate-100 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between'>
-      <p className='text-sm text-slate-600'>
+    <div className='flex flex-col gap-2 border-t border-slate-100 bg-white px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between'>
+      <p className='text-xs text-slate-600'>
         แสดง <span className='font-semibold text-slate-900'>{start}</span> ถึง{' '}
         <span className='font-semibold text-slate-900'>{end}</span> จาก{' '}
         <span className='font-semibold text-slate-900'>{total}</span> รายการ
@@ -169,10 +169,10 @@ function RfqTablePagination({
           type='button'
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className='flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
           aria-label='หน้าก่อน'
         >
-          <ChevronLeft className='h-4 w-4' />
+          <ChevronLeft className='h-3.5 w-3.5' />
         </Button>
         {pageNumbers.map((p) => (
           <Button
@@ -180,7 +180,7 @@ function RfqTablePagination({
             variant='unstyled'
             type='button'
             onClick={() => onPageChange(p)}
-            className={`flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-sm font-semibold transition-colors ${
+            className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-xs font-semibold transition-colors ${
               p === page
                 ? 'bg-indigo-600 text-white'
                 : 'text-slate-600 hover:bg-slate-50'
@@ -195,10 +195,10 @@ function RfqTablePagination({
           type='button'
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          className='flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
           aria-label='หน้าถัดไป'
         >
-          <ChevronRight className='h-4 w-4' />
+          <ChevronRight className='h-3.5 w-3.5' />
         </Button>
       </div>
     </div>
@@ -218,13 +218,13 @@ function RfqTableRowLink({
 
   return (
     <TableRow>
-      <TableCell className='min-w-[220px]'>
+      <TableCell className='min-w-[220px] py-2.5 text-xs'>
         <Link
           to={`/factory/rfqs/${row.id}`}
           state={{ from }}
-          className='flex items-center gap-3 min-w-0 group'
+          className='flex items-center gap-2.5 min-w-0 group'
         >
-          <div className='h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center'>
+          <div className='flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100'>
             {row.thumbUrl ? (
               <Image
                 src={row.thumbUrl}
@@ -233,17 +233,17 @@ function RfqTableRowLink({
                 loading='lazy'
               />
             ) : (
-              <ImageIcon className='text-slate-300' size={20} aria-hidden />
+              <ImageIcon className='text-slate-300' size={16} aria-hidden />
             )}
           </div>
           <div className='min-w-0'>
-            <p className='truncate text-sm font-semibold text-slate-900 group-hover:text-indigo-700'>
+            <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-indigo-700'>
               {row.title}
             </p>
-            <div className='mt-0.5 flex flex-wrap items-center gap-1.5'>
-              <span className='text-[11px] text-slate-400'>#{row.id}</span>
+            <div className='mt-0.5 flex flex-wrap items-center gap-1'>
+              <span className='text-[10px] text-slate-400'>#{row.id}</span>
               {row.isTargeted ? (
-                <span className='inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700'>
+                <span className='inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1 py-0.5 text-[9px] font-semibold text-amber-700'>
                   <Crosshair size={9} />
                   ส่งตรง
                 </span>
@@ -252,26 +252,26 @@ function RfqTableRowLink({
           </div>
         </Link>
       </TableCell>
-      <TableCell className='min-w-[140px] text-sm text-slate-700'>{categoryLabel(row)}</TableCell>
-      <TableCell className='min-w-[100px] text-sm text-slate-700'>
+      <TableCell className='min-w-[140px] py-2.5 text-xs text-slate-700'>{categoryLabel(row)}</TableCell>
+      <TableCell className='min-w-[100px] py-2.5 text-xs text-slate-700'>
         {requestKindLabel(row.requestKind)}
       </TableCell>
-      <TableCell className='min-w-[120px] text-sm font-medium text-slate-900 tabular-nums'>
+      <TableCell className='min-w-[120px] py-2.5 text-xs font-medium text-slate-900 tabular-nums'>
         {priceLabel(row)}
       </TableCell>
-      <TableCell className='min-w-[120px]'>
+      <TableCell className='min-w-[120px] py-2.5'>
         <span
-          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${pill.className}`}
+          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${pill.className}`}
         >
           {pill.label}
         </span>
         {variant === 'boq' && row.myQuotedPrice != null ? (
-          <p className='mt-1 text-[11px] text-slate-500 tabular-nums'>
+          <p className='mt-0.5 text-[10px] text-slate-500 tabular-nums'>
             BOQ {formatBaht(row.myQuotedPrice)}/ชิ้น
           </p>
         ) : null}
       </TableCell>
-      <TableCell className='min-w-[110px] text-sm text-slate-600 whitespace-nowrap'>
+      <TableCell className='min-w-[110px] py-2.5 text-xs text-slate-600 whitespace-nowrap'>
         {formatCreatedAt(row.createdAtMs)}
       </TableCell>
     </TableRow>

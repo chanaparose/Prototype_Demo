@@ -56,23 +56,23 @@ function FilterDropdown({
         variant='unstyled'
         type='button'
         onClick={onToggle}
-        className='w-full h-[42px] rounded-xl border border-slate-200 bg-white px-3.5 text-left hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100'
+        className='h-9 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-left hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100'
       >
-        <div className='flex items-center justify-between gap-2'>
-          <span className='text-[11px] text-slate-500 shrink-0'>{label}</span>
-          <span className='flex items-center gap-1.5 min-w-0'>
-            <span className='text-xs font-semibold text-slate-700 truncate'>
+        <div className='flex items-center justify-between gap-1.5'>
+          <span className='shrink-0 text-[10px] text-slate-500'>{label}</span>
+          <span className='flex min-w-0 items-center gap-1'>
+            <span className='truncate text-[11px] font-semibold text-slate-700'>
               {selected?.label ?? '-'}
             </span>
             <ChevronDown
-              size={10}
-              className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              size={9}
+              className={`shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
             />
           </span>
         </div>
       </Button>
       {isOpen ? (
-        <div className='absolute left-0 right-0 top-[calc(100%+6px)] z-20 rounded-xl border border-slate-200 bg-white shadow-lg p-1 max-h-64 overflow-auto'>
+        <div className='absolute left-0 right-0 top-[calc(100%+4px)] z-20 max-h-52 overflow-auto rounded-lg border border-slate-200 bg-white p-0.5 shadow-lg'>
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
@@ -84,15 +84,15 @@ function FilterDropdown({
                   onChange(opt.value);
                   onClose();
                 }}
-                className='w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-slate-50 transition-colors'
+                className='flex w-full items-center justify-between gap-1.5 rounded-md px-2 py-1 text-left transition-colors hover:bg-slate-50'
                 style={{ background: isSelected ? '#EEF2FF' : 'transparent' }}
               >
                 <span
-                  className={`text-[12px] ${isSelected ? 'font-semibold text-indigo-700' : 'text-slate-700'}`}
+                  className={`text-[11px] ${isSelected ? 'font-semibold text-indigo-700' : 'text-slate-700'}`}
                 >
                   {opt.label}
                 </span>
-                {isSelected ? <Check size={13} className='text-indigo-600' /> : null}
+                {isSelected ? <Check size={11} className='shrink-0 text-indigo-600' /> : null}
               </Button>
             );
           })}
@@ -557,7 +557,7 @@ export function FactoryRfqBoardPage() {
                       { value: '', label: 'หมวดหมู่ทั้งหมด' },
                       ...categoryOptions.map(([cid, name]) => ({ value: String(cid), label: name })),
                     ]}
-                    className='shrink-0 min-w-[11rem]'
+                    className='shrink-0 min-w-[9rem]'
                   />
                   <FilterDropdown
                     label='วิธีจัดส่ง'
@@ -567,7 +567,7 @@ export function FactoryRfqBoardPage() {
                       { value: '', label: 'วิธีส่งทั้งหมด' },
                       ...shipOptions.map((s) => ({ value: String(s.id), label: s.name })),
                     ]}
-                    className='shrink-0 min-w-[11rem]'
+                    className='shrink-0 min-w-[9rem]'
                   />
                   {hasFilters ? (
                     <Button
