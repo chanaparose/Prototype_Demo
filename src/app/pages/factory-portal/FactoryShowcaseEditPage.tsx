@@ -499,35 +499,50 @@ export function FactoryShowcaseEditPage() {
 
   return (
     <form
-      className='max-w-6xl mx-auto w-full min-w-0 pb-28'
+      className='pb-28'
       style={{ backgroundColor: 'var(--brand-page)' }}
     >
-      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-4 h-14 flex items-center justify-between gap-3'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={onBack}
-          className='flex items-center gap-1.5 text-sm font-medium transition-colors'
-          style={{ color: 'var(--brand-indigo)' }}
-        >
-          <ChevronLeft size={18} /> กลับ
-        </Button>
+      {/* Full-width sticky header — escapes FactoryPortalLayout padding */}
+      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
+        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={onBack}
+            className='flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+          >
+            <ChevronLeft size={18} />
+            กลับ
+          </Button>
+ 
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => void save('DR')}
+              disabled={saving}
+              className='rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-50'
+            >
+              {saving ? 'กำลังบันทึก...' : 'บันทึกร่าง'}
+            </Button>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => void save('AC')}
+              disabled={saving || !canPublish}
+              className='rounded-lg px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all disabled:opacity-50'
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
+              }}
+            >
+              {saving ? 'กำลังเผยแพร่...' : 'เผยแพร่'}
+            </Button>
+          </div>
+        </div>
+      </header>
 
-        <ShowcaseTypeBadge type={contentType} />
-
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => void save('DR')}
-          disabled={saving}
-          className='text-sm font-semibold disabled:opacity-40 transition-colors whitespace-nowrap'
-          style={{ color: 'var(--brand-indigo)' }}
-        >
-          บันทึกร่าง
-        </Button>
-      </div>
-
-      <div className='px-4 py-5'>
+      <div className='max-w-6xl mx-auto px-0 py-5'>
         <ImageCropModal
           open={cropFile != null}
           file={cropFile}
@@ -554,135 +569,142 @@ export function FactoryShowcaseEditPage() {
         />
         {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
-        <div className='space-y-5 min-w-0'>
-          <div className='flex flex-col xl:flex-row xl:gap-5 xl:items-start gap-5'>
-            {contentType !== 'ID' ? (
+        <div className='grid auto-rows-min gap-5 lg:grid-cols-2'>
+          {/* Image — col 1 */}
+          {contentType !== 'ID' ? (
+            <div>
               <ShowcaseImageManager
                 imageUrls={imageUrls}
                 uploading={uploading}
                 onPickImage={(file) => void onPickImage(file)}
                 onRemoveImage={(url) => void removeImage(url)}
               />
-      ) : null}
-
-            <div className='flex-1 min-w-0 space-y-5'>
-              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
-                <ShowcaseTypeSelector value={contentType} onChange={() => undefined} disabled />
-                <Input
-                  className='w-full text-2xl font-bold text-gray-900 placeholder-gray-300 border-0 bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/35 rounded-lg transition-shadow'
-                  placeholder='ชื่อ *'
-            {...form.register('title', { required: true })}
-          />
-              </section>
-
-              <ShowcaseCategoryFields
-                contentType={contentType}
-                idScope={idScope}
-                pmScope={pmScope}
-                onIdScopeChange={(scope) => {
-                  setIdScope(scope);
-                  form.setValue('category_id', null, { shouldDirty: true });
-                  form.setValue('sub_category_id', null, { shouldDirty: true });
-                }}
-                onPmScopeChange={(scope) => {
-                  setPmScope(scope);
-                  form.setValue('category_id', null, { shouldDirty: true });
-                  form.setValue('sub_category_id', null, { shouldDirty: true });
-                }}
-                categoryValue={selectedCategoryId}
-                subCategoryValue={form.watch('sub_category_id')}
-                onCategoryChange={(value) => {
-                  form.setValue('category_id', value, { shouldDirty: true });
-                  form.setValue('sub_category_id', null, { shouldDirty: true });
-                }}
-                onSubCategoryChange={(value) =>
-                  form.setValue('sub_category_id', value, { shouldDirty: true })
-                }
-                categoriesQ={categoriesQ}
-                subOptions={subOptions}
-                subCategoriesLoading={subsResult.isLoading}
-                statusValue={form.watch('status')}
-                onStatusChange={(value: ShowcaseStatus) =>
-                  form.setValue('status', value, { shouldDirty: true })
-                }
-              />
-
-              <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
-                {contentType !== 'ID' && (
-                  <div className='grid gap-3 sm:grid-cols-3'>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500 mb-1.5 block'>MOQ</span>
-                      <Input
-                        type='number'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
-                        {...form.register('moq', {
-                          setValueAs: (v) => (v === '' ? null : Number(v)),
-                        })}
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500 mb-1.5 block'>Lead time (วัน)</span>
-                      <Input
-                        type='number'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
-                        {...form.register('lead_time_days', {
-                          setValueAs: (v) => (v === '' ? null : Number(v)),
-                        })}
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500 mb-1.5 block'>ราคา (฿)</span>
-                      <Input
-                        type='number'
-                        step='0.01'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
-                        {...form.register('base_price', {
-                          setValueAs: (v) => (v === '' ? null : Number(v)),
-                        })}
-                      />
-                    </Label>
-                  </div>
-                )}
-
-                {contentType === 'PM' && (
-                  <div className='grid gap-3 sm:grid-cols-3'>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500 mb-1.5 block'>ราคาโปรโมชัน (฿)</span>
-                      <Input
-                        type='number'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
-                        {...form.register('promo_price', {
-                          setValueAs: (v) => (v === '' ? null : Number(v)),
-                        })}
-                        placeholder='0.00'
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500 mb-1.5 block'>วันที่เริ่มโปร</span>
-                      <Input
-                        type='date'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
-                        {...form.register('start_date')}
-                      />
-                    </Label>
-                    <Label className='block'>
-                      <span className='text-xs text-gray-500 mb-1.5 block'>วันที่สิ้นสุดโปร</span>
-                      <Input
-                        type='date'
-                        className='w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-brand-indigo focus:ring-1 focus:ring-indigo- outline-none'
-                        {...form.register('end_date')}
-                      />
-                    </Label>
-        </div>
-                )}
-      </section>
             </div>
-          </div>
+          ) : null}
 
-          <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
-            <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
-              รายละเอียด
-            </p>
+          {/* Merged form fields — col 2 (or full-width for ID) */}
+          <section
+            className={`rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-5 ${
+              contentType !== 'ID' ? 'lg:col-span-1' : 'lg:col-span-2'
+            }`}
+          >
+            <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+              <p className='text-sm font-bold text-gray-800'>รายละเอียดสินค้า</p>
+              <ShowcaseTypeBadge type={contentType} />
+            </div>
+
+            <Label className='block'>
+              <span className='text-xs text-gray-500 font-medium'>ชื่อ *</span>
+              <Input
+                className='mt-1 w-full text-base font-semibold text-gray-900 placeholder-gray-300 rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
+                placeholder='ชื่อสินค้า / ไอเดีย'
+                {...form.register('title', { required: true })}
+              />
+            </Label>
+
+            <ShowcaseCategoryFields
+              contentType={contentType}
+              idScope={idScope}
+              pmScope={pmScope}
+              onIdScopeChange={(scope) => {
+                setIdScope(scope);
+                form.setValue('category_id', null, { shouldDirty: true });
+                form.setValue('sub_category_id', null, { shouldDirty: true });
+              }}
+              onPmScopeChange={(scope) => {
+                setPmScope(scope);
+                form.setValue('category_id', null, { shouldDirty: true });
+                form.setValue('sub_category_id', null, { shouldDirty: true });
+              }}
+              categoryValue={selectedCategoryId}
+              subCategoryValue={form.watch('sub_category_id')}
+              onCategoryChange={(value) => {
+                form.setValue('category_id', value, { shouldDirty: true });
+                form.setValue('sub_category_id', null, { shouldDirty: true });
+              }}
+              onSubCategoryChange={(value) =>
+                form.setValue('sub_category_id', value, { shouldDirty: true })
+              }
+              categoriesQ={categoriesQ}
+              subOptions={subOptions}
+              subCategoriesLoading={subsResult.isLoading}
+              statusValue={form.watch('status')}
+              onStatusChange={(value: ShowcaseStatus) =>
+                form.setValue('status', value, { shouldDirty: true })
+              }
+            />
+
+            {contentType !== 'ID' && (
+              <div className='grid gap-3 sm:grid-cols-3 pt-3 border-t border-gray-100'>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
+                  <Input
+                    type='number'
+                    step='0.01'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    {...form.register('base_price', {
+                      setValueAs: (v) => (v === '' ? null : Number(v)),
+                    })}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
+                  <Input
+                    type='number'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    {...form.register('moq', {
+                      setValueAs: (v) => (v === '' ? null : Number(v)),
+                    })}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>Lead time (วัน)</span>
+                  <Input
+                    type='number'
+                    className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+                    {...form.register('lead_time_days', {
+                      setValueAs: (v) => (v === '' ? null : Number(v)),
+                    })}
+                  />
+                </Label>
+              </div>
+            )}
+
+            {contentType === 'PM' && (
+              <div className='grid gap-3 sm:grid-cols-3 pt-3 border-t border-dashed border-purple-100'>
+                <Label className='block'>
+                  <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
+                  <Input
+                    type='number'
+                    placeholder='0.00'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    {...form.register('promo_price', {
+                      setValueAs: (v) => (v === '' ? null : Number(v)),
+                    })}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs font-medium text-indigo-600'>วันที่เริ่มโปร *</span>
+                  <Input
+                    type='date'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    {...form.register('start_date')}
+                  />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs font-medium text-indigo-600'>วันที่สิ้นสุดโปร *</span>
+                  <Input
+                    type='date'
+                    className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
+                    {...form.register('end_date')}
+                  />
+                </Label>
+              </div>
+            )}
+          </section>
+
+          {/* Markdown — full width */}
+          <section className='lg:col-span-2'>
             <Controller
               control={form.control}
               name='content'
@@ -698,73 +720,7 @@ export function FactoryShowcaseEditPage() {
             />
           </section>
 
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
-            <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm'>
-              <p className='text-sm font-semibold text-gray-900'>การเผยแพร่</p>
-              <p className='mt-1 text-xs text-gray-500'>
-                อัปเดตข้อมูลแล้วกดเผยแพร่เพื่อให้หน้าลูกค้าเห็นข้อมูลล่าสุด
-              </p>
-              <div className='mt-4 space-y-2'>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => void save('DR')}
-                  disabled={saving}
-                  className='w-full py-2.5 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors'
-                  style={{ borderColor: 'var(--brand-indigo)', color: 'var(--brand-indigo)' }}
-                >
-                  บันทึกร่าง
-                </Button>
-                <Button
-                  variant='unstyled'
-                  type='button'
-                  onClick={() => void save('AC')}
-                  disabled={saving || !canPublish}
-                  className='w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
-                  style={{
-                    background:
-                      'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-                  }}
-                >
-                  เผยแพร่
-                </Button>
-              </div>
-            </div>
-
-            <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm'>
-              <p className='text-xs font-semibold text-gray-400 uppercase tracking-wide'>
-                สถานะฟอร์ม
-              </p>
-              <div className='mt-3 space-y-2 text-sm text-gray-700'>
-                <div className='flex items-center justify-between'>
-                  <span>ชื่อรายการ</span>
-                  <span
-                    className={
-                      (titleValue ?? '').trim()
-                        ? 'text-emerald-600 font-semibold'
-                        : 'text-amber-600 font-semibold'
-                    }
-                  >
-                    {(titleValue ?? '').trim() ? 'พร้อม' : 'ยังไม่ครบ'}
-                  </span>
-                </div>
-                {contentType !== 'ID' ? (
-                  <div className='flex items-center justify-between'>
-                    <span>ภาพปก</span>
-                    <span
-                      className={
-                        imageUrls.length > 0
-                          ? 'text-emerald-600 font-semibold'
-                          : 'text-amber-600 font-semibold'
-                      }
-                    >
-                      {imageUrls.length > 0 ? `${imageUrls.length}/5` : 'ยังไม่เพิ่ม'}
-                    </span>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
+           
 
           {contentType === 'ID' ? (
             <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
@@ -786,32 +742,7 @@ export function FactoryShowcaseEditPage() {
           ) : null}
         </div>
           </div>
-
-      <div className='sticky xl:hidden bottom-0 z-10 bg-white border-t border-gray-100 px-4 py-3 flex gap-3'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => void save('DR')}
-          disabled={saving}
-          className='flex-1 py-3 rounded-xl border text-sm font-semibold disabled:opacity-50 transition-colors'
-          style={{ borderColor: 'var(--brand-indigo)', color: 'var(--brand-indigo)' }}
-        >
-          บันทึกร่าง
-        </Button>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => void save('AC')}
-          disabled={saving || !canPublish}
-          className='flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm'
-          style={{
-            background:
-              'linear-gradient(135deg, var(--brand-indigo) 0%, var(--brand-indigo-dark) 100%)',
-          }}
-        >
-          เผยแพร่
-        </Button>
-      </div>
+ 
     </form>
   );
 }
