@@ -82,9 +82,11 @@ function InfoCard({
 }) {
   return (
     <div className={`rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden ${className}`}>
-      {title != null && (
+      {(title != null || action != null) && (
         <div className='flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100'>
-          <span className='text-base font-bold text-gray-900'>{title}</span>
+          {title != null
+            ? <span className='text-base font-bold text-gray-900'>{title}</span>
+            : <span />}
           {action}
         </div>
       )}
