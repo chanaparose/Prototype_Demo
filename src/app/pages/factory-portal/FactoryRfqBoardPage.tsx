@@ -718,11 +718,12 @@ export function FactoryRfqBoardPage() {
                   ) : null}
                 </div>
               ) : (
-                <div className='mt-3'>
+                <div className='-mx-3 sm:-mx-4 mt-3 border-t border-slate-100'>
                   <RfqTable
                     rows={pipeline}
                     variant={statusTab === 'quoted' ? 'boq' : 'board'}
                     pageSize={7}
+                    seamless
                   />
                 </div>
               )}

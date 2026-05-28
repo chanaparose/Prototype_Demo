@@ -123,10 +123,10 @@ function boqStatusPill(row: RfqCardModel): StatusPill {
 
 function SortableHead({ children }: { children: React.ReactNode }) {
   return (
-    <TableHead className='normal-case tracking-normal text-[13px] font-medium text-slate-500'>
+    <TableHead>
       <span className='inline-flex items-center gap-1.5'>
         {children}
-        <ArrowUpDown className='h-3.5 w-3.5 text-slate-400' aria-hidden />
+        <ArrowUpDown className='h-3 w-3 text-slate-400' aria-hidden />
       </span>
     </TableHead>
   );
@@ -157,7 +157,7 @@ function RfqTablePagination({
   if (total === 0) return null;
 
   return (
-    <div className='flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between'>
+    <div className='flex flex-col gap-3 border-t border-slate-100 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between'>
       <p className='text-sm text-slate-600'>
         แสดง <span className='font-semibold text-slate-900'>{start}</span> ถึง{' '}
         <span className='font-semibold text-slate-900'>{end}</span> จาก{' '}
@@ -217,7 +217,7 @@ function RfqTableRowLink({
   const pill = variant === 'boq' ? boqStatusPill(row) : boardStatusPill(row);
 
   return (
-    <TableRow className='border-b border-slate-100 transition-colors last:border-b-0 hover:bg-slate-50/80'>
+    <TableRow>
       <TableCell className='min-w-[220px]'>
         <Link
           to={`/factory/rfqs/${row.id}`}
@@ -285,10 +285,13 @@ export function RfqTable({
   rows,
   variant = 'board',
   pageSize = 7,
+  seamless = false,
 }: {
   rows: RfqTableRow[];
   variant?: 'board' | 'boq';
   pageSize?: number;
+  /** When true, removes the outer card border — use inside an existing card container */
+  seamless?: boolean;
 }) {
   const location = useLocation();
   const from = `${location.pathname}${location.search}`;
@@ -310,12 +313,12 @@ export function RfqTable({
     return rows.slice(start, start + pageSize);
   }, [rows, page, pageSize]);
 
-  return (
-    <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white'>
+  const inner = (
+    <>
       <div className='overflow-x-auto'>
         <Table>
           <TableHeader>
-            <TableRow className='border-b border-slate-100 transition-colors last:border-b-0 hover:bg-transparent'>
+            <TableRow className='hover:bg-transparent dark:hover:bg-transparent'>
               <SortableHead>RFQ</SortableHead>
               <SortableHead>หมวดหมู่</SortableHead>
               <SortableHead>ประเภท</SortableHead>
@@ -338,6 +341,14 @@ export function RfqTable({
         pageSize={pageSize}
         onPageChange={setPage}
       />
-    </div>
+    </>
+  );
+
+  if (seamless) {
+    return <div className='overflow-hidden'>{inner}</div>;
+  }
+
+  return (
+    <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white'>{inner}</div>
   );
 }
