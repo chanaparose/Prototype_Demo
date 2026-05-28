@@ -233,10 +233,45 @@ export function FactoryShowcaseNewPage() {
             contentType === 'ID' ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
           }`}
         >
-          {/* Col 2: Form fields */}
+          {/* Col: Image manager (PD/MT, ซ้าย) or RelatedShowcasePicker (ID, ขวา) */}
+          <div
+            className={
+              contentType === 'ID'
+                ? 'lg:order-2 lg:col-span-1 lg:h-full'
+                : ''
+            }
+          >
+            {contentType === 'ID' && myFactoryId != null ? (
+              <section className='h-full rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-3'>
+                <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
+                  <p className='text-sm font-bold text-gray-800'>อ้างอิงสินค้า / โปรโมชัน</p>
+                </div>
+                <p className='text-xs text-gray-500'>
+                  เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
+                </p>
+                <RelatedShowcasePicker
+                  factoryId={myFactoryId}
+                  value={selectedShowcaseIds}
+                  onChange={setSelectedShowcaseIds}
+                  max={5}
+                  disabled={saving}
+                  errorText={linkedShowcaseError}
+                />
+              </section>
+            ) : (
+              <ShowcaseImageManager
+                imageUrls={imageUrls}
+                uploading={uploading}
+                onPickImage={(file) => void onPickImage(file)}
+                onRemoveImage={(_, index) => removeImage(index)}
+              />
+            )}
+          </div>
+
+          {/* Col: รายละเอียดสินค้า (ID → ซ้าย, PD/MT → ขวา) */}
           <section
             className={`rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-5 ${
-              contentType === 'ID' ? 'lg:col-span-2' : ''
+              contentType === 'ID' ? 'lg:order-1 lg:col-span-2' : ''
             }`}
           >
             <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
@@ -283,35 +318,6 @@ export function FactoryShowcaseNewPage() {
               subCategoriesLoading={subsResult.isLoading}
             />
           </section>
-
-          {/* Col 1: Image manager (PD/MT) or RelatedShowcasePicker (ID) */}
-          <div className={contentType === 'ID' ? 'lg:col-span-1 lg:h-full' : ''}>
-            {contentType === 'ID' && myFactoryId != null ? (
-              <section className='h-full rounded-2xl bg-white border border-gray-100 shadow-sm p-5 space-y-3'>
-                <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
-                  <p className='text-sm font-bold text-gray-800'>อ้างอิงสินค้า / โปรโมชัน</p>
-                </div>
-                <p className='text-xs text-gray-500'>
-                  เลือกสินค้าหรือโปรโมชันของโรงงานคุณที่เกี่ยวข้องกับไอเดียนี้ (สูงสุด 5 รายการ)
-                </p>
-                <RelatedShowcasePicker
-                  factoryId={myFactoryId}
-                  value={selectedShowcaseIds}
-                  onChange={setSelectedShowcaseIds}
-                  max={5}
-                  disabled={saving}
-                  errorText={linkedShowcaseError}
-                />
-              </section>
-            ) : (
-              <ShowcaseImageManager
-                imageUrls={imageUrls}
-                uploading={uploading}
-                onPickImage={(file) => void onPickImage(file)}
-                onRemoveImage={(_, index) => removeImage(index)}
-              />
-            )}
-          </div>
 
           {/* ราคา / MOQ / Lead time — separate card, full width (non-ID only) */}
           {contentType !== 'ID' ? (
