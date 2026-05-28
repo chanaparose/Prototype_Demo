@@ -37,6 +37,7 @@ import {
   AdminCustomerDetailPage,
 } from '@/pages/admin';
 import { AuthGuard } from '@/components/AuthGuard';
+import { RoleRedirectIndex } from '@/components/RoleRedirectIndex';
 import { PublicDataOutlet } from '@/components/PublicDataOutlet';
 import { FactoryRoleGuard } from '@/components/factory/FactoryRoleGuard';
 import { FactoryVerifiedGuard } from '@/components/factory/FactoryVerifiedGuard';
@@ -75,7 +76,7 @@ export const router = createBrowserRouter([
       {
         Component: Layout,
         children: [
-          { index: true, Component: Explore },
+          { index: true, Component: RoleRedirectIndex },
           { path: 'product-detail', Component: ProductDetail },
           { path: 'promotion-detail', Component: PromotionDetail },
           { path: 'idea-detail', Component: IdeaDetail },
