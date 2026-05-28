@@ -415,7 +415,7 @@ export function FactoryRfqDetailPage() {
   }
 
   return (
-    <div className='min-h-screen pb-24' style={{ backgroundColor: 'var(--brand-page)' }}>
+    <div className='min-h-screen pb-24'>
       {/* ── Sticky Header ── */}
       <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
         <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
@@ -526,16 +526,16 @@ export function FactoryRfqDetailPage() {
                   <div className='rounded-xl border border-slate-100 bg-slate-50/60 divide-y divide-slate-100'>
                     <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                       <span className='text-xs text-slate-500 shrink-0'>หมวดหมู่</span>
-                      <span className='text-sm font-medium text-right text-slate-900'>{breadcrumb}</span>
+                      <span className='text-xs font-medium text-right text-slate-900'>{breadcrumb}</span>
                     </div>
                     <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                       <span className='text-xs text-slate-500 shrink-0'>วัสดุ / เกรด</span>
-                      <span className='text-sm font-medium text-right text-slate-900'>{String(rfqBody.material_grade ?? '—')}</span>
+                      <span className='text-xs font-medium text-right text-slate-900'>{String(rfqBody.material_grade ?? '—')}</span>
                     </div>
                     {rfqBody.target_price != null ? (
                       <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                         <span className='text-xs text-slate-500 shrink-0'>งบประมาณรวม</span>
-                        <span className='text-sm font-medium text-right text-slate-900'>
+                        <span className='text-xs font-medium text-right text-slate-900'>
                           {formatCompactNumber(Number(rfqBody.target_price))} บาท
                         </span>
                       </div>
@@ -543,17 +543,17 @@ export function FactoryRfqDetailPage() {
                     {targetDaysCustomer != null ? (
                       <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                         <span className='text-xs text-slate-500 shrink-0'>Lead time ที่ต้องการ</span>
-                        <span className='text-sm font-medium text-right text-slate-900'>{targetDaysCustomer} วัน</span>
+                        <span className='text-xs font-medium text-right text-slate-900'>{targetDaysCustomer} วัน</span>
                       </div>
                     ) : null}
                     <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                       <span className='text-xs text-slate-500 shrink-0'>วิธีจัดส่ง</span>
-                      <span className='text-sm font-medium text-right text-slate-900'>{customerShipLabel || '—'}</span>
+                      <span className='text-xs font-medium text-right text-slate-900'>{customerShipLabel || '—'}</span>
                     </div>
                     {(addressSummary || true) ? (
                       <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
                         <span className='text-xs text-slate-500 shrink-0'>ที่อยู่ปลายทาง</span>
-                        <span className='text-sm font-medium text-right break-words text-slate-900'>{addressSummary || '—'}</span>
+                        <span className='text-xs font-medium text-right break-words text-slate-900'>{addressSummary || '—'}</span>
                       </div>
                     ) : null}
                     <div className='flex items-center justify-between gap-4 px-4 py-2.5'>
@@ -715,12 +715,12 @@ export function FactoryRfqDetailPage() {
               </section>
             </div>
 
-            {/* Send QT in chat + Quotation history — same row, same height */}
+            {/* Send QT in chat + Quotation history */}
             {(customerId > 0 && fid != null) || (myQuote && quoteIdOf(myQuote)) ? (
-              <div className='flex flex-col lg:flex-row gap-5 items-stretch'>
-                {/* Send QT in chat */}
+              <div className='flex flex-col lg:flex-row gap-5 items-start'>
+                {/* Send QT in chat — fixed height, ไม่ยืดตาม history */}
                 {customerId > 0 && fid != null ? (
-                  <div className='flex-1 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3 flex flex-col justify-center'>
+                  <div className='w-full lg:flex-1 self-start rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3'>
                     <div className='flex items-center justify-between gap-3'>
                       <div className='min-w-0'>
                         <p className='text-[13px] font-semibold text-slate-800'>ส่งใบเสนอราคาให้ลูกค้า</p>
@@ -740,9 +740,9 @@ export function FactoryRfqDetailPage() {
                   </div>
                 ) : null}
 
-                {/* Quotation history */}
+                {/* Quotation history — ขยายได้อิสระ */}
                 {myQuote && quoteIdOf(myQuote) ? (
-                  <div className='flex-1 min-w-0'>
+                  <div className='w-full lg:flex-1 min-w-0'>
                     <QuotationHistoryPanel quotationId={quoteIdOf(myQuote)} />
                   </div>
                 ) : null}

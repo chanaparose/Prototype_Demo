@@ -98,27 +98,31 @@ export function QuotationHistoryPanel({
   if (fetched && history.length <= 1) return null;
 
   return (
-    <div className='border border-gray-200 rounded-xl overflow-hidden bg-white'>
+    <div className='w-full rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3'>
       <Button
         variant='unstyled'
         type='button'
         onClick={() => setOpen((v) => !v)}
-        className='w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors'
+        className='w-full flex items-center justify-between gap-3'
       >
-        <div className='flex items-center gap-2'>
-          <Clock size={16} style={{ color: '#6366F1' }} />
-          <span className='text-sm font-semibold text-gray-700'>ประวัติการแก้ไขใบเสนอราคา</span>
-          {fetched && history.length > 0 ? (
-            <span className='text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full'>
-              {history.length} รายการ
-            </span>
-          ) : null}
+        <div className='flex min-w-0 items-center gap-2.5'>
+          <Clock size={15} className='shrink-0 text-indigo-600' />
+          <div className='min-w-0 text-left'>
+            <p className='text-[13px] font-semibold text-slate-800'>ประวัติการแก้ไขใบเสนอราคา</p>
+            {fetched && history.length > 0 ? (
+              <p className='text-[11px] text-slate-500'>{history.length} รายการ</p>
+            ) : null}
+          </div>
         </div>
-        {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        {open ? (
+          <ChevronUp size={16} className='shrink-0 text-slate-500' />
+        ) : (
+          <ChevronDown size={16} className='shrink-0 text-slate-500' />
+        )}
       </Button>
 
       {open ? (
-        <div className='divide-y divide-gray-100'>
+        <div className='mt-3 divide-y divide-indigo-100/80 overflow-hidden rounded-xl border border-indigo-100 bg-white'>
           {loading ? (
             <div className='px-4 py-6 text-center text-sm text-gray-400'>กำลังโหลด...</div>
           ) : (
