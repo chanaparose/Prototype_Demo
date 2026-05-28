@@ -45,7 +45,7 @@ import { Image } from '@/components/ui/image';
 // ─── Constants ───────────────────────────────────────────────────────────────
 const PRIMARY = '#3C50E0';
 
-type EditSection = 'info' | 'categories' | null;
+type EditSection = 'info' | null;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function normalizeIds(ids: number[]): number[] {
@@ -302,28 +302,6 @@ export function FactoryInfoPage() {
     finally { setSaving(false); }
   }, [fid, form, qc, refreshUser]);
 
-  // ── Save categories section ────────────────────────────────────────────────
-  const handleSaveCategories = useCallback(async () => {
-    if (!fid) return;
-    setSaving(true); setError(''); setOkMsg('');
-    const v = form.getValues();
-    const catIds = normalizeIds(v.category_ids);
-    const subIds = normalizeIds(v.sub_category_ids);
-    try {
-      await factoriesApi.saveProfile(fid, {
-        factory_name: v.factory_name.trim() || 'โรงงาน',
-        category_ids: catIds,
-        sub_category_ids: subIds,
-        image_url: String(v.image_url ?? ''),
-        background_image_url: String(v.cover_image_url ?? ''),
-      });
-      form.reset({ ...v, category_ids: catIds, sub_category_ids: subIds });
-      setOkMsg('บันทึกหมวดหมู่เรียบร้อย');
-      setEditSection(null);
-      await refreshUser(); await qc.invalidateQueries({ queryKey: profileInitKey });
-    } catch (e) { setError(e instanceof Error ? e.message : 'บันทึกไม่สำเร็จ'); }
-    finally { setSaving(false); }
-  }, [fid, form, qc, refreshUser]);
 
   // ── Image upload ──────────────────────────────────────────────────────────
   const handleUploadImage = useCallback(async (file: File) => {
@@ -400,16 +378,28 @@ export function FactoryInfoPage() {
 
       <VerifyStatusBanner status={verifyStatus} />
 
-      {/* ── 1. Profile Overview Card ────────────────────────────────────────── */}
+      {/* ── 1+2. Profile + หมวดหมู่ — same API (PUT /factories/:id/profile) ─── */}
       <InfoCard
         action={
-          <SectionEditActions
-            isEditing={editSection === 'info'}
-            saving={saving}
-            onEdit={() => { setEditSection('info'); setError(''); setOkMsg(''); }}
-            onCancel={() => { form.reset(initialValues); setEditSection(null); setError(''); }}
-            onSave={() => void handleSaveInfo()}
-          />
+          <div className='flex items-center gap-2'>
+            {editSection === 'info' && (
+              <Button
+                variant='unstyled'
+                type='button'
+                onClick={() => openCategoryPickerRef.current?.()}
+                className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+              >
+                <Plus size={11} /> เพิ่มหมวดหมู่
+              </Button>
+            )}
+            <SectionEditActions
+              isEditing={editSection === 'info'}
+              saving={saving}
+              onEdit={() => { setEditSection('info'); setError(''); setOkMsg(''); }}
+              onCancel={() => { form.reset(initialValues); setEditSection(null); setError(''); }}
+              onSave={() => void handleSaveInfo()}
+            />
+          </div>
         }
       >
         {/* Avatar + Name row */}
@@ -449,17 +439,59 @@ export function FactoryInfoPage() {
         {/* Divider */}
         <div className='border-t border-gray-100 -mx-6 mb-6' />
 
-        {/* Data fields or form */}
         {editSection === 'info' ? (
-          <BusinessInfoSection form={form} />
+          /* ── Edit mode: business info + categories in one form ── */
+          <div className='space-y-6'>
+            <BusinessInfoSection form={form} />
+            <div className='border-t border-gray-100 -mx-6' />
+            <div>
+              <p className='text-xs font-semibold text-gray-500 mb-3'>ข้อมูลการผลิตและหมวดหมู่</p>
+              <CategoriesSection
+                form={form}
+                factoryId={fid}
+                onRegisterAdd={(h) => { openCategoryPickerRef.current = h; }}
+                apiCategories={factoryQ.data?.categories as Parameters<typeof CategoriesSection>[0]['apiCategories']}
+                apiSubCategories={factoryQ.data?.sub_categories as Parameters<typeof CategoriesSection>[0]['apiSubCategories']}
+              />
+            </div>
+          </div>
         ) : (
-          <div className='grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6'>
-            <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
-            <Field label='ประเภทโรงงาน' value={factoryTypeName} />
-            <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
-            <Field label='MOQ (ขั้นต่ำรับผลิต)' value={initialValues.min_order ? `${initialValues.min_order.toLocaleString()} ชิ้น` : undefined} />
-            <Field label='Lead Time' value={initialValues.lead_time_desc} />
-            <Field label='รายละเอียด' value={initialValues.description} className='col-span-2 sm:col-span-4' />
+          /* ── View mode: data grid + category tags ── */
+          <div className='space-y-6'>
+            <div className='grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6'>
+              <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
+              <Field label='ประเภทโรงงาน' value={factoryTypeName} />
+              <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
+              <Field label='MOQ (ขั้นต่ำรับผลิต)' value={initialValues.min_order ? `${initialValues.min_order.toLocaleString()} ชิ้น` : undefined} />
+              <Field label='Lead Time' value={initialValues.lead_time_desc} />
+              <Field label='รายละเอียด' value={initialValues.description} className='col-span-2 sm:col-span-4' />
+            </div>
+
+            {/* Categories sub-section */}
+            <div className='border-t border-gray-100 -mx-6' />
+            <div className='space-y-4'>
+              <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
+              <div>
+                <p className='text-[11px] font-medium text-gray-400 mb-2'>หมวดหมู่หลัก</p>
+                {catNames.length > 0 ? (
+                  <div className='flex flex-wrap gap-2'>
+                    {catNames.map((n) => (
+                      <span key={n} className='inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100'>{n}</span>
+                    ))}
+                  </div>
+                ) : <p className='text-sm text-gray-300 font-normal'>—</p>}
+              </div>
+              {subNames.length > 0 && (
+                <div>
+                  <p className='text-[11px] font-medium text-gray-400 mb-2'>หมวดหมู่ย่อย</p>
+                  <div className='flex flex-wrap gap-2'>
+                    {subNames.map((n) => (
+                      <span key={n} className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100'>{n}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </InfoCard>
@@ -476,65 +508,6 @@ export function FactoryInfoPage() {
           try { await handleUploadImage(file); } finally { setCropFile(null); }
         }}
       />
-
-      {/* ── 2. หมวดหมู่ Card ─────────────────────────────────────────────────── */}
-      <InfoCard
-        title='ข้อมูลการผลิตและหมวดหมู่'
-        action={
-          <div className='flex items-center gap-2'>
-            {editSection === 'categories' && (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => openCategoryPickerRef.current?.()}
-                className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
-              >
-                <Plus size={11} /> เพิ่ม
-              </Button>
-            )}
-            <SectionEditActions
-              isEditing={editSection === 'categories'}
-              saving={saving}
-              onEdit={() => { setEditSection('categories'); setError(''); setOkMsg(''); }}
-              onCancel={() => { form.reset(initialValues); setEditSection(null); setError(''); }}
-              onSave={() => void handleSaveCategories()}
-            />
-          </div>
-        }
-      >
-        {editSection === 'categories' ? (
-          <CategoriesSection
-            form={form}
-            factoryId={fid}
-            onRegisterAdd={(h) => { openCategoryPickerRef.current = h; }}
-            apiCategories={factoryQ.data?.categories as Parameters<typeof CategoriesSection>[0]['apiCategories']}
-            apiSubCategories={factoryQ.data?.sub_categories as Parameters<typeof CategoriesSection>[0]['apiSubCategories']}
-          />
-        ) : (
-          <div className='space-y-5'>
-            <div>
-              <p className='text-[11px] font-medium text-gray-400 mb-2.5'>หมวดหมู่หลัก</p>
-              {catNames.length > 0 ? (
-                <div className='flex flex-wrap gap-2'>
-                  {catNames.map((n) => (
-                    <span key={n} className='inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100'>{n}</span>
-                  ))}
-                </div>
-              ) : <p className='text-sm text-gray-300 font-normal'>—</p>}
-            </div>
-            {subNames.length > 0 && (
-              <div>
-                <p className='text-[11px] font-medium text-gray-400 mb-2.5'>หมวดหมู่ย่อย</p>
-                <div className='flex flex-wrap gap-2'>
-                  {subNames.map((n) => (
-                    <span key={n} className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100'>{n}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </InfoCard>
 
       {/* ── 3. ที่อยู่ — separate API per item, always shows CRUD ─────────────── */}
       <InfoCard title='ที่อยู่และการติดต่อ'>
