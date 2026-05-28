@@ -175,7 +175,7 @@ function AvatarUploader({
       }}
     >
       <Label
-        className={`relative block w-[70px] h-[70px] sm:w-20 sm:h-20 rounded-full overflow-hidden cursor-pointer border-4 border-white shadow-md group bg-indigo-50 ${uploading ? 'pointer-events-none' : ''}`}
+        className={`relative block w-[70px] h-[70px] sm:w-20 sm:h-20 rounded-2xl overflow-hidden cursor-pointer border-2 border-white shadow-md group bg-indigo-50 ${uploading ? 'pointer-events-none' : ''}`}
       >
         {imageUrl
           ? <Image src={imageUrl} alt='' className='w-full h-full object-cover' />
