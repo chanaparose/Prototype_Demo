@@ -8,16 +8,18 @@ export interface SubCategoryOption {
   id: number;
   name: string;
   categoryId: number;
+  sortOrder?: number;
 }
 
 function toOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
   const id = Number(r.sub_category_id ?? r.id);
   const categoryId = Number(r.category_id ?? r.parent_category_id ?? categoryIdHint);
   const name = String(r.name ?? r.name_th ?? r.sub_category_name ?? '').trim();
+  const sortOrderRaw = Number(r.sort_order ?? r.sortOrder ?? 0);
   if (!Number.isFinite(id) || id <= 0) return null;
   if (!Number.isFinite(categoryId) || categoryId <= 0) return null;
   if (!name) return null;
-  return { id, name, categoryId };
+  return { id, name, categoryId, sortOrder: Number.isFinite(sortOrderRaw) ? sortOrderRaw : 0 };
 }
 
 export function useSubCategoriesByCategories(categoryIds: number[]) {

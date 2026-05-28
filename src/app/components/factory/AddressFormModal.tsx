@@ -99,7 +99,7 @@ export function AddressFormModal({ open, mode, initial, saving, onClose, onSubmi
       footer={
         <ModalFooter
           layout='flex'
-          accent='success'
+          accent='purple'
           primary={{
             label: mode === 'create' ? 'เพิ่มที่อยู่' : 'บันทึกการแก้ไข',
             loadingLabel: 'กำลังบันทึก...',

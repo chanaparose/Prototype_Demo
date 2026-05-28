@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { cn } from '@lib/utils';
 import { masterKeys } from '@/lib/queryKeys';
 import { masterApi, categoriesApi } from '@/services/api/masterApi';
 import { AppSheetDialog } from '@/components/ui/app-sheet-dialog';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { ModalFooter } from '@/shared/ui/modals/ModalFooter';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { parseCategorySelection } from '@/domain/factory/schemas/categoryPicker.schema';
 
 interface Props {
@@ -22,12 +21,7 @@ type CategoryWithScope = { id: number; name: string; scope: 'PD' | 'MT' | string
 
 function toSubCategoryOption(r: Row, categoryIdHint: number): SubCategoryOption | null {
   const id = Number(
-    r.sub_category_id ??
-      r.subCategoryId ??
-      r.subcategory_id ??
-      r.sub_id ??
-      r.subId ??
-      r.lbi_sub_category_id,
+    r.sub_category_id ?? r.subCategoryId ?? r.subcategory_id ?? r.sub_id ?? r.lbi_sub_category_id,
   );
   const categoryId = Number(r.category_id ?? r.parent_category_id ?? categoryIdHint);
   const name = String(r.name ?? r.name_th ?? r.sub_category_name ?? '').trim();
@@ -75,16 +69,14 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
   const mtCategories = categories.filter((c) => c.scope === 'MT');
 
   useEffect(() => {
-    if (open) {
-      setSelected(initialSelected);
-      setConfirmError('');
-    }
+    if (open) { setSelected(initialSelected); setConfirmError(''); }
   }, [open, initialSelected]);
 
   const toggle = (id: number) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id].sort((a, b) => a - b),
     );
+    setConfirmError('');
   };
 
   const handleConfirm = async () => {
@@ -128,31 +120,44 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
     }
   };
 
-  const renderGroup = (label: string, items: CategoryWithScope[], accentClass: string) => (
-    <div>
-      <p className={`text-[11px] font-semibold mb-1.5 ${accentClass}`}>{label}</p>
-      <ul className='space-y-0.5'>
+  const renderGroup = (
+    label: string,
+    items: CategoryWithScope[],
+    accentClass: string,
+    pillSelected: string,
+    pillDefault: string,
+  ) => (
+    <div className='space-y-2'>
+      <p className={`text-[11px] font-semibold uppercase tracking-wide ${accentClass}`}>{label}</p>
+      <div className='flex flex-wrap gap-2'>
         {items.map((c) => (
-          <li key={c.id}>
-            <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
-              <Checkbox checked={selected.includes(c.id)} onCheckedChange={() => toggle(c.id)} />
-              {c.name}
-            </Label>
-          </li>
+          <label
+            key={c.id}
+            className={cn(
+              'inline-flex cursor-pointer select-none items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-all',
+              selected.includes(c.id) ? pillSelected : pillDefault,
+            )}
+          >
+            <input
+              type='checkbox'
+              className='sr-only'
+              checked={selected.includes(c.id)}
+              onChange={() => toggle(c.id)}
+            />
+            {c.name}
+          </label>
         ))}
-      </ul>
+      </div>
     </div>
   );
 
   return (
     <AppSheetDialog
       open={open}
-      onOpenChange={(next) => {
-        if (!next) onClose();
-      }}
+      onOpenChange={(next) => { if (!next) onClose(); }}
       title='เลือกหมวดหมู่หลัก'
       className='sm:max-w-lg'
-      bodyClassName='p-4 sm:p-5 space-y-4'
+      bodyClassName='p-4 sm:p-5 space-y-4 bg-white'
       footer={
         <ModalFooter
           layout='grid-compact'
@@ -164,12 +169,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
             disabled: confirming,
             onClick: handleConfirm,
           }}
-          secondary={{
-            label: 'ยกเลิก',
-            onClick: onClose,
-            disabled: confirming,
-            tone: 'muted',
-          }}
+          secondary={{ label: 'ยกเลิก', onClick: onClose, disabled: confirming, tone: 'muted' }}
         />
       }
     >
@@ -179,11 +179,19 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
         ) : categories.length === 0 && !isError ? (
           <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
         ) : !isError ? (
-          <div className='space-y-4 max-h-[55vh] overflow-y-auto'>
-            {pdCategories.length > 0 &&
-              renderGroup('หมวดสินค้า (PD)', pdCategories, 'text-indigo-600')}
-            {mtCategories.length > 0 &&
-              renderGroup('หมวดวัตถุดิบ (MT)', mtCategories, 'text-emerald-600')}
+          <div className='space-y-4 max-h-[55vh] overflow-y-auto pr-1'>
+            {pdCategories.length > 0 && renderGroup(
+              'หมวดสินค้า (PD)', pdCategories,
+              'text-indigo-600',
+              'border-[var(--brand-purple)] bg-[var(--brand-purple)] font-semibold text-white shadow-sm',
+              'border-[var(--brand-lavender-muted,#e5e0f0)] bg-white text-[var(--neutral-subtle,#6b7280)] hover:border-[var(--brand-mauve,#9c84c0)] hover:text-[var(--brand-purple,#7c3aed)]',
+            )}
+            {mtCategories.length > 0 && renderGroup(
+              'หมวดวัตถุดิบ (MT)', mtCategories,
+              'text-emerald-600',
+              'border-emerald-500 bg-emerald-500 font-semibold text-white shadow-sm',
+              'border-gray-200 bg-white text-gray-600 hover:border-emerald-300 hover:text-emerald-600',
+            )}
           </div>
         ) : null}
       </FormField>

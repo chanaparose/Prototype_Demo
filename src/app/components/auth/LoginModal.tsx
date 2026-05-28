@@ -11,6 +11,7 @@ import {
   type AuthLoginFormValues,
 } from '@/domain/auth/schemas/authForm.schema';
 import { getErrorMessage } from '@/lib/apiError';
+import { getAvailableRoles } from '@/services/api/authApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
@@ -22,6 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { RolePickerModal, type RoleChoice } from '@/components/auth/RolePickerModal';
 
 const HEALTH_URL = '/health';
 type ServerStatus = 'unknown' | 'checking' | 'online' | 'offline';
@@ -37,6 +39,8 @@ export function LoginModal() {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [serverStatus, setServerStatus] = useState<ServerStatus>('unknown');
+  const [showRolePicker, setShowRolePicker] = useState(false);
+  const [roleSwitching, setRoleSwitching] = useState(false);
 
   const form = useForm<AuthLoginFormValues>({
     resolver: zodResolver(authLoginSchema),
@@ -83,22 +87,55 @@ export function LoginModal() {
     setError('');
   };
 
+  const { switchRole } = useAuth();
+
+  const navigateByRole = (role: string) => {
+    if (pendingRedirect && pendingRedirect.startsWith('/') && !pendingRedirect.startsWith('//')) {
+      navigate(pendingRedirect, { replace: true });
+    } else {
+      navigate(role === 'FT' ? '/factory' : '/', { replace: true });
+    }
+  };
+
   const submitLogin = async (values: AuthLoginFormValues) => {
     setIsSubmitting(true);
     setError('');
     try {
       const session = await login(values);
-      close();
-      const role = String(session?.user?.role ?? '').toUpperCase();
-      if (pendingRedirect && pendingRedirect.startsWith('/') && !pendingRedirect.startsWith('//')) {
-        navigate(pendingRedirect, { replace: true });
+      let roles: string[] = [];
+      try {
+        const res = await getAvailableRoles();
+        roles = res.roles ?? [];
+      } catch {
+        // API not available — fall back to session role
+      }
+      const hasBoth = roles.includes('FT') && roles.includes('CT');
+      if (hasBoth) {
+        close();
+        setShowRolePicker(true);
       } else {
-        navigate(role === 'FT' ? '/factory' : '/', { replace: true });
+        const role = roles[0] || String(session?.user?.role ?? 'CT').toUpperCase();
+        close();
+        navigateByRole(role);
       }
     } catch (err) {
       setError(getErrorMessage(err, 'เข้าสู่ระบบไม่สำเร็จ'));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleRolePick = async (role: RoleChoice) => {
+    setRoleSwitching(true);
+    try {
+      await switchRole(role);
+      setShowRolePicker(false);
+      navigateByRole(role);
+    } catch {
+      setShowRolePicker(false);
+      navigateByRole(role);
+    } finally {
+      setRoleSwitching(false);
     }
   };
 
@@ -110,6 +147,7 @@ export function LoginModal() {
         : 'ยังรออยู่... Render free tier อาจใช้เวลานานถึง 60 วินาที';
 
   return (
+    <>
     <DialogPrimitive.Root open={isOpen} onOpenChange={(o) => !o && handleClose()}>
       <DialogPrimitive.Portal>
         {/* Overlay */}
@@ -315,5 +353,8 @@ export function LoginModal() {
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
+
+    <RolePickerModal open={showRolePicker} loading={roleSwitching} onPick={handleRolePick} />
+    </>
   );
 }

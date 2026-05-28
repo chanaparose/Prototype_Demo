@@ -2,13 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { useProvinces } from '@/hooks/master/useProvinces';
 import { useDistricts } from '@/hooks/master/useDistricts';
 import { useSubDistricts, type SubDistrictOption } from '@/hooks/master/useSubDistricts';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Label } from '@/components/ui/label';
 
 export type LbiAddressValue = {
@@ -97,23 +91,17 @@ function Cell({ label, value, loading, disabled, options, placeholder, onChange 
   return (
     <Label className='block'>
       <span className='text-xs text-gray-500'>{label}</span>
-      <Select
-        value={value}
-        disabled={disabled || loading}
-        onValueChange={(next) => onChange(next === '__empty' ? '' : next)}
-      >
-        <SelectTrigger className='mt-1 w-full'>
-          <SelectValue placeholder={loading ? 'กำลังโหลด…' : placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value='__empty'>{loading ? 'กำลังโหลด…' : placeholder}</SelectItem>
-          {options.map((o) => (
-            <SelectItem key={o.id} value={String(o.id)}>
-              {o.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className='mt-1'>
+        <SearchableSelect
+          value={value}
+          onValueChange={(next) => onChange(next)}
+          options={options.map((o) => ({ value: String(o.id), label: o.name }))}
+          placeholder={loading ? 'กำลังโหลด…' : placeholder}
+          searchPlaceholder='พิมพ์เพื่อค้นหา…'
+          disabled={disabled || loading}
+          loading={loading}
+        />
+      </div>
     </Label>
   );
 }

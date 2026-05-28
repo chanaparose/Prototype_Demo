@@ -21,6 +21,9 @@ interface LookupSelectProps<Option> {
   required?: boolean;
   disabled?: boolean;
   className?: string;
+  triggerClassName?: string;
+  contentClassName?: string;
+  itemClassName?: string;
 }
 
 export function LookupSelect<Option>({
@@ -34,6 +37,9 @@ export function LookupSelect<Option>({
   required,
   disabled,
   className = '',
+  triggerClassName = '',
+  contentClassName = '',
+  itemClassName = '',
 }: LookupSelectProps<Option>) {
   const { data, isLoading, isError, refetch } = queryResult;
   const opts = data ?? [];
@@ -55,15 +61,17 @@ export function LookupSelect<Option>({
             onChange(next === '__empty' ? null : Number(next));
           }}
         >
-          <SelectTrigger className='mt-1 w-full'>
+          <SelectTrigger className={`mt-1 w-full ${triggerClassName}`}>
             <SelectValue placeholder={isLoading ? 'กำลังโหลด…' : placeholder} />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='__empty'>{isLoading ? 'กำลังโหลด…' : placeholder}</SelectItem>
+          <SelectContent className={contentClassName}>
+            <SelectItem value='__empty' className={itemClassName}>
+              {isLoading ? 'กำลังโหลด…' : placeholder}
+            </SelectItem>
             {opts.map((o) => {
               const id = getId(o);
               return (
-                <SelectItem key={id} value={String(id)}>
+                <SelectItem key={id} value={String(id)} className={itemClassName}>
                   {getLabel(o)}
                 </SelectItem>
               );

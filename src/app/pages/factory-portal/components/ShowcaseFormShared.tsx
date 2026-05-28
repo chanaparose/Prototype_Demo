@@ -80,7 +80,7 @@ export function ShowcaseImageManager({
   };
 
   return (
-    <section className='w-full max-w-[360px] xl:shrink-0'>
+    <section className='w-full'>
       <div
         className='relative aspect-[4/3] rounded-xl overflow-hidden border'
         style={{ borderColor: '#E7E2F0', background: 'var(--neutral-warm-surface)' }}
@@ -167,8 +167,6 @@ export function ShowcaseCategoryFields({
   categoriesQ,
   subOptions,
   subCategoriesLoading,
-  statusValue,
-  onStatusChange,
 }: {
   contentType: ShowcaseType;
   idScope: ShowcaseScope;
@@ -182,8 +180,6 @@ export function ShowcaseCategoryFields({
   categoriesQ: UseQueryResult<Option[]>;
   subOptions: Option[];
   subCategoriesLoading?: boolean;
-  statusValue?: ShowcaseStatus;
-  onStatusChange?: (value: ShowcaseStatus) => void;
 }) {
   const hideSubCat =
     contentType === 'MT' ||
@@ -227,7 +223,7 @@ export function ShowcaseCategoryFields({
         : null}
 
       <div
-        className={`grid grid-cols-1 gap-3 ${hideSubCat ? (onStatusChange ? 'sm:grid-cols-2' : '') : onStatusChange ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}
+        className={`grid grid-cols-1 gap-3 ${hideSubCat ? '' : 'sm:grid-cols-2'}`}
       >
         <LookupSelect
           label='หมวดหมู่'
@@ -240,6 +236,9 @@ export function ShowcaseCategoryFields({
           getId={(option) => option.id}
           getLabel={(option) => option.name}
           placeholder='เลือกหมวดหมู่'
+          triggerClassName='text-xs'
+          contentClassName='text-xs'
+          itemClassName='text-xs'
         />
 
         {!hideSubCat ? (
@@ -252,7 +251,7 @@ export function ShowcaseCategoryFields({
                 onSubCategoryChange(next === '__empty' ? null : Number(next))
               }
             >
-              <SelectTrigger className='w-full h-10 disabled:bg-gray-50 disabled:text-gray-400'>
+              <SelectTrigger className='w-full h-10 text-xs disabled:bg-gray-50 disabled:text-gray-400'>
                 <SelectValue
                   placeholder={
                     categoryValue == null
@@ -263,8 +262,8 @@ export function ShowcaseCategoryFields({
                   }
                 />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='__empty'>
+              <SelectContent className='text-xs'>
+                <SelectItem value='__empty' className='text-xs'>
                   {categoryValue == null
                     ? '— เลือกหมวดหมู่ก่อน —'
                     : subCategoriesLoading
@@ -272,7 +271,7 @@ export function ShowcaseCategoryFields({
                       : '— เลือกหมวดย่อย —'}
                 </SelectItem>
                 {subOptions.map((option) => (
-                  <SelectItem key={option.id} value={String(option.id)}>
+                  <SelectItem key={option.id} value={String(option.id)} className='text-xs'>
                     {option.name}
                   </SelectItem>
                 ))}
@@ -281,25 +280,6 @@ export function ShowcaseCategoryFields({
           </Label>
         ) : null}
 
-        {onStatusChange ? (
-          <Label className='block'>
-            <span className='text-xs text-gray-500 mb-1.5 block'>สถานะ</span>
-            <Select
-              value={statusValue ?? 'DR'}
-              onValueChange={(next) => onStatusChange(next as ShowcaseStatus)}
-            >
-              <SelectTrigger className='w-full h-10'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='DR'>ร่าง</SelectItem>
-                <SelectItem value='AC'>Active</SelectItem>
-                <SelectItem value='HI'>Hidden</SelectItem>
-                <SelectItem value='AR'>เก็บเข้าคลัง</SelectItem>
-              </SelectContent>
-            </Select>
-          </Label>
-        ) : null}
       </div>
     </section>
   );

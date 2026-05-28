@@ -37,12 +37,14 @@ import {
   AdminCustomerDetailPage,
 } from '@/pages/admin';
 import { AuthGuard } from '@/components/AuthGuard';
+import { RoleRedirectIndex } from '@/components/RoleRedirectIndex';
 import { PublicDataOutlet } from '@/components/PublicDataOutlet';
 import { FactoryRoleGuard } from '@/components/factory/FactoryRoleGuard';
 import { FactoryVerifiedGuard } from '@/components/factory/FactoryVerifiedGuard';
 import { FactoryPortalLayout } from '@/pages/factory-portal/FactoryPortalLayout';
 import { FactoryDashboardPage } from '@/pages/factory-portal/FactoryDashboardPage';
 import { FactoryProfilePage } from '@/pages/factory-portal/FactoryProfilePage';
+import { FactoryInfoPage } from '@/pages/factory-portal/FactoryInfoPage';
 import { FactoryShowcasesPage } from '@/pages/factory-portal/FactoryShowcasesPage';
 import { FactoryShowcaseNewPage } from '@/pages/factory-portal/FactoryShowcaseNewPage';
 import { FactoryRfqBoardPage } from '@/pages/factory-portal/FactoryRfqBoardPage';
@@ -75,7 +77,7 @@ export const router = createBrowserRouter([
       {
         Component: Layout,
         children: [
-          { index: true, Component: Explore },
+          { index: true, Component: RoleRedirectIndex },
           { path: 'product-detail', Component: ProductDetail },
           { path: 'promotion-detail', Component: PromotionDetail },
           { path: 'idea-detail', Component: IdeaDetail },
@@ -120,6 +122,7 @@ export const router = createBrowserRouter([
                     children: [
                       { index: true, Component: FactoryDashboardPage },
                       { path: 'profile', Component: FactoryProfilePage },
+                      { path: 'info', Component: FactoryInfoPage },
                       { path: 'wallet', Component: FactoryWalletPage },
                       {
                         Component: FactoryVerifiedGuard,

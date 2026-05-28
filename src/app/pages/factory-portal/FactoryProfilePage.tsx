@@ -22,27 +22,23 @@ import {
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { factoriesApi, mediaApi } from '@/services/api/factoryApi';
+import { useFactoryTypes } from '@/hooks/master/useFactoryTypes';
 
 import { useProfileInit, profileInitKey } from '@/hooks/factory/useProfileInit';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 
 import { FormSkeleton } from '@/components/common/FormSkeleton';
 import { ImageCropModal } from '@/components/common/ImageCropModal';
-import { VerifyStatusBanner } from '@/components/factory/profile/VerifyStatusBanner';
 import { BusinessInfoSection } from '@/components/factory/profile/BusinessInfoSection';
 import { CategoriesSection } from '@/components/factory/profile/CategoriesSection';
 import { AddressesSection } from '@/components/factory/profile/AddressesSection';
 import { CertificatesSection } from '@/components/factory/profile/CertificatesSection';
 import { BankAccountPlaceholder } from '@/components/factory/profile/BankAccountPlaceholder';
-import { ProfileSaveBar } from '@/components/factory/profile/ProfileSaveBar';
-import { SectionCard } from '@/shared/ui/cards/SectionCard';
-import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 
 import {
   PROFILE_FORM_DEFAULTS,
   type ProfileFormValues,
 } from '@/components/factory/profile/ProfileFormTypes';
-import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -72,72 +68,6 @@ function countDirty(dirtyFields: Record<string, unknown>): number {
     }
   }
   return n;
-}
-
-function sectionBadge(complete: boolean) {
-  return (
-    <StatusBadge variant={complete ? 'success' : 'pending'} size='sm'>
-      {complete ? 'ครบถ้วน ✓' : 'ยังไม่ครบ !'}
-    </StatusBadge>
-  );
-}
-
-interface StepDef {
-  label: string;
-  sublabel: string;
-  complete: boolean;
-}
-
-function VerificationStepper({ steps }: { steps: StepDef[] }) {
-  const allDone = steps.every((s) => s.complete);
-  return (
-    <div className='rounded-2xl border border-gray-100 bg-white shadow-sm p-5'>
-      <div className='flex items-center justify-between mb-4'>
-        <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wider'>
-          ขั้นตอนการยืนยัน
-        </p>
-        <span
-          className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${allDone ? 'bg-teal-100 text-teal-700' : 'bg-amber-100 text-amber-700'}`}
-        >
-          {steps.filter((s) => s.complete).length}/{steps.length} ขั้นตอน
-        </span>
-      </div>
-
-      <div className='flex items-start'>
-        {steps.map((step, i) => (
-          <React.Fragment key={step.label}>
-            <div className='flex flex-col items-center gap-2 flex-1 min-w-0'>
-              <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all ${
-                  step.complete
-                    ? 'bg-teal-500 text-white shadow-sm shadow-teal-200'
-                    : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                {step.complete ? '✓' : i + 1}
-              </div>
-              <div className='text-center min-w-0 px-1'>
-                <p
-                  className={`text-[10px] font-semibold leading-tight ${step.complete ? 'text-teal-700' : 'text-gray-500'}`}
-                >
-                  {step.label}
-                </p>
-                <p className='text-[9px] text-gray-400 leading-tight mt-0.5 hidden sm:block'>
-                  {step.sublabel}
-                </p>
-              </div>
-            </div>
-            {i < steps.length - 1 && (
-              <div
-                className='h-0.5 flex-1 mt-[18px] mx-1 shrink-0 transition-all'
-                style={{ backgroundColor: step.complete ? '#14b8a6' : 'var(--neutral-border)' }}
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 function FactoryHeroCard({
@@ -376,6 +306,7 @@ export function FactoryProfilePage() {
   const { user, refreshUser } = useAuth();
   const fid = getFactoryEntityId(user);
   const qc = useQueryClient();
+  const factoryTypesQ = useFactoryTypes();
 
   const initQ = useProfileInit();
 
@@ -433,6 +364,8 @@ export function FactoryProfilePage() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isCategoryEditing, setIsCategoryEditing] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [cropTarget, setCropTarget] = useState<'profile' | 'cover' | null>(null);
@@ -446,14 +379,6 @@ export function FactoryProfilePage() {
   const changeCount = countDirty(form.formState.dirtyFields as Record<string, unknown>);
   const isDirty = form.formState.isDirty;
   const watched = form.watch();
-  const requiredStatus = useMemo(() => {
-    const hasBusiness = Boolean(watched.factory_name?.trim()) && Boolean(watched.factory_type_id);
-    const hasCategories = (watched.category_ids?.length ?? 0) > 0;
-    const hasAddress = true;
-    const hasCertificates = true;
-    return { hasBusiness, hasCategories, hasAddress, hasCertificates };
-  }, [watched]);
-
   useBeforeUnload(isDirty);
 
   const handleSave = useCallback(async () => {
@@ -497,6 +422,8 @@ export function FactoryProfilePage() {
       setSaving(false);
       setOkMsg('บันทึกข้อมูลเรียบร้อย');
       form.reset(saveDraftValues);
+      setIsEditing(false);
+      setIsCategoryEditing(false);
       await refreshUser();
       await qc.invalidateQueries({ queryKey: profileInitKey });
     } catch (err) {
@@ -629,218 +556,237 @@ export function FactoryProfilePage() {
     );
   }
 
-  const steps: StepDef[] = [
-    {
-      label: 'ข้อมูลพื้นฐาน',
-      sublabel: 'ชื่อ, ประเภท',
-      complete: requiredStatus.hasBusiness,
-    },
-    {
-      label: 'ที่อยู่',
-      sublabel: 'จังหวัด, โทรศัพท์',
-      complete: requiredStatus.hasAddress,
-    },
-    {
-      label: 'เอกสาร',
-      sublabel: 'ใบรับรอง, GMP',
-      complete: requiredStatus.hasCertificates,
-    },
-    {
-      label: 'อนุมัติ',
-      sublabel: 'รอแอดมิน',
-      complete: isVerified,
-    },
-  ];
+  const factoryTypeName =
+    factoryTypesQ.data?.find((t) => t.id === watched.factory_type_id)?.label ??
+    factoryTypesQ.data?.find((t) => t.id === initialValues.factory_type_id)?.label ??
+    '—';
+
+  const catNames = ((factoryQ.data?.categories ?? []) as Array<Record<string, unknown>>)
+    .map((c) => String(c.name ?? c.category_name ?? '').trim())
+    .filter(Boolean);
+  const subNames = ((factoryQ.data?.sub_categories ?? []) as Array<Record<string, unknown>>)
+    .map((s) => String(s.name ?? s.sub_category_name ?? '').trim())
+    .filter(Boolean);
+
+  const statusChip =
+    verifyStatus === 'AP'
+      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      : verifyStatus === 'RJ'
+        ? 'bg-red-50 text-red-700 border-red-200'
+        : 'bg-amber-50 text-amber-700 border-amber-200';
+  const statusText =
+    verifyStatus === 'AP' ? 'Approved' : verifyStatus === 'RJ' ? 'Rejected' : 'Pending';
 
   return (
-    <div className='space-y-5 pb-32' style={{ backgroundColor: COLORS.pageBg }}>
-      <FactoryPageHeader
-        title='ข้อมูลโรงงาน'
-        subtitle={isVerified ? 'ยืนยันแล้ว' : 'ตั้งค่าโปรไฟล์โรงงาน'}
-        icon={Building2}
-      />
+    <div className='pb-16'>
+      <div className='max-w-4xl mx-auto px-4 space-y-5'>
+        <h1 className='text-2xl font-bold text-gray-900'>Factory Info</h1>
 
-      <FactoryHeroCard
-        factoryName={String(watched.factory_name || initialValues.factory_name || 'โรงงานของคุณ')}
-        verifyStatus={verifyStatus}
-        imageUrl={String(watched.image_url ?? '').trim()}
-        coverImageUrl={String(watched.cover_image_url ?? '').trim()}
-        uploadingImage={uploadingImage}
-        uploadingCover={uploadingCover}
-        onPickImage={(file) => {
-          openCropper('profile', file);
-        }}
-        onRemoveImage={() => void handleRemoveImage()}
-        onPickCover={(file) => {
-          openCropper('cover', file);
-        }}
-        onRemoveCover={() => void handleRemoveCover()}
-      />
-
-      <ImageCropModal
-        open={cropTarget != null && cropFile != null}
-        file={cropFile}
-        title={cropTarget === 'profile' ? 'ครอปรูปโปรไฟล์โรงงาน' : 'ครอปรูปพื้นหลังโรงงาน'}
-        aspect={cropTarget === 'profile' ? 1 : 16 / 9}
-        outputWidth={cropTarget === 'profile' ? 900 : 1800}
-        onCancel={closeCropper}
-        onConfirm={async (file) => {
-          try {
-            if (cropTarget === 'profile') {
-              await handleUploadImage(file);
-            } else if (cropTarget === 'cover') {
-              await handleUploadCover(file);
+        <ImageCropModal
+          open={cropTarget != null && cropFile != null}
+          file={cropFile}
+          title={cropTarget === 'profile' ? 'ครอปรูปโปรไฟล์โรงงาน' : 'ครอปรูปพื้นหลังโรงงาน'}
+          aspect={cropTarget === 'profile' ? 1 : 16 / 9}
+          outputWidth={cropTarget === 'profile' ? 900 : 1800}
+          onCancel={closeCropper}
+          onConfirm={async (file) => {
+            try {
+              if (cropTarget === 'profile') await handleUploadImage(file);
+              if (cropTarget === 'cover') await handleUploadCover(file);
+            } finally {
+              closeCropper();
             }
-          } finally {
-            closeCropper();
-          }
-        }}
-      />
+          }}
+        />
 
-      {!isVerified && <VerificationStepper steps={steps} />}
-      <VerifyStatusBanner status={verifyStatus} />
+        {error ? (
+          <div className='flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'>
+            <AlertTriangle size={16} className='text-red-500 shrink-0 mt-0.5' />
+            <p className='text-sm text-red-700'>{error}</p>
+          </div>
+        ) : null}
+        {okMsg ? (
+          <div className='flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
+            <CheckCircle size={16} className='text-emerald-500 shrink-0 mt-0.5' />
+            <p className='text-sm text-emerald-700'>{okMsg}</p>
+          </div>
+        ) : null}
 
-      {error ? (
-        <div className='flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'>
-          <AlertTriangle size={16} className='text-red-500 shrink-0 mt-0.5' />
-          <p className='text-sm text-red-700'>{error}</p>
+        <div className='rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden'>
+          <div className='px-6 py-5'>
+            <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4'>
+              <div className='flex items-center gap-4 min-w-0'>
+                <div className='w-20 h-20 rounded-full overflow-hidden border border-gray-200 bg-gray-100 shrink-0'>
+                  {String(watched.image_url ?? '').trim() ? (
+                    <Image src={String(watched.image_url)} alt='' className='w-full h-full object-cover' />
+                  ) : null}
+                </div>
+                <div className='min-w-0'>
+                  <p className='text-[18px] font-bold text-gray-900 truncate'>
+                    {String(watched.factory_name || initialValues.factory_name || 'โรงงานของคุณ')}
+                  </p>
+                  <div className='flex items-center gap-2 mt-1 flex-wrap'>
+                    <span className='text-sm text-gray-600'>{factoryTypeName}</span>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusChip}`}>
+                      {statusText}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {!isEditing ? (
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => setIsEditing(true)}
+                  className='inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50'
+                >
+                  <Pencil size={12} /> Edit
+                </Button>
+              ) : (
+                <div className='flex flex-col sm:flex-row gap-2'>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => {
+                      form.reset(initialValues);
+                      setIsEditing(false);
+                    }}
+                    className='inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50'
+                  >
+                    <X size={12} /> ยกเลิก
+                  </Button>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    disabled={saving}
+                    onClick={() => void handleSave()}
+                    className='inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-60'
+                    style={{ background: 'linear-gradient(135deg,#3C50E0 0%,#6366f1 100%)' }}
+                  >
+                    {saving ? <Loader2 size={12} className='animate-spin' /> : <CheckCircle size={12} />} บันทึก
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className='border-t border-gray-100' />
+          <div className='px-6 py-5'>
+            {isEditing ? (
+              <BusinessInfoSection form={form} />
+            ) : (
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5'>
+                <DataField label='Factory Name' value={initialValues.factory_name} />
+                <DataField label='Type' value={factoryTypeName} />
+                <DataField label='Tax ID' value={initialValues.tax_id} />
+                <DataField label='MOQ' value={initialValues.min_order ? String(initialValues.min_order) : '—'} />
+                <DataField label='Lead Time' value={initialValues.lead_time_desc} />
+                <div className='sm:col-span-2 lg:col-span-3'>
+                  <DataField label='Description' value={initialValues.description} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      ) : null}
-      {okMsg ? (
-        <div className='flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
-          <CheckCircle size={16} className='text-emerald-500 shrink-0 mt-0.5' />
-          <p className='text-sm text-emerald-700'>{okMsg}</p>
-        </div>
-      ) : null}
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void handleSave();
-        }}
-        className='space-y-5 w-full min-w-0'
-      >
-        <SectionCard
-          icon={<Building2 size={14} style={{ color: COLORS.purple }} strokeWidth={2} />}
-          title='ข้อมูลพื้นฐาน'
-          iconClassName='h-8 w-8 rounded-lg'
-          iconStyle={{ backgroundColor: 'rgba(79,70,229,0.1)' }}
-          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
-          headerClassName='px-6 py-4'
-          contentClassName='px-6 py-5'
-          badge={sectionBadge(requiredStatus.hasBusiness)}
-        >
-          <BusinessInfoSection form={form} />
-        </SectionCard>
-
-        <SectionCard
-          icon={<Award size={14} style={{ color: '#0EA5E9' }} strokeWidth={2} />}
-          title='ข้อมูลการผลิตและหมวดหมู่'
-          iconClassName='h-8 w-8 rounded-lg'
-          iconStyle={{ backgroundColor: 'rgba(14,165,233,0.1)' }}
-          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
-          headerClassName='px-6 py-4'
-          contentClassName='px-6 py-5'
-          badge={sectionBadge(requiredStatus.hasCategories)}
-          actionButton={
+        <div className='rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden'>
+          <div className='flex items-center justify-between border-b border-gray-100 px-6 py-5'>
+            <h2 className='text-lg font-bold text-gray-900'>หมวดหมู่</h2>
             <Button
               variant='unstyled'
               type='button'
-              onClick={() => openCategoryPickerRef.current?.()}
-              className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors'
+              onClick={() => setIsCategoryEditing((p) => !p)}
+              className='inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50'
             >
-              <Plus size={12} />
-              เพิ่มหมวดหมู่
+              <Pencil size={12} /> {isCategoryEditing ? 'ปิดแก้ไข' : 'Edit'}
             </Button>
-          }
-        >
-          <CategoriesSection
-            form={form}
-            factoryId={fid}
-            onRegisterAdd={(handler) => {
-              openCategoryPickerRef.current = handler;
-            }}
-            apiCategories={factoryQ.data?.categories}
-            apiSubCategories={factoryQ.data?.sub_categories}
-          />
-        </SectionCard>
+          </div>
+          <div className='px-6 py-5'>
+            {isCategoryEditing ? (
+              <CategoriesSection
+                form={form}
+                factoryId={fid}
+                onRegisterAdd={(handler) => {
+                  openCategoryPickerRef.current = handler;
+                }}
+                apiCategories={factoryQ.data?.categories}
+                apiSubCategories={factoryQ.data?.sub_categories}
+              />
+            ) : (
+              <div className='space-y-4'>
+                <div>
+                  <p className='text-[11px] text-gray-400 mb-2'>หมวดหมู่หลัก</p>
+                  <div className='flex flex-wrap gap-1.5'>
+                    {catNames.length
+                      ? catNames.map((n) => (
+                          <span key={n} className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100'>
+                            {n}
+                          </span>
+                        ))
+                      : <span className='text-sm text-gray-400'>—</span>}
+                  </div>
+                </div>
+                <div>
+                  <p className='text-[11px] text-gray-400 mb-2'>หมวดหมู่ย่อย</p>
+                  <div className='flex flex-wrap gap-1.5'>
+                    {subNames.length
+                      ? subNames.map((n) => (
+                          <span key={n} className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-100'>
+                            {n}
+                          </span>
+                        ))
+                      : <span className='text-sm text-gray-400'>—</span>}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
-        <SectionCard
-          icon={<MapPin size={14} style={{ color: '#F97316' }} strokeWidth={2} />}
-          title='ที่อยู่และการติดต่อ'
-          iconClassName='h-8 w-8 rounded-lg'
-          iconStyle={{ backgroundColor: 'rgba(249,115,22,0.1)' }}
-          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
-          headerClassName='px-6 py-4'
-          contentClassName='px-6 py-5'
-          badge={sectionBadge(requiredStatus.hasAddress)}
-        >
-          <AddressesSection />
-        </SectionCard>
+        <div className='rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden'>
+          <div className='flex items-center justify-between border-b border-gray-100 px-6 py-5'>
+            <h2 className='text-lg font-bold text-gray-900'>ที่อยู่</h2>
+            <span className='text-xs text-gray-500'>+ เพิ่มที่อยู่</span>
+          </div>
+          <div className='px-6 py-5'>
+            <AddressesSection readOnly={false} />
+          </div>
+        </div>
 
-        <SectionCard
-          icon={<Award size={14} style={{ color: '#10B981' }} strokeWidth={2} />}
-          title='เอกสารและใบรับรอง'
-          iconClassName='h-8 w-8 rounded-lg'
-          iconStyle={{ backgroundColor: 'rgba(16,185,129,0.1)' }}
-          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
-          headerClassName='px-6 py-4'
-          contentClassName='px-6 py-5'
-          badge={sectionBadge(requiredStatus.hasCertificates)}
-          actionButton={
+        <div className='rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden'>
+          <div className='flex items-center justify-between border-b border-gray-100 px-6 py-5'>
+            <h2 className='text-lg font-bold text-gray-900'>เอกสารและใบรับรอง</h2>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => openCertAddRef.current?.()}
               className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors'
             >
-              <Plus size={12} />
-              เพิ่มใบรับรอง
+              <Plus size={12} /> เพิ่มใบรับรอง
             </Button>
-          }
-        >
-          <p className='text-xs text-gray-400 mb-3'>เช่น GMP, Halal, ISO, มาตรฐานอาหาร</p>
-          <CertificatesSection
-            factoryId={fid}
-            certs={(factoryQ.data?.certificates ?? []) as Record<string, unknown>[]}
-            onRegisterAdd={(handler) => {
-              openCertAddRef.current = handler;
-            }}
-          />
-        </SectionCard>
-
-        <SectionCard
-          icon={<Landmark size={14} style={{ color: '#6366F1' }} strokeWidth={2} />}
-          title='บัญชีธนาคาร'
-          iconClassName='h-8 w-8 rounded-lg'
-          iconStyle={{ backgroundColor: 'rgba(99,102,241,0.1)' }}
-          titleClassName='text-[12px] font-bold leading-none text-gray-800 truncate'
-          headerClassName='px-6 py-4'
-          contentClassName='px-6 py-5'
-        >
-          <div className='flex items-center gap-2 mb-3'>
-            <span className='text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500'>
-              Optional
-            </span>
-            <p className='text-xs text-gray-400'>ใช้สำหรับรับการโอนเงิน</p>
           </div>
-          <BankAccountPlaceholder />
-        </SectionCard>
+          <div className='px-6 py-5'>
+            <CertificatesSection
+              factoryId={fid}
+              certs={(factoryQ.data?.certificates ?? []) as Record<string, unknown>[]}
+              onRegisterAdd={(handler) => {
+                openCertAddRef.current = handler;
+              }}
+              readOnly={false}
+            />
+          </div>
+        </div>
 
-        {isDirty && changeCount > 0 && (
-          <p className='text-xs text-gray-400 text-center'>
-            มี {changeCount} ฟิลด์ที่เปลี่ยนแปลง — กดบันทึกเพื่อยืนยัน
-          </p>
-        )}
-      </form>
-
-      <ProfileSaveBar
-        isDirty={isDirty}
-        changeCount={changeCount}
-        saving={saving}
-        onSave={() => void handleSave()}
-        onDiscard={() => form.reset(initialValues)}
-      />
+        <div className='rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden'>
+          <div className='flex items-center justify-between border-b border-gray-100 px-6 py-5'>
+            <h2 className='text-lg font-bold text-gray-900'>บัญชีธนาคาร</h2>
+            <span className='text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 border border-gray-200'>Optional</span>
+          </div>
+          <div className='px-6 py-5'>
+            <BankAccountPlaceholder />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

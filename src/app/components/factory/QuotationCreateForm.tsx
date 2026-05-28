@@ -59,6 +59,7 @@ interface Props {
   initialFactoryHighlight?: string;
   patchQuotationId?: string | null; // PATCH mode
   submitLabel?: string;
+  pageError?: string;
   onSubmitted?: () => void | Promise<void>;
   readOnly?: boolean;
   showHeading?: boolean;
@@ -85,6 +86,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       initialFactoryHighlight,
       patchQuotationId,
       submitLabel = 'ส่งใบเสนอราคา',
+      pageError,
       onSubmitted,
       readOnly = false,
       showHeading = true,
@@ -285,8 +287,6 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         className='bg-white rounded-2xl border border-gray-100 p-4 space-y-4'
       >
         {showHeading ? <h3 className='text-sm font-bold text-gray-900'>ยื่นใบเสนอราคา</h3> : null}
-
-        {error ? <ErrorAlert size='sm'>{error}</ErrorAlert> : null}
 
         <FormField
           label='ราคาต่อชิ้น (บาท)'
@@ -533,29 +533,35 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         ) : null}
 
         {!readOnly ? (
-          <Button
-            variant='unstyled'
-            type='submit'
-            disabled={
-              saving ||
-              (!form.formState.isDirty &&
-                (factoryHighlight ?? '') === (initialFactoryHighlight ?? '')) ||
-              Boolean(highlightError)
-            }
-            className='w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-brand-purple to-brand-violet'
-          >
-            {saving ? (
-              <>
-                <Loader2 size={14} className='animate-spin' />
-                กำลังส่ง…
-              </>
-            ) : (
-              <>
-                {patchQuotationId ? <Save size={14} /> : <Send size={14} />}
-                {submitLabel}
-              </>
-            )}
-          </Button>
+          <>
+            {pageError ? <ErrorAlert size='sm'>{pageError}</ErrorAlert> : null}
+            {error ? <ErrorAlert size='sm'>{error}</ErrorAlert> : null}
+            <Button
+              variant='unstyled'
+              type='submit'
+              disabled={
+                saving ||
+                (!form.formState.isDirty &&
+                  (factoryHighlight ?? '') === (initialFactoryHighlight ?? '')) ||
+                Boolean(highlightError)
+              }
+              className='w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-brand-purple to-brand-violet'
+            >
+              {saving ? (
+                <>
+                  <Loader2 size={14} className='animate-spin' />
+                  กำลังส่ง…
+                </>
+              ) : (
+                <>
+                  {patchQuotationId ? <Save size={14} /> : <Send size={14} />}
+                  {submitLabel}
+                </>
+              )}
+            </Button>
+          </>
+        ) : pageError ? (
+          <ErrorAlert size='sm'>{pageError}</ErrorAlert>
         ) : null}
       </form>
     );

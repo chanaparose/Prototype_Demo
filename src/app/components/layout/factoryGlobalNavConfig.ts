@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Package,
   Wallet,
+  IdCard,
 } from 'lucide-react';
 
 export type FactorySidebarNavItem = {
@@ -39,6 +40,14 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     href: '/factory/profile',
     activeMatch: 'prefix',
     activePath: '/factory/profile',
+  },
+  {
+    key: 'factory-info',
+    label: 'Factory Info',
+    icon: IdCard,
+    href: '/factory/info',
+    activeMatch: 'prefix',
+    activePath: '/factory/info',
   },
   {
     key: 'factory-showcases',

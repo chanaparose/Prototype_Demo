@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   ResponsiveContainer,
+  ComposedChart,
   LineChart,
   Line,
   BarChart,
@@ -320,10 +321,23 @@ export function FactoryDashboardPage() {
 
   const isDesktop = useIsDesktop();
   const [timeframe, setTimeframe] = useState<AnalyticsTimeframe>('daily');
+  const [statsRange, setStatsRange] = useState<'monthly' | 'quarterly' | 'annually'>('monthly');
+  const [performanceTab, setPerformanceTab] = useState<'daily' | 'online' | 'new'>('daily');
   const { loading, error, summary, series, reload } = useFactoryDashboard(timeframe);
 
   const chartData = useMemo(() => series as AnalyticsSeriesPoint[], [series]);
   const kpis = useMemo(() => kpiRows(summary), [summary]);
+  const funnelChartData = useMemo(
+    () =>
+      chartData.map((it) => ({
+        label: it.label,
+        received: it.rfq_received,
+        replied: Math.max(it.rfq_replies, 0),
+        ordered: Math.max(it.total_orders, 0),
+        closed: Math.max(it.closed_orders, 0),
+      })),
+    [chartData],
+  );
 
   const lineChartHeight = isDesktop ? 280 : 220;
   const barChartHeight = isDesktop ? 260 : 220;
@@ -396,43 +410,44 @@ export function FactoryDashboardPage() {
         </div>
       ) : null}
 
-      <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3'>
-        {kpis.map((k) => {
-          const Icon = k.icon;
-          return (
-            <Button
-              variant='unstyled'
-              key={k.key}
-              type='button'
-              onClick={() => navigate(k.to)}
-              className='w-full text-left rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 group'
-            >
-              <div className='flex items-start justify-between gap-2'>
-                <div
-                  className='rounded-xl p-2.5 flex items-center justify-center shrink-0'
-                  style={{ backgroundColor: k.iconBg }}
-                >
-                  <Icon size={18} style={{ color: k.accent }} strokeWidth={2} aria-hidden />
-                </div>
-                <ChevronRight
-                  size={14}
-                  className='text-gray-300 group-hover:text-gray-500 transition-colors mt-1'
-                />
-              </div>
-              <p className='mt-3 text-[11px] font-medium uppercase tracking-wide text-gray-500'>
-                {k.title}
-              </p>
-              <p
-                className='mt-1 text-xl font-bold tabular-nums break-words leading-none'
-                style={{ color: COLORS.navy }}
+      <section className='rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+        <div className='flex items-center justify-between mb-4'>
+          <h3 className='text-lg font-bold text-slate-900'>Overview Performance</h3>
+          <span className='text-xs text-slate-500'>Factory KPI</span>
+        </div>
+        <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3'>
+          {kpis.slice(0, 4).map((k) => {
+            const Icon = k.icon;
+            return (
+              <Button
+                variant='unstyled'
+                key={k.key}
+                type='button'
+                onClick={() => navigate(k.to)}
+                className='w-full text-left rounded-2xl border border-slate-200 bg-white p-4 hover:shadow-md transition-all duration-200 group'
               >
-                {k.value}
-              </p>
-              {k.sub ? <p className='mt-1 text-[11px] text-gray-400'>{k.sub}</p> : null}
-            </Button>
-          );
-        })}
-      </div>
+                <div className='flex items-start justify-between gap-2'>
+                  <div
+                    className='rounded-xl p-2.5 flex items-center justify-center shrink-0'
+                    style={{ backgroundColor: k.iconBg }}
+                  >
+                    <Icon size={18} style={{ color: k.accent }} strokeWidth={2} aria-hidden />
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className='text-gray-300 group-hover:text-gray-500 transition-colors mt-1'
+                  />
+                </div>
+                <p className='mt-3 text-xs font-medium text-slate-500'>{k.title}</p>
+                <p className='mt-1 text-3xl font-bold tabular-nums break-words leading-none text-slate-900'>
+                  {k.value}
+                </p>
+                {k.sub ? <p className='mt-1 text-xs text-slate-400'>{k.sub}</p> : null}
+              </Button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className='flex items-center justify-between gap-4 flex-wrap'>
         <div>
@@ -479,6 +494,202 @@ export function FactoryDashboardPage() {
               </Button>
             );
           })}
+        </div>
+      </div>
+
+      <section className='rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+        <div className='flex items-center justify-between mb-2'>
+          <div>
+            <h3 className='text-lg font-bold text-slate-900'>Users & Revenue Statistics</h3>
+            <p className='text-sm text-slate-500'>รายได้ มัดจำ และออเดอร์ตามช่วงเวลา</p>
+          </div>
+          <div className='flex p-1 rounded-xl bg-slate-100'>
+            {[
+              { id: 'monthly', label: 'Monthly' },
+              { id: 'quarterly', label: 'Quarterly' },
+              { id: 'annually', label: 'Annually' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type='button'
+                onClick={() => setStatsRange(item.id as typeof statsRange)}
+                className='px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors'
+                style={{
+                  background: statsRange === item.id ? '#fff' : 'transparent',
+                  color: statsRange === item.id ? '#0F172A' : '#64748B',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className='w-full min-w-0 mt-4' style={{ height: lineChartHeight + 40 }}>
+          <ResponsiveContainer width='100%' height='100%'>
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 4 }}
+            >
+              <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
+              <XAxis
+                dataKey='label'
+                tick={{ fontSize: isDesktop ? 11 : 9, fill: SLATE }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                yAxisId='money'
+                tickFormatter={compactAxis}
+                tick={{ fontSize: 11, fill: SLATE }}
+                axisLine={false}
+                tickLine={false}
+                width={44}
+              />
+              <YAxis yAxisId='count' orientation='right' hide />
+              <Tooltip content={<MoneyTooltip />} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar
+                yAxisId='count'
+                dataKey='total_orders'
+                name='Orders'
+                fill='rgba(99,102,241,0.25)'
+                radius={[6, 6, 0, 0]}
+                maxBarSize={20}
+              />
+              <Line
+                yAxisId='money'
+                type='monotone'
+                dataKey='revenue'
+                name='Revenue'
+                stroke={PURPLE}
+                strokeWidth={2.5}
+                dot={{ r: 2.5, fill: PURPLE }}
+              />
+              <Line
+                yAxisId='money'
+                type='monotone'
+                dataKey='deposits'
+                name='Deposit'
+                stroke={ORANGE}
+                strokeWidth={2.5}
+                dot={{ r: 2.5, fill: ORANGE }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
+      <div className='grid gap-5 lg:grid-cols-5'>
+        <div className='lg:col-span-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+          <div className='flex items-center justify-between mb-1'>
+            <div>
+              <h3 className='text-lg font-bold text-slate-900'>Conversion Funnel</h3>
+              <p className='text-xs text-gray-400 mt-0.5'>RFQ ที่ได้รับ → ตอบกลับ → ออเดอร์ → ปิดสำเร็จ</p>
+            </div>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => navigate('/factory/rfqs')}
+              className='text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity'
+              style={{ color: COLORS.orange }}
+            >
+              จัดการ RFQ <ArrowRight size={12} />
+            </Button>
+          </div>
+          <div className='w-full min-w-0 mt-4' style={{ height: barChartHeight + 20 }}>
+            <ResponsiveContainer width='100%' height='100%'>
+              <BarChart
+                data={funnelChartData}
+                margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 2 }}
+              >
+                <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
+                <XAxis
+                  dataKey='label'
+                  interval={0}
+                  {...barXAxisProps}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 11, fill: SLATE }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={36}
+                />
+                <Tooltip content={<CountTooltip />} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey='received' name='RFQ Received' stackId='funnel' fill='#3730A3' />
+                <Bar dataKey='replied' name='Replied' stackId='funnel' fill='#4F46E5' />
+                <Bar dataKey='ordered' name='Ordered' stackId='funnel' fill='#818CF8' />
+                <Bar dataKey='closed' name='Closed' stackId='funnel' fill='#BFDBFE' />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className='lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
+          <div className='flex items-center justify-between mb-3'>
+            <h3 className='text-lg font-bold text-slate-900'>Product Performance</h3>
+          </div>
+          <div className='grid grid-cols-3 rounded-xl bg-slate-100 p-1 mb-3'>
+            {[
+              { id: 'daily', label: 'Daily Sales' },
+              { id: 'online', label: 'Online Sales' },
+              { id: 'new', label: 'New Users' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={() => setPerformanceTab(tab.id as typeof performanceTab)}
+                className='rounded-lg py-2 text-xs font-semibold transition-colors'
+                style={{
+                  background: performanceTab === tab.id ? '#fff' : 'transparent',
+                  color: performanceTab === tab.id ? '#0F172A' : '#64748B',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className='rounded-xl border border-slate-200 p-3 mb-3 grid grid-cols-2 gap-3'>
+            <div>
+              <p className='text-xs text-slate-500'>RFQ ตอบกลับ</p>
+              <p className='text-3xl font-bold text-slate-900 tabular-nums'>
+                {formatCompactNumber(summary.rfq_replies_total)}
+              </p>
+            </div>
+            <div>
+              <p className='text-xs text-slate-500'>ปิดสำเร็จ</p>
+              <p className='text-3xl font-bold text-slate-900 tabular-nums'>
+                {formatCompactNumber(summary.closed_orders_total)}
+              </p>
+            </div>
+          </div>
+          <div className='rounded-xl border border-slate-200 p-3'>
+            <p className='text-xs text-slate-500 mb-1'>Average Daily Orders</p>
+            <p className='text-2xl font-bold text-slate-900 tabular-nums mb-3'>
+              {summary.total_orders_total > 0
+                ? (summary.total_orders_total / Math.max(chartData.length, 1)).toFixed(1)
+                : '0.0'}
+            </p>
+            <div style={{ height: 160 }}>
+              <ResponsiveContainer width='100%' height='100%'>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
+                  <XAxis
+                    dataKey='label'
+                    tick={{ fontSize: 10, fill: SLATE }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis hide />
+                  <Tooltip content={<CountTooltip />} />
+                  <Bar dataKey='total_orders' fill='#4F46E5' radius={[6, 6, 0, 0]} maxBarSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -603,353 +814,7 @@ export function FactoryDashboardPage() {
         </div>
       </div>
 
-      <div className='grid gap-5 lg:grid-cols-2'>
-        {/* ── Pipeline ธุรกิจ ── */}
-        <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col'>
-          {/* header */}
-          <div className='px-5 py-4 border-b border-gray-50 flex items-center justify-between'>
-            <div>
-              <h3 className='text-sm font-bold' style={{ color: COLORS.navy }}>
-                Pipeline ธุรกิจ
-              </h3>
-              <p className='text-xs text-gray-400 mt-0.5'>Conversion ตั้งแต่ RFQ ถึงยอดขาย</p>
-            </div>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate('/factory/rfqs')}
-              className='text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity'
-              style={{ color: COLORS.orange }}
-            >
-              จัดการ RFQ <ArrowRight size={12} />
-            </Button>
-          </div>
-
-          {/* funnel stages */}
-          <div className='px-5 py-4 flex-1 space-y-4'>
-            {(() => {
-              const stages = [
-                {
-                  label: 'RFQ ที่ได้รับ',
-                  sub: 'คำขอใบเสนอราคาทั้งหมด',
-                  count: summary.rfq_received_total,
-                  barColor: '#6366F1',
-                  textColor: 'text-indigo-600',
-                  bgColor: 'bg-indigo-50',
-                  iconColor: 'text-indigo-500',
-                  Icon: ClipboardList,
-                  pct: 100,
-                  to: '/factory/rfqs',
-                },
-                {
-                  label: 'ส่งใบเสนอราคาแล้ว',
-                  sub: 'ตอบกลับ RFQ',
-                  count: summary.rfq_replies_total,
-                  barColor: '#0EA5E9',
-                  textColor: 'text-sky-600',
-                  bgColor: 'bg-sky-50',
-                  iconColor: 'text-sky-500',
-                  Icon: MessageSquareReply,
-                  pct:
-                    summary.rfq_received_total > 0
-                      ? Math.round((summary.rfq_replies_total / summary.rfq_received_total) * 100)
-                      : 0,
-                  to: '/factory/rfqs',
-                },
-                {
-                  label: 'ออเดอร์ที่ได้รับ',
-                  sub: 'ลูกค้ายืนยันแล้ว',
-                  count: summary.total_orders_total,
-                  barColor: '#F59E0B',
-                  textColor: 'text-amber-600',
-                  bgColor: 'bg-amber-50',
-                  iconColor: 'text-amber-500',
-                  Icon: Package,
-                  pct:
-                    summary.rfq_replies_total > 0
-                      ? Math.round((summary.total_orders_total / summary.rfq_replies_total) * 100)
-                      : 0,
-                  to: '/factory/orders',
-                },
-                {
-                  label: 'ปิดการขายสำเร็จ',
-                  sub: 'ดำเนินการเสร็จสิ้น',
-                  count: summary.closed_orders_total,
-                  barColor: '#10B981',
-                  textColor: 'text-emerald-600',
-                  bgColor: 'bg-emerald-50',
-                  iconColor: 'text-emerald-500',
-                  Icon: CheckCircle,
-                  pct:
-                    summary.total_orders_total > 0
-                      ? Math.round((summary.closed_orders_total / summary.total_orders_total) * 100)
-                      : 0,
-                  to: '/factory/orders',
-                },
-              ];
-              return stages.map((s, i) => (
-                <button
-                  key={s.label}
-                  type='button'
-                  onClick={() => navigate(s.to)}
-                  className='w-full text-left group'
-                >
-                  <div className='flex items-center gap-3 mb-1.5'>
-                    {/* step number + icon */}
-                    <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${s.bgColor} transition-transform group-hover:scale-110`}
-                    >
-                      <s.Icon size={13} className={s.iconColor} />
-                    </div>
-                    {/* label */}
-                    <div className='flex-1 min-w-0'>
-                      <div className='flex items-baseline justify-between gap-2'>
-                        <span className='text-xs font-semibold text-gray-700 truncate'>
-                          {s.label}
-                        </span>
-                        <span className={`text-sm font-bold shrink-0 ${s.textColor}`}>
-                          {formatCompactNumber(s.count)}
-                        </span>
-                      </div>
-                      <div className='flex items-center justify-between gap-2 mt-0.5'>
-                        <span className='text-[10px] text-gray-400 truncate'>{s.sub}</span>
-                        <span className='text-[10px] text-gray-400 shrink-0'>
-                          {i === 0 ? '100%' : `${s.pct}%`}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  {/* progress bar */}
-                  <div className='ml-10 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden'>
-                    <div
-                      className='h-full rounded-full transition-all duration-700'
-                      style={{
-                        width: `${Math.min(i === 0 ? 100 : s.pct, 100)}%`,
-                        backgroundColor: s.barColor,
-                      }}
-                    />
-                  </div>
-                </button>
-              ));
-            })()}
-          </div>
-
-          {/* urgent action — pending quotations */}
-          {summary.pending_quotations_total > 0 && (
-            <div className='mx-5 mb-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center gap-3'>
-              <div className='w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0'>
-                <AlertTriangle size={13} className='text-amber-600' />
-              </div>
-              <div className='flex-1 min-w-0'>
-                <p className='text-xs font-semibold text-amber-800'>
-                  มี {summary.pending_quotations_total} RFQ รอการตอบกลับ
-                </p>
-                <p className='text-[11px] text-amber-600 mt-0.5'>
-                  ตอบเร็วเพื่อเพิ่มโอกาสได้ออเดอร์
-                </p>
-              </div>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate('/factory/rfqs')}
-                className='shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-amber-500 hover:bg-amber-600 transition-colors'
-              >
-                ตอบเลย
-              </Button>
-            </div>
-          )}
-
-          {/* footer metrics */}
-          <div className='px-5 py-3 border-t border-gray-50 flex gap-4 flex-wrap'>
-            <div className='flex items-center gap-1.5'>
-              <span className='w-2 h-2 rounded-full bg-sky-400' />
-              <span className='text-[11px] text-gray-500'>
-                Reply Rate:{' '}
-                <span className='font-semibold text-gray-700'>{rfqReplyRatePct(summary)}%</span>
-              </span>
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <span className='w-2 h-2 rounded-full bg-emerald-400' />
-              <span className='text-[11px] text-gray-500'>
-                Close Rate:{' '}
-                <span className='font-semibold text-gray-700'>
-                  {summary.total_orders_total > 0
-                    ? Math.round((summary.closed_orders_total / summary.total_orders_total) * 100)
-                    : 0}
-                  %
-                </span>
-              </span>
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <span className='w-2 h-2 rounded-full' style={{ backgroundColor: SLATE }} />
-              <span className='text-[11px] text-gray-500'>
-                รายได้:{' '}
-                <span className='font-semibold text-gray-700'>
-                  {formatCurrencyNoDecimals(summary.revenue_total)}
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'>
-          <div className='px-5 py-4 border-b border-gray-50 flex items-center justify-between'>
-            <div>
-              <h3 className='text-sm font-bold' style={{ color: COLORS.navy }}>
-                คำสั่งซื้อล่าสุด
-              </h3>
-              <p className='text-xs text-gray-400 mt-0.5'>สถานะออเดอร์ในช่วงนี้</p>
-            </div>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate('/factory/orders')}
-              className='text-xs font-semibold flex items-center gap-1 hover:opacity-80 transition-opacity'
-              style={{ color: COLORS.orange }}
-            >
-              ดูทั้งหมด <ArrowRight size={12} />
-            </Button>
-          </div>
-
-          <div className='p-4 grid grid-cols-3 gap-3'>
-            <div className='rounded-xl border border-gray-100 bg-gray-50 p-3 text-center'>
-              <p className='text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1'>
-                ทั้งหมด
-              </p>
-              <p className='text-xl font-bold' style={{ color: COLORS.navy }}>
-                {formatCompactNumber(summary.total_orders_total)}
-              </p>
-              <p className='text-[10px] text-gray-400 mt-0.5'>ออเดอร์</p>
-            </div>
-            <div className='rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-center'>
-              <p className='text-[10px] text-emerald-500 font-medium uppercase tracking-wide mb-1'>
-                ปิดสำเร็จ
-              </p>
-              <p className='text-xl font-bold text-emerald-600'>
-                {formatCompactNumber(summary.closed_orders_total)}
-              </p>
-              <p className='text-[10px] text-emerald-400 mt-0.5'>ออเดอร์</p>
-            </div>
-            <div className='rounded-xl border border-amber-100 bg-amber-50 p-3 text-center'>
-              <p className='text-[10px] text-amber-500 font-medium uppercase tracking-wide mb-1'>
-                กำลังดำเนินการ
-              </p>
-              <p className='text-xl font-bold text-amber-600'>
-                {formatCompactNumber(
-                  Math.max(summary.total_orders_total - summary.closed_orders_total, 0),
-                )}
-              </p>
-              <p className='text-[10px] text-amber-400 mt-0.5'>ออเดอร์</p>
-            </div>
-          </div>
-
-          <div className='px-4 pb-4'>
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={() => navigate('/factory/orders')}
-              className='w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 flex items-center justify-center gap-2'
-              style={{
-                backgroundColor: COLORS.purple,
-                boxShadow: '0 2px 8px rgba(122,75,148,0.3)',
-              }}
-            >
-              จัดการคำสั่งซื้อ
-              <ArrowRight size={14} />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className='rounded-2xl border border-gray-100 bg-white p-5 shadow-sm'>
-        <div className='flex items-center justify-between mb-1'>
-          <div>
-            <h3 className='text-sm font-bold' style={{ color: COLORS.navy }}>
-              RFQ ที่ได้รับ vs การตอบกลับ
-            </h3>
-            <p className='text-xs text-gray-400 mt-0.5'>
-              จำนวนต่อ{timeframe === 'daily' ? 'วัน' : timeframe === 'weekly' ? 'สัปดาห์' : 'เดือน'}{' '}
-              · ไม่ใช่ยอดสะสม
-            </p>
-          </div>
-
-          <div
-            className='flex items-center gap-2 rounded-xl px-3 py-2'
-            style={{
-              backgroundColor:
-                rfqReplyRatePct(summary) < 50 ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)',
-            }}
-          >
-            <span className='text-[10px] font-medium text-gray-500'>อัตราตอบ</span>
-            <span
-              className='text-base font-bold tabular-nums'
-              style={{ color: rfqReplyRatePct(summary) < 50 ? 'var(--status-danger)' : '#10B981' }}
-            >
-              {rfqReplyRatePct(summary)}%
-            </span>
-          </div>
-        </div>
-        <div className='w-full min-w-0 mt-4' style={{ height: barChartHeight }}>
-          <ResponsiveContainer width='100%' height='100%'>
-            <BarChart
-              data={chartData}
-              margin={{ top: 8, right: isDesktop ? 8 : 4, left: 0, bottom: isDesktop ? 0 : 2 }}
-            >
-              <CartesianGrid strokeDasharray='3 3' stroke='var(--neutral-slate-muted)' />
-              <XAxis
-                dataKey='label'
-                interval={0}
-                {...barXAxisProps}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fontSize: 11, fill: SLATE }}
-                axisLine={false}
-                tickLine={false}
-                width={36}
-              />
-              <Tooltip content={<CountTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar
-                dataKey='rfq_received'
-                name='RFQ ที่ได้รับ'
-                fill={SLATE}
-                radius={[4, 4, 0, 0]}
-                maxBarSize={28}
-              />
-              <Bar
-                dataKey='rfq_replies'
-                name='ตอบกลับ'
-                fill={ORANGE}
-                radius={[4, 4, 0, 0]}
-                maxBarSize={28}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {rfqReplyRatePct(summary) < 50 && summary.rfq_received_total > 0 && (
-          <div className='mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3'>
-            <AlertTriangle size={16} className='text-amber-500 shrink-0 mt-0.5' />
-            <div>
-              <p className='text-sm font-semibold text-amber-800'>อัตราตอบ RFQ ต่ำ</p>
-              <p className='text-xs text-amber-600 mt-0.5'>
-                คุณตอบ RFQ เพียง {rfqReplyRatePct(summary)}% — การตอบกลับสูงขึ้นช่วยให้ได้งานมากขึ้น
-              </p>
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => navigate('/factory/rfqs')}
-                className='mt-2 text-xs font-semibold text-amber-700 underline hover:text-amber-900'
-              >
-                ไปตอบ RFQ ที่รอ →
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+       
     </div>
   );
 }
