@@ -86,9 +86,13 @@ function InfoCard({
     <div className={`rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden ${className}`}>
       {(title != null || action != null) && (
         <div className='flex items-center justify-between gap-4 px-6 py-5 border-b border-gray-100'>
-          {title != null
-            ? <span className='text-base font-bold text-gray-900'>{title}</span>
-            : <span />}
+          {title != null ? (
+            typeof title === 'string' || typeof title === 'number'
+              ? <span className='text-base font-bold text-gray-900'>{title}</span>
+              : <div className='min-w-0 flex-1'>{title}</div>
+          ) : (
+            <span />
+          )}
           {action}
         </div>
       )}
@@ -389,16 +393,12 @@ export function FactoryInfoPage() {
   );
   if (isLoading) return (
     <div className='space-y-4'>
-      <h1 className='text-xl font-bold text-gray-900'>Factory Info</h1>
       <FormSkeleton sections={4} />
     </div>
   );
 
   return (
     <div className='space-y-5 pb-12 max-w-4xl'>
-      {/* Page heading */}
-      <h1 className='text-xl font-bold text-gray-900'>Factory Info</h1>
-
       {/* Alerts */}
       {error && (
         <div className='flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'>
@@ -413,10 +413,9 @@ export function FactoryInfoPage() {
         </div>
       )}
 
-      <VerifyStatusBanner status={verifyStatus} />
-
       {/* ── 1+2. Profile + หมวดหมู่ — same API (PUT /factories/:id/profile) ─── */}
       <InfoCard
+        title={<VerifyStatusBanner status={verifyStatus} />}
         action={
           <div className='flex items-center gap-2'>
             <SectionEditActions
