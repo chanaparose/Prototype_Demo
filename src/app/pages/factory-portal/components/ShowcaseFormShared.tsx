@@ -80,7 +80,7 @@ export function ShowcaseImageManager({
   };
 
   return (
-    <section className='w-full max-w-[360px] xl:shrink-0'>
+    <section className='w-full'>
       <div
         className='relative aspect-[4/3] rounded-xl overflow-hidden border'
         style={{ borderColor: '#E7E2F0', background: 'var(--neutral-warm-surface)' }}
