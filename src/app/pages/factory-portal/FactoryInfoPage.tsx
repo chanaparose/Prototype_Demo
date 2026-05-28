@@ -41,6 +41,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
+import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 const PRIMARY = '#3C50E0';
@@ -392,13 +393,16 @@ export function FactoryInfoPage() {
     </div>
   );
   if (isLoading) return (
-    <div className='space-y-4'>
+    <div className='w-full min-w-0 space-y-4'>
+      <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory / Info' icon={Building2} />
       <FormSkeleton sections={4} />
     </div>
   );
 
   return (
-    <div className='space-y-5 pb-12 max-w-4xl'>
+    <div className='w-full min-w-0 space-y-4 pb-12'>
+      <FactoryPageHeader title='ข้อมูลโรงงาน' subtitle='Factory / Info' icon={Building2} />
+
       {/* Alerts */}
       {error && (
         <div className='flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'>
@@ -511,7 +515,7 @@ export function FactoryInfoPage() {
               {categoryCardsByScope.PD.length > 0 ? (
                 <div className='space-y-2.5'>
                   <p className='text-sm font-bold text-indigo-700'>หมวดสินค้า (PD)</p>
-                  <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'>
                     {categoryCardsByScope.PD.map((cat) => (
                       <div key={`pd-${cat.id}`} className='rounded-2xl border border-gray-200 bg-white p-4'>
                         <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
@@ -541,7 +545,7 @@ export function FactoryInfoPage() {
               {categoryCardsByScope.MT.length > 0 ? (
                 <div className='space-y-2.5'>
                   <p className='text-sm font-bold text-emerald-700'>หมวดวัตถุดิบ (MT)</p>
-                  <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'>
                     {categoryCardsByScope.MT.map((cat) => (
                       <div key={`mt-${cat.id}`} className='rounded-2xl border border-gray-200 bg-white p-4'>
                         <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
