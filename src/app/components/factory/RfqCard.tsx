@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import {
   ArrowUpDown,
   ChevronLeft,
@@ -214,16 +214,28 @@ function RfqTableRowLink({
   variant: 'board' | 'boq';
   from: string;
 }) {
+  const navigate = useNavigate();
   const pill = variant === 'boq' ? boqStatusPill(row) : boardStatusPill(row);
+  const detailPath = `/factory/rfqs/${row.id}`;
+
+  const goToDetail = () => navigate(detailPath, { state: { from } });
 
   return (
-    <TableRow>
+    <TableRow
+      className='cursor-pointer'
+      onClick={goToDetail}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goToDetail();
+        }
+      }}
+      tabIndex={0}
+      role='link'
+      aria-label={`${row.title} #${row.id}`}
+    >
       <TableCell className='min-w-[220px] py-2.5 text-xs'>
-        <Link
-          to={`/factory/rfqs/${row.id}`}
-          state={{ from }}
-          className='flex items-center gap-2.5 min-w-0 group'
-        >
+        <div className='flex min-w-0 items-center gap-2.5 group'>
           <div className='flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100'>
             {row.thumbUrl ? (
               <Image
@@ -250,7 +262,7 @@ function RfqTableRowLink({
               ) : null}
             </div>
           </div>
-        </Link>
+        </div>
       </TableCell>
       <TableCell className='min-w-[140px] py-2.5 text-xs text-slate-700'>{categoryLabel(row)}</TableCell>
       <TableCell className='min-w-[100px] py-2.5 text-xs text-slate-700'>
