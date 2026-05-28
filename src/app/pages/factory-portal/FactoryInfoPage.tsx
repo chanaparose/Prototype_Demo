@@ -52,6 +52,8 @@ function normalizeIds(ids: number[]): number[] {
   return Array.from(new Set(ids)).filter((id) => Number.isFinite(id) && id > 0).sort((a, b) => a - b);
 }
 
+type CategoryScope = 'PD' | 'MT' | 'OTHER';
+
 // ─── Shared UI ────────────────────────────────────────────────────────────────
 
 /** Small labeled data field — label above bold value */
@@ -339,8 +341,43 @@ export function FactoryInfoPage() {
   const factoryTypeName = factoryTypesQ.data?.find((t) => t.id === initialValues.factory_type_id)?.label;
   const rawCats = (factoryQ.data?.categories as Array<Record<string, unknown>> | undefined) ?? [];
   const rawSubs = (factoryQ.data?.sub_categories as Array<Record<string, unknown>> | undefined) ?? [];
-  const catNames = rawCats.map((c) => String(c.category_name ?? c.name ?? '')).filter(Boolean);
-  const subNames = rawSubs.map((s) => String(s.sub_category_name ?? s.name ?? '')).filter(Boolean);
+  const lbiCategories = (initQ.data?.lbi_categories as Array<Record<string, unknown>> | undefined) ?? [];
+  const catScopeById = useMemo(() => {
+    const map = new Map<number, CategoryScope>();
+    lbiCategories.forEach((c) => {
+      const id = Number(c.category_id);
+      const scope = String(c.scope ?? '').toUpperCase();
+      if (!Number.isFinite(id)) return;
+      if (scope === 'PD' || scope === 'MT') map.set(id, scope);
+      else map.set(id, 'OTHER');
+    });
+    return map;
+  }, [lbiCategories]);
+  const categoryCardsByScope = useMemo(() => {
+    const out: Record<'PD' | 'MT', Array<{ id: number; name: string; subNames: string[] }>> = {
+      PD: [],
+      MT: [],
+    };
+    const subByCat = new Map<number, string[]>();
+    rawSubs.forEach((s) => {
+      const catId = Number(s.category_id);
+      const name = String(s.sub_category_name ?? s.name ?? '').trim();
+      if (!Number.isFinite(catId) || !name) return;
+      const bucket = subByCat.get(catId) ?? [];
+      bucket.push(name);
+      subByCat.set(catId, bucket);
+    });
+    rawCats.forEach((c) => {
+      const id = Number(c.category_id);
+      const name = String(c.category_name ?? c.name ?? '').trim();
+      if (!Number.isFinite(id) || !name) return;
+      const scope = catScopeById.get(id) ?? 'PD';
+      if (scope !== 'PD' && scope !== 'MT') return;
+      const subNamesForCard = Array.from(new Set(subByCat.get(id) ?? []));
+      out[scope].push({ id, name, subNames: subNamesForCard });
+    });
+    return out;
+  }, [catScopeById, rawCats, rawSubs]);
 
   // ── Guards ─────────────────────────────────────────────────────────────────
   if (fid == null) return <p className='text-sm text-red-600'>บัญชีนี้ไม่ใช่โรงงาน</p>;
@@ -471,26 +508,56 @@ export function FactoryInfoPage() {
             <div className='border-t border-gray-100 -mx-6' />
             <div className='space-y-4'>
               <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
-              <div>
-                <p className='text-[11px] font-medium text-gray-400 mb-2'>หมวดหมู่หลัก</p>
-                {catNames.length > 0 ? (
-                  <div className='flex flex-wrap gap-2'>
-                    {catNames.map((n) => (
-                      <span key={n} className='inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100'>{n}</span>
-                    ))}
-                  </div>
-                ) : <p className='text-sm text-gray-300 font-normal'>—</p>}
-              </div>
-              {subNames.length > 0 && (
-                <div>
-                  <p className='text-[11px] font-medium text-gray-400 mb-2'>หมวดหมู่ย่อย</p>
-                  <div className='flex flex-wrap gap-2'>
-                    {subNames.map((n) => (
-                      <span key={n} className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100'>{n}</span>
+
+              {categoryCardsByScope.PD.length > 0 ? (
+                <div className='space-y-2.5'>
+                  <p className='text-sm font-bold text-indigo-700'>หมวดสินค้า (PD)</p>
+                  <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                    {categoryCardsByScope.PD.map((cat) => (
+                      <div key={`pd-${cat.id}`} className='rounded-2xl border border-gray-200 bg-white p-4'>
+                        <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
+                        <p className='text-xs text-gray-500 mt-0.5'>
+                          {cat.subNames.length} หมวดย่อยที่เลือกไว้
+                        </p>
+                        {cat.subNames.length > 0 ? (
+                          <ul className='mt-3 flex flex-wrap gap-1.5'>
+                            {cat.subNames.map((name) => (
+                              <li
+                                key={`${cat.id}-${name}`}
+                                className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
+                              >
+                                ✓ {name}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className='mt-3 text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย</p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
-              )}
+              ) : null}
+
+              {categoryCardsByScope.MT.length > 0 ? (
+                <div className='space-y-2.5'>
+                  <p className='text-sm font-bold text-emerald-700'>หมวดวัตถุดิบ (MT)</p>
+                  <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+                    {categoryCardsByScope.MT.map((cat) => (
+                      <div key={`mt-${cat.id}`} className='rounded-2xl border border-gray-200 bg-white p-4'>
+                        <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
+                        <p className='text-xs text-gray-500 mt-0.5'>
+                          {cat.subNames.length > 0 ? `${cat.subNames.length} หมวดย่อยที่เลือกไว้` : 'ไม่มีหมวดย่อย'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {categoryCardsByScope.PD.length === 0 && categoryCardsByScope.MT.length === 0 ? (
+                <p className='text-sm text-gray-300 font-normal'>—</p>
+              ) : null}
             </div>
           </div>
         )}
