@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Plus, Pencil, Trash2, Heart, ImageIcon, Sparkles, MapPin, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon, Sparkles, MapPin, Star, Search, ArrowUpDown } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { showcasesApi } from '@/services/api/factoryApi';
@@ -87,8 +87,27 @@ export function FactoryShowcasesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
 
   const rows = allRows.filter((r) => String(r.content_type ?? '').toUpperCase() === activeType);
+  const displayRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const filtered = rows.filter((r) => {
+      if (!q) return true;
+      const title = String(r.title ?? '').toLowerCase();
+      return title.includes(q);
+    });
+    const toTs = (r: Row): number => {
+      const raw = String(r.created_at ?? r.updated_at ?? r.published_at ?? '');
+      const ts = Date.parse(raw);
+      return Number.isFinite(ts) ? ts : 0;
+    };
+    return [...filtered].sort((a, b) => {
+      const diff = toTs(b) - toTs(a);
+      return sortDir === 'desc' ? diff : -diff;
+    });
+  }, [rows, search, sortDir]);
 
   const changeType = (type: ShowcaseType) => {
     setActiveType(type);
@@ -154,29 +173,54 @@ export function FactoryShowcasesPage() {
         action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
       />
 
-      <div className='flex items-center gap-1 p-1 rounded-xl bg-slate-100 border border-slate-200'>
-        {SHOWCASE_TAB_TYPES.map((type) => {
-          const meta = TAB_META[type];
-          const active = activeType === type;
-          return (
-            <Button
-              variant='unstyled'
-              key={type}
-              type='button'
-              onClick={() => changeType(type)}
-              className='flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all'
-              style={{
-                backgroundColor: active ? 'var(--brand-indigo)' : 'transparent',
-                color: active ? 'var(--neutral-white)' : '#334155',
-                fontWeight: active ? 700 : 500,
-                boxShadow: active ? '0 2px 8px rgba(79,70,229,0.25)' : 'none',
-              }}
-            >
-              <span>{meta.icon}</span>
-              <span>{meta.label}</span>
-            </Button>
-          );
-        })}
+      <div className='flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2 lg:flex-row lg:items-center lg:justify-between'>
+        <div className='flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 lg:flex-1'>
+          {SHOWCASE_TAB_TYPES.map((type) => {
+            const meta = TAB_META[type];
+            const active = activeType === type;
+            return (
+              <Button
+                variant='unstyled'
+                key={type}
+                type='button'
+                onClick={() => changeType(type)}
+                className='flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all'
+                style={{
+                  backgroundColor: active ? 'var(--brand-indigo)' : 'transparent',
+                  color: active ? 'var(--neutral-white)' : '#334155',
+                  fontWeight: active ? 700 : 500,
+                  boxShadow: active ? '0 2px 8px rgba(79,70,229,0.25)' : 'none',
+                }}
+              >
+                <span>{meta.icon}</span>
+                <span>{meta.label}</span>
+              </Button>
+            );
+          })}
+        </div>
+
+        <div className='flex items-center gap-2 lg:w-[360px] lg:flex-none'>
+          <div className='relative flex-1'>
+            <Search className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400' />
+            <input
+              type='search'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder='ค้นหา showcase'
+              className='h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-200'
+            />
+          </div>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
+            className='h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-slate-50'
+            title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
+          >
+            <ArrowUpDown className='h-4 w-4' />
+            {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
+          </Button>
+        </div>
       </div>
 
       {error ? <ErrorAlert>{error}</ErrorAlert> : null}
@@ -194,7 +238,7 @@ export function FactoryShowcasesPage() {
             </div>
           ))}
         </div>
-      ) : rows.length === 0 ? (
+      ) : displayRows.length === 0 ? (
         <div className='rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4'>
           <div className='text-5xl'>{icon}</div>
           <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
@@ -213,7 +257,7 @@ export function FactoryShowcasesPage() {
         </div>
       ) : (
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
-          {rows.map((r) => {
+          {displayRows.map((r) => {
                 const id = rowId(r);
             const img = firstImage(r);
             const statusKey = String(r.status ?? 'DR').toUpperCase() as ShowcaseStatus;
