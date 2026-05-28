@@ -438,8 +438,6 @@ export function FactoryRfqDetailPage() {
           </div>
         ) : null}
 
-        {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
-
         {!loading ? (
           <div className='flex flex-col gap-5'>
 
@@ -644,6 +642,7 @@ export function FactoryRfqDetailPage() {
                 </h2>
 
                 <div className='flex min-h-0 flex-1 flex-col gap-3'>
+                {error && fid == null ? <ErrorAlert size='sm'>{error}</ErrorAlert> : null}
                 {fid != null ? (
                   <QuotationCreateForm
                     key={`quote-${id}-${myQuote ? quoteIdOf(myQuote) : 'new'}`}
@@ -688,6 +687,7 @@ export function FactoryRfqDetailPage() {
                         : ''
                     }
                     submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
+                    pageError={error || undefined}
                     readOnly={Boolean(myQuote && !canEdit)}
                     showHeading={false}
                     budgetPerPiece={budgetPerPiece}
@@ -717,16 +717,24 @@ export function FactoryRfqDetailPage() {
 
             {/* Send QT in chat */}
             {customerId > 0 && fid != null ? (
-              <Button
-                variant='unstyled'
-                type='button'
-                disabled={chatBusy}
-                onClick={() => void sendQuoteMessageToCustomer()}
-                className='w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)] lg:max-w-[calc(50%-0.625rem)] lg:ml-auto'
-              >
-                <MessageCircle size={16} />
-                ส่งใบเสนอราคาในแชท (QT)
-              </Button>
+              <div className='w-full lg:max-w-[calc(50%-0.625rem)] lg:ml-auto rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3'>
+                <div className='flex items-center justify-between gap-3'>
+                  <div className='min-w-0'>
+                    <p className='text-[13px] font-semibold text-slate-800'>ส่งใบเสนอราคาให้ลูกค้า</p>
+                    <p className='text-[11px] text-slate-500'>แชร์ BOQ ล่าสุดเข้าแชทลูกค้าโดยตรง</p>
+                  </div>
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    disabled={chatBusy || !myQuote}
+                    onClick={() => void sendQuoteMessageToCustomer()}
+                    className='shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-indigo-dark)_100%)]'
+                  >
+                    <MessageCircle size={15} />
+                    ส่งในแชท
+                  </Button>
+                </div>
+              </div>
             ) : null}
 
             {/* Quotation history */}
