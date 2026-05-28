@@ -22,7 +22,7 @@ const TAB_META = {
 } as const;
 
 /** PM tab disabled on /factory/showcases */
-const SHOWCASE_TAB_TYPES: ShowcaseType[] = ['PD', 'ID', 'MT'];
+const SHOWCASE_TAB_TYPES: ShowcaseType[] = ['PD', 'MT', 'ID'];
 
 const STATUS_META: Record<ShowcaseStatus, { label: string; bg: string; color: string }> = {
   DR: { label: 'ร่าง', bg: 'rgba(107,114,128,0.12)', color: 'var(--neutral-subtle)' },
@@ -89,14 +89,15 @@ export function FactoryShowcasesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [filterStatus, setFilterStatus] = useState<ShowcaseStatus | 'ALL'>('ALL');
 
   const rows = allRows.filter((r) => String(r.content_type ?? '').toUpperCase() === activeType);
   const displayRows = useMemo(() => {
     const q = search.trim().toLowerCase();
     const filtered = rows.filter((r) => {
-      if (!q) return true;
-      const title = String(r.title ?? '').toLowerCase();
-      return title.includes(q);
+      const matchSearch = !q || String(r.title ?? '').toLowerCase().includes(q);
+      const matchStatus = filterStatus === 'ALL' || String(r.status ?? 'DR').toUpperCase() === filterStatus;
+      return matchSearch && matchStatus;
     });
     const toTs = (r: Row): number => {
       const raw = String(r.created_at ?? r.updated_at ?? r.published_at ?? '');
@@ -107,7 +108,7 @@ export function FactoryShowcasesPage() {
       const diff = toTs(b) - toTs(a);
       return sortDir === 'desc' ? diff : -diff;
     });
-  }, [rows, search, sortDir]);
+  }, [rows, search, sortDir, filterStatus]);
 
   const changeType = (type: ShowcaseType) => {
     setActiveType(type);
@@ -173,60 +174,91 @@ export function FactoryShowcasesPage() {
         action={{ label: btnLabel, to: `/factory/showcases/new?type=${activeType}` }}
       />
 
-      <div className='flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2 lg:flex-row lg:items-center lg:justify-between'>
-        <div className='flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 lg:flex-1'>
-          {SHOWCASE_TAB_TYPES.map((type) => {
-            const meta = TAB_META[type];
-            const active = activeType === type;
-            return (
-              <Button
-                variant='unstyled'
-                key={type}
-                type='button'
-                onClick={() => changeType(type)}
-                className='flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[13px] transition-all'
-                style={{
-                  backgroundColor: active ? 'var(--brand-indigo)' : 'transparent',
-                  color: active ? 'var(--neutral-white)' : '#334155',
-                  fontWeight: active ? 700 : 500,
-                  boxShadow: active ? '0 2px 8px rgba(79,70,229,0.25)' : 'none',
-                }}
-              >
-                <span>{meta.icon}</span>
-                <span>{meta.label}</span>
-              </Button>
-            );
-          })}
-        </div>
-
-        <div className='flex items-center gap-2 lg:w-[360px] lg:flex-none'>
-          <div className='relative flex-1'>
-            <Search className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400' />
-            <input
-              type='search'
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder='ค้นหา showcase'
-              className='h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-200'
-            />
+      <div className='overflow-hidden rounded-2xl border border-slate-100 bg-white'>
+        {/* Filter bar */}
+        <div className='flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 pb-3 pt-4'>
+          {/* Tabs */}
+          <div className='flex min-w-0 flex-1 items-center gap-1'>
+            {SHOWCASE_TAB_TYPES.map((type) => {
+              const meta = TAB_META[type];
+              const active = activeType === type;
+              const count = allRows.filter((r) => String(r.content_type ?? '').toUpperCase() === type).length;
+              return (
+                <Button
+                  variant='unstyled'
+                  key={type}
+                  type='button'
+                  onClick={() => changeType(type)}
+                  className='whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium flex items-center justify-center gap-1.5'
+                  style={{
+                    transition: 'background-color 0.15s ease, color 0.15s ease',
+                    backgroundColor: active ? 'var(--brand-indigo)' : 'transparent',
+                    color: active ? '#fff' : '#475569',
+                    fontWeight: active ? 700 : 500,
+                  }}
+                >
+                  <span>{meta.label}</span>
+                  {count > 0 && (
+                    <span
+                      className='rounded-full px-1.5 py-0.5 text-xs font-bold'
+                      style={{
+                        transition: 'background-color 0.15s ease, color 0.15s ease',
+                        backgroundColor: active ? 'rgba(255,255,255,0.2)' : '#f1f5f9',
+                        color: active ? '#fff' : '#475569',
+                      }}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </Button>
+              );
+            })}
+            <Button
+              variant='unstyled'
+              type='button'
+              disabled
+              title='โปรโมชัน — เร็วๆ นี้'
+              className='cursor-not-allowed whitespace-nowrap rounded-lg px-3 py-2 text-sm text-gray-300 flex items-center gap-1'
+            >
+              โปรโมชัน
+              <span className='ml-1 text-[9px] text-gray-300'>เร็วๆ นี้</span>
+            </Button>
           </div>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
-            className='h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-slate-50'
-            title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
-          >
-            <ArrowUpDown className='h-4 w-4' />
-            {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
-          </Button>
+
+          {/* Search + filters */}
+          <div className='flex flex-wrap items-center gap-2'>
+            <div className='relative flex-1 min-w-[220px] sm:min-w-[280px]'>
+              <Search className='pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400' />
+              <input
+                type='search'
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder='ค้นหา showcase'
+                className='h-9 w-full rounded-xl border border-slate-200 bg-white pl-8 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100'
+              />
+            </div>
+ 
+
+            {/* Sort */}
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => setSortDir((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
+              className='h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 inline-flex items-center gap-2 transition-colors hover:bg-slate-50'
+              title={sortDir === 'desc' ? 'ใหม่สุด → เก่าสุด' : 'เก่าสุด → ใหม่สุด'}
+            >
+              <ArrowUpDown className='h-4 w-4' />
+              {sortDir === 'desc' ? 'ใหม่สุด' : 'เก่าสุด'}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {error ? <ErrorAlert>{error}</ErrorAlert> : null}
+        {/* Content */}
+        <div className='p-4'>
+          {error ? <ErrorAlert>{error}</ErrorAlert> : null}
 
-      {loading ? (
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
+          {loading ? (
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className='rounded-2xl overflow-hidden border border-gray-100 bg-white'>
               <div className='aspect-video bg-gray-100 animate-pulse' />
@@ -400,7 +432,9 @@ export function FactoryShowcasesPage() {
                       );
                     })}
         </div>
-      )}
+        )}
+        </div>{/* /Content */}
+      </div>{/* /outer card */}
     </div>
   );
 }
