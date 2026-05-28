@@ -130,13 +130,19 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
 
   const renderGroup = (label: string, items: CategoryWithScope[], accentClass: string) => (
     <div>
-      <p className={`text-[11px] font-semibold mb-1.5 ${accentClass}`}>{label}</p>
-      <ul className='space-y-0.5'>
+      <p className={`text-[11px] font-semibold mb-2 ${accentClass}`}>{label}</p>
+      <ul className='space-y-2'>
         {items.map((c) => (
           <li key={c.id}>
-            <Label className='flex items-center gap-2 text-sm px-3 py-2 rounded-xl hover:bg-gray-50 cursor-pointer'>
+            <Label
+              className={`flex items-center justify-between gap-3 text-sm px-3 py-2.5 rounded-xl border transition-colors cursor-pointer ${
+                selected.includes(c.id)
+                  ? 'border-indigo-200 bg-indigo-50'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <span className='font-medium text-gray-700'>{c.name}</span>
               <Checkbox checked={selected.includes(c.id)} onCheckedChange={() => toggle(c.id)} />
-              {c.name}
             </Label>
           </li>
         ))}
@@ -152,7 +158,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
       }}
       title='เลือกหมวดหมู่หลัก'
       className='sm:max-w-lg'
-      bodyClassName='p-4 sm:p-5 space-y-4'
+      bodyClassName='p-4 sm:p-5 space-y-4 bg-white'
       footer={
         <ModalFooter
           layout='grid-compact'
@@ -179,7 +185,7 @@ export function CategoryPickerModal({ open, initialSelected, onClose, onConfirm 
         ) : categories.length === 0 && !isError ? (
           <p className='text-sm text-gray-400'>ไม่พบข้อมูลหมวด</p>
         ) : !isError ? (
-          <div className='space-y-4 max-h-[55vh] overflow-y-auto'>
+          <div className='space-y-4 max-h-[55vh] overflow-y-auto pr-1'>
             {pdCategories.length > 0 &&
               renderGroup('หมวดสินค้า (PD)', pdCategories, 'text-indigo-600')}
             {mtCategories.length > 0 &&

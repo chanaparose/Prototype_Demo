@@ -382,16 +382,6 @@ export function FactoryInfoPage() {
       <InfoCard
         action={
           <div className='flex items-center gap-2'>
-            {editSection === 'info' && (
-              <Button
-                variant='unstyled'
-                type='button'
-                onClick={() => openCategoryPickerRef.current?.()}
-                className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
-              >
-                <Plus size={11} /> เพิ่มหมวดหมู่
-              </Button>
-            )}
             <SectionEditActions
               isEditing={editSection === 'info'}
               saving={saving}
@@ -445,7 +435,17 @@ export function FactoryInfoPage() {
             <BusinessInfoSection form={form} />
             <div className='border-t border-gray-100 -mx-6' />
             <div>
-              <p className='text-xs font-semibold text-gray-500 mb-3'>ข้อมูลการผลิตและหมวดหมู่</p>
+              <div className='flex items-center justify-between gap-2 mb-3'>
+                <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  onClick={() => openCategoryPickerRef.current?.()}
+                  className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors'
+                >
+                  <Plus size={11} /> เพิ่มหมวดหมู่
+                </Button>
+              </div>
               <CategoriesSection
                 form={form}
                 factoryId={fid}
