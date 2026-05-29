@@ -43,7 +43,7 @@ import { FactoryRoleGuard } from '@/components/factory/FactoryRoleGuard';
 import { FactoryVerifiedGuard } from '@/components/factory/FactoryVerifiedGuard';
 import { FactoryPortalLayout } from '@/pages/factory-portal/FactoryPortalLayout';
 import { FactoryDashboardPage } from '@/pages/factory-portal/FactoryDashboardPage';
-import { FactoryProfilePage } from '@/pages/factory-portal/FactoryProfilePage';
+
 import { FactoryInfoPage } from '@/pages/factory-portal/FactoryInfoPage';
 import { FactoryShowcasesPage } from '@/pages/factory-portal/FactoryShowcasesPage';
 import { FactoryShowcaseNewPage } from '@/pages/factory-portal/FactoryShowcaseNewPage';
@@ -121,7 +121,7 @@ export const router = createBrowserRouter([
                     Component: FactoryPortalLayout,
                     children: [
                       { index: true, Component: FactoryDashboardPage },
-                      { path: 'profile', Component: FactoryProfilePage },
+
                       { path: 'info', Component: FactoryInfoPage },
                       { path: 'wallet', Component: FactoryWalletPage },
                       {

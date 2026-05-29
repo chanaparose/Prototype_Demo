@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   MessageCircle,
   LayoutDashboard,
-  Building2,
+
   Images,
   ClipboardList,
   Package,
@@ -32,14 +32,6 @@ export const FACTORY_SIDEBAR_NAV: FactorySidebarNavItem[] = [
     href: '/factory',
     activeMatch: 'exact',
     activePath: '/factory',
-  },
-  {
-    key: 'factory-profile',
-    label: 'ข้อมูลโรงงาน',
-    icon: Building2,
-    href: '/factory/profile',
-    activeMatch: 'prefix',
-    activePath: '/factory/profile',
   },
   {
     key: 'factory-info',
