@@ -104,8 +104,10 @@ export function RfqDetailSpecs({ rfq, bare = false }: RfqDetailSpecsProps) {
       )}
       {rfq.description && (
         <div className='mt-3 pt-3 border-t border-gray-100'>
-          <p className='text-xs text-gray-500 mb-1'>รายละเอียด</p>
-          <p className='text-xs text-gray-700'>{rfq.description}</p>
+          <p className='text-xs text-gray-500 mb-1.5'>รายละเอียด</p>
+          <div className='rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5'>
+            <p className='text-xs leading-relaxed text-violet-950'>{rfq.description}</p>
+          </div>
         </div>
       )}
       {Array.isArray(rfq.certificationsRequired) && rfq.certificationsRequired.length > 0 && (
