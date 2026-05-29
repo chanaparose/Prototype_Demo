@@ -678,7 +678,8 @@ export function FactoryShowcaseEditPage() {
                     type='number'
                     step='0.01'
                     className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-                    {...form.register('base_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                    value={form.watch('base_price') ?? ''}
+                    onChange={(e) => form.setValue('base_price', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                   />
                 </Label>
                 <Label className='block'>
@@ -686,7 +687,8 @@ export function FactoryShowcaseEditPage() {
                   <Input
                     type='number'
                     className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-                    {...form.register('moq', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                    value={form.watch('moq') ?? ''}
+                    onChange={(e) => form.setValue('moq', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                   />
                 </Label>
                 <Label className='block'>
@@ -694,7 +696,8 @@ export function FactoryShowcaseEditPage() {
                   <Input
                     type='number'
                     className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-                    {...form.register('lead_time_days', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                    value={form.watch('lead_time_days') ?? ''}
+                    onChange={(e) => form.setValue('lead_time_days', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                   />
                 </Label>
               </div>
@@ -707,7 +710,8 @@ export function FactoryShowcaseEditPage() {
                       type='number'
                       placeholder='0.00'
                       className='mt-1 w-full rounded-xl border border-indigo-200 px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-300 focus:outline-none'
-                      {...form.register('promo_price', { setValueAs: (v) => (v === '' ? null : Number(v)) })}
+                      value={form.watch('promo_price') ?? ''}
+                    onChange={(e) => form.setValue('promo_price', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                     />
                   </Label>
                   <Label className='block'>
