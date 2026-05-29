@@ -118,17 +118,18 @@ export function ProductTour() {
 
     const outerTimer = setTimeout(() => {
       if (cancelled) return;
-      const el = findTarget(def);
-      if (!el) {
-        setTargetRect(null);
-        return;
-      }
-      if (!isTourTargetMostlyVisible(el)) {
-        el.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+      if (def.preActionSelector) {
+        const preEl = document.querySelector<HTMLElement>(def.preActionSelector);
+        if (preEl) preEl.click();
       }
 
       const measure = () => {
         if (cancelled) return;
+        const el = findTarget(def);
+        if (!el) { setTargetRect(null); return; }
+        if (!isTourTargetMostlyVisible(el)) {
+          el.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+        }
         if (rafId != null) cancelAnimationFrame(rafId);
         rafId = requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -138,7 +139,7 @@ export function ProductTour() {
         });
       };
 
-      innerTimer = setTimeout(measure, isTouchDevice ? 450 : 280);
+      innerTimer = setTimeout(measure, def.preActionSelector ? 500 : (isTouchDevice ? 450 : 280));
       if (isTouchDevice) {
         touchFollowUpTimer = window.setTimeout(measure, 850);
       }

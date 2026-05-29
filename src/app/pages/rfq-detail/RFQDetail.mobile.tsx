@@ -245,12 +245,14 @@ export function RFQDetailMobile() {
               {
                 id: 'offers' as const,
                 label: `เปรียบเทียบใบเสนอราคา${(rfq.offers?.length ?? 0) > 0 ? ` (${rfq.offers?.length})` : ''}`,
+                dataTour: 'tab-offers',
               },
             ]).map((tab) => (
               <button
                 key={tab.id}
                 type='button'
                 onClick={() => setActiveTab(tab.id)}
+                {...('dataTour' in tab && tab.dataTour ? { 'data-tour': tab.dataTour } : {})}
                 className={`flex-1 py-3 text-xs font-semibold text-center transition-colors ${
                   activeTab === tab.id ? 'border-b-2' : 'text-gray-400 hover:text-gray-600'
                 }`}

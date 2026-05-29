@@ -73,6 +73,7 @@ export const TOUR_STEPS: TourStepDef[] = [
   {
     route: '/rfqs/28',
     mockScenario: 'rfq',
+    preActionSelector: '[data-tour="tab-offers"]',
     targetSelector: '[data-tour="offer-card"][data-factory-id="9998"]',
     targetTexts: ['แพ็กเกจจิ้งสัตว์เลี้ยง โปร', 'ยอมรับข้อเสนอ'],
     spotlightRadius: 14,
