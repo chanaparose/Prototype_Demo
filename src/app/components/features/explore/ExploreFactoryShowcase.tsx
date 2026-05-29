@@ -24,8 +24,9 @@ export function ExploreFactoryShowcase({
   const [activeIdx, setActiveIdx] = useState(0);
   const items = factories ?? [];
 
-  const cardWidth = variant === 'desktop' ? 480 : 320;
-  const gap = 16;
+  const cardWidth = variant === 'desktop' ? 400 : 260;
+  const cardHeight = variant === 'desktop' ? 180 : 148;
+  const gap = 12;
   const step = cardWidth + gap;
 
   const scrollTo = useCallback(
@@ -144,7 +145,7 @@ export function ExploreFactoryShowcase({
         <div
           ref={scrollRef}
           onScroll={onScroll}
-          className='flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2'
+          className='flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2'
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {items.map((factory, i) => {
@@ -155,10 +156,10 @@ export function ExploreFactoryShowcase({
                 type='button'
                 key={factory.id}
                 onClick={() => onFactoryClick(factory.id)}
-                className='snap-start shrink-0 rounded-2xl overflow-hidden text-left relative hover:shadow-lg transition-shadow group'
+                className='snap-start shrink-0 rounded-xl overflow-hidden text-left relative hover:shadow-lg transition-shadow group'
                 style={{
                   width: cardWidth,
-                  height: variant === 'desktop' ? 220 : 180,
+                  height: cardHeight,
                   background: palette.bg,
                 }}
               >
@@ -177,8 +178,8 @@ export function ExploreFactoryShowcase({
                 </div>
 
                 {factory.verified ? (
-                  <div className='absolute top-3 right-3 z-10 flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-full px-2 py-0.5 shadow-sm'>
-                    <BadgeCheck size={12} style={{ color: palette.accent }} />
+                  <div className='absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-white/95 backdrop-blur-sm rounded-full px-1.5 py-0.5 shadow-sm'>
+                    <BadgeCheck size={11} style={{ color: palette.accent }} />
                     <span className='text-[10px] font-semibold' style={{ color: palette.accent }}>
                       ยืนยัน
                     </span>
@@ -186,29 +187,29 @@ export function ExploreFactoryShowcase({
                 ) : null}
 
                 <div
-                  className='relative z-[1] flex flex-col justify-between h-full p-4'
+                  className='relative z-[1] flex flex-col justify-between h-full p-3'
                   style={{ width: variant === 'desktop' ? '55%' : '58%' }}
                 >
                   <div>
                     <div
-                      className='inline-flex items-center gap-1 text-[10px] lg:text-[11px] font-semibold mb-1.5'
+                      className='inline-flex items-center gap-0.5 text-[10px] font-semibold mb-1'
                       style={{ color: palette.accent }}
                     >
-                      <MapPin size={10} />
+                      <MapPin size={9} />
                       {factory.location || 'โรงงาน'}
                     </div>
                     <h3
-                      className='font-bold text-brand-ink mb-1.5 leading-tight line-clamp-2'
-                      style={{ fontSize: variant === 'desktop' ? 18 : 15 }}
+                      className='font-bold text-brand-ink mb-1 leading-tight line-clamp-2'
+                      style={{ fontSize: variant === 'desktop' ? 16 : 14 }}
                     >
                       {factory.name}
                     </h3>
-                    <div className='flex items-center gap-1 text-[10px] lg:text-[11px] text-gray-600 mb-2'>
-                      <Star size={11} className='text-amber-400 fill-amber-400 shrink-0' />
+                    <div className='flex items-center gap-1 text-[10px] text-gray-600 mb-1'>
+                      <Star size={10} className='text-amber-400 fill-amber-400 shrink-0' />
                       <span className='font-semibold'>{factory.rating.toFixed(1)}</span>
                       <span className='text-gray-400'>({factory.reviews} รีวิว)</span>
                     </div>
-                    <p className='text-[10px] lg:text-[11px] text-gray-600 leading-snug line-clamp-2'>
+                    <p className='text-[10px] text-gray-600 leading-snug line-clamp-2'>
                       ขั้นต่ำ{' '}
                       <span className='font-semibold text-gray-800'>
                         {formatCompactNumber(factory.minOrder)}
@@ -218,10 +219,10 @@ export function ExploreFactoryShowcase({
                   </div>
 
                   <div
-                    className='inline-flex items-center gap-1 text-[10px] lg:text-[11px] font-bold rounded-full px-3 py-1.5 self-start'
+                    className='inline-flex items-center gap-0.5 text-[10px] font-bold rounded-full px-2.5 py-1 self-start'
                     style={{ background: palette.chip, color: palette.chipText }}
                   >
-                    ดูรายละเอียด <ArrowRight size={10} />
+                    ดูรายละเอียด <ArrowRight size={9} />
                   </div>
                 </div>
               </Button>
