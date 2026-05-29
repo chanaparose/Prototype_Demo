@@ -186,6 +186,7 @@ export function FactoryOrdersPage() {
       {/* KPI strip — mirrors kind-filter cards on RFQ board */}
       <FactoryOrdersKpiStrip
         kpi={kpi}
+        total={rows.length}
         onSelectKpi={(key) => {
           if (key === 'overdue') {
             setStatusTab('needs_action');
