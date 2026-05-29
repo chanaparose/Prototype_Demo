@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
+import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import {
@@ -449,6 +450,11 @@ export function ProductDetailMobile() {
                   <p className='text-[10px] text-amber-600'>★ {Number(r.rating || 0).toFixed(1)}</p>
                 </div>
                 <p className='text-[11px] text-gray-600 mt-1 line-clamp-2'>{r.comment || '-'}</p>
+                {r.imageUrls && r.imageUrls.length > 0 && (
+                  <div className='mt-1.5'>
+                    <ReviewImageAttachments urls={r.imageUrls} />
+                  </div>
+                )}
               </div>
             ))
           )}
