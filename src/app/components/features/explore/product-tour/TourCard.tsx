@@ -40,7 +40,7 @@ export function TourCard({
         ...(placeAtTop ? { top: 16 } : { bottom: 16 }),
         left: 12,
         right: 12,
-        zIndex: 9999,
+        zIndex: 100001,
         maxWidth: 440,
         margin: '0 auto',
         background: 'var(--neutral-white)',
