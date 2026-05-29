@@ -81,7 +81,7 @@ export function OrderSummaryCard({
 
   return (
     <div
-      className='relative overflow-hidden rounded-2xl p-4 sm:p-5 mt-4'
+      className='relative overflow-hidden rounded-2xl p-4 sm:p-5 '
       style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
     >
       <div className='absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white' />
