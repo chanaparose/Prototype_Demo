@@ -687,13 +687,6 @@ export function FactoryRfqDetailPage() {
                           )
                         : ''
                     }
-                    initialFactoryNote={
-                      myQuote
-                        ? String(
-                            (myQuote as unknown as Record<string, unknown>).factory_note ?? '',
-                          ) || undefined
-                        : undefined
-                    }
                     submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                     pageError={error || undefined}
                     readOnly={Boolean(myQuote && !canEdit)}
@@ -723,9 +716,8 @@ export function FactoryRfqDetailPage() {
               </section>
             </div>
 
-            {/* Factory Note — standalone widget when quote is locked/view-only.
-                When canEdit=true the note is inside QuotationAuditEditForm (FactoryNoteField). */}
-            {myQuote && quoteIdOf(myQuote) && !canEdit ? (
+            {/* Factory Note — always visible when quotation exists, all statuses */}
+            {myQuote && quoteIdOf(myQuote) ? (
               <FactoryNoteInline
                 quotationId={quoteIdOf(myQuote)}
                 initialNote={
