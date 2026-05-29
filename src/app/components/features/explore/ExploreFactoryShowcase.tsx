@@ -219,7 +219,7 @@ export function ExploreFactoryShowcase({
                   </div>
 
                   <div
-                    className='inline-flex items-center gap-0.5 text-[10px] font-bold rounded-full px-2.5 py-1 self-start'
+                    className='inline-flex items-center gap-0.5 text-[9px] font-semibold rounded-full px-2 py-0.5 self-start'
                     style={{ background: palette.chip, color: palette.chipText }}
                   >
                     ดูรายละเอียด <ArrowRight size={9} />
