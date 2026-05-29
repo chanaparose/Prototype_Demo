@@ -1,12 +1,20 @@
 export function mapOrderStatusFromApi(code: string): string {
   const u = String(code ?? '').toUpperCase();
+  // Raw DB codes
   if (u === 'PP') return 'pending_payment';
-  if (u === 'PR' || u === 'QC' || u === 'WF') return 'in_production';
+  if (u === 'PD' || u === 'PR' || u === 'QC' || u === 'WF') return 'in_production';
   if (u === 'SH') return 'shipped';
   if (u === 'CP') return 'completed';
   if (u === 'CC' || u === 'CN' || u === 'CL' || u === 'PE' || u === 'EX')
     return 'cancelled_expired';
-  return u.toLowerCase() || 'pending';
+  // Already-mapped strings from bootstrap (pass-through)
+  const lower = u.toLowerCase();
+  if (lower === 'pending_payment') return 'pending_payment';
+  if (lower === 'in_production') return 'in_production';
+  if (lower === 'shipped') return 'shipped';
+  if (lower === 'completed') return 'completed';
+  if (lower === 'cancelled_expired') return 'cancelled_expired';
+  return lower || 'pending';
 }
 
 export function guessOrderProgress(status: string): number {
