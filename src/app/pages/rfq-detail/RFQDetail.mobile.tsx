@@ -37,9 +37,9 @@ export function RFQDetailMobile() {
     error,
     refetch,
   } = useRfqDetail(id);
-  const [specsOpen, setSpecsOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'specs' | 'offers'>('specs');
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
@@ -182,34 +182,27 @@ export function RFQDetailMobile() {
       : `${rfq.offerCount} ใบเสนอราคา`;
 
   return (
-    <div className='min-h-screen flex flex-col' style={{ backgroundColor: COLORS.lightPurpleBg }}>
-      <div className='flex items-center justify-between px-4 pt-5 pb-4 bg-white border-b border-gray-100'>
+    <div className='min-h-screen' style={{ backgroundColor: COLORS.lightPurpleBg }}>
+      <div className='sticky top-0 z-50 flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
         <Button
           variant='unstyled'
+          type='button'
           onClick={() => navigate('/orders')}
-          className='w-10 h-10 rounded-xl shadow-sm flex items-center justify-center'
-          style={{ backgroundColor: COLORS.lightPurpleBg }}
+          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
         >
-          <ChevronLeft size={22} style={{ color: COLORS.blue }} />
+          <ChevronLeft size={18} />
+          กลับ
         </Button>
-        <div className='text-center'>
-          <p className='text-[10px]' style={{ color: COLORS.orange }}>
-            RFQ Detail
-          </p>
-          <h1
-            className='text-sm max-w-[200px] truncate'
-            style={{ fontWeight: 700, color: COLORS.blue }}
-          >
-            {rfq.projectName}
-          </h1>
-        </div>
-        <div className='w-10 h-10' aria-hidden />
       </div>
 
-      <div className='flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4'>
-        {canClose ? (
-          <div className='flex gap-2'>
-            {canClose ? (
+      <div className='px-4 pt-4 pb-2'>
+        <RfqDetailStatusCard
+          rfq={rfq}
+          isHistoryView={isHistoryView}
+          statusBadgeStyle={statusBadgeStyle}
+          statusLabel={statusLabel}
+          footer={
+            canClose ? (
               <Button
                 variant='unstyled'
                 type='button'
@@ -230,7 +223,7 @@ export function RFQDetailMobile() {
                     setClosing(false);
                   }
                 }}
-                className='flex-1 rounded-xl border text-sm font-semibold py-2.5 disabled:opacity-60'
+                className='w-full rounded-xl border text-[13px] font-semibold py-2 disabled:opacity-60'
                 style={{
                   borderColor: COLORS.purple,
                   color: COLORS.purple,
@@ -239,59 +232,69 @@ export function RFQDetailMobile() {
               >
                 {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
               </Button>
-            ) : null}
-          </div>
-        ) : null}
-        {rfq.subCategoryName || rfq.shippingMethodName ? (
-          <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-2 text-sm'>
-            {rfq.subCategoryName ? (
-              <p>
-                <span className='text-gray-500'>ประเภทย่อย: </span>
-                <span style={{ fontWeight: 600, color: COLORS.blue }}>{rfq.subCategoryName}</span>
-              </p>
-            ) : null}
-            {rfq.shippingMethodName ? (
-              <p>
-                <span className='text-gray-500'>วิธีส่งของ: </span>
-                <span style={{ fontWeight: 600, color: COLORS.blue }}>
-                  {rfq.shippingMethodName}
-                </span>
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-        <RfqDetailStatusCard
-          rfq={rfq}
-          isHistoryView={isHistoryView}
-          statusBadgeStyle={statusBadgeStyle}
-          statusLabel={statusLabel}
+            ) : undefined
+          }
         />
+      </div>
 
-        <RfqDetailSpecs rfq={rfq} open={specsOpen} onToggle={() => setSpecsOpen(!specsOpen)} />
-
-        <RfqDetailOffersSection
-          rfqStatus={rfq.status}
-          offers={rfq.offers ?? []}
-          isHistoryView={isHistoryView}
-          orderForRfq={relatedOrder ?? undefined}
-          selectedOfferId={selectedOffer}
-          onSelectOffer={setSelectedOffer}
-          onChatWithOffer={handleChatWithOffer}
-          rfqQuantity={rfq.quantity}
-          quoteHistories={quoteHistories}
-          onOfferFlowComplete={async ({ orderId }) => {
-            await refetch();
-            if (orderId) navigate(`/orders/${orderId}`);
-          }}
-        />
-        {selectedOffer ? (
-          <div className='px-1'>
-            <QuotationHistoryPanel
-              quotationId={selectedOffer}
-              preloadedHistory={quoteHistories?.[selectedOffer]}
-            />
+      <div className='px-4 pb-32 pt-3'>
+        <div className='bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm'>
+          <div className='sticky z-40 flex border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
+            {([
+              { id: 'specs' as const, label: 'สเปกของโครงการ' },
+              {
+                id: 'offers' as const,
+                label: `เปรียบเทียบใบเสนอราคา${(rfq.offers?.length ?? 0) > 0 ? ` (${rfq.offers?.length})` : ''}`,
+                dataTour: 'tab-offers',
+              },
+            ]).map((tab) => (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={() => setActiveTab(tab.id)}
+                {...('dataTour' in tab && tab.dataTour ? { 'data-tour': tab.dataTour } : {})}
+                className={`flex-1 py-3 text-xs font-semibold text-center transition-colors ${
+                  activeTab === tab.id ? 'border-b-2' : 'text-gray-400 hover:text-gray-600'
+                }`}
+                style={
+                  activeTab === tab.id
+                    ? { borderColor: COLORS.purple, color: COLORS.purple }
+                    : undefined
+                }
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        ) : null}
+
+          {activeTab === 'specs' ? (
+            <RfqDetailSpecs rfq={rfq} bare />
+          ) : (
+            <div className='space-y-4 px-4 pb-5'>
+              <RfqDetailOffersSection
+                rfqStatus={rfq.status}
+                offers={rfq.offers ?? []}
+                isHistoryView={isHistoryView}
+                orderForRfq={relatedOrder ?? undefined}
+                selectedOfferId={selectedOffer}
+                onSelectOffer={setSelectedOffer}
+                onChatWithOffer={handleChatWithOffer}
+                rfqQuantity={rfq.quantity}
+                quoteHistories={quoteHistories}
+                onOfferFlowComplete={async ({ orderId }) => {
+                  await refetch();
+                  if (orderId) navigate(`/orders/${orderId}`);
+                }}
+              />
+              {selectedOffer ? (
+                <QuotationHistoryPanel
+                  quotationId={selectedOffer}
+                  preloadedHistory={quoteHistories?.[selectedOffer]}
+                />
+              ) : null}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -33,6 +33,7 @@ export type BootstrapFactoryModel = {
 export type BootstrapFactoryProfileModel = {
   factoryId: string;
   address: string;
+  description?: string;
   acceptedProductTypes: string[];
   certificates: string[];
 };

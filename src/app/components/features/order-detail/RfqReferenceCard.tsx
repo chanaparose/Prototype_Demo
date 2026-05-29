@@ -118,7 +118,6 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
       ? [{ label: 'ประเภทย่อย', value: subCategoryName || '—' }]
       : []),
     ...(shippingMethodName ? [{ label: 'วิธีส่งของ', value: shippingMethodName }] : []),
-    ...(deliveryAddress ? [{ label: 'ที่อยู่จัดส่ง', value: deliveryAddress }] : []),
     { label: 'จำนวน', value: `${formatCompactNumber(quantity)} ชิ้น` },
     ...(materialGrade ? [{ label: 'Material grade', value: materialGrade }] : []),
     ...(tolerance ? [{ label: 'Tolerance', value: tolerance }] : []),
@@ -148,9 +147,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
   const body = (
     <div className='space-y-4'>
       <div>
-        <p className='text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2'>
-          สเปคของโครงการ
-        </p>
+        
         <dl className='space-y-2 text-xs'>
           {specRows.map((row) => (
             <div key={row.label} className='flex items-start justify-between gap-3'>
@@ -162,6 +159,15 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
           ))}
         </dl>
       </div>
+
+      {deliveryAddress ? (
+        <div className='rounded-lg border border-gray-100 bg-gray-50/70 px-3 py-2'>
+          <p className='text-[11px] text-gray-500 mb-1'>ที่อยู่จัดส่ง</p>
+          <p className='text-xs text-gray-900 leading-5 line-clamp-2 break-words' style={{ fontWeight: 600 }}>
+            {deliveryAddress}
+          </p>
+        </div>
+      ) : null}
 
       {imageUrls.length > 0 ? (
         <div>
@@ -190,7 +196,9 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
           <p className='text-[11px] text-gray-400 font-semibold uppercase tracking-wide mb-2'>
             รายละเอียด
           </p>
-          <p className='text-sm text-gray-700 whitespace-pre-wrap'>{description}</p>
+          <div className='rounded-xl border border-violet-100 bg-violet-50/80 px-3 py-2.5'>
+            <p className='text-sm leading-relaxed text-violet-950 whitespace-pre-wrap'>{description}</p>
+          </div>
         </div>
       ) : null}
 

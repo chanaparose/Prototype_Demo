@@ -91,6 +91,12 @@ function normalizeRow(raw: Record<string, unknown>): FactoryOrderRow | null {
           unit_name: pickScalarString(rfqObj.unit_name, 'ชิ้น'),
         }
       : null,
+    request_kind: (() => {
+      const k = pickScalarString(
+        (isObj(row.rfq) ? (row.rfq as Record<string, unknown>).request_kind : null) ?? row.request_kind,
+      ).toUpperCase();
+      return (['PR', 'MR', 'PS', 'MS'] as const).includes(k as never) ? (k as 'PR' | 'MR' | 'PS' | 'MS') : null;
+    })(),
     production_summary: toProductionSummary(row.production_summary),
   };
 }
@@ -102,7 +108,7 @@ export function useFactoryOrdersData() {
     queryKey: ['factory', 'orders', fid],
     queryFn: async () => {
       const raw = await ordersApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const arr = (Array.isArray(raw) ? raw : []) as unknown as Record<string, unknown>[];
       return arr
         .map(normalizeRow)
         .filter((r): r is FactoryOrderRow => r != null)

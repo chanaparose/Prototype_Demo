@@ -9,6 +9,13 @@ import type {
   FactoryOrderRow,
 } from '@/pages/factory-portal/factory-orders/types';
 
+export const REQUEST_KIND_LABEL: Record<string, { label: string; cls: string }> = {
+  PR: { label: 'ผลิต OEM', cls: 'bg-purple-50 text-purple-700' },
+  MR: { label: 'วัตถุดิบ', cls: 'bg-blue-50 text-blue-700' },
+  PS: { label: 'ตัวอย่างสินค้า', cls: 'bg-orange-50 text-orange-700' },
+  MS: { label: 'ตัวอย่างวัตถุดิบ', cls: 'bg-teal-50 text-teal-700' },
+};
+
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: string }> = {
   PP: { label: 'รอชำระมัดจำ', badgeClass: 'bg-amber-100 text-amber-800', icon: '⏳' },
   PE: { label: 'หมดกำหนดชำระ', badgeClass: 'bg-red-100 text-red-800', icon: '⛔' },
@@ -38,7 +45,14 @@ export function FactoryOrderCard({
           <p className='font-semibold text-gray-900 text-sm leading-snug truncate'>
             {row.rfq?.title ?? `Order #${row.order_id}`}
           </p>
-          <p className='text-[11px] text-gray-400 mt-0.5'>Order #{row.order_id}</p>
+          <div className='flex items-center gap-1.5 mt-0.5'>
+            <p className='text-[11px] text-gray-400'>Order #{row.order_id}</p>
+            {row.request_kind && REQUEST_KIND_LABEL[row.request_kind] && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${REQUEST_KIND_LABEL[row.request_kind].cls}`}>
+                {REQUEST_KIND_LABEL[row.request_kind].label}
+              </span>
+            )}
+          </div>
         </div>
         <div className='flex flex-wrap justify-end gap-1'>
           <span

@@ -15,6 +15,7 @@ import {
   Handshake,
   Printer,
   ExternalLink,
+  Truck,
 } from 'lucide-react';
 import { openShippingLabel } from '@/utils/printShippingLabel';
 import { useQueryClient } from '@tanstack/react-query';
@@ -37,7 +38,6 @@ import {
   type MergedProductionStep,
 } from '@/components/features/production/types';
 import { deriveStepStates } from '@/components/features/production/stepDerivedState';
-import { getStepGuide } from '@/components/features/production/stepGuideConfig';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -134,10 +134,6 @@ function factoryCanUpdateStep(step: MergedProductionStep | null): boolean {
   return n >= 0 && n <= 4;
 }
 
-function isAcceptStep(step: MergedProductionStep | null): boolean {
-  return getStepId(step) === 0;
-}
-
 function extractShippingInfo(order: Record<string, unknown>): CustomerShippingInfo {
   const addr =
     (order.delivery_address as Record<string, unknown>) ??
@@ -173,196 +169,21 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
   };
 }
 
-type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
-
-function StepStatusBadge({ state, overrideLabel }: { state: StepState; overrideLabel?: string }) {
-  const map: Record<
-    StepState,
-    {
-      label: string;
-      variant: React.ComponentProps<typeof StatusBadge>['variant'];
-      icon: React.ReactNode;
-    }
-  > = {
-    completed: { label: 'เสร็จสิ้น', variant: 'success', icon: <CheckCircle2 size={12} /> },
-    active: { label: 'กำลังดำเนินการ', variant: 'active', icon: <Clock size={12} /> },
-    blocked: { label: 'รอดำเนินการ', variant: 'pending', icon: <AlertCircle size={12} /> },
-    rejected: { label: 'ต้องแก้ไข', variant: 'error', icon: <AlertCircle size={12} /> },
-    upcoming: { label: 'ยังไม่เริ่ม', variant: 'inactive', icon: <Circle size={12} /> },
-  };
-  const { label, variant, icon } = map[state];
+function StartWorkButton({ onStart }: { onStart: () => Promise<void> }) {
+  const [busy, setBusy] = React.useState(false);
   return (
-    <StatusBadge variant={variant} size='sm' icon={icon}>
-      {overrideLabel ?? label}
-    </StatusBadge>
-  );
-}
-
-interface NextActionCardProps {
-  step: MergedProductionStep;
-  stepIndex: number;
-  totalSteps: number;
-  state: StepState;
-  customerShipping: CustomerShippingInfo;
-  onUpdate: () => void;
-  /** เฉพาะ step_id=0: กดยืนยันรับงานโดยไม่ต้องเปิด drawer */
-  onAcceptOrder?: () => Promise<void>;
-}
-
-function NextActionCard({
-  step,
-  stepIndex,
-  totalSteps,
-  state,
-  customerShipping,
-  onUpdate,
-  onAcceptOrder,
-}: NextActionCardProps) {
-  const [accepting, setAccepting] = React.useState(false);
-  const guide = getStepGuide(getStepId(step));
-  const canUpdate = factoryCanUpdateStep(step);
-  const stepId = getStepId(step);
-  const isAccept = isAcceptStep(step);
-  const isShipping = stepId === 4; // step 4 = จัดส่งแล้ว (factory ships)
-  const isQC = Boolean(step.template.is_payment_trigger);
-
-  const hasAddr =
-    customerShipping.addressLine || customerShipping.phone || customerShipping.recipientName;
-
-  return (
-    <section className='rounded-2xl overflow-hidden border border-indigo-200 shadow-md'>
-      <div className='px-4 py-3 flex items-center justify-between bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet-deep)_100%)]'>
-        <div className='flex items-center gap-2'>
-          <span className='text-xl leading-none'>{guide.emoji}</span>
-          <div>
-            <p className='text-[10px] font-semibold text-indigo-200 uppercase tracking-wide'>
-              ขั้นตอนที่ {stepIndex + 1} / {totalSteps}
-            </p>
-            <p className='text-sm font-bold text-white leading-tight'>
-              {step.template.step_name_th}
-            </p>
-          </div>
-        </div>
-        {/* step_id=0: แสดง "ยืนยันรับงาน" แทน "กำลังดำเนินการ" */}
-        <StepStatusBadge state={state} overrideLabel={isAccept ? 'ยืนยันรับงาน' : undefined} />
-      </div>
-
-      <div className='bg-white p-4 space-y-3'>
-        <div>
-          <p className='text-xs font-bold text-slate-800'>{guide.whatToDo}</p>
-          <p className='text-xs text-slate-500 mt-1 leading-relaxed'>{guide.guidance}</p>
-        </div>
-
-        {isQC ? (
-          <div className='rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 flex items-start gap-2'>
-            <span className='text-base leading-none shrink-0 mt-0.5'>💳</span>
-            <p className='text-xs text-amber-800'>
-              <strong>การยืนยันขั้นนี้จะส่งคำขอชำระเงินส่วนที่เหลือให้ลูกค้าทันที</strong>
-            </p>
-          </div>
-        ) : null}
-
-        {isShipping && hasAddr ? (
-          <div className='rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5'>
-            <p className='text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-2 flex items-center gap-1'>
-              <MapPin size={11} /> ที่อยู่จัดส่ง — สำหรับทำใบปะหน้าพัสดุ
-            </p>
-            <div className='space-y-1'>
-              {customerShipping.recipientName ? (
-                <div className='flex items-center gap-1.5'>
-                  <User size={11} className='text-amber-600 shrink-0' />
-                  <span className='text-xs font-semibold text-amber-900'>
-                    {customerShipping.recipientName}
-                  </span>
-                </div>
-              ) : null}
-              {customerShipping.phone ? (
-                <div className='flex items-center gap-1.5'>
-                  <Phone size={11} className='text-amber-600 shrink-0' />
-                  <span className='text-xs text-amber-800'>{customerShipping.phone}</span>
-                </div>
-              ) : null}
-              {customerShipping.addressLine ? (
-                <div className='flex items-start gap-1.5'>
-                  <MapPin size={11} className='text-amber-500 shrink-0 mt-0.5' />
-                  <span className='text-xs text-amber-800 leading-relaxed'>
-                    {[
-                      customerShipping.addressLine,
-                      customerShipping.subDistrict,
-                      customerShipping.district,
-                      customerShipping.province,
-                      customerShipping.postalCode,
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
-                  </span>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-
-        <ul className='space-y-1.5'>
-          {guide.bulletPoints.slice(0, 3).map((item, i) => (
-            <li key={i} className='flex items-start gap-2 text-xs text-gray-700 leading-relaxed'>
-              <span className='mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400' />
-              {item}
-            </li>
-          ))}
-        </ul>
-
-        <div className='rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 flex items-center gap-2'>
-          <span className='text-sm'>➡️</span>
-          <p className='text-[11px] text-slate-500 leading-relaxed'>
-            <span className='font-semibold text-slate-700'>เมื่อยืนยัน:</span> {guide.nextStepHint}
-          </p>
-        </div>
-
-        {canUpdate ? (
-          isAccept ? (
-            // step_id=0: ยืนยันรับงาน — ไม่ต้องแนบรูป กดปุ่มเลย
-            <Button
-              variant='unstyled'
-              type='button'
-              disabled={accepting}
-              onClick={async () => {
-                if (!onAcceptOrder) return;
-                setAccepting(true);
-                try {
-                  await onAcceptOrder();
-                } finally {
-                  setAccepting(false);
-                }
-              }}
-              className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)] disabled:opacity-60'
-            >
-              <Package size={16} />
-              {accepting ? 'กำลังบันทึก…' : guide.confirmLabel}
-            </Button>
-          ) : (
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={onUpdate}
-              className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)]'
-            >
-              <Package size={16} />
-              {step.update.status === 'IP'
-                ? 'อัปเดตและยืนยันขั้นนี้'
-                : step.update.status === 'RJ'
-                  ? 'ส่งหลักฐานใหม่'
-                  : guide.confirmLabel}
-            </Button>
-          )
-        ) : (
-          <div className='rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-center'>
-            <p className='text-xs text-emerald-700 font-medium'>
-              ⏳ {step.template.description ?? 'รอการยืนยันจากลูกค้าหรือระบบอัตโนมัติ'}
-            </p>
-          </div>
-        )}
-      </div>
-    </section>
+    <button
+      type='button'
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try { await onStart(); } finally { setBusy(false); }
+      }}
+      className='w-full rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-60'
+      style={{ background: 'var(--brand-mauve)' }}
+    >
+      {busy ? 'กำลังดำเนินการ...' : '✅ เริ่มงาน'}
+    </button>
   );
 }
 
@@ -447,18 +268,6 @@ export function FactoryOrderDetailPage() {
     [displayMerged, orderStatus],
   );
 
-  const activeStepIdx = useMemo(
-    () => derivedStates.findIndex((d) => d === 'active' || d === 'blocked'),
-    [derivedStates],
-  );
-  const nextStepIdx = useMemo(() => {
-    if (activeStepIdx >= 0) return activeStepIdx;
-    return derivedStates.findIndex((d) => d === 'upcoming');
-  }, [activeStepIdx, derivedStates]);
-
-  const activeStep = nextStepIdx >= 0 ? (displayMerged[nextStepIdx] ?? null) : null;
-  const activeState = (nextStepIdx >= 0 ? derivedStates[nextStepIdx] : null) as StepState | null;
-
   const [drawerStep, setDrawerStep] = useState<MergedProductionStep | null>(null);
 
   const handleStepSubmit = useCallback(
@@ -482,17 +291,13 @@ export function FactoryOrderDetailPage() {
           ? { 'X-Confirm-Payment-Trigger': 'true' }
           : undefined;
       await ordersApi.postProductionUpdate(id, body, headers);
-      await qc.invalidateQueries({ queryKey: ['order', id, 'production-updates'] });
-      await qc.invalidateQueries({ queryKey: ['order', id] });
-      await loadOrder();
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['order', id, 'production-updates'] }),
+        qc.invalidateQueries({ queryKey: ['order', id] }),
+      ]);
     },
-    [id, qc, loadOrder],
+    [id, qc],
   );
-
-  /** step_id=0: ยืนยันรับงาน — ส่ง CD โดยตรง ไม่ต้องรูป */
-  const handleAcceptOrder = useCallback(async () => {
-    await handleStepSubmit({ step_id: 0, status: 'CD', description: '', image_urls: [] });
-  }, [handleStepSubmit]);
 
   const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as IRfqNestedResponse) : null;
   const quotation =
@@ -554,6 +359,23 @@ export function FactoryOrderDetailPage() {
         /(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i,
       )?.[1] ?? undefined)
     : undefined;
+  /** courier/tracking จาก orders.* (primary) + fallback จาก step4 description */
+  const trackingFromOrder = String(
+    (order as Record<string, unknown>).tracking_no ??
+      (order as Record<string, unknown>).trackingNo ??
+      '',
+  ).trim();
+  const courierFromOrder = String(
+    (order as Record<string, unknown>).courier ??
+      (order as Record<string, unknown>).shipping_courier ??
+      '',
+  ).trim();
+  const courierFromDesc = step4?.update.description
+    ? (step4.update.description.match(/(?:courier|ขนส่ง|บริษัทขนส่ง)[:\s]*([^\n,]+)/i)?.[1]?.trim() ??
+      '')
+    : '';
+  const shippedTrackingNo = trackingFromOrder || trackingNumber || '';
+  const shippedCourier = courierFromOrder || courierFromDesc || '';
 
   const customerShipping = useMemo(() => extractShippingInfo(order), [order]);
   const completedCount = derivedStates.filter((s) => s === 'completed').length;
@@ -567,6 +389,15 @@ export function FactoryOrderDetailPage() {
   const customerPhone = String(
     (order.customer as Record<string, unknown>)?.phone ?? customerShipping.phone ?? '-',
   );
+  const requestKindRaw = String(
+    order.request_kind ??
+    (order.rfq as Record<string, unknown> | null)?.request_kind ??
+    (order.quotation as Record<string, unknown> | null)?.request_kind ??
+    '',
+  ).toUpperCase();
+  const requestKindLabel: Record<string, string> = {
+    PR: 'ผลิต OEM', MR: 'วัตถุดิบ', PS: 'ตัวอย่างสินค้า', MS: 'ตัวอย่างวัตถุดิบ',
+  };
   const shippingMethodName = String(
     (order.shipping_method as Record<string, unknown>)?.method_name ??
       order.shipping_method_name ??
@@ -627,6 +458,111 @@ export function FactoryOrderDetailPage() {
             <div className='w-10 h-10 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin' />
           </div>
         ) : (
+          <>
+            {(isCompleted || showLabelCard || step4?.update.status === 'CD') && (
+              <div className='grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-5 mb-4'>
+                {isCompleted ? (
+                  <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
+                    <p className='text-2xl'>🎉</p>
+                    <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
+                    <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
+                  </section>
+                ) : (
+                  <div />
+                )}
+
+                {showLabelCard ? (
+                  <section className='rounded-2xl overflow-hidden border border-orange-200 shadow-sm'>
+                    <div className='px-4 py-2.5 flex items-center gap-2 bg-[#ee4d2d]'>
+                      <Printer size={15} className='text-white' />
+                      <p className='text-sm font-bold text-white flex-1'>ใบปะหน้าพัสดุ</p>
+                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
+                        พร้อมพิมพ์
+                      </span>
+                    </div>
+                    <div className='bg-white px-4 py-3 space-y-3'>
+                      <div className='rounded-xl border border-orange-100 bg-orange-50 px-3 py-2.5'>
+                        <p className='text-[9px] font-bold text-orange-600 uppercase tracking-wide mb-1.5'>
+                          ผู้รับ
+                        </p>
+                        <p className='text-sm font-bold text-slate-900 leading-tight'>
+                          {customerShipping.recipientName || (
+                            <span className='text-slate-400 font-normal'>ไม่ระบุชื่อ</span>
+                          )}
+                        </p>
+                        {customerShipping.phone ? (
+                          <p className='text-xs text-slate-700 mt-0.5'>📞 {customerShipping.phone}</p>
+                        ) : null}
+                        {customerShipping.addressLine ? (
+                          <p className='text-[11px] text-slate-600 mt-1 leading-relaxed'>
+                            {[
+                              customerShipping.addressLine,
+                              customerShipping.subDistrict,
+                              customerShipping.district,
+                              customerShipping.province,
+                              customerShipping.postalCode,
+                            ]
+                              .filter(Boolean)
+                              .join(', ')}
+                          </p>
+                        ) : (
+                          <p className='text-[11px] text-slate-400 mt-1'>ยังไม่มีที่อยู่จัดส่ง</p>
+                        )}
+                      </div>
+                      {trackingNumber ? (
+                        <div className='flex items-center gap-1.5'>
+                          <span className='text-xs'>📦</span>
+                          <span className='text-xs font-semibold text-slate-700 bg-slate-100 rounded px-2 py-0.5'>
+                            {trackingNumber}
+                          </span>
+                        </div>
+                      ) : null}
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        onClick={handleOpenLabel}
+                        className='w-full rounded-xl py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-[#ee4d2d] hover:opacity-90 transition-opacity'
+                      >
+                        <Printer size={15} />
+                        ทำใบปะหน้าพัสดุ
+                        <ExternalLink size={13} className='opacity-70' />
+                      </Button>
+                      <p className='text-[10px] text-slate-400 text-center'>
+                        เปิด tab ใหม่ • พิมพ์หรือบันทึก PDF ได้เลย
+                      </p>
+                    </div>
+                  </section>
+                ) : step4?.update.status === 'CD' ? (
+                  <section className='rounded-2xl overflow-hidden border border-emerald-200 shadow-sm bg-white'>
+                    <div className='px-4 py-2.5 flex items-center gap-2 bg-emerald-50'>
+                      <Truck size={15} className='text-emerald-700' />
+                      <p className='text-sm font-bold text-emerald-800 flex-1'>จัดส่งแล้ว</p>
+                      <span className='text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200'>
+                        CD
+                      </span>
+                    </div>
+                    <div className='px-4 py-3 space-y-2.5'>
+                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                        <p className='text-[10px] text-slate-500 mb-1'>บริษัทขนส่ง</p>
+                        <p className='text-sm font-semibold text-slate-900'>
+                          {shippedCourier || <span className='text-slate-400 font-normal'>-</span>}
+                        </p>
+                      </div>
+                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                        <p className='text-[10px] text-slate-500 mb-1'>เลขพัสดุ</p>
+                        <p className='text-sm font-semibold text-slate-900 font-mono break-all'>
+                          {shippedTrackingNo || (
+                            <span className='text-slate-400 font-sans font-normal'>-</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                ) : (
+                  <div />
+                )}
+              </div>
+            )}
           <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] gap-4 lg:gap-5 items-start'>
             <div className='space-y-4 min-w-0'>
               <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
@@ -730,6 +666,7 @@ export function FactoryOrderDetailPage() {
                           { label: 'มูลค่ารวม', value: <span className='font-semibold tabular-nums'>{formatCurrency(Number(order.total_amount ?? 0))}</span> },
                           { label: 'มัดจำ (Deposit)', value: <span className='font-semibold tabular-nums text-emerald-700'>{formatCurrency(Number(order.deposit_amount ?? 0))}</span> },
                           { label: 'วิธีจัดส่ง', value: shippingMethodName },
+                          ...(requestKindRaw && requestKindLabel[requestKindRaw] ? [{ label: 'ประเภทออเดอร์', value: <span className='text-[12px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full'>{requestKindLabel[requestKindRaw]}</span> }] : []),
                           ...(trackingNumber ? [{ label: 'Tracking No.', value: <span className='font-mono bg-slate-100 rounded px-2 py-0.5 text-xs'>{trackingNumber}</span> }] : []),
                         ].map(({ label, value }, i) => (
                           <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
@@ -817,112 +754,6 @@ export function FactoryOrderDetailPage() {
             </div>
 
             <aside className='space-y-4 xl:sticky xl:top-20'>
-              {isCompleted ? (
-                <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
-                  <p className='text-2xl'>🎉</p>
-                  <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
-                  <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
-                </section>
-              ) : activeStep != null && totalSteps > 0 ? (
-                <NextActionCard
-                  step={activeStep}
-                  stepIndex={nextStepIdx}
-                  totalSteps={totalSteps}
-                  state={activeState ?? 'upcoming'}
-                  customerShipping={customerShipping}
-                  onAcceptOrder={handleAcceptOrder}
-                  onUpdate={() => {
-                    if (factoryCanUpdateStep(activeStep) && !isAcceptStep(activeStep))
-                      setDrawerStep(activeStep);
-                  }}
-                />
-              ) : totalSteps > 0 ? (
-                <section className='rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center'>
-                  <p className='text-sm text-gray-500'>ทุกขั้นตอนเสร็จสิ้น — รอลูกค้ายืนยัน</p>
-                </section>
-              ) : (
-                <section className='rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center'>
-                  <p className='text-sm text-gray-400'>กำลังโหลดขั้นตอน…</p>
-                </section>
-              )}
-
-              {/* ── ใบปะหน้าพัสดุ (แสดงเมื่อถึง step 4) ── */}
-              {showLabelCard ? (
-                <section className='rounded-2xl overflow-hidden border border-orange-200 shadow-sm'>
-                  {/* header */}
-                  <div className='px-4 py-2.5 flex items-center gap-2 bg-[#ee4d2d]'>
-                    <Printer size={15} className='text-white' />
-                    <p className='text-sm font-bold text-white flex-1'>ใบปะหน้าพัสดุ</p>
-                    {step4?.update.status === 'CD' ? (
-                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
-                        จัดส่งแล้ว
-                      </span>
-                    ) : (
-                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
-                        พร้อมพิมพ์
-                      </span>
-                    )}
-                  </div>
-
-                  {/* body */}
-                  <div className='bg-white px-4 py-3 space-y-3'>
-                    {/* recipient preview */}
-                    <div className='rounded-xl border border-orange-100 bg-orange-50 px-3 py-2.5'>
-                      <p className='text-[9px] font-bold text-orange-600 uppercase tracking-wide mb-1.5'>
-                        ผู้รับ
-                      </p>
-                      <p className='text-sm font-bold text-slate-900 leading-tight'>
-                        {customerShipping.recipientName || (
-                          <span className='text-slate-400 font-normal'>ไม่ระบุชื่อ</span>
-                        )}
-                      </p>
-                      {customerShipping.phone ? (
-                        <p className='text-xs text-slate-700 mt-0.5'>📞 {customerShipping.phone}</p>
-                      ) : null}
-                      {customerShipping.addressLine ? (
-                        <p className='text-[11px] text-slate-600 mt-1 leading-relaxed'>
-                          {[
-                            customerShipping.addressLine,
-                            customerShipping.subDistrict,
-                            customerShipping.district,
-                            customerShipping.province,
-                            customerShipping.postalCode,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </p>
-                      ) : (
-                        <p className='text-[11px] text-slate-400 mt-1'>ยังไม่มีที่อยู่จัดส่ง</p>
-                      )}
-                    </div>
-
-                    {/* tracking chip if exists */}
-                    {trackingNumber ? (
-                      <div className='flex items-center gap-1.5'>
-                        <span className='text-xs'>📦</span>
-                        <span className='text-xs font-semibold text-slate-700 bg-slate-100 rounded px-2 py-0.5'>
-                          {trackingNumber}
-                        </span>
-                      </div>
-      ) : null}
-
-                    {/* print button */}
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      onClick={handleOpenLabel}
-                      className='w-full rounded-xl py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-[#ee4d2d] hover:opacity-90 transition-opacity'
-                    >
-                      <Printer size={15} />
-                      ทำใบปะหน้าพัสดุ
-                      <ExternalLink size={13} className='opacity-70' />
-                    </Button>
-                    <p className='text-[10px] text-slate-400 text-center'>
-                      เปิด tab ใหม่ • พิมพ์หรือบันทึก PDF ได้เลย
-                    </p>
-              </div>
-            </section>
-              ) : null}
 
               <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
                 <div className='flex items-center gap-2'>
@@ -940,6 +771,9 @@ export function FactoryOrderDetailPage() {
                 ) : (
                   <>
                     {/* step_id=0: แสดง info card แทน StepRow */}
+                    {!step0Accepted && status === 'PD' && (
+                      <StartWorkButton onStart={() => handleStepSubmit({ step_id: 0, status: 'CD', image_urls: [] })} />
+                    )}
                     {step0Accepted ? (
                       <div className='rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 flex items-center justify-between gap-2'>
                         <div className='flex items-center gap-2 min-w-0'>
@@ -1039,8 +873,9 @@ export function FactoryOrderDetailPage() {
               </section>
             </aside>
           </div>
+          </>
         )}
-        </div>
+      </div>
 
       <UpdateStepDrawer
         open={drawerStep != null}

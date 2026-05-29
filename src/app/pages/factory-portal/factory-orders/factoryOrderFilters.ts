@@ -8,9 +8,7 @@ import type {
 export function matchTab(row: FactoryOrderRow, derived: DerivedCardState, tabId: TabId): boolean {
   if (tabId === 'all') return true;
 
-  // step_id >= 4 (step จัดส่ง (4) ดำเนินการแล้ว หรือ step 5 (รอยืนยัน) active)
-  // เมื่อ step 4 = CD, BE auto-progress step 5 → IP ทำให้ current_step_id = 5
-  const isShipping = (row.production_summary?.current_step_id ?? 0) >= 4;
+  const isShipping = row.status === 'SH';
 
   // PD = PaymentDone — โรงงานต้องยืนยันรับงานและเริ่มผลิต
   const isPendingStart = row.status === 'PD';

@@ -35,6 +35,7 @@ export type FactoryAbout = {
 
 export type FactoryProfileExtra = {
   address?: string;
+  description?: string;
   acceptedProductTypes?: string[];
   certificates?: string[];
 };

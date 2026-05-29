@@ -16,6 +16,7 @@ export type ReviewItem = {
   rating: number;
   comment: string;
   createdAt: string;
+  imageUrls?: string[];
 };
 
 export type ReviewsData = {
@@ -77,13 +78,19 @@ function mapEmbeddedReviews(rRaw: Record<string, unknown>): ReviewsData {
       breakdown,
     },
     items: rawItems
-      .map((row) => ({
-        id: String(row.review_id ?? row.id ?? ''),
-        reviewer: String(row.reviewer_name ?? row.reviewer ?? 'ลูกค้า'),
-        rating: Number(row.rating ?? 0),
-        comment: String(row.comment ?? ''),
-        createdAt: String(row.created_at ?? ''),
-      }))
+      .map((row) => {
+        const imgUrls = Array.isArray(row.image_urls)
+          ? (row.image_urls as string[]).filter((u) => typeof u === 'string' && u.trim() !== '')
+          : [];
+        return {
+          id: String(row.review_id ?? row.id ?? ''),
+          reviewer: String(row.reviewer_name ?? row.reviewer ?? 'ลูกค้า'),
+          rating: Number(row.rating ?? 0),
+          comment: String(row.comment ?? ''),
+          createdAt: String(row.created_at ?? ''),
+          ...(imgUrls.length > 0 ? { imageUrls: imgUrls } : {}),
+        };
+      })
       .filter((r) => r.id),
   };
 }
@@ -170,9 +177,27 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
       }
       const fRaw = (row.factory ?? raw.factory) as Record<string, unknown> | undefined;
       const rRaw = (row.reviews ?? raw.reviews) as Record<string, unknown> | undefined;
+      // Fallback: construct factory from flat showcase fields when no nested object
+      const embeddedFactory = fRaw
+        ? mapEmbeddedFactory(fRaw)
+        : raw.factory_name
+          ? mapEmbeddedFactory({
+              factory_id: raw.factory_id,
+              factory_name: raw.factory_name,
+              province: raw.province_name,
+              rating: raw.factory_rating,
+              review_count: raw.factory_review_count,
+              factory_type: raw.factory_specialization,
+              image_url: raw.factory_image_url,
+              verified: raw.factory_verified,
+              completed_orders: raw.completed_orders,
+              min_order: raw.moq,
+              lead_time_desc: raw.lead_time_days != null ? `${raw.lead_time_days} วัน` : undefined,
+            })
+          : null;
       return {
         showcase: s,
-        factory: fRaw ? mapEmbeddedFactory(fRaw) : null,
+        factory: embeddedFactory,
         reviews: rRaw ? mapEmbeddedReviews(rRaw) : null,
       };
     },

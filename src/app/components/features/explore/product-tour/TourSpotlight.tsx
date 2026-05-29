@@ -20,7 +20,7 @@ export function SpotlightOverlay({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 9998,
+        zIndex: 100000,
         pointerEvents: 'all',
         cursor: 'default',
         width: '100%',

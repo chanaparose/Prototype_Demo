@@ -247,9 +247,10 @@ export function ShowcaseCategoryFields({
             <Select
               disabled={categoryValue == null || subCategoriesLoading}
               value={subCategoryValue != null ? String(subCategoryValue) : ''}
-              onValueChange={(next) =>
-                onSubCategoryChange(next === '__empty' ? null : Number(next))
-              }
+              onValueChange={(next) => {
+                if (!next) return;
+                onSubCategoryChange(next === '__empty' ? null : Number(next));
+              }}
             >
               <SelectTrigger className='w-full h-10 text-xs disabled:bg-gray-50 disabled:text-gray-400'>
                 <SelectValue
@@ -270,6 +271,11 @@ export function ShowcaseCategoryFields({
                       ? 'กำลังโหลด…'
                       : '— เลือกหมวดย่อย —'}
                 </SelectItem>
+                {subCategoryValue != null && !subOptions.some((o) => o.id === subCategoryValue) && (
+                  <SelectItem value={String(subCategoryValue)} className='text-xs'>
+                    {subCategoriesLoading ? 'กำลังโหลด…' : `#${subCategoryValue}`}
+                  </SelectItem>
+                )}
                 {subOptions.map((option) => (
                   <SelectItem key={option.id} value={String(option.id)} className='text-xs'>
                     {option.name}

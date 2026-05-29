@@ -24,16 +24,12 @@ export function TourCard({
   const isFirst = stepIdx === 0;
   const isLast = stepIdx === total - 1;
   const wh = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const ww = typeof window !== 'undefined' ? window.innerWidth : 400;
 
   const placeAtTop = (() => {
     if (def.cardPlacement === 'top') return true;
     if (def.cardPlacement === 'bottom') return false;
     return !isMock && rect ? rect.top > wh * 0.5 : false;
   })();
-
-  const arrowDown = placeAtTop && rect != null;
-  const arrowUp = !placeAtTop && !isMock && rect ? rect.bottom < wh * 0.55 : false;
 
   return (
     <div
@@ -44,7 +40,7 @@ export function TourCard({
         ...(placeAtTop ? { top: 16 } : { bottom: 16 }),
         left: 12,
         right: 12,
-        zIndex: 9999,
+        zIndex: 100001,
         maxWidth: 440,
         margin: '0 auto',
         background: 'var(--neutral-white)',
@@ -54,38 +50,6 @@ export function TourCard({
         animation: 'tour-card-in 0.22s ease-out both',
       }}
     >
-      {arrowUp && rect && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: Math.min(Math.max(rect.left + rect.width / 2 - 24, 20), ww - 60),
-            width: 0,
-            height: 0,
-            borderLeft: '12px solid transparent',
-            borderRight: '12px solid transparent',
-            borderBottom: `12px solid ${def.badgeColor}`,
-            marginBottom: -1,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-      {arrowDown && rect && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: Math.min(Math.max(rect.left + rect.width / 2 - 24, 20), ww - 60),
-            width: 0,
-            height: 0,
-            borderLeft: '12px solid transparent',
-            borderRight: '12px solid transparent',
-            borderTop: `12px solid ${def.badgeColor}`,
-            marginTop: -1,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
       <div
         style={{
           height: 4,

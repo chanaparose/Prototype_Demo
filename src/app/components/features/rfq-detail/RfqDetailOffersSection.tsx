@@ -113,10 +113,11 @@ export function RfqDetailOffersSection({
     setAcceptingId(offerId);
     setFlowError(null);
     try {
-      let orderId: string | undefined;
-      const created = (await ordersApi.create(Number(offerId))) as Record<string, unknown>;
-      const oid = created.order_id ?? created.id;
-      if (oid != null && String(oid)) orderId = String(oid);
+      const created = await ordersApi.create(Number(offerId));
+      const orderId =
+        created.order_id != null && Number.isFinite(created.order_id)
+          ? String(created.order_id)
+          : undefined;
       if (orderId) setSuccessOrderId(orderId);
       onOfferFlowComplete?.({ quoteId: offerId, orderId });
     } catch (err) {
@@ -329,7 +330,7 @@ export function RfqDetailOffersSection({
     return (
       <>
         <div
-          className='rounded-2xl p-4 relative overflow-hidden'
+          className='rounded-2xl p-4 relative overflow-hidden mt-3'
           style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
         >
           <div className='absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 bg-white' />

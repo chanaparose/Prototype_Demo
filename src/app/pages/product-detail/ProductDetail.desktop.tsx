@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useProductDetailShowcase } from '@/hooks/useProductDetailShowcase';
+import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
+import { openImageLightbox } from '@/stores/useLightboxStore';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
@@ -554,6 +556,11 @@ export function ProductDetailDesktop() {
                     <p className='text-[12px] text-gray-600 mt-1 line-clamp-2'>
                       {r.comment || '-'}
                     </p>
+                    {r.imageUrls && r.imageUrls.length > 0 && (
+                      <div className='mt-1.5'>
+                        <ReviewImageAttachments urls={r.imageUrls} onPreviewUrl={(u) => openImageLightbox(u)} />
+                      </div>
+                    )}
                 </div>
                 ))
               )}

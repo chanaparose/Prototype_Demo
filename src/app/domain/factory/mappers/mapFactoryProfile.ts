@@ -105,6 +105,7 @@ function mapProfileFromApi(
   return {
     factoryId: pickScalarString(p.factory_id, factoryId),
     address: addr,
+    description: pickScalarString(p.description, p.about, b?.description),
     acceptedProductTypes: types,
     certificates: certs,
   };
@@ -119,12 +120,12 @@ function mapReviewFromApi(r: Record<string, unknown>, factoryId: string): Factor
   const fullName = `${firstName} ${lastName}`.trim();
   const fallbackByUserId = Number.isFinite(userId) && userId > 0 ? `ผู้ใช้ #${userId}` : '';
   const reviewer = pickScalarString(
-    fullName,
+    fullName || undefined,   // skip empty string so pickScalarString falls through
     r.reviewer_name,
     r.reviewer,
     r.user_name,
     r.display_name,
-    fallbackByUserId,
+    fallbackByUserId || undefined,
     'ลูกค้า',
   );
   const imageUrls = normalizeReviewImageUrls(r.image_urls);

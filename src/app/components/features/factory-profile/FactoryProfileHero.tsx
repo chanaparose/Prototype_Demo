@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
   ArrowLeft,
-  Building2,
   ChevronDown,
   ImageIcon,
   MapPin,
@@ -54,7 +53,6 @@ export function FactoryProfileHero({
   factorySubCategoryPairs = [],
   apiCertificates = [],
 }: FactoryProfileHeroProps) {
-  const cover = String(factory.coverImageUrl ?? '').trim();
   const [showCategorySubs, setShowCategorySubs] = useState(false);
 
   const groupedCategorySubs = useMemo(() => {
@@ -79,54 +77,41 @@ export function FactoryProfileHero({
   const address = String(profile?.address ?? factory.location).trim();
   const profileCerts = profile?.certificates ?? [];
   const hasCerts = profileCerts.length > 0 || apiCertificates.length > 0;
-  const hasDetails = Boolean(address) || groupedCategorySubs.length > 0 || hasCerts;
+  const description = String(profile?.description ?? '').trim();
+  const hasDetails =
+    Boolean(address) || Boolean(description) || groupedCategorySubs.length > 0 || hasCerts;
 
   return (
     <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'>
-      <div
-        className='relative h-28 sm:h-36'
-        style={
-          cover
-            ? {
-                backgroundImage: `url(${cover})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }
-            : undefined
-        }
-      >
-        {!cover ? (
-          <div
-            className='absolute inset-0 bg-gradient-to-br from-slate-100 via-violet-50 to-indigo-50'
-            aria-hidden
-          />
-        ) : null}
-        <div className='absolute inset-0 bg-slate-900/25 pointer-events-none' aria-hidden />
-
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={onBack}
-          className='absolute left-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/95 shadow-sm backdrop-blur-[1px] hover:bg-white'
-        >
-          <ArrowLeft className='h-4 w-4 text-gray-700' />
-        </Button>
-        {showChat ? (
+      <div className='px-4 sm:px-5 pt-4 pb-1 border-b border-gray-100 bg-gradient-to-r from-violet-50/70 via-indigo-50/50 to-white'>
+        <div className='flex items-center justify-between gap-2'>
           <Button
             variant='unstyled'
             type='button'
-            onClick={onChat}
-            disabled={chatLoading}
-            className='absolute right-3 top-3 z-20 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/40 bg-white/95 shadow-md backdrop-blur-[1px] hover:bg-white disabled:opacity-60'
-            aria-label='แชทกับโรงงาน'
+            onClick={onBack}
+            className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm hover:bg-gray-50'
           >
-            {chatLoading ? (
-              <span className='h-4 w-4 animate-spin rounded-full border-2 border-brand-royal border-t-transparent' />
-            ) : (
-              <MessageCircle className='h-5 w-5' style={{ color: 'var(--brand-royal)' }} />
-            )}
+            <ArrowLeft className='h-4 w-4 text-gray-700' />
           </Button>
-        ) : null}
+          {showChat ? (
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={onChat}
+              disabled={chatLoading}
+              className='inline-flex h-9 w-9 items-center justify-center rounded-xl border border-indigo-100 bg-white shadow-sm hover:bg-indigo-50 disabled:opacity-60'
+              aria-label='แชทกับโรงงาน'
+            >
+              {chatLoading ? (
+                <span className='h-4 w-4 animate-spin rounded-full border-2 border-brand-royal border-t-transparent' />
+              ) : (
+                <MessageCircle className='h-4 w-4' style={{ color: 'var(--brand-royal)' }} />
+              )}
+            </Button>
+          ) : (
+            <div className='h-9 w-9' />
+          )}
+        </div>
       </div>
 
       <div className='relative z-[2] px-5 pb-5 pt-4'>
@@ -182,6 +167,11 @@ export function FactoryProfileHero({
 
             {hasDetails ? (
               <div className='mt-3 space-y-2 border-t border-gray-100 pt-3 text-sm text-gray-600'>
+                {description ? (
+                  <p className='rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2 text-[13px] leading-relaxed text-gray-700'>
+                    {description}
+                  </p>
+                ) : null}
                 {address ? (
                   <p className='flex items-start gap-2'>
                     <MapPin className='mt-0.5 h-4 w-4 shrink-0 text-purple-600' />
