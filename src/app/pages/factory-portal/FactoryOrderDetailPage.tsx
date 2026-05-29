@@ -41,7 +41,6 @@ import { getStepGuide } from '@/components/features/production/stepGuideConfig';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { Button } from '@/components/ui/button';
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -543,13 +542,6 @@ export function FactoryOrderDetailPage() {
 
   return (
     <div className='space-y-4 pb-24'>
-      <FactoryPageHeader
-        title={title}
-        subtitle={`คำสั่งซื้อ #${orderCode}`}
-        icon={Flag}
-        count={statusLabel(status)}
-      />
-
       <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-y border-slate-200 px-4 h-14 flex items-center gap-3 rounded-xl'>
         <Button
           variant='unstyled'

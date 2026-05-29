@@ -45,6 +45,20 @@ export const ordersApi = {
     headers?: Record<string, string>,
   ) => httpClient.post<unknown>(`/orders/${orderId}/production-updates`, data, headers),
 
+  /** Complete shipping step (step_id=4) with tracking number */
+  ship: (
+    orderId: string | number,
+    data: { tracking_number: string; note?: string; courier?: string },
+  ) =>
+    httpClient.post<unknown>(`/orders/${orderId}/production-updates`, {
+      step_id: 4,
+      status: 'CD',
+      description: data.note,
+      image_urls: [] as string[],
+      tracking_no: data.tracking_number,
+      ...(data.courier ? { courier: data.courier } : {}),
+    } satisfies IProductionUpdateRequest),
+
   /** POST /orders/:id/payments — pay deposit or full payment */
   createPayment: (
     orderId: string | number,

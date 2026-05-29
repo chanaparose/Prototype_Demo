@@ -47,4 +47,6 @@ export interface IProductionUpdateRequest {
   description?: string;
   image_urls: string[];
   confirm_payment_trigger?: boolean;
+  tracking_no?: string;
+  courier?: string;
 }
