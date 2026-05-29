@@ -732,7 +732,7 @@ export function FactoryRfqDetailPage() {
                     (myQuote as unknown as Record<string, unknown>).factory_note ?? '',
                   ) || null
                 }
-                invalidateKeys={[['rfq', id]]}
+                onSaved={load}
               />
             ) : null}
 
