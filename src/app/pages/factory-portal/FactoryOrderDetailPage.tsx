@@ -37,7 +37,6 @@ import {
   type MergedProductionStep,
 } from '@/components/features/production/types';
 import { deriveStepStates } from '@/components/features/production/stepDerivedState';
-import { getStepGuide } from '@/components/features/production/stepGuideConfig';
 import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -134,10 +133,6 @@ function factoryCanUpdateStep(step: MergedProductionStep | null): boolean {
   return n >= 0 && n <= 4;
 }
 
-function isAcceptStep(step: MergedProductionStep | null): boolean {
-  return getStepId(step) === 0;
-}
-
 function extractShippingInfo(order: Record<string, unknown>): CustomerShippingInfo {
   const addr =
     (order.delivery_address as Record<string, unknown>) ??
@@ -171,199 +166,6 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
     province: String(addr.province_name ?? addr.province ?? '').trim() || undefined,
     postalCode: String(addr.zip_code ?? addr.postal_code ?? '').trim() || undefined,
   };
-}
-
-type StepState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
-
-function StepStatusBadge({ state, overrideLabel }: { state: StepState; overrideLabel?: string }) {
-  const map: Record<
-    StepState,
-    {
-      label: string;
-      variant: React.ComponentProps<typeof StatusBadge>['variant'];
-      icon: React.ReactNode;
-    }
-  > = {
-    completed: { label: 'เสร็จสิ้น', variant: 'success', icon: <CheckCircle2 size={12} /> },
-    active: { label: 'กำลังดำเนินการ', variant: 'active', icon: <Clock size={12} /> },
-    blocked: { label: 'รอดำเนินการ', variant: 'pending', icon: <AlertCircle size={12} /> },
-    rejected: { label: 'ต้องแก้ไข', variant: 'error', icon: <AlertCircle size={12} /> },
-    upcoming: { label: 'ยังไม่เริ่ม', variant: 'inactive', icon: <Circle size={12} /> },
-  };
-  const { label, variant, icon } = map[state];
-  return (
-    <StatusBadge variant={variant} size='sm' icon={icon}>
-      {overrideLabel ?? label}
-    </StatusBadge>
-  );
-}
-
-interface NextActionCardProps {
-  step: MergedProductionStep;
-  stepIndex: number;
-  totalSteps: number;
-  state: StepState;
-  customerShipping: CustomerShippingInfo;
-  onUpdate: () => void;
-  /** เฉพาะ step_id=0: กดยืนยันรับงานโดยไม่ต้องเปิด drawer */
-  onAcceptOrder?: () => Promise<void>;
-}
-
-function NextActionCard({
-  step,
-  stepIndex,
-  totalSteps,
-  state,
-  customerShipping,
-  onUpdate,
-  onAcceptOrder,
-}: NextActionCardProps) {
-  const [accepting, setAccepting] = React.useState(false);
-  const guide = getStepGuide(getStepId(step));
-  const canUpdate = factoryCanUpdateStep(step);
-  const stepId = getStepId(step);
-  const isAccept = isAcceptStep(step);
-  const isShipping = stepId === 4; // step 4 = จัดส่งแล้ว (factory ships)
-  const isQC = Boolean(step.template.is_payment_trigger);
-
-  const hasAddr =
-    customerShipping.addressLine || customerShipping.phone || customerShipping.recipientName;
-
-  return (
-    <section className='rounded-2xl overflow-hidden border border-indigo-200 shadow-md'>
-      <div className='px-4 py-3 flex items-center justify-between bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet-deep)_100%)]'>
-        <div className='flex items-center gap-2'>
-          <span className='text-xl leading-none'>{guide.emoji}</span>
-          <div>
-            <p className='text-[10px] font-semibold text-indigo-200 uppercase tracking-wide'>
-              ขั้นตอนที่ {stepIndex + 1} / {totalSteps}
-            </p>
-            <p className='text-sm font-bold text-white leading-tight'>
-              {step.template.step_name_th}
-            </p>
-          </div>
-        </div>
-        {/* step_id=0: แสดง "ยืนยันรับงาน" แทน "กำลังดำเนินการ" */}
-        <StepStatusBadge state={state} overrideLabel={isAccept ? 'ยืนยันรับงาน' : undefined} />
-      </div>
-
-      <div className='bg-white p-4 space-y-3'>
-        <div>
-          <p className='text-xs font-bold text-slate-800'>{guide.whatToDo}</p>
-          <p className='text-xs text-slate-500 mt-1 leading-relaxed'>{guide.guidance}</p>
-        </div>
-
-        {isQC ? (
-          <div className='rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 flex items-start gap-2'>
-            <span className='text-base leading-none shrink-0 mt-0.5'>💳</span>
-            <p className='text-xs text-amber-800'>
-              <strong>การยืนยันขั้นนี้จะส่งคำขอชำระเงินส่วนที่เหลือให้ลูกค้าทันที</strong>
-            </p>
-          </div>
-        ) : null}
-
-        {isShipping && hasAddr ? (
-          <div className='rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5'>
-            <p className='text-[10px] font-bold text-amber-700 uppercase tracking-wide mb-2 flex items-center gap-1'>
-              <MapPin size={11} /> ที่อยู่จัดส่ง — สำหรับทำใบปะหน้าพัสดุ
-            </p>
-            <div className='space-y-1'>
-              {customerShipping.recipientName ? (
-                <div className='flex items-center gap-1.5'>
-                  <User size={11} className='text-amber-600 shrink-0' />
-                  <span className='text-xs font-semibold text-amber-900'>
-                    {customerShipping.recipientName}
-                  </span>
-                </div>
-              ) : null}
-              {customerShipping.phone ? (
-                <div className='flex items-center gap-1.5'>
-                  <Phone size={11} className='text-amber-600 shrink-0' />
-                  <span className='text-xs text-amber-800'>{customerShipping.phone}</span>
-                </div>
-              ) : null}
-              {customerShipping.addressLine ? (
-                <div className='flex items-start gap-1.5'>
-                  <MapPin size={11} className='text-amber-500 shrink-0 mt-0.5' />
-                  <span className='text-xs text-amber-800 leading-relaxed'>
-                    {[
-                      customerShipping.addressLine,
-                      customerShipping.subDistrict,
-                      customerShipping.district,
-                      customerShipping.province,
-                      customerShipping.postalCode,
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
-                  </span>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-
-        <ul className='space-y-1.5'>
-          {guide.bulletPoints.slice(0, 3).map((item, i) => (
-            <li key={i} className='flex items-start gap-2 text-xs text-gray-700 leading-relaxed'>
-              <span className='mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-indigo-400' />
-              {item}
-            </li>
-          ))}
-        </ul>
-
-        <div className='rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 flex items-center gap-2'>
-          <span className='text-sm'>➡️</span>
-          <p className='text-[11px] text-slate-500 leading-relaxed'>
-            <span className='font-semibold text-slate-700'>เมื่อยืนยัน:</span> {guide.nextStepHint}
-          </p>
-        </div>
-
-        {canUpdate ? (
-          isAccept ? (
-            // step_id=0: ยืนยันรับงาน — ไม่ต้องแนบรูป กดปุ่มเลย
-            <Button
-              variant='unstyled'
-              type='button'
-              disabled={accepting}
-              onClick={async () => {
-                if (!onAcceptOrder) return;
-                setAccepting(true);
-                try {
-                  await onAcceptOrder();
-                } finally {
-                  setAccepting(false);
-                }
-              }}
-              className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)] disabled:opacity-60'
-            >
-              <Package size={16} />
-              {accepting ? 'กำลังบันทึก…' : guide.confirmLabel}
-            </Button>
-          ) : (
-            <Button
-              variant='unstyled'
-              type='button'
-              onClick={onUpdate}
-              className='w-full rounded-xl py-3.5 text-sm font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-[linear-gradient(135deg,var(--brand-indigo)_0%,var(--brand-violet)_100%)]'
-            >
-              <Package size={16} />
-              {step.update.status === 'IP'
-                ? 'อัปเดตและยืนยันขั้นนี้'
-                : step.update.status === 'RJ'
-                  ? 'ส่งหลักฐานใหม่'
-                  : guide.confirmLabel}
-            </Button>
-          )
-        ) : (
-          <div className='rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-3 text-center'>
-            <p className='text-xs text-emerald-700 font-medium'>
-              ⏳ {step.template.description ?? 'รอการยืนยันจากลูกค้าหรือระบบอัตโนมัติ'}
-            </p>
-          </div>
-        )}
-      </div>
-    </section>
-  );
 }
 
 export function FactoryOrderDetailPage() {
@@ -447,18 +249,6 @@ export function FactoryOrderDetailPage() {
     [displayMerged, orderStatus],
   );
 
-  const activeStepIdx = useMemo(
-    () => derivedStates.findIndex((d) => d === 'active' || d === 'blocked'),
-    [derivedStates],
-  );
-  const nextStepIdx = useMemo(() => {
-    if (activeStepIdx >= 0) return activeStepIdx;
-    return derivedStates.findIndex((d) => d === 'upcoming');
-  }, [activeStepIdx, derivedStates]);
-
-  const activeStep = nextStepIdx >= 0 ? (displayMerged[nextStepIdx] ?? null) : null;
-  const activeState = (nextStepIdx >= 0 ? derivedStates[nextStepIdx] : null) as StepState | null;
-
   const [drawerStep, setDrawerStep] = useState<MergedProductionStep | null>(null);
 
   const handleStepSubmit = useCallback(
@@ -488,11 +278,6 @@ export function FactoryOrderDetailPage() {
     },
     [id, qc, loadOrder],
   );
-
-  /** step_id=0: ยืนยันรับงาน — ส่ง CD โดยตรง ไม่ต้องรูป */
-  const handleAcceptOrder = useCallback(async () => {
-    await handleStepSubmit({ step_id: 0, status: 'CD', description: '', image_urls: [] });
-  }, [handleStepSubmit]);
 
   const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as IRfqNestedResponse) : null;
   const quotation =
@@ -823,28 +608,7 @@ export function FactoryOrderDetailPage() {
                   <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
                   <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
                 </section>
-              ) : activeStep != null && totalSteps > 0 ? (
-                <NextActionCard
-                  step={activeStep}
-                  stepIndex={nextStepIdx}
-                  totalSteps={totalSteps}
-                  state={activeState ?? 'upcoming'}
-                  customerShipping={customerShipping}
-                  onAcceptOrder={handleAcceptOrder}
-                  onUpdate={() => {
-                    if (factoryCanUpdateStep(activeStep) && !isAcceptStep(activeStep))
-                      setDrawerStep(activeStep);
-                  }}
-                />
-              ) : totalSteps > 0 ? (
-                <section className='rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center'>
-                  <p className='text-sm text-gray-500'>ทุกขั้นตอนเสร็จสิ้น — รอลูกค้ายืนยัน</p>
-                </section>
-              ) : (
-                <section className='rounded-2xl bg-gray-50 border border-gray-200 px-4 py-5 text-center'>
-                  <p className='text-sm text-gray-400'>กำลังโหลดขั้นตอน…</p>
-                </section>
-              )}
+              ) : null}
 
               {/* ── ใบปะหน้าพัสดุ (แสดงเมื่อถึง step 4) ── */}
               {showLabelCard ? (
