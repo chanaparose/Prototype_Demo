@@ -112,7 +112,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
         setSaving(true);
         setError('');
         try {
-          await quotationsApi.patch(quotationId, {
+          await quotationsApi.update(quotationId, {
             factory_id: factoryEntityId,
             price_per_piece: Number(values.price_per_piece),
             mold_cost: Number(values.mold_cost) || 0,
