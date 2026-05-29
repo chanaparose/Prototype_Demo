@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   X,
+  ChevronLeft,
   ChevronRight,
   Clock,
   Search,
@@ -55,6 +56,87 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
 function statusMeta(code: string) {
   return STATUS_LABEL[code] ?? { label: code, cls: 'bg-gray-100 text-gray-600' };
 }
+
+function SortableHead({ children }: { children: React.ReactNode }) {
+  return (
+    <TableHead className='py-2 text-[10px]'>
+      <span className='inline-flex items-center gap-1'>
+        {children}
+        <ArrowUpDown className='h-2.5 w-2.5 text-slate-400' aria-hidden />
+      </span>
+    </TableHead>
+  );
+}
+
+function OrdersTablePagination({
+  page,
+  totalPages,
+  total,
+  pageSize,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  total: number;
+  pageSize: number;
+  onPageChange: (p: number) => void;
+}) {
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages = new Set<number>([1, totalPages, page, page - 1, page + 1]);
+    return [...pages].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+  }, [page, totalPages]);
+  if (total === 0) return null;
+  return (
+    <div className='flex flex-col gap-2 border-t border-slate-100 bg-white px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between'>
+      <p className='text-xs text-slate-600'>
+        แสดง <span className='font-semibold text-slate-900'>{start}</span> ถึง{' '}
+        <span className='font-semibold text-slate-900'>{end}</span> จาก{' '}
+        <span className='font-semibold text-slate-900'>{total}</span> รายการ
+      </p>
+      <div className='flex items-center gap-1'>
+        <Button
+          variant='unstyled'
+          type='button'
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          aria-label='หน้าก่อน'
+        >
+          <ChevronLeft className='h-3.5 w-3.5' />
+        </Button>
+        {pageNumbers.map((p) => (
+          <Button
+            key={p}
+            variant='unstyled'
+            type='button'
+            onClick={() => onPageChange(p)}
+            className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-1.5 text-xs font-semibold transition-colors ${
+              p === page ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+            aria-current={p === page ? 'page' : undefined}
+          >
+            {p}
+          </Button>
+        ))}
+        <Button
+          variant='unstyled'
+          type='button'
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className='flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+          aria-label='หน้าถัดไป'
+        >
+          <ChevronRight className='h-3.5 w-3.5' />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+const PAGE_SIZE = 7;
 
 const TAB_DEFS: {
   id: TabId;
@@ -112,6 +194,7 @@ export function FactoryOrdersPage() {
   const [statusTab, setStatusTab] = useState<TabId>('needs_action');
   const [search, setSearch] = useState('');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [page, setPage] = useState(1);
   const [updateModal, setUpdateModal] = useState<{
     row: FactoryOrderRow;
     notes: string;
@@ -142,6 +225,15 @@ export function FactoryOrdersPage() {
         return sortDir === 'desc' ? diff : -diff;
       });
   }, [rows, derived, search, sortDir, statusTab]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const pageRows = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredRows.slice(start, start + PAGE_SIZE);
+  }, [filteredRows, page]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setPage(1); }, [filteredRows]);
 
   if (isLoading) {
     return (
@@ -278,70 +370,92 @@ export function FactoryOrdersPage() {
                 <p className='text-xs text-slate-400'>ลองเปลี่ยนแท็บหรือค้นหาใหม่</p>
               </div>
             ) : (
-              <div className='-mx-3 sm:-mx-4 mt-3 border-t border-slate-100 overflow-x-auto'>
-                <Table className='w-full min-w-[700px]'>
-                  <TableHeader>
-                    <TableRow className='hover:bg-transparent dark:hover:bg-transparent'>
-                      {['Order', 'สินค้า', 'ลูกค้า', 'มูลค่า', 'สถานะ', 'กำหนดส่ง', ''].map((h) => (
-                        <TableHead key={h}>{h}</TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      <TableSkeletonRows columns={7} rows={4} />
-                    ) : (
-                      filteredRows.map(({ row }) => {
-                        const meta = statusMeta(row.status);
-                        const deadline = row.estimated_delivery
-                          ? new Date(row.estimated_delivery).toLocaleDateString('th-TH', {
-                              day: 'numeric',
-                              month: 'short',
-                            })
-                          : '-';
-                        return (
-                          <TableRow key={row.order_id}>
-                            <TableCell className='font-mono text-xs font-semibold text-indigo-600'>
-                              #{row.order_id}
-                            </TableCell>
-                            <TableCell className='font-medium max-w-[180px] truncate'>
-                              {row.rfq?.title ?? `สินค้า #${row.order_id}`}
-                            </TableCell>
-                            <TableCell className='text-slate-500 max-w-[140px] truncate'>
-                              {row.customer?.display_name ?? '-'}
-                            </TableCell>
-                            <TableCell className='font-semibold tabular-nums'>
-                              {formatCurrency(row.total_amount)}
-                            </TableCell>
-                            <TableCell>
-                              <span
-                                className={`rounded-full text-[11px] font-semibold px-2.5 py-1 ${meta.cls}`}
-                              >
-                                {meta.label}
-                              </span>
-                            </TableCell>
-                            <TableCell className='text-xs text-slate-500'>
-                              <span className='flex items-center gap-1'>
-                                <Clock size={11} className='shrink-0' />
-                                {deadline}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant='unstyled'
-                                type='button'
-                                className='flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors'
-                                onClick={() => navigate(`/factory/orders/${row.order_id}`)}
-                              >
-                                ดู <ChevronRight size={12} />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
+              <div className='-mx-3 sm:-mx-4 mt-3 border-t border-slate-100'>
+                <div className='overflow-x-auto'>
+                  <Table className='w-full min-w-[680px]'>
+                    <TableHeader>
+                      <TableRow className='hover:bg-transparent dark:hover:bg-transparent'>
+                        <SortableHead>Order</SortableHead>
+                        <SortableHead>สินค้า</SortableHead>
+                        <SortableHead>ลูกค้า</SortableHead>
+                        <SortableHead>มูลค่า</SortableHead>
+                        <SortableHead>สถานะ</SortableHead>
+                        <SortableHead>กำหนดส่ง</SortableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {isLoading ? (
+                        <TableSkeletonRows columns={6} rows={4} />
+                      ) : (
+                        pageRows.map(({ row }) => {
+                          const meta = statusMeta(row.status);
+                          const deadline = row.estimated_delivery
+                            ? new Date(row.estimated_delivery).toLocaleDateString('th-TH', {
+                                day: 'numeric',
+                                month: 'short',
+                              })
+                            : '-';
+                          return (
+                            <TableRow
+                              key={row.order_id}
+                              className='cursor-pointer'
+                              onClick={() => navigate(`/factory/orders/${row.order_id}`)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  navigate(`/factory/orders/${row.order_id}`);
+                                }
+                              }}
+                              tabIndex={0}
+                              role='link'
+                              aria-label={`คำสั่งซื้อ #${row.order_id}`}
+                            >
+                              <TableCell className='py-2.5 font-mono text-xs font-semibold text-indigo-600'>
+                                #{row.order_id}
+                              </TableCell>
+                              <TableCell className='py-2.5 min-w-[180px]'>
+                                <p className='truncate text-xs font-semibold text-slate-900 group-hover:text-indigo-700'>
+                                  {row.rfq?.title ?? `สินค้า #${row.order_id}`}
+                                </p>
+                                {row.rfq ? (
+                                  <p className='text-[10px] text-slate-400'>
+                                    {row.rfq.quantity} {row.rfq.unit_name}
+                                  </p>
+                                ) : null}
+                              </TableCell>
+                              <TableCell className='py-2.5 text-xs text-slate-600 min-w-[120px] max-w-[160px] truncate'>
+                                {row.customer?.display_name ?? '-'}
+                              </TableCell>
+                              <TableCell className='py-2.5 text-xs font-semibold text-slate-900 tabular-nums'>
+                                {formatCurrency(row.total_amount)}
+                              </TableCell>
+                              <TableCell className='py-2.5'>
+                                <span
+                                  className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${meta.cls}`}
+                                >
+                                  {meta.label}
+                                </span>
+                              </TableCell>
+                              <TableCell className='py-2.5 text-xs text-slate-600 whitespace-nowrap'>
+                                <span className='flex items-center gap-1'>
+                                  <Clock size={11} className='shrink-0' />
+                                  {deadline}
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+                <OrdersTablePagination
+                  page={page}
+                  totalPages={totalPages}
+                  total={filteredRows.length}
+                  pageSize={PAGE_SIZE}
+                  onPageChange={setPage}
+                />
               </div>
             )}
           </div>
