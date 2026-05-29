@@ -234,50 +234,25 @@ function OrderDetailMobileBody() {
 
   return (
     <div className='min-h-screen flex flex-col bg-white'>
-      <header className='hidden lg:block px-0 pt-1 pb-3'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate('/orders')}
-          className='mb-3 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50'
-        >
-          <ChevronLeft size={16} />
-          กลับไปรายการคำสั่งซื้อ
-        </Button>
-        <h1 className='text-xl text-gray-900' style={{ fontWeight: 700 }}>
-          {rfq?.title ?? order.projectName}
-        </h1>
-        <p className='text-xs text-gray-500'>
-          คำสั่งซื้อ #{order.id} · สร้างเมื่อ {formatDateTh(order.createdAt)}
-        </p>
-      </header>
+     
 
-      <div className='flex lg:hidden items-center justify-between px-4 pt-5 pb-4'>
+      <div className='sticky top-0 z-20 flex lg:hidden items-center justify-between h-12 px-4 border-b border-gray-200 bg-white'>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => navigate(-1)}
-          className='w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center'
+          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
         >
-          <ChevronLeft size={22} className='text-gray-700' />
+          <ChevronLeft size={18} />
+          กลับ
         </Button>
-        <div className='text-center min-w-0 flex-1 px-2'>
-          <h1
-            className='text-sm text-gray-900 max-w-[240px] truncate mx-auto'
-            style={{ fontWeight: 700 }}
-            title={rfq?.title ?? order.projectName}
-          >
-            {rfq?.title ?? order.projectName}
-          </h1>
-          <p className='text-[10px] text-gray-400'>คำสั่งซื้อ #{order.id}</p>
-        </div>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => openOrderChat()}
-          className='w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center'
+          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
         >
-          <MessageCircle size={20} style={{ color: 'var(--brand-purple)' }} />
+          <MessageCircle size={18} style={{ color: 'var(--brand-purple)' }} />
         </Button>
       </div>
 
