@@ -22,6 +22,7 @@ export interface FactoryOrderRow {
   factory_id: number;
   customer: { user_id: number; display_name: string } | null;
   rfq: { rfq_id: number; title: string; quantity: number; unit_name: string } | null;
+  request_kind: 'PR' | 'MR' | 'PS' | 'MS' | null;
   production_summary: ProductionSummaryRow | null;
 }
 

@@ -389,6 +389,15 @@ export function FactoryOrderDetailPage() {
   const customerPhone = String(
     (order.customer as Record<string, unknown>)?.phone ?? customerShipping.phone ?? '-',
   );
+  const requestKindRaw = String(
+    order.request_kind ??
+    (order.rfq as Record<string, unknown> | null)?.request_kind ??
+    (order.quotation as Record<string, unknown> | null)?.request_kind ??
+    '',
+  ).toUpperCase();
+  const requestKindLabel: Record<string, string> = {
+    PR: 'ผลิต OEM', MR: 'วัตถุดิบ', PS: 'ตัวอย่างสินค้า', MS: 'ตัวอย่างวัตถุดิบ',
+  };
   const shippingMethodName = String(
     (order.shipping_method as Record<string, unknown>)?.method_name ??
       order.shipping_method_name ??
@@ -657,6 +666,7 @@ export function FactoryOrderDetailPage() {
                           { label: 'มูลค่ารวม', value: <span className='font-semibold tabular-nums'>{formatCurrency(Number(order.total_amount ?? 0))}</span> },
                           { label: 'มัดจำ (Deposit)', value: <span className='font-semibold tabular-nums text-emerald-700'>{formatCurrency(Number(order.deposit_amount ?? 0))}</span> },
                           { label: 'วิธีจัดส่ง', value: shippingMethodName },
+                          ...(requestKindRaw && requestKindLabel[requestKindRaw] ? [{ label: 'ประเภทออเดอร์', value: <span className='text-[12px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full'>{requestKindLabel[requestKindRaw]}</span> }] : []),
                           ...(trackingNumber ? [{ label: 'Tracking No.', value: <span className='font-mono bg-slate-100 rounded px-2 py-0.5 text-xs'>{trackingNumber}</span> }] : []),
                         ].map(({ label, value }, i) => (
                           <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>

@@ -91,6 +91,12 @@ function normalizeRow(raw: Record<string, unknown>): FactoryOrderRow | null {
           unit_name: pickScalarString(rfqObj.unit_name, 'ชิ้น'),
         }
       : null,
+    request_kind: (() => {
+      const k = pickScalarString(
+        (isObj(row.rfq) ? (row.rfq as Record<string, unknown>).request_kind : null) ?? row.request_kind,
+      ).toUpperCase();
+      return (['PR', 'MR', 'PS', 'MS'] as const).includes(k as never) ? (k as 'PR' | 'MR' | 'PS' | 'MS') : null;
+    })(),
     production_summary: toProductionSummary(row.production_summary),
   };
 }
