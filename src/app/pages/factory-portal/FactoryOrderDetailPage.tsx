@@ -272,11 +272,12 @@ export function FactoryOrderDetailPage() {
           ? { 'X-Confirm-Payment-Trigger': 'true' }
           : undefined;
       await ordersApi.postProductionUpdate(id, body, headers);
-      await qc.invalidateQueries({ queryKey: ['order', id, 'production-updates'] });
-      await qc.invalidateQueries({ queryKey: ['order', id] });
-      await loadOrder();
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['order', id, 'production-updates'] }),
+        qc.invalidateQueries({ queryKey: ['order', id] }),
+      ]);
     },
-    [id, qc, loadOrder],
+    [id, qc],
   );
 
   const rfq = order.rfq && typeof order.rfq === 'object' ? (order.rfq as IRfqNestedResponse) : null;
