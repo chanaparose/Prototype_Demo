@@ -222,7 +222,7 @@ export function StepRow({
         <div className='px-4 pb-4 pt-0 border-t border-gray-100/80 space-y-3 text-sm'>
           {update.description ? (
             <div>
-              <p className='text-[10px] text-gray-500 uppercase'>หมายเหตุ</p>
+              <p className='text-[10px] text-gray-500 uppercase pt-3'>หมายเหตุ</p>
               <p className='text-gray-800 whitespace-pre-wrap'>{update.description}</p>
             </div>
           ) : null}

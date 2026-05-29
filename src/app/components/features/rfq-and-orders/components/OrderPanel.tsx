@@ -22,6 +22,25 @@ import {
   getOrderProgressBg,
   getOrderTabCount,
 } from '@/components/features/rfq-and-orders/utils';
+
+const STEP_LABELS: Record<number, { emoji: string; label: string }> = {
+  0: { emoji: '🤝', label: 'รอยืนยันรับงาน' },
+  1: { emoji: '🧱', label: 'จัดเตรียมวัตถุดิบ' },
+  2: { emoji: '🏭', label: 'กำลังผลิต' },
+  3: { emoji: '🔍', label: 'ตรวจสอบคุณภาพ' },
+  4: { emoji: '🚚', label: 'จัดส่งแล้ว' },
+  5: { emoji: '📬', label: 'รอยืนยันรับสินค้า' },
+};
+
+function getCurrentStepLabel(order: { currentStepId?: number; status: string; progress: number }) {
+  if (order.status === 'completed') return { emoji: '✅', label: 'เสร็จสิ้น' };
+  if (order.status === 'cancelled' || order.status === 'expired') return { emoji: '❌', label: 'ยกเลิก' };
+  if (order.status === 'pending_payment') return { emoji: '💳', label: 'รอชำระมัดจำ' };
+  const step = STEP_LABELS[order.currentStepId ?? -1];
+  if (step) return step;
+  if (order.progress >= 100) return { emoji: '✅', label: 'เสร็จสิ้น' };
+  return { emoji: '📋', label: 'รอดำเนินการ' };
+}
 import type { useRfqAndOrdersState } from '@/components/features/rfq-and-orders/hooks/useRfqAndOrdersState';
 import { type Order } from '@/stores/types';
 import { Button } from '@/components/ui/button';
@@ -179,22 +198,19 @@ export function OrderPanel({
                   </span>
                 </div>
 
-                <div className='mb-3'>
-                  <div className='flex justify-between text-[10px] text-gray-400 mb-1'>
-                    <span>ความคืบหน้า</span>
-                    <span className='font-bold' style={{ color: cfg.color }}>
-                      {order.progress}%
-                    </span>
-                  </div>
-                  <div className='h-1.5 bg-gray-100 rounded-full overflow-hidden'>
-                    <div
-                      className='h-full rounded-full transition-all duration-700'
-                      style={{
-                        width: `${order.progress}%`,
-                        background: getOrderProgressBg(order.status),
-                      }}
-                    />
-                  </div>
+                <div className='mb-3 flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5'>
+                  {(() => {
+                    const stepInfo = getCurrentStepLabel(order);
+                    return (
+                      <>
+                        <span className='text-sm leading-none'>{stepInfo.emoji}</span>
+                        <span className='text-[11px] font-semibold text-gray-700 flex-1'>
+                          {stepInfo.label}
+                        </span>
+                         
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className='flex items-center justify-between'>
