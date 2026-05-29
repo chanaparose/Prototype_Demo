@@ -182,28 +182,17 @@ export function RFQDetailMobile() {
       : `${rfq.offerCount} ใบเสนอราคา`;
 
   return (
-    <div className='min-h-screen flex flex-col' style={{ backgroundColor: COLORS.lightPurpleBg }}>
-      <div className='flex items-center justify-between px-4 pt-5 pb-4 bg-white border-b border-gray-100'>
+    <div className='min-h-screen' style={{ backgroundColor: COLORS.lightPurpleBg }}>
+      <div className='sticky top-0 z-50 flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
         <Button
           variant='unstyled'
+          type='button'
           onClick={() => navigate('/orders')}
-          className='w-10 h-10 rounded-xl shadow-sm flex items-center justify-center'
-          style={{ backgroundColor: COLORS.lightPurpleBg }}
+          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
         >
-          <ChevronLeft size={22} style={{ color: COLORS.blue }} />
+          <ChevronLeft size={18} />
+          กลับ
         </Button>
-        <div className='text-center'>
-          <p className='text-[10px]' style={{ color: COLORS.orange }}>
-            RFQ Detail
-          </p>
-          <h1
-            className='text-sm max-w-[200px] truncate'
-            style={{ fontWeight: 700, color: COLORS.blue }}
-          >
-            {rfq.projectName}
-          </h1>
-        </div>
-        <div className='w-10 h-10' aria-hidden />
       </div>
 
       <div className='flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4'>
