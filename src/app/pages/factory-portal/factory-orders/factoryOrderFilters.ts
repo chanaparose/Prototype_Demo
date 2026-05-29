@@ -12,7 +12,11 @@ export function matchTab(row: FactoryOrderRow, derived: DerivedCardState, tabId:
   // เมื่อ step 4 = CD, BE auto-progress step 5 → IP ทำให้ current_step_id = 5
   const isShipping = (row.production_summary?.current_step_id ?? 0) >= 4;
 
+  // PD = PaymentDone — โรงงานต้องยืนยันรับงานและเริ่มผลิต
+  const isPendingStart = row.status === 'PD';
+
   const needsAction =
+    isPendingStart ||
     derived.flags.isOverdue ||
     derived.flags.hasRejected ||
     derived.flags.isStaleUpdate ||

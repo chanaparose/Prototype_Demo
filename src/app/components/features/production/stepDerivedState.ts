@@ -22,7 +22,12 @@ export function deriveStepStates(
     if (st === 'RJ') return 'rejected';
     if (st === 'CD') return 'completed';
     if (st === 'IP') return 'active';
-    // PD branch — promote the first PD to active/blocked when order is live
+    // PD order status = ชำระแล้ว รอโรงงานยืนยันรับงาน (step_id=0)
+    // เฉพาะ step_id=0 เท่านั้นที่ active — step อื่นยัง upcoming
+    if (ostatus === 'PD') {
+      return m.template.step_id === 0 ? 'active' : 'upcoming';
+    }
+    // PR/QC/SH: promote first PD step to active/blocked
     const isFirstPd = i === firstPdIdx;
     if (!hasAnyIp && isFirstPd) {
       if (isActiveOrder) return 'active';

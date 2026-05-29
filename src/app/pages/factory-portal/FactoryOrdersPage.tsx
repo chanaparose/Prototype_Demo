@@ -43,7 +43,7 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   PP: { label: 'รอยืนยัน', cls: 'bg-amber-100 text-amber-700' },
   PE: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
-  PD: { label: 'รอชำระ', cls: 'bg-amber-100 text-amber-700' },
+  PD: { label: 'ต้องดำเนินการ', cls: 'bg-orange-100 text-orange-700' },
   PR: { label: 'กำลังผลิต', cls: 'bg-blue-100 text-blue-700' },
   QC: { label: 'ตรวจสอบ', cls: 'bg-indigo-100 text-indigo-700' },
   SH: { label: 'จัดส่งแล้ว', cls: 'bg-teal-100 text-teal-700' },

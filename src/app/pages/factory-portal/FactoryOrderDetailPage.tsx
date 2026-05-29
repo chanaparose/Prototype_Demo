@@ -94,7 +94,7 @@ function statusLabel(code: string): string {
   const s = code.toUpperCase();
   if (s === 'PP') return 'รอชำระมัดจำ';
   if (s === 'PE') return 'หมดกำหนดชำระ';
-  if (s === 'PD') return 'ชำระแล้ว รอเริ่มผลิต';
+  if (s === 'PD') return 'ต้องดำเนินการ';
   if (s === 'PR') return 'กำลังผลิต';
   if (s === 'QC') return 'ตรวจคุณภาพ';
   if (s === 'SH') return 'จัดส่งแล้ว';
