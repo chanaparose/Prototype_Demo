@@ -10,7 +10,7 @@ export function computeKpi(rows: FactoryOrderRow[], derived: DerivedCardState[])
   return {
     needs_action: rows.filter((_, i) => matchTab(rows[i], derived[i], 'needs_action')).length,
     in_production: rows.filter((r) => ['PR', 'QC'].includes(r.status)).length,
-    shipped: rows.filter((r) => (r.production_summary?.current_step_id ?? 0) >= 4).length,
+    shipped: rows.filter((r) => r.status === 'SH').length,
     overdue: derived.filter((d) => d.flags.isOverdue).length,
   };
 }
