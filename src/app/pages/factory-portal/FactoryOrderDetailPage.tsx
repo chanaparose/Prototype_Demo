@@ -15,6 +15,7 @@ import {
   Handshake,
   Printer,
   ExternalLink,
+  Truck,
 } from 'lucide-react';
 import { openShippingLabel } from '@/utils/printShippingLabel';
 import { useQueryClient } from '@tanstack/react-query';
@@ -340,6 +341,23 @@ export function FactoryOrderDetailPage() {
         /(?:tracking|เลขพัสดุ|เลขติดตาม)[:\s#]*([A-Z0-9\-]{6,})/i,
       )?.[1] ?? undefined)
     : undefined;
+  /** courier/tracking จาก orders.* (primary) + fallback จาก step4 description */
+  const trackingFromOrder = String(
+    (order as Record<string, unknown>).tracking_no ??
+      (order as Record<string, unknown>).trackingNo ??
+      '',
+  ).trim();
+  const courierFromOrder = String(
+    (order as Record<string, unknown>).courier ??
+      (order as Record<string, unknown>).shipping_courier ??
+      '',
+  ).trim();
+  const courierFromDesc = step4?.update.description
+    ? (step4.update.description.match(/(?:courier|ขนส่ง|บริษัทขนส่ง)[:\s]*([^\n,]+)/i)?.[1]?.trim() ??
+      '')
+    : '';
+  const shippedTrackingNo = trackingFromOrder || trackingNumber || '';
+  const shippedCourier = courierFromOrder || courierFromDesc || '';
 
   const customerShipping = useMemo(() => extractShippingInfo(order), [order]);
   const completedCount = derivedStates.filter((s) => s === 'completed').length;
@@ -687,6 +705,34 @@ export function FactoryOrderDetailPage() {
                     </p>
               </div>
             </section>
+              ) : null}
+
+              {step4?.update.status === 'CD' ? (
+                <section className='rounded-2xl overflow-hidden border border-emerald-200 shadow-sm bg-white'>
+                  <div className='px-4 py-2.5 flex items-center gap-2 bg-emerald-50'>
+                    <Truck size={15} className='text-emerald-700' />
+                    <p className='text-sm font-bold text-emerald-800 flex-1'>จัดส่งแล้ว</p>
+                    <span className='text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200'>
+                      CD
+                    </span>
+                  </div>
+                  <div className='px-4 py-3 space-y-2.5'>
+                    <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                      <p className='text-[10px] text-slate-500 mb-1'>บริษัทขนส่ง</p>
+                      <p className='text-sm font-semibold text-slate-900'>
+                        {shippedCourier || <span className='text-slate-400 font-normal'>-</span>}
+                      </p>
+                    </div>
+                    <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                      <p className='text-[10px] text-slate-500 mb-1'>เลขพัสดุ</p>
+                      <p className='text-sm font-semibold text-slate-900 font-mono break-all'>
+                        {shippedTrackingNo || (
+                          <span className='text-slate-400 font-sans font-normal'>-</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </section>
               ) : null}
 
               <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
