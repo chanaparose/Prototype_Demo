@@ -126,6 +126,7 @@ export function FactoryEditQuotationPage() {
           shippingMethodNameHint={shippingMethodNameHint}
           shippingMethodLabel={shipLabel}
           isLocked={isLocked}
+          initialFactoryNote={String(raw.factory_note ?? '') || undefined}
           saving={saving}
           onSavingChange={setSaving}
           onSaved={(msg) => {

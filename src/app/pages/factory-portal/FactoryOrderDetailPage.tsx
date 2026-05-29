@@ -42,6 +42,7 @@ import { useIsDesktop } from '@/hooks/useIsDesktop';
 import { StatusBadge } from '@/shared/ui/badges/StatusBadge';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { Button } from '@/components/ui/button';
+import { FactoryNoteInline } from '@/components/factory/FactoryNoteInline';
 
 function DetailField({
   label,
@@ -804,6 +805,15 @@ export function FactoryOrderDetailPage() {
                   </div>
                 ) : null}
               </div>
+
+              {/* ── Factory Note — always editable ── */}
+              {quotation?.quote_id ? (
+                <FactoryNoteInline
+                  quotationId={quotation.quote_id}
+                  initialNote={quotation.factory_note}
+                  onSaved={loadOrder}
+                />
+              ) : null}
             </div>
 
             <aside className='space-y-4 xl:sticky xl:top-20'>

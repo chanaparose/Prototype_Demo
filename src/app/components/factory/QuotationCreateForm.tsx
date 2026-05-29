@@ -57,6 +57,7 @@ interface Props {
   initial?: Partial<QuotationCreateFormValues>;
   initialImageUrls?: string[]; // รูปภาพที่บันทึกไว้แล้ว (pre-fill)
   initialFactoryHighlight?: string;
+  initialFactoryNote?: string;
   patchQuotationId?: string | null; // PATCH mode
   submitLabel?: string;
   pageError?: string;
@@ -84,6 +85,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       initial,
       initialImageUrls,
       initialFactoryHighlight,
+      initialFactoryNote,
       patchQuotationId,
       submitLabel = 'ส่งใบเสนอราคา',
       pageError,
@@ -160,6 +162,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
     const [imageUrls, setImageUrls] = useState<string[]>(() => initialImageUrls ?? []);
     const [factoryHighlight, setFactoryHighlight] = useState<string>(initialFactoryHighlight ?? '');
+    const [factoryNote, setFactoryNote] = useState<string>(initialFactoryNote ?? '');
     const [uploadingImage, setUploadingImage] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -169,6 +172,9 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     useEffect(() => {
       setFactoryHighlight(initialFactoryHighlight ?? '');
     }, [initialFactoryHighlight]);
+    useEffect(() => {
+      setFactoryNote(initialFactoryNote ?? '');
+    }, [initialFactoryNote]);
 
     const highlightError = useMemo(() => {
       if ((factoryHighlight.trim().length ?? 0) > 200) return 'สูงสุด 200 ตัวอักษร';
@@ -244,6 +250,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           validity_days: Number(v.validity_days) || 14,
           image_urls: imageUrls,
           factory_highlight: factoryHighlight.trim() || undefined,
+          factory_note: factoryNote.trim() || undefined,
           reason: 'อัปเดตใบเสนอราคา',
         };
 
@@ -407,6 +414,23 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           error={highlightError}
         />
 
+        {/* Show factory_note field only when creating a new quotation.
+            When editing (patchQuotationId set), FactoryNoteInline handles this. */}
+        {!patchQuotationId ? (
+          <div>
+            <p className='text-xs font-semibold text-gray-600 mb-1'>Note (สำหรับโรงงานเท่านั้น)</p>
+            <p className='text-[11px] text-slate-400 mb-2'>บันทึกภายใน ลูกค้าจะไม่เห็นข้อความนี้</p>
+            <textarea
+              value={factoryNote}
+              onChange={(e) => setFactoryNote(e.target.value)}
+              disabled={readOnly}
+              rows={3}
+              placeholder='เช่น ต้องสั่งวัตถุดิบพิเศษ, ต้องประสานงานแผนก…'
+              className='w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60 resize-none'
+            />
+          </div>
+        ) : null}
+
         {!readOnly ? (
           <div>
             <p className='text-xs font-semibold text-gray-600 mb-2'>รูปภาพประกอบ (ถ้ามี)</p>
@@ -542,7 +566,8 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
               disabled={
                 saving ||
                 (!form.formState.isDirty &&
-                  (factoryHighlight ?? '') === (initialFactoryHighlight ?? '')) ||
+                  (factoryHighlight ?? '') === (initialFactoryHighlight ?? '') &&
+                  (factoryNote ?? '') === (initialFactoryNote ?? '')) ||
                 Boolean(highlightError)
               }
               className='w-full rounded-xl text-white py-2.5 text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-2 bg-gradient-to-br from-brand-purple to-brand-violet'

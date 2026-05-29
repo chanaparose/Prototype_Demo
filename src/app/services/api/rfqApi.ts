@@ -112,6 +112,12 @@ export const quotationsApi = {
   },
 
   listMine: () => httpClient.get<IQuotationResponse[]>('/quotations'),
+
+  /** PATCH /quotations/:id/factory-note — bypasses lock/status, factory-only */
+  patchFactoryNote: (quoteId: string | number, note: string | null) =>
+    httpClient.patch<{ message: string }>(`/quotations/${quoteId}/factory-note`, {
+      factory_note: note,
+    }),
 };
 
 export const quotationApi = {
