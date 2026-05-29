@@ -105,6 +105,7 @@ function mapProfileFromApi(
   return {
     factoryId: pickScalarString(p.factory_id, factoryId),
     address: addr,
+    description: pickScalarString(p.description, p.about, b?.description),
     acceptedProductTypes: types,
     certificates: certs,
   };
