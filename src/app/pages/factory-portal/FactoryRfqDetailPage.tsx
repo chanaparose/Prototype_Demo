@@ -723,8 +723,9 @@ export function FactoryRfqDetailPage() {
               </section>
             </div>
 
-            {/* Factory Note — always editable when quotation exists */}
-            {myQuote && quoteIdOf(myQuote) ? (
+            {/* Factory Note — standalone widget when quote is locked/view-only.
+                When canEdit=true the note is inside QuotationAuditEditForm (FactoryNoteField). */}
+            {myQuote && quoteIdOf(myQuote) && !canEdit ? (
               <FactoryNoteInline
                 quotationId={quoteIdOf(myQuote)}
                 initialNote={

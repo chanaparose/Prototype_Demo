@@ -9,6 +9,7 @@ import React, {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
+import { FactoryNoteField } from '@/components/factory/FactoryNoteField';
 import { useQueryClient } from '@tanstack/react-query';
 import { quotationsApi } from '@/services/api/rfqApi';
 import {
@@ -263,20 +264,11 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
           </div>
         </div>
 
-        <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
-          <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
-            Note (สำหรับโรงงานเท่านั้น)
-          </p>
-          <p className='text-[11px] text-slate-400 -mt-1'>บันทึกภายใน ลูกค้าจะไม่เห็นข้อความนี้</p>
-          <textarea
-            value={factoryNote}
-            onChange={(e) => setFactoryNote(e.target.value)}
-            disabled={isLocked}
-            rows={3}
-            placeholder='เช่น ต้องสั่งวัตถุดิบพิเศษ, ต้องประสานงานแผนก…'
-            className='w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60 resize-none'
-          />
-        </section>
+        <FactoryNoteField
+          value={factoryNote}
+          onChange={setFactoryNote}
+          disabled={isLocked}
+        />
 
         <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
           <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
