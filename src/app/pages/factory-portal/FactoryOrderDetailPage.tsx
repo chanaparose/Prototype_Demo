@@ -542,22 +542,19 @@ export function FactoryOrderDetailPage() {
 
   return (
     <div className='space-y-4 pb-24'>
-      <div className='sticky top-0 z-10 bg-white/95 backdrop-blur border-y border-slate-200 px-4 h-14 flex items-center gap-3 rounded-xl'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate('/factory/orders')}
-          className='flex items-center gap-1 text-sm font-medium text-indigo-700'
-        >
-          <ChevronLeft size={18} /> กลับ
-        </Button>
-        <span className='flex-1 text-center text-sm font-bold text-slate-900 truncate'>
-          รายละเอียดคำสั่งซื้อ
-        </span>
-        <StatusBadge variant={badgeVariant} size='md'>
-          {statusLabel(status)}
-        </StatusBadge>
-      </div>
+      <header className='sticky top-0 z-[99999] -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 -mt-4 sm:-mt-5 lg:-mt-6 flex w-[calc(100%+1.5rem)] sm:w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900'>
+        <div className='flex h-14 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => navigate('/factory/orders')}
+            className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+          >
+            <ChevronLeft size={18} />
+            กลับ
+          </Button>
+        </div>
+      </header>
 
       <div className='w-full max-w-7xl mx-auto'>
         {error ? <ErrorAlert className='mb-4'>{error}</ErrorAlert> : null}
