@@ -329,7 +329,7 @@ export function RfqDetailOffersSection({
     return (
       <>
         <div
-          className='rounded-2xl p-4 relative overflow-hidden'
+          className='rounded-2xl p-4 relative overflow-hidden mt-3'
           style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
         >
           <div className='absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 bg-white' />

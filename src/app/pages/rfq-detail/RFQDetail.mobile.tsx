@@ -237,66 +237,62 @@ export function RFQDetailMobile() {
         />
       </div>
 
-      {/* Tabs */}
-      <div className='sticky top-12 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200'>
-        <div className='flex px-4'>
-          {([
-            { id: 'specs' as const, label: 'สเปกของโครงการ' },
-            { id: 'offers' as const, label: `เปรียบเทียบใบเสนอราคา${(rfq.offers?.length ?? 0) > 0 ? ` (${rfq.offers?.length})` : ''}` },
-          ]).map((tab) => (
-            <button
-              key={tab.id}
-              type='button'
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 text-xs font-semibold text-center transition-colors ${
-                activeTab === tab.id
-                  ? 'border-b-2'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}
-              style={
-                activeTab === tab.id
-                  ? { borderColor: COLORS.purple, color: COLORS.purple }
-                  : undefined
-              }
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className='px-4 pb-32 pt-0 space-y-4'>
-        {activeTab === 'specs' ? (
-          <div className='bg-white border-x border-b border-gray-200 rounded-b-2xl overflow-hidden shadow-sm'>
-            <RfqDetailSpecs rfq={rfq} bare />
+      <div className='px-4 pb-32 pt-3'>
+        <div className='bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm'>
+          <div className='sticky z-40 flex border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
+            {([
+              { id: 'specs' as const, label: 'สเปกของโครงการ' },
+              {
+                id: 'offers' as const,
+                label: `เปรียบเทียบใบเสนอราคา${(rfq.offers?.length ?? 0) > 0 ? ` (${rfq.offers?.length})` : ''}`,
+              },
+            ]).map((tab) => (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-3 text-xs font-semibold text-center transition-colors ${
+                  activeTab === tab.id ? 'border-b-2' : 'text-gray-400 hover:text-gray-600'
+                }`}
+                style={
+                  activeTab === tab.id
+                    ? { borderColor: COLORS.purple, color: COLORS.purple }
+                    : undefined
+                }
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        ) : (
-          <>
-            <RfqDetailOffersSection
-              rfqStatus={rfq.status}
-              offers={rfq.offers ?? []}
-              isHistoryView={isHistoryView}
-              orderForRfq={relatedOrder ?? undefined}
-              selectedOfferId={selectedOffer}
-              onSelectOffer={setSelectedOffer}
-              onChatWithOffer={handleChatWithOffer}
-              rfqQuantity={rfq.quantity}
-              quoteHistories={quoteHistories}
-              onOfferFlowComplete={async ({ orderId }) => {
-                await refetch();
-                if (orderId) navigate(`/orders/${orderId}`);
-              }}
-            />
-            {selectedOffer ? (
-              <div className='px-1'>
+
+          {activeTab === 'specs' ? (
+            <RfqDetailSpecs rfq={rfq} bare />
+          ) : (
+            <div className='space-y-4 px-4 pb-5'>
+              <RfqDetailOffersSection
+                rfqStatus={rfq.status}
+                offers={rfq.offers ?? []}
+                isHistoryView={isHistoryView}
+                orderForRfq={relatedOrder ?? undefined}
+                selectedOfferId={selectedOffer}
+                onSelectOffer={setSelectedOffer}
+                onChatWithOffer={handleChatWithOffer}
+                rfqQuantity={rfq.quantity}
+                quoteHistories={quoteHistories}
+                onOfferFlowComplete={async ({ orderId }) => {
+                  await refetch();
+                  if (orderId) navigate(`/orders/${orderId}`);
+                }}
+              />
+              {selectedOffer ? (
                 <QuotationHistoryPanel
                   quotationId={selectedOffer}
                   preloadedHistory={quoteHistories?.[selectedOffer]}
                 />
-              </div>
-            ) : null}
-          </>
-        )}
+              ) : null}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
