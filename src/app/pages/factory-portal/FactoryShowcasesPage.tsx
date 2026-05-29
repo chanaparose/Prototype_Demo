@@ -9,6 +9,7 @@ import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPage
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
 import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
@@ -48,6 +49,8 @@ function firstImage(r: Row): string | undefined {
       );
     }
   }
+  const { imageUrls } = partitionLinkedShowcases(r.linked_showcases ?? r.linkedShowcases);
+  if (imageUrls.length > 0) return imageUrls[0];
   return undefined;
 }
 
