@@ -322,13 +322,11 @@ export function RFQDetailDesktop() {
                   {specsOpen ? 'ซ่อน' : 'แสดง'}
                 </Button>
               </div>
-              <div className='p-4'>
-                <RfqDetailSpecs
-                  rfq={rfq}
-                  open={specsOpen}
-                  onToggle={() => setSpecsOpen((v) => !v)}
-                />
-              </div>
+              {specsOpen ? (
+                <div className='p-4 pt-0'>
+                  <RfqDetailSpecs rfq={rfq} bare />
+                </div>
+              ) : null}
             </div>
 
             <div

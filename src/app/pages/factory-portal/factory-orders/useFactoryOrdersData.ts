@@ -108,7 +108,7 @@ export function useFactoryOrdersData() {
     queryKey: ['factory', 'orders', fid],
     queryFn: async () => {
       const raw = await ordersApi.list();
-      const arr = (Array.isArray(raw) ? raw : []) as Record<string, unknown>[];
+      const arr = (Array.isArray(raw) ? raw : []) as unknown as Record<string, unknown>[];
       return arr
         .map(normalizeRow)
         .filter((r): r is FactoryOrderRow => r != null)

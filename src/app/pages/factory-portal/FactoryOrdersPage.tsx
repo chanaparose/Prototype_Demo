@@ -21,7 +21,7 @@ import { deriveOrderCardState } from '@/pages/factory-portal/factory-orders/deri
 import { computeKpi, countByTab } from '@/pages/factory-portal/factory-orders/factoryOrderKpi';
 import { matchTab, searchMatch } from '@/pages/factory-portal/factory-orders/factoryOrderFilters';
 import type { FactoryOrderRow, TabId } from '@/pages/factory-portal/factory-orders/types';
-import { FactoryOrderCard } from '@/pages/factory-portal/factory-orders/components/FactoryOrderCard';
+import { FactoryOrderCard, REQUEST_KIND_LABEL } from '@/pages/factory-portal/factory-orders/components/FactoryOrderCard';
 import { FactoryOrdersEmptyState } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersEmptyState';
 import { FactoryOrdersKpiStrip } from '@/pages/factory-portal/factory-orders/components/FactoryOrdersKpiStrip';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
@@ -372,11 +372,12 @@ export function FactoryOrdersPage() {
             ) : (
               <div className='-mx-3 sm:-mx-4 mt-3 border-t border-slate-100'>
                 <div className='overflow-x-auto'>
-                  <Table className='w-full min-w-[680px]'>
+                  <Table className='w-full min-w-[760px]'>
                     <TableHeader>
                       <TableRow className='hover:bg-transparent dark:hover:bg-transparent'>
                         <SortableHead>Order</SortableHead>
                         <SortableHead>สินค้า</SortableHead>
+                        <SortableHead>ประเภท</SortableHead>
                         <SortableHead>ลูกค้า</SortableHead>
                         <SortableHead>มูลค่า</SortableHead>
                         <SortableHead>สถานะ</SortableHead>
@@ -385,7 +386,7 @@ export function FactoryOrdersPage() {
                     </TableHeader>
                     <TableBody>
                       {isLoading ? (
-                        <TableSkeletonRows columns={6} rows={4} />
+                        <TableSkeletonRows columns={7} rows={4} />
                       ) : (
                         pageRows.map(({ row }) => {
                           const meta = statusMeta(row.status);
@@ -418,10 +419,19 @@ export function FactoryOrdersPage() {
                                   {row.rfq?.title ?? `สินค้า #${row.order_id}`}
                                 </p>
                                 {row.rfq ? (
-                                  <p className='text-[10px] text-slate-400'>
+                                  <p className='text-[10px] text-slate-400 mt-0.5'>
                                     {row.rfq.quantity} {row.rfq.unit_name}
                                   </p>
                                 ) : null}
+                              </TableCell>
+                              <TableCell className='py-2.5 min-w-[110px]'>
+                                {row.request_kind && REQUEST_KIND_LABEL[row.request_kind] ? (
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${REQUEST_KIND_LABEL[row.request_kind].cls}`}>
+                                    {REQUEST_KIND_LABEL[row.request_kind].label}
+                                  </span>
+                                ) : (
+                                  <span className='text-[10px] text-slate-400'>-</span>
+                                )}
                               </TableCell>
                               <TableCell className='py-2.5 text-xs text-slate-600 min-w-[120px] max-w-[160px] truncate'>
                                 {row.customer?.display_name ?? '-'}

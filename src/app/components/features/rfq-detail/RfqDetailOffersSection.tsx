@@ -113,10 +113,11 @@ export function RfqDetailOffersSection({
     setAcceptingId(offerId);
     setFlowError(null);
     try {
-      let orderId: string | undefined;
-      const created = (await ordersApi.create(Number(offerId))) as Record<string, unknown>;
-      const oid = created.order_id ?? created.id;
-      if (oid != null && String(oid)) orderId = String(oid);
+      const created = await ordersApi.create(Number(offerId));
+      const orderId =
+        created.order_id != null && Number.isFinite(created.order_id)
+          ? String(created.order_id)
+          : undefined;
       if (orderId) setSuccessOrderId(orderId);
       onOfferFlowComplete?.({ quoteId: offerId, orderId });
     } catch (err) {
