@@ -20,7 +20,11 @@ export function deriveStepStates(
   return merged.map((m, i) => {
     const st = m.update.status;
     if (st === 'RJ') return 'rejected';
-    if (st === 'CD') return 'completed';
+    if (st === 'CD') {
+      // step_id=5 (จัดส่งสำเร็จ) ถือว่าเสร็จก็ต่อเมื่อ order.status = CP เท่านั้น
+      if (m.template.step_id === 5 && ostatus !== 'CP') return 'active';
+      return 'completed';
+    }
     if (st === 'IP') return 'active';
     // PD order status = ชำระแล้ว รอโรงงานยืนยันรับงาน (step_id=0)
     // เฉพาะ step_id=0 เท่านั้นที่ active — step อื่นยัง upcoming
