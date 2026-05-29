@@ -236,7 +236,7 @@ function OrderDetailMobileBody() {
     <div className='min-h-screen flex flex-col bg-white'>
      
 
-      <div className='sticky top-0 z-20 flex lg:hidden items-center justify-between h-12 px-4 border-b border-gray-200 bg-white'>
+      <div className='sticky top-0 z-20 flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white'>
         <Button
           variant='unstyled'
           type='button'
