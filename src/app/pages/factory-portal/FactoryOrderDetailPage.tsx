@@ -169,6 +169,24 @@ function extractShippingInfo(order: Record<string, unknown>): CustomerShippingIn
   };
 }
 
+function StartWorkButton({ onStart }: { onStart: () => Promise<void> }) {
+  const [busy, setBusy] = React.useState(false);
+  return (
+    <button
+      type='button'
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try { await onStart(); } finally { setBusy(false); }
+      }}
+      className='w-full rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-60'
+      style={{ background: 'var(--brand-mauve)' }}
+    >
+      {busy ? 'กำลังดำเนินการ...' : '✅ เริ่มงาน'}
+    </button>
+  );
+}
+
 export function FactoryOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -431,6 +449,111 @@ export function FactoryOrderDetailPage() {
             <div className='w-10 h-10 border-3 border-brand-indigo border-t-transparent rounded-full animate-spin' />
           </div>
         ) : (
+          <>
+            {(isCompleted || showLabelCard || step4?.update.status === 'CD') && (
+              <div className='grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-5 mb-4'>
+                {isCompleted ? (
+                  <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
+                    <p className='text-2xl'>🎉</p>
+                    <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
+                    <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
+                  </section>
+                ) : (
+                  <div />
+                )}
+
+                {showLabelCard ? (
+                  <section className='rounded-2xl overflow-hidden border border-orange-200 shadow-sm'>
+                    <div className='px-4 py-2.5 flex items-center gap-2 bg-[#ee4d2d]'>
+                      <Printer size={15} className='text-white' />
+                      <p className='text-sm font-bold text-white flex-1'>ใบปะหน้าพัสดุ</p>
+                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
+                        พร้อมพิมพ์
+                      </span>
+                    </div>
+                    <div className='bg-white px-4 py-3 space-y-3'>
+                      <div className='rounded-xl border border-orange-100 bg-orange-50 px-3 py-2.5'>
+                        <p className='text-[9px] font-bold text-orange-600 uppercase tracking-wide mb-1.5'>
+                          ผู้รับ
+                        </p>
+                        <p className='text-sm font-bold text-slate-900 leading-tight'>
+                          {customerShipping.recipientName || (
+                            <span className='text-slate-400 font-normal'>ไม่ระบุชื่อ</span>
+                          )}
+                        </p>
+                        {customerShipping.phone ? (
+                          <p className='text-xs text-slate-700 mt-0.5'>📞 {customerShipping.phone}</p>
+                        ) : null}
+                        {customerShipping.addressLine ? (
+                          <p className='text-[11px] text-slate-600 mt-1 leading-relaxed'>
+                            {[
+                              customerShipping.addressLine,
+                              customerShipping.subDistrict,
+                              customerShipping.district,
+                              customerShipping.province,
+                              customerShipping.postalCode,
+                            ]
+                              .filter(Boolean)
+                              .join(', ')}
+                          </p>
+                        ) : (
+                          <p className='text-[11px] text-slate-400 mt-1'>ยังไม่มีที่อยู่จัดส่ง</p>
+                        )}
+                      </div>
+                      {trackingNumber ? (
+                        <div className='flex items-center gap-1.5'>
+                          <span className='text-xs'>📦</span>
+                          <span className='text-xs font-semibold text-slate-700 bg-slate-100 rounded px-2 py-0.5'>
+                            {trackingNumber}
+                          </span>
+                        </div>
+                      ) : null}
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        onClick={handleOpenLabel}
+                        className='w-full rounded-xl py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-[#ee4d2d] hover:opacity-90 transition-opacity'
+                      >
+                        <Printer size={15} />
+                        ทำใบปะหน้าพัสดุ
+                        <ExternalLink size={13} className='opacity-70' />
+                      </Button>
+                      <p className='text-[10px] text-slate-400 text-center'>
+                        เปิด tab ใหม่ • พิมพ์หรือบันทึก PDF ได้เลย
+                      </p>
+                    </div>
+                  </section>
+                ) : step4?.update.status === 'CD' ? (
+                  <section className='rounded-2xl overflow-hidden border border-emerald-200 shadow-sm bg-white'>
+                    <div className='px-4 py-2.5 flex items-center gap-2 bg-emerald-50'>
+                      <Truck size={15} className='text-emerald-700' />
+                      <p className='text-sm font-bold text-emerald-800 flex-1'>จัดส่งแล้ว</p>
+                      <span className='text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200'>
+                        CD
+                      </span>
+                    </div>
+                    <div className='px-4 py-3 space-y-2.5'>
+                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                        <p className='text-[10px] text-slate-500 mb-1'>บริษัทขนส่ง</p>
+                        <p className='text-sm font-semibold text-slate-900'>
+                          {shippedCourier || <span className='text-slate-400 font-normal'>-</span>}
+                        </p>
+                      </div>
+                      <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
+                        <p className='text-[10px] text-slate-500 mb-1'>เลขพัสดุ</p>
+                        <p className='text-sm font-semibold text-slate-900 font-mono break-all'>
+                          {shippedTrackingNo || (
+                            <span className='text-slate-400 font-sans font-normal'>-</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                ) : (
+                  <div />
+                )}
+              </div>
+            )}
           <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_550px] gap-4 lg:gap-5 items-start'>
             <div className='space-y-4 min-w-0'>
               <div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
@@ -621,119 +744,6 @@ export function FactoryOrderDetailPage() {
             </div>
 
             <aside className='space-y-4 xl:sticky xl:top-20'>
-              {isCompleted ? (
-                <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
-                  <p className='text-2xl'>🎉</p>
-                  <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
-                  <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
-                </section>
-              ) : null}
-
-              {/* ── ใบปะหน้าพัสดุ (แสดงเมื่อถึง step 4) ── */}
-              {showLabelCard ? (
-                <section className='rounded-2xl overflow-hidden border border-orange-200 shadow-sm'>
-                  {/* header */}
-                  <div className='px-4 py-2.5 flex items-center gap-2 bg-[#ee4d2d]'>
-                    <Printer size={15} className='text-white' />
-                    <p className='text-sm font-bold text-white flex-1'>ใบปะหน้าพัสดุ</p>
-                    {step4?.update.status === 'CD' ? (
-                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
-                        จัดส่งแล้ว
-                      </span>
-                    ) : (
-                      <span className='text-[10px] font-semibold bg-white/20 text-white px-2 py-0.5 rounded-full'>
-                        พร้อมพิมพ์
-                      </span>
-                    )}
-                  </div>
-
-                  {/* body */}
-                  <div className='bg-white px-4 py-3 space-y-3'>
-                    {/* recipient preview */}
-                    <div className='rounded-xl border border-orange-100 bg-orange-50 px-3 py-2.5'>
-                      <p className='text-[9px] font-bold text-orange-600 uppercase tracking-wide mb-1.5'>
-                        ผู้รับ
-                      </p>
-                      <p className='text-sm font-bold text-slate-900 leading-tight'>
-                        {customerShipping.recipientName || (
-                          <span className='text-slate-400 font-normal'>ไม่ระบุชื่อ</span>
-                        )}
-                      </p>
-                      {customerShipping.phone ? (
-                        <p className='text-xs text-slate-700 mt-0.5'>📞 {customerShipping.phone}</p>
-                      ) : null}
-                      {customerShipping.addressLine ? (
-                        <p className='text-[11px] text-slate-600 mt-1 leading-relaxed'>
-                          {[
-                            customerShipping.addressLine,
-                            customerShipping.subDistrict,
-                            customerShipping.district,
-                            customerShipping.province,
-                            customerShipping.postalCode,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </p>
-                      ) : (
-                        <p className='text-[11px] text-slate-400 mt-1'>ยังไม่มีที่อยู่จัดส่ง</p>
-                      )}
-                    </div>
-
-                    {/* tracking chip if exists */}
-                    {trackingNumber ? (
-                      <div className='flex items-center gap-1.5'>
-                        <span className='text-xs'>📦</span>
-                        <span className='text-xs font-semibold text-slate-700 bg-slate-100 rounded px-2 py-0.5'>
-                          {trackingNumber}
-                        </span>
-                      </div>
-      ) : null}
-
-                    {/* print button */}
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      onClick={handleOpenLabel}
-                      className='w-full rounded-xl py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 bg-[#ee4d2d] hover:opacity-90 transition-opacity'
-                    >
-                      <Printer size={15} />
-                      ทำใบปะหน้าพัสดุ
-                      <ExternalLink size={13} className='opacity-70' />
-                    </Button>
-                    <p className='text-[10px] text-slate-400 text-center'>
-                      เปิด tab ใหม่ • พิมพ์หรือบันทึก PDF ได้เลย
-                    </p>
-              </div>
-            </section>
-              ) : null}
-
-              {step4?.update.status === 'CD' ? (
-                <section className='rounded-2xl overflow-hidden border border-emerald-200 shadow-sm bg-white'>
-                  <div className='px-4 py-2.5 flex items-center gap-2 bg-emerald-50'>
-                    <Truck size={15} className='text-emerald-700' />
-                    <p className='text-sm font-bold text-emerald-800 flex-1'>จัดส่งแล้ว</p>
-                    <span className='text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200'>
-                      CD
-                    </span>
-                  </div>
-                  <div className='px-4 py-3 space-y-2.5'>
-                    <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
-                      <p className='text-[10px] text-slate-500 mb-1'>บริษัทขนส่ง</p>
-                      <p className='text-sm font-semibold text-slate-900'>
-                        {shippedCourier || <span className='text-slate-400 font-normal'>-</span>}
-                      </p>
-                    </div>
-                    <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5'>
-                      <p className='text-[10px] text-slate-500 mb-1'>เลขพัสดุ</p>
-                      <p className='text-sm font-semibold text-slate-900 font-mono break-all'>
-                        {shippedTrackingNo || (
-                          <span className='text-slate-400 font-sans font-normal'>-</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-              ) : null}
 
               <section className='rounded-2xl bg-white border border-slate-200 shadow-sm p-4 space-y-3'>
                 <div className='flex items-center gap-2'>
@@ -751,6 +761,9 @@ export function FactoryOrderDetailPage() {
                 ) : (
                   <>
                     {/* step_id=0: แสดง info card แทน StepRow */}
+                    {!step0Accepted && status === 'PD' && (
+                      <StartWorkButton onStart={() => handleStepSubmit({ step_id: 0, status: 'CD', image_urls: [] })} />
+                    )}
                     {step0Accepted ? (
                       <div className='rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 flex items-center justify-between gap-2'>
                         <div className='flex items-center gap-2 min-w-0'>
@@ -850,8 +863,9 @@ export function FactoryOrderDetailPage() {
               </section>
             </aside>
           </div>
+          </>
         )}
-        </div>
+      </div>
 
       <UpdateStepDrawer
         open={drawerStep != null}
