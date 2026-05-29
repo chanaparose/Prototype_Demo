@@ -12,7 +12,27 @@ export type OrderSummary = {
   totalAmount: number;
   quantity?: number;
   estimatedDelivery: string;
+  currentStepId?: number;
 };
+
+const STEP_LABELS: Record<number, { emoji: string; label: string }> = {
+  0: { emoji: '🤝', label: 'รอยืนยันรับงาน' },
+  1: { emoji: '🧱', label: 'จัดเตรียมวัตถุดิบ' },
+  2: { emoji: '🏭', label: 'กำลังผลิต' },
+  3: { emoji: '🔍', label: 'ตรวจสอบคุณภาพ' },
+  4: { emoji: '🚚', label: 'จัดส่งแล้ว' },
+  5: { emoji: '📬', label: 'รอยืนยันรับสินค้า' },
+};
+
+function getCurrentStepLabel(order: { currentStepId?: number; status: string; progress: number }) {
+  if (order.status === 'completed') return { emoji: '✅', label: 'เสร็จสิ้น' };
+  if (order.status === 'cancelled' || order.status === 'expired') return { emoji: '❌', label: 'ยกเลิก' };
+  if (order.status === 'pending_payment') return { emoji: '💳', label: 'รอชำระมัดจำ' };
+  const step = STEP_LABELS[order.currentStepId ?? -1];
+  if (step) return step;
+  if (order.progress >= 100) return { emoji: '✅', label: 'เสร็จสิ้น' };
+  return { emoji: '📋', label: 'รอดำเนินการ' };
+}
 
 type FactoryInfo = {
   image?: string;
@@ -93,19 +113,19 @@ export function OrderSummaryCard({
             {badgeLabel}
           </span>
         </div>
-        <div className='mb-3 space-y-1.5'>
-          <div className='flex justify-between text-xs text-white/80'>
-            <span>ความคืบหน้า</span>
-            <span style={{ fontWeight: 700, color: 'var(--neutral-white)' }}>
-              {order.progress}%
-            </span>
-          </div>
-          <div className='h-2 bg-white/30 rounded-full overflow-hidden'>
-            <div
-              className='h-full bg-white rounded-full transition-all'
-              style={{ width: `${order.progress}%` }}
-            />
-          </div>
+        <div className='mb-3 flex items-center gap-2 rounded-xl bg-white/15 px-3 py-2'>
+          {(() => {
+            const stepInfo = getCurrentStepLabel(order);
+            return (
+              <>
+                <span className='text-sm leading-none'>{stepInfo.emoji}</span>
+                <span className='text-xs font-semibold text-white flex-1'>
+                  {stepInfo.label}
+                </span>
+                 
+              </>
+            );
+          })()}
         </div>
         <div className='grid grid-cols-3 gap-2 rounded-xl bg-white/10 p-2.5'>
           <div className='min-w-0'>
