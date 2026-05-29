@@ -246,7 +246,10 @@ export async function fetchAndMapRfqDetail(
   const budgetFallback = budgetPerPiece != null ? budgetPerPiece * quantity : 0;
   const budget = Math.max(0, Math.round(budgetTotalExplicit ?? budgetFallback ?? 0));
   const rawCategoryId = pickScalarString(rawRfq.category_id);
-  const catName = categoryMap.get(rawCategoryId) ?? '';
+  const catName =
+    pickScalarString(rawRfq.category_name) ||
+    categoryMap.get(rawCategoryId) ||
+    '';
   const hasAcceptedQuote = quotes.some((q) => pickScalarString(q.status).toUpperCase() === 'AC');
   const status = mapRfqStatusFromApi(rawRfq.status, {
     quoteCount: quotes.length,
