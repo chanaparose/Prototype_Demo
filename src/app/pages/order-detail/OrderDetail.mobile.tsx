@@ -235,7 +235,27 @@ function OrderDetailMobileBody() {
   return (
     <div className='min-h-screen bg-white'>
 
-      <div className='fixed inset-x-0 top-0 z-[99999] flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
+      <div className='fixed inset-x-0 top-0 z-[99999] flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm lg:hidden'>
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => navigate(-1)}
+          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+        >
+          <ChevronLeft size={18} />
+          กลับ
+        </Button>
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => openOrderChat()}
+          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+        >
+          <MessageCircle size={18} style={{ color: 'var(--brand-purple)' }} />
+        </Button>
+      </div>
+
+      <div className='hidden lg:flex sticky top-0 z-10 items-center justify-between h-12 px-4 border-b border-gray-200 bg-white'>
         <Button
           variant='unstyled'
           type='button'
@@ -268,7 +288,7 @@ function OrderDetailMobileBody() {
             </Button>
           </div>
         ) : null}
-        <div className='flex-1 overflow-y-auto px-4 pb-4 pt-14 space-y-4'>
+        <div className='flex-1 overflow-y-auto px-4 pb-4 pt-14 lg:pt-0 space-y-4'>
           <OrderSummaryCard
             order={order}
             rfqSummary={rfqSummary}
