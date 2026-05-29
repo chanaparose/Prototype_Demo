@@ -687,13 +687,6 @@ export function FactoryRfqDetailPage() {
                           )
                         : ''
                     }
-                    initialFactoryNote={
-                      myQuote
-                        ? String(
-                            (myQuote as unknown as Record<string, unknown>).factory_note ?? '',
-                          ) || undefined
-                        : undefined
-                    }
                     submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                     pageError={error || undefined}
                     readOnly={Boolean(myQuote && !canEdit)}
@@ -723,7 +716,7 @@ export function FactoryRfqDetailPage() {
               </section>
             </div>
 
-            {/* Factory Note — always editable when quotation exists */}
+            {/* Factory Note — always visible when quotation exists, all statuses */}
             {myQuote && quoteIdOf(myQuote) ? (
               <FactoryNoteInline
                 quotationId={quoteIdOf(myQuote)}

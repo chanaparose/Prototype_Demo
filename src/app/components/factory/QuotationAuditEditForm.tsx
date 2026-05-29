@@ -46,7 +46,6 @@ type Props = {
   showFooterActions?: boolean;
   saving?: boolean;
   onSavingChange?: (saving: boolean) => void;
-  initialFactoryNote?: string;
 };
 
 export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, Props>(
@@ -64,7 +63,6 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
       showFooterActions = false,
       saving: savingProp,
       onSavingChange,
-      initialFactoryNote,
     },
     ref,
   ) {
@@ -84,11 +82,6 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
       form.reset(next);
       lastPrefillKeyRef.current = key;
     }, [rawQuotation, form]);
-
-    const [factoryNote, setFactoryNote] = useState<string>(initialFactoryNote ?? '');
-    useEffect(() => {
-      setFactoryNote(initialFactoryNote ?? '');
-    }, [initialFactoryNote]);
 
     const [internalSaving, setInternalSaving] = useState(false);
     const saving = savingProp ?? internalSaving;
@@ -112,14 +105,13 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
         setSaving(true);
         setError('');
         try {
-          await quotationsApi.patch(quotationId, {
+          await quotationsApi.update(quotationId, {
             factory_id: factoryEntityId,
             price_per_piece: Number(values.price_per_piece),
             mold_cost: Number(values.mold_cost) || 0,
             lead_time_days: Number(values.lead_time_days),
             shipping_method_id: values.shipping_method_id!,
             reason: values.reason.trim(),
-            factory_note: factoryNote.trim() || undefined,
           });
           form.reset({ ...values, reason: '' });
           lastPrefillKeyRef.current = JSON.stringify(mapQuotationToEditForm(rawQuotation));
@@ -139,7 +131,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
         }
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [isLocked, quotationId, factoryEntityId, form, qc, rawQuotation, onSaved, onError, setSaving, factoryNote],
+      [isLocked, quotationId, factoryEntityId, form, qc, rawQuotation, onSaved, onError, setSaving],
     );
 
     const submit = useCallback(async () => {
@@ -262,21 +254,6 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
             <span className='font-semibold'>{form.watch('lead_time_days') || '—'} วัน</span>
           </div>
         </div>
-
-        <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-3'>
-          <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>
-            Note (สำหรับโรงงานเท่านั้น)
-          </p>
-          <p className='text-[11px] text-slate-400 -mt-1'>บันทึกภายใน ลูกค้าจะไม่เห็นข้อความนี้</p>
-          <textarea
-            value={factoryNote}
-            onChange={(e) => setFactoryNote(e.target.value)}
-            disabled={isLocked}
-            rows={3}
-            placeholder='เช่น ต้องสั่งวัตถุดิบพิเศษ, ต้องประสานงานแผนก…'
-            className='w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60 resize-none'
-          />
-        </section>
 
         <section className='rounded-2xl bg-white border border-gray-100 shadow-sm p-4 space-y-4'>
           <p className='text-[10px] font-semibold text-gray-400 uppercase tracking-wide'>

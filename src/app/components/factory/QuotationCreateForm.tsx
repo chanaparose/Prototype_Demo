@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
+import { FactoryNoteField } from '@/components/factory/FactoryNoteField';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getErrorMessage } from '@/lib/apiError';
@@ -416,24 +417,11 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
 
         {/* factory_note — shown only when creating (edit mode uses FactoryNoteInline) */}
         {!patchQuotationId ? (
-          <div className='rounded-2xl border border-amber-200 bg-amber-50/60 overflow-hidden'>
-            <div className='flex items-center gap-2 px-4 py-2.5 border-b border-amber-100'>
-              <span className='text-[11px] font-semibold uppercase tracking-wide text-amber-700 flex-1'>
-                🔒 Note (สำหรับโรงงานเท่านั้น)
-              </span>
-              <span className='text-[11px] text-amber-600/70'>ลูกค้าจะไม่เห็นข้อความนี้</span>
-            </div>
-            <div className='px-4 py-3'>
-              <textarea
-                value={factoryNote}
-                onChange={(e) => setFactoryNote(e.target.value)}
-                disabled={readOnly}
-                rows={3}
-                placeholder='เช่น ต้องสั่งวัตถุดิบพิเศษ, ต้องประสานงานแผนก…'
-                className='w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60 resize-none'
-              />
-            </div>
-          </div>
+          <FactoryNoteField
+            value={factoryNote}
+            onChange={setFactoryNote}
+            disabled={readOnly}
+          />
         ) : null}
 
         {!readOnly ? (
