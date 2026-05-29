@@ -12,9 +12,10 @@ interface Props {
   rfq: IRfqNestedResponse;
   variant?: 'accordion';
   defaultOpen?: boolean;
+  collapsible?: boolean;
 }
 
-export function RfqReferenceCard({ rfq, defaultOpen = true }: Props) {
+export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   // Use enriched data from GET /orders/:id — no extra API calls needed.
@@ -216,18 +217,29 @@ export function RfqReferenceCard({ rfq, defaultOpen = true }: Props) {
 
   return (
     <section className='my-3 rounded-2xl border border-gray-100 bg-white'>
-      <Button
-        variant='unstyled'
-        type='button'
-        onClick={() => setOpen((v) => !v)}
-        className='w-full flex items-center justify-between px-4 py-3'
-      >
-        <span className='text-sm text-gray-900' style={{ fontWeight: 700 }}>
-          รายละเอียดใบขอราคา
-        </span>
-        <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-      </Button>
-      {open ? <div className='px-4 pb-4'>{body}</div> : null}
+      {collapsible ? (
+        <>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={() => setOpen((v) => !v)}
+            className='w-full flex items-center justify-between px-4 py-3'
+          >
+            <span className='text-sm text-gray-900' style={{ fontWeight: 700 }}>
+              รายละเอียดใบขอราคา
+            </span>
+            <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+          </Button>
+          {open ? <div className='px-4 pb-4'>{body}</div> : null}
+        </>
+      ) : (
+        <div className='px-4 py-4'>
+          <p className='text-sm text-gray-900 mb-3' style={{ fontWeight: 700 }}>
+            รายละเอียดใบขอราคา
+          </p>
+          {body}
+        </div>
+      )}
     </section>
   );
 }

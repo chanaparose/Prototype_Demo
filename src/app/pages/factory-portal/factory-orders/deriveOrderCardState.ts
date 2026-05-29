@@ -54,6 +54,8 @@ export function deriveOrderCardState(row: FactoryOrderRow, now: Date): DerivedCa
     primaryCta = { kind: 'start_qc' };
   } else if (row.status === 'SH') {
     primaryCta = { kind: 'mark_shipped' };
+  } else if (row.status === 'PD') {
+    primaryCta = { kind: 'view_only' };
   } else if (['PP', 'PE'].includes(row.status)) {
     primaryCta = { kind: 'waiting_customer' };
   }

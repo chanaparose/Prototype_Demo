@@ -11,6 +11,7 @@ import { conversationsApi, messagesApi } from '@/services/api/chatApi';
 import { buildSendPayload, chatRoomPath, getCurrentUserId } from '@/utils/chatContract';
 import type { ApiConversation } from '@/utils/chatContract';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
+import { FactoryNoteInline } from '@/components/factory/FactoryNoteInline';
 import { DeadlineBadge } from '@/components/factory/DeadlineBadge';
 import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLockedField';
 import {
@@ -686,6 +687,13 @@ export function FactoryRfqDetailPage() {
                           )
                         : ''
                     }
+                    initialFactoryNote={
+                      myQuote
+                        ? String(
+                            (myQuote as unknown as Record<string, unknown>).factory_note ?? '',
+                          ) || undefined
+                        : undefined
+                    }
                     submitLabel={myQuote && canEdit ? 'อัปเดตใบเสนอราคา' : 'ส่งใบเสนอราคา'}
                     pageError={error || undefined}
                     readOnly={Boolean(myQuote && !canEdit)}
@@ -714,6 +722,19 @@ export function FactoryRfqDetailPage() {
                 </div>
               </section>
             </div>
+
+            {/* Factory Note — always editable when quotation exists */}
+            {myQuote && quoteIdOf(myQuote) ? (
+              <FactoryNoteInline
+                quotationId={quoteIdOf(myQuote)}
+                initialNote={
+                  String(
+                    (myQuote as unknown as Record<string, unknown>).factory_note ?? '',
+                  ) || null
+                }
+                onSaved={load}
+              />
+            ) : null}
 
             {/* Send QT in chat + Quotation history */}
             {(customerId > 0 && fid != null) || (myQuote && quoteIdOf(myQuote)) ? (

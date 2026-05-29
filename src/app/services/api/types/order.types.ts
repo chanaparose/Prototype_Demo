@@ -53,6 +53,7 @@ export interface IQuoteNestedResponse {
   payment_terms?: string | null;
   image_urls?: string[];
   factory_highlight?: string | null;
+  factory_note?: string | null;
 }
 
 export interface IOrderDetailResponse {
