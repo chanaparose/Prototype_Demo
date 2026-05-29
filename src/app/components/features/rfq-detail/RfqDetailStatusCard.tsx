@@ -17,13 +17,15 @@ type RfqDetailStatusCardProps = {
   isHistoryView: boolean;
   statusBadgeStyle: { background: string; color: string };
   statusLabel: string;
+  footer?: React.ReactNode;
 };
 
 export function RfqDetailStatusCard({
   rfq,
-  isHistoryView,
+  isHistoryView: _isHistoryView,
   statusBadgeStyle,
   statusLabel,
+  footer,
 }: RfqDetailStatusCardProps) {
   return (
     <div className='bg-white rounded-2xl p-4 shadow-sm'>
@@ -54,6 +56,7 @@ export function RfqDetailStatusCard({
         <span>•</span>
         <span>{formatCompactNumber(rfq.quantity)} ชิ้น</span>
       </div>
+      {footer ? <div className='mt-3 pt-3 border-t border-gray-100'>{footer}</div> : null}
     </div>
   );
 }

@@ -37,9 +37,9 @@ export function RFQDetailMobile() {
     error,
     refetch,
   } = useRfqDetail(id);
-  const [specsOpen, setSpecsOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'specs' | 'offers'>('specs');
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
@@ -195,10 +195,14 @@ export function RFQDetailMobile() {
         </Button>
       </div>
 
-      <div className='flex-1 overflow-y-auto px-4 pb-32 pt-4 space-y-4'>
-        {canClose ? (
-          <div className='flex gap-2'>
-            {canClose ? (
+      <div className='px-4 pt-4 pb-2'>
+        <RfqDetailStatusCard
+          rfq={rfq}
+          isHistoryView={isHistoryView}
+          statusBadgeStyle={statusBadgeStyle}
+          statusLabel={statusLabel}
+          footer={
+            canClose ? (
               <Button
                 variant='unstyled'
                 type='button'
@@ -219,7 +223,7 @@ export function RFQDetailMobile() {
                     setClosing(false);
                   }
                 }}
-                className='flex-1 rounded-xl border text-sm font-semibold py-2.5 disabled:opacity-60'
+                className='w-full rounded-xl border text-[13px] font-semibold py-2 disabled:opacity-60'
                 style={{
                   borderColor: COLORS.purple,
                   color: COLORS.purple,
@@ -228,59 +232,71 @@ export function RFQDetailMobile() {
               >
                 {closing ? 'กำลังปิด...' : 'ปิดรับคำขอ'}
               </Button>
-            ) : null}
-          </div>
-        ) : null}
-        {rfq.subCategoryName || rfq.shippingMethodName ? (
-          <div className='rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-2 text-sm'>
-            {rfq.subCategoryName ? (
-              <p>
-                <span className='text-gray-500'>ประเภทย่อย: </span>
-                <span style={{ fontWeight: 600, color: COLORS.blue }}>{rfq.subCategoryName}</span>
-              </p>
-            ) : null}
-            {rfq.shippingMethodName ? (
-              <p>
-                <span className='text-gray-500'>วิธีส่งของ: </span>
-                <span style={{ fontWeight: 600, color: COLORS.blue }}>
-                  {rfq.shippingMethodName}
-                </span>
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-        <RfqDetailStatusCard
-          rfq={rfq}
-          isHistoryView={isHistoryView}
-          statusBadgeStyle={statusBadgeStyle}
-          statusLabel={statusLabel}
+            ) : undefined
+          }
         />
+      </div>
 
-        <RfqDetailSpecs rfq={rfq} open={specsOpen} onToggle={() => setSpecsOpen(!specsOpen)} />
+      {/* Tabs */}
+      <div className='sticky top-12 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200'>
+        <div className='flex px-4'>
+          {([
+            { id: 'specs' as const, label: 'สเปกของโครงการ' },
+            { id: 'offers' as const, label: `เปรียบเทียบใบเสนอราคา${(rfq.offers?.length ?? 0) > 0 ? ` (${rfq.offers?.length})` : ''}` },
+          ]).map((tab) => (
+            <button
+              key={tab.id}
+              type='button'
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-3 text-xs font-semibold text-center transition-colors ${
+                activeTab === tab.id
+                  ? 'border-b-2'
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+              style={
+                activeTab === tab.id
+                  ? { borderColor: COLORS.purple, color: COLORS.purple }
+                  : undefined
+              }
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        <RfqDetailOffersSection
-          rfqStatus={rfq.status}
-          offers={rfq.offers ?? []}
-          isHistoryView={isHistoryView}
-          orderForRfq={relatedOrder ?? undefined}
-          selectedOfferId={selectedOffer}
-          onSelectOffer={setSelectedOffer}
-          onChatWithOffer={handleChatWithOffer}
-          rfqQuantity={rfq.quantity}
-          quoteHistories={quoteHistories}
-          onOfferFlowComplete={async ({ orderId }) => {
-            await refetch();
-            if (orderId) navigate(`/orders/${orderId}`);
-          }}
-        />
-        {selectedOffer ? (
-          <div className='px-1'>
-            <QuotationHistoryPanel
-              quotationId={selectedOffer}
-              preloadedHistory={quoteHistories?.[selectedOffer]}
+      <div className='px-4 pb-32 pt-0 space-y-4'>
+        {activeTab === 'specs' ? (
+          <div className='bg-white border-x border-b border-gray-200 rounded-b-2xl overflow-hidden shadow-sm'>
+            <RfqDetailSpecs rfq={rfq} bare />
+          </div>
+        ) : (
+          <>
+            <RfqDetailOffersSection
+              rfqStatus={rfq.status}
+              offers={rfq.offers ?? []}
+              isHistoryView={isHistoryView}
+              orderForRfq={relatedOrder ?? undefined}
+              selectedOfferId={selectedOffer}
+              onSelectOffer={setSelectedOffer}
+              onChatWithOffer={handleChatWithOffer}
+              rfqQuantity={rfq.quantity}
+              quoteHistories={quoteHistories}
+              onOfferFlowComplete={async ({ orderId }) => {
+                await refetch();
+                if (orderId) navigate(`/orders/${orderId}`);
+              }}
             />
-          </div>
-        ) : null}
+            {selectedOffer ? (
+              <div className='px-1'>
+                <QuotationHistoryPanel
+                  quotationId={selectedOffer}
+                  preloadedHistory={quoteHistories?.[selectedOffer]}
+                />
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
     </div>
   );

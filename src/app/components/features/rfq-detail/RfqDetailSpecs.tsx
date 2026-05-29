@@ -1,9 +1,7 @@
 import React from 'react';
 import { openImageLightbox } from '@/stores/useLightboxStore';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
-import { Button } from '@/components/ui/button';
 
 export type RfqForSpecs = {
   category: string;
@@ -32,11 +30,10 @@ export type RfqForSpecs = {
 
 type RfqDetailSpecsProps = {
   rfq: RfqForSpecs;
-  open: boolean;
-  onToggle: () => void;
+  bare?: boolean;
 };
 
-export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
+export function RfqDetailSpecs({ rfq, bare = false }: RfqDetailSpecsProps) {
   const imageUrls = rfq.imageUrls?.filter(Boolean) ?? [];
   const subLabel = (rfq.subCategoryName ?? '').trim();
   const hasSubFromApi = Boolean(subLabel) || (rfq.subCategoryId != null && rfq.subCategoryId > 0);
@@ -72,76 +69,64 @@ export function RfqDetailSpecs({ rfq, open, onToggle }: RfqDetailSpecsProps) {
     { label: 'วันที่สร้าง', value: rfq.createdAt },
   ];
 
-  return (
-    <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>
-      <Button
-        variant='unstyled'
-        type='button'
-        onClick={onToggle}
-        className='w-full flex items-center justify-between p-4'
-      >
-        <span className='text-sm' style={{ fontWeight: 600, color: 'var(--brand-navy)' }}>
-          สเปคของโครงการ
-        </span>
-        {open ? (
-          <ChevronUp size={18} className='text-gray-400' />
-        ) : (
-          <ChevronDown size={18} className='text-gray-400' />
-        )}
-      </Button>
-      {open && (
-        <div className='px-4 pb-4 border-t border-gray-50'>
-          <div className='space-y-2.5 mt-3'>
-            {rows.map((item) => (
-              <div key={item.label} className='flex justify-between'>
-                <span className='text-xs text-gray-500'>{item.label}</span>
-                <span className='text-xs' style={{ fontWeight: 500, color: 'var(--brand-navy)' }}>
-                  {item.value}
-                </span>
-              </div>
+  const content = (
+    <div className={bare ? 'px-4 py-4' : 'px-4 pb-4 border-t border-gray-50'}>
+      <div className={`space-y-2.5 ${bare ? '' : 'mt-3'}`}>
+        {rows.map((item) => (
+          <div key={item.label} className='flex justify-between gap-4'>
+            <span className='text-xs text-gray-500'>{item.label}</span>
+            <span
+              className='text-xs text-right'
+              style={{ fontWeight: 500, color: 'var(--brand-navy)' }}
+            >
+              {item.value}
+            </span>
+          </div>
+        ))}
+      </div>
+      {imageUrls.length > 0 && (
+        <div className='mt-3 pt-3 border-t border-gray-100'>
+          <p className='text-xs text-gray-500 mb-2'>รูปอ้างอิง / แนบมากับ RFQ</p>
+          <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
+            {imageUrls.map((url, idx) => (
+              <button
+                key={`${url}-${idx}`}
+                type='button'
+                onClick={() => openImageLightbox(url)}
+                className='block aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100 focus:outline-none active:opacity-80'
+                aria-label='ดูรูปขนาดใหญ่'
+              >
+                <ImageWithFallback src={url} alt='' className='w-full h-full object-cover' />
+              </button>
             ))}
           </div>
-          {imageUrls.length > 0 && (
-            <div className='mt-3 pt-3 border-t border-gray-100'>
-              <p className='text-xs text-gray-500 mb-2'>รูปอ้างอิง / แนบมากับ RFQ</p>
-              <div className='grid grid-cols-2 sm:grid-cols-3 gap-2'>
-                {imageUrls.map((url, idx) => (
-                  <button
-                    key={`${url}-${idx}`}
-                    type='button'
-                    onClick={() => openImageLightbox(url)}
-                    className='block aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100 focus:outline-none active:opacity-80'
-                    aria-label='ดูรูปขนาดใหญ่'
-                  >
-                    <ImageWithFallback src={url} alt='' className='w-full h-full object-cover' />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {rfq.description && (
-            <div className='mt-3 pt-3 border-t border-gray-100'>
-              <p className='text-xs text-gray-500 mb-1'>รายละเอียด</p>
-              <p className='text-xs text-gray-700'>{rfq.description}</p>
-            </div>
-          )}
-          {Array.isArray(rfq.certificationsRequired) && rfq.certificationsRequired.length > 0 && (
-            <div className='mt-3 pt-3 border-t border-gray-100'>
-              <p className='text-xs text-gray-500 mb-2'>Certifications required</p>
-              <div className='flex flex-wrap gap-1.5'>
-                {rfq.certificationsRequired.map((c) => (
-                  <span
-                    key={c}
-                    className='text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-100'
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+        </div>
+      )}
+      {rfq.description && (
+        <div className='mt-3 pt-3 border-t border-gray-100'>
+          <p className='text-xs text-gray-500 mb-1'>รายละเอียด</p>
+          <p className='text-xs text-gray-700'>{rfq.description}</p>
+        </div>
+      )}
+      {Array.isArray(rfq.certificationsRequired) && rfq.certificationsRequired.length > 0 && (
+        <div className='mt-3 pt-3 border-t border-gray-100'>
+          <p className='text-xs text-gray-500 mb-2'>Certifications required</p>
+          <div className='flex flex-wrap gap-1.5'>
+            {rfq.certificationsRequired.map((c) => (
+              <span
+                key={c}
+                className='text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-100'
+              >
+                {c}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
+
+  if (bare) return content;
+
+  return <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>{content}</div>;
 }
