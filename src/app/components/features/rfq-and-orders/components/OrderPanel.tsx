@@ -159,27 +159,24 @@ export function OrderPanel({
       ) : (
         <div className='space-y-3'>
           {filteredOrders.map((order) => {
-            const cfg = ORDER_STATUS_CONFIG[order.status] ?? ORDER_STATUS_CONFIG.pending;
             const isPendingPayment = order.status === 'pending_payment';
+            const statusCfg = ORDER_STATUS_CONFIG[order.status] ?? ORDER_STATUS_CONFIG.pending;
+            const cardCfg = isPendingPayment ? ORDER_STATUS_CONFIG.in_production : statusCfg;
 
             return (
               <div
                 key={order.id}
                 onClick={() => navigate(`/orders/${order.id}`)}
                 className='rounded-2xl p-4 border bg-white cursor-pointer transition-all active:scale-[0.98] hover:shadow-sm'
-                style={{
-                  borderColor: isPendingPayment ? ACCENT_ORANGE : BORDER_WARM,
-                  borderLeftWidth: isPendingPayment ? '3px' : '1px',
-                  borderLeftColor: isPendingPayment ? ACCENT_ORANGE : BORDER_WARM,
-                }}
+                style={{ borderColor: BORDER_WARM }}
               >
                 <div className='flex items-start justify-between mb-3'>
                   <div className='flex items-center gap-2.5 min-w-0 flex-1'>
                     <div
                       className='w-10 h-10 rounded-xl flex items-center justify-center shrink-0'
-                      style={{ background: cfg.bg }}
+                      style={{ background: cardCfg.bg }}
                     >
-                      <Package size={18} style={{ color: cfg.color }} />
+                      <Package size={18} style={{ color: cardCfg.color }} />
                     </div>
                     <div className='min-w-0 flex-1'>
                       <p className='text-[10px] text-gray-400 mb-0.5'>#{order.id}</p>
@@ -191,10 +188,10 @@ export function OrderPanel({
                   </div>
                   <span
                     className='flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 ml-2'
-                    style={{ background: cfg.bg, color: cfg.color }}
+                    style={{ background: cardCfg.bg, color: cardCfg.color }}
                   >
-                    <span className='w-1.5 h-1.5 rounded-full' style={{ background: cfg.dot }} />
-                    {cfg.label}
+                    <span className='w-1.5 h-1.5 rounded-full' style={{ background: cardCfg.dot }} />
+                    {statusCfg.label}
                   </span>
                 </div>
 
@@ -225,20 +222,13 @@ export function OrderPanel({
                       {formatBudget(order.totalAmount)}
                     </span>
                   </div>
-                  {isPendingPayment ? (
-                    <span className='flex items-center gap-1 rounded-lg bg-[var(--brand-orange-vivid)] px-3 py-1 text-[11px] font-bold text-white'>
-                      <Banknote size={12} />
-                      ชำระเงิน
-                    </span>
-                  ) : (
-                    <span
-                      className='flex items-center gap-0.5 text-xs font-semibold'
-                      style={{ color: cfg.color }}
-                    >
-                      ดูรายละเอียด
-                      <ChevronRight size={13} />
-                    </span>
-                  )}
+                  <span
+                    className='flex items-center gap-0.5 text-xs font-semibold'
+                    style={{ color: cardCfg.color }}
+                  >
+                    ดูรายละเอียด
+                    <ChevronRight size={13} />
+                  </span>
                 </div>
               </div>
             );
