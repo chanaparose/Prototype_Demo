@@ -72,28 +72,42 @@ export function RFQDetailDesktop() {
     [user, navigate, id, rfq?.projectName],
   );
 
+  const sharedHeader = (
+    <div className='flex items-center gap-3 mb-2'>
+      <Button
+        variant='unstyled'
+        type='button'
+        onClick={() => navigate('/orders')}
+        className='w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-gray-200 hover:border-gray-300 transition-colors'
+        style={{ backgroundColor: COLORS.white }}
+      >
+        <ArrowLeft size={18} style={{ color: COLORS.blue }} />
+      </Button>
+      <div className='min-w-0'>
+        <p className='text-xs uppercase tracking-wider font-semibold' style={{ color: COLORS.orange }}>
+          RFQ Detail
+        </p>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div
         className='hidden lg:block min-h-[60vh]'
         style={{ backgroundColor: COLORS.lightPurpleBg }}
       >
-        <div className='max-w-6xl mx-auto px-8 py-14 flex flex-col items-center gap-4 text-center'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/orders')}
-            className='w-10 h-10 rounded-xl flex items-center justify-center border border-gray-200 bg-white self-start'
-          >
-            <ArrowLeft size={18} style={{ color: COLORS.blue }} />
-          </Button>
-          <div
-            className='w-10 h-10 rounded-full border-[3px] animate-spin'
-            style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
-          />
-          <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
-            กำลังโหลด RFQ...
-          </p>
+        <div className='max-w-6xl mx-auto px-8 py-7'>
+          {sharedHeader}
+          <div className='flex flex-col items-center gap-4 text-center py-20'>
+            <div
+              className='w-10 h-10 rounded-full border-[3px] animate-spin'
+              style={{ borderColor: COLORS.purple, borderTopColor: 'transparent' }}
+            />
+            <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
+              กำลังโหลด RFQ...
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -105,44 +119,39 @@ export function RFQDetailDesktop() {
         className='hidden lg:block min-h-[60vh]'
         style={{ backgroundColor: COLORS.lightPurpleBg }}
       >
-        <div className='max-w-6xl mx-auto px-8 py-14 flex flex-col items-center gap-4 text-center'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/orders')}
-            className='w-10 h-10 rounded-xl flex items-center justify-center border border-gray-200 bg-white self-start'
-          >
-            <ArrowLeft size={18} style={{ color: COLORS.blue }} />
-          </Button>
-          {error ? (
-            <>
-              <p className='text-sm font-semibold text-red-600 mb-2'>{error}</p>
-              <Button
-                variant='unstyled'
-                type='button'
-                className='text-sm font-semibold underline'
-                style={{ color: COLORS.purple }}
-                onClick={() => refetch()}
-              >
-                ลองใหม่
-              </Button>
-            </>
-          ) : (
-            <>
-              <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
-                ไม่พบคำขอนี้ หรือคุณไม่มีสิทธิ์ดู
-              </p>
-              <Button
-                variant='unstyled'
-                type='button'
-                className='text-sm font-semibold underline'
-                style={{ color: COLORS.purple }}
-                onClick={() => navigate('/orders')}
-              >
-                กลับไป คำขอราคา & คำสั่งซื้อ
-              </Button>
-            </>
-          )}
+        <div className='max-w-6xl mx-auto px-8 py-7'>
+          {sharedHeader}
+          <div className='flex flex-col items-center gap-4 text-center py-20'>
+            {error ? (
+              <>
+                <p className='text-sm font-semibold text-red-600 mb-2'>{error}</p>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  className='text-sm font-semibold underline'
+                  style={{ color: COLORS.purple }}
+                  onClick={() => refetch()}
+                >
+                  ลองใหม่
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className='text-sm font-semibold' style={{ color: COLORS.blue }}>
+                  ไม่พบคำขอนี้ หรือคุณไม่มีสิทธิ์ดู
+                </p>
+                <Button
+                  variant='unstyled'
+                  type='button'
+                  className='text-sm font-semibold underline'
+                  style={{ color: COLORS.purple }}
+                  onClick={() => navigate('/orders')}
+                >
+                  กลับไป คำขอราคา & คำสั่งซื้อ
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     );
