@@ -108,9 +108,6 @@ export function FactoryIdeasMobile() {
               <p className='mb-0.5 text-[11px] font-medium leading-snug text-[#EBD3FF]'>
                 พื้นที่โปรโมตจากโรงงานพาร์ทเนอร์
               </p>
-              <h2 className='text-[13px] font-bold leading-snug line-clamp-2'>
-                ค้นหาไอเดียสินค้าใหม่ พร้อมโรงงานที่ทำได้จริงในที่เดียว
-              </h2>
             </div>
             <span className='self-center rounded-md bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums text-[#EBD3FF]'>
               {totalCount} รายการ

@@ -196,7 +196,7 @@ export function ExploreDesktop({
           {desktopPromoSlides.length > 0 && (
           <section>
             <div className='flex items-center justify-between mb-3'>
-              <h2 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
+              <h2 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
                 <Sparkles className='text-brand-orange' size={16} />
                 โค้ดส่วนลดพิเศษ
               </h2>
@@ -332,7 +332,7 @@ export function ExploreDesktop({
             <div className='absolute inset-0 rounded-xl' style={SHIMMER_GRADIENT} />
           </div>
           <div className='relative z-[1] flex items-center justify-between mb-3'>
-            <h2 className='text-base font-bold text-brand-navy-ink'>บทความ Idea</h2>
+            <h2 className='text-[14px] font-bold text-brand-navy-ink'>บทความ Idea</h2>
             <Button
               variant='unstyled'
               type='button'
@@ -427,6 +427,16 @@ export function ExploreDesktop({
         <ExploreFooter />
       </div>
 
+      <Button
+        variant='unstyled'
+        data-tour='fab'
+        type='button'
+        onClick={() => navigate('/create-rfq')}
+        className='hidden md:flex xl:hidden fixed bottom-6 right-5 w-12 h-12 rounded-full items-center justify-center shadow-lg transition-transform active:scale-95 z-30'
+        style={FAB_BUTTON_STYLE}
+      >
+        <Plus size={20} className='text-white' />
+      </Button>
     </div>
   );
 }

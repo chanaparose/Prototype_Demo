@@ -77,7 +77,7 @@ export function ExploreMobile({
   const hasMaterialShowcases = materialShowcases.length > 0;
 
   return (
-    <div className='md:hidden pt-3 pb-2 space-y-3'>
+    <div className='md:hidden pt-4 pb-2 space-y-3'>
       <div className='mx-4 relative rounded-2xl overflow-hidden h-[115px] shadow-md'>
         <ImageWithFallback
           src='/assets/tryly-banner-final.png'
@@ -102,15 +102,15 @@ export function ExploreMobile({
       </div>
 
       <div data-tour='products' className='mb-3'>
-        <div className='mt-[25px] flex items-center justify-between px-4 mb-2'>
-          <h3 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
+        <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
+          <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
             <ShoppingBag size={15} className='text-brand-orange' /> สินค้าแนะนำ
           </h3>
           <Button
             variant='unstyled'
             type='button'
             onClick={() => navigate('/factory-ideas?type=product')}
-            className='text-brand-magenta text-xs font-medium flex items-center gap-0.5'
+            className='text-brand-magenta text-[12px] font-medium flex items-center gap-0.5'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
           </Button>
@@ -151,7 +151,7 @@ export function ExploreMobile({
                     alt={item.title}
                     className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                   />
-                  <div className='absolute top-1 left-1 bg-brand-sky px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
+                  <div className='absolute top-1 left-2 bg-brand-sky px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
                     สินค้า
                   </div>
                   <ShowcaseHeartButton
@@ -179,7 +179,7 @@ export function ExploreMobile({
                           {item.factoryRating ?? 0}
                         </span>
                       </div>
-                      <span className='text-gray-400 text-[8px] shrink-0'>
+                      <span className='text-gray-400 text-[9px] shrink-0'>
                         ขั้นต่ำ {item.minOrder ?? 0}
                       </span>
                     </div>
@@ -212,14 +212,14 @@ export function ExploreMobile({
 
       <div className='mb-3'>
         <div className='mt-[20px] flex items-center justify-between px-4 mb-2'>
-          <h3 className='text-base font-bold text-brand-navy-ink flex items-center gap-1.5'>
+          <h3 className='text-[14px] font-bold text-brand-navy-ink flex items-center gap-1.5'>
             <Leaf size={15} className='text-status-success' /> วัตถุดิบแนะนำ
           </h3>
           <Button
             variant='unstyled'
             type='button'
             onClick={() => navigate('/factory-ideas?type=material')}
-            className='text-status-success text-xs font-medium flex items-center gap-0.5'
+            className='text-status-success text-[12px] font-medium flex items-center gap-0.5'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
           </Button>
@@ -288,7 +288,7 @@ export function ExploreMobile({
                           {item.factoryRating ?? 0}
                         </span>
                       </div>
-                      <span className='text-gray-400 text-[8px] shrink-0'>
+                      <span className='text-gray-400 text-[9px] shrink-0'>
                         ขั้นต่ำ {item.minOrder ?? 0}
                       </span>
                     </div>
@@ -316,7 +316,7 @@ export function ExploreMobile({
         )}
       </div>
 
-      <HowToOrderSection className='mx-4' />
+      <HowToOrderSection className='mx-4 mt-5' />
 
       <div className='mt-[20px]'>
         <ExploreFactoryShowcase
@@ -339,7 +339,7 @@ export function ExploreMobile({
 
       {/* โปรโมชันแนะนำ (PM) — disabled */}
 
-      <div className='mx-auto w-[78%] max-w-xs relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30 mt-8'>
+      <div className='px-4 mt-5'><div className='relative aspect-[4/3] rounded-xl overflow-hidden shadow-sm border border-brand-purple/30'>
         <Image
           src='assets/IMG_7664.jpg'
           alt=''
@@ -372,6 +372,7 @@ export function ExploreMobile({
             />
           </Button>
         </div>
+      </div>
       </div>
 
       <ExploreFooter />
