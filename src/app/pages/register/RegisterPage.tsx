@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -1642,9 +1642,19 @@ function RoleSelectionStep({
 
 export function RegisterPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, user } = useAuth();
   // CT user who wants to upgrade their account to FT
   const isCTUpgrade = isAuthenticated && String(user?.role ?? '').toUpperCase() === 'CT';
+
+  const goBack = () => {
+    if (location.key !== 'default') {
+      navigate(-1);
+      return;
+    }
+    navigate('/');
+  };
 
   const initialRole = isCTUpgrade ? 'ft' : parseInitialRole(searchParams.get('tab'));
   const [step, setStep] = useState<RegisterStep>(initialRole ? 'form' : 'choose-role');
@@ -1691,14 +1701,15 @@ export function RegisterPage() {
 
               <div>
                 {isCTUpgrade ? (
-                  /* CT upgrade: back = go home (not choose-role, they're already logged in) */
-              <Link
-                to='/'
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={goBack}
                     className='inline-flex items-center gap-1.5 text-xs font-medium text-[var(--neutral-subtle)] transition-colors hover:text-[var(--brand-purple)]'
-              >
-                <ArrowLeft size={14} />
-                    ยกเลิก — กลับหน้าแรก
-              </Link>
+                  >
+                    <ArrowLeft size={14} />
+                    ยกเลิก — ย้อนกลับ
+                  </Button>
                 ) : step === 'form' ? (
                   <Button
                     variant='unstyled'
