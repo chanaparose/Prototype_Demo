@@ -36,6 +36,8 @@ export async function fetchAndMapRfqList(): Promise<RfqListResult> {
       categoryIcon: guessCategoryIcon(category),
       status,
       offerCount,
+      acceptedCount: Number(r.acceptedCount ?? r.accepted_count ?? 0),
+      pendingCount: Number(r.pendingCount ?? r.pending_count ?? 0),
       budget: Number(r.budget ?? r.target_price ?? 0),
       quantity: Number(r.quantity ?? 0),
       material: '',

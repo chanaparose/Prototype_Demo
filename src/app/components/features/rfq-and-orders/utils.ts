@@ -20,8 +20,16 @@ export type OrderTagCounts = {
 export function getRfqActivityCounts(rfq: Rfq) {
   const offers = rfq.offers ?? [];
   const totalOffers = offers.length || rfq.offerCount || 0;
-  const accepted = offers.filter((o) => o.quoteStatus === 'AC').length;
-  const pending = offers.filter((o) => o.quoteStatus === 'PD').length;
+  // When offers array is populated (e.g. RFQ detail page), compute from it.
+  // When it's empty (e.g. bootstrap list), use the pre-aggregated counts from BE.
+  const accepted =
+    offers.length > 0
+      ? offers.filter((o) => o.quoteStatus === 'AC').length
+      : (rfq.acceptedCount ?? 0);
+  const pending =
+    offers.length > 0
+      ? offers.filter((o) => o.quoteStatus === 'PD').length
+      : (rfq.pendingCount ?? 0);
   return { totalOffers, accepted, pending };
 }
 
