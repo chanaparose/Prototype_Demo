@@ -577,6 +577,7 @@ export function ProductDetailDesktop() {
                 const rf = data.factories.find((f) => f.id === rp.factoryId);
                 const rating = Number(rf?.rating ?? rp.factoryRating ?? 0);
                 const reviews = Number(rf?.reviews ?? 0);
+                const province = (rf?.provinceName ?? rf?.location ?? rp.location ?? '').trim();
                 const isPromo = rp.contentType === 'promotion';
                 return (
                   <Button
@@ -612,7 +613,7 @@ export function ProductDetailDesktop() {
                         <div className='flex items-center gap-0.5 mt-0.5'>
                           <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
                           <span className='text-[14px] text-gray-500 truncate'>
-                            {(rf?.provinceName ?? rf?.location ?? '').trim() || '—'}
+                            {province || '—'}
                           </span>
                         </div>
                       </div>
