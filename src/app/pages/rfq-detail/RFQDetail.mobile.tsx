@@ -44,6 +44,12 @@ export function RFQDetailMobile() {
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
   React.useEffect(() => {
+    if (requestedQuoteId || requestedFactoryId) {
+      setActiveTab('offers');
+    }
+  }, [requestedQuoteId, requestedFactoryId]);
+
+  React.useEffect(() => {
     if (!rfq?.offers?.length) return;
     if (selectedOffer) return;
     const byQuote = requestedQuoteId
