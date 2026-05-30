@@ -44,6 +44,12 @@ export function RFQDetailMobile() {
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
   React.useEffect(() => {
+    if (requestedQuoteId || requestedFactoryId) {
+      setActiveTab('offers');
+    }
+  }, [requestedQuoteId, requestedFactoryId]);
+
+  React.useEffect(() => {
     if (!rfq?.offers?.length) return;
     if (selectedOffer) return;
     const byQuote = requestedQuoteId
@@ -75,20 +81,24 @@ export function RFQDetailMobile() {
     [user, navigate, id, rfq?.projectName],
   );
 
+  const sharedHeader = (
+    <div className='sticky top-0 z-50 flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
+      <Button
+        variant='unstyled'
+        type='button'
+        onClick={() => navigate('/orders')}
+        className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
+      >
+        <ChevronLeft size={18} />
+        กลับ
+      </Button>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className='min-h-screen flex flex-col' style={{ backgroundColor: COLORS.lightPurpleBg }}>
-        <div className='flex items-center px-4 pt-5 pb-4 bg-white border-b border-gray-100'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/orders')}
-            className='w-10 h-10 rounded-xl shadow-sm flex items-center justify-center'
-            style={{ backgroundColor: COLORS.lightPurpleBg }}
-          >
-            <ChevronLeft size={22} style={{ color: COLORS.blue }} />
-          </Button>
-        </div>
+        {sharedHeader}
         <div className='flex-1 flex flex-col items-center justify-center px-6 pb-24 text-center'>
           <div
             className='w-10 h-10 rounded-full border-[3px] animate-spin mb-3'
@@ -105,17 +115,7 @@ export function RFQDetailMobile() {
   if (!rfq) {
     return (
       <div className='min-h-screen flex flex-col' style={{ backgroundColor: COLORS.lightPurpleBg }}>
-        <div className='flex items-center px-4 pt-5 pb-4 bg-white border-b border-gray-100'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => navigate('/orders')}
-            className='w-10 h-10 rounded-xl shadow-sm flex items-center justify-center'
-            style={{ backgroundColor: COLORS.lightPurpleBg }}
-          >
-            <ChevronLeft size={22} style={{ color: COLORS.blue }} />
-          </Button>
-        </div>
+        {sharedHeader}
         <div className='flex-1 flex flex-col items-center justify-center px-6 pb-24 text-center'>
           {error ? (
             <>
@@ -183,17 +183,7 @@ export function RFQDetailMobile() {
 
   return (
     <div className='min-h-screen' style={{ backgroundColor: COLORS.lightPurpleBg }}>
-      <div className='sticky top-0 z-50 flex items-center justify-between h-12 px-4 border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={() => navigate('/orders')}
-          className='flex shrink-0 items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors'
-        >
-          <ChevronLeft size={18} />
-          กลับ
-        </Button>
-      </div>
+      {sharedHeader}
 
       <div className='px-4 pt-4 pb-2'>
         <RfqDetailStatusCard

@@ -145,6 +145,8 @@ export type BootstrapRfqModel = {
   categoryIcon: string;
   status: string;
   offerCount: number;
+  acceptedCount?: number;
+  pendingCount?: number;
   budget: number;
   quantity: number;
   material: string;

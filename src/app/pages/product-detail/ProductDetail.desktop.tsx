@@ -32,7 +32,6 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { useFavorites } from '@/hooks/useFavorites';
-import { SubCategoryTag } from '@/components/SubCategoryTag';
 import { StrictSpecsBlock } from '@/shared/ui/StrictSpecsBlock/StrictSpecsBlock';
 import {
   Table,
@@ -70,16 +69,25 @@ export function ProductDetailDesktop() {
   }, [item?.image, item?.imageUrls]);
 
   const [activeImage, setActiveImage] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
   useEffect(() => {
-    setActiveImage(0);
-  }, [item?.id]);
+    history.scrollRestoration = 'manual';
+  }, []);
 
-  if (loading) {
+  useEffect(() => {
+    setTransitioning(true);
+    setActiveImage(0);
+    window.scrollTo({ top: 0 });
+    const t = setTimeout(() => setTransitioning(false), 250);
+    return () => clearTimeout(t);
+  }, [resolvedId]);
+
+  if (loading || transitioning) {
     return (
       <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center bg-[#F5F3FF] lg:flex'>
         <span
@@ -97,7 +105,7 @@ export function ProductDetailDesktop() {
           variant='unstyled'
           type='button'
           onClick={handleBack}
-          className='mb-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--brand-purple)]'
+          className='mb-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-[var(--brand-purple)]'
         >
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
@@ -129,8 +137,6 @@ export function ProductDetailDesktop() {
   const latestReviews = reviews?.items ?? [];
 
   const specRows: { label: string; value: React.ReactNode }[] = [];
-  if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
-  if (subName && !isMaterial) specRows.push({ label: 'ประเภทย่อย', value: subName });
   const leadTimeDays = Number(String(item.leadTime ?? '').replace(/[^\d.]/g, ''));
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
   if (Array.isArray(item.specs) && item.specs.length > 0) {
@@ -143,27 +149,28 @@ export function ProductDetailDesktop() {
   }
 
   return (
-    <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block'>
+    <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block animate-[fadeIn_0.2s_ease-in]'>
       <div className='px-8 pt-5 pb-3'>
-        <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
+        <div className='flex flex-col gap-1'>
           <Button
             variant='unstyled'
             type='button'
-          onClick={handleBack}
-            className='inline-flex items-center gap-1 font-medium text-[var(--brand-purple)] hover:opacity-80'
+            onClick={handleBack}
+            className='inline-flex items-center gap-1 font-medium text-[var(--brand-purple)] hover:opacity-80 self-start'
           >
             <ArrowLeft className='w-3.5 h-3.5' /> กลับ
           </Button>
-          <Chevron className='w-3 h-3 text-gray-300' />
-          <span>{item.category || 'ทั้งหมด'}</span>
-          {subName && !isMaterial ? (
-            <>
-              <Chevron className='w-3 h-3 text-gray-300' />
-              <span>{subName}</span>
-            </>
-        ) : null}
-          <Chevron className='w-3 h-3 text-gray-300' />
-          <span className='max-w-[32rem] truncate text-[var(--brand-ink)]'>{item.title}</span>
+          <div className='flex items-center gap-1.5 text-[14px] text-gray-500'>
+            <span>{item.category || 'ทั้งหมด'}</span>
+            {subName && !isMaterial ? (
+              <>
+                <Chevron className='w-3 h-3 text-gray-300' />
+                <span>{subName}</span>
+              </>
+            ) : null}
+            <Chevron className='w-3 h-3 text-gray-300' />
+            <span className='max-w-[32rem] truncate text-[var(--brand-ink)]'>{item.title}</span>
+          </div>
         </div>
       </div>
 
@@ -182,7 +189,7 @@ export function ProductDetailDesktop() {
                 className=''
               />
 
-              <div className='mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-[12px] text-gray-500'>
+              <div className='mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-[14px] text-gray-500'>
                 <Button
                   variant='unstyled'
                   type='button'
@@ -219,28 +226,25 @@ export function ProductDetailDesktop() {
             <div className='flex-1 min-w-0'>
               <div className='flex flex-wrap items-center gap-2 mb-2'>
                 {factory?.verified ? (
-                  <span className='inline-flex items-center gap-1 rounded-sm bg-[var(--brand-orange)] px-2 py-0.5 text-[10px] font-bold text-white'>
+                  <span className='inline-flex items-center gap-1 rounded-sm bg-[var(--brand-orange)] px-2 py-0.5 text-[14px] font-bold text-white'>
                     <BadgeCheck className='w-3 h-3' /> Preferred
                   </span>
                 ) : null}
-                <span className='inline-flex items-center rounded-sm bg-[#F5F3FF] px-2 py-0.5 text-[10px] font-semibold text-[var(--brand-purple)]'>
+                <span className='inline-flex items-center rounded-sm bg-[#F5F3FF] px-2 py-0.5 text-[14px] font-semibold text-[var(--brand-purple)]'>
                   {isIdea ? 'ไอเดีย / บทความ' : isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                 </span>
                 {item.category ? (
-                  <span className='inline-flex items-center px-2 py-0.5 rounded-sm text-[10px] font-medium text-gray-500 border border-gray-200'>
-                    {item.category}
+                  <span className='text-[14px] text-gray-500'>
+                    {item.category}{subName && !isMaterial ? ` > ${subName}` : ''}
                   </span>
                 ) : null}
-                {subName && !isMaterial ? (
-                  <SubCategoryTag name={subName} size='sm' showSubPrefix />
-                ) : null}
-          </div>
+              </div>
 
-              <h1 className='text-[20px] font-medium leading-snug text-[var(--brand-ink)]'>
+              <h1 className='text-[20px] font-semibold leading-snug text-[var(--brand-ink)]'>
                 {item.title}
               </h1>
 
-              <div className='flex items-center gap-4 py-3 mt-1 border-b border-gray-100 text-[13px] text-gray-500'>
+              <div className='flex items-center gap-4 py-3 mt-1 border-b border-gray-100 text-[14px] text-gray-500'>
                 <span className='inline-flex items-center gap-1'>
                   <span className='border-b border-[var(--brand-orange)] text-[var(--brand-orange)]'>
                     {avgRating.toFixed(1)}
@@ -259,12 +263,12 @@ export function ProductDetailDesktop() {
                 </span>
                 <span className='h-3 w-px bg-gray-200' />
                 <span>เผยแพร่ {formatThaiDate(item.postedAt)}</span>
-                          </div>
+              </div>
 
-              <div className='mt-4 rounded-xl border border-[#F8DEC1] bg-[var(--surface-paper-warm)] px-4 py-4'>
+              <div className='mt-3 rounded-xl border border-[#F8DEC1] bg-[var(--surface-paper-warm)] px-3 py-2.5'>
                 {priceText ? (
                   <div className='flex items-baseline gap-2'>
-                    <p className='text-[26px] font-bold leading-none text-[var(--brand-violet)]'>
+                    <p className='text-[22px] font-bold leading-none text-[var(--brand-violet)]'>
                       {priceText}
                     </p>
                     {item.promoPrice && item.basePrice && item.promoPrice < item.basePrice ? (
@@ -274,16 +278,16 @@ export function ProductDetailDesktop() {
                     ) : null}
                   </div>
                 ) : (
-                  <p className='text-[20px] font-semibold leading-none text-[var(--brand-violet)]'>
+                  <p className='text-[14px] font-semibold leading-none text-[var(--brand-violet)]'>
                     สอบถามราคากับโรงงาน
                   </p>
                 )}
-                <p className='text-[11px] text-gray-500 mt-2'>
+                <p className='text-[14px] text-gray-500 mt-1.5'>
                   ราคาต่อชิ้นอาจแตกต่างตามปริมาณสั่งผลิต กรุณาแชทเพื่อขอใบเสนอราคา
                 </p>
-                </div>
+              </div>
 
-              <div className='mt-5 grid grid-cols-[120px_1fr] gap-y-3 gap-x-4 text-[13px]'>
+              <div className='mt-5 grid grid-cols-[120px_1fr] gap-y-3 gap-x-4 text-[14px]'>
                 <span className='text-gray-400'>ขั้นต่ำผลิต</span>
                 <span className='text-[var(--brand-ink)]'>
                   <span className='font-semibold'>{item.minOrder}</span>{' '}
@@ -308,13 +312,13 @@ export function ProductDetailDesktop() {
               </div>
 
               {item.tags.length > 0 ? (
-                <div className='mt-5 grid grid-cols-[120px_1fr] gap-x-4 items-start text-[13px]'>
+                <div className='mt-5 grid grid-cols-[120px_1fr] gap-x-4 items-start text-[14px]'>
                   <span className='text-gray-400 pt-1'>แท็ก</span>
                   <div className='flex flex-wrap gap-1.5'>
                     {item.tags.map((tag) => (
                       <span
                         key={tag}
-                        className='inline-flex cursor-pointer items-center rounded-sm bg-[#F5F3FF] px-2 py-1 text-[11px] font-medium text-[var(--brand-purple)] transition-colors hover:opacity-80'
+                        className='inline-flex cursor-pointer items-center rounded-sm bg-[#F5F3FF] px-2 py-1 text-[14px] font-medium text-[var(--brand-purple)] transition-colors hover:opacity-80'
                       >
                         {tag}
                       </span>
@@ -333,7 +337,7 @@ export function ProductDetailDesktop() {
                     className='inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-5 text-[14px] font-semibold text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
                   >
                     {starting ? (
-              <span
+                      <span
                         className='w-4 h-4 border-2 border-t-transparent rounded-full animate-spin'
                         style={{ borderColor: BRAND.orangeDark }}
                       />
@@ -384,16 +388,13 @@ export function ProductDetailDesktop() {
               </div>
               <div className='min-w-0'>
                 <div className='flex items-center gap-1.5'>
-                  <p className='truncate text-[15px] font-semibold text-[var(--brand-ink)]'>
+                  <p className='truncate text-[16px] font-semibold text-[var(--brand-ink)]'>
                     {item.factoryName}
                   </p>
                   {factory?.verified ? (
                     <BadgeCheck className='w-4 h-4 shrink-0 text-[var(--brand-purple)]' />
                   ) : null}
                 </div>
-                <p className='text-[12px] text-gray-500 truncate mt-0.5'>
-                  {factory?.specialization || 'โรงงานรับผลิต OEM / Private Label'}
-                </p>
                 <div className='flex items-center gap-2 mt-3'>
                   {canChat ? (
                     <Button
@@ -401,7 +402,7 @@ export function ProductDetailDesktop() {
                       type='button'
                       onClick={handleStartChat}
                       disabled={starting}
-                      className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-3.5 text-[13px] font-medium text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
+                      className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[var(--brand-orange)] bg-[var(--surface-orange-tint)] px-3.5 text-[14px] font-medium text-[var(--brand-orange-vivid)] transition-colors disabled:opacity-70'
                     >
                       <MessageCircle className='w-3.5 h-3.5' /> แชท
                     </Button>
@@ -410,7 +411,7 @@ export function ProductDetailDesktop() {
                     variant='unstyled'
                     type='button'
                     onClick={() => navigate(`/factories/${item.factoryId}`)}
-                    className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#E7E2F0] px-3.5 text-[13px] font-medium text-[var(--neutral-text)] transition-colors hover:opacity-80'
+                    className='inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#E7E2F0] px-3.5 text-[14px] font-medium text-[var(--neutral-text)] transition-colors hover:opacity-80'
                   >
                     <Store className='w-3.5 h-3.5' /> ดูโรงงาน
                   </Button>
@@ -420,11 +421,11 @@ export function ProductDetailDesktop() {
 
             <div className='w-px h-24 bg-gray-100 mx-2' />
 
-            <div className='grid grid-cols-3 gap-6 text-[13px] flex-1'>
+            <div className='grid grid-cols-3 gap-6 text-[14px] flex-1'>
               <div>
                 <p className='text-gray-400 mb-1'>เรตติ้งเฉลี่ย</p>
                 <p className='font-semibold text-[var(--brand-orange)]'>
-                  {avgRating.toFixed(1)} <span className='text-[11px] text-gray-400'>/ 5.0</span>
+                  {avgRating.toFixed(1)} <span className='text-[14px] text-gray-400'>/ 5.0</span>
                 </p>
               </div>
               <div>
@@ -469,7 +470,7 @@ export function ProductDetailDesktop() {
                   Number.isFinite(leadTimeDays) && leadTimeDays > 0 ? leadTimeDays : null,
               }}
             />
-            <Table className='w-full text-[13px]'>
+            <Table className='w-full text-[14px]'>
               <TableBody>
                 {specRows.map((row, idx) => (
                   <TableRow
@@ -493,17 +494,15 @@ export function ProductDetailDesktop() {
           </div>
           <div className='p-6'>
             {markdown ? (
-              <>
-                <MarkdownBody
-                  source={markdown}
-                  className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
-                />
-              </>
+              <MarkdownBody
+                source={markdown}
+                className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
+              />
             ) : (
-              <p className='text-[13px] text-gray-400'>ยังไม่มีรายละเอียดเพิ่มเติม</p>
+              <p className='text-[14px] text-gray-400'>ยังไม่มีรายละเอียดเพิ่มเติม</p>
             )}
           </div>
-          </div>
+        </div>
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
@@ -515,7 +514,7 @@ export function ProductDetailDesktop() {
                 <p className='text-[34px] font-bold leading-none text-[var(--brand-orange)]'>
                   {avgRating.toFixed(1)}
                 </p>
-                <p className='text-[12px] text-gray-500 mt-1'>จาก {reviewCount} รีวิว</p>
+                <p className='text-[14px] text-gray-500 mt-1'>จาก {reviewCount} รีวิว</p>
               </div>
               <div className='flex-1 space-y-2'>
                 {[5, 4, 3, 2, 1].map((star) => {
@@ -524,7 +523,7 @@ export function ProductDetailDesktop() {
                     reviewCount > 0 ? Math.max(0, Math.min(100, (count / reviewCount) * 100)) : 0;
                   return (
                     <div key={star} className='flex items-center gap-2'>
-                      <span className='w-10 text-[12px] text-gray-500'>{star} ดาว</span>
+                      <span className='w-10 text-[14px] text-gray-500'>{star} ดาว</span>
                       <div className='h-2 flex-1 rounded-full bg-gray-100 overflow-hidden'>
                         <div
                           className='h-full rounded-full'
@@ -537,23 +536,23 @@ export function ProductDetailDesktop() {
               </div>
             </div>
             <div className='mt-5 border-t border-gray-100 pt-4 space-y-3'>
-              <p className='text-[13px] font-semibold text-[var(--brand-ink)]'>
+              <p className='text-[16px] font-semibold text-[var(--brand-ink)]'>
                 รีวิวล่าสุดจากลูกค้า
               </p>
               {latestReviews.length === 0 ? (
-                <p className='text-[12px] text-gray-400'>ยังไม่มีรีวิว</p>
+                <p className='text-[14px] text-gray-400'>ยังไม่มีรีวิว</p>
               ) : (
                 latestReviews.slice(0, 3).map((r) => (
                   <div key={r.id} className='rounded-lg border border-gray-100 px-3 py-2'>
                     <div className='flex items-center justify-between gap-2'>
-                      <p className='text-[12px] font-semibold text-gray-700 truncate'>
+                      <p className='text-[14px] font-semibold text-gray-700 truncate'>
                         {r.reviewer}
                       </p>
-                      <p className='text-[11px] text-amber-600'>
+                      <p className='text-[14px] text-amber-600'>
                         ★ {Number(r.rating || 0).toFixed(1)}
                       </p>
                     </div>
-                    <p className='text-[12px] text-gray-600 mt-1 line-clamp-2'>
+                    <p className='text-[14px] text-gray-600 mt-1 line-clamp-2'>
                       {r.comment || '-'}
                     </p>
                     {r.imageUrls && r.imageUrls.length > 0 && (
@@ -561,14 +560,12 @@ export function ProductDetailDesktop() {
                         <ReviewImageAttachments urls={r.imageUrls} onPreviewUrl={(u) => openImageLightbox(u)} />
                       </div>
                     )}
-                </div>
+                  </div>
                 ))
               )}
             </div>
           </div>
         </div>
-
-         
 
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
@@ -580,6 +577,7 @@ export function ProductDetailDesktop() {
                 const rf = data.factories.find((f) => f.id === rp.factoryId);
                 const rating = Number(rf?.rating ?? rp.factoryRating ?? 0);
                 const reviews = Number(rf?.reviews ?? 0);
+                const province = (rf?.provinceName ?? rf?.location ?? rp.location ?? '').trim();
                 const isPromo = rp.contentType === 'promotion';
                 return (
                   <Button
@@ -609,13 +607,13 @@ export function ProductDetailDesktop() {
                     </div>
                     <div className='p-2 flex flex-col flex-1 justify-between gap-0.5'>
                       <div>
-                        <p className='text-gray-700 truncate mb-0.5 text-xs font-medium leading-tight group-hover:text-brand-purple transition-colors'>
+                        <p className='text-[14px] text-gray-700 truncate mb-0.5 font-medium leading-tight group-hover:text-brand-purple transition-colors'>
                           {rp.title}
                         </p>
                         <div className='flex items-center gap-0.5 mt-0.5'>
                           <MapPin className='w-2.5 h-2.5 text-gray-400 shrink-0' />
-                          <span className='text-gray-500 text-[10px] truncate'>
-                            {(rf?.provinceName ?? rf?.location ?? '').trim() || '—'}
+                          <span className='text-[14px] text-gray-500 truncate'>
+                            {province || '—'}
                           </span>
                         </div>
                       </div>
@@ -623,12 +621,12 @@ export function ProductDetailDesktop() {
                         <div className='flex items-center justify-between min-w-0'>
                           <div className='flex items-center gap-0.5 min-w-0'>
                             <Star className='w-2.5 h-2.5 text-amber-400 fill-amber-400 shrink-0' />
-                            <span className='text-gray-700 text-[10px] font-semibold'>
+                            <span className='text-[14px] text-gray-700 font-semibold'>
                               {rating}
                             </span>
-                            <span className='text-gray-400 text-[9px] truncate'>({reviews})</span>
+                            <span className='text-[14px] text-gray-400 truncate'>({reviews})</span>
                           </div>
-                          <span className='text-gray-400 text-[8px] shrink-0'>
+                          <span className='text-[14px] text-gray-400 shrink-0'>
                             ขั้นต่ำ {rp.minOrder}
                           </span>
                         </div>
@@ -639,7 +637,7 @@ export function ProductDetailDesktop() {
               })}
             </div>
           ) : (
-            <div className='p-8 text-center text-sm text-gray-400'>
+            <div className='p-8 text-center text-[14px] text-gray-400'>
               ยังไม่มีสินค้าที่ใกล้เคียงในหมวดนี้
             </div>
           )}
