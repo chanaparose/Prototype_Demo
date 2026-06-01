@@ -5,6 +5,7 @@ import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import type { ProductionLockContext } from '@/components/features/production/types';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { Button } from '@/components/ui/button';
+import { Lock, WalletCards } from 'lucide-react';
 
 type Props = {
   ctx: ProductionLockContext;
@@ -18,9 +19,7 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
 
   return (
     <div className='w-full max-w-md mx-auto text-center px-1'>
-      <div className='mb-3 sm:mb-4 text-4xl sm:text-5xl' aria-hidden>
-        🔒
-      </div>
+      <Lock size={42} className='mx-auto mb-3 text-red-400 sm:mb-4' aria-hidden />
       <h2 className='text-lg font-semibold text-red-800'>คำสั่งซื้อหมดอายุ</h2>
       <p className='mt-2 text-sm text-gray-700'>
         เกินกำหนดชำระเงินแล้ว คำสั่งซื้อนี้ไม่สามารถดำเนินการต่อได้
@@ -30,7 +29,10 @@ export function LockedDepositExpired({ ctx, onBackToOverview }: Props) {
         className='mt-6 rounded-2xl border p-5 text-left'
         style={{ borderColor: 'rgba(220, 38, 38, 0.25)', background: '#FEF2F2' }}
       >
-        <p className='text-xs font-semibold text-red-700'>💰 ยอดที่ต้องชำระ</p>
+        <p className='flex items-center gap-1.5 text-xs font-semibold text-red-700'>
+          <WalletCards size={13} />
+          ยอดที่ต้องชำระ
+        </p>
         <p className='mt-1 text-xl font-semibold tabular-nums' style={{ color: DEEP_PURPLE }}>
           {formatCurrency(amount)}
         </p>

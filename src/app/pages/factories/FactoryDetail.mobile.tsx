@@ -4,6 +4,7 @@ import {
   Package,
   Clock,
   CheckCircle2,
+  Factory,
   Star,
   ShieldCheck,
   Mail,
@@ -91,14 +92,14 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
         <Button
           variant='unstyled'
           type='button'
-          onClick={() => navigate('/explore')}
+          onClick={() => navigate('/')}
           className='mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-violet-600'
         >
           <ArrowLeft className='h-4 w-4' />
           กลับหน้าหลัก
         </Button>
         <div className='rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm'>
-          <p className='mb-2 text-3xl'>🏭</p>
+          <Factory size={30} className='mx-auto mb-2 text-gray-400' />
           <p className='text-sm font-medium text-gray-500'>ไม่พบข้อมูลโรงงาน</p>
         </div>
       </div>

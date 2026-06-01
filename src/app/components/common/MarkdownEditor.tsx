@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   LayoutTemplate,
   CheckCircle2,
+  Lightbulb,
 } from 'lucide-react';
 import { mediaApi } from '@/services/api/factoryApi';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
@@ -414,7 +415,10 @@ export function MarkdownEditor({
             <div className='px-3 py-2 border-b border-gray-100 bg-gray-50/60 flex flex-col gap-1 text-[11px] text-gray-500'>
               <div className='flex items-center justify-between'>
                 <p>
-                  <span className='font-semibold text-gray-700 mr-1'>💡 ทิปส์:</span>
+                  <span className='mr-1 inline-flex items-center gap-1 font-semibold text-gray-700'>
+                    <Lightbulb size={13} />
+                    ทิปส์:
+                  </span>
                   ใช้ <code>**หนา**</code>, <code>_เอียง_</code>, สร้างตารางด้วย <code>|</code>,
                   หรือเลือกเทมเพลตเพื่อประหยัดเวลา
                 </p>

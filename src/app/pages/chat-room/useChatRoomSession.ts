@@ -51,6 +51,14 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     await refreshConversationsCache();
   }, []);
 
+  const markConversationReadAndRefresh = useCallback(
+    async (opts?: { force?: boolean }) => {
+      const didMarkAsRead = await markAsRead(conversationId, opts);
+      if (didMarkAsRead) await refreshConversations();
+    },
+    [conversationId, markAsRead, refreshConversations],
+  );
+
   useEffect(() => {
     setHeader({
       factoryId: preview?.factoryId ?? '',
@@ -110,10 +118,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
           }
         }
 
-        void (async () => {
-          await markAsRead(conversationId);
-          await refreshConversations();
-        })();
+        void markConversationReadAndRefresh();
       })
       .catch(() => {
         if (!cancelled) setMessages([]);
@@ -124,16 +129,13 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     return () => {
       cancelled = true;
     };
-  }, [conversationId, markAsRead, refreshConversations]);
+  }, [conversationId, markConversationReadAndRefresh]);
 
   useEffect(() => {
     if (!conversationId) return;
     const onFocusOrVisible = () => {
       if (document.hidden) return;
-      void (async () => {
-        await markAsRead(conversationId, { force: true });
-        await refreshConversations();
-      })();
+      void markConversationReadAndRefresh({ force: true });
     };
     window.addEventListener('focus', onFocusOrVisible);
     document.addEventListener('visibilitychange', onFocusOrVisible);
@@ -141,7 +143,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
       window.removeEventListener('focus', onFocusOrVisible);
       document.removeEventListener('visibilitychange', onFocusOrVisible);
     };
-  }, [conversationId, markAsRead, refreshConversations]);
+  }, [conversationId, markConversationReadAndRefresh]);
 
   // Use SSE for real-time message updates instead of polling
   const convIdRef = useRef(conversationId);
@@ -170,10 +172,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
       // If the message is for me, mark as read
       const uid = currentUserIdRef.current;
       if (uid != null && incoming.receiver_id === uid && incoming.sender_id !== uid) {
-        void (async () => {
-          await markAsRead(conversationId, { force: true });
-          await refreshConversations();
-        })();
+        void markConversationReadAndRefresh({ force: true });
       }
     };
 
@@ -194,7 +193,7 @@ export function useChatRoomSession(conversationId: string, preview?: ChatRoomPre
     return () => {
       setSSECallbacks({});
     };
-  }, [conversationId, markAsRead, refreshConversations]);
+  }, [conversationId, markConversationReadAndRefresh]);
 
   const conv: Conversation = useMemo(
     () => ({

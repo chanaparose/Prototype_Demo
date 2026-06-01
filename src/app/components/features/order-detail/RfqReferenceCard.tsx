@@ -231,17 +231,17 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
             variant='unstyled'
             type='button'
             onClick={() => setOpen((v) => !v)}
-            className='w-full flex items-center justify-between px-4 py-3'
+            className='w-full flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4'
           >
             <span className='text-sm text-gray-900' style={{ fontWeight: 700 }}>
               รายละเอียดใบขอราคา
             </span>
             <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
           </Button>
-          {open ? <div className='px-4 pb-4'>{body}</div> : null}
+          {open ? <div className='px-4 pb-4 lg:px-6 lg:pb-6'>{body}</div> : null}
         </>
       ) : (
-        <div className='px-4 py-4'>
+        <div className='px-4 py-4 lg:px-6 lg:py-6'>
           <p className='text-sm text-gray-900 mb-3' style={{ fontWeight: 700 }}>
             รายละเอียดใบขอราคา
           </p>

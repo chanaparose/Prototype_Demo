@@ -54,7 +54,7 @@ export function OrderActionBanner({
 
   return (
     <div
-      className='sticky top-0 z-20 -mx-4 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 border-b border-amber-100/80 px-4 py-3'
+      className='sticky top-0 z-20 -mx-4 flex flex-col gap-2 border-b border-amber-100/80 px-4 py-3 sm:flex-row sm:items-center sm:gap-3 lg:mx-0 lg:rounded-2xl lg:border lg:px-6 lg:py-4'
       style={{ background: urgencyBg }}
     >
       <div className='flex items-start gap-2 sm:items-center sm:flex-1 min-w-0'>

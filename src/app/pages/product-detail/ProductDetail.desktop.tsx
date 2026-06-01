@@ -17,6 +17,7 @@ import {
   ChevronRight as Chevron,
   Heart,
   ImageIcon,
+  PackageX,
   MapPin,
   MessageCircle,
   Share2,
@@ -110,7 +111,7 @@ export function ProductDetailDesktop() {
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
         <div className='bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm'>
-          <p className='text-4xl mb-3'>📦</p>
+          <PackageX size={38} className='mx-auto mb-3 text-gray-400' />
           <p className='text-[14px] text-gray-500 font-medium'>{error || 'ไม่พบข้อมูลสินค้า'}</p>
         </div>
       </div>
@@ -150,7 +151,7 @@ export function ProductDetailDesktop() {
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block animate-[fadeIn_0.2s_ease-in]'>
-      <div className='px-8 pt-5 pb-3'>
+      <div className='px-8 2xl:px-10 pt-5 pb-3'>
         <div className='flex flex-col gap-1'>
           <Button
             variant='unstyled'
@@ -174,10 +175,10 @@ export function ProductDetailDesktop() {
         </div>
       </div>
 
-      <div className='px-8 pb-10 space-y-4'>
+      <div className='px-8 2xl:px-10 pb-10 space-y-4'>
         <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6'>
           <div className='flex gap-8'>
-            <div className='w-[450px] shrink-0'>
+            <div className='w-[450px] 2xl:w-[520px] shrink-0'>
               <ShowcaseHeroGallery
                 gallery={gallery}
                 fallbackImage={item.image}
@@ -572,7 +573,7 @@ export function ProductDetailDesktop() {
             <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>สินค้าที่ใกล้เคียง</p>
           </div>
           {relatedProducts.length > 0 ? (
-            <div className='p-6 grid grid-cols-4 gap-3'>
+            <div className='p-6 grid grid-cols-4 2xl:grid-cols-5 gap-3'>
               {relatedProducts.map((rp) => {
                 const rf = data.factories.find((f) => f.id === rp.factoryId);
                 const rating = Number(rf?.rating ?? rp.factoryRating ?? 0);

@@ -182,7 +182,7 @@ function StartWorkButton({ onStart }: { onStart: () => Promise<void> }) {
       className='w-full rounded-xl py-2.5 text-sm font-bold text-white disabled:opacity-60'
       style={{ background: 'var(--brand-mauve)' }}
     >
-      {busy ? 'กำลังดำเนินการ...' : '✅ เริ่มงาน'}
+      {busy ? 'กำลังดำเนินการ...' : 'เริ่มงาน'}
     </button>
   );
 }
@@ -463,7 +463,7 @@ export function FactoryOrderDetailPage() {
               <div className='grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-5 mb-4'>
                 {isCompleted ? (
                   <section className='rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center space-y-1'>
-                    <p className='text-2xl'>🎉</p>
+                    <CheckCircle2 size={24} className='mx-auto text-emerald-600' />
                     <p className='text-sm font-bold text-emerald-800'>ออเดอร์นี้เสร็จสิ้นแล้ว</p>
                     <p className='text-xs text-emerald-600'>ขอบคุณที่ดำเนินการเสร็จสิ้น</p>
                   </section>
@@ -491,7 +491,10 @@ export function FactoryOrderDetailPage() {
                           )}
                         </p>
                         {customerShipping.phone ? (
-                          <p className='text-xs text-slate-700 mt-0.5'>📞 {customerShipping.phone}</p>
+                          <p className='mt-0.5 flex items-center gap-1 text-xs text-slate-700'>
+                            <Phone size={12} />
+                            {customerShipping.phone}
+                          </p>
                         ) : null}
                         {customerShipping.addressLine ? (
                           <p className='text-[11px] text-slate-600 mt-1 leading-relaxed'>
@@ -511,7 +514,7 @@ export function FactoryOrderDetailPage() {
                       </div>
                       {trackingNumber ? (
                         <div className='flex items-center gap-1.5'>
-                          <span className='text-xs'>📦</span>
+                          <Package size={13} className='text-slate-500' />
                           <span className='text-xs font-semibold text-slate-700 bg-slate-100 rounded px-2 py-0.5'>
                             {trackingNumber}
                           </span>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { FileText, Calendar, Factory, ChevronRight, Layers } from 'lucide-react';
+import { FileText, Calendar, Factory, ChevronRight } from 'lucide-react';
 import {
   PRIMARY_BG,
   PRIMARY_COLOR,
@@ -12,6 +12,7 @@ import {
   getRfqActivityCounts,
 } from '@/components/features/rfq-and-orders/utils';
 import { type Rfq } from '@/stores/types';
+import { CategoryIcon } from '@/components/ui/category-icon';
 
 export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
   const { totalOffers, accepted, pending } = getRfqActivityCounts(rfq);
@@ -40,7 +41,7 @@ export function ActiveRfqCard({ rfq, idx }: { rfq: Rfq; idx: number }) {
               className='w-11 h-11 shrink-0 rounded-xl flex items-center justify-center text-lg'
               style={{ background: ib }}
             >
-              {rfq.categoryIcon ?? <Layers size={20} style={{ color: ic }} />}
+              <CategoryIcon value={rfq.categoryIcon} size={20} className='text-[var(--brand-mauve)]' />
             </div>
             <div className='min-w-0 flex-1'>
               <p

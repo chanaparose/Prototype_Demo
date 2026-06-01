@@ -11,6 +11,7 @@ import {
   CalendarDays,
   ChevronRight as Chevron,
   Heart,
+  Lightbulb,
   MapPin,
   MessageCircle,
 } from 'lucide-react';
@@ -100,7 +101,7 @@ export function IdeaDetailDesktop() {
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
         <div className='bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm'>
-          <p className='text-4xl mb-3'>💡</p>
+          <Lightbulb size={38} className='mx-auto mb-3 text-gray-400' />
           <p className='text-[14px] text-gray-500 font-medium'>{error || 'ไม่พบบทความไอเดีย'}</p>
         </div>
       </div>

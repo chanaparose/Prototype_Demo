@@ -342,9 +342,9 @@ export function RFQCreateWizard() {
   const showMatchStrip = Boolean(draft.category_id) && Number(draft.category_id) > 0;
 
   return (
-    <div className='min-h-screen bg-[linear-gradient(180deg,var(--brand-lavender)_0%,var(--brand-page)_42%,var(--neutral-white)_100%)] pb-32'>
-      <header className='sticky top-0 z-20 border-b border-white/70 bg-white/90 backdrop-blur-md'>
-        <div className='mx-auto max-w-2xl px-4 py-3'>
+    <div className='min-h-screen bg-[var(--brand-page)] pb-32'>
+      <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
+        <div className='mx-auto max-w-6xl px-4 py-3 lg:px-8'>
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[#C4A484]'>
             สร้างคำขอ
           </p>
@@ -374,7 +374,7 @@ export function RFQCreateWizard() {
         </div>
       </header>
 
-      <main className='mx-auto max-w-2xl space-y-3 px-4 py-4'>
+      <main className='mx-auto max-w-6xl space-y-4 px-4 py-5 lg:px-8'>
         {step === 0 ? (
           <>
             <RfqFormSection
@@ -536,7 +536,7 @@ export function RFQCreateWizard() {
                 />
               </RfqSummaryCard>
             ) : (
-              <section className='rounded-2xl border border-white/80 bg-white px-3.5 py-3.5 shadow-[0_2px_12px_rgba(46,34,82,0.05)]'>
+              <section className='rounded-2xl border border-gray-100 bg-white px-4 py-4'>
                 <p className='text-[13px] font-bold text-brand-navy-deep mb-2'>ยืนยันการขอตัวอย่าง</p>
                 <Label className='flex items-start gap-2 text-[12px] text-brand-navy-deep'>
                   <Checkbox
@@ -563,8 +563,8 @@ export function RFQCreateWizard() {
         )}
       </main>
 
-      <div className='fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200/90 bg-white/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]'>
-        <div className='mx-auto flex max-w-2xl items-center justify-between gap-3'>
+      <div className='fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200/90 bg-white/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:left-64'>
+        <div className='mx-auto flex max-w-6xl items-center justify-between gap-3 lg:px-4'>
           <Button
             variant='unstyled'
             type='button'
@@ -579,7 +579,7 @@ export function RFQCreateWizard() {
               type='button'
               onClick={() => setStep(1)}
               disabled={!isFormValid}
-              className='min-w-[9rem] flex-1 max-w-[14rem] rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(109,40,217,0.35)] disabled:opacity-45'
+              className='min-w-[9rem] flex-1 max-w-[16rem] rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45'
             >
               ตรวจสอบและส่ง
             </Button>
@@ -588,7 +588,7 @@ export function RFQCreateWizard() {
               variant='unstyled'
               type='button'
               onClick={() => openLoginModal('/create-rfq')}
-              className='flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(109,40,217,0.35)]'
+              className='flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white'
             >
               <LogIn size={15} />
               ล็อกอินเพื่อส่ง
@@ -599,7 +599,7 @@ export function RFQCreateWizard() {
               type='button'
               onClick={() => void submit()}
               disabled={!isFormValid || create.isPending || (isSampleMode && !acceptSampleTerms)}
-              className='min-w-0 flex-1 rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(109,40,217,0.35)] disabled:opacity-45'
+              className='min-w-0 flex-1 rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45'
             >
               {create.isPending ? 'กำลังส่ง…' : 'ส่งคำขอราคา'}
             </Button>

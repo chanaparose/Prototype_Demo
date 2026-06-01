@@ -32,9 +32,9 @@ export function RfqFormSection({
   return (
     <section
       data-tour={dataTour}
-      className={`overflow-hidden rounded-2xl border border-white/80 bg-white shadow-[0_2px_16px_rgba(46,34,82,0.06)] ${className}`}
+      className={`overflow-hidden rounded-2xl border border-gray-100 bg-white ${className}`}
     >
-      <div className='flex items-start justify-between gap-2 border-b border-gray-100 px-3.5 py-2.5'>
+      <div className='flex items-start justify-between gap-2 border-b border-gray-100 px-4 py-3 lg:px-5'>
         <div className='min-w-0'>
           <p className='text-[13px] font-bold text-brand-navy-deep'>{title}</p>
           {hint ? <p className='mt-0.5 text-[11px] leading-snug text-neutral-subtle'>{hint}</p> : null}
@@ -49,7 +49,7 @@ export function RfqFormSection({
           </span>
         ) : null}
       </div>
-      <div className='p-3.5'>{children}</div>
+      <div className='p-4 lg:p-5'>{children}</div>
     </section>
   );
 }
@@ -61,7 +61,7 @@ type RfqKindPickerProps = {
 
 export function RfqKindPicker({ kind, onSelect }: RfqKindPickerProps) {
   return (
-    <div className='flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide -mx-0.5 px-0.5'>
+    <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
       {REQUEST_KIND_OPTIONS.map((opt) => {
         const active = kind === opt.id;
         const isSample = opt.id === 'PS' || opt.id === 'MS';
@@ -71,11 +71,11 @@ export function RfqKindPicker({ kind, onSelect }: RfqKindPickerProps) {
             key={opt.id}
             type='button'
             onClick={() => onSelect(opt.id)}
-            className={`shrink-0 min-w-[5.5rem] rounded-xl border px-3 py-2 text-left transition-all active:scale-[0.98] ${
+            className={`rounded-xl border px-3 py-2.5 text-left transition-all active:scale-[0.98] ${
               active
                 ? isSample
-                  ? 'border-brand-orange-deep bg-[rgba(242,138,46,0.1)] shadow-[0_2px_10px_rgba(227,136,68,0.2)]'
-                  : 'border-brand-violet-deep bg-brand-violet-soft shadow-[0_2px_10px_rgba(109,40,217,0.15)]'
+                  ? 'border-brand-orange-deep bg-[rgba(242,138,46,0.1)]'
+                  : 'border-brand-violet-deep bg-brand-violet-soft'
                 : 'border-gray-200 bg-white hover:border-brand-mauve-light'
             }`}
           >
@@ -149,10 +149,10 @@ export function RfqCollapsibleSection({
 }: RfqCollapsibleSectionProps) {
   return (
     <details
-      className='group overflow-hidden rounded-2xl border border-white/80 bg-white shadow-[0_2px_12px_rgba(46,34,82,0.05)]'
+      className='group overflow-hidden rounded-2xl border border-gray-100 bg-white'
       open={defaultOpen}
     >
-      <summary className='flex cursor-pointer list-none items-center justify-between gap-2 px-3.5 py-3 marker:content-none [&::-webkit-details-marker]:hidden'>
+      <summary className='flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 marker:content-none lg:px-5 [&::-webkit-details-marker]:hidden'>
         <span className='text-[13px] font-bold text-brand-navy-deep'>{title}</span>
         <span className='flex items-center gap-1 text-[10px] font-medium text-neutral-subtle'>
           ไม่บังคับ
@@ -163,7 +163,7 @@ export function RfqCollapsibleSection({
           />
         </span>
       </summary>
-      <div className='border-t border-gray-100 px-3.5 pb-3.5 pt-3'>
+      <div className='border-t border-gray-100 px-4 pb-4 pt-3 lg:px-5 lg:pb-5'>
         {hint ? (
           <p className='mb-3 rounded-xl border border-violet-100 bg-violet-50/60 px-3 py-2 text-[11px] leading-snug text-violet-800'>
             {hint}
@@ -194,7 +194,7 @@ export function RfqSummaryCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className='rounded-2xl border border-white/80 bg-white px-3.5 py-1 shadow-[0_2px_12px_rgba(46,34,82,0.05)]'>
+    <section className='rounded-2xl border border-gray-100 bg-white px-4 py-1 lg:px-5'>
       <p className='border-b border-gray-100 py-2.5 text-[13px] font-bold text-brand-navy-deep'>{title}</p>
       <dl>{children}</dl>
     </section>

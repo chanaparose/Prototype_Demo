@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  ClipboardList,
 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { type Conversation } from '@/stores/types';
@@ -526,8 +527,8 @@ function ChatRoomBody({
       className={cn(
         'flex min-h-0 flex-col bg-white',
         isFullMobile
-          ? 'h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] max-lg:max-h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] lg:h-[calc(100vh-4rem)]'
-          : 'h-full overflow-hidden rounded-l-3xl shadow-sm',
+          ? 'h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] max-lg:max-h-[calc(100dvh-4rem-4rem-env(safe-area-inset-bottom,0px))] lg:h-screen'
+          : 'h-full overflow-hidden rounded-3xl shadow-sm',
       )}
     >
       <div
@@ -585,7 +586,7 @@ function ChatRoomBody({
               className='flex w-full items-center justify-between px-2.5 py-2 lg:px-3 lg:py-2.5'
             >
               <div className='flex min-w-0 items-center gap-1.5'>
-                <span className='text-xs lg:text-sm'>📋</span>
+                <ClipboardList size={14} className='shrink-0 text-brand-mauve' />
                 <span className='max-w-[min(100%,140px)] truncate text-[11px] font-semibold text-brand-navy sm:max-w-[200px] lg:text-xs'>
                   {conv.rfqName || 'RFQ / ใบเสนอราคา'}
                 </span>

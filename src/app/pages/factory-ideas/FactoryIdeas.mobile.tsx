@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   List,
   MapPin,
+  SearchX,
   Star,
 } from 'lucide-react';
 import {
@@ -299,7 +300,7 @@ export function FactoryIdeasMobile() {
           )
         ) : totalCount === 0 ? (
           <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
-            <p className='text-3xl mb-2'>🔍</p>
+            <SearchX size={30} className='mx-auto mb-2 text-gray-400' />
             <p className='text-sm font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
             </p>

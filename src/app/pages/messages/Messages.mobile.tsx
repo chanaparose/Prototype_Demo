@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BadgeCheck, RefreshCw, Search } from 'lucide-react';
+import { BadgeCheck, MessageCircle, RefreshCw, Search } from 'lucide-react';
 import { cn } from '@lib/utils';
 import type { UiConversation } from '@/pages/messages/types';
 import { formatConversationListTime } from '@/pages/messages/types';
@@ -321,7 +321,7 @@ function MobileEmptyState({ tab }: { tab: MessageTab }) {
             className='flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)] text-2xl'
             style={{ color: 'var(--brand-mauve)' }}
           >
-            💬
+            <MessageCircle size={26} />
           </span>
         }
       />

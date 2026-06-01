@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeft, Package, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Package, Clock, CheckCircle2, Factory, ShieldCheck } from 'lucide-react';
 import { FactoryProfileHero } from '@/components/features/factory-profile/FactoryProfileHero';
 import {
   FactoryProfileTabContent,
@@ -81,14 +81,14 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
         <Button
           variant='unstyled'
           type='button'
-          onClick={() => navigate('/explore')}
+          onClick={() => navigate('/')}
           className='mb-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-purple-600 transition-colors hover:text-purple-800'
         >
           <ArrowLeft className='h-4 w-4' />
           กลับหน้าหลัก
         </Button>
         <div className='rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm'>
-          <p className='mb-3 text-4xl'>🏭</p>
+          <Factory size={38} className='mx-auto mb-3 text-gray-400' />
           <p className='text-[14px] font-medium text-gray-500'>ไม่พบข้อมูลโรงงาน</p>
         </div>
       </div>
@@ -110,7 +110,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex'>
-      <div className='px-8 pt-6'>
+      <div className='px-8 2xl:px-10 pt-6'>
         <FactoryProfileHero
           factory={factory}
           onBack={handleBack}
@@ -125,7 +125,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
         />
       </div>
 
-      <div className='border-b border-gray-100 bg-white px-8 py-4'>
+      <div className='border-b border-gray-100 bg-white px-8 2xl:px-10 py-4'>
         <div className='flex flex-wrap items-center gap-6'>
           <div className='flex items-center gap-5'>
             {statItems.map((s) => (
@@ -159,7 +159,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
         </div>
       </div>
 
-      <div className='flex-1 px-8 py-6'>
+      <div className='flex-1 px-8 2xl:px-10 py-6'>
         <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm pt-0'>
           <FactoryProfileTabContent
             activeTab={activeTab}

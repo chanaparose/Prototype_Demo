@@ -1,6 +1,7 @@
 import React from 'react';
 import type { PaymentScheduleItem } from '@/pages/order-detail/orderDetailFromApi';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
+import { WalletCards } from 'lucide-react';
 
 function stageLabelTh(stage: string): string {
   switch (stage) {
@@ -42,8 +43,9 @@ export function OrderPaymentScheduleCard({ schedule }: Props) {
 
   return (
     <div className='bg-white rounded-2xl p-4 shadow-sm border border-gray-100'>
-      <p className='text-[12px] text-gray-900 mb-3' style={{ fontWeight: 600 }}>
-        💰 การชำระเงิน
+      <p className='mb-3 flex items-center gap-1.5 text-[12px] text-gray-900' style={{ fontWeight: 600 }}>
+        <WalletCards size={14} className='text-brand-mauve' />
+        การชำระเงิน
       </p>
       <ul className='space-y-2.5'>
         {schedule.map((row) => (

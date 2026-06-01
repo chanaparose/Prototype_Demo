@@ -5,16 +5,17 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { getCurrentUserId } from '@/utils/chatContract';
 import type { IConversationResponse } from '@/services/api/types/chat.types';
 
-/** Invalidate and refresh the TanStack conversation cache. */
+/** Refresh the TanStack conversation cache with a single network request. */
 export async function refreshConversationsCache(): Promise<void> {
   const { isAuthenticated } = useAuthStore.getState();
   if (!isAuthenticated) return;
 
-  await queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
-
   try {
-    const list = await fetchConversations();
-    queryClient.setQueryData(chatKeys.conversations(), list);
+    await queryClient.fetchQuery({
+      queryKey: chatKeys.conversations(),
+      queryFn: fetchConversations,
+      staleTime: 0,
+    });
   } catch {
     /* keep cached conversations */
   }

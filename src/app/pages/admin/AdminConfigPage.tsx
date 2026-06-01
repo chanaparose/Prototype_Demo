@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertTriangle, CheckSquare, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckSquare, Lock, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { adminConfigApi } from '@/services/api/adminApi';
 import type {
@@ -526,7 +526,7 @@ export function AdminConfigPage() {
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm font-medium text-slate-900'>
                             {configLabel(cfg)}{' '}
-                            {isDefault ? <span className='text-xs text-slate-400'>🔒</span> : null}
+                            {isDefault ? <Lock size={12} className='inline text-slate-400' /> : null}
                           </TableCell>
                           <TableCell className='px-4 py-3 text-sm text-right tabular-nums text-indigo-700 font-bold'>
                             {formatCompactNumber(

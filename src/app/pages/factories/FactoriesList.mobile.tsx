@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, SlidersHorizontal, MapPin, Star, ShieldCheck, Package, X } from 'lucide-react';
+import { Search, SlidersHorizontal, MapPin, Star, ShieldCheck, Package, Factory, X } from 'lucide-react';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import type { useFactoriesList } from '@/hooks/useFactoriesList';
 import { Button } from '@/components/ui/button';
@@ -195,7 +195,7 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
       <div className='px-4 pt-4 space-y-3'>
         {factories.length === 0 ? (
           <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
-            <p className='text-3xl mb-2'>🏭</p>
+            <Factory size={30} className='mx-auto mb-2 text-gray-400' />
             <p className='text-sm font-medium text-gray-500'>ไม่พบโรงงานที่ตรงกับเงื่อนไข</p>
             <p className='text-xs text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือตัวกรอง</p>
           </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Building2, Users, Search, X } from 'lucide-react';
+import { AlertTriangle, Building2, Users, Search, X } from 'lucide-react';
 import type { TargetFactory } from '@/pages/rfq/useRFQDraft';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ export function RfqTargetingSelector({
                 onFocus={() => setShowDropdown(true)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                 placeholder='ค้นหาชื่อโรงงาน…'
-                className='flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-400'
+                className='flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:font-normal placeholder:text-gray-400'
               />
             </div>
           </div>
@@ -211,8 +211,9 @@ export function RfqTargetingSelector({
 
           {/* Warning when no factories selected */}
           {targetFactories.length === 0 && (
-            <p className='mt-2 text-[11px] text-amber-600'>
-              ⚠️ ต้องเพิ่มโรงงานอย่างน้อย 1 รายการเพื่อส่ง RFQ
+            <p className='mt-2 flex items-center gap-1 text-[11px] text-amber-600'>
+              <AlertTriangle size={12} />
+              ต้องเพิ่มโรงงานอย่างน้อย 1 รายการเพื่อส่ง RFQ
             </p>
           )}
         </div>

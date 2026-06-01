@@ -2,6 +2,7 @@ import React from 'react';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { Image } from '@/components/ui/image';
+import { getOrderProgressMeta } from '@/components/features/order-detail/orderProgressMeta';
 
 export type OrderSummary = {
   id: string;
@@ -14,25 +15,6 @@ export type OrderSummary = {
   estimatedDelivery: string;
   currentStepId?: number;
 };
-
-const STEP_LABELS: Record<number, { emoji: string; label: string }> = {
-  0: { emoji: '🤝', label: 'รอยืนยันรับงาน' },
-  1: { emoji: '🧱', label: 'จัดเตรียมวัตถุดิบ' },
-  2: { emoji: '🏭', label: 'กำลังผลิต' },
-  3: { emoji: '🔍', label: 'ตรวจสอบคุณภาพ' },
-  4: { emoji: '🚚', label: 'จัดส่งแล้ว' },
-  5: { emoji: '📬', label: 'รอยืนยันรับสินค้า' },
-};
-
-function getCurrentStepLabel(order: { currentStepId?: number; status: string; progress: number }) {
-  if (order.status === 'completed') return { emoji: '✅', label: 'เสร็จสิ้น' };
-  if (order.status === 'cancelled' || order.status === 'expired') return { emoji: '❌', label: 'ยกเลิก' };
-  if (order.status === 'pending_payment') return { emoji: '💳', label: 'รอชำระมัดจำ' };
-  const step = STEP_LABELS[order.currentStepId ?? -1];
-  if (step) return step;
-  if (order.progress >= 100) return { emoji: '✅', label: 'เสร็จสิ้น' };
-  return { emoji: '📋', label: 'รอดำเนินการ' };
-}
 
 type FactoryInfo = {
   image?: string;
@@ -81,12 +63,12 @@ export function OrderSummaryCard({
 
   return (
     <div
-      className='relative overflow-hidden rounded-2xl p-4 sm:p-5 '
+      className='relative overflow-hidden rounded-2xl p-4 sm:p-5 lg:p-6 2xl:p-7'
       style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
     >
       <div className='absolute -right-6 -top-6 w-28 h-28 rounded-full opacity-20 bg-white' />
       <div className='relative z-10'>
-        <div className='mb-3 flex items-start justify-between gap-3'>
+        <div className='mb-3 flex items-start justify-between gap-3 lg:mb-4'>
           <div className='flex min-w-0 flex-1 items-center gap-3'>
             {relatedFactory?.image && (
               <Image
@@ -113,12 +95,13 @@ export function OrderSummaryCard({
             {badgeLabel}
           </span>
         </div>
-        <div className='mb-3 flex items-center gap-2 rounded-xl bg-white/15 px-3 py-2'>
+        <div className='mb-3 flex items-center gap-2 rounded-xl bg-white/15 px-3 py-2 lg:mb-4 lg:px-4 lg:py-3'>
           {(() => {
-            const stepInfo = getCurrentStepLabel(order);
+            const stepInfo = getOrderProgressMeta(order);
+            const StepIcon = stepInfo.icon;
             return (
               <>
-                <span className='text-sm leading-none'>{stepInfo.emoji}</span>
+                <StepIcon size={14} className='shrink-0 text-white/80' />
                 <span className='text-xs font-semibold text-white flex-1'>
                   {stepInfo.label}
                 </span>
@@ -127,20 +110,20 @@ export function OrderSummaryCard({
             );
           })()}
         </div>
-        <div className='grid grid-cols-3 gap-2 rounded-xl bg-white/10 p-2.5'>
-          <div className='min-w-0'>
+        <div className='grid grid-cols-3 gap-2 rounded-xl bg-white/10 p-2.5 lg:p-4'>
+          <div className='min-w-0 lg:px-1'>
             <p className='truncate text-sm text-white' style={{ fontWeight: 700 }}>
               {formatCurrency(order.totalAmount)}
             </p>
             <p className='text-[10px] text-white/70'>มูลค่ารวม</p>
           </div>
-          <div className='min-w-0 border-l border-white/20 pl-2'>
+          <div className='min-w-0 border-l border-white/20 pl-2 lg:pl-4'>
             <p className='truncate text-sm text-white' style={{ fontWeight: 700 }}>
               {qtyText}
             </p>
             <p className='text-[10px] text-white/70'>จำนวน</p>
           </div>
-          <div className='min-w-0 border-l border-white/20 pl-2'>
+          <div className='min-w-0 border-l border-white/20 pl-2 lg:pl-4'>
             <p className='truncate text-sm text-white' style={{ fontWeight: 700 }}>
               {formatDateTh(order.estimatedDelivery)}
             </p>

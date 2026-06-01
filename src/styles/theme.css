@@ -173,6 +173,19 @@
     line-height: 1.5;
   }
 
+  button:not(:disabled),
+  a[href],
+  [role='button']:not([aria-disabled='true']),
+  [role='tab']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button'][aria-disabled='true'],
+  [role='tab'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
   input {
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);

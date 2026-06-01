@@ -4,7 +4,7 @@ import { NotificationsMobile } from '@/pages/notifications/Notifications.mobile'
 export function NotificationsDesktop() {
   return (
     <div className='hidden lg:block'>
-      <div className='max-w-4xl mx-auto px-6'>
+      <div className='mx-auto max-w-[1600px] px-6 2xl:px-10'>
         <NotificationsMobile />
       </div>
     </div>

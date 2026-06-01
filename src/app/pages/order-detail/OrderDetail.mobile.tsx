@@ -255,7 +255,7 @@ function OrderDetailMobileBody() {
         </Button>
       </div>
 
-      <div className='hidden lg:flex sticky top-0 z-10 items-center justify-between h-12 px-4 border-b border-gray-200 bg-white'>
+      <div className='hidden lg:flex sticky top-0 z-10 items-center justify-between h-12 px-4 border-b border-gray-200 bg-white lg:px-6 2xl:px-8'>
         <Button
           variant='unstyled'
           type='button'
@@ -288,7 +288,7 @@ function OrderDetailMobileBody() {
             </Button>
           </div>
         ) : null}
-        <div className='flex-1 overflow-y-auto px-4 pb-4 pt-14 lg:pt-0 space-y-4'>
+        <div className='flex-1 overflow-y-auto px-4 pb-4 pt-14 lg:px-6 lg:pb-6 lg:pt-5 2xl:px-8 space-y-4'>
           <OrderSummaryCard
             order={order}
             rfqSummary={rfqSummary}
@@ -377,7 +377,7 @@ function OrderDetailMobileBody() {
 
           <div
             data-tour='order-tabs'
-            className='flex border-b border-gray-100 bg-white -mx-4 px-0'
+            className='flex border-b border-gray-100 bg-white -mx-4 px-0 lg:-mx-6 lg:px-6 2xl:-mx-8 2xl:px-8'
           >
             <Button
               variant='unstyled'
@@ -478,13 +478,26 @@ function OrderDetailMobileBody() {
                 opacity: order.status === 'shipped' && confirmingReceive ? 0.7 : 1,
               }}
             >
-              {order.status === 'shipped'
-                ? confirmingReceive
-                  ? 'กำลังยืนยันการรับสินค้า...'
-                  : '✓ ยืนยันการรับสินค้า'
-                : reviewState?.already_reviewed
-                  ? '✓ คุณรีวิวรายการนี้แล้ว'
-                  : '⭐ ให้คะแนนและรีวิว'}
+              {order.status === 'shipped' ? (
+                confirmingReceive ? (
+                  'กำลังยืนยันการรับสินค้า...'
+                ) : (
+                  <span className='inline-flex items-center justify-center gap-2'>
+                    <PackageCheck size={17} />
+                    ยืนยันการรับสินค้า
+                  </span>
+                )
+              ) : reviewState?.already_reviewed ? (
+                <span className='inline-flex items-center justify-center gap-2'>
+                  <PackageCheck size={17} />
+                  คุณรีวิวรายการนี้แล้ว
+                </span>
+              ) : (
+                <span className='inline-flex items-center justify-center gap-2'>
+                  <Star size={17} />
+                  ให้คะแนนและรีวิว
+                </span>
+              )}
             </Button>
           </div>
         )}

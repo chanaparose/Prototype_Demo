@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCurrency';
+import { CategoryIcon } from '@/components/ui/category-icon';
 
 export type RfqForStatusCard = {
   category: string;
@@ -35,7 +36,7 @@ export function RfqDetailStatusCard({
             className='w-10 h-10 rounded-xl flex items-center justify-center text-lg border border-violet-200'
             style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F3EEFF 100%)' }}
           >
-            {rfq.categoryIcon}
+            <CategoryIcon value={rfq.categoryIcon} className='text-violet-600' />
           </div>
           <div>
             <p className='text-[10px] text-slate-500'>{rfq.category}</p>

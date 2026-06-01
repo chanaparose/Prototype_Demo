@@ -7,6 +7,7 @@ import { formatDateTh } from '@/components/features/order-detail/utils';
 import { OrderPaymentScheduleCard } from '@/components/features/order-detail/OrderPaymentScheduleCard';
 import { OrderPendingPaymentSection } from '@/components/features/order-detail/OrderPendingPaymentSection';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
+import { CategoryIcon } from '@/components/ui/category-icon';
 
 export type OrderForOverview = {
   totalAmount: number;
@@ -74,7 +75,7 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
       {relatedRfq && (
         <SectionCard
           title='RFQ ที่เกี่ยวข้อง'
-          icon={<span className='text-lg'>{relatedRfq.categoryIcon ?? '📋'}</span>}
+          icon={<CategoryIcon value={relatedRfq.categoryIcon} size={16} className='text-brand-mauve' />}
           className='bg-white rounded-2xl shadow-sm'
         >
           <div className='rounded-xl border border-gray-100 p-3 bg-brand-page'>

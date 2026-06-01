@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ProductionStepTemplate } from '@/components/features/production/types';
+import { WalletCards } from 'lucide-react';
 
 type Props = {
   steps: ProductionStepTemplate[];
@@ -24,7 +25,7 @@ export function FadedStepPreview({ steps }: Props) {
               {s.sort_order}
             </span>
             <span className='flex-1 text-sm text-gray-800'>{s.step_name_th}</span>
-            {s.is_payment_trigger ? <span className='text-xs shrink-0'>💰</span> : null}
+            {s.is_payment_trigger ? <WalletCards size={14} className='shrink-0 text-gray-500' /> : null}
           </li>
         ))}
       </ul>

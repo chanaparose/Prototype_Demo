@@ -11,7 +11,7 @@ export function ExploreFooter() {
 
   return (
     <footer className='w-full bg-neutral-footer border-t border-gray-200 pt-6 md:pt-10 mt-8 md:mt-12 flex-shrink-0'>
-      <div className='max-w-7xl mx-auto px-4 md:px-6'>
+      <div className='max-w-[1600px] mx-auto px-4 md:px-6'>
         <div className='md:hidden mb-6 space-y-2'>
           <AccordionItem
             title='ศูนย์ดูแลลูกค้า'
@@ -403,7 +403,7 @@ export function ExploreFooter() {
       </div>
 
       <div className='bg-brand-navy-ink text-white py-2.5 md:py-3 text-[11px] md:text-xs mt-2 md:mt-3'>
-        <div className='max-w-7xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3'>
+        <div className='max-w-[1600px] mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3'>
           <div>&copy; 2026 Tryly Shopping. By Digital Media Advertising Co., Ltd.</div>
           <div className='flex items-center gap-4 md:gap-6'>
             <a href='#' className='hover:underline'>

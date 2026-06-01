@@ -177,7 +177,7 @@ export function StepRow({
       <div
         role='button'
         tabIndex={0}
-        className='w-full text-left px-4 py-3 flex items-start gap-3 cursor-pointer'
+        className='w-full text-left px-4 py-3 flex items-start gap-3 cursor-pointer lg:px-6 lg:py-4 lg:gap-4'
         onClick={onToggleExpand}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -213,13 +213,13 @@ export function StepRow({
       </div>
 
       {isBlocked ? (
-        <div className='px-4 pb-3 -mt-1'>
+        <div className='px-4 pb-3 -mt-1 lg:px-6 lg:pb-4'>
           <p className='text-[11px] text-amber-800'>รอลูกค้าดำเนินการก่อนจึงจะเริ่มขั้นตอนนี้ได้</p>
         </div>
       ) : null}
 
       {expanded ? (
-        <div className='px-4 pb-4 pt-0 border-t border-gray-100/80 space-y-3 text-sm'>
+        <div className='px-4 pb-4 pt-0 border-t border-gray-100/80 space-y-3 text-sm lg:px-6 lg:pb-5 lg:space-y-4'>
           {update.description ? (
             <div>
               <p className='text-[10px] text-gray-500 uppercase pt-3'>หมายเหตุ</p>

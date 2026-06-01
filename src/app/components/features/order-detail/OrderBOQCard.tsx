@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Factory } from 'lucide-react';
 import type { IQuoteNestedResponse } from '@/types/api';
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 import { CollapsibleCard } from '@/shared/ui/cards/CollapsibleCard';
@@ -60,10 +60,10 @@ export function OrderBOQCard({ quotation, factoryName }: Props) {
       }
       className='mb-3 rounded-2xl border border-gray-100 bg-white overflow-hidden'
     >
-      <div className='space-y-4'>
+      <div className='space-y-4 lg:space-y-5'>
         <div className='flex items-center gap-2.5 pt-2'>
           <div className='w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-base shrink-0'>
-            🏭
+            <Factory size={17} className='text-violet-600' />
           </div>
           <div className='min-w-0'>
             <p className='text-sm font-semibold text-gray-900 truncate'>

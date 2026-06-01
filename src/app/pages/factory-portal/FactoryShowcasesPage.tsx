@@ -10,16 +10,17 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Button } from '@/components/ui/button';
 import { formatCompactNumber, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { partitionLinkedShowcases } from '@/utils/linkedShowcases';
+import { ShowcaseTypeIcon } from '@/components/factory/showcase/ShowcaseTypeIcon';
 
 type Row = Record<string, unknown>;
 type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 type ShowcaseStatus = 'DR' | 'AC' | 'HI' | 'AR';
 
 const TAB_META = {
-  PD: { icon: '🏷', label: 'สินค้า', btnLabel: 'เพิ่มสินค้า', empty: 'ยังไม่มีสินค้า' },
-  PM: { icon: '🎁', label: 'โปรโมชัน', btnLabel: 'เพิ่มโปรโมชัน', empty: 'ยังไม่มีโปรโมชัน' },
-  ID: { icon: '💡', label: 'ไอเดีย', btnLabel: 'เพิ่มไอเดีย', empty: 'ยังไม่มีไอเดีย' },
-  MT: { icon: '🧱', label: 'วัตถุดิบ', btnLabel: 'เพิ่มวัตถุดิบ', empty: 'ยังไม่มีวัตถุดิบ' },
+  PD: { label: 'สินค้า', btnLabel: 'เพิ่มสินค้า', empty: 'ยังไม่มีสินค้า' },
+  PM: { label: 'โปรโมชัน', btnLabel: 'เพิ่มโปรโมชัน', empty: 'ยังไม่มีโปรโมชัน' },
+  ID: { label: 'ไอเดีย', btnLabel: 'เพิ่มไอเดีย', empty: 'ยังไม่มีไอเดีย' },
+  MT: { label: 'วัตถุดิบ', btnLabel: 'เพิ่มวัตถุดิบ', empty: 'ยังไม่มีวัตถุดิบ' },
 } as const;
 
 /** PM tab disabled on /factory/showcases */
@@ -165,7 +166,7 @@ export function FactoryShowcasesPage() {
     return <ErrorAlert>บัญชีนี้ไม่ใช่โรงงาน</ErrorAlert>;
   }
 
-  const { btnLabel, empty, icon } = TAB_META[activeType];
+  const { btnLabel, empty } = TAB_META[activeType];
 
   return (
     <div className='space-y-4'>
@@ -275,7 +276,7 @@ export function FactoryShowcasesPage() {
         </div>
       ) : displayRows.length === 0 ? (
         <div className='rounded-2xl border border-gray-100 bg-white px-4 py-14 text-center space-y-4'>
-          <div className='text-5xl'>{icon}</div>
+          <ShowcaseTypeIcon type={activeType} size={42} className='mx-auto text-indigo-500' />
           <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
             {empty}
           </p>

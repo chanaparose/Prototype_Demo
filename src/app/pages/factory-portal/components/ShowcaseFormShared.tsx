@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
+import { ShowcaseTypeIcon } from '@/components/factory/showcase/ShowcaseTypeIcon';
 
 export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 export type ShowcaseScope = 'PD' | 'MT';
@@ -20,28 +21,24 @@ export type ShowcaseStatus = 'DR' | 'AC' | 'HI' | 'AR';
 
 const SHOWCASE_TYPE_META: Record<
   ShowcaseType,
-  { icon: string; label: string; sub: string; cls: string }
+  { label: string; sub: string; cls: string }
 > = {
   PD: {
-    icon: '🏷',
     label: 'สินค้า',
     sub: 'Product Design',
     cls: 'bg-orange-50 text-orange-700 border-orange-200',
   },
   PM: {
-    icon: '🎁',
     label: 'โปรโมชัน',
     sub: 'Promotion',
     cls: 'bg-indigo-50 text-indigo-700 border-indigo-200',
   },
   ID: {
-    icon: '💡',
     label: 'ไอเดีย',
     sub: 'Industrial Design',
     cls: 'bg-amber-50 text-amber-700 border-amber-200',
   },
   MT: {
-    icon: '🧱',
     label: 'วัตถุดิบ',
     sub: 'Materials',
     cls: 'bg-green-50 text-green-700 border-green-200',
@@ -56,7 +53,7 @@ export function ShowcaseTypeBadge({ type }: { type: ShowcaseType }) {
     <span
       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${meta.cls}`}
     >
-      {meta.icon} {meta.label}
+      <ShowcaseTypeIcon type={type} size={13} /> {meta.label}
       <span className='opacity-60 hidden sm:inline'>· {meta.sub}</span>
     </span>
   );
@@ -206,7 +203,8 @@ export function ShowcaseCategoryFields({
               borderColor: value === scope ? 'var(--brand-indigo)' : 'var(--neutral-slate-border)',
             }}
           >
-            {scope === 'PD' ? '🏷 สินค้า' : '🧱 วัตถุดิบ'}
+            <ShowcaseTypeIcon type={scope} size={14} />
+            {scope === 'PD' ? 'สินค้า' : 'วัตถุดิบ'}
           </Button>
         ))}
       </div>

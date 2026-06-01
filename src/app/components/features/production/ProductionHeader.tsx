@@ -72,8 +72,8 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div className='bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-3'>
-      <div className='flex flex-wrap items-center justify-between gap-2'>
+    <div className='bg-white rounded-2xl border border-gray-100 p-4 shadow-sm space-y-3 lg:p-6 lg:space-y-4'>
+      <div className='flex flex-wrap items-center justify-between gap-2 lg:gap-4'>
         <p className='text-sm font-bold text-gray-900'>ความคืบหน้าการผลิต</p>
         <span
           className={`text-[11px] font-semibold px-2 py-1 rounded-lg ${pillClass}`}
@@ -93,7 +93,7 @@ export function ProductionHeader({ merged, orderStatus }: Props) {
           {done}/{total} ขั้นตอน
         </p>
       </div>
-      <div>
+      <div className='lg:pt-1'>
         <p className='text-[10px] text-gray-500 uppercase'>ขั้นปัจจุบัน</p>
         <p className='text-sm font-semibold text-gray-900'>{currentName}</p>
       </div>

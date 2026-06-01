@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ChevronRight, FileCheck } from 'lucide-react';
+import { ChevronRight, FileCheck, FileX } from 'lucide-react';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { FactoryPageHeader } from '@/pages/factory-portal/components/FactoryPageHeader';
 import { useFactoryQuotationsListQuery } from '@/domain/factory/queries/useFactoryQuotationsListQuery';
@@ -54,7 +54,7 @@ export function FactoryQuotationsPage() {
 
       {rows.length === 0 && !error ? (
         <div className='rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
-          <div className='text-5xl'>📄</div>
+          <FileX size={44} className='mx-auto text-slate-400' />
           <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
             ยังไม่มีใบเสนอราคา
           </p>

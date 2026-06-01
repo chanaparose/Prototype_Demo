@@ -39,7 +39,7 @@ export function useConversations() {
 
   return {
     items,
-    loading: enabled ? conversationsQ.isLoading || conversationsQ.isFetching : false,
+    loading: enabled ? conversationsQ.isLoading : false,
     error: conversationsQ.error
       ? conversationsQ.error instanceof Error
         ? conversationsQ.error.message

@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 
 import React from 'react';
-import { CheckCircle2, LogIn, MapPin, Plus, Truck } from 'lucide-react';
+import { Building2, CheckCircle2, LogIn, MapPin, Package, Plus, Truck } from 'lucide-react';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { addressesApi, masterApi } from '@/services/api/masterApi';
 import { mapAddressFromApi, type MappedAddress } from '@/domain/shared/mappers/mapAddressFromApi';
@@ -15,11 +15,11 @@ type ShippingMethod = {
   name: string;
 };
 
-const SHIPPING_ICONS: Record<number, string> = {
-  1: '🏭',
-  2: '🚚',
-  3: '📦',
-  4: '🚛',
+const SHIPPING_ICONS = {
+  1: Building2,
+  2: Truck,
+  3: Package,
+  4: Truck,
 };
 
 type Props = {
@@ -156,8 +156,8 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
   );
 
   return (
-    <div className='space-y-5'>
-      <div>
+    <div className='grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.75fr)]'>
+      <div className='min-w-0'>
         <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
           <MapPin size={14} className='text-violet-500' />
           ที่อยู่จัดส่งสินค้า <span className='text-red-400 ml-0.5'>*</span>
@@ -168,7 +168,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
             variant='unstyled'
             type='button'
             onClick={() => openLoginModal('/create-rfq')}
-            className='flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/60 px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]'
+            className='flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-white px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]'
           >
             <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100'>
               <LogIn size={18} className='text-violet-500' />
@@ -220,7 +220,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                   className={`w-full text-left p-3.5 rounded-xl border-2 transition-all ${
                     active
                       ? 'border-violet-500 bg-violet-50'
-                      : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 active:scale-[0.98]'
+                      : 'border-gray-200 bg-white hover:border-gray-300 active:scale-[0.98]'
                   }`}
                 >
                   <div className='flex items-start gap-2.5'>
@@ -260,7 +260,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
         )}
       </div>
 
-      <div>
+      <div className='min-w-0'>
         <p className='text-[13px] font-bold text-gray-700 mb-2 flex items-center gap-1.5'>
           <Truck size={14} className='text-violet-500' />
           วิธีจัดส่งที่ต้องการ <span className='text-red-400 ml-0.5'>*</span>
@@ -271,6 +271,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
         <div className='flex flex-col gap-1.5'>
           {shippingMethods.map((method) => {
             const active = draft.shipping_method_id === method.id;
+            const ShippingIcon = SHIPPING_ICONS[method.id as keyof typeof SHIPPING_ICONS] ?? Package;
             return (
               <Button
                 variant='unstyled'
@@ -280,12 +281,10 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                 className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
                   active
                     ? 'border-violet-500 bg-violet-50'
-                    : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 active:scale-[0.98]'
+                    : 'border-gray-200 bg-white hover:border-gray-300 active:scale-[0.98]'
                 }`}
               >
-                <span className='text-lg leading-none shrink-0'>
-                  {SHIPPING_ICONS[method.id] ?? '📦'}
-                </span>
+                <ShippingIcon size={18} className='shrink-0 text-violet-500' />
                 <span
                   className={`text-[13px] font-medium flex-1 ${active ? 'text-violet-800' : 'text-gray-600'}`}
                 >
@@ -302,7 +301,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
         </div>
       </div>
 
-      <div>
+      <div className='lg:col-span-2'>
         <p className='text-[13px] font-bold text-gray-700 mb-2'>ระยะเวลาผลิตที่ต้องการ (วัน)</p>
         <Input
           type='number'
@@ -310,7 +309,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
           value={draft.target_lead_time_days ?? ''}
           onChange={(e) => setDraft({ target_lead_time_days: Number(e.target.value) || undefined })}
           placeholder='ระยะเวลาผลิตที่ต้องการ (วัน)'
-          className='w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
+          className='w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-normal placeholder:font-normal placeholder:text-neutral-placeholder focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]'
         />
       </div>
 

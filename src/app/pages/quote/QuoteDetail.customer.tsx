@@ -4,6 +4,7 @@ import { quotationApi } from '@/services/api/rfqApi';
 import { MoneyText } from '@/shared/ui/MoneyText';
 import { DiffRow } from '@/shared/ui/DiffRow';
 import { Button } from '@/components/ui/button';
+import { Info } from 'lucide-react';
 
 type AnyObj = Record<string, unknown>;
 
@@ -109,8 +110,9 @@ export function QuoteDetailCustomer() {
         </div>
       </div>
 
-      <div className='rounded-2xl border border-blue-100 bg-blue-50 p-4 text-xs text-blue-700'>
-        ℹ️ หากท่านเป็นนิติบุคคล อาจต้องหัก WHT 1-3% ก่อนชำระ กรุณาตกลงกับผู้ขายโดยตรง
+      <div className='flex items-start gap-2 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-xs text-blue-700'>
+        <Info size={14} className='mt-0.5 shrink-0' />
+        <span>หากท่านเป็นนิติบุคคล อาจต้องหัก WHT 1-3% ก่อนชำระ กรุณาตกลงกับผู้ขายโดยตรง</span>
       </div>
 
       {history.length > 1 ? (

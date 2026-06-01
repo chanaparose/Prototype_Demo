@@ -1,6 +1,17 @@
+import {
+  Boxes,
+  ClipboardList,
+  Factory,
+  Handshake,
+  PackageCheck,
+  ScanSearch,
+  Truck,
+  type LucideIcon,
+} from 'lucide-react';
+
 export interface StepGuide {
-  /** emoji หรือ icon สั้น ๆ แสดงข้างชื่อขั้นตอน */
-  emoji: string;
+  /** icon แสดงข้างชื่อขั้นตอน */
+  icon: LucideIcon;
   /** หัวข้อสั้น — "คุณต้องทำอะไร" */
   whatToDo: string;
   /** อธิบายรายละเอียดการดำเนินการ */
@@ -22,7 +33,7 @@ export interface StepGuide {
 const STEP_GUIDES: Record<number, StepGuide> = {
   /** step_id=0: ยืนยันรับงาน — ไม่ต้องแนบรูป แค่กดปุ่มยืนยัน */
   0: {
-    emoji: '🤝',
+    icon: Handshake,
     whatToDo: 'ยืนยันรับงานและเริ่มกระบวนการผลิต',
     guidance:
       'ตรวจสอบรายละเอียดสินค้า จำนวน และ BOQ ให้ครบถ้วน จากนั้นกดยืนยันรับงานเพื่อแจ้งลูกค้า',
@@ -38,7 +49,7 @@ const STEP_GUIDES: Record<number, StepGuide> = {
   },
   /** step_id=1: จัดเตรียมวัตถุดิบ */
   1: {
-    emoji: '🧱',
+    icon: Boxes,
     whatToDo: 'รายงานสถานะการเตรียมวัตถุดิบ',
     guidance:
       'แนบภาพวัตถุดิบที่จัดเตรียมไว้ หากมีวัตถุดิบบางรายการล่าช้าให้แจ้งในหมายเหตุพร้อมระบุวันที่คาดว่าจะมาถึง',
@@ -54,7 +65,7 @@ const STEP_GUIDES: Record<number, StepGuide> = {
   },
   /** step_id=2: ขั้นตอนการผลิต */
   2: {
-    emoji: '🏭',
+    icon: Factory,
     whatToDo: 'อัปเดตสถานะการผลิต',
     guidance: 'แนบภาพสายการผลิตหรือสินค้าระหว่างผลิต ช่วยสร้างความมั่นใจให้ลูกค้าและลดการติดตามงาน',
     bulletPoints: [
@@ -69,7 +80,7 @@ const STEP_GUIDES: Record<number, StepGuide> = {
   },
   /** step_id=3: ตรวจสอบคุณภาพ */
   3: {
-    emoji: '🔍',
+    icon: ScanSearch,
     whatToDo: 'ส่งหลักฐานตรวจสอบคุณภาพ (QC)',
     guidance: 'แนบภาพสินค้าสำเร็จรูปและผลการตรวจ QC ให้ครบถ้วนก่อนเตรียมบรรจุและจัดส่ง',
     bulletPoints: [
@@ -85,7 +96,7 @@ const STEP_GUIDES: Record<number, StepGuide> = {
   },
   /** step_id=4: จัดส่งแล้ว — โรงงานจัดส่งสินค้าและบันทึกหลักฐาน */
   4: {
-    emoji: '🚚',
+    icon: Truck,
     whatToDo: 'จัดส่งสินค้าและบันทึกหลักฐานการจัดส่ง',
     guidance:
       'ทำใบปะหน้าพัสดุตามที่อยู่ลูกค้าด้านล่าง แนบภาพพัสดุพร้อมใบนำส่ง และระบุ Tracking Number ในหมายเหตุ',
@@ -98,12 +109,12 @@ const STEP_GUIDES: Record<number, StepGuide> = {
       'ระบุ Tracking Number เช่น TH123456789 (Kerry / J&T / Flash Express / ไปรษณีย์ไทย)',
     draftLabel: 'บันทึกกำลังจัดส่ง',
     confirmLabel: 'ยืนยันจัดส่งแล้ว',
-    nextStepHint: '📬 ลูกค้าจะได้รับแจ้งเตือนว่าสินค้าถูกจัดส่งแล้ว และรอยืนยันรับสินค้า',
+    nextStepHint: 'ลูกค้าจะได้รับแจ้งเตือนว่าสินค้าถูกจัดส่งแล้ว และรอยืนยันรับสินค้า',
     requiresShippingInfo: true,
   },
   /** step_id=5: จัดส่งสำเร็จ — รอลูกค้ายืนยัน หรือระบบปิดอัตโนมัติ 14 วัน (factory ไม่สามารถแก้ไขได้) */
   5: {
-    emoji: '📬',
+    icon: PackageCheck,
     whatToDo: 'รอลูกค้ายืนยันรับสินค้า',
     guidance:
       'สินค้าถูกจัดส่งแล้ว รอลูกค้ากดยืนยันรับสินค้า หรือระบบจะปิดออเดอร์อัตโนมัติหลังจาก 14 วัน',
@@ -121,7 +132,7 @@ const STEP_GUIDES: Record<number, StepGuide> = {
 
 /** Fallback สำหรับขั้นตอนที่ไม่ได้กำหนดใน STEP_GUIDES */
 const DEFAULT_STEP_GUIDE: StepGuide = {
-  emoji: '📋',
+  icon: ClipboardList,
   whatToDo: 'อัปเดตขั้นตอนการผลิต',
   guidance: 'แนบภาพหลักฐานและระบุหมายเหตุให้ชัดเจน',
   bulletPoints: ['แนบภาพหลักฐานอย่างน้อย 1 ภาพ'],

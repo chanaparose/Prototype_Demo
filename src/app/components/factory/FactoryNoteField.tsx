@@ -17,7 +17,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Bold, Italic, Code, Heading, Quote, Minus,
   List, ListOrdered, Link, Table as TableIcon,
-  Check, Pencil, X,
+  Check, Lock, Pencil, X,
 } from 'lucide-react';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { Button } from '@/components/ui/button';
@@ -128,8 +128,9 @@ export function FactoryNoteField({
     <div className={`rounded-2xl border border-indigo-200 bg-indigo-50/50 overflow-hidden ${className}`}>
       {/* Header */}
       <div className='flex items-center gap-2 px-4 py-2.5 border-b border-indigo-100'>
-        <span className='text-[11px] font-semibold uppercase tracking-wide text-indigo-700 flex-1'>
-          🔒 Note (สำหรับโรงงานเท่านั้น)
+        <span className='flex flex-1 items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-700'>
+          <Lock size={11} />
+          Note (สำหรับโรงงานเท่านั้น)
         </span>
 
         {!editing ? (

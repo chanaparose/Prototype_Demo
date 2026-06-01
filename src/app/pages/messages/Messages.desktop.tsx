@@ -51,7 +51,7 @@ export function MessagesDesktop({
 }: MessagesDesktopProps) {
   return (
     <div className='hidden lg:flex' style={{ height: 'calc(100vh - 0px)' }}>
-      <div className='w-80 xl:w-96 border-r border-gray-200 flex flex-col bg-white shrink-0'>
+      <div className='w-80 xl:w-96 2xl:w-[420px] border-r border-gray-200 flex flex-col bg-white shrink-0'>
         <div className='px-5 pt-6 pb-4 border-b border-gray-100'>
           <div className='flex items-center gap-2 mb-4'>
             <h2 className='text-lg font-bold' style={{ color: 'var(--brand-navy)' }}>
@@ -158,7 +158,7 @@ export function MessagesDesktop({
 
       <div className='flex-1 flex flex-col bg-gray-50'>
         {selectedId ? (
-          <div className='h-full px-6 py-5'>
+          <div className='h-full px-6 2xl:px-8 py-5'>
             <ChatRoomEmbedded
               conversationId={selectedId}
               preview={

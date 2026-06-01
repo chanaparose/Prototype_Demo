@@ -8,7 +8,7 @@ type Props = {
 
 export function Step2Specifications({ draft, setDraft }: Props) {
   const fieldClass =
-    'w-full rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2.5 text-sm focus:border-brand-violet-deep focus:bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.12)]';
+    'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-normal placeholder:font-normal data-[placeholder]:font-normal focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]';
 
   return (
     <div className='space-y-3'>

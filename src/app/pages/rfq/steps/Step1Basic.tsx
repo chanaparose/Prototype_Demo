@@ -65,20 +65,33 @@ export function Step1Basic({
           : 'รายละเอียดงาน *';
   const showSubCategory = mode !== 'MS' && mode !== 'MR';
   const fieldClass =
-    'w-full rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 px-3 py-2.5 text-sm text-brand-navy-deep placeholder:text-neutral-placeholder focus:border-brand-violet-deep focus:bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.12)]';
+    'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-brand-navy-deep placeholder:font-normal placeholder:text-neutral-placeholder data-[placeholder]:font-normal focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]';
   return (
-    <div className='space-y-3.5'>
-      <label className='block'>
-        <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
-          ชื่อโปรเจกต์ / สินค้า <span className='text-brand-orange-deep'>*</span>
-        </span>
-        <Input
-          value={draft.title}
-          onChange={(e) => setDraft({ title: e.target.value })}
-          placeholder='เช่น ขวดพลาสติก 500ml'
-          className={fieldClass}
-        />
-      </label>
+    <div className='space-y-4'>
+      <div className='grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(240px,0.7fr)]'>
+        <label className='block'>
+          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
+            ชื่อโปรเจกต์ / สินค้า <span className='text-brand-orange-deep'>*</span>
+          </span>
+          <Input
+            value={draft.title}
+            onChange={(e) => setDraft({ title: e.target.value })}
+            placeholder='เช่น ขวดพลาสติก 500ml'
+            className={fieldClass}
+          />
+        </label>
+        <label className='block'>
+          <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>งบประมาณโดยประมาณ</span>
+          <Input
+            type='number'
+            min={0}
+            value={draft.target_price ?? ''}
+            onChange={(e) => setDraft({ target_price: Number(e.target.value) || undefined })}
+            placeholder='บาท (ไม่บังคับ)'
+            className={fieldClass}
+          />
+        </label>
+      </div>
       <label className='block'>
         <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
           รายละเอียด <span className='text-brand-orange-deep'>*</span>
@@ -87,8 +100,8 @@ export function Step1Basic({
           value={draft.description}
           onChange={(e) => setDraft({ description: e.target.value })}
           placeholder={descriptionPlaceholder}
-          rows={3}
-          className={`${fieldClass} min-h-[4.5rem] resize-y`}
+          rows={4}
+          className={`${fieldClass} min-h-[7rem] resize-y lg:min-h-[8.5rem]`}
         />
       </label>
 
@@ -110,7 +123,7 @@ export function Step1Basic({
           type='button'
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || draft.reference_images.length >= 5}
-          className='w-full rounded-xl border border-dashed border-brand-mauve-light/60 bg-brand-lavender-chip/50 px-3 py-3 text-[12px] font-medium text-brand-violet-deep'
+          className='w-full rounded-xl border border-dashed border-brand-mauve-light/60 bg-white px-3 py-3 text-[12px] font-medium text-brand-violet-deep transition-colors hover:bg-brand-lavender-chip/40'
         >
           {uploading
             ? 'กำลังอัปโหลด...'
@@ -152,9 +165,7 @@ export function Step1Basic({
         ) : null}
       </div>
 
-      <div
-        className={`grid gap-2.5 ${showSubCategory ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'}`}
-      >
+      <div className={`grid gap-3 ${showSubCategory ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2'}`}>
         <label className='block min-w-0'>
           <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
             หมวดหมู่ <span className='text-brand-orange-deep'>*</span>
@@ -224,17 +235,6 @@ export function Step1Basic({
         />
         </label>
       </div>
-      <label className='block'>
-        <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>งบประมาณโดยประมาณ</span>
-      <Input
-        type='number'
-        min={0}
-        value={draft.target_price ?? ''}
-        onChange={(e) => setDraft({ target_price: Number(e.target.value) || undefined })}
-        placeholder='บาท (ไม่บังคับ)'
-        className={fieldClass}
-      />
-      </label>
     </div>
   );
 }

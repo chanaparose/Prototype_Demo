@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Star,
   Package,
+  Factory,
   ArrowUpRight,
   ChevronDown,
   X,
@@ -172,7 +173,7 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
       <div className='px-8 py-6'>
         {factories.length === 0 ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
-            <p className='text-4xl mb-3'>🏭</p>
+            <Factory size={38} className='mb-3 text-gray-400' />
             <p className='text-[14px] text-gray-500 font-medium'>ไม่พบโรงงานที่ตรงกับเงื่อนไข</p>
             <p className='text-[12px] text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือตัวกรอง</p>
           </div>

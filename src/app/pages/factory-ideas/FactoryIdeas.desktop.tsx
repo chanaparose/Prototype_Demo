@@ -8,6 +8,7 @@ import {
   List,
   Loader2,
   MapPin,
+  SearchX,
   Star,
 } from 'lucide-react';
 import { FactoryIdeasCategoryDropdown } from '@/components/features/factory-ideas/FactoryIdeasCategoryDropdown';
@@ -69,7 +70,7 @@ export function FactoryIdeasDesktop() {
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-page)] lg:block'>
       <div className='bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10'>
-        <div className='px-8 py-4 space-y-4'>
+        <div className='px-8 2xl:px-10 py-4 space-y-4'>
           <div className='relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,var(--brand-navy-deep)_0%,#4A267D_100%)] p-5 text-white shadow-md'>
             <div className='absolute -right-8 -top-8 h-40 w-40 rounded-full bg-[var(--brand-orange-hot)] opacity-40 blur-2xl mix-blend-screen' />
             <div className='absolute right-0 top-0 h-28 w-28 translate-x-8 skew-x-[-15deg] rounded-full bg-[var(--brand-purple)] opacity-60' />
@@ -179,7 +180,7 @@ export function FactoryIdeasDesktop() {
         </div>
       </div>
 
-      <div className={`px-8 py-6 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`px-8 2xl:px-10 py-6 transition-opacity duration-200 ${showcasesFetching ? 'opacity-50 pointer-events-none' : ''}`}>
         <TabSwipeContent activeKey={selectedType} tabOrder={factoryIdeasTabOrder}>
         {showcasesLoading || factoriesLoading ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm gap-2'>
@@ -188,14 +189,14 @@ export function FactoryIdeasDesktop() {
           </div>
         ) : totalCount === 0 ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
-            <p className='text-4xl mb-3'>🔍</p>
+            <SearchX size={36} className='mb-3 text-gray-400' />
             <p className='text-[14px] font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
             </p>
             <p className='text-[12px] text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
           </div>
         ) : isFactoryTab ? (
-          <div className='grid grid-cols-4 gap-3'>
+          <div className='grid grid-cols-4 2xl:grid-cols-5 gap-3'>
             {visibleFactories.map((factory) => (
               <article
                 key={factory.id}
@@ -282,7 +283,7 @@ export function FactoryIdeasDesktop() {
             })}
           </div>
         ) : viewMode === 'grid' ? (
-          <div className='grid grid-cols-5 gap-2'>
+          <div className='grid grid-cols-5 2xl:grid-cols-6 gap-2'>
             {visibleItems.map((item) => {
               const factory = data.factories.find((f) => f.id === item.factoryId);
               const badgeColor = contentTypeBadge[item.contentType];
@@ -443,8 +444,8 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleMaterialItems.length})
               </Button>
             </div>
-            <div className='grid grid-cols-5 gap-2'>
-              {visibleMaterialItems.slice(0, 5).map((item) => {
+            <div className='grid grid-cols-5 2xl:grid-cols-6 gap-2'>
+              {visibleMaterialItems.slice(0, 6).map((item) => {
                 const factory = data.factories.find((f) => f.id === item.factoryId);
                 return (
                   <article
@@ -517,8 +518,8 @@ export function FactoryIdeasDesktop() {
                 ดูทั้งหมด ({visibleFactories.length})
               </Button>
             </div>
-            <div className='grid grid-cols-5 gap-2'>
-              {visibleFactories.slice(0, 5).map((factory) => (
+            <div className='grid grid-cols-5 2xl:grid-cols-6 gap-2'>
+              {visibleFactories.slice(0, 6).map((factory) => (
                 <div
                   key={`fac-${factory.id}`}
                   onClick={() => navigate(`/factories/${factory.id}`)}

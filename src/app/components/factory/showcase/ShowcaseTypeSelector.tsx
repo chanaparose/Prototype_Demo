@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { ShowcaseTypeIcon } from '@/components/factory/showcase/ShowcaseTypeIcon';
 
 export type ShowcaseType = 'PD' | 'PM' | 'ID' | 'MT';
 
@@ -10,10 +11,10 @@ interface ShowcaseTypeSelectorProps {
 }
 
 const OPTIONS = [
-  { type: 'PD', icon: '🏷', label: 'สินค้า', sublabel: 'Product Design' },
-  { type: 'PM', icon: '🎁', label: 'โปรโมชัน', sublabel: 'Promotion' },
-  { type: 'ID', icon: '💡', label: 'ไอเดีย', sublabel: 'Industrial Design' },
-  { type: 'MT', icon: '🧱', label: 'วัตถุดิบ', sublabel: 'Material' },
+  { type: 'PD', label: 'สินค้า', sublabel: 'Product Design' },
+  { type: 'PM', label: 'โปรโมชัน', sublabel: 'Promotion' },
+  { type: 'ID', label: 'ไอเดีย', sublabel: 'Industrial Design' },
+  { type: 'MT', label: 'วัตถุดิบ', sublabel: 'Material' },
 ] as const;
 
 export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseTypeSelectorProps) {
@@ -35,7 +36,7 @@ export function ShowcaseTypeSelector({ value, onChange, disabled }: ShowcaseType
             } disabled:opacity-50`}
           >
             <div className='text-sm font-semibold flex items-center gap-1'>
-              <span>{opt.icon}</span>
+              <ShowcaseTypeIcon type={opt.type} size={14} />
               <span>{opt.label}</span>
             </div>
             <p className={`text-[10px] ${active ? 'text-orange-100' : 'text-gray-400'}`}>

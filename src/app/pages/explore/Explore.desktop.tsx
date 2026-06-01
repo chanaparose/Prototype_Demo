@@ -174,8 +174,8 @@ export function ExploreDesktop({
 
   return (
     <div className='hidden md:block min-h-screen'>
-      <div className='px-4 md:px-6 lg:px-8 py-3 lg:py-4 space-y-6 pb-0 w-full mx-auto'>
-        <section className='relative rounded-2xl overflow-hidden h-[180px] shadow-lg'>
+      <div className='px-4 md:px-6 lg:px-8 2xl:px-10 py-3 lg:py-4 space-y-6 pb-0 w-full mx-auto'>
+        <section className='relative rounded-2xl overflow-hidden h-[180px] 2xl:h-[220px] shadow-lg'>
           <ImageWithFallback
             src='assets/tryly_banner_slim.png'
             alt='Tryly banner'
@@ -323,7 +323,7 @@ export function ExploreDesktop({
         <section>...</section>
         */}
 
-        <section className='relative -mx-8 px-8 py-5 rounded-xl overflow-hidden bg-neutral-cool-surface'>
+        <section className='relative -mx-8 2xl:-mx-10 px-8 2xl:px-10 py-5 rounded-xl overflow-hidden bg-neutral-cool-surface'>
           <div
             aria-hidden
             className='absolute inset-0 rounded-xl pointer-events-none'
@@ -423,7 +423,7 @@ export function ExploreDesktop({
         </div>
       </section>
 
-      <div className='lg:px-8'>
+      <div className='lg:px-8 2xl:px-10'>
         <ExploreFooter />
       </div>
 

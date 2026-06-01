@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Send, Save, Loader2, ImagePlus, Lock, X as XIcon } from 'lucide-react';
+import { Send, Save, Loader2, ImagePlus, Lock, AlertTriangle, X as XIcon } from 'lucide-react';
 import { FactoryNoteField } from '@/components/factory/FactoryNoteField';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -544,7 +544,10 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         {formWarnings.length > 0 ? (
           <ul className='text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 space-y-1'>
             {formWarnings.map((w) => (
-              <li key={w}>⚠ {w}</li>
+              <li key={w} className='flex items-start gap-1.5'>
+                <AlertTriangle size={13} className='mt-0.5 shrink-0' />
+                <span>{w}</span>
+              </li>
             ))}
           </ul>
         ) : null}

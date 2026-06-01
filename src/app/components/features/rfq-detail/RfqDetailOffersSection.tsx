@@ -13,6 +13,7 @@ import {
   History,
   GitCompare,
   ExternalLink,
+  Factory,
 } from 'lucide-react';
 import { ordersApi } from '@/services/api/ordersApi';
 import type { Quotation } from '@/components/features/rfq-detail/QuotationBOQCard';
@@ -168,7 +169,7 @@ export function RfqDetailOffersSection({
                 <div className='flex items-start justify-between mb-3'>
                   <div className='flex items-center gap-2'>
                     <div className='w-9 h-9 rounded-xl flex items-center justify-center text-sm bg-gray-100'>
-                      🏭
+                      <Factory size={17} className='text-gray-500' />
                     </div>
                     <div>
                       <div className='flex items-center gap-1.5'>
@@ -219,7 +220,7 @@ export function RfqDetailOffersSection({
             <p className='text-xs font-bold text-green-700 mb-2'>โรงงานที่เลือก</p>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-lg'>
-                🏭
+                <Factory size={18} className='text-green-700' />
               </div>
               <div className='flex-1 min-w-0'>
                 <p className='text-sm font-bold text-brand-navy'>{orderForRfq.factoryName}</p>
@@ -511,7 +512,7 @@ export function RfqDetailOffersSection({
                         className='w-9 h-9 rounded-xl flex items-center justify-center text-sm'
                         style={{ background: 'var(--brand-page)' }}
                       >
-                        🏭
+                        <Factory size={17} className='text-brand-mauve' />
                       </div>
                       <div>
                         <div className='flex items-center gap-1.5'>

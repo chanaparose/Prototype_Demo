@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { ChevronLeft, MessageCircle, X } from 'lucide-react';
+import { ChevronLeft, ClipboardList, MessageCircle, X } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
 import { useData } from '@/stores/useDataStore';
 import type { IConversationResponse } from '@/services/api/types/chat.types';
@@ -458,7 +458,7 @@ export function FactoryRfqDetailPage() {
               </div>
             ) : (
               <div className='flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3'>
-                <span className='text-lg'>📋</span>
+                <ClipboardList size={18} className='shrink-0 text-amber-700' />
                 <p className='text-sm font-medium text-amber-800'>คุณยังไม่ได้ส่งใบเสนอราคาสำหรับ RFQ นี้</p>
               </div>
             )}

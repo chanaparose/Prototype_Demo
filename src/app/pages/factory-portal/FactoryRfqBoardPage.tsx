@@ -11,6 +11,7 @@ import {
   EyeOff,
   Mail,
   Send,
+  SearchX,
 } from 'lucide-react';
 import { factoryRfqsApi } from '@/services/api/rfqApi';
 import { RfqTable } from '@/components/factory/RfqCard';
@@ -674,7 +675,7 @@ export function FactoryRfqBoardPage() {
 
               {pipeline.length === 0 ? (
                 <div className='mt-3 rounded-2xl border border-gray-100 bg-white px-4 py-12 text-center space-y-4'>
-                  <div className='text-5xl'>🔍</div>
+                  <SearchX size={44} className='mx-auto text-slate-400' />
                   <p className='text-base font-bold' style={{ color: 'var(--brand-navy)' }}>
                     {statusTab === 'direct'
                       ? 'ยังไม่มี RFQ ที่ส่งถึงคุณโดยตรง'

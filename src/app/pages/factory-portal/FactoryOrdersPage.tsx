@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Zap,
   Package,
+  PackageX,
   HelpCircle,
   Truck,
   CheckCircle2,
@@ -365,7 +366,7 @@ export function FactoryOrdersPage() {
             {/* Empty state or edge-to-edge table */}
             {filteredRows.length === 0 ? (
               <div className='mt-3 py-12 text-center space-y-2'>
-                <div className='text-4xl'>📦</div>
+                <PackageX size={38} className='mx-auto text-slate-400' />
                 <p className='text-sm font-bold text-slate-700'>ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข</p>
                 <p className='text-xs text-slate-400'>ลองเปลี่ยนแท็บหรือค้นหาใหม่</p>
               </div>

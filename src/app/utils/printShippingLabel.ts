@@ -254,7 +254,7 @@ function buildHtml(opts: ShippingLabelOptions): string {
 <body>
 
   <div class="toolbar">
-    <button class="btn btn-print" onclick="window.print()">🖨️&nbsp; พิมพ์ใบปะหน้า</button>
+    <button class="btn btn-print" onclick="window.print()">พิมพ์ใบปะหน้า</button>
     <button class="btn btn-outline" onclick="window.close()">✕&nbsp; ปิด</button>
   </div>
 

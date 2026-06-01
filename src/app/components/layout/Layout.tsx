@@ -169,6 +169,34 @@ export function Layout() {
   const onNotificationsPage = location.pathname === '/notifications';
   const headerIconTone: HeaderIconTone = isFactory ? 'indigo' : 'purple';
   const hideMobileTopHeader = /^\/orders\/[^/]+$/.test(location.pathname);
+  const wideContentPaths = [
+    '/',
+    '/factory-ideas',
+    '/orders',
+    '/messages',
+    '/notifications',
+    '/create-rfq',
+  ];
+  const isWideChatRoom =
+    location.pathname === '/chat-room' ||
+    location.pathname.startsWith('/chat-room/') ||
+    location.pathname.startsWith('/messages/');
+  const isWideOrderDetail = location.pathname.startsWith('/orders/');
+  const isWidePublicDetail =
+    location.pathname === '/product-detail' ||
+    location.pathname === '/promotion-detail' ||
+    location.pathname === '/idea-detail' ||
+    location.pathname.startsWith('/factory-ideas/products/') ||
+    location.pathname.startsWith('/factory-ideas/promotions/') ||
+    location.pathname.startsWith('/factory-ideas/ideas/') ||
+    location.pathname.startsWith('/factories/');
+  const mainContentMaxWidth =
+    wideContentPaths.includes(location.pathname) ||
+    isWideChatRoom ||
+    isWideOrderDetail ||
+    isWidePublicDetail
+      ? 'max-w-[1600px]'
+      : 'max-w-7xl';
 
   if (isAdminRole && !location.pathname.startsWith('/admin')) {
     return <Navigate to='/admin/dashboard' replace />;
@@ -270,7 +298,7 @@ export function Layout() {
         <main className='flex-1 min-w-0 overflow-x-hidden bg-[var(--brand-page)] pb-16 lg:pb-0'>
           {/* `relative` gives AnimatePresence a positioned ancestor so the
               exiting element doesn't escape the content column. */}
-          <div className='relative max-w-7xl mx-auto min-h-full'>
+          <div className={`relative ${mainContentMaxWidth} mx-auto min-h-full`}>
             <AnimatedOutlet />
           </div>
         </main>

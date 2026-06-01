@@ -78,6 +78,7 @@ export const router = createBrowserRouter([
         Component: Layout,
         children: [
           { index: true, Component: RoleRedirectIndex },
+          { path: 'explore', loader: () => redirect('/') },
           { path: 'product-detail', Component: ProductDetail },
           { path: 'promotion-detail', Component: PromotionDetail },
           { path: 'idea-detail', Component: IdeaDetail },

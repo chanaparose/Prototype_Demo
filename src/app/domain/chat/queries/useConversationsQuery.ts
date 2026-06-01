@@ -13,8 +13,12 @@ export function useConversationsQuery(enabled: boolean) {
     queryKey: chatKeys.conversations(),
     queryFn: fetchConversations,
     enabled,
-    staleTime: 30_000,
-    refetchOnWindowFocus: true,
+    placeholderData: (previous) => previous,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: false,
     retry: false,
   });
 }

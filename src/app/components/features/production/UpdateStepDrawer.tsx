@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { X, Plus, ImageIcon, Truck, FileText, AlertTriangle } from 'lucide-react';
+import { X, Plus, ImageIcon, Truck, FileText, AlertTriangle, CreditCard } from 'lucide-react';
 import { mediaApi } from '@/services/api/factoryApi';
 import type { MergedProductionStep } from '@/components/features/production/types';
 import { productionErrorMessage } from '@/components/features/production/productionErrors';
@@ -51,6 +51,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
   const [err, setErr] = useState('');
 
   const guide = step ? getStepGuide(Number(step.template.step_id ?? 0)) : null;
+  const GuideIcon = guide?.icon;
   const stepId = step ? Number(step.template.step_id ?? -1) : -1;
   const isShippingStep = stepId === 4;
   const isPayment = Boolean(step?.template.is_payment_trigger);
@@ -180,8 +181,8 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
         <div className='shrink-0 px-5 py-4 border-b border-gray-100'>
           <div className='flex items-start justify-between gap-3'>
             <div className='flex items-center gap-3 min-w-0'>
-              <div className='w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 text-xl leading-none'>
-                {guide?.emoji ?? '📋'}
+              <div className='w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 text-indigo-600'>
+                {GuideIcon ? <GuideIcon size={19} /> : null}
               </div>
               <div className='min-w-0'>
                 <p className='text-[10px] font-semibold uppercase tracking-widest text-indigo-500 mb-0.5'>
@@ -218,7 +219,7 @@ export function UpdateStepDrawer({ open, placement, step, onClose, onSubmit }: P
             {/* Payment warning */}
             {isPayment ? (
               <div className='flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-3'>
-                <span className='text-base leading-none shrink-0'>💳</span>
+                <CreditCard size={16} className='mt-0.5 shrink-0 text-amber-700' />
                 <p className='text-xs text-amber-800 leading-relaxed'>
                   <span className='font-semibold'>การยืนยันขั้นนี้</span>จะส่งคำขอชำระเงินส่วนที่เหลือให้ลูกค้าทันที
                 </p>

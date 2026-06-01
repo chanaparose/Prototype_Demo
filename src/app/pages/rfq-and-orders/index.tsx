@@ -110,7 +110,7 @@ export function RfqAndOrders() {
         </div>
       </div>
 
-      <div className='hidden lg:flex flex-col px-8 py-7 h-full'>
+      <div className='hidden lg:flex flex-col px-8 2xl:px-10 py-7 h-full'>
         <div className='flex items-center justify-between mb-6 shrink-0'>
           <div>
             <p className='text-xs uppercase tracking-wider font-semibold mb-0.5 text-[#C4A484]'>

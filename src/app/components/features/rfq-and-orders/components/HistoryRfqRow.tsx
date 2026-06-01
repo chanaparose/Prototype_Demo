@@ -3,6 +3,7 @@ import { FileText, Calendar, Factory, ChevronRight } from 'lucide-react';
 import { RFQ_STATUS_DISPLAY } from '@/components/features/rfq-and-orders/constants';
 import { formatDate } from '@/components/features/rfq-and-orders/utils';
 import { type Rfq } from '@/stores/types';
+import { CategoryIcon } from '@/components/ui/category-icon';
 
 export function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
   const statusCfg = RFQ_STATUS_DISPLAY[rfq.status] ?? {
@@ -17,7 +18,7 @@ export function HistoryRfqRow({ rfq }: { rfq: Rfq }) {
       <div className='flex items-center justify-between rounded-xl border border-[rgba(196,164,132,0.4)] bg-white/80 px-3 py-3 transition-all hover:bg-white'>
         <div className='flex items-center gap-2.5 min-w-0 flex-1'>
           <div className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--neutral-muted)] text-sm'>
-            {rfq.categoryIcon ?? <FileText size={14} className='text-gray-400' />}
+            <CategoryIcon value={rfq.categoryIcon} size={14} className='text-gray-400' />
           </div>
           <div className='min-w-0'>
             <p className='text-sm font-semibold text-gray-700 truncate'>{rfq.projectName}</p>
