@@ -192,6 +192,15 @@
     line-height: 1.5;
   }
 
+  input::placeholder,
+  textarea::placeholder {
+    font-weight: 400;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--neutral-placeholder);
+    opacity: 1;
+  }
+
   /* ──── Prevent iOS auto-zoom on input focus ──── */
   /* iOS Safari zooms when font-size < 16px. Force 16px on all
      focusable form controls so the page stays at its original scale. */

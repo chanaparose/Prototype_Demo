@@ -40,7 +40,7 @@ export function MobileSearchField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className='h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-sm leading-snug text-gray-700 shadow-none ring-0 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-0'
+        className='h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-sm font-normal leading-snug text-gray-700 shadow-none ring-0 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-0'
       />
       {value.trim() ? (
         <Button

@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, Building2, Users, Search, X } from 'lucide-react';
 import type { TargetFactory } from '@/pages/rfq/useRFQDraft';
+import { RFQ_BORDER, RFQ_RADIUS, rfqChoiceClass } from '@/pages/rfq/rfqCreateWizardUi';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -82,11 +83,9 @@ export function RfqTargetingSelector({
             key={mode}
             type='button'
             onClick={() => onTargetingChange(mode)}
-            className={`w-full flex items-center gap-3 rounded-xl border-2 px-3.5 py-3 text-left transition-all ${
-              active
-                ? 'border-violet-500 bg-violet-50'
-                : 'border-gray-100 bg-gray-50/50 hover:border-gray-200 active:scale-[0.99]'
-            }`}
+            className={`flex w-full items-center gap-3 px-3.5 py-3 text-left active:scale-[0.99] ${rfqChoiceClass(
+              active,
+            )} ${!active ? 'bg-gray-50/50' : ''}`}
           >
             {/* Radio dot */}
             <div
@@ -147,7 +146,9 @@ export function RfqTargetingSelector({
 
           {/* Search input */}
           <div ref={anchorRef}>
-            <div className='flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 transition-all focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400/30'>
+            <div
+              className={`flex items-center gap-2 bg-white px-3 py-2.5 transition-all focus-within:border-violet-400 focus-within:ring-1 focus-within:ring-violet-400/30 ${RFQ_RADIUS} ${RFQ_BORDER}`}
+            >
               <Search size={14} className='shrink-0 text-gray-400' />
               <input
                 ref={inputRef}
@@ -160,7 +161,7 @@ export function RfqTargetingSelector({
                 onFocus={() => setShowDropdown(true)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                 placeholder='ค้นหาชื่อโรงงาน…'
-                className='flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:font-normal placeholder:text-gray-400'
+                className='flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:text-xs placeholder:font-normal placeholder:text-gray-400'
               />
             </div>
           </div>
@@ -176,7 +177,7 @@ export function RfqTargetingSelector({
                   width: dropdownRect.width,
                   zIndex: 9999,
                 }}
-                className='overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg'
+                className={`overflow-hidden bg-white shadow-lg ${RFQ_RADIUS} border-[0.5px] border-gray-100`}
               >
                 {results.length === 0 ? (
                   <p className='px-4 py-3 text-[12px] text-gray-400'>ไม่พบโรงงานที่ค้นหา</p>

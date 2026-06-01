@@ -52,6 +52,20 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
 
   const debouncedSearchText = useDebounce(searchText, 400);
 
+  const typeFromUrl = searchParams.get('type');
+  useEffect(() => {
+    const allowed: FactoryIdeasContentType[] = [
+      'all',
+      'product',
+      'material',
+      'idea',
+      'factory',
+    ];
+    if (typeFromUrl && allowed.includes(typeFromUrl as FactoryIdeasContentType)) {
+      setSelectedType(typeFromUrl as FactoryIdeasContentType);
+    }
+  }, [typeFromUrl]);
+
   const data = useData();
   const favorites = useFavorites();
   const isFactoryTab = selectedType === 'factory';
@@ -294,6 +308,13 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
         ? totalShowcases + visibleFactories.length
         : visibleItems.length;
 
+  const isListFiltered = Boolean(
+    debouncedSearchText.trim() ||
+      (effectiveCategoryId && effectiveCategoryId !== 'all') ||
+      selectedSubCategoryId ||
+      (isFactoryTab && factoryScope !== 'all'),
+  );
+
   const closeCategoryMenu = () => {
     setCategoryMenuOpen(false);
     if (layout === 'mobile') setCategoryMenuStep('categories');
@@ -353,6 +374,7 @@ export function useFactoryIdeasPageState({ layout, initialType }: UseFactoryIdea
     visibleMaterialItems,
     visibleFactories,
     totalCount,
+    isListFiltered,
     totalShowcases,
     page,
     setPage,

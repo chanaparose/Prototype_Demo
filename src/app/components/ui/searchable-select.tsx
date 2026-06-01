@@ -107,11 +107,20 @@ export function SearchableSelect({
         className={cn(
           'flex w-full items-center justify-between gap-2 rounded-xl border px-4 py-2.5 text-left text-sm shadow-[0_1px_2px_rgba(46,34,82,0.04)] transition-all',
           'disabled:cursor-not-allowed disabled:opacity-60',
-          selected ? 'text-[var(--brand-navy)]' : 'text-[var(--neutral-placeholder)]',
+          selected ? 'text-[var(--brand-navy)]' : 'text-[var(--neutral-placeholder)] font-normal',
           className,
         )}
       >
-        <span className='min-w-0 flex-1 truncate font-medium'>{displayLabel}</span>
+        <span
+          className={cn(
+            'min-w-0 flex-1 truncate',
+            selected
+              ? 'text-sm font-medium text-[var(--brand-navy)]'
+              : 'text-xs font-normal text-[var(--neutral-placeholder)]',
+          )}
+        >
+          {displayLabel}
+        </span>
         <ChevronDown
           size={16}
           className={cn('shrink-0 text-[var(--brand-mauve)] transition-transform', isOpen && 'rotate-180')}

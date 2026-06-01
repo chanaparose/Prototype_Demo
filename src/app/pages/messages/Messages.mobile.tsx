@@ -107,7 +107,7 @@ export function MessagesMobile({
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             placeholder='ค้นหา'
-            className='flex-1 bg-transparent text-sm text-[var(--brand-navy)] placeholder:text-[var(--neutral-placeholder)] outline-none'
+            className='flex-1 bg-transparent text-sm font-normal text-[var(--brand-navy)] placeholder:text-xs placeholder:font-normal placeholder:text-[var(--neutral-placeholder)] outline-none'
           />
         </label>
       </div>

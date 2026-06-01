@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { RFQ_BORDER, RFQ_FIELD_CLASS, RFQ_RADIUS } from '@/pages/rfq/rfqCreateWizardUi';
 
 type SubCategory = {
   id: number;
@@ -64,8 +65,7 @@ export function Step1Basic({
           ? 'ระบุขนาด/สี/สูตร/มาตรฐานที่ต้องการ (อย่างน้อย 20 ตัวอักษร) *'
           : 'รายละเอียดงาน *';
   const showSubCategory = mode !== 'MS' && mode !== 'MR';
-  const fieldClass =
-    'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-normal text-brand-navy-deep placeholder:font-normal placeholder:text-neutral-placeholder data-[placeholder]:font-normal focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]';
+  const fieldClass = RFQ_FIELD_CLASS;
   return (
     <div className='space-y-4'>
       <div className='grid gap-3 lg:grid-cols-[minmax(0,1.7fr)_minmax(240px,0.7fr)]'>
@@ -123,7 +123,7 @@ export function Step1Basic({
           type='button'
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || draft.reference_images.length >= 5}
-          className='w-full rounded-xl border border-dashed border-brand-mauve-light/60 bg-white px-3 py-3 text-[12px] font-medium text-brand-violet-deep transition-colors hover:bg-brand-lavender-chip/40'
+          className={`w-full ${RFQ_RADIUS} border-[0.5px] border-dashed border-brand-mauve-light/60 bg-white px-3 py-3 text-[12px] font-medium text-brand-violet-deep transition-colors hover:bg-brand-lavender-chip/40`}
         >
           {uploading
             ? 'กำลังอัปโหลด...'
@@ -136,7 +136,7 @@ export function Step1Basic({
             {draft.reference_images.map((u, idx) => (
               <div
                 key={u + idx}
-                className='relative aspect-square overflow-hidden rounded-xl border border-gray-100 bg-gray-100'
+                className={`relative aspect-square overflow-hidden ${RFQ_RADIUS} ${RFQ_BORDER} bg-gray-100`}
               >
                 {!brokenImages[idx] ? (
                   <Image

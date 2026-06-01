@@ -1,4 +1,10 @@
 import { Input } from '@/components/ui/input';
+import {
+  RFQ_BORDER,
+  RFQ_FIELD_CLASS,
+  RFQ_RADIUS,
+  rfqChoiceClass,
+} from '@/pages/rfq/rfqCreateWizardUi';
 
 import React from 'react';
 import { Building2, CheckCircle2, LogIn, MapPin, Package, Plus, Truck } from 'lucide-react';
@@ -168,7 +174,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
             variant='unstyled'
             type='button'
             onClick={() => openLoginModal('/create-rfq')}
-            className='flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-violet-200 bg-white px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]'
+            className={`flex w-full items-center gap-3 ${RFQ_RADIUS} border-[0.5px] border-dashed border-violet-200 bg-white px-4 py-4 text-left transition-all hover:bg-violet-50 active:scale-[0.99]`}
           >
             <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100'>
               <LogIn size={18} className='text-violet-500' />
@@ -182,15 +188,15 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
           </Button>
         ) : addrLoading ? (
           <div className='space-y-2'>
-            <div className='h-14 rounded-xl bg-gray-100 animate-pulse' />
-            <div className='h-14 rounded-xl bg-gray-100 animate-pulse opacity-50' />
+            <div className={`h-14 ${RFQ_RADIUS} bg-gray-100 animate-pulse`} />
+            <div className={`h-14 ${RFQ_RADIUS} bg-gray-100 animate-pulse opacity-50`} />
           </div>
         ) : addresses.length === 0 ? (
           <Button
             variant='unstyled'
             type='button'
             onClick={() => setModalOpen(true)}
-            className='w-full border-2 border-dashed border-gray-200 rounded-xl p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all'
+            className={`w-full ${RFQ_RADIUS} border-[0.5px] border-dashed border-gray-200 p-5 flex flex-col items-center gap-2 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] transition-all`}
           >
             <div className='w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center'>
               <Plus size={20} className='text-violet-500' />
@@ -217,11 +223,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                   key={addr.id}
                   type='button'
                   onClick={() => setDraft({ delivery_address_id: addr.id })}
-                  className={`w-full text-left p-3.5 rounded-xl border-2 transition-all ${
-                    active
-                      ? 'border-violet-500 bg-violet-50'
-                      : 'border-gray-200 bg-white hover:border-gray-300 active:scale-[0.98]'
-                  }`}
+                  className={`w-full p-3.5 text-left active:scale-[0.98] ${rfqChoiceClass(active)}`}
                 >
                   <div className='flex items-start gap-2.5'>
                     <MapPin
@@ -251,7 +253,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
               variant='unstyled'
               type='button'
               onClick={() => setModalOpen(true)}
-              className='w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all'
+              className={`w-full flex items-center justify-center gap-1.5 py-2.5 ${RFQ_RADIUS} border-[0.5px] border-dashed border-gray-200 text-[12px] font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.98] transition-all`}
             >
               <Plus size={14} />
               เพิ่มที่อยู่ใหม่
@@ -278,11 +280,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
                 key={method.id}
                 type='button'
                 onClick={() => setDraft({ shipping_method_id: method.id })}
-                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                  active
-                    ? 'border-violet-500 bg-violet-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300 active:scale-[0.98]'
-                }`}
+                className={`flex w-full items-center gap-3 px-4 py-3 text-left active:scale-[0.98] ${rfqChoiceClass(active)}`}
               >
                 <ShippingIcon size={18} className='shrink-0 text-violet-500' />
                 <span
@@ -309,7 +307,7 @@ export function Step3Commercial({ draft, setDraft, onLoaded, isGuest = false }: 
           value={draft.target_lead_time_days ?? ''}
           onChange={(e) => setDraft({ target_lead_time_days: Number(e.target.value) || undefined })}
           placeholder='ระยะเวลาผลิตที่ต้องการ (วัน)'
-          className='w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-normal placeholder:font-normal placeholder:text-neutral-placeholder focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]'
+          className={RFQ_FIELD_CLASS}
         />
       </div>
 

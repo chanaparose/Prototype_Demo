@@ -1,5 +1,6 @@
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { Input } from '@/components/ui/input';
+import { RFQ_FIELD_CLASS } from '@/pages/rfq/rfqCreateWizardUi';
 
 type Props = {
   draft: RFQDraft;
@@ -7,8 +8,7 @@ type Props = {
 };
 
 export function Step2Specifications({ draft, setDraft }: Props) {
-  const fieldClass =
-    'w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-normal placeholder:font-normal data-[placeholder]:font-normal focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]';
+  const fieldClass = RFQ_FIELD_CLASS;
 
   return (
     <div className='space-y-3'>

@@ -22,6 +22,8 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { AlertCircle, LogIn } from 'lucide-react';
 import {
+  RFQ_BORDER,
+  RFQ_RADIUS,
   RfqCollapsibleSection,
   RfqFormSection,
   RfqKindPicker,
@@ -465,7 +467,7 @@ export function RFQCreateWizard() {
             ) : null}
 
             {!isFormValid && blockingIssues.length > 0 ? (
-              <div className='flex gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5'>
+              <div className={`flex gap-2.5 ${RFQ_RADIUS} border-[0.5px] border-amber-200 bg-amber-50 px-3 py-2.5`}>
                 <AlertCircle size={18} className='shrink-0 text-amber-600 mt-0.5' />
                 <div>
                   <p className='text-[12px] font-semibold text-amber-900'>ยังส่งไม่ได้</p>
@@ -536,7 +538,7 @@ export function RFQCreateWizard() {
                 />
               </RfqSummaryCard>
             ) : (
-              <section className='rounded-lg border border-gray-200 bg-white px-4 py-4'>
+              <section className={`${RFQ_RADIUS} ${RFQ_BORDER} bg-white px-4 py-4`}>
                 <p className='text-[13px] font-bold text-brand-navy-deep mb-2'>ยืนยันการขอตัวอย่าง</p>
                 <Label className='flex items-start gap-2 text-[12px] text-brand-navy-deep'>
                   <Checkbox
@@ -569,7 +571,7 @@ export function RFQCreateWizard() {
             variant='unstyled'
             type='button'
             onClick={() => (step > 0 ? setStep(step - 1) : navigate(-1))}
-            className='shrink-0 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-brand-navy-deep'
+            className={`shrink-0 ${RFQ_RADIUS} ${RFQ_BORDER} px-4 py-2.5 text-sm font-medium text-brand-navy-deep`}
           >
             {step === 0 ? 'ยกเลิก' : 'แก้ไข'}
           </Button>
@@ -579,7 +581,7 @@ export function RFQCreateWizard() {
               type='button'
               onClick={() => setStep(1)}
               disabled={!isFormValid}
-              className='min-w-[9rem] flex-1 max-w-[16rem] rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45'
+              className={`min-w-[9rem] max-w-[16rem] flex-1 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45`}
             >
               ตรวจสอบและส่ง
             </Button>
@@ -588,7 +590,7 @@ export function RFQCreateWizard() {
               variant='unstyled'
               type='button'
               onClick={() => openLoginModal('/create-rfq')}
-              className='flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white'
+              className={`flex min-w-0 flex-1 items-center justify-center gap-2 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white`}
             >
               <LogIn size={15} />
               ล็อกอินเพื่อส่ง
@@ -599,7 +601,7 @@ export function RFQCreateWizard() {
               type='button'
               onClick={() => void submit()}
               disabled={!isFormValid || create.isPending || (isSampleMode && !acceptSampleTerms)}
-              className='min-w-0 flex-1 rounded-xl bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45'
+              className={`min-w-0 flex-1 ${RFQ_RADIUS} bg-brand-violet-deep px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-45`}
             >
               {create.isPending ? 'กำลังส่ง…' : 'ส่งคำขอราคา'}
             </Button>

@@ -3,6 +3,29 @@ import { ChevronDown, Factory } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 
+/** มุมมน + เส้นขอบมาตรฐาน — ใช้ร่วมกันทุก control ในหน้า /create-rfq */
+export const RFQ_RADIUS = 'rounded-lg';
+
+export const RFQ_BORDER = 'border-[0.5px] border-gray-200';
+
+/** สไตล์ช่องกรอก — ไม่มีเงา (override shadow-sm จาก ui/input) */
+export const RFQ_FIELD_CLASS = [
+  'w-full shadow-none bg-white px-3 py-2.5 text-sm font-normal text-brand-navy-deep',
+  RFQ_RADIUS,
+  RFQ_BORDER,
+  'placeholder:text-xs placeholder:font-normal placeholder:text-neutral-placeholder',
+  'data-[placeholder]:text-xs data-[placeholder]:font-normal',
+  'focus:border-brand-violet-deep focus:outline-none focus:ring-2 focus:ring-[rgba(109,40,217,0.10)]',
+].join(' ');
+
+/** ปุ่ม/การ์ดเลือก (ที่อยู่, จัดส่ง, ประเภท RFQ ฯลฯ) */
+export const RFQ_CHOICE_SHELL = `${RFQ_RADIUS} border transition-all`;
+
+export const rfqChoiceClass = (active: boolean, activeBorder = 'border-violet-500') =>
+  active
+    ? `${RFQ_CHOICE_SHELL} ${activeBorder} border bg-violet-50`
+    : `${RFQ_CHOICE_SHELL} ${RFQ_BORDER} bg-white hover:border-gray-300`;
+
 export const REQUEST_KIND_OPTIONS = [
   { id: 'PR' as const, label: 'OEM', desc: 'ขอราคาผลิต' },
   { id: 'MR' as const, label: 'วัตถุดิบ', desc: 'ขอราคาสั่งซื้อ' },
@@ -32,7 +55,7 @@ export function RfqFormSection({
   return (
     <section
       data-tour={dataTour}
-      className={`overflow-hidden rounded-lg border border-gray-200 bg-white ${className}`}
+      className={`overflow-hidden ${RFQ_RADIUS} ${RFQ_BORDER} bg-white ${className}`}
     >
       <div className='flex items-start justify-between gap-2 border-b border-gray-100 px-4 py-3 lg:px-5'>
         <div className='min-w-0'>
@@ -71,12 +94,12 @@ export function RfqKindPicker({ kind, onSelect }: RfqKindPickerProps) {
             key={opt.id}
             type='button'
             onClick={() => onSelect(opt.id)}
-            className={`rounded-xl border px-3 py-2.5 text-left transition-all active:scale-[0.98] ${
+            className={`${RFQ_CHOICE_SHELL} px-3 py-2.5 text-left active:scale-[0.98] ${
               active
                 ? isSample
-                  ? 'border-brand-orange-deep bg-[rgba(242,138,46,0.1)]'
-                  : 'border-brand-violet-deep bg-brand-violet-soft'
-                : 'border-gray-200 bg-white hover:border-brand-mauve-light'
+                  ? 'border border-brand-orange-deep bg-[rgba(242,138,46,0.1)]'
+                  : 'border border-brand-violet-deep bg-brand-violet-soft'
+                : `${RFQ_BORDER} bg-white hover:border-brand-mauve-light`
             }`}
           >
             <p
@@ -103,7 +126,7 @@ export function RfqMatchStrip({ loading, count, isMaterialKind }: RfqMatchStripP
   const ok = !loading && n > 0;
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 ${
+      className={`flex items-center gap-2.5 ${RFQ_RADIUS} ${RFQ_BORDER} px-3 py-2.5 ${
         ok
           ? isMaterialKind
             ? 'border-emerald-200 bg-emerald-50/90'
@@ -149,10 +172,10 @@ export function RfqCollapsibleSection({
 }: RfqCollapsibleSectionProps) {
   return (
     <details
-      className='group overflow-hidden rounded-lg border border-gray-200 bg-white'
+      className={`group overflow-hidden ${RFQ_RADIUS} ${RFQ_BORDER} bg-white`}
       open={defaultOpen}
     >
-      <summary className='flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 marker:content-none lg:px-5 [&::-webkit-details-marker]:hidden'>
+      <summary className='flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-violet-50/90 active:bg-violet-100/70 group-open:bg-violet-50/50 marker:content-none lg:px-5 [&::-webkit-details-marker]:hidden'>
         <span className='text-[13px] font-bold text-brand-navy-deep'>{title}</span>
         <span className='flex items-center gap-1 text-[10px] font-medium text-neutral-subtle'>
           ไม่บังคับ
@@ -165,7 +188,7 @@ export function RfqCollapsibleSection({
       </summary>
       <div className='border-t border-gray-100 px-4 pb-4 pt-3 lg:px-5 lg:pb-5'>
         {hint ? (
-          <p className='mb-3 rounded-xl border border-violet-100 bg-violet-50/60 px-3 py-2 text-[11px] leading-snug text-violet-800'>
+          <p className={`mb-3 ${RFQ_RADIUS} border-[0.5px] border-violet-100 bg-violet-50/60 px-3 py-2 text-[11px] leading-snug text-violet-800`}>
             {hint}
           </p>
         ) : null}
@@ -194,7 +217,7 @@ export function RfqSummaryCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className='rounded-lg border border-gray-200 bg-white px-4 py-1 lg:px-5'>
+    <section className={`${RFQ_RADIUS} ${RFQ_BORDER} bg-white px-4 py-1 lg:px-5`}>
       <p className='border-b border-gray-100 py-2.5 text-[13px] font-bold text-brand-navy-deep'>{title}</p>
       <dl>{children}</dl>
     </section>

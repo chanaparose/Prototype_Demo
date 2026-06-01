@@ -283,7 +283,7 @@ export function FactoryShowcaseNewPage() {
             <Label className='block'>
               <span className='text-xs text-gray-500 font-medium'>ชื่อ *</span>
               <Input
-                className='mt-1 w-full text-sm font-semibold text-gray-900 placeholder-gray-300 rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
+                className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-normal text-gray-900 placeholder:text-xs placeholder:font-normal placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300/50'
                 placeholder='ชื่อสินค้า / ไอเดีย'
                 value={form.title}
                 onChange={(e) => setField('title', e.target.value)}

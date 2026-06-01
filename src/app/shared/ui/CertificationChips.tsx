@@ -35,10 +35,10 @@ export function CertificationChips({ options, value, onChange }: Props) {
                 prev?.focus();
               }
             }}
-            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
+            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
               active
-                ? 'bg-violet-100 border-violet-300 text-violet-800'
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                ? 'border-violet-300 bg-violet-100 text-violet-800 hover:border-violet-400 hover:bg-violet-200/80'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800'
             }`}
           >
             {opt}

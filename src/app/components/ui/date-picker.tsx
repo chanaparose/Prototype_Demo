@@ -187,7 +187,12 @@ export function DatePicker({
                 : 'text-gray-400 group-hover:text-[var(--brand-mauve)]',
             )}
           />
-          <span className={cn('flex-1 truncate', !selected && 'text-[var(--neutral-placeholder)]')}>
+          <span
+            className={cn(
+              'flex-1 truncate',
+              !selected && 'text-xs font-normal text-[var(--neutral-placeholder)]',
+            )}
+          >
             {selected ? formatThai(selected) : placeholder}
           </span>
           {selected && (
