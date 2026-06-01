@@ -187,13 +187,21 @@ export function FactoryIdeasDesktop() {
             <Loader2 className='h-8 w-8 animate-spin text-[var(--brand-mauve)]' />
             <p className='text-sm text-gray-500'>กำลังโหลดจากเซิร์ฟเวอร์…</p>
           </div>
-        ) : totalCount === 0 ? (
+        ) : totalCount === 0 && (searchText.trim() || (selectedType !== 'all' && effectiveCategoryId !== 'all')) ? (
           <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
             <SearchX size={36} className='mb-3 text-gray-400' />
             <p className='text-[14px] font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
             </p>
             <p className='text-[12px] text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
+          </div>
+        ) : totalCount === 0 ? (
+          <div className='flex flex-col items-center justify-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm'>
+            <Sparkles size={36} className='mb-3 text-gray-400' />
+            <p className='text-[14px] font-medium text-[var(--brand-navy)]'>
+              เรากำลังเตรียมรายการแนะนำจากโรงงานพาร์ทเนอร์ให้คุณ
+            </p>
+            <p className='text-[12px] text-gray-400 mt-1'>กรุณากลับมาดูอีกครั้งในเร็วๆ นี้</p>
           </div>
         ) : isFactoryTab ? (
           <div className='grid grid-cols-4 2xl:grid-cols-5 gap-3'>

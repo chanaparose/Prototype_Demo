@@ -298,13 +298,21 @@ export function FactoryIdeasMobile() {
               {[...Array(6)].map((_, i) => <ShowcaseGridCardSkeleton key={i} />)}
             </div>
           )
-        ) : totalCount === 0 ? (
+        ) : totalCount === 0 && (searchText.trim() || (selectedType !== 'all' && effectiveCategoryId !== 'all')) ? (
           <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
             <SearchX size={30} className='mx-auto mb-2 text-gray-400' />
             <p className='text-sm font-medium text-[var(--brand-navy)]'>
               ไม่พบรายการที่ตรงกับเงื่อนไข
             </p>
             <p className='text-xs text-gray-400 mt-1'>ลองเปลี่ยนคีย์เวิร์ดหรือหมวดหมู่</p>
+          </div>
+        ) : totalCount === 0 ? (
+          <div className='bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm'>
+            <Sparkles size={30} className='mx-auto mb-2 text-gray-400' />
+            <p className='text-sm font-medium text-[var(--brand-navy)]'>
+              เรากำลังเตรียมรายการแนะนำจากโรงงานพาร์ทเนอร์ให้คุณ
+            </p>
+            <p className='text-xs text-gray-400 mt-1'>กรุณากลับมาดูอีกครั้งในเร็วๆ นี้</p>
           </div>
         ) : isFactoryTab ? (
           <TabSwipeContent activeKey={factoryScope} tabOrder={factoryIdeasFactoryScopeOrder}>
