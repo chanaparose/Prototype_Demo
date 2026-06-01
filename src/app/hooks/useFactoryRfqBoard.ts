@@ -86,6 +86,8 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
 
     const addressSummary = pickScalarString(inner.address_summary, row.address_summary).trim();
 
+    const unitName = pickScalarString(inner.unit_name, row.unit_name).trim() || null;
+
     const myQuoteStatusRaw = inner.my_quote_status ?? row.my_quote_status;
     const hasMyQuote = pickScalarString(myQuoteStatusRaw) !== '';
     const myQuoteStatus = hasMyQuote ? pickScalarString(myQuoteStatusRaw).toUpperCase() : null;
@@ -111,6 +113,7 @@ function parseRfqRows(board: { rfqs: unknown; factory_category_ids?: unknown }):
       shippingMethodName,
       addressSummary,
       thumbUrl,
+      unitName,
       myQuotedPrice,
       myQuoteStatus,
       hasMyQuote,

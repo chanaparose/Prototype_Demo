@@ -34,6 +34,7 @@ export type RfqCardModel = {
   shippingMethodName: string;
   addressSummary: string;
   thumbUrl: string | null;
+  unitName: string | null;
   myQuotedPrice: number | null;
   myQuoteStatus: string | null;
   hasMyQuote: boolean;
@@ -41,8 +42,6 @@ export type RfqCardModel = {
 };
 
 export type RfqTableRow = RfqCardModel & { createdAtMs?: number };
-
-type StatusPill = { label: string; className: string };
 
 function requestKindLabel(kind?: string): string {
   const k = String(kind ?? '').toUpperCase();
@@ -87,38 +86,6 @@ function formatCreatedAt(ms?: number): string {
     month: 'short',
     year: 'numeric',
   });
-}
-
-function boardStatusPill(row: RfqCardModel): StatusPill {
-  if (row.hasMyQuote) {
-    if (row.myQuoteStatus === 'AC') {
-      return { label: 'ลูกค้ารับแล้ว', className: 'bg-emerald-50 text-emerald-700' };
-    }
-    if (row.myQuoteStatus === 'RJ') {
-      return { label: 'ถูกปฏิเสธ', className: 'bg-rose-50 text-rose-600' };
-    }
-    return { label: 'รอลูกค้าตอบ', className: 'bg-amber-50 text-amber-700' };
-  }
-  if (row.status === 'OP') {
-    return { label: 'รอเสนอราคา', className: 'bg-amber-50 text-amber-700' };
-  }
-  if (row.status === 'CL') {
-    return { label: 'ปิดรับแล้ว', className: 'bg-slate-100 text-slate-600' };
-  }
-  if (row.status === 'CC') {
-    return { label: 'ยกเลิก', className: 'bg-rose-50 text-rose-600' };
-  }
-  return { label: row.status || '—', className: 'bg-slate-100 text-slate-600' };
-}
-
-function boqStatusPill(row: RfqCardModel): StatusPill {
-  if (row.myQuoteStatus === 'AC') {
-    return { label: 'ลูกค้ารับแล้ว', className: 'bg-emerald-50 text-emerald-700' };
-  }
-  if (row.myQuoteStatus === 'RJ') {
-    return { label: 'ถูกปฏิเสธ', className: 'bg-rose-50 text-rose-600' };
-  }
-  return { label: 'รอลูกค้าตอบ', className: 'bg-amber-50 text-amber-700' };
 }
 
 function SortableHead({ children }: { children: React.ReactNode }) {
@@ -207,15 +174,12 @@ function RfqTablePagination({
 
 function RfqTableRowLink({
   row,
-  variant,
   from,
 }: {
   row: RfqTableRow;
-  variant: 'board' | 'boq';
   from: string;
 }) {
   const navigate = useNavigate();
-  const pill = variant === 'boq' ? boqStatusPill(row) : boardStatusPill(row);
   const detailPath = `/factory/rfqs/${row.id}`;
 
   const goToDetail = () => navigate(detailPath, { state: { from } });
@@ -271,17 +235,10 @@ function RfqTableRowLink({
       <TableCell className='min-w-[120px] py-2.5 text-xs font-medium text-slate-900 tabular-nums'>
         {priceLabel(row)}
       </TableCell>
-      <TableCell className='min-w-[120px] py-2.5'>
-        <span
-          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${pill.className}`}
-        >
-          {pill.label}
-        </span>
-        {variant === 'boq' && row.myQuotedPrice != null ? (
-          <p className='mt-0.5 text-[10px] text-slate-500 tabular-nums'>
-            BOQ {formatBaht(row.myQuotedPrice)}/ชิ้น
-          </p>
-        ) : null}
+      <TableCell className='min-w-[120px] py-2.5 text-xs font-medium text-slate-900 tabular-nums'>
+        {row.quantity != null && Number.isFinite(row.quantity)
+          ? `${formatCompactNumber(row.quantity)} ${row.unitName || 'ชิ้น'}`
+          : '—'}
       </TableCell>
       <TableCell className='min-w-[110px] py-2.5 text-xs text-slate-600 whitespace-nowrap'>
         {formatCreatedAt(row.createdAtMs)}
@@ -335,13 +292,13 @@ export function RfqTable({
               <SortableHead>หมวดหมู่</SortableHead>
               <SortableHead>ประเภท</SortableHead>
               <SortableHead>งบประมาณ</SortableHead>
-              <SortableHead>สถานะ</SortableHead>
+              <SortableHead>จำนวน</SortableHead>
               <SortableHead>วันที่สร้าง</SortableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {pageRows.map((row) => (
-              <RfqTableRowLink key={row.id} row={row} variant={variant} from={from} />
+              <RfqTableRowLink key={row.id} row={row} from={from} />
             ))}
           </TableBody>
         </Table>

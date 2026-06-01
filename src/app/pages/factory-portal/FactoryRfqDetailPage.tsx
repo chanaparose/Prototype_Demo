@@ -211,6 +211,11 @@ export function FactoryRfqDetailPage() {
     return Number.isFinite(n) ? n : null;
   }, [rfqBody]);
 
+  const unitName = useMemo(() => {
+    const name = String(rfqBody.unit_name ?? '').trim();
+    return name || 'ชิ้น';
+  }, [rfqBody]);
+
   const revenueApprox = useMemo(() => {
     const totalBudget = Number(
       rfqBody.target_price ?? rfqBody.budget_total ?? rfqBody.total_budget ?? 0,
@@ -512,7 +517,7 @@ export function FactoryRfqDetailPage() {
                     {quantity != null ? (
                       <div className='rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3'>
                         <p className='text-[10px] font-semibold uppercase tracking-wide text-emerald-600 mb-1'>จำนวน</p>
-                        <p className='text-base font-bold text-emerald-800'>{formatCompactNumber(quantity)} ชิ้น</p>
+                        <p className='text-base font-bold text-emerald-800'>{formatCompactNumber(quantity)} {unitName}</p>
                       </div>
                     ) : null}
                     {revenueApprox != null ? (
