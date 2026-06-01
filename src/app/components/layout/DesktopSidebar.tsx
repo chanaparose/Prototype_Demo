@@ -318,11 +318,7 @@ export function DesktopSidebar() {
               variant='unstyled'
               type='button'
               onClick={() => navigate('/register')}
-              className='flex-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-white'
-              style={{
-                background:
-                  'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
-              }}
+              className='flex-1 rounded-lg bg-brand-purple px-2 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-brand-violet-deep'
             >
               Register
             </Button>
@@ -337,12 +333,7 @@ export function DesktopSidebar() {
             type='button'
             data-tour='create-rfq-cta'
             onClick={() => navigate('/create-rfq')}
-            className='w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 active:scale-[0.98]'
-            style={{
-              background:
-                'linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-orange) 100%)',
-              boxShadow: '0 4px 14px rgba(162,56,255,0.30)',
-            }}
+            className='w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-brand-purple text-sm text-white font-semibold shadow-[0_2px_8px_rgba(162,56,255,0.18)] transition-all hover:bg-brand-violet-deep active:scale-[0.98]'
           >
             <Plus size={18} />
             สร้างคำขอราคา

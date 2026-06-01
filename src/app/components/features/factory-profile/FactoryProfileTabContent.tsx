@@ -118,7 +118,7 @@ export function FactoryProfileTabContent({
   }) => (
     <div
       onClick={onClick}
-      className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98]'
+      className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col active:scale-[0.98]'
     >
       <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
         <ImageWithFallback
@@ -204,7 +204,7 @@ export function FactoryProfileTabContent({
       {activeTab === 'products' && (
         <div>
           {productItems.length === 0 ? (
-            <div className='bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center'>
+            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีสินค้าแนะนำ
             </div>
           ) : (
@@ -215,7 +215,7 @@ export function FactoryProfileTabContent({
                   item={item}
                   onClick={() => onProductClick(item.id)}
                   badgeLabel='สินค้า'
-                  badgeColor='var(--brand-sky)'
+                  badgeColor='var(--brand-orange)'
                 />
               ))}
             </div>
@@ -232,7 +232,7 @@ export function FactoryProfileTabContent({
             </p>
           </div>
           {promotionItems.length === 0 ? (
-            <div className='bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center'>
+            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีโปรโมชัน
             </div>
           ) : (
@@ -254,7 +254,7 @@ export function FactoryProfileTabContent({
       {activeTab === 'materials' && (
         <div>
           {materialItems.length === 0 ? (
-            <div className='bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center'>
+            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีวัตถุดิบ
             </div>
           ) : (
@@ -265,7 +265,7 @@ export function FactoryProfileTabContent({
                   item={item}
                   onClick={() => onProductClick(item.id)}
                   badgeLabel='วัตถุดิบ'
-                  badgeColor='var(--brand-teal-light)'
+                  badgeColor='var(--status-success)'
                 />
               ))}
             </div>
@@ -276,7 +276,7 @@ export function FactoryProfileTabContent({
       {activeTab === 'articles' && (
         <div>
           {articleShowcases.length === 0 ? (
-            <div className='bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-500 text-center'>
+            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีบทความ
             </div>
           ) : (
@@ -285,7 +285,7 @@ export function FactoryProfileTabContent({
                 <div
                   key={item.id}
                   onClick={() => onIdeaClick(item.id)}
-                  className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col active:scale-[0.98] p-4 min-w-0'
+                  className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col active:scale-[0.98] p-4 min-w-0'
                 >
                   <div className='flex items-center gap-2 mb-2'>
                     <StatusBadge variant='info' size='sm'>
@@ -311,7 +311,7 @@ export function FactoryProfileTabContent({
 
       {activeTab === 'review' && (
         <div className='space-y-3'>
-          <div className='bg-white rounded-2xl p-4 border border-gray-100 shadow-sm'>
+          <div className='bg-white rounded-lg p-4 border border-gray-200'>
             <div className='flex items-center justify-between mb-2.5'>
               <p
                 className='text-sm text-gray-900 inline-flex items-center gap-1.5'

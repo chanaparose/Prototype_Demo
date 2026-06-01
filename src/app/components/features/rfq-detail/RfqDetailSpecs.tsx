@@ -130,5 +130,5 @@ export function RfqDetailSpecs({ rfq, bare = false }: RfqDetailSpecsProps) {
 
   if (bare) return content;
 
-  return <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>{content}</div>;
+  return <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>{content}</div>;
 }

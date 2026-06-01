@@ -5,7 +5,6 @@ export const factoryIdeasTheme = {
   purpleLight: '#9D77B2',
   orange: 'var(--brand-orange-deep)',
   blue: 'var(--brand-navy)',
-  productBadgeBlue: '#2563EB',
   white: 'var(--neutral-white)',
   gray: 'var(--neutral-warm-surface)',
   lightPurpleBg: 'var(--brand-page)',
@@ -53,9 +52,9 @@ export const factoryIdeasContentTypeBadge: Record<
   Exclude<FactoryIdeasContentType, 'all'>,
   string
 > = {
-  product: factoryIdeasTheme.productBadgeBlue,
+  product: 'var(--brand-orange)',
   promotion: factoryIdeasTheme.orange,
-  material: 'var(--brand-teal-light)',
+  material: 'var(--status-success)',
   idea: factoryIdeasTheme.purple,
   factory: factoryIdeasTheme.teal,
 };

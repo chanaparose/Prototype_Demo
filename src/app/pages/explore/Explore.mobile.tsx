@@ -110,7 +110,7 @@ export function ExploreMobile({
             variant='unstyled'
             type='button'
             onClick={() => navigate('/factory-ideas?type=product')}
-            className='text-brand-magenta text-[12px] font-medium flex items-center gap-0.5'
+            className='text-brand-orange text-[12px] font-medium flex items-center gap-0.5'
           >
             ดูเพิ่มเติม <ChevronRight size={13} />
           </Button>
@@ -151,7 +151,7 @@ export function ExploreMobile({
                     alt={item.title}
                     className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                   />
-                  <div className='absolute top-1 left-2 bg-brand-sky px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
+                  <div className='absolute top-1 left-2 bg-brand-orange px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white uppercase tracking-wide'>
                     สินค้า
                   </div>
                   <ShowcaseHeartButton

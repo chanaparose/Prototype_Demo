@@ -120,7 +120,7 @@ export function RfqAndOrders() {
           </div>
             <Link
             to='/create-rfq'
-            className='flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all hover:opacity-90 shadow-md bg-[linear-gradient(135deg,var(--brand-purple)_0%,var(--brand-orange)_100%)] shadow-[0_6px_20px_rgba(162,56,255,0.35)]'
+            className='flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all bg-brand-purple shadow-[0_2px_8px_rgba(162,56,255,0.18)] hover:bg-brand-violet-deep active:scale-[0.98]'
             >
               <Plus size={16} />
             สร้างคำขอราคา

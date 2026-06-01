@@ -133,7 +133,7 @@ export function RfqDetailOffersSection({
         <div>
           <div className='mb-4 lg:mb-8 lg:mt-2 flex items-start gap-3 lg:gap-4'>
             <div
-              className='mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm'
+              className='mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border'
               style={{
                 background:
                   'linear-gradient(145deg, rgba(162,56,255,0.14) 0%, rgba(124,58,237,0.07) 100%)',
@@ -164,7 +164,7 @@ export function RfqDetailOffersSection({
             {offers.map((offer) => (
               <div
                 key={offer.id}
-                className='bg-white rounded-2xl p-4 shadow-sm border border-gray-100'
+                className='bg-white rounded-lg p-4 border border-gray-200'
               >
                 <div className='flex items-start justify-between mb-3'>
                   <div className='flex items-center gap-2'>
@@ -216,7 +216,7 @@ export function RfqDetailOffersSection({
         </div>
 
         {rfqStatus === 'completed' && orderForRfq && (
-          <div className='bg-green-50 border border-green-100 rounded-2xl p-4'>
+          <div className='bg-green-50 border border-green-100 rounded-lg p-4'>
             <p className='text-xs font-bold text-green-700 mb-2'>โรงงานที่เลือก</p>
             <div className='flex items-center gap-3'>
               <div className='w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-lg'>
@@ -240,7 +240,7 @@ export function RfqDetailOffersSection({
         )}
 
         {rfqStatus === 'cancelled' && (
-          <div className='bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3'>
+          <div className='bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center shrink-0'>
               <XCircle size={24} className='text-slate-500' />
             </div>
@@ -254,7 +254,7 @@ export function RfqDetailOffersSection({
         )}
 
         {rfqStatus === 'closed' && (
-          <div className='bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3'>
+          <div className='bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center shrink-0'>
               <XCircle size={24} className='text-slate-500' />
             </div>
@@ -268,7 +268,7 @@ export function RfqDetailOffersSection({
         )}
 
         {rfqStatus === 'expired' && (
-          <div className='bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3'>
+          <div className='bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0'>
               <AlertCircle size={24} className='text-amber-600' />
             </div>
@@ -288,7 +288,7 @@ export function RfqDetailOffersSection({
     return (
       <>
         {rfqStatus === 'cancelled' && (
-          <div className='bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3'>
+          <div className='bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center shrink-0'>
               <XCircle size={24} className='text-slate-500' />
             </div>
@@ -299,7 +299,7 @@ export function RfqDetailOffersSection({
           </div>
         )}
         {rfqStatus === 'closed' && (
-          <div className='bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3'>
+          <div className='bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-slate-200 flex items-center justify-center shrink-0'>
               <XCircle size={24} className='text-slate-500' />
             </div>
@@ -310,7 +310,7 @@ export function RfqDetailOffersSection({
           </div>
         )}
         {rfqStatus === 'expired' && (
-          <div className='bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3'>
+          <div className='bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3'>
             <div className='w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0'>
               <AlertCircle size={24} className='text-amber-600' />
             </div>
@@ -331,7 +331,7 @@ export function RfqDetailOffersSection({
     return (
       <>
         <div
-          className='rounded-2xl p-4 relative overflow-hidden mt-3'
+          className='rounded-lg p-4 relative overflow-hidden mt-3'
           style={{ background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)' }}
         >
           <div className='absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 bg-white' />
@@ -377,7 +377,7 @@ export function RfqDetailOffersSection({
         <div data-tour='offers-compare'>
           <div className='mb-4 lg:mb-8 lg:mt-2 flex items-start gap-3 lg:gap-4'>
             <div
-              className='mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm'
+              className='mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border'
               style={{
                 background:
                   'linear-gradient(145deg, rgba(242,138,46,0.16) 0%, rgba(162,56,255,0.08) 100%)',
@@ -497,7 +497,7 @@ export function RfqDetailOffersSection({
                       }
                     }
                   }}
-                  className='bg-white rounded-2xl p-4 shadow-sm border-2 cursor-pointer transition-all'
+                  className='bg-white rounded-lg p-4 border-2 cursor-pointer transition-all'
                   style={{
                     borderColor: offer.recommended
                       ? 'var(--brand-mauve)'
@@ -787,9 +787,9 @@ export function RfqDetailOffersSection({
   const isClosed = rfqStatus === 'closed';
 
   return (
-    <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
+    <div className='bg-white rounded-lg border border-gray-200 p-8 text-center'>
       <div
-        className='w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3'
+        className='w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-3'
         style={{ background: isClosed ? 'var(--neutral-slate-muted)' : 'var(--neutral-muted)' }}
       >
         {isClosed ? (

@@ -98,7 +98,7 @@ export function QuotationHistoryPanel({
   if (fetched && history.length <= 1) return null;
 
   return (
-    <div className='w-full rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3'>
+    <div className='w-full rounded-lg border border-indigo-100 bg-indigo-50/40 p-3'>
       <Button
         variant='unstyled'
         type='button'

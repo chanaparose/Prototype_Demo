@@ -530,7 +530,7 @@ export function PromotionDetailMobile() {
               <span
                         className='absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
                 style={{
-                          backgroundColor: isPromo ? BRAND.orange : '#2563EB',
+                          backgroundColor: BRAND.orange,
                         }}
                       >
                         {isPromo ? 'โปรโมชัน' : 'สินค้า'}

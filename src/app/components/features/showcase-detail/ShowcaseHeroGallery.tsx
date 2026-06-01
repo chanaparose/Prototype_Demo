@@ -59,7 +59,7 @@ export function ShowcaseHeroGallery({
   return (
     <div className={className}>
       <div
-        className='relative aspect-[4/3] rounded-xl overflow-hidden border'
+        className='relative aspect-[4/3] rounded-lg overflow-hidden border'
         style={{ borderColor, background: 'var(--neutral-warm-surface)' }}
       >
         <Carousel setApi={setApi} options={{ loop: hasMultipleImages }} className='h-full'>

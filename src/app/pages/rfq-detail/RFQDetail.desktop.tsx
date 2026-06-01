@@ -262,7 +262,7 @@ export function RFQDetailDesktop() {
 
         <div className='grid grid-cols-[1fr_360px] gap-6 items-start'>
           <div className='space-y-4'>
-            <div className='bg-white rounded-2xl border border-gray-100 shadow-sm'>
+            <div className='bg-white rounded-lg border border-gray-200'>
               <div className='px-5 py-4 border-b border-gray-100'>
                 <p className='text-sm font-bold' style={{ color: COLORS.blue }}>
                   สรุปสถานะ
@@ -281,7 +281,7 @@ export function RFQDetailDesktop() {
               </div>
             </div>
 
-            <div className='bg-white rounded-2xl border border-gray-100 shadow-sm'>
+            <div className='bg-white rounded-lg border border-gray-200'>
               <div className='px-5 py-4 border-b border-gray-100 flex items-center justify-between'>
                 <div>
                   <p className='text-sm font-bold' style={{ color: COLORS.blue }}>
@@ -313,7 +313,7 @@ export function RFQDetailDesktop() {
           </div>
 
           <div className='space-y-4 sticky top-6'>
-            <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
+            <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
               <div className='px-5 py-4 border-b border-gray-100 flex items-center justify-between'>
                 <div>
                   <p className='text-sm font-bold' style={{ color: COLORS.blue }}>
@@ -339,7 +339,7 @@ export function RFQDetailDesktop() {
             </div>
 
             <div
-              className='rounded-2xl p-5 text-white shadow-sm relative overflow-hidden'
+              className='rounded-lg p-5 text-white relative overflow-hidden'
               style={{
                 background: 'linear-gradient(135deg, var(--brand-navy-deep) 0%, #4A267D 100%)',
               }}

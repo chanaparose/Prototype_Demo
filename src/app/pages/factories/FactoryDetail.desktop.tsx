@@ -87,7 +87,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
           <ArrowLeft className='h-4 w-4' />
           กลับหน้าหลัก
         </Button>
-        <div className='rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm'>
+        <div className='rounded-lg border border-gray-200 bg-white p-8 text-center'>
           <Factory size={38} className='mx-auto mb-3 text-gray-400' />
           <p className='text-[14px] font-medium text-gray-500'>ไม่พบข้อมูลโรงงาน</p>
         </div>
@@ -160,7 +160,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
       </div>
 
       <div className='flex-1 px-8 2xl:px-10 py-6'>
-        <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm pt-0'>
+        <div className='overflow-hidden rounded-lg border border-gray-200 bg-white pt-0'>
           <FactoryProfileTabContent
             activeTab={activeTab}
             onTabChange={setActiveTab as (tab: TabId) => void}

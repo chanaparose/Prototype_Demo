@@ -98,7 +98,7 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
           <ArrowLeft className='h-4 w-4' />
           กลับหน้าหลัก
         </Button>
-        <div className='rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm'>
+        <div className='rounded-lg border border-gray-200 bg-white p-8 text-center'>
           <Factory size={30} className='mx-auto mb-2 text-gray-400' />
           <p className='text-sm font-medium text-gray-500'>ไม่พบข้อมูลโรงงาน</p>
         </div>
@@ -150,7 +150,7 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
           {statItems.map((s) => (
             <div
               key={s.label}
-              className='rounded-2xl border border-gray-100 bg-white p-2.5 text-center shadow-sm'
+              className='rounded-lg border border-gray-200 bg-white p-2.5 text-center'
             >
               <div className='mb-1 flex justify-center'>{s.icon}</div>
               <p className='text-[11px] font-bold leading-tight text-gray-900'>{s.value}</p>

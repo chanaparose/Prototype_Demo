@@ -115,7 +115,7 @@ export function ProductDetailMobile() {
         >
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
-        <div className='rounded-2xl border border-gray-100 bg-white p-6 text-center text-sm text-gray-500 shadow-sm'>
+        <div className='rounded-lg border border-gray-200 bg-white p-6 text-center text-sm text-gray-500'>
           {error ?? 'ไม่พบข้อมูลสินค้า'}
         </div>
       </div>
@@ -241,8 +241,14 @@ export function ProductDetailMobile() {
             </span>
           ) : null}
           <span
-            className='inline-flex items-center px-1.5 py-0.5 rounded-sm text-[12px] font-semibold'
-            style={{ background: BRAND.purpleSoft, color: BRAND.purple }}
+            className='inline-flex items-center px-1.5 py-0.5 rounded-sm text-[12px] font-semibold text-white'
+            style={{
+              background: isIdea
+                ? BRAND.purple
+                : isMaterial
+                  ? 'var(--status-success)'
+                  : BRAND.orange,
+            }}
           >
             {isIdea ? 'ไอเดีย' : isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
           </span>
@@ -387,9 +393,9 @@ export function ProductDetailMobile() {
         className='block w-full text-left bg-white px-4 py-3 active:opacity-90'
       >
         <div className='flex items-center gap-3'>
-          <div className='w-fit shrink-0 rounded-2xl'>
+          <div className='w-fit shrink-0 rounded-lg'>
             <div
-              className={`relative block h-17 w-17 overflow-hidden rounded-2xl border-2 shadow-md ring-1 ring-white ${
+              className={`relative block h-17 w-17 overflow-hidden rounded-lg border ${
                 factory?.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
               }`}
             >
@@ -518,7 +524,7 @@ export function ProductDetailMobile() {
                         `/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`,
                       )
                     }
-                    className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col h-full w-full text-left active:scale-[0.98]'
+                    className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col h-full w-full text-left active:scale-[0.98]'
                   >
                     <div className='relative aspect-[4/3] overflow-hidden bg-gray-100 shrink-0'>
                       <ImageWithFallback
@@ -528,7 +534,7 @@ export function ProductDetailMobile() {
                       />
                       <span
                         className='absolute top-1 left-1 z-[1] px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white'
-                        style={{ backgroundColor: isPromo ? BRAND.orange : '#2563EB' }}
+                        style={{ backgroundColor: BRAND.orange }}
                       >
                         {isPromo ? 'โปรโมชัน' : 'สินค้า'}
                       </span>
@@ -573,7 +579,7 @@ export function ProductDetailMobile() {
       </>
 
       <div
-        className='fixed inset-x-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-2xl shadow-[0_12px_30px_rgba(46,34,82,0.16)] overflow-hidden transition-[bottom] duration-300 ease-in-out'
+        className='fixed inset-x-2 bg-white/92 backdrop-blur-md border z-40 flex items-stretch h-[58px] rounded-xl shadow-[0_4px_14px_rgba(46,34,82,0.12)] overflow-hidden transition-[bottom] duration-300 ease-in-out'
         style={{
           borderColor: BRAND.border,
           bottom: mobileActionBarBottomOffset(bottomNavHidden),

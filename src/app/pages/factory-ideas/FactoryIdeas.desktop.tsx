@@ -459,7 +459,7 @@ export function FactoryIdeasDesktop() {
                         alt={item.title}
                         className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                       />
-                      <span className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--brand-teal-light)] px-1.5 py-0.5 text-[8px] font-bold text-white'>
+                      <span className='absolute left-1 top-1 z-[1] rounded-full bg-[var(--status-success)] px-1.5 py-0.5 text-[8px] font-bold text-white'>
                         วัตถุดิบ
                       </span>
                       <ShowcaseHeartButton

@@ -32,7 +32,7 @@ export function RfqFormSection({
   return (
     <section
       data-tour={dataTour}
-      className={`overflow-hidden rounded-2xl border border-gray-100 bg-white ${className}`}
+      className={`overflow-hidden rounded-lg border border-gray-200 bg-white ${className}`}
     >
       <div className='flex items-start justify-between gap-2 border-b border-gray-100 px-4 py-3 lg:px-5'>
         <div className='min-w-0'>
@@ -149,7 +149,7 @@ export function RfqCollapsibleSection({
 }: RfqCollapsibleSectionProps) {
   return (
     <details
-      className='group overflow-hidden rounded-2xl border border-gray-100 bg-white'
+      className='group overflow-hidden rounded-lg border border-gray-200 bg-white'
       open={defaultOpen}
     >
       <summary className='flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 marker:content-none lg:px-5 [&::-webkit-details-marker]:hidden'>
@@ -194,7 +194,7 @@ export function RfqSummaryCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className='rounded-2xl border border-gray-100 bg-white px-4 py-1 lg:px-5'>
+    <section className='rounded-lg border border-gray-200 bg-white px-4 py-1 lg:px-5'>
       <p className='border-b border-gray-100 py-2.5 text-[13px] font-bold text-brand-navy-deep'>{title}</p>
       <dl>{children}</dl>
     </section>

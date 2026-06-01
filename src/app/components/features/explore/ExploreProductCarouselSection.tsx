@@ -75,7 +75,7 @@ export function ExploreProductCarouselSection({
           type='button'
           onClick={() => navigate(seeMoreHref)}
           className='text-xs font-medium hover:underline flex items-center gap-0.5 transition-colors'
-          style={{ color: isMaterial ? 'var(--status-success)' : 'var(--brand-magenta)' }}
+          style={{ color: isMaterial ? 'var(--status-success)' : 'var(--brand-orange)' }}
         >
           ดูเพิ่มเติม <ChevronRight size={14} />
         </Button>
@@ -148,7 +148,7 @@ export function ExploreProductCarouselSection({
                             />
                             <span
                               className={`absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white ${
-                                isMaterial ? 'bg-brand-teal-light' : 'bg-brand-sky'
+                                isMaterial ? 'bg-status-success' : 'bg-brand-orange'
                               }`}
                             >
                               {isMaterial ? 'วัตถุดิบ' : 'สินค้า'}

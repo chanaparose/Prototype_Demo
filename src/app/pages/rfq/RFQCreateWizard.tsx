@@ -536,7 +536,7 @@ export function RFQCreateWizard() {
                 />
               </RfqSummaryCard>
             ) : (
-              <section className='rounded-2xl border border-gray-100 bg-white px-4 py-4'>
+              <section className='rounded-lg border border-gray-200 bg-white px-4 py-4'>
                 <p className='text-[13px] font-bold text-brand-navy-deep mb-2'>ยืนยันการขอตัวอย่าง</p>
                 <Label className='flex items-start gap-2 text-[12px] text-brand-navy-deep'>
                   <Checkbox

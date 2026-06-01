@@ -228,7 +228,7 @@ export function RFQDetailMobile() {
       </div>
 
       <div className='px-4 pb-32 pt-3'>
-        <div className='bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm'>
+        <div className='bg-white border border-gray-200 rounded-lg overflow-hidden'>
           <div className='sticky z-40 flex border-b border-gray-200 bg-white/95 backdrop-blur-sm'>
             {([
               { id: 'specs' as const, label: 'สเปกของโครงการ' },

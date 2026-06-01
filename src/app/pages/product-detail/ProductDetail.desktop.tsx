@@ -110,7 +110,7 @@ export function ProductDetailDesktop() {
         >
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
-        <div className='bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm'>
+        <div className='bg-white rounded-lg border border-gray-200 p-10 text-center'>
           <PackageX size={38} className='mx-auto mb-3 text-gray-400' />
           <p className='text-[14px] text-gray-500 font-medium'>{error || 'ไม่พบข้อมูลสินค้า'}</p>
         </div>
@@ -176,7 +176,7 @@ export function ProductDetailDesktop() {
       </div>
 
       <div className='px-8 2xl:px-10 pb-10 space-y-4'>
-        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6'>
+        <div className='bg-white rounded-lg border border-gray-200 p-6'>
           <div className='flex gap-8'>
             <div className='w-[450px] 2xl:w-[520px] shrink-0'>
               <ShowcaseHeroGallery
@@ -231,7 +231,16 @@ export function ProductDetailDesktop() {
                     <BadgeCheck className='w-3 h-3' /> Preferred
                   </span>
                 ) : null}
-                <span className='inline-flex items-center rounded-sm bg-[#F5F3FF] px-2 py-0.5 text-[14px] font-semibold text-[var(--brand-purple)]'>
+                <span
+                  className='inline-flex items-center rounded-sm px-2 py-0.5 text-[14px] font-semibold text-white'
+                  style={{
+                    background: isIdea
+                      ? 'var(--brand-purple)'
+                      : isMaterial
+                        ? 'var(--status-success)'
+                        : 'var(--brand-orange)',
+                  }}
+                >
                   {isIdea ? 'ไอเดีย / บทความ' : isMaterial ? 'วัตถุดิบ' : 'สินค้า'}
                 </span>
                 {item.category ? (
@@ -362,12 +371,12 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-5'>
+        <div className='bg-white rounded-lg border border-gray-200 p-5'>
           <div className='flex items-center gap-5'>
             <div className='flex items-center gap-4 min-w-0'>
-              <div className='w-fit shrink-0 rounded-2xl'>
+              <div className='w-fit shrink-0 rounded-lg'>
                 <div
-                  className={`relative block h-17 w-17 overflow-hidden rounded-2xl border-2 shadow-md ring-1 ring-white ${
+                  className={`relative block h-17 w-17 overflow-hidden rounded-lg border ${
                     factory?.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
                   }`}
                 >
@@ -459,7 +468,7 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
             <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>ข้อมูลจำเพาะของสินค้า</p>
           </div>
@@ -489,7 +498,7 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
             <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>รายละเอียดสินค้า</p>
           </div>
@@ -505,7 +514,7 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
             <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>คะแนนรีวิว</p>
           </div>
@@ -568,7 +577,7 @@ export function ProductDetailDesktop() {
           </div>
         </div>
 
-        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden'>
+        <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
           <div className={SHOWCASE_SECTION_HEADER_CLASS}>
             <p className={SHOWCASE_SECTION_HEADER_TITLE_CLASS}>สินค้าที่ใกล้เคียง</p>
           </div>
@@ -590,7 +599,7 @@ export function ProductDetailDesktop() {
                         `/${isPromo ? 'promotion-detail' : 'product-detail'}?showcase_id=${rp.id}`,
                       )
                     }
-                    className='bg-white rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:shadow-md transition-all group flex flex-col w-full text-left'
+                    className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col w-full text-left'
                   >
                     <div className='relative aspect-[4/3] overflow-hidden bg-gray-100'>
                       <ImageWithFallback
@@ -598,11 +607,7 @@ export function ProductDetailDesktop() {
                         alt={rp.title}
                         className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
                       />
-                      <span
-                        className={`absolute left-1 top-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold text-white ${
-                          isPromo ? 'bg-[var(--brand-orange)]' : 'bg-[#2563EB]'
-                        }`}
-                      >
+                      <span className='absolute left-1 top-1 rounded-full bg-[var(--brand-orange)] px-1.5 py-0.5 text-[8px] font-bold text-white'>
                         {isPromo ? 'โปรโมชัน' : 'สินค้า'}
                       </span>
                     </div>

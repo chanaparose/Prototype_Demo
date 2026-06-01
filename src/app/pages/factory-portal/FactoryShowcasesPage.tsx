@@ -342,10 +342,10 @@ export function FactoryShowcasesPage() {
                         style={{
                           backgroundColor:
                             activeType === 'MT'
-                              ? 'var(--brand-teal-light)'
+                              ? 'var(--status-success)'
                               : activeType === 'PM'
                                 ? 'var(--brand-orange)'
-                                : 'var(--brand-sky)',
+                                : 'var(--brand-orange)',
                         }}
                       >
                         {activeType === 'MT'

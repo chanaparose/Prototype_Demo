@@ -82,14 +82,14 @@ export function FactoryProfileHero({
     Boolean(address) || Boolean(description) || groupedCategorySubs.length > 0 || hasCerts;
 
   return (
-    <div className='rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden'>
-      <div className='px-4 sm:px-5 pt-4 pb-1 border-b border-gray-100 bg-gradient-to-r from-violet-50/70 via-indigo-50/50 to-white'>
+    <div className='overflow-hidden rounded-lg border border-gray-200 bg-white'>
+      <div className='px-4 sm:px-5 pt-4 pb-1 border-b border-gray-100 bg-violet-50/50'>
         <div className='flex items-center justify-between gap-2'>
           <Button
             variant='unstyled'
             type='button'
             onClick={onBack}
-            className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm hover:bg-gray-50'
+            className='inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50'
           >
             <ArrowLeft className='h-4 w-4 text-gray-700' />
           </Button>
@@ -99,7 +99,7 @@ export function FactoryProfileHero({
               type='button'
               onClick={onChat}
               disabled={chatLoading}
-              className='inline-flex h-9 w-9 items-center justify-center rounded-xl border border-indigo-100 bg-white shadow-sm hover:bg-indigo-50 disabled:opacity-60'
+              className='inline-flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-100 bg-white hover:bg-indigo-50 disabled:opacity-60'
               aria-label='แชทกับโรงงาน'
             >
               {chatLoading ? (
@@ -117,9 +117,9 @@ export function FactoryProfileHero({
       <div className='relative z-[2] px-5 pb-5 pt-4'>
         <div className='flex flex-col gap-4 sm:flex-row sm:items-end'>
           <div className='flex w-fit shrink-0 items-end gap-2'>
-            <div className='rounded-2xl'>
+            <div className='rounded-lg'>
               <div
-                className={`relative block h-24 w-24 overflow-hidden rounded-2xl border-2 shadow-md ring-4 ring-white sm:h-28 sm:w-28 ${
+                className={`relative block h-24 w-24 overflow-hidden rounded-lg border sm:h-28 sm:w-28 ${
                   factory.image ? 'border-white' : 'border-dashed border-indigo-200 bg-violet-50'
                 }`}
               >
@@ -168,7 +168,7 @@ export function FactoryProfileHero({
             {hasDetails ? (
               <div className='mt-3 space-y-2 border-t border-gray-100 pt-3 text-sm text-gray-600'>
                 {description ? (
-                  <p className='rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2 text-[13px] leading-relaxed text-gray-700'>
+                  <p className='rounded-lg border border-violet-100 bg-violet-50/40 px-3 py-2 text-[13px] leading-relaxed text-gray-700'>
                     {description}
                   </p>
                 ) : null}
@@ -187,7 +187,7 @@ export function FactoryProfileHero({
                       variant='unstyled'
                       type='button'
                       onClick={() => setShowCategorySubs((v) => !v)}
-                      className='flex w-full max-w-xl items-center justify-between gap-2 rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2 text-left'
+                      className='flex w-full max-w-xl items-center justify-between gap-2 rounded-lg border border-violet-100 bg-violet-50/40 px-3 py-2 text-left'
                     >
                       <span className='text-[12px] font-semibold text-violet-800'>
                         หมวดหมู่ที่รับผลิต
@@ -200,7 +200,7 @@ export function FactoryProfileHero({
                       </div>
                     </Button>
                     {showCategorySubs ? (
-                      <div className='mt-2 max-h-80 space-y-1.5 overflow-auto rounded-xl border border-violet-100 bg-white p-2 shadow-sm'>
+                      <div className='mt-2 max-h-80 space-y-1.5 overflow-auto rounded-lg border border-violet-100 bg-white p-2'>
                         {groupedCategorySubs.map(([cat, subs]) => (
                           <div
                             key={`cat-group-${cat}`}

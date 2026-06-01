@@ -29,7 +29,7 @@ export function RfqDetailStatusCard({
   footer,
 }: RfqDetailStatusCardProps) {
   return (
-    <div className='rounded-2xl p-4 border border-violet-200 bg-gradient-to-br from-white via-violet-50/70 to-indigo-50/50 shadow-[0_8px_24px_rgba(124,58,237,0.12)]'>
+    <div className='rounded-lg p-4 border border-violet-200 bg-violet-50/60'>
       <div className='flex items-center justify-between mb-3'>
         <div className='flex items-center gap-2'>
           <div
