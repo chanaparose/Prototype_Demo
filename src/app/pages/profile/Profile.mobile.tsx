@@ -24,12 +24,12 @@ import {
   Loader2,
   CheckCircle2,
 } from 'lucide-react';
-import { useData, useDataStore } from '@/stores/useDataStore';
+import { useData } from '@/stores/useDataStore';
 import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { getAvailableRoles } from '@/services/api/authApi';
 import { profileApi } from '@/services/api/userApi';
 import { addressesApi } from '@/services/api/masterApi';
-import { resolveCustomerAvatarSrc } from '@/utils/resolveCustomerAvatar';
+import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import { Button } from '@/components/ui/button';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Input } from '@/components/ui/input';
@@ -230,7 +230,6 @@ function MobileRoleSwitcher() {
 export function ProfileMobile() {
   const navigate = useNavigate();
   const data = useData();
-  const patchCurrentUser = useDataStore((s) => s.patchCurrentUser);
   const { logout, user: authUser } = useAuth();
   const currentUser = data.currentUser;
   const role = String(
@@ -286,22 +285,10 @@ export function ProfileMobile() {
     }
   };
 
-  const profileAvatarSrc = resolveCustomerAvatarSrc(currentUser?.avatar, authUser?.avatar);
-
-  useEffect(() => {
-    let cancelled = false;
-    profileApi
-      .get()
-      .then((p) => {
-        if (cancelled) return;
-        const avatarUrl = String(p.avatar_url ?? '').trim();
-        if (avatarUrl) patchCurrentUser({ avatar: avatarUrl });
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [patchCurrentUser]);
+  const profileAvatarSrc = resolveCustomerAvatarSrc(
+    currentUser?.id ?? authUser?.id,
+    192,
+  );
 
   useEffect(() => {
     let cancelled = false;

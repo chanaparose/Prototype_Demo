@@ -1,6 +1,6 @@
 import type { IConversationResponse } from '@/types/api';
+import { getCustomerAvatarUrl } from '@/utils/customerAvatar';
 
-const CUSTOMER_AVATAR = '/assets/avatars/customer-default.svg';
 export const FACTORY_FALLBACK_AVATAR = '/assets/avatars/factory-fallback.svg';
 
 export interface CounterpartyView {
@@ -33,7 +33,7 @@ export function resolveCounterparty(
   return {
     title: conv.customer.display_name || `ลูกค้า #${conv.customer_id}`,
     subtitle: undefined,
-    avatarUrl: CUSTOMER_AVATAR,
+    avatarUrl: getCustomerAvatarUrl(conv.customer_id, 96),
     verified: false,
     counterpartyUserId: conv.customer_id,
     viewerRole,

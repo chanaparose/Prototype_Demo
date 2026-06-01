@@ -23,8 +23,7 @@ import {
   isFactorySidebarNavActive,
 } from '@/components/layout/factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
-import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
-import { resolveCustomerAvatarSrc } from '@/utils/resolveCustomerAvatar';
+import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
@@ -140,7 +139,7 @@ export function DesktopSidebar() {
     .find(Boolean);
   const avatarSrc = isFactory
     ? avatarFromApi || DEFAULT_USER_AVATAR_SRC
-    : resolveCustomerAvatarSrc(currentUser?.avatar, authUser?.avatar);
+    : resolveCustomerAvatarSrc(currentUser?.id ?? authUser?.id, 96);
 
   return (
     <aside className='hidden lg:flex flex-col fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40'>

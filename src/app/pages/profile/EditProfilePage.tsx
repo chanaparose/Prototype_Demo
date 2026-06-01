@@ -6,7 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { profileApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
-import { useDataStore } from '@/stores/useDataStore';
+import { resolveCustomerAvatarSrc } from '@/utils/customerAvatar';
 import {
   profileEditFormSchema,
   validateProfileEditForRole,
@@ -45,13 +45,11 @@ const emptyValues: ProfileEditFormValues = {
 
 export function EditProfilePage() {
   const navigate = useNavigate();
-  const { user, refreshUser } = useAuth();
-  const patchCurrentUser = useDataStore((s) => s.patchCurrentUser);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [rootError, setRootError] = useState('');
   const [role, setRole] = useState('');
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState('');
+  const profileAvatarSrc = resolveCustomerAvatarSrc(user?.id, 112);
 
   const form = useForm<ProfileEditFormValues>({
     resolver: zodResolver(profileEditFormSchema),
@@ -69,7 +67,6 @@ export function EditProfilePage() {
       .then((p) => {
         if (!mounted) return;
         const addr = (p.address ?? {}) as Record<string, unknown>;
-        setAvatarPreview(String(p.avatar_url ?? ''));
         setRole(String(p.role ?? user?.role ?? ''));
         form.reset({
           first_name: String(p.first_name ?? ''),
@@ -104,22 +101,7 @@ export function EditProfilePage() {
     }
     setRootError('');
     try {
-      let avatarUrl: string | undefined;
-      if (avatarFile) {
-        const uploadRes = await profileApi.uploadAvatar(avatarFile);
-        avatarUrl = String(
-          uploadRes.avatar_url ?? (uploadRes as Record<string, unknown>).avatar_url ?? '',
-        ).trim() || undefined;
-      }
-      const updateData: Record<string, unknown> = { ...values, bio: values.bio.slice(0, 300) };
-      if (avatarUrl) {
-        updateData.avatar_url = avatarUrl;
-      }
-      await profileApi.update(updateData);
-      if (avatarUrl) {
-        patchCurrentUser({ avatar: avatarUrl });
-      }
-      await refreshUser();
+      await profileApi.update({ ...values, bio: values.bio.slice(0, 300) });
       navigate('/profile');
     } catch (e) {
       setRootError(getErrorMessage(e, 'บันทึกไม่สำเร็จ'));
@@ -178,23 +160,13 @@ export function EditProfilePage() {
         >
           <div className='flex items-center gap-3'>
             <Image
-              src={avatarPreview || '/assets/avatars/customer-default.svg'}
+              src={profileAvatarSrc}
               alt='avatar'
-              className='w-14 h-14 rounded-lg object-cover bg-gray-100'
+              className='h-14 w-14 rounded-lg bg-gray-100 object-cover'
             />
-            <label className='text-xs font-semibold text-brand-purple cursor-pointer hover:text-brand-violet-deep transition-colors'>
-              เปลี่ยนรูปโปรไฟล์
-              <Input
-                type='file'
-                accept='image/*'
-                className='hidden'
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  setAvatarFile(f);
-                  if (f) setAvatarPreview(URL.createObjectURL(f));
-                }}
-              />
-            </label>
+            <p className='text-xs text-slate-500'>
+              รูปโปรไฟล์ถูกสร้างอัตโนมัติจากบัญชีของคุณ
+            </p>
           </div>
 
           <FormField
