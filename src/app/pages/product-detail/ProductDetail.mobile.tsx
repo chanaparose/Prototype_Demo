@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { cn } from '@lib/utils';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
+  SHOWCASE_DETAIL_DATA_TEXT_CLASS,
   formatShowcaseTHB as formatTHB,
   formatShowcaseThaiDate as formatThaiDate,
   normalizeShowcaseMarkdown as normalizeMarkdownContent,
@@ -357,8 +359,13 @@ export function ProductDetailMobile() {
               className='flex items-start justify-between py-2 gap-3'
               style={idx > 0 ? { borderTop: `1px solid ${BRAND.border}` } : undefined}
             >
-              <span className='text-[12px] text-gray-500 w-32 shrink-0'>{row.label}</span>
-              <span className='text-[12px] text-right flex-1' style={{ color: BRAND.ink }}>
+              <span className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-gray-500 w-32 shrink-0')}>
+                {row.label}
+              </span>
+              <span
+                className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-right flex-1')}
+                style={{ color: BRAND.ink }}
+              >
                 {row.value}
               </span>
             </div>
@@ -374,12 +381,11 @@ export function ProductDetailMobile() {
           รายละเอียดสินค้า
         </p>
         {markdown ? (
-          <MarkdownBody
-            source={markdown}
-            className='max-w-none !text-[12px] md:!text-[12px] text-gray-700 leading-relaxed [&_p]:!text-[12px] [&_li]:!text-[12px] [&_a]:!text-[12px] [&_blockquote]:!text-[12px] [&_h1]:!text-[12px] [&_h2]:!text-[12px] [&_h3]:!text-[12px]'
-          />
+          <MarkdownBody source={markdown} typography='showcase-detail' />
         ) : (
-          <p className='text-[12px] text-gray-400'>ยังไม่มีรายละเอียดเพิ่มเติม</p>
+          <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-gray-400')}>
+            ยังไม่มีรายละเอียดเพิ่มเติม
+          </p>
         )}
       </div>
 

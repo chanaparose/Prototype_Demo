@@ -1,5 +1,6 @@
 import React from 'react';
 import { Boxes, Clock3 } from 'lucide-react';
+import { SHOWCASE_DETAIL_DATA_TEXT_CLASS } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { appColors } from '@/styles/colors';
 import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 
@@ -26,13 +27,19 @@ function Row({
 }>) {
   return (
     <div className='flex items-center justify-between gap-3 py-2'>
-      <span className='inline-flex items-center gap-2 text-[12px]' style={{ color: LABEL_COLOR }}>
+      <span
+        className={`inline-flex items-center gap-2 ${SHOWCASE_DETAIL_DATA_TEXT_CLASS}`}
+        style={{ color: LABEL_COLOR }}
+      >
         <span className='w-6 h-6 rounded-lg bg-brand-page flex items-center justify-center'>
           {icon}
         </span>
         {label}
       </span>
-      <span className='text-[13px] font-semibold tabular-nums' style={{ color: VALUE_COLOR }}>
+      <span
+        className={`${SHOWCASE_DETAIL_DATA_TEXT_CLASS} font-semibold tabular-nums`}
+        style={{ color: VALUE_COLOR }}
+      >
         {value}
       </span>
     </div>

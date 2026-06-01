@@ -35,7 +35,6 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
     activeTab,
     setActiveTab,
     productItems,
-    promotionItems,
     materialItems,
     articleItems,
     reviews,
@@ -129,23 +128,21 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
     },
   ];
   return (
-    <div className='min-h-screen bg-gray-50 pb-10'>
-      <div className='px-4 pt-4'>
-        <FactoryProfileHero
-          factory={factory}
-          onBack={handleBack}
-          onChat={handleChat}
-          chatLoading={starting}
-          showChat={canChat}
-          profile={profile}
-          factoryCategoryNames={factoryCategoryNames}
-          factorySubCategoryNames={factorySubCategoryNames}
-          factorySubCategoryPairs={factorySubCategoryPairs}
-          apiCertificates={apiCertificates}
-        />
-      </div>
+    <div className='min-h-screen bg-gray-50 px-4 pb-10 pt-4'>
+      <FactoryProfileHero
+        factory={factory}
+        onBack={handleBack}
+        onChat={handleChat}
+        chatLoading={starting}
+        showChat={canChat}
+        profile={profile}
+        factoryCategoryNames={factoryCategoryNames}
+        factorySubCategoryNames={factorySubCategoryNames}
+        factorySubCategoryPairs={factorySubCategoryPairs}
+        apiCertificates={apiCertificates}
+      />
 
-      <div className='space-y-3 px-4 pt-4'>
+      <div className='mt-4 space-y-3'>
         <div className='grid grid-cols-4 gap-2'>
           {statItems.map((s) => (
             <div
@@ -164,7 +161,6 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
           onTabChange={setActiveTab as (tab: TabId) => void}
           factoryId={factory.id}
           productItems={productItems}
-          promotionItems={promotionItems}
           materialItems={materialItems}
           articleShowcases={articleItems.showcaseIdeas}
           factory={{
@@ -179,7 +175,6 @@ export function FactoryDetailMobile({ state }: FactoryDetailMobileProps) {
           }}
           reviews={reviews}
           onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
-          onPromotionClick={(itemId) => navigate(`/factory-ideas/promotions/${itemId}`)}
           onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}
         />
       </div>

@@ -83,7 +83,7 @@ export function FactoryProfileHero({
 
   return (
     <div className='overflow-hidden rounded-lg border border-gray-200 bg-white'>
-      <div className='px-4 sm:px-5 pt-4 pb-1 border-b border-gray-100 bg-violet-50/50'>
+      <div className='px-4 pt-2 pb-2 border-b border-gray-100 bg-violet-50/50 lg:px-5'>
         <div className='flex items-center justify-between gap-2'>
           <Button
             variant='unstyled'
@@ -114,7 +114,7 @@ export function FactoryProfileHero({
         </div>
       </div>
 
-      <div className='relative z-[2] px-5 pb-6 pt-4'>
+      <div className='relative z-[2] px-4 pb-6 pt-4 lg:px-5'>
         <div className='flex flex-col gap-4 sm:flex-row sm:items-start'>
           <div className='flex w-fit shrink-0 items-end gap-2 sm:mt-1'>
             <div className='rounded-lg'>

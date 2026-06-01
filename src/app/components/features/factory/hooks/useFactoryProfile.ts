@@ -56,10 +56,6 @@ export function useFactoryProfile() {
     () => factoryShowcases.filter((item) => item.contentType === 'product'),
     [factoryShowcases],
   );
-  const promotionItems = React.useMemo(
-    () => factoryShowcases.filter((item) => item.contentType === 'promotion'),
-    [factoryShowcases],
-  );
   const materialItems = React.useMemo(
     () => factoryShowcases.filter((item) => item.contentType === 'material'),
     [factoryShowcases],
@@ -103,7 +99,6 @@ export function useFactoryProfile() {
     profile,
     conversation,
     productItems,
-    promotionItems,
     materialItems,
     articleItems,
     reviews,

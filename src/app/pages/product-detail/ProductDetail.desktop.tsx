@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { cn } from '@lib/utils';
 import {
   SHOWCASE_DETAIL_BRAND as BRAND,
+  SHOWCASE_DETAIL_DATA_TEXT_CLASS,
   SHOWCASE_SECTION_HEADER_CLASS,
   SHOWCASE_SECTION_HEADER_TITLE_CLASS,
   formatShowcaseTHB as formatTHB,
@@ -483,7 +485,7 @@ export function ProductDetailDesktop() {
                   Number.isFinite(leadTimeDays) && leadTimeDays > 0 ? leadTimeDays : null,
               }}
             />
-            <Table className='w-full text-[14px]'>
+            <Table className={cn('w-full', SHOWCASE_DETAIL_DATA_TEXT_CLASS)}>
               <TableBody>
                 {specRows.map((row, idx) => (
                   <TableRow
@@ -507,12 +509,11 @@ export function ProductDetailDesktop() {
           </div>
           <div className='p-6'>
             {markdown ? (
-              <MarkdownBody
-                source={markdown}
-                className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
-              />
+              <MarkdownBody source={markdown} typography='showcase-detail' />
             ) : (
-              <p className='text-[14px] text-gray-400'>ยังไม่มีรายละเอียดเพิ่มเติม</p>
+              <p className={cn(SHOWCASE_DETAIL_DATA_TEXT_CLASS, 'text-gray-400')}>
+                ยังไม่มีรายละเอียดเพิ่มเติม
+              </p>
             )}
           </div>
         </div>

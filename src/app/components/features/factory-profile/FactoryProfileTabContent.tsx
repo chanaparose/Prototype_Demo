@@ -8,7 +8,7 @@ import { formatThaiDate } from '@/components/features/factory-profile/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export type TabId = 'products' | 'promotions' | 'materials' | 'articles' | 'review';
+export type TabId = 'products' | 'materials' | 'articles' | 'review';
 
 import type { IFactoryProfileShowcase } from '@/domain/factory/types/factoryProfile.model';
 
@@ -53,7 +53,6 @@ export type ReviewItem = {
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'products', label: 'สินค้า' },
-  { id: 'promotions', label: 'โปรโมชัน' },
   { id: 'materials', label: 'วัตถุดิบ' },
   { id: 'articles', label: 'บทความ' },
   { id: 'review', label: 'รีวิว' },
@@ -63,14 +62,12 @@ type FactoryProfileTabContentProps = {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
   productItems: IFactoryProfileShowcase[];
-  promotionItems: IFactoryProfileShowcase[];
   materialItems: IFactoryProfileShowcase[];
   articleShowcases: IFactoryProfileShowcase[];
   factory: FactoryAbout;
   factoryId?: string;
   reviews: ReviewItem[];
   onProductClick: (id: string) => void;
-  onPromotionClick: (id: string) => void;
   onIdeaClick: (id: string) => void;
 };
 
@@ -78,27 +75,23 @@ export function FactoryProfileTabContent({
   activeTab,
   onTabChange,
   productItems,
-  promotionItems,
   materialItems,
   articleShowcases,
   factory,
   factoryId,
   reviews,
   onProductClick,
-  onPromotionClick,
   onIdeaClick,
 }: FactoryProfileTabContentProps) {
   const tabCounts = useMemo(
     () => ({
       products: productItems.length,
-      promotions: promotionItems.length,
       materials: materialItems.length,
       articles: articleShowcases.length,
       review: reviews.length,
     }),
     [
       productItems.length,
-      promotionItems.length,
       materialItems.length,
       articleShowcases.length,
       reviews.length,
@@ -200,7 +193,7 @@ export function FactoryProfileTabContent({
         </div>
       </div>
 
-      <div className='px-5 pb-6 pt-4 lg:px-8 lg:pb-8 lg:pt-6 space-y-3'>
+      <div className='px-0 pb-6 pt-4 lg:px-8 lg:pb-8 lg:pt-6 space-y-3'>
       {activeTab === 'products' && (
         <div>
           {productItems.length === 0 ? (
@@ -216,34 +209,6 @@ export function FactoryProfileTabContent({
                   onClick={() => onProductClick(item.id)}
                   badgeLabel='สินค้า'
                   badgeColor='var(--brand-orange)'
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'promotions' && (
-        <div>
-          <div className='mb-3 rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2.5'>
-            <p className='text-[12px] font-semibold text-amber-800'>หมายเหตุโปรโมชัน</p>
-            <p className='mt-0.5 text-[11px] text-amber-700'>
-              ราคาและเงื่อนไขโปรโมชันอาจมีการเปลี่ยนแปลงตามช่วงเวลา กรุณาแชทสอบถามโรงงานก่อนสั่งซื้อทุกครั้ง
-            </p>
-          </div>
-          {promotionItems.length === 0 ? (
-            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
-              โรงงานนี้ยังไม่มีโปรโมชัน
-            </div>
-          ) : (
-            <div className='grid grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-3'>
-              {promotionItems.map((item) => (
-                <ShowcaseGridCard
-                  key={item.id}
-                  item={item}
-                  onClick={() => onPromotionClick(item.id)}
-                  badgeLabel='โปรโมชัน'
-                  badgeColor='var(--brand-orange-deep)'
                 />
               ))}
             </div>

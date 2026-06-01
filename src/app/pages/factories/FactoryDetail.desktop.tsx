@@ -25,7 +25,6 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
     activeTab,
     setActiveTab,
     productItems,
-    promotionItems,
     materialItems,
     articleItems,
     reviews,
@@ -166,7 +165,6 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             onTabChange={setActiveTab as (tab: TabId) => void}
             factoryId={factory.id}
             productItems={productItems}
-            promotionItems={promotionItems}
             materialItems={materialItems}
             articleShowcases={articleItems.showcaseIdeas}
             factory={{
@@ -181,7 +179,6 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
             }}
             reviews={reviews}
             onProductClick={(itemId) => navigate(`/factory-ideas/products/${itemId}`)}
-            onPromotionClick={(itemId) => navigate(`/factory-ideas/promotions/${itemId}`)}
             onIdeaClick={(itemId) => navigate(`/factory-ideas/ideas/${itemId}`)}
           />
         </div>

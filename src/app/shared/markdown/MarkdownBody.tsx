@@ -1,15 +1,19 @@
 import React, { useMemo } from 'react';
+
+import { SHOWCASE_DETAIL_MARKDOWN_CLASS } from '@/components/features/showcase-detail/showcaseDetailShared';
 import { renderMarkdown } from '@/shared/markdown/safeMarkdown';
+import { cn } from '@lib/utils';
+
+type MarkdownTypography = 'default' | 'showcase-detail';
 
 type Props = {
   source: string;
   className?: string;
+  /** `showcase-detail` — flat 14px to match spec tables on product detail */
+  typography?: MarkdownTypography;
 };
 
-/** XSS-safe markdown body (detail pages + editor preview parity). */
-export function MarkdownBody({ source, className }: Props) {
-  const html = useMemo(() => renderMarkdown(source), [source]);
-  const markdownClassName = `max-w-none text-gray-800 text-sm md:text-base leading-relaxed
+const defaultMarkdownClassName = `max-w-none text-gray-800 text-sm md:text-base leading-relaxed
          [&_p]:my-2
          [&_h1]:text-2xl [&_h1]:md:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h1]:mt-6 [&_h1]:mb-3
          [&_h2]:text-xl [&_h2]:md:text-2xl [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:mt-5 [&_h2]:mb-3
@@ -31,9 +35,16 @@ export function MarkdownBody({ source, className }: Props) {
          [&_code]:font-mono [&_code]:text-[0.92em]
          [&_p_code]:bg-gray-100 [&_p_code]:px-1.5 [&_p_code]:py-0.5 [&_p_code]:rounded
          [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:text-gray-600 [&_blockquote]:my-3`;
+
+/** XSS-safe markdown body (detail pages + editor preview parity). */
+export function MarkdownBody({ source, className, typography = 'default' }: Props) {
+  const html = useMemo(() => renderMarkdown(source), [source]);
+  const baseClassName =
+    typography === 'showcase-detail' ? SHOWCASE_DETAIL_MARKDOWN_CLASS : defaultMarkdownClassName;
+
   return (
     <div
-      className={className ? `${markdownClassName} ${className}` : markdownClassName}
+      className={cn(baseClassName, className)}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
