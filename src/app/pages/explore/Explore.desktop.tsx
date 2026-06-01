@@ -323,38 +323,34 @@ export function ExploreDesktop({
         <section>...</section>
         */}
 
-        <section className='relative -mx-8 2xl:-mx-10 px-8 2xl:px-10 py-5 rounded-xl overflow-hidden bg-neutral-cool-surface'>
-          <div
-            aria-hidden
-            className='absolute inset-0 rounded-xl pointer-events-none'
-            style={{ opacity: 0.2 }}
-          >
-            <div className='absolute inset-0 rounded-xl' style={SHIMMER_GRADIENT} />
-          </div>
-          <div className='relative z-[1] flex items-center justify-between mb-3'>
-            <h2 className='text-[14px] font-bold text-brand-navy-ink'>บทความ Idea</h2>
+        <section>
+          <div className='mb-4 flex items-center justify-between'>
+            <h2 className='flex items-center gap-2 text-base font-bold text-[var(--brand-navy)]'>
+              <Sparkles className='h-5 w-5 text-[var(--brand-mauve)]' />
+              บทความ Idea
+            </h2>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => navigate('/factory-ideas?type=idea')}
-              className='text-brand-magenta text-xs font-medium hover:underline flex items-center'
+              className='text-[13px] font-medium text-[var(--brand-mauve)] transition-opacity hover:opacity-80'
             >
-              ดูทั้งหมด <ChevronRight size={14} />
+              ดูทั้งหมด ({ideaArticlesList.length})
             </Button>
           </div>
 
-          <div className='relative z-[1]'>
+          <div>
             {ideaArticlesList.length === 0 ? (
               <div className='rounded-xl border border-dashed border-gray-200 bg-white px-6 py-6 text-center text-xs text-gray-500'>
                 ยังไม่มีบทความในขณะนี้
               </div>
             ) : (
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
+              <div className='grid grid-cols-2 gap-4'>
                 {ideaArticlesList.slice(0, 4).map((article) => (
-                  <div
+                  <article
                     key={article.id}
                     onClick={() => navigate(`/idea-detail?showcase_id=${article.id}`)}
-                    className='relative bg-white rounded-xl border border-gray-100 p-3 pr-10 hover:shadow-md transition-shadow cursor-pointer group min-h-[100px]'
+                    className='relative min-h-[100px] cursor-pointer rounded-xl border border-gray-100 bg-white p-3 pr-10 transition-shadow hover:shadow-md group'
                   >
                     <ShowcaseHeartButton
                       showcaseId={article.id}
@@ -362,22 +358,22 @@ export function ExploreDesktop({
                       onToggle={toggleFavorite}
                       className='absolute top-2 right-2 z-[1]'
                     />
-                    <div className='flex items-center gap-2 mb-1.5'>
-                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
-                        {article.tag || 'Idea'}
+                    <div className='mb-1.5 flex items-center gap-2'>
+                      <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-magenta'>
+                        ไอเดีย
                       </span>
-                      <span className='text-[10px] text-gray-400 truncate'>
+                      <span className='truncate text-[10px] text-gray-400'>
                         {article.factoryName}
                       </span>
                     </div>
-                    <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug group-hover:text-brand-magenta transition-colors'>
+                    <h3 className='mb-1 line-clamp-2 text-[13px] font-bold leading-snug text-brand-navy-ink transition-colors group-hover:text-brand-magenta'>
                       {article.title}
                     </h3>
                     <p className='text-[12px] text-gray-500 line-clamp-2'>{article.excerpt}</p>
-                    <div className='mt-2 pt-1.5 border-t border-gray-100'>
+                    <div className='mt-2 border-t border-gray-100 pt-1.5'>
                       <span className='text-[10px] text-gray-400'>แตะเพื่ออ่านต่อ</span>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             )}

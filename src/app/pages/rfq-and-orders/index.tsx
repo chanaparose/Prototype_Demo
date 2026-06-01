@@ -56,23 +56,34 @@ export function RfqAndOrders() {
 
   return (
     <>
-      <div className='lg:hidden flex flex-col min-h-full pb-20'>
-        <div className='px-4 pt-5 pb-3'>
-          <p className='text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-[#C4A484]'>
-                คำขอ
-              </p>
-          <h1 className='text-xl font-bold text-brand-navy-deep'>คำขอราคา & คำสั่งซื้อ</h1>
+      <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
+        <div className='mx-auto max-w-6xl px-4 py-4 lg:px-8'>
+          <p className='text-xs font-semibold uppercase tracking-wider text-[#C4A484]'>
+            คำขอและคำสั่งซื้อ
+          </p>
+          <div className='mt-1 flex items-center justify-between gap-2'>
+            <h1 className='text-2xl font-bold text-brand-navy-deep'>คำขอราคา & คำสั่งซื้อ</h1>
+            <Link
+              to='/create-rfq'
+              className='hidden lg:flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all bg-brand-purple shadow-[0_2px_8px_rgba(162,56,255,0.18)] hover:bg-brand-violet-deep active:scale-[0.98] shrink-0'
+            >
+              <Plus size={16} />
+              สร้างคำขอราคา
+            </Link>
+          </div>
         </div>
+      </header>
 
-        <div className='px-4 mb-4'>
-          <div className='flex p-1 rounded-2xl border bg-surface-cream border-[rgba(196,164,132,0.4)]'>
+      <div className='lg:hidden flex flex-col min-h-full pb-20'>
+        <div className='px-4 pt-4 mb-4'>
+          <div className='flex p-1 rounded-xl border bg-surface-cream border-[rgba(196,164,132,0.4)]'>
             <Button
               variant='unstyled'
               onClick={() => setPrimaryTab('rfq')}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all ${
                   primaryTab === 'rfq'
-                  ? 'bg-white/95 text-brand-violet-deep shadow-[0_2px_14px_rgba(109,40,217,0.18)]'
-                  : 'text-neutral-subtle'
+                  ? 'border-brand-orange/35 bg-surface-peach text-brand-orange-vivid'
+                  : 'border-transparent text-neutral-subtle hover:bg-surface-peach/60'
               }`}
             >
               คำขอราคา
@@ -80,10 +91,10 @@ export function RfqAndOrders() {
             <Button
               variant='unstyled'
               onClick={() => setPrimaryTab('orders')}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all relative ${
+              className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition-all relative ${
                   primaryTab === 'orders'
-                  ? 'bg-white/95 text-brand-orange-vivid shadow-[0_2px_14px_rgba(242,120,48,0.22)]'
-                  : 'text-neutral-subtle'
+                  ? 'border-brand-orange/35 bg-surface-peach text-brand-orange-vivid'
+                  : 'border-transparent text-neutral-subtle hover:bg-surface-peach/60'
               }`}
             >
               คำสั่งซื้อ
@@ -111,31 +122,13 @@ export function RfqAndOrders() {
       </div>
 
       <div className='hidden lg:flex flex-col px-8 2xl:px-10 py-7 h-full'>
-        <div className='flex items-center justify-between mb-6 shrink-0'>
-          <div>
-            <p className='text-xs uppercase tracking-wider font-semibold mb-0.5 text-[#C4A484]'>
-              คำขอและคำสั่งซื้อ
-            </p>
-            <h1 className='text-2xl font-bold text-brand-navy-deep'>คำขอราคา &amp; คำสั่งซื้อ</h1>
-          </div>
-            <Link
-            to='/create-rfq'
-            className='flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm text-white font-semibold transition-all bg-brand-purple shadow-[0_2px_8px_rgba(162,56,255,0.18)] hover:bg-brand-violet-deep active:scale-[0.98]'
-            >
-              <Plus size={16} />
-            สร้างคำขอราคา
-            </Link>
-        </div>
-
         <div className='grid grid-cols-2 gap-6 flex-1 min-h-0'>
-          <div className='bg-white rounded-2xl border border-[rgba(196,164,132,0.4)] border-t-[3px] border-t-brand-violet-deep overflow-hidden flex flex-col'>
-            <div className='flex items-center justify-between px-5 py-4 border-b shrink-0 border-[rgba(196,164,132,0.4)] bg-[#FBF8FF]'>
-              <div className='flex items-center gap-2'>
-                <div className='w-8 h-8 rounded-xl flex items-center justify-center bg-brand-lavender'>
-                  <FileText size={15} className='text-brand-violet-deep' />
-                </div>
-                <h2 className='font-bold text-brand-navy-deep'>คำขอราคา</h2>
-                <span className='text-[11px] px-2 py-0.5 rounded-full font-semibold text-brand-violet-deep bg-brand-lavender'>
+          <div className='bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col'>
+            <div className='flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0'>
+              <div className='flex items-center gap-3'>
+                <FileText size={18} className='text-brand-violet-deep shrink-0' />
+                <h2 className='font-semibold text-slate-900'>คำขอราคา</h2>
+                <span className='text-[11px] px-2.5 py-1 font-semibold text-slate-600 border border-slate-200 rounded-lg'>
                   {
                     rfqs.filter(
                       (r) =>
@@ -144,7 +137,7 @@ export function RfqAndOrders() {
                         r.status !== 'completed',
                     ).length
                   }
-                            </span>
+                </span>
               </div>
             </div>
 
@@ -153,23 +146,21 @@ export function RfqAndOrders() {
                   </div>
                 </div>
 
-          <div className='bg-white rounded-2xl border border-[rgba(196,164,132,0.4)] border-t-[3px] border-t-brand-orange overflow-hidden flex flex-col'>
-            <div className='flex items-center justify-between px-5 py-4 border-b shrink-0 border-[rgba(196,164,132,0.4)] bg-surface-peach'>
-              <div className='flex items-center gap-2'>
-                <div className='w-8 h-8 rounded-xl flex items-center justify-center bg-surface-peach'>
-                  <Package size={15} className='text-brand-orange-vivid' />
-                </div>
-                <h2 className='font-bold text-brand-navy-deep'>คำสั่งซื้อ</h2>
-                <span className='text-[11px] px-2 py-0.5 rounded-full font-semibold bg-surface-peach text-brand-orange-vivid'>
+          <div className='bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col'>
+            <div className='flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0'>
+              <div className='flex items-center gap-3'>
+                <Package size={18} className='text-brand-orange-vivid shrink-0' />
+                <h2 className='font-semibold text-slate-900'>คำสั่งซื้อ</h2>
+                <span className='text-[11px] px-2.5 py-1 font-semibold text-slate-600 border border-slate-200 rounded-lg'>
                   {orders.filter((o) => o.status !== 'completed').length}
                 </span>
               </div>
               {hasPendingPayment && (
-                <span className='flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full animate-pulse bg-surface-orange-soft text-brand-orange-vivid'>
-                  <AlertTriangle size={10} />
+                <span className='flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 text-red-600 border border-red-200 rounded-lg'>
+                  <AlertTriangle size={14} />
                   {orderTagCounts.pendingPayment} รอชำระ
-                        </span>
-                      )}
+                </span>
+              )}
               </div>
 
             <div className='overflow-y-auto flex-1 p-4'>

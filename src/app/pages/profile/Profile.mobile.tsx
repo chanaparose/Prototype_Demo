@@ -22,6 +22,7 @@ import {
   ArrowLeftRight,
   Factory,
   Loader2,
+  CheckCircle2,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
 import { useAuth, useAuthStore } from '@/stores/useAuthStore';
@@ -217,12 +218,11 @@ function MobileRoleSwitcher() {
       variant='unstyled'
       disabled={switching}
       onClick={() => void handleSwitch()}
-      className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]'
-      style={{ color: 'var(--brand-indigo)', fontWeight: 600 }}
+      className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 text-brand-indigo font-semibold transition-all hover:bg-indigo-50 active:scale-[0.98] border border-gray-100 disabled:opacity-60'
     >
       {switching ? <Loader2 size={18} className='animate-spin' /> : <ArrowLeftRight size={18} />}
       สลับเป็นบัญชี{targetLabel}
-      <TargetIcon size={16} className='opacity-60' />
+      <TargetIcon size={16} className='opacity-70' />
     </Button>
   );
 }
@@ -345,133 +345,110 @@ export function ProfileMobile() {
   }
 
   return (
-    <div className='pb-4'>
-      <div className='px-4 pt-5 mb-5'>
-        <div className='flex items-center justify-between mb-4'>
+    <div className='pb-6'>
+      <div className='px-4 pt-6 pb-4'>
+        <div className='mb-5'>
           <div>
-            <p className='text-[10px] text-gray-400 uppercase tracking-wider'>บัญชี</p>
-            <h1 className='text-gray-900' style={{ fontWeight: 700 }}>
+            <p className='text-xs text-gray-400 uppercase tracking-widest font-semibold'>บัญชี</p>
+            <h1 className='text-2xl text-gray-900 font-bold mt-1'>
               โปรไฟล์
             </h1>
           </div>
         </div>
 
-        <div
-          className='rounded-3xl p-5 relative overflow-hidden'
-          style={{
-            background: 'linear-gradient(135deg, var(--brand-royal) 0%, #8B5CF6 60%, #A78BFA 100%)',
-          }}
-        >
-          <div className='absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20 bg-white' />
-          <div className='absolute right-4 bottom-0 w-16 h-16 rounded-full opacity-15 bg-white' />
-          <div className='relative z-10'>
-            <div className='flex items-center gap-3 mb-4'>
-              <div className='relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/30 bg-brand-lavender-muted'>
+        <div className='rounded-2xl p-6 bg-gradient-to-br from-brand-royal to-purple-600'>
+          <div>
+            <div className='flex items-start gap-4 mb-6'>
+              <div className='relative shrink-0 w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/40 bg-white/10'>
                 <Image
                   src={HARDCODED_CUSTOMER_PROFILE_SRC}
                   alt='avatar'
                   className='absolute inset-0 w-full h-full object-cover object-center'
                 />
               </div>
-              <div>
-                <p className='text-white' style={{ fontWeight: 700 }}>
+              <div className='flex-1 min-w-0'>
+                <p className='text-white text-lg font-bold'>
                   {currentUser.name}
                 </p>
-                <p className='text-white/70 text-xs'>{currentUser.company}</p>
-                <div
-                  className='flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full w-fit'
-                  style={{ background: 'rgba(255,255,255,0.2)' }}
-                >
-                  <span className='text-yellow-300 text-[10px]'>✓</span>
-                  <span className='text-white text-[10px]'>Verified Member</span>
+                <p className='text-white/70 text-sm mt-0.5'>{currentUser.company}</p>
+                <div className='flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/15 w-fit'>
+                  <CheckCircle2 size={16} className='text-yellow-200 shrink-0' />
+                  <span className='text-white/90 text-xs font-medium'>Verified Member</span>
                 </div>
               </div>
             </div>
-            <div className='flex gap-4'>
-              <div className='text-center'>
-                <p className='text-white' style={{ fontWeight: 700 }}>
+            <div className='grid grid-cols-3 gap-2'>
+              <div className='text-center py-1'>
+                <p className='text-white text-lg font-bold'>
                   {completedOrders}
                 </p>
-                <p className='text-white/70 text-[10px]'>คำสั่งซื้อ</p>
+                <p className='text-white/70 text-xs mt-0.5'>คำสั่งซื้อ</p>
               </div>
-              <div className='w-px bg-white/30' />
-              <div className='text-center'>
-                <p className='text-white' style={{ fontWeight: 700 }}>
+              <div className='text-center py-1 border-l border-r border-white/20'>
+                <p className='text-white text-lg font-bold'>
                   4.8
                 </p>
-                <p className='text-white/70 text-[10px]'>คะแนน</p>
+                <p className='text-white/70 text-xs mt-0.5'>คะแนน</p>
               </div>
-              <div className='w-px bg-white/30' />
-              <div className='text-center'>
-                <p className='text-white' style={{ fontWeight: 700 }}>
+              <div className='text-center py-1'>
+                <p className='text-white text-lg font-bold'>
                   ฿{(totalSpent / 1000).toFixed(0)}K
                 </p>
-                <p className='text-white/70 text-[10px]'>ใช้จ่ายรวม</p>
+                <p className='text-white/70 text-xs mt-0.5'>ใช้จ่ายรวม</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className='px-4 space-y-4'>
-        <div className='bg-white rounded-2xl p-4 shadow-sm'>
-          <div className='flex items-center justify-between mb-4'>
-            <div className='flex items-center gap-2'>
-              <div
-                className='w-9 h-9 rounded-xl flex items-center justify-center'
-                style={{ background: '#EDE9FF' }}
-              >
-                <Wallet size={18} style={{ color: 'var(--brand-royal)' }} />
-              </div>
-              <p className='text-sm text-gray-900' style={{ fontWeight: 700 }}>
+      <div className='px-4 space-y-5'>
+        <div className='bg-white rounded-2xl p-5 border border-gray-200'>
+          <div className='flex items-center justify-between mb-5'>
+            <div className='flex items-center gap-3'>
+              <Wallet size={24} className='text-brand-royal' />
+              <p className='text-base text-gray-900 font-bold'>
                 กระเป๋าเงิน
               </p>
             </div>
           </div>
 
-          <div className='mb-4'>
-            <p className='text-[10px] text-gray-400 mb-1'>ยอดคงเหลือ</p>
-            <p className='text-2xl text-gray-900' style={{ fontWeight: 700 }}>
+          <div className='mb-6'>
+            <p className='text-xs text-gray-500 font-medium mb-2'>ยอดคงเหลือ</p>
+            <p className='text-3xl text-gray-900 font-bold'>
               {formatCurrencyNoDecimals(currentUser.walletBalance)}
             </p>
-            <div className='flex items-center gap-1 mt-1'>
-              <span className='text-[10px]' style={{ color: 'var(--status-warning)' }}>
+            <div className='flex items-center gap-1 mt-2'>
+              <span className='text-xs text-amber-600 font-medium'>
                 รอดำเนินการ: {formatCurrencyNoDecimals(currentUser.pendingBalance)}
               </span>
             </div>
           </div>
 
-          <div className='flex gap-2 mb-4'>
+          <div className='flex gap-3 mb-6'>
             <Button
               variant='unstyled'
-              className='flex-1 py-2.5 rounded-xl text-xs text-white'
-              style={{ background: 'var(--brand-royal)', fontWeight: 600 }}
+              className='flex-1 py-3 rounded-xl text-sm text-white font-semibold bg-brand-royal hover:bg-brand-royal/90 transition-colors'
             >
               + เติมเงิน
             </Button>
             <Button
               variant='unstyled'
-              className='flex-1 py-2.5 rounded-xl text-xs border'
-              style={{
-                borderColor: 'var(--brand-royal)',
-                color: 'var(--brand-royal)',
-                fontWeight: 600,
-              }}
+              className='flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors'
             >
               ถอนเงิน
             </Button>
           </div>
 
-          <div className='space-y-2.5'>
-            <div className='flex justify-between items-end mb-4'>
-              <h3 className='text-base font-bold text-slate-800'>รายการล่าสุด</h3>
+          <div className='space-y-3'>
+            <div className='flex justify-between items-center mb-4'>
+              <h3 className='text-base font-bold text-gray-900'>รายการล่าสุด</h3>
               <Button
                 variant='unstyled'
                 type='button'
-                className='inline-flex items-center gap-1 text-xs font-semibold text-brand-royal-dark'
+                className='inline-flex items-center gap-0.5 text-xs font-semibold text-brand-royal hover:text-brand-royal/80 transition-colors'
                 onClick={() => navigate('/profile/transactions')}
               >
-                ดูทั้งหมด <ChevronRight size={14} strokeWidth={2.5} />
+                ดูทั้งหมด <ChevronRight size={16} strokeWidth={2.5} />
               </Button>
             </div>
             {txLoading ? (
@@ -482,19 +459,14 @@ export function ProfileMobile() {
               walletTransactions.map((tx) => (
                 <div key={tx.id} className='flex items-center justify-between'>
                   <div className='flex items-center gap-2.5'>
-                    <div
-                      className='w-8 h-8 rounded-xl flex items-center justify-center'
-                      style={{
-                        background: tx.type === 'credit' ? '#DCFCE7' : 'var(--status-danger-soft)',
-                      }}
-                    >
+                    <div>
                       {tx.type === 'credit' ? (
                         <ArrowDownLeft
-                          size={14}
-                          style={{ color: 'var(--status-success-bright)' }}
+                          size={18}
+                          className='text-green-600'
                         />
                       ) : (
-                        <ArrowUpRight size={14} style={{ color: 'var(--status-danger)' }} />
+                        <ArrowUpRight size={18} className='text-red-600' />
                       )}
                     </div>
                     <div>
@@ -529,10 +501,10 @@ export function ProfileMobile() {
         {menuSections.map((section, sectionIndex) => (
           <div
             key={section.title ?? `section-${sectionIndex}`}
-            className='bg-white rounded-2xl shadow-sm overflow-hidden'
+            className='bg-white rounded-2xl overflow-hidden border border-gray-200'
           >
             {section.title ? (
-              <p className='text-[10px] text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2'>
+              <p className='text-xs text-gray-500 uppercase tracking-widest font-semibold px-5 pt-4 pb-3'>
                 {section.title}
               </p>
             ) : null}
@@ -541,83 +513,76 @@ export function ProfileMobile() {
                 variant='unstyled'
                 key={item.label}
                 type='button'
-                className='w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors'
-                style={{ borderTop: idx > 0 ? '1px solid var(--neutral-surface)' : 'none' }}
+                className={`w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors ${idx > 0 ? 'border-t border-gray-200' : ''}`}
                 onClick={() => {
                   if (item.to) navigate(item.to);
                 }}
               >
                 <div className='flex items-center gap-3'>
-                  <div
-                    className='w-9 h-9 rounded-xl flex items-center justify-center'
-                    style={{ background: item.bg }}
-                  >
-                    <item.icon size={17} style={{ color: item.color }} />
-                  </div>
-                  <div className='text-left'>
-                    <p className='text-sm text-gray-900' style={{ fontWeight: 500 }}>
+                  <item.icon size={20} style={{ color: item.color }} className='shrink-0' />
+                  <div className='text-left min-w-0 flex-1'>
+                    <p className='text-sm text-gray-900 font-medium'>
                       {item.label}
                     </p>
-                    <p className='text-[10px] text-gray-400'>{item.sub}</p>
+                    <p className='text-xs text-gray-500 mt-0.5'>{item.sub}</p>
                   </div>
                 </div>
-                <ChevronRight size={16} className='text-gray-300' />
+                <ChevronRight size={18} className='text-gray-300 shrink-0 ml-2' />
               </Button>
             ))}
           </div>
         ))}
 
-        <div className='bg-white rounded-2xl shadow-sm overflow-hidden'>
-          <div className='flex items-center justify-between px-4 pt-3 pb-2'>
-            <div className='flex items-center gap-2'>
-              <Home size={15} style={{ color: 'var(--brand-royal)' }} />
-              <p className='text-[10px] text-gray-400 uppercase tracking-wider'>ที่อยู่จัดส่ง</p>
+        <div className='bg-white rounded-2xl overflow-hidden border border-gray-200'>
+          <div className='flex items-center justify-between px-5 pt-4 pb-3'>
+            <div className='flex items-center gap-2.5'>
+              <Home size={20} className='text-brand-royal' />
+              <p className='text-xs text-gray-500 uppercase tracking-widest font-semibold'>ที่อยู่จัดส่ง</p>
             </div>
             <Button
               variant='unstyled'
               type='button'
               onClick={() => setShowAddressForm((v) => !v)}
-              className='flex items-center gap-0.5 text-[10px] font-semibold text-brand-royal'
+              className='flex items-center gap-1 text-xs font-semibold text-brand-royal hover:text-brand-royal/80 transition-colors'
             >
-              <Plus size={12} /> เพิ่ม
+              <Plus size={16} /> เพิ่ม
             </Button>
           </div>
           {showAddressForm && (
-            <div className='px-4 pb-3 flex gap-2'>
+            <div className='px-5 pb-4 flex gap-2 border-t border-gray-200'>
               <Input
                 type='text'
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
                 placeholder='กรอกที่อยู่จัดส่ง...'
-                className='flex-1 text-xs border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-royal/30'
+                className='flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-royal/30 focus:border-transparent'
               />
               <Button
                 variant='unstyled'
                 type='button'
                 onClick={addAddress}
                 disabled={addingAddress || !newAddress.trim()}
-                className='px-3 py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50'
-                style={{ background: 'var(--brand-royal)' }}
+                className='px-4 py-2.5 text-sm font-semibold text-white rounded-lg bg-brand-royal hover:bg-brand-royal/90 disabled:opacity-50 transition-colors'
               >
                 {addingAddress ? '...' : 'บันทึก'}
               </Button>
             </div>
           )}
           {addressesLoading ? (
-            <p className='text-xs text-gray-400 text-center py-3'>กำลังโหลด...</p>
+            <p className='text-xs text-gray-400 text-center py-4'>กำลังโหลด...</p>
           ) : addresses.length === 0 ? (
-            <p className='text-xs text-gray-400 text-center pb-3'>ยังไม่มีที่อยู่</p>
+            <p className='text-xs text-gray-400 text-center py-4'>ยังไม่มีที่อยู่</p>
           ) : (
-            <div className='divide-y divide-gray-50'>
+            <div className='divide-y divide-gray-200'>
               {addresses.map((addr) => (
-                <div key={addr.id} className='flex items-start gap-3 px-4 py-3'>
-                  <MapPin size={14} className='text-brand-royal mt-0.5 shrink-0' />
+                <div key={addr.id} className='flex items-start gap-3 px-5 py-4'>
+                  <MapPin size={16} className='text-brand-royal mt-0.5 shrink-0' />
                   <div className='flex-1 min-w-0'>
-                    <p className='text-xs font-semibold text-gray-700 capitalize'>{addr.label}</p>
-                    <p className='text-[11px] text-gray-500 truncate'>{addr.detail}</p>
+                    <p className='text-sm font-semibold text-gray-800 capitalize'>{addr.label}</p>
+                    <p className='text-xs text-gray-500 mt-0.5 line-clamp-2'>{addr.detail}</p>
                   </div>
                   {addr.isDefault && (
-                    <span className='text-[9px] font-bold text-brand-royal bg-violet-50 px-1.5 py-0.5 rounded-full shrink-0'>
+                    <span className='text-xs font-semibold text-brand-royal bg-purple-50 px-2 py-1 rounded-full shrink-0'>
                       หลัก
                     </span>
                   )}
@@ -635,14 +600,13 @@ export function ProfileMobile() {
             logout();
             navigate('/', { replace: true });
           }}
-          className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 shadow-sm text-sm transition-all active:scale-[0.98]'
-          style={{ color: 'var(--status-danger)', fontWeight: 600 }}
+          className='w-full flex items-center justify-center gap-2 bg-white rounded-2xl py-4 text-red-600 font-semibold transition-all hover:bg-red-50 active:scale-[0.98] border border-gray-200'
         >
           <LogOut size={18} />
           ออกจากระบบ
         </Button>
 
-        <p className='text-center text-[10px] text-gray-400 pb-2'>
+        <p className='text-center text-xs text-gray-400 pb-4'>
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}
         </p>
       </div>

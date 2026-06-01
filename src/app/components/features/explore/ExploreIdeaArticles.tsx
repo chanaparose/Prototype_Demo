@@ -48,9 +48,9 @@ export function ExploreIdeaArticles({
             className='bg-white rounded-xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3'
           >
             <div className='flex items-center gap-2 mb-1.5'>
-              <StatusBadge variant='info' size='sm'>
+              <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta uppercase tracking-wide'>
                 ไอเดีย
-              </StatusBadge>
+              </span>
               <span className='text-[10px] text-gray-400 truncate'>{article.factoryName}</span>
             </div>
             <h3 className='font-bold text-[13px] text-brand-navy-ink mb-1 line-clamp-2 leading-snug'>

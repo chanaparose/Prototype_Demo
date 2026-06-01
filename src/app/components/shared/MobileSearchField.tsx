@@ -22,18 +22,15 @@ export function MobileSearchField({
     <div
       data-tour={dataTour}
       className={cn(
-        'group flex min-h-11 items-center gap-2.5 rounded-2xl border border-[color-mix(in_srgb,var(--brand-purple)_14%,var(--neutral-border))]',
-        'bg-white px-3 shadow-[0_1px_3px_rgba(46,34,82,0.06)]',
-        'transition-[border-color,box-shadow] duration-200',
-        'focus-within:border-[color-mix(in_srgb,var(--brand-purple)_38%,var(--neutral-border))]',
-        'focus-within:shadow-[0_2px_14px_rgba(162,56,255,0.14)]',
-        'focus-within:ring-[3px] focus-within:ring-[rgba(162,56,255,0.1)]',
+        'group flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2',
+        'shadow-sm transition-all duration-200',
+        'focus-within:border-brand-purple focus-within:shadow-md focus-within:ring-2 focus-within:ring-purple-100',
         className,
       )}
     >
       <span
         aria-hidden
-        className='flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-lavender-chip)] text-[var(--brand-purple)] transition-colors group-focus-within:bg-[var(--brand-violet-soft)]'
+        className='flex h-5 w-5 shrink-0 items-center justify-center text-gray-400 transition-colors group-focus-within:text-brand-purple'
       >
         <Search size={16} strokeWidth={2.25} />
       </span>
@@ -43,7 +40,7 @@ export function MobileSearchField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className='h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-[15px] leading-snug text-[var(--brand-navy)] shadow-none ring-0 placeholder:text-[var(--neutral-placeholder)] focus-visible:border-transparent focus-visible:ring-0'
+        className='h-auto min-h-0 flex-1 border-0 bg-transparent p-0 text-sm leading-snug text-gray-700 shadow-none ring-0 placeholder:text-gray-400 focus-visible:border-transparent focus-visible:ring-0'
       />
       {value.trim() ? (
         <Button
@@ -51,7 +48,7 @@ export function MobileSearchField({
           type='button'
           onClick={() => onChange('')}
           aria-label='ล้างข้อความค้นหา'
-          className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--neutral-muted)] text-[var(--neutral-subtle)] transition-colors hover:bg-[var(--brand-violet-soft)] hover:text-[var(--brand-purple)]'
+          className='flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600'
         >
           <X size={14} strokeWidth={2.25} />
         </Button>

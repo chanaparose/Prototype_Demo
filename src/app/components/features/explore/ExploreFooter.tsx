@@ -156,26 +156,7 @@ export function ExploreFooter() {
             open={open === 'apps'}
             onToggle={() => toggle('apps')}
           >
-            <div className='flex flex-col gap-2 max-w-[140px]'>
-              <a
-                href='#'
-                className='bg-black text-white rounded-lg px-2 py-1.5 flex items-center gap-2 hover:bg-gray-800 transition-colors'
-              >
-                <div className='flex-1'>
-                  <div className='text-[8px] leading-tight'>Download on the</div>
-                  <div className='text-[11px] font-semibold leading-tight'>App Store</div>
-                </div>
-              </a>
-              <a
-                href='#'
-                className='bg-black text-white rounded-lg px-2 py-1.5 flex items-center gap-2 hover:bg-gray-800 transition-colors'
-              >
-                <div className='flex-1'>
-                  <div className='text-[8px] leading-tight'>GET IT ON</div>
-                  <div className='text-[11px] font-semibold leading-tight'>Google Play</div>
-                </div>
-              </a>
-            </div>
+            <AppDownloadBadges className='pt-0.5' />
           </AccordionItem>
         </div>
 
@@ -319,63 +300,44 @@ export function ExploreFooter() {
           </div>
 
           <div>
-            <h3 className='font-bold text-brand-navy-ink mb-2.5 text-sm md:text-base'>
+            <h3 className='font-bold text-brand-navy-ink mb-1.5 text-sm md:text-base'>
               ดาวน์โหลดแอปพลิเคชัน
             </h3>
-            <div className='flex flex-col gap-2 max-w-[140px] md:max-w-[150px]'>
-              <a
-                href='#'
-                className='bg-black text-white rounded-lg px-2 py-1.5 flex items-center gap-2 hover:bg-gray-800 transition-colors'
-              >
-                <div className='flex-1'>
-                  <div className='text-[8px] md:text-[9px] leading-tight'>Download on the</div>
-                  <div className='text-[11px] md:text-xs font-semibold leading-tight'>
-                    App Store
-                  </div>
-                </div>
-              </a>
-              <a
-                href='#'
-                className='bg-black text-white rounded-lg px-2 py-1.5 flex items-center gap-2 hover:bg-gray-800 transition-colors'
-              >
-                <div className='flex-1'>
-                  <div className='text-[8px] md:text-[9px] leading-tight'>GET IT ON</div>
-                  <div className='text-[11px] md:text-xs font-semibold leading-tight'>
-                    Google Play
-                  </div>
-                </div>
-              </a>
-            </div>
+            <AppDownloadBadges />
           </div>
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 py-4 md:py-6 border-t border-gray-300'>
           <div>
             <h4 className='font-bold text-brand-navy-ink mb-2.5 text-xs md:text-sm'>ติดตามเรา</h4>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-3'>
               <a
                 href='#'
-                className='w-8 h-8 md:w-9 md:h-9 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors'
+                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
+                title='Facebook'
               >
-                <Facebook size={16} />
+                <Facebook size={20} />
               </a>
               <a
                 href='#'
-                className='w-8 h-8 md:w-9 md:h-9 rounded-full bg-green-500 text-white flex items-center justify-center hover:bg-green-600 transition-colors'
+                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#00B900] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
+                title='LINE'
               >
-                <span className='font-bold text-[10px]'>LINE</span>
+                <span className='font-bold text-xs'>LINE</span>
               </a>
               <a
                 href='#'
-                className='w-8 h-8 md:w-9 md:h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-colors'
+                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#FF0000] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
+                title='YouTube'
               >
-                <Youtube size={16} />
+                <Youtube size={20} />
               </a>
               <a
                 href='#'
-                className='w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-tr from-brand-orange via-brand-orange-vivid to-brand-magenta text-white flex items-center justify-center hover:opacity-90 transition-opacity'
+                className='w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#E4405F] text-white flex items-center justify-center hover:shadow-lg transition-shadow'
+                title='Instagram'
               >
-                <Instagram size={16} />
+                <Instagram size={20} />
               </a>
             </div>
           </div>
@@ -422,6 +384,45 @@ export function ExploreFooter() {
   );
 }
 
+const APP_STORE_BADGE = {
+  src: '/assets/badges/download-on-the-app-store-apple-logo.svg',
+  alt: 'Download on the App Store',
+  width: 540,
+  height: 160,
+} as const;
+
+const GOOGLE_PLAY_BADGE = {
+  src: '/assets/badges/google-play-badge-logo.svg',
+  alt: 'Get it on Google Play',
+  width: 135,
+  height: 40,
+} as const;
+
+function AppDownloadBadges({ className }: { className?: string }) {
+  const badges = [APP_STORE_BADGE, GOOGLE_PLAY_BADGE];
+
+  return (
+    <div className={`flex flex-col gap-1 ${className ?? ''}`}>
+      {badges.map((badge) => (
+        <a
+          key={badge.src}
+          href='#'
+          className='inline-block w-fit hover:opacity-80 transition-opacity leading-none'
+        >
+          <img
+            src={badge.src}
+            alt={badge.alt}
+            width={badge.width}
+            height={badge.height}
+            className='h-11 md:h-12 w-auto max-w-full block'
+            decoding='async'
+          />
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function AccordionItem({
   title,
   open,
@@ -448,7 +449,7 @@ function AccordionItem({
           aria-hidden
         />
       </Button>
-      {open ? <div className='px-3 pb-3'>{children}</div> : null}
+      {open ? <div className='px-3 pt-0 pb-2'>{children}</div> : null}
     </div>
   );
 }

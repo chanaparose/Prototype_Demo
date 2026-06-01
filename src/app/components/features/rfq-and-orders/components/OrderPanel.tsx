@@ -74,7 +74,7 @@ export function OrderPanel({
         </Button>
       )}
 
-      <div className='mb-3 grid w-full grid-cols-5 gap-0.5 rounded-xl border border-[rgba(196,164,132,0.4)] bg-[linear-gradient(135deg,var(--brand-lavender)_0%,var(--surface-cream-warm)_48%,var(--surface-cream-orange)_100%)] px-1 py-[5px]'>
+      <div className='mb-3 grid w-full grid-cols-5 gap-0.5 rounded-xl border border-[rgba(196,164,132,0.4)] bg-surface-cream px-1 py-[5px]'>
         {ORDER_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = orderFilter === tab.id;
@@ -87,19 +87,16 @@ export function OrderPanel({
               variant='unstyled'
               key={tab.id}
               onClick={() => setOrderFilter(tab.id)}
-              className={`relative flex flex-col items-center gap-0.5 rounded-lg py-0.5 transition-all ${
-                isActive ? 'bg-white/90 shadow-[0_1px_6px_rgba(0,0,0,0.08)]' : ''
-              }`}
+              className='relative flex flex-col items-center gap-0.5 rounded-lg border py-0.5 transition-colors hover:bg-[rgba(255,237,213,0.45)]'
+              style={{
+                background: isActive ? th.activeBg : undefined,
+                borderColor: isActive ? th.activeColor : 'transparent',
+              }}
             >
-              <div
-                className='w-7 h-7 rounded-full flex items-center justify-center'
-                style={{ background: isActive ? th.activeBg : 'transparent' }}
-              >
-                <Icon
-                  size={14}
-                  style={{ color: isActive ? th.activeColor : 'var(--neutral-subtle)' }}
-                />
-              </div>
+              <Icon
+                size={16}
+                style={{ color: isActive ? th.activeColor : 'var(--neutral-subtle)' }}
+              />
               {count > 0 && (
                 <span
                   className={`absolute top-0.5 right-[10%] min-w-[14px] h-3.5 px-1 rounded-full text-white text-[8px] flex items-center justify-center font-bold ${isPendingTab && !isActive ? 'animate-pulse' : ''}`}

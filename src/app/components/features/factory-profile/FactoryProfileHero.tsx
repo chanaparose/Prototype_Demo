@@ -114,9 +114,9 @@ export function FactoryProfileHero({
         </div>
       </div>
 
-      <div className='relative z-[2] px-5 pb-5 pt-4'>
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-end'>
-          <div className='flex w-fit shrink-0 items-end gap-2'>
+      <div className='relative z-[2] px-5 pb-6 pt-4'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-start'>
+          <div className='flex w-fit shrink-0 items-end gap-2 sm:mt-1'>
             <div className='rounded-lg'>
               <div
                 className={`relative block h-24 w-24 overflow-hidden rounded-lg border sm:h-28 sm:w-28 ${

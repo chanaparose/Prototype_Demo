@@ -99,7 +99,7 @@ export function IdeaDetailMobile() {
         >
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
-        <div className='rounded-2xl border border-gray-100 bg-white p-6 text-center text-sm text-gray-500 shadow-sm'>
+        <div className='rounded-xl border border-slate-100 bg-white p-6 text-center text-sm text-gray-500'>
           {error || 'ไม่พบบทความไอเดีย'}
         </div>
       </div>
@@ -111,7 +111,7 @@ export function IdeaDetailMobile() {
   const markdown = String(item.content ?? '').trim();
 
   return (
-    <div className='min-h-screen bg-neutral-warm-surface pb-[72px]'>
+    <div className='min-h-screen bg-white pb-[72px]'>
       <div className='bg-white px-4 pt-4 pb-3 border-b' style={{ borderColor: BRAND.divider }}>
         <div className='flex items-start'>
           <Button
@@ -132,10 +132,7 @@ export function IdeaDetailMobile() {
               <CalendarDays className='w-3 h-3' /> เผยแพร่ {formatThaiDate(item.postedAt)}
             </div>
             <div className='mt-1 flex flex-wrap items-center gap-1.5'>
-              <span
-                className='inline-flex items-center px-1.5 py-0.5 rounded-sm text-[9px] font-semibold'
-                style={{ background: BRAND.purpleSoft, color: BRAND.purple }}
-              >
+              <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-1.5 py-0.5 text-[9px] font-semibold text-brand-magenta'>
                 บทความไอเดีย
               </span>
               {item.category ? (
@@ -166,17 +163,14 @@ export function IdeaDetailMobile() {
       </div>
 
       <div className='px-4 pt-4 space-y-3'>
-        <article className='bg-white rounded-2xl p-4 border border-gray-100 shadow-sm'>
+        <article className='bg-white rounded-xl p-4 border border-slate-100'>
           <MarkdownBody
             source={markdown}
             className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
           />
         </article>
 
-        <div
-          className='bg-white px-4 py-3 border rounded-2xl shadow-sm'
-          style={{ borderColor: BRAND.divider }}
-        >
+        <div className='bg-white px-4 py-3 border border-slate-100 rounded-xl'>
           <div className='flex items-center gap-3 min-w-0'>
             <div className='w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0'>
               <ImageWithFallback
@@ -261,7 +255,7 @@ export function IdeaDetailMobile() {
           }
         />
 
-        <section className='bg-white rounded-2xl border border-gray-100 shadow-sm p-4'>
+        <section className='bg-white rounded-xl border border-slate-100 p-4'>
           <h2 className='text-[14px] font-bold mb-3' style={{ color: 'var(--brand-navy)' }}>
             บทความที่น่าสนใจให้อ่านต่อ
           </h2>
@@ -272,16 +266,13 @@ export function IdeaDetailMobile() {
               return (
                 <article
                   key={next.id}
-                  className='bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-[0.98] transition-transform cursor-pointer p-3'
+                  className='bg-white rounded-xl border border-slate-100 active:scale-[0.98] transition-transform cursor-pointer p-3'
                   onClick={() =>
                     navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
                   }
                 >
                   <div className='flex items-center gap-2 mb-2'>
-                    <span
-                      className='px-2 py-0.5 rounded-full text-[9px] font-bold text-white'
-                      style={{ backgroundColor: CARD.purple }}
-                    >
+                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[9px] font-bold text-brand-magenta'>
                       ไอเดีย
                     </span>
                     <span className='text-[10px] text-gray-400 truncate'>{next.factoryName}</span>

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, Star, X } from 'lucide-react';
+import { ChevronLeft, Star, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { profileApi, reviewsApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
 import { ReviewImageAttachments } from '@/components/features/reviews/ReviewImageAttachments';
 import { normalizeReviewImageUrls } from '@/utils/reviewImageUrls';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
 type ReviewItem = {
@@ -102,44 +103,71 @@ export function MyReviewsPage() {
   };
 
   return (
-    <div className='space-y-4 pb-24'>
-      <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center gap-2'>
+    <div className='flex min-h-screen flex-col bg-white pb-20'>
+      {/* Header - Match FavoriteShowcasesPage style */}
+      <div className='flex items-center justify-between px-4 pb-3 pt-4'>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => navigate(-1)}
-          className='text-slate-600'
+          className='flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm'
           aria-label='ย้อนกลับ'
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={22} className='text-gray-700' />
         </Button>
-        <p className='text-sm font-bold text-slate-900'>รีวิวของฉัน</p>
+        <div className='flex flex-col items-center'>
+          <p className='text-[10px] text-gray-400'>บัญชี</p>
+          <h1 className='text-[13px] text-gray-900 font-bold'>รีวิวของฉัน</h1>
+        </div>
+        <div className='h-10 w-10' aria-hidden />
       </div>
 
-      <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'>
-        {loading ? (
-          <p className='text-sm text-slate-500'>กำลังโหลด...</p>
-        ) : items.length === 0 ? (
-          <p className='text-sm text-slate-500'>ยังไม่มีรีวิว — เขียนรีวิวหลังรับสินค้าแล้ว</p>
-        ) : (
-          <ul className='space-y-3'>
-            {items.map((r) => (
-              <li
+      <div className='flex-1 px-4 py-3'>
+        {/* Search Input */}
+        <div className='relative mb-4'>
+          <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4'>
+            <Search className='h-5 w-5 text-slate-400' />
+          </div>
+          <Input
+            type='text'
+            placeholder='ค้นหารีวิว...'
+            className='block w-full rounded-xl border border-slate-100 bg-white py-3 pl-11 pr-4 text-sm text-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.04)] transition-all focus:outline-none focus:ring-2 focus:ring-brand-purple'
+          />
+        </div>
+
+        {/* Item Count */}
+        <div className='mb-3 flex items-center justify-end'>
+          <span className='text-[11px] text-slate-400'>{items.length} รายการ</span>
+        </div>
+
+        {/* Reviews List */}
+        <div className='space-y-2'>
+          {loading ? (
+            <div className='py-8 text-center'>
+              <p className='text-sm text-slate-500'>กำลังโหลด...</p>
+            </div>
+          ) : items.length === 0 ? (
+            <div className='py-12 text-center text-sm text-slate-500'>
+              ยังไม่มีรีวิว — เขียนรีวิวหลังรับสินค้าแล้ว
+            </div>
+          ) : (
+            items.map((r) => (
+              <div
                 key={r.review_id}
-                className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-3'
+                className='rounded-lg border border-slate-100 bg-white px-4 py-3'
               >
-                <div className='flex items-center justify-between gap-2'>
-                  <p className='text-sm font-semibold text-slate-900'>
+                <div className='flex items-center justify-between gap-2 mb-2'>
+                  <p className='text-sm font-medium text-slate-900'>
                     {r.factory_name || 'โรงงาน'}
                   </p>
                   <p className='text-[11px] text-slate-500'>
                     {r.created_at ? new Date(r.created_at).toLocaleDateString('th-TH') : '-'}
                   </p>
                 </div>
-                <p className='text-[12px] text-amber-500'>
+                <p className='text-xs text-amber-500 mb-1'>
                   {'★'.repeat(Math.max(1, Math.min(5, r.rating)))}
                 </p>
-                <p className='text-sm text-slate-700'>{r.comment || '-'}</p>
+                <p className='text-sm text-slate-700 mb-2'>{r.comment || '-'}</p>
                 <ReviewImageAttachments
                   urls={r.image_urls}
                   onPreviewUrl={(u) => window.open(u, '_blank', 'noopener,noreferrer')}
@@ -150,7 +178,7 @@ export function MyReviewsPage() {
                       variant='unstyled'
                       type='button'
                       onClick={() => openEdit(r)}
-                      className='px-2.5 py-1 rounded-lg border border-slate-200 text-xs text-slate-700'
+                      className='px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 font-medium hover:bg-slate-50'
                     >
                       แก้ไข
                     </Button>
@@ -162,16 +190,16 @@ export function MyReviewsPage() {
                         await reviewsApi.delete(r.review_id);
                         await load();
                       }}
-                      className='px-2.5 py-1 rounded-lg border border-red-200 text-xs text-red-600'
+                      className='px-3 py-1.5 rounded-lg border border-red-200 text-xs text-red-600 font-medium hover:bg-red-50'
                     >
                       ลบ
                     </Button>
                   </div>
                 ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {editOpen ? (

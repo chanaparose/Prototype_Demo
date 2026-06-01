@@ -48,7 +48,7 @@ export type OrderFilterId =
   | 'completed'
   | 'cancelled_expired';
 
-/** ธีมแท็บคำสั่งซื้อ (มือถือ) — สลับม่วง / ส้ม / มิดไนท์ */
+/** ธีมแท็บคำสั่งซื้อ (มือถือ) — ใช้ active คู่สีเดียวกันเพื่อให้ segmented control นิ่ง */
 export const ORDER_MOBILE_TAB_THEME: Record<
   OrderFilterId,
   { activeBg: string; activeColor: string; badgeInactive: string }
@@ -59,23 +59,23 @@ export const ORDER_MOBILE_TAB_THEME: Record<
     badgeInactive: BADGE_ALERT_BG,
   },
   in_production: {
-    activeBg: PLUM_SOFT_BG,
-    activeColor: PLUM,
+    activeBg: PEACH_MIST,
+    activeColor: ACCENT_ORANGE_DEEP,
     badgeInactive: PLUM,
   },
   shipped: {
-    activeBg: PEACH_SOFT,
-    activeColor: '#C2410C',
+    activeBg: PEACH_MIST,
+    activeColor: ACCENT_ORANGE_DEEP,
     badgeInactive: ACCENT_ORANGE,
   },
   completed: {
-    activeBg: '#ECE9F2',
-    activeColor: DEEP_PURPLE,
+    activeBg: PEACH_MIST,
+    activeColor: ACCENT_ORANGE_DEEP,
     badgeInactive: ORCHID,
   },
   cancelled_expired: {
-    activeBg: LILAC_MUTED,
-    activeColor: DEEP_PURPLE,
+    activeBg: PEACH_MIST,
+    activeColor: ACCENT_ORANGE_DEEP,
     badgeInactive: '#7C6F9E',
   },
 };

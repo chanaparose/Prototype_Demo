@@ -200,11 +200,11 @@ export function FactoryProfileTabContent({
         </div>
       </div>
 
-      <div className='px-0 lg:px-6 pt-1 space-y-3'>
+      <div className='px-5 pb-6 pt-4 lg:px-8 lg:pb-8 lg:pt-6 space-y-3'>
       {activeTab === 'products' && (
         <div>
           {productItems.length === 0 ? (
-            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
+            <div className='bg-white rounded-lg border border-gray-200 px-6 py-8 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีสินค้าแนะนำ
             </div>
           ) : (
@@ -276,7 +276,7 @@ export function FactoryProfileTabContent({
       {activeTab === 'articles' && (
         <div>
           {articleShowcases.length === 0 ? (
-            <div className='bg-white rounded-lg border border-gray-200 p-5 text-sm text-gray-500 text-center'>
+            <div className='bg-white rounded-xl border border-slate-100 p-5 text-sm text-gray-500 text-center'>
               โรงงานนี้ยังไม่มีบทความ
             </div>
           ) : (
@@ -285,12 +285,12 @@ export function FactoryProfileTabContent({
                 <div
                   key={item.id}
                   onClick={() => onIdeaClick(item.id)}
-                  className='bg-white rounded-lg overflow-hidden border border-gray-200 cursor-pointer hover:border-gray-300 transition-all group flex flex-col active:scale-[0.98] p-4 min-w-0'
+                  className='bg-white rounded-xl overflow-hidden border border-slate-100 cursor-pointer hover:border-slate-200 transition-all group flex flex-col active:scale-[0.98] p-4 min-w-0'
                 >
                   <div className='flex items-center gap-2 mb-2'>
-                    <StatusBadge variant='info' size='sm'>
-                      Idea
-                    </StatusBadge>
+                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-bold text-brand-magenta'>
+                      ไอเดีย
+                    </span>
                     <p className='text-[10px] text-gray-400 truncate'>
                       {item.postedAt ? formatThaiDate(item.postedAt) : ''}
                     </p>

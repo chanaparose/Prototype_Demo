@@ -110,7 +110,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
 
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] flex-col bg-gray-50 lg:flex'>
-      <div className='px-8 2xl:px-10 pt-6'>
+      <div className='px-4 sm:px-6 pt-6 pb-4'>
         <FactoryProfileHero
           factory={factory}
           onBack={handleBack}
@@ -125,7 +125,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
         />
       </div>
 
-      <div className='border-b border-gray-100 bg-white px-8 2xl:px-10 py-4'>
+      <div className='border-b border-gray-100 bg-white px-4 sm:px-6 py-5'>
         <div className='flex flex-wrap items-center gap-6'>
           <div className='flex items-center gap-5'>
             {statItems.map((s) => (
@@ -159,7 +159,7 @@ export function FactoryDetailDesktop({ state }: FactoryDetailDesktopProps) {
         </div>
       </div>
 
-      <div className='flex-1 px-8 2xl:px-10 py-6'>
+      <div className='flex-1 px-4 sm:px-6 py-6 overflow-auto'>
         <div className='overflow-hidden rounded-lg border border-gray-200 bg-white pt-0'>
           <FactoryProfileTabContent
             activeTab={activeTab}

@@ -72,10 +72,7 @@ export function IdeaDetailDesktop() {
 
   if (loading) {
     return (
-      <div
-        className='hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex'
-        style={{ background: BRAND.purpleSoft }}
-      >
+      <div className='hidden min-h-[calc(100vh-4rem)] items-center justify-center lg:flex bg-white'>
         <span
           className='h-10 w-10 animate-spin rounded-full border-2 border-purple-600 border-t-transparent'
           aria-hidden
@@ -86,10 +83,7 @@ export function IdeaDetailDesktop() {
 
   if (!item || !resolvedId) {
     return (
-      <div
-        className='hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)]'
-        style={{ background: BRAND.purpleSoft }}
-      >
+      <div className='hidden lg:block px-8 pt-8 pb-20 min-h-[calc(100vh-4rem)] bg-white'>
         <Button
           variant='unstyled'
           type='button'
@@ -100,7 +94,7 @@ export function IdeaDetailDesktop() {
         >
           <ArrowLeft className='w-4 h-4' /> กลับ
         </Button>
-        <div className='bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm'>
+        <div className='bg-white rounded-xl border border-slate-100 p-10 text-center'>
           <Lightbulb size={38} className='mx-auto mb-3 text-gray-400' />
           <p className='text-[14px] text-gray-500 font-medium'>{error || 'ไม่พบบทความไอเดีย'}</p>
         </div>
@@ -114,11 +108,9 @@ export function IdeaDetailDesktop() {
   const subName = item.sub_category_name?.trim() ?? null;
 
   return (
-    <div
-      className='hidden lg:block min-h-[calc(100vh-4rem)]'
-      style={{ background: BRAND.purpleSoft }}
+    <div className='hidden lg:block min-h-[calc(100vh-4rem)] bg-white'
     >
-      <div className='px-8 pt-5 pb-3'>
+      <div className='px-8 pt-5 pb-3 border-b border-slate-100'>
         <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
           <Button
             variant='unstyled'
@@ -144,14 +136,11 @@ export function IdeaDetailDesktop() {
         </div>
       </div>
 
-      <div className='px-8 pb-10 space-y-3'>
-        <div className='bg-white rounded-2xl border border-gray-100 shadow-sm p-4'>
+      <div className='px-8 pb-10 space-y-3 pt-5'>
+        <div className='bg-white rounded-xl border border-slate-100 p-4'>
           <div className='space-y-3'>
             <div className='flex flex-wrap items-center gap-2'>
-              <span
-                className='inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-semibold'
-                style={{ background: 'var(--surface-orange-tint)', color: BRAND.orange }}
-              >
+              <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[11px] font-semibold text-brand-magenta'>
                 บทความไอเดีย
               </span>
               {item.category ? (
@@ -172,14 +161,14 @@ export function IdeaDetailDesktop() {
           </div>
         </div>
 
-        <article className='bg-white rounded-2xl p-8 border border-gray-100 shadow-sm'>
+        <article className='bg-white rounded-xl p-8 border border-slate-100'>
           <MarkdownBody
             source={markdown}
             className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
           />
         </article>
 
-        <div className='rounded-xl border border-gray-200 p-3 bg-white'>
+        <div className='rounded-xl border border-slate-100 p-3 bg-white'>
           <div className='flex items-center gap-3 min-w-0'>
             <div className='w-14 h-14 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0'>
               <ImageWithFallback
@@ -257,7 +246,7 @@ export function IdeaDetailDesktop() {
           }
         />
 
-        <section className='bg-white rounded-2xl border border-gray-100 shadow-sm p-6'>
+        <section className='bg-white rounded-xl border border-slate-100 p-6'>
           <h2 className='text-[16px] font-bold mb-4' style={{ color: 'var(--brand-navy)' }}>
             บทความที่น่าสนใจให้อ่านต่อ
           </h2>
@@ -268,16 +257,13 @@ export function IdeaDetailDesktop() {
               return (
                 <article
                   key={next.id}
-                  className='group bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 p-4'
+                  className='group bg-white rounded-xl border border-slate-100 cursor-pointer hover:shadow-md transition-all duration-200 p-4'
                   onClick={() =>
                     navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
                   }
                 >
                   <div className='flex items-center gap-2 mb-2'>
-                    <span
-                      className='px-2 py-0.5 rounded-full text-[9px] font-bold text-white'
-                      style={{ backgroundColor: CARD.purple }}
-                    >
+                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[9px] font-bold text-brand-magenta'>
                       ไอเดีย
                     </span>
                     <span className='text-[10px] text-gray-400 truncate'>{next.factoryName}</span>
