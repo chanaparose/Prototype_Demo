@@ -319,6 +319,7 @@ export function RFQCreateWizard() {
       description: draft.description,
       category_id: Number(draft.category_id),
       qty: Number(draft.qty),
+      unit_id: draft.unit_id,
       sub_category_id: draft.sub_category_id,
       targeting: draft.targeting ?? 'all',
       factory_ids:

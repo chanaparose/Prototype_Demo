@@ -53,6 +53,10 @@ export function useCreateRFQ() {
             ? payload.certifications_required.map(String).filter(Boolean)
             : [],
 
+        unit_id:
+          payload.unit_id != null && Number.isFinite(Number(payload.unit_id)) && Number(payload.unit_id) > 0
+            ? Number(payload.unit_id)
+            : undefined,
         request_kind: kind,
         source_showcase_id:
           payload.source_showcase_id != null && Number.isFinite(Number(payload.source_showcase_id))
@@ -72,7 +76,7 @@ export function useCreateRFQ() {
         if (ids.length > 0) body.factory_ids = ids;
       }
 
-      return rfqsApi.create(body as IRfqCreateRequest);
+      return rfqsApi.create(body as unknown as IRfqCreateRequest);
     },
   });
 }

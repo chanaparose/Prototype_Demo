@@ -14,6 +14,8 @@ interface Props {
   onEditSubs: (categoryId: number) => void;
   onRemove: (categoryId: number) => void;
   isMT?: boolean;
+  /** แสดง error highlight เมื่อ PD category ไม่มี sub-category เลือกไว้ */
+  hasSubError?: boolean;
 }
 
 export function CategoryCard({
@@ -25,6 +27,7 @@ export function CategoryCard({
   onEditSubs,
   onRemove,
   isMT = false,
+  hasSubError = false,
 }: Props) {
   const selectedHere = subCategoriesForCategory.filter((s) => selectedSubIds.includes(s.id));
   const [deleting, setDeleting] = useState(false);
@@ -45,7 +48,6 @@ export function CategoryCard({
     setDeleteError('');
     try {
       await Promise.all(selectedHere.map((s) => factoriesApi.removeSubCategory(factoryId, s.id)));
-
       await factoriesApi.removeCategory(factoryId, categoryId);
       await qc.invalidateQueries({ queryKey: ['factory', 'me', 'profile-init'] });
       onRemove(categoryId);
@@ -57,7 +59,8 @@ export function CategoryCard({
   };
 
   return (
-    <div className='border border-gray-200 rounded-2xl p-4 bg-white'>
+    <div className={`border rounded-2xl p-4 bg-white ${hasSubError ? 'border-red-400 ring-1 ring-red-300' : 'border-gray-200'}`}>
+      {/* Header row */}
       <div className='flex items-start justify-between gap-3'>
         <div className='min-w-0'>
           <h3 className='text-sm font-bold text-gray-900'>{categoryName}</h3>
@@ -91,19 +94,27 @@ export function CategoryCard({
         </div>
       </div>
       {deleteError && <p className='text-xs text-red-600 mt-2'>{deleteError}</p>}
+      {hasSubError && !isMT && (
+        <p className='text-xs text-red-600 mt-1.5 flex items-center gap-1'>
+          <span>⚠</span> กรุณาเลือกหมวดย่อยอย่างน้อย 1 รายการ
+        </p>
+      )}
 
+      {/* Sub-categories list */}
       {!isMT &&
         (selectedHere.length > 0 ? (
-          <ul className='mt-3 flex flex-wrap gap-1.5'>
-            {selectedHere.map((s) => (
-              <li
-                key={s.id}
-                className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
-              >
-                ✓ {s.name}
-              </li>
-            ))}
-          </ul>
+          <div className='mt-3'>
+            <ul className='flex flex-wrap gap-1.5 mb-2'>
+              {selectedHere.map((s) => (
+                <li
+                  key={s.id}
+                  className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
+                >
+                  ✓ {s.name}
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : (
           <p className='mt-3 text-xs text-gray-400'>
             ยังไม่ได้เลือกหมวดย่อย — กด [แก้ไข] เพื่อเลือก

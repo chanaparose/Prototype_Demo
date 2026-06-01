@@ -38,7 +38,6 @@ const emptyValues: ProfileEditFormValues = {
   postal_code: '',
   description: '',
   specialization: '',
-  min_order: '',
   lead_time_desc: '',
   price_range: '',
 };
@@ -80,7 +79,6 @@ export function EditProfilePage() {
           postal_code: String(p.postal_code ?? addr.postal_code ?? ''),
           description: String(p.description ?? ''),
           specialization: String(p.specialization ?? ''),
-          min_order: String(p.min_order ?? ''),
           lead_time_desc: String(p.lead_time_desc ?? ''),
           price_range: String(p.price_range ?? ''),
         });
@@ -112,7 +110,6 @@ export function EditProfilePage() {
     ? [
         { label: 'รายละเอียดโรงงาน', name: 'description' },
         { label: 'ความเชี่ยวชาญ', name: 'specialization' },
-        { label: 'ขั้นต่ำการผลิต (MOQ)', name: 'min_order' },
         { label: 'Lead Time', name: 'lead_time_desc' },
         { label: 'ช่วงราคา', name: 'price_range' },
       ]

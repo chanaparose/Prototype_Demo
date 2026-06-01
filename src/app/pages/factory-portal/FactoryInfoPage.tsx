@@ -221,6 +221,40 @@ function AvatarUploader({
   );
 }
 
+// ─── CategoryViewCard — view-mode card for categories (no edit) ───────────────
+type SubEntryView = { id: number; name: string };
+type CatCardView = { id: number; name: string; subs: SubEntryView[] };
+
+function CategoryViewCard({
+  cat,
+  isMT = false,
+}: {
+  cat: CatCardView;
+  isMT?: boolean;
+}) {
+  return (
+    <div className='rounded-2xl border border-gray-200 bg-white p-4 space-y-2'>
+      <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
+
+      {!isMT && (
+        cat.subs.length > 0 ? (
+          <ul className='flex flex-wrap gap-1.5'>
+            {cat.subs.map((s) => (
+              <li key={s.id}>
+                <span className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'>
+                  ✓ {s.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className='text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย</p>
+        )
+      )}
+    </div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 export function FactoryInfoPage() {
   const { user, refreshUser } = useAuth();
@@ -253,9 +287,8 @@ export function FactoryInfoPage() {
     factory_type_id: (() => { const v = Number(factoryQ.data?.factory_type_id); return Number.isFinite(v) && v > 0 ? v : null; })(),
     category_ids: normalizeIds(factoryQ.categoryIds),
     sub_category_ids: normalizeIds(factoryQ.subCategoryIds),
-    min_order: (() => { const v = Number(factoryQ.data?.min_order); return Number.isFinite(v) && v > 0 ? v : null; })(),
     lead_time_desc: String(factoryQ.data?.lead_time_desc ?? '').trim(),
-  }), [factoryQ.data, factoryQ.categoryIds, factoryQ.subCategoryIds]);
+  }), [factoryQ.data, factoryQ.categoryIds, factoryQ.subCategoryIds, initQ.data]);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -274,6 +307,8 @@ export function FactoryInfoPage() {
   const [okMsg, setOkMsg] = useState('');
 
   const openCategoryPickerRef = useRef<(() => void) | null>(null);
+  // PD categories ที่ยังไม่ได้เลือก sub — ใช้ block save
+  const pdSubErrorsRef = useRef<Set<number>>(new Set());
   const openCertAddRef = useRef<(() => void) | null>(null);
 
   const isDirty = form.formState.isDirty;
@@ -282,8 +317,13 @@ export function FactoryInfoPage() {
   // ── Save info section ──────────────────────────────────────────────────────
   const handleSaveInfo = useCallback(async () => {
     if (!fid) return;
-    const valid = await form.trigger(['factory_name', 'factory_type_id', 'tax_id', 'min_order', 'lead_time_desc', 'description']);
+    const valid = await form.trigger(['factory_name', 'factory_type_id', 'tax_id', 'lead_time_desc', 'description']);
     if (!valid) { setError('กรุณาตรวจสอบข้อมูลในฟอร์ม'); return; }
+    // ตรวจสอบว่า PD categories ทุกอันมี sub-category เลือกไว้
+    if (pdSubErrorsRef.current.size > 0) {
+      setError('กรุณาเลือกหมวดย่อยอย่างน้อย 1 รายการสำหรับทุก "หมวดสินค้า (PD)" ที่เลือกไว้');
+      return;
+    }
     setSaving(true); setError(''); setOkMsg('');
     const v = form.getValues();
     const catIds = normalizeIds(v.category_ids);
@@ -294,13 +334,18 @@ export function FactoryInfoPage() {
         tax_id: v.tax_id.trim() || undefined,
         description: v.description.trim() || undefined,
         factory_type_id: v.factory_type_id ?? undefined,
-        min_order: v.min_order != null && v.min_order > 0 ? v.min_order : undefined,
         lead_time_desc: v.lead_time_desc.trim() || undefined,
         image_url: String(v.image_url ?? ''),
         background_image_url: String(v.cover_image_url ?? ''),
         category_ids: catIds,
         sub_category_ids: subIds,
       });
+      if (catIds.length > 0) {
+        await factoriesApi.setCategories(fid, catIds);
+      }
+      if (subIds.length > 0) {
+        await factoriesApi.setSubCategories(fid, subIds);
+      }
       form.reset({ ...v, category_ids: catIds, sub_category_ids: subIds });
       setOkMsg('บันทึกข้อมูลพื้นฐานเรียบร้อย');
       setEditSection(null);
@@ -358,18 +403,18 @@ export function FactoryInfoPage() {
     });
     return map;
   }, [lbiCategories]);
+  type SubEntry = { id: number; name: string };
+  type CatCard = { id: number; name: string; subs: SubEntry[] };
   const categoryCardsByScope = useMemo(() => {
-    const out: Record<'PD' | 'MT', Array<{ id: number; name: string; subNames: string[] }>> = {
-      PD: [],
-      MT: [],
-    };
-    const subByCat = new Map<number, string[]>();
+    const out: Record<'PD' | 'MT', CatCard[]> = { PD: [], MT: [] };
+    const subByCat = new Map<number, SubEntry[]>();
     rawSubs.forEach((s) => {
       const catId = Number(s.category_id);
+      const id = Number(s.sub_category_id);
       const name = String(s.sub_category_name ?? s.name ?? '').trim();
-      if (!Number.isFinite(catId) || !name) return;
+      if (!Number.isFinite(catId) || !Number.isFinite(id) || !name) return;
       const bucket = subByCat.get(catId) ?? [];
-      bucket.push(name);
+      if (!bucket.some((x) => x.id === id)) bucket.push({ id, name });
       subByCat.set(catId, bucket);
     });
     rawCats.forEach((c) => {
@@ -378,8 +423,7 @@ export function FactoryInfoPage() {
       if (!Number.isFinite(id) || !name) return;
       const scope = catScopeById.get(id) ?? 'PD';
       if (scope !== 'PD' && scope !== 'MT') return;
-      const subNamesForCard = Array.from(new Set(subByCat.get(id) ?? []));
-      out[scope].push({ id, name, subNames: subNamesForCard });
+      out[scope].push({ id, name, subs: subByCat.get(id) ?? [] });
     });
     return out;
   }, [catScopeById, rawCats, rawSubs]);
@@ -490,8 +534,9 @@ export function FactoryInfoPage() {
                 form={form}
                 factoryId={fid}
                 onRegisterAdd={(h) => { openCategoryPickerRef.current = h; }}
-                apiCategories={factoryQ.data?.categories as Parameters<typeof CategoriesSection>[0]['apiCategories']}
-                apiSubCategories={factoryQ.data?.sub_categories as Parameters<typeof CategoriesSection>[0]['apiSubCategories']}
+                apiCategories={(factoryQ.data?.categories ?? []) as Parameters<typeof CategoriesSection>[0]['apiCategories']}
+                apiSubCategories={(factoryQ.data?.sub_categories ?? []) as Parameters<typeof CategoriesSection>[0]['apiSubCategories']}
+                onPdSubValidation={(invalidIds) => { pdSubErrorsRef.current = invalidIds; }}
               />
             </div>
           </div>
@@ -502,7 +547,6 @@ export function FactoryInfoPage() {
               <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
               <Field label='ประเภทโรงงาน' value={factoryTypeName} />
               <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
-              <Field label='MOQ (ขั้นต่ำรับผลิต)' value={initialValues.min_order ? `${initialValues.min_order.toLocaleString()} ชิ้น` : undefined} />
               <Field label='Lead Time' value={initialValues.lead_time_desc} />
               <Field label='รายละเอียด' value={initialValues.description} className='col-span-2 sm:col-span-4' />
             </div>
@@ -512,47 +556,25 @@ export function FactoryInfoPage() {
             <div className='space-y-4'>
               <p className='text-xs font-semibold text-gray-500'>ข้อมูลการผลิตและหมวดหมู่</p>
 
+              {/* PD categories */}
               {categoryCardsByScope.PD.length > 0 ? (
                 <div className='space-y-2.5'>
                   <p className='text-sm font-bold text-indigo-700'>หมวดสินค้า (PD)</p>
                   <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'>
                     {categoryCardsByScope.PD.map((cat) => (
-                      <div key={`pd-${cat.id}`} className='rounded-2xl border border-gray-200 bg-white p-4'>
-                        <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
-                        <p className='text-xs text-gray-500 mt-0.5'>
-                          {cat.subNames.length} หมวดย่อยที่เลือกไว้
-                        </p>
-                        {cat.subNames.length > 0 ? (
-                          <ul className='mt-3 flex flex-wrap gap-1.5'>
-                            {cat.subNames.map((name) => (
-                              <li
-                                key={`${cat.id}-${name}`}
-                                className='inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full px-2.5 py-1'
-                              >
-                                ✓ {name}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className='mt-3 text-xs text-gray-400'>ยังไม่ได้เลือกหมวดย่อย</p>
-                        )}
-                      </div>
+                      <CategoryViewCard key={`pd-${cat.id}`} cat={cat} />
                     ))}
                   </div>
                 </div>
               ) : null}
 
+              {/* MT categories */}
               {categoryCardsByScope.MT.length > 0 ? (
                 <div className='space-y-2.5'>
                   <p className='text-sm font-bold text-emerald-700'>หมวดวัตถุดิบ (MT)</p>
                   <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'>
                     {categoryCardsByScope.MT.map((cat) => (
-                      <div key={`mt-${cat.id}`} className='rounded-2xl border border-gray-200 bg-white p-4'>
-                        <h3 className='text-sm font-bold text-gray-900'>{cat.name}</h3>
-                        <p className='text-xs text-gray-500 mt-0.5'>
-                          {cat.subNames.length > 0 ? `${cat.subNames.length} หมวดย่อยที่เลือกไว้` : 'ไม่มีหมวดย่อย'}
-                        </p>
-                      </div>
+                      <CategoryViewCard key={`mt-${cat.id}`} cat={cat} isMT />
                     ))}
                   </div>
                 </div>

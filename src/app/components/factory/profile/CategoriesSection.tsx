@@ -30,6 +30,11 @@ interface Props {
   apiCategories?: ApiCategory[];
   /** Raw sub_categories from /factories/me — used as fallback when master data is unavailable */
   apiSubCategories?: ApiSubCategory[];
+  /**
+   * Callback เพื่อส่ง Set ของ PD category IDs ที่ยังไม่ได้เลือก sub ให้ parent ใช้ validate
+   * จะถูกเรียกทุกครั้งที่ค่าเปลี่ยน
+   */
+  onPdSubValidation?: (invalidCategoryIds: Set<number>) => void;
 }
 
 export function CategoriesSection({
@@ -38,6 +43,7 @@ export function CategoriesSection({
   onRegisterAdd,
   apiCategories = [],
   apiSubCategories = [],
+  onPdSubValidation,
 }: Props) {
   const { control } = form;
   const { data: allCategories = [] } = useProductCategories();
@@ -126,6 +132,24 @@ export function CategoriesSection({
     return { pd, mt, unknown };
   }, [resolvedCategories, pdIds, mtIds]);
 
+  // PD categories ที่ไม่มี sub-category เลือกไว้เลย (ใช้สำหรับ validation + highlight)
+  const pdCatsWithNoSubs = useMemo(() => {
+    return new Set(
+      categoryIds.filter((cid) => {
+        if (mtIds.has(cid)) return false; // ไม่ใช่ PD
+        const subsAvailable = (byCategory.get(cid) ?? []).length;
+        if (subsAvailable === 0) return false; // ไม่มี sub ให้เลือก = ไม่นับ
+        const subsSelected = (byCategory.get(cid) ?? []).filter((s) => subCategoryIds.includes(s.id)).length;
+        return subsSelected === 0;
+      }),
+    );
+  }, [categoryIds, subCategoryIds, byCategory, mtIds]);
+
+  // แจ้ง parent เมื่อ validation state เปลี่ยน
+  useEffect(() => {
+    onPdSubValidation?.(pdCatsWithNoSubs);
+  }, [pdCatsWithNoSubs, onPdSubValidation]);
+
   const renderCategoryGrid = (rows: { id: number; name: string }[], isMTGroup = false) => (
     <div className='grid gap-3 sm:grid-cols-2'>
       {rows.map((c) => (
@@ -137,19 +161,12 @@ export function CategoriesSection({
           subCategoriesForCategory={byCategory.get(c.id) ?? []}
           selectedSubIds={subCategoryIds}
           isMT={isMTGroup || mtIds.has(c.id)}
+          hasSubError={!isMTGroup && !mtIds.has(c.id) && pdCatsWithNoSubs.has(c.id)}
           onEditSubs={(cid) => setEditingCategoryId(cid)}
           onRemove={(cid) => {
             const subsInCategory = (byCategory.get(cid) ?? []).map((s) => s.id);
-            form.setValue(
-              'category_ids',
-              categoryIds.filter((x) => x !== cid),
-              { shouldDirty: true },
-            );
-            form.setValue(
-              'sub_category_ids',
-              subCategoryIds.filter((x) => !subsInCategory.includes(x)),
-              { shouldDirty: true },
-            );
+            form.setValue('category_ids', categoryIds.filter((x) => x !== cid), { shouldDirty: true });
+            form.setValue('sub_category_ids', subCategoryIds.filter((x) => !subsInCategory.includes(x)), { shouldDirty: true });
           }}
         />
       ))}

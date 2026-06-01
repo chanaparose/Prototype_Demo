@@ -55,6 +55,7 @@ export type ProvinceOption = { id: number; name: string };
 export type CategoryOption = { id: number; name: string; scope?: string };
 export type SubCategoryOption = { id: number; name: string; sort_order?: number };
 export type CertTypeOption = { id: number; label: string };
+export type UnitOption = { id: number; name: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_RE = /^0[6-9]\d{8}$/;

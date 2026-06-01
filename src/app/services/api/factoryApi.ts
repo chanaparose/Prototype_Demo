@@ -59,7 +59,6 @@ export const factoriesApi = {
       tax_id?: string;
       description?: string;
       factory_type_id?: number;
-      min_order?: number;
       lead_time_desc?: string;
       image_url?: string;
       background_image_url?: string;
@@ -72,9 +71,7 @@ export const factoriesApi = {
     httpClient.put<void>(`/factories/${factoryId}/categories`, { category_ids: categoryIds }),
 
   setSubCategories: (factoryId: string | number, subCategoryIds: number[]) =>
-    httpClient.put<void>(`/factories/${factoryId}/sub-categories`, {
-      sub_category_ids: subCategoryIds,
-    }),
+    httpClient.put<void>(`/factories/${factoryId}/sub-categories`, { sub_category_ids: subCategoryIds }),
 
   getCategories: (factoryId: string | number) =>
     httpClient.get<{ data: { category_id: number; name: string }[]; total: number }>(

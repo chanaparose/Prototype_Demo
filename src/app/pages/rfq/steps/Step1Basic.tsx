@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import type { RFQDraft } from '@/pages/rfq/useRFQDraft';
 import { mediaApi } from '@/services/api/factoryApi';
+import { masterApi } from '@/services/api/masterApi';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
@@ -13,6 +14,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { RFQ_BORDER, RFQ_FIELD_CLASS, RFQ_RADIUS } from '@/pages/rfq/rfqCreateWizardUi';
+
+type UnitOption = { unit_id: number; unit_name: string; abbreviation?: string };
 
 type SubCategory = {
   id: number;
@@ -38,6 +41,19 @@ export function Step1Basic({
   mode = 'PR',
 }: Props) {
   const [uploading, setUploading] = useState(false);
+  const [units, setUnits] = useState<UnitOption[]>([]);
+  React.useEffect(() => {
+    masterApi.getUnits().then((raw) => {
+      if (!Array.isArray(raw)) return;
+      setUnits(
+        (raw as unknown as Record<string, unknown>[]).map((u) => ({
+          unit_id: Number(u.unit_id ?? u.id ?? 0),
+          unit_name: String(u.unit_name ?? u.name ?? ''),
+          abbreviation: u.abbreviation ? String(u.abbreviation) : undefined,
+        })).filter((u) => u.unit_id > 0)
+      );
+    }).catch(() => {});
+  }, []);
   const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -225,14 +241,32 @@ export function Step1Basic({
           <span className='mb-1 block text-[11px] font-semibold text-brand-navy-deep'>
             จำนวน <span className='text-brand-orange-deep'>*</span>
           </span>
-        <Input
-          type='number'
-          min={1}
-          value={draft.qty ?? ''}
-          onChange={(e) => setDraft({ qty: Number(e.target.value) || null })}
-          placeholder={mode === 'PS' ? '1–10' : mode === 'MS' ? '1–5' : 'ชิ้น'}
-          className={fieldClass}
-        />
+          <div className='flex gap-2'>
+            <Input
+              type='number'
+              min={1}
+              value={draft.qty ?? ''}
+              onChange={(e) => setDraft({ qty: Number(e.target.value) || null })}
+              placeholder={mode === 'PS' ? '1–10' : mode === 'MS' ? '1–5' : '0'}
+              className={fieldClass}
+            />
+            <Select
+              value={draft.unit_id ? String(draft.unit_id) : '__default'}
+              onValueChange={(v) => setDraft({ unit_id: v === '__default' ? undefined : Number(v) })}
+            >
+              <SelectTrigger className='w-[110px] shrink-0 rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 text-sm text-brand-navy-deep focus:border-brand-violet-deep focus:ring-2 focus:ring-[rgba(109,40,217,0.12)]'>
+                <SelectValue placeholder='หน่วย' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='__default'>ชิ้น (default)</SelectItem>
+                {units.map((u) => (
+                  <SelectItem key={u.unit_id} value={String(u.unit_id)}>
+                    {u.unit_name}{u.abbreviation ? ` (${u.abbreviation})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </label>
       </div>
     </div>

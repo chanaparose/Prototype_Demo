@@ -12,7 +12,6 @@ export const profileEditFormSchema = z.object({
   postal_code: z.string(),
   description: z.string(),
   specialization: z.string(),
-  min_order: z.string(),
   lead_time_desc: z.string(),
   price_range: z.string(),
 });

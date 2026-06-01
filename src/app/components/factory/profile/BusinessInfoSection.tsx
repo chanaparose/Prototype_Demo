@@ -58,27 +58,6 @@ export function BusinessInfoSection({ form }: Props) {
 
       <Label className='block'>
         <span className='text-xs text-gray-500'>
-          ขั้นต่ำในการรับผลิต (ชิ้น)
-          <span className='ml-1 text-gray-400 font-normal'>— MOQ</span>
-        </span>
-        <Input
-          type='number'
-          inputMode='numeric'
-          min={0}
-          placeholder='500'
-          className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'
-          {...register('min_order', {
-            setValueAs: (v) => {
-              if (v === '' || v == null) return null;
-              const n = Number(v);
-              return Number.isFinite(n) && n > 0 ? n : null;
-            },
-          })}
-        />
-      </Label>
-
-      <Label className='block'>
-        <span className='text-xs text-gray-500'>
           ระยะเวลาผลิต (Lead time)
           <span className='ml-1 text-gray-400 font-normal'>— เช่น 15-20 วัน</span>
         </span>

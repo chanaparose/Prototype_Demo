@@ -40,6 +40,7 @@ export interface IRfqCreateRequest {
   sub_category_id?: number;
   title: string;
   quantity: number;
+  unit_id?: number;
   details?: string;
   address_id: number;
   target_price?: number;
@@ -136,6 +137,7 @@ export interface IRfqWizardCreateInput {
   category_id: number | string;
   sub_category_id?: number | string;
   qty: number;
+  unit_id?: number;
   target_price?: number;
   target_lead_time_days?: number;
   material_grade?: string;

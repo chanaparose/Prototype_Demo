@@ -18,6 +18,7 @@ export type RFQDraft = {
   category_id: number | null;
   sub_category_id?: number;
   qty: number | null;
+  unit_id?: number;
   material_grade: string;
   tolerance: string;
   color_finish: string;

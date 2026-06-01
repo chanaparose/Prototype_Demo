@@ -9,7 +9,6 @@ export const profileFormSchema = z.object({
   factory_type_id: z.number().int().positive().nullable(),
   category_ids: z.array(z.number().int().positive()),
   sub_category_ids: z.array(z.number().int().positive()),
-  min_order: z.number().int().positive().nullable(),
   lead_time_desc: z.string(),
 });
 

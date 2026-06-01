@@ -423,16 +423,7 @@ export function ExploreDesktop({
         <ExploreFooter />
       </div>
 
-      <Button
-        variant='unstyled'
-        data-tour='fab'
-        type='button'
-        onClick={() => navigate('/create-rfq')}
-        className='hidden md:flex xl:hidden fixed bottom-6 right-5 w-12 h-12 rounded-full items-center justify-center shadow-lg transition-transform active:scale-95 z-30'
-        style={FAB_BUTTON_STYLE}
-      >
-        <Plus size={20} className='text-white' />
-      </Button>
+      
     </div>
   );
 }
