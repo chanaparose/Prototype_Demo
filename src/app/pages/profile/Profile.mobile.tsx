@@ -24,12 +24,12 @@ import {
   Loader2,
   CheckCircle2,
 } from 'lucide-react';
-import { useData } from '@/stores/useDataStore';
+import { useData, useDataStore } from '@/stores/useDataStore';
 import { useAuth, useAuthStore } from '@/stores/useAuthStore';
 import { getAvailableRoles } from '@/services/api/authApi';
 import { profileApi } from '@/services/api/userApi';
 import { addressesApi } from '@/services/api/masterApi';
-import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
+import { resolveCustomerAvatarSrc } from '@/utils/resolveCustomerAvatar';
 import { Button } from '@/components/ui/button';
 import { formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { Input } from '@/components/ui/input';
@@ -230,7 +230,8 @@ function MobileRoleSwitcher() {
 export function ProfileMobile() {
   const navigate = useNavigate();
   const data = useData();
-  const { logout } = useAuth();
+  const patchCurrentUser = useDataStore((s) => s.patchCurrentUser);
+  const { logout, user: authUser } = useAuth();
   const currentUser = data.currentUser;
   const role = String(
     (currentUser as { role?: unknown; user_type?: unknown } | null)?.role ??
@@ -284,6 +285,23 @@ export function ProfileMobile() {
       setAddingAddress(false);
     }
   };
+
+  const profileAvatarSrc = resolveCustomerAvatarSrc(currentUser?.avatar, authUser?.avatar);
+
+  useEffect(() => {
+    let cancelled = false;
+    profileApi
+      .get()
+      .then((p) => {
+        if (cancelled) return;
+        const avatarUrl = String(p.avatar_url ?? '').trim();
+        if (avatarUrl) patchCurrentUser({ avatar: avatarUrl });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [patchCurrentUser]);
 
   useEffect(() => {
     let cancelled = false;
@@ -346,62 +364,54 @@ export function ProfileMobile() {
 
   return (
     <div className='pb-6'>
-      <div className='px-4 pt-6 pb-4'>
-        <div className='mb-5'>
-          <div>
-            <p className='text-xs text-gray-400 uppercase tracking-widest font-semibold'>บัญชี</p>
-            <h1 className='text-2xl text-gray-900 font-bold mt-1'>
-              โปรไฟล์
-            </h1>
-          </div>
+      <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
+        <div className='mx-auto max-w-6xl px-4 py-4 lg:px-8'>
+          <p className='text-xs font-semibold uppercase tracking-wider text-gray-400'>
+            บัญชี
+          </p>
+          <h1 className='text-2xl font-bold text-gray-900 mt-1'>
+            โปรไฟล์
+          </h1>
         </div>
+      </header>
 
-        <div className='rounded-2xl p-6 bg-gradient-to-br from-brand-royal to-purple-600'>
-          <div>
-            <div className='flex items-start gap-4 mb-6'>
-              <div className='relative shrink-0 w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/40 bg-white/10'>
-                <Image
-                  src={HARDCODED_CUSTOMER_PROFILE_SRC}
-                  alt='avatar'
-                  className='absolute inset-0 w-full h-full object-cover object-center'
-                />
-              </div>
-              <div className='flex-1 min-w-0'>
-                <p className='text-white text-lg font-bold'>
-                  {currentUser.name}
-                </p>
-                <p className='text-white/70 text-sm mt-0.5'>{currentUser.company}</p>
-                <div className='flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-white/15 w-fit'>
-                  <CheckCircle2 size={16} className='text-yellow-200 shrink-0' />
-                  <span className='text-white/90 text-xs font-medium'>Verified Member</span>
-                </div>
-              </div>
+      <div className='mx-auto w-full max-w-6xl space-y-5 px-4 pt-6 lg:px-8'>
+        <div className='w-full rounded-2xl border border-purple-500/30 bg-gradient-to-br from-brand-royal to-purple-600 p-5 shadow-sm'>
+          <div className='flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-4'>
+            <div className='relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border-2 border-white/40 bg-white/10 sm:h-[4.5rem] sm:w-[4.5rem]'>
+              <Image
+                src={profileAvatarSrc}
+                alt='avatar'
+                className='absolute inset-0 h-full w-full object-cover object-center'
+              />
             </div>
-            <div className='grid grid-cols-3 gap-2'>
-              <div className='text-center py-1'>
-                <p className='text-white text-lg font-bold'>
-                  {completedOrders}
-                </p>
-                <p className='text-white/70 text-xs mt-0.5'>คำสั่งซื้อ</p>
-              </div>
-              <div className='text-center py-1 border-l border-r border-white/20'>
-                <p className='text-white text-lg font-bold'>
-                  4.8
-                </p>
-                <p className='text-white/70 text-xs mt-0.5'>คะแนน</p>
-              </div>
-              <div className='text-center py-1'>
-                <p className='text-white text-lg font-bold'>
-                  ฿{(totalSpent / 1000).toFixed(0)}K
-                </p>
-                <p className='text-white/70 text-xs mt-0.5'>ใช้จ่ายรวม</p>
+            <div className='min-w-0 flex-1'>
+              <p className='text-lg font-bold text-white break-words'>{currentUser.name}</p>
+              <p className='mt-0.5 text-sm text-white/70 break-words'>{currentUser.company}</p>
+              <div className='mt-2 flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1'>
+                <CheckCircle2 size={16} className='shrink-0 text-yellow-200' />
+                <span className='text-xs font-medium text-white/90'>Verified Member</span>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className='px-4 space-y-5'>
+          <div className='mt-5 grid grid-cols-3 divide-x divide-white/20 rounded-xl border border-white/15 bg-white/10'>
+            <div className='min-w-0 px-2 py-3 text-center sm:px-3'>
+              <p className='text-lg font-bold text-white tabular-nums'>{completedOrders}</p>
+              <p className='mt-0.5 text-xs text-white/70'>คำสั่งซื้อ</p>
+            </div>
+            <div className='min-w-0 px-2 py-3 text-center sm:px-3'>
+              <p className='text-lg font-bold text-white tabular-nums'>4.8</p>
+              <p className='mt-0.5 text-xs text-white/70'>คะแนน</p>
+            </div>
+            <div className='min-w-0 px-2 py-3 text-center sm:px-3'>
+              <p className='text-lg font-bold text-white tabular-nums'>
+                ฿{(totalSpent / 1000).toFixed(0)}K
+              </p>
+              <p className='mt-0.5 text-xs text-white/70'>ใช้จ่ายรวม</p>
+            </div>
+          </div>
+        </div>
         <div className='bg-white rounded-2xl p-5 border border-gray-200'>
           <div className='flex items-center justify-between mb-5'>
             <div className='flex items-center gap-3'>
@@ -427,13 +437,13 @@ export function ProfileMobile() {
           <div className='flex gap-3 mb-6'>
             <Button
               variant='unstyled'
-              className='flex-1 py-3 rounded-xl text-sm text-white font-semibold bg-brand-royal hover:bg-brand-royal/90 transition-colors'
+              className='flex-1 py-3 rounded-xl text-sm text-white font-semibold bg-brand-purple hover:bg-brand-violet-deep transition-colors'
             >
               + เติมเงิน
             </Button>
             <Button
               variant='unstyled'
-              className='flex-1 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors'
+              className='flex-1 py-3 rounded-xl text-sm font-semibold border border-brand-purple text-brand-purple hover:bg-brand-purple/5 transition-colors'
             >
               ถอนเงิน
             </Button>
@@ -549,13 +559,13 @@ export function ProfileMobile() {
             </Button>
           </div>
           {showAddressForm && (
-            <div className='px-5 pb-4 flex gap-2 border-t border-gray-200'>
+            <div className='px-5 py-4 flex gap-2 border-t border-gray-200'>
               <Input
                 type='text'
                 value={newAddress}
                 onChange={(e) => setNewAddress(e.target.value)}
                 placeholder='กรอกที่อยู่จัดส่ง...'
-                className='flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-royal/30 focus:border-transparent'
+                className='flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2.5 shadow-none focus:outline-none focus:ring-2 focus:ring-brand-royal/30 focus:border-transparent'
               />
               <Button
                 variant='unstyled'
@@ -606,7 +616,7 @@ export function ProfileMobile() {
           ออกจากระบบ
         </Button>
 
-        <p className='text-center text-xs text-gray-400 pb-4'>
+        <p className='pb-4 text-center text-xs text-gray-400'>
           ManuConnect v1.0.0 · สมาชิกตั้งแต่ {currentUser.memberSince}
         </p>
       </div>

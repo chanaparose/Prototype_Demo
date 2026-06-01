@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { profileApi } from '@/services/api/userApi';
 import { useAuth } from '@/stores/useAuthStore';
+import { useDataStore } from '@/stores/useDataStore';
 import {
   profileEditFormSchema,
   validateProfileEditForRole,
@@ -44,7 +45,8 @@ const emptyValues: ProfileEditFormValues = {
 
 export function EditProfilePage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const patchCurrentUser = useDataStore((s) => s.patchCurrentUser);
   const [loading, setLoading] = useState(true);
   const [rootError, setRootError] = useState('');
   const [role, setRole] = useState('');
@@ -102,8 +104,22 @@ export function EditProfilePage() {
     }
     setRootError('');
     try {
-      if (avatarFile) await profileApi.uploadAvatar(avatarFile);
-      await profileApi.update({ ...values, bio: values.bio.slice(0, 300) });
+      let avatarUrl: string | undefined;
+      if (avatarFile) {
+        const uploadRes = await profileApi.uploadAvatar(avatarFile);
+        avatarUrl = String(
+          uploadRes.avatar_url ?? (uploadRes as Record<string, unknown>).avatar_url ?? '',
+        ).trim() || undefined;
+      }
+      const updateData: Record<string, unknown> = { ...values, bio: values.bio.slice(0, 300) };
+      if (avatarUrl) {
+        updateData.avatar_url = avatarUrl;
+      }
+      await profileApi.update(updateData);
+      if (avatarUrl) {
+        patchCurrentUser({ avatar: avatarUrl });
+      }
+      await refreshUser();
       navigate('/profile');
     } catch (e) {
       setRootError(getErrorMessage(e, 'บันทึกไม่สำเร็จ'));
@@ -132,24 +148,24 @@ export function EditProfilePage() {
 
   return (
     <div className='space-y-4 pb-24'>
-      <div className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex items-center justify-between'>
+      <div className='border-b border-gray-200 bg-white p-4 flex items-center justify-between'>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => navigate(-1)}
-          className='text-slate-600'
+          className='text-gray-600 hover:text-gray-900'
         >
           <ChevronLeft size={18} />
         </Button>
-        <p className='text-sm font-bold text-slate-900'>แก้ไขโปรไฟล์</p>
+        <p className='text-sm font-bold text-gray-900'>แก้ไขโปรไฟล์</p>
         <Button
           variant='unstyled'
           type='button'
           onClick={() => void form.handleSubmit(onSubmit)()}
           disabled={form.formState.isSubmitting}
-          className='text-xs font-semibold text-indigo-600 disabled:opacity-50'
+          className='px-3 py-1.5 rounded-lg text-sm font-semibold text-white bg-brand-purple hover:bg-brand-violet-deep disabled:opacity-50 transition-colors'
         >
-          บันทึก
+          {form.formState.isSubmitting ? '...' : 'บันทึก'}
         </Button>
       </div>
 
@@ -158,15 +174,15 @@ export function EditProfilePage() {
       <Form {...form}>
         <form
           onSubmit={(e) => void form.handleSubmit(onSubmit)(e)}
-          className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3'
+          className='rounded-lg border border-gray-200 bg-white p-4 space-y-3'
         >
           <div className='flex items-center gap-3'>
             <Image
               src={avatarPreview || '/assets/avatars/customer-default.svg'}
               alt='avatar'
-              className='w-14 h-14 rounded-2xl object-cover bg-slate-100'
+              className='w-14 h-14 rounded-lg object-cover bg-gray-100'
             />
-            <FormLabel className='text-xs font-semibold text-indigo-600 cursor-pointer'>
+            <label className='text-xs font-semibold text-brand-purple cursor-pointer hover:text-brand-violet-deep transition-colors'>
               เปลี่ยนรูปโปรไฟล์
               <Input
                 type='file'
@@ -178,7 +194,7 @@ export function EditProfilePage() {
                   if (f) setAvatarPreview(URL.createObjectURL(f));
                 }}
               />
-            </FormLabel>
+            </label>
           </div>
 
           <FormField
@@ -190,7 +206,7 @@ export function EditProfilePage() {
                 <FormControl>
                   <Input
                     {...field}
-                    className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm'
+                    className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
                   />
                 </FormControl>
                 <FormMessage />
@@ -209,7 +225,7 @@ export function EditProfilePage() {
                   <FormControl>
                     <Input
                       {...field}
-                      className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm'
+                      className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
                     />
                   </FormControl>
                   <FormMessage />
@@ -229,7 +245,7 @@ export function EditProfilePage() {
                     {...field}
                     onChange={(e) => field.onChange(e.target.value.slice(0, 300))}
                     rows={3}
-                    className='w-full rounded-xl border border-slate-200 px-3 py-2 text-sm'
+                    className='w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-none focus:outline-none focus:ring-2 focus:ring-brand-purple/20 focus:border-brand-purple'
                   />
                 </FormControl>
                 <p className='text-[11px] text-slate-400 text-right'>{bioLength}/300</p>

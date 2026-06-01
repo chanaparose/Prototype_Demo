@@ -55,6 +55,7 @@ export interface DataActions {
   refetchConversations: () => Promise<void>;
   refetchFactory: (id: string) => Promise<void>;
   refetchWallet: () => Promise<void>;
+  patchCurrentUser: (patch: Partial<CurrentUser>) => void;
 }
 
 const INITIAL_STATE: DataState = {
@@ -116,7 +117,7 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
               id: pickScalarString(u.id),
               name: pickScalarString(u.name),
               nameEn: u.nameEn != null ? pickScalarString(u.nameEn) : undefined,
-              avatar: pickScalarString(u.avatar) || undefined,
+              avatar: pickScalarString(u.avatar ?? u.avatar_url) || undefined,
               company: pickScalarString(u.company) || undefined,
               email: pickScalarString(u.email),
               phone: pickScalarString(u.phone),
@@ -258,6 +259,16 @@ export const useDataStore = create<DataState & DataActions>((set, get) => {
       } catch {
         /* keep cached wallet */
       }
+    },
+
+    patchCurrentUser: (patch) => {
+      set((state) => {
+        if (!state.currentUser) return state;
+        return {
+          ...state,
+          currentUser: { ...state.currentUser, ...patch },
+        };
+      });
     },
   };
 });

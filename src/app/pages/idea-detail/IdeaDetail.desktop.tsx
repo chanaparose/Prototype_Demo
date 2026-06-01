@@ -110,25 +110,24 @@ export function IdeaDetailDesktop() {
   return (
     <div className='hidden lg:block min-h-[calc(100vh-4rem)] bg-white'
     >
-      <div className='px-8 pt-5 pb-3 border-b border-slate-100'>
-        <div className='flex items-center gap-1.5 text-[12px] text-gray-500'>
+      <div className='px-8 pt-5 pb-3'>
+        <div className='flex items-center gap-2 text-[14px] text-gray-500'>
           <Button
             variant='unstyled'
             type='button'
-          onClick={handleBack}
-            className='inline-flex items-center gap-1 font-medium hover:opacity-80'
-            style={{ color: BRAND.purple }}
+            onClick={handleBack}
+            aria-label='กลับไปหน้าก่อนหน้า'
+            className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50'
           >
-            <ArrowLeft className='w-3.5 h-3.5' /> กลับ
+            <ArrowLeft className='h-3.5 w-3.5' />
           </Button>
-          <Chevron className='w-3 h-3 text-gray-300' />
           <span>{item.category || 'บทความไอเดีย'}</span>
           {subName ? (
             <>
               <Chevron className='w-3 h-3 text-gray-300' />
               <span>{subName}</span>
             </>
-        ) : null}
+          ) : null}
           <Chevron className='w-3 h-3 text-gray-300' />
           <span className='truncate max-w-[32rem]' style={{ color: BRAND.ink }}>
             {item.title}

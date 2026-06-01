@@ -141,9 +141,9 @@ export function NotificationsMobile() {
           <ChevronLeft size={22} className='text-gray-700' />
         </Button>
         <div className='flex flex-col items-center'>
-          <p className='text-[10px] text-gray-400'>แจ้งเตือน</p>
+          <p className='text-[12px] text-gray-400'>แจ้งเตือน</p>
           <div className='flex items-center gap-2'>
-            <h1 className='text-[13px] text-gray-900 truncate' style={{ fontWeight: 700 }}>
+            <h1 className='text-[16px] text-gray-900 truncate' style={{ fontWeight: 700 }}>
               การแจ้งเตือน
             </h1>
              

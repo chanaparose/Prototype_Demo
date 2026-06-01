@@ -24,6 +24,7 @@ import {
 } from '@/components/layout/factoryGlobalNavConfig';
 import { factoryVerifyStatus } from '@/components/factory/FactoryVerifiedGuard';
 import { HARDCODED_CUSTOMER_PROFILE_SRC } from '@/constants/customerProfile';
+import { resolveCustomerAvatarSrc } from '@/utils/resolveCustomerAvatar';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
 import { useConversationUnreadCount } from '@/domain/chat/hooks/useConversationUnreadCount';
 import { useNotificationUnreadCount } from '@/hooks/useNotificationUnreadCount';
@@ -134,11 +135,12 @@ export function DesktopSidebar() {
     (r) => r.status !== 'completed' && r.status !== 'cancelled' && r.status !== 'expired' && r.status !== 'closed',
   ).length;
 
+  const avatarFromApi = [currentUser?.avatar, authUser?.avatar]
+    .map((v) => (v != null ? String(v).trim() : ''))
+    .find(Boolean);
   const avatarSrc = isFactory
-    ? currentUser?.avatar && String(currentUser.avatar).trim() !== ''
-      ? String(currentUser.avatar).trim()
-      : DEFAULT_USER_AVATAR_SRC
-    : HARDCODED_CUSTOMER_PROFILE_SRC;
+    ? avatarFromApi || DEFAULT_USER_AVATAR_SRC
+    : resolveCustomerAvatarSrc(currentUser?.avatar, authUser?.avatar);
 
   return (
     <aside className='hidden lg:flex flex-col fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40'>

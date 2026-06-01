@@ -102,14 +102,18 @@ export function ProductDetailDesktop() {
   if (!item || !resolvedId) {
     return (
       <div className='hidden min-h-[calc(100vh-4rem)] bg-[#F5F3FF] px-8 pb-20 pt-8 lg:block'>
-        <Button
-          variant='unstyled'
-          type='button'
-          onClick={handleBack}
-          className='mb-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-[var(--brand-purple)]'
-        >
-          <ArrowLeft className='w-4 h-4' /> กลับ
-        </Button>
+        <div className='mb-5 flex items-center gap-2 text-[14px] text-gray-500'>
+          <Button
+            variant='unstyled'
+            type='button'
+            onClick={handleBack}
+            aria-label='กลับไปหน้าก่อนหน้า'
+            className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50'
+          >
+            <ArrowLeft className='h-3.5 w-3.5' />
+          </Button>
+          <span>สินค้า</span>
+        </div>
         <div className='bg-white rounded-lg border border-gray-200 p-10 text-center'>
           <PackageX size={38} className='mx-auto mb-3 text-gray-400' />
           <p className='text-[14px] text-gray-500 font-medium'>{error || 'ไม่พบข้อมูลสินค้า'}</p>
@@ -152,26 +156,25 @@ export function ProductDetailDesktop() {
   return (
     <div className='hidden min-h-[calc(100vh-4rem)] bg-[var(--brand-panel)] lg:block animate-[fadeIn_0.2s_ease-in]'>
       <div className='px-8 2xl:px-10 pt-5 pb-3'>
-        <div className='flex flex-col gap-1'>
+        <div className='flex items-center gap-2 text-[14px] text-gray-500'>
           <Button
             variant='unstyled'
             type='button'
             onClick={handleBack}
-            className='inline-flex items-center gap-1 font-medium text-[var(--brand-purple)] hover:opacity-80 self-start'
+            aria-label='กลับไปหน้าก่อนหน้า'
+            className='inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50'
           >
-            <ArrowLeft className='w-3.5 h-3.5' /> กลับ
+            <ArrowLeft className='h-3.5 w-3.5' />
           </Button>
-          <div className='flex items-center gap-1.5 text-[14px] text-gray-500'>
-            <span>{item.category || 'ทั้งหมด'}</span>
-            {subName && !isMaterial ? (
-              <>
-                <Chevron className='w-3 h-3 text-gray-300' />
-                <span>{subName}</span>
-              </>
-            ) : null}
-            <Chevron className='w-3 h-3 text-gray-300' />
-            <span className='max-w-[32rem] truncate text-[var(--brand-ink)]'>{item.title}</span>
-          </div>
+          <span>{item.category || 'ทั้งหมด'}</span>
+          {subName && !isMaterial ? (
+            <>
+              <Chevron className='w-3 h-3 text-gray-300' />
+              <span>{subName}</span>
+            </>
+          ) : null}
+          <Chevron className='w-3 h-3 text-gray-300' />
+          <span className='max-w-[32rem] truncate text-[var(--brand-ink)]'>{item.title}</span>
         </div>
       </div>
 

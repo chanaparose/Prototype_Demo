@@ -74,7 +74,7 @@ export function OrderPanel({
         </Button>
       )}
 
-      <div className='mb-3 grid w-full grid-cols-5 gap-0.5 rounded-xl border border-[rgba(196,164,132,0.4)] bg-surface-cream px-1 py-[5px]'>
+      <div className='mb-3 grid w-full grid-cols-5 gap-0.5 rounded-xl border border-gray-200 bg-white px-1 py-[5px]'>
         {ORDER_TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = orderFilter === tab.id;
@@ -87,7 +87,7 @@ export function OrderPanel({
               variant='unstyled'
               key={tab.id}
               onClick={() => setOrderFilter(tab.id)}
-              className='relative flex flex-col items-center gap-0.5 rounded-lg border py-0.5 transition-colors hover:bg-[rgba(255,237,213,0.45)]'
+              className='relative flex flex-col items-center gap-0.5 rounded-lg border py-0.5 transition-colors hover:bg-gray-50'
               style={{
                 background: isActive ? th.activeBg : undefined,
                 borderColor: isActive ? th.activeColor : 'transparent',
@@ -126,9 +126,9 @@ export function OrderPanel({
       </div>
 
       {filteredOrders.length === 0 ? (
-        <div className='flex min-h-[258px] flex-col items-center justify-center rounded-2xl border border-[rgba(196,164,132,0.4)] bg-[var(--surface-orange-wash)] py-12 text-center'>
-          <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-peach)]'>
-            <Package size={24} className='text-[var(--brand-orange-vivid)]' />
+        <div className='flex min-h-[258px] flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-12 text-center'>
+          <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-lg'>
+            <Package size={24} className='text-gray-300' />
           </div>
           <p className='text-gray-700 font-semibold text-sm mb-1'>ยังไม่มีคำสั่งซื้อ</p>
           <p className='text-xs text-gray-400 max-w-[200px]'>
@@ -146,8 +146,7 @@ export function OrderPanel({
               <div
                 key={order.id}
                 onClick={() => navigate(`/orders/${order.id}`)}
-                className='rounded-2xl p-4 border bg-white cursor-pointer transition-all active:scale-[0.98] hover:shadow-sm'
-                style={{ borderColor: BORDER_WARM }}
+                className='rounded-xl p-4 border border-gray-200 bg-white cursor-pointer transition-all active:scale-[0.98]'
               >
                 <div className='flex items-start justify-between mb-3'>
                   <div className='flex items-center gap-2.5 min-w-0 flex-1'>

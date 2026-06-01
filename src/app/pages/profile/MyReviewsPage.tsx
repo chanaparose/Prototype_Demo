@@ -116,8 +116,8 @@ export function MyReviewsPage() {
           <ChevronLeft size={22} className='text-gray-700' />
         </Button>
         <div className='flex flex-col items-center'>
-          <p className='text-[10px] text-gray-400'>บัญชี</p>
-          <h1 className='text-[13px] text-gray-900 font-bold'>รีวิวของฉัน</h1>
+          <p className='text-[12px] text-gray-400'>บัญชี</p>
+          <h1 className='text-[16px] text-gray-900 font-bold'>รีวิวของฉัน</h1>
         </div>
         <div className='h-10 w-10' aria-hidden />
       </div>

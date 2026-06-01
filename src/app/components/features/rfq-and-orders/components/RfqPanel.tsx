@@ -58,9 +58,9 @@ export function RfqPanel({
       </div>
 
       {activeRfqs.length === 0 ? (
-        <div className='mb-4 flex flex-col items-center justify-center rounded-2xl border border-[rgba(196,164,132,0.4)] bg-[#FDFCFF] py-12 text-center'>
-          <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-lavender)]'>
-            <FileText size={24} className='text-[var(--brand-purple)]' />
+        <div className='mb-4 flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white py-12 text-center'>
+          <div className='mb-3 flex h-14 w-14 items-center justify-center rounded-lg'>
+            <FileText size={24} className='text-gray-300' />
           </div>
           <p className='text-gray-700 font-semibold text-sm mb-1'>
             ยังไม่มีคำขอราคาที่ดำเนินการอยู่
@@ -68,7 +68,7 @@ export function RfqPanel({
           <p className='text-xs text-gray-400 mb-4'>สร้างคำขอราคาเพื่อรับใบเสนอราคาจากโรงงาน</p>
           <Link
             to='/create-rfq'
-            className='rounded-xl bg-[linear-gradient(135deg,#1A0F2E_0%,#4A267D_45%,var(--brand-purple)_100%)] px-5 py-2 text-sm font-bold text-white shadow-md'
+            className='rounded-lg bg-brand-purple px-5 py-2 text-sm font-bold text-white hover:bg-brand-violet-deep transition-colors'
           >
             สร้างคำขอราคา
           </Link>
