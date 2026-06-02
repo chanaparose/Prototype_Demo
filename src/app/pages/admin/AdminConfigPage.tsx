@@ -134,6 +134,7 @@ export function AdminConfigPage() {
       shipping_days: '',
     },
   });
+  const [isEditingGeneral, setIsEditingGeneral] = useState(false);
   const [savingGeneral, setSavingGeneral] = useState(false);
   const [savedGeneral, setSavedGeneral] = useState(false);
 
@@ -159,6 +160,7 @@ export function AdminConfigPage() {
     },
   });
   const [savingConfig, setSavingConfig] = useState(false);
+  const [showNewConfigForm, setShowNewConfigForm] = useState(false);
 
   const [savingVerification, setSavingVerification] = useState(false);
   const [savedVerification, setSavedVerification] = useState(false);
@@ -225,6 +227,7 @@ export function AdminConfigPage() {
       if (values.rfq_expired) payload['rfq_expired'] = values.rfq_expired;
       if (values.shipping_days) payload['shipping_days'] = values.shipping_days;
       await adminTConfigApi.patchBulk(payload);
+      setIsEditingGeneral(false);
       setSavedGeneral(true);
       setTimeout(() => setSavedGeneral(false), 2200);
     } catch (e) {
@@ -271,12 +274,16 @@ export function AdminConfigPage() {
     setSavingConfig(true);
     setError('');
     try {
+      // BE expects RFC3339 datetime — convert YYYY-MM-DD → YYYY-MM-DDT00:00:00Z
+      const effectiveTo = values.effective_to
+        ? `${values.effective_to}T00:00:00Z`
+        : null;
       const created = await adminConfigApi.createConfig({
         label: values.label.trim(),
         default_commission_rate: commission,
         vat_rate: Number.isFinite(vat) ? vat : 7,
         currency_code: 'THB',
-        effective_to: values.effective_to || null,
+        effective_to: effectiveTo,
       });
       setConfigs((prev) => [...prev, created]);
       newConfigForm.reset({
@@ -285,6 +292,7 @@ export function AdminConfigPage() {
         vat_rate: '7',
         effective_to: '',
       });
+      setShowNewConfigForm(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'สร้าง config พิเศษไม่สำเร็จ');
     } finally {
@@ -357,137 +365,174 @@ export function AdminConfigPage() {
           {loading ? <p className='text-sm text-slate-500'>กำลังโหลดการตั้งค่า...</p> : null}
 
           {!loading && activeTab === 'general' ? (
-            <Form {...generalForm}>
-              <div className='space-y-5 max-w-lg'>
-                {!isSA ? (
-                  <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5'>
-                    เฉพาะ Super Admin เท่านั้นที่แก้ไขการตั้งค่าทั่วไปได้
+            <div className='max-w-lg space-y-5'>
+              {/* Header row: title + Edit / Cancel+Save buttons */}
+              <div className='flex items-start justify-between gap-4'>
+                <div>
+                  <h4 className='text-sm font-bold text-slate-900'>การตั้งค่าทั่วไป</h4>
+                  <p className='text-xs text-slate-400 mt-1'>ชื่อแพลตฟอร์ม ช่องทางติดต่อ และค่า default ของระบบ</p>
+                </div>
+                {isSA ? (
+                  isEditingGeneral ? (
+                    <div className='flex items-center gap-2 shrink-0'>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        disabled={savingGeneral}
+                        onClick={() => {
+                          generalForm.reset();
+                          setIsEditingGeneral(false);
+                          setError('');
+                        }}
+                        className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors'
+                      >
+                        <X size={12} />
+                        ยกเลิก
+                      </Button>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        disabled={savingGeneral}
+                        onClick={() => void onSaveGeneral()}
+                        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50'
+                      >
+                        {savingGeneral ? (
+                          <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
+                        ) : savedGeneral ? (
+                          <><CheckCircle size={12} /> บันทึกแล้ว ✓</>
+                        ) : (
+                          <><CheckCircle size={12} /> บันทึก</>
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      onClick={() => { setIsEditingGeneral(true); setError(''); }}
+                      className='inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shrink-0'
+                    >
+                      <Pencil size={12} />
+                      Edit
+                    </Button>
+                  )
+                ) : (
+                  <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 shrink-0'>
+                    เฉพาะ SA เท่านั้น
                   </div>
-                ) : null}
+                )}
+              </div>
 
-                <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>ข้อมูลแพลตฟอร์ม</p>
-
-                <FormField
-                  control={generalForm.control}
-                  name='platform_name'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-xs font-semibold text-slate-700'>
-                        ชื่อแพลตฟอร์ม
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={!isSA}
-                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={generalForm.control}
-                  name='contact_email'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-xs font-semibold text-slate-700'>
-                        อีเมลติดต่อ
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type='email'
-                          disabled={!isSA}
-                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={generalForm.control}
-                  name='support_phone'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-xs font-semibold text-slate-700'>
-                        โทรศัพท์สนับสนุน
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={!isSA}
-                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className='border-t border-slate-100 pt-4'>
-                  <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4'>การตั้งค่าระบบ</p>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                    <FormField
-                      control={generalForm.control}
-                      name='rfq_expired'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>
-                            อายุ RFQ (วัน)
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type='number'
-                              min={1}
-                              step={1}
-                              disabled={!isSA}
-                              placeholder='30'
-                              className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={generalForm.control}
-                      name='shipping_days'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className='text-xs font-semibold text-slate-700'>
-                            เวลาจัดส่ง Default (วัน)
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type='number'
-                              min={1}
-                              step={1}
-                              disabled={!isSA}
-                              placeholder='7'
-                              className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              {/* View mode */}
+              {!isEditingGeneral ? (
+                <div className='space-y-0'>
+                  <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>ข้อมูลแพลตฟอร์ม</p>
+                  {[
+                    { label: 'ชื่อแพลตฟอร์ม', value: generalForm.getValues('platform_name') },
+                    { label: 'อีเมลติดต่อ',   value: generalForm.getValues('contact_email') },
+                    { label: 'โทรศัพท์สนับสนุน', value: generalForm.getValues('support_phone') },
+                  ].map(({ label, value }) => (
+                    <div key={label} className='flex items-center justify-between py-2.5 border-b border-slate-100'>
+                      <span className='text-xs font-semibold text-slate-500'>{label}</span>
+                      <span className='text-sm text-slate-800'>{value || '—'}</span>
+                    </div>
+                  ))}
+                  <div className='pt-4'>
+                    <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>การตั้งค่าระบบ</p>
+                    {[
+                      { label: 'อายุ RFQ (วัน)',           value: generalForm.getValues('rfq_expired'),   unit: 'วัน' },
+                      { label: 'เวลาจัดส่ง Default (วัน)', value: generalForm.getValues('shipping_days'), unit: 'วัน' },
+                    ].map(({ label, value, unit }) => (
+                      <div key={label} className='flex items-center justify-between py-2.5 border-b border-slate-100'>
+                        <span className='text-xs font-semibold text-slate-500'>{label}</span>
+                        <span className='text-sm font-semibold text-slate-800 tabular-nums'>
+                          {value ? `${value} ${unit}` : '—'}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-
-                {isSA ? (
-                  <SaveButton
-                    saving={savingGeneral}
-                    saved={savedGeneral}
-                    onClick={() => void onSaveGeneral()}
-                    text='บันทึกการตั้งค่าทั่วไป'
-                  />
-                ) : null}
-              </div>
-            </Form>
+              ) : (
+                /* Edit mode */
+                <Form {...generalForm}>
+                  <div className='space-y-4'>
+                    <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>ข้อมูลแพลตฟอร์ม</p>
+                    <FormField
+                      control={generalForm.control}
+                      name='platform_name'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>ชื่อแพลตฟอร์ม</FormLabel>
+                          <FormControl>
+                            <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={generalForm.control}
+                      name='contact_email'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>อีเมลติดต่อ</FormLabel>
+                          <FormControl>
+                            <Input {...field} type='email' className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={generalForm.control}
+                      name='support_phone'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>โทรศัพท์สนับสนุน</FormLabel>
+                          <FormControl>
+                            <Input {...field} className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className='border-t border-slate-100 pt-3'>
+                      <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3'>การตั้งค่าระบบ</p>
+                      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                        <FormField
+                          control={generalForm.control}
+                          name='rfq_expired'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className='text-xs font-semibold text-slate-700'>อายุ RFQ (วัน)</FormLabel>
+                              <FormControl>
+                                <Input {...field} type='number' min={1} step={1} placeholder='30'
+                                  className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={generalForm.control}
+                          name='shipping_days'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className='text-xs font-semibold text-slate-700'>เวลาจัดส่ง Default (วัน)</FormLabel>
+                              <FormControl>
+                                <Input {...field} type='number' min={1} step={1} placeholder='7'
+                                  className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm' />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Form>
+              )}
+            </div>
           ) : null}
 
           {!loading && activeTab === 'commission' ? (
@@ -728,106 +773,137 @@ export function AdminConfigPage() {
               </div>
 
               {isSA ? (
-                <Form {...newConfigForm}>
-                  <div className='bg-slate-50 rounded-xl border border-slate-200 p-4'>
-                    <p className='text-xs font-semibold text-slate-700 mb-3'>
-                      เพิ่ม Config พิเศษใหม่
-                    </p>
-                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-                      <FormField
-                        control={newConfigForm.control}
-                        name='label'
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className='text-xs font-semibold text-slate-700'>
-                              ชื่อ Config
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                !showNewConfigForm ? (
+                  /* Collapsed — show + button only */
+                  <Button
+                    variant='unstyled'
+                    type='button'
+                    onClick={() => { setShowNewConfigForm(true); setError(''); }}
+                    className='inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-dashed border-indigo-300 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors'
+                  >
+                    <Plus size={14} />
+                    เพิ่ม Config พิเศษ
+                  </Button>
+                ) : (
+                  /* Expanded form */
+                  <Form {...newConfigForm}>
+                    <div className='bg-slate-50 rounded-xl border border-slate-200 p-4'>
+                      <div className='flex items-center justify-between mb-3'>
+                        <p className='text-xs font-semibold text-slate-700'>เพิ่ม Config พิเศษใหม่</p>
+                        <Button
+                          variant='unstyled'
+                          type='button'
+                          disabled={savingConfig}
+                          onClick={() => {
+                            newConfigForm.reset({ label: '', default_commission_rate: '', vat_rate: '7', effective_to: '' });
+                            setShowNewConfigForm(false);
+                            setError('');
+                          }}
+                          className='inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-100 transition-colors'
+                        >
+                          <X size={12} />
+                          ยกเลิก
+                        </Button>
+                      </div>
+                      <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                        <FormField
+                          control={newConfigForm.control}
+                          name='label'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className='text-xs font-semibold text-slate-700'>
+                                ชื่อ Config
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={newConfigForm.control}
+                          name='effective_to'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className='text-xs font-semibold text-slate-700'>
+                                หมดอายุ
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type='date'
+                                  className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={newConfigForm.control}
+                          name='default_commission_rate'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className='text-xs font-semibold text-slate-700'>
+                                ค่าคอม (%)
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type='number'
+                                  min={0}
+                                  max={100}
+                                  step={0.1}
+                                  className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={newConfigForm.control}
+                          name='vat_rate'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className='text-xs font-semibold text-slate-700'>
+                                VAT (%)
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  type='number'
+                                  min={0}
+                                  max={100}
+                                  step={0.1}
+                                  className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        onClick={() => void handleCreateConfig()}
+                        disabled={savingConfig}
+                        className='mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
+                      >
+                        {savingConfig ? (
+                          <><Loader2 size={14} className='animate-spin' /> กำลังเพิ่ม…</>
+                        ) : (
+                          <><Plus size={14} /> เพิ่ม Config</>
                         )}
-                      />
-                      <FormField
-                        control={newConfigForm.control}
-                        name='effective_to'
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className='text-xs font-semibold text-slate-700'>
-                              หมดอายุ
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type='date'
-                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={newConfigForm.control}
-                        name='default_commission_rate'
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className='text-xs font-semibold text-slate-700'>
-                              ค่าคอม (%)
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type='number'
-                                min={0}
-                                max={100}
-                                step={0.1}
-                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={newConfigForm.control}
-                        name='vat_rate'
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className='text-xs font-semibold text-slate-700'>
-                              VAT (%)
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                type='number'
-                                min={0}
-                                max={100}
-                                step={0.1}
-                                className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm'
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      </Button>
                     </div>
-                    <Button
-                      variant='unstyled'
-                      type='button'
-                      onClick={() => void handleCreateConfig()}
-                      disabled={savingConfig}
-                      className='mt-3 flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-40'
-                    >
-                      <Plus size={14} />
-                      {savingConfig ? 'กำลังเพิ่ม...' : 'เพิ่ม Config พิเศษ'}
-                    </Button>
-                  </div>
-                </Form>
+                  </Form>
+                )
               ) : null}
             </div>
           ) : null}
