@@ -85,6 +85,14 @@ export const adminFactoryConfigApi = {
     httpClient.patch<IFactoryConfigResponse>(`/admin/factories/${factoryId}/config`, data),
 };
 
+export const adminFactoryCertApi = {
+  patchStatus: (factoryId: number, mapId: number, verifyStatus: 'AP' | 'RJ' | 'PE') =>
+    httpClient.patch<{ factory_id: number; map_id: number; verify_status: string }>(
+      `/admin/factories/${factoryId}/certificates/${mapId}`,
+      { verify_status: verifyStatus },
+    ),
+};
+
 export const adminApi = {
   dashboardSummary: () =>
     httpClient.get<IAdminDashboardSummaryResponse>('/admin/dashboard/summary'),
