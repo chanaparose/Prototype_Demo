@@ -4,12 +4,20 @@ export const adminGeneralConfigSchema = z.object({
   platform_name: z.string().trim().min(1, 'กรุณากรอกชื่อแพลตฟอร์ม'),
   contact_email: z.string().trim().email('รูปแบบอีเมลไม่ถูกต้อง'),
   support_phone: z.string().trim().min(1, 'กรุณากรอกเบอร์โทร'),
+  rfq_expired: z
+    .string()
+    .trim()
+    .refine((v) => !v || (Number.isInteger(Number(v)) && Number(v) > 0), 'ต้องเป็นจำนวนเต็มบวก'),
+  shipping_days: z
+    .string()
+    .trim()
+    .refine((v) => !v || (Number.isInteger(Number(v)) && Number(v) > 0), 'ต้องเป็นจำนวนเต็มบวก'),
 });
 
 export type AdminGeneralConfigFormValues = z.infer<typeof adminGeneralConfigSchema>;
 
+// label is locked to 'default_comm' and not editable — only commission & vat are user-controlled
 export const adminDefaultCommissionSchema = z.object({
-  label: z.string().trim().min(1, 'กรุณากรอกชื่อ config'),
   commission: z
     .string()
     .trim()
@@ -31,7 +39,7 @@ export const adminNewConfigSchema = z.object({
     .trim()
     .min(1, 'กรุณากรอกอัตราค่าคอม')
     .refine((v) => Number.isFinite(Number(v)), 'อัตราค่าคอมไม่ถูกต้อง'),
-  vat_rate: z.string().trim().default('7'),
+  vat_rate: z.string().trim().min(1, 'กรุณากรอก VAT'),
   effective_to: z.string(),
 });
 

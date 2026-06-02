@@ -47,12 +47,25 @@ export const platformConfigApi = {
   history: () => httpClient.get<IPlatformConfigResponse[]>('/admin/platform-config/history'),
 };
 
+export const adminTConfigApi = {
+  getAll: () =>
+    httpClient.get<{ configs: Record<string, string> }>('/admin/tconfig'),
+
+  patchBulk: (data: Record<string, string>) =>
+    httpClient.patch<{ message: string }>('/admin/tconfig', data),
+};
+
 export const adminConfigApi = {
+  /** Returns all platform_config rows (for Config Packages tab) */
   listConfigs: () =>
     httpClient.get<{
       configs: IPlatformConfigItemResponse[];
       total: number;
     }>('/admin/platform-configs'),
+
+  /** Returns the single row WHERE label = 'default_comm' (for Commission tab) */
+  getDefaultComm: () =>
+    httpClient.get<IPlatformConfigItemResponse>('/admin/platform-configs/default-comm'),
 
   updateConfig: (configId: number, data: IUpdatePlatformConfigRequest) =>
     httpClient.patch<IPlatformConfigItemResponse>(`/admin/platform-configs/${configId}`, data),

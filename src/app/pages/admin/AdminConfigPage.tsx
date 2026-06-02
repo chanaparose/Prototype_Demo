@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertTriangle, CheckSquare, Lock, Percent, Plus, Save, Square, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle, CheckSquare, Lock, Loader2, Pencil, Percent, Plus, Save, Square, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/stores/useAuthStore';
-import { adminConfigApi } from '@/services/api/adminApi';
+import { adminConfigApi, adminTConfigApi } from '@/services/api/adminApi';
 import type {
   IPlatformConfigItemResponse,
   IUpdatePlatformConfigRequest,
@@ -67,6 +67,17 @@ const DEFAULT_REQUIREMENTS: VerificationRequirement[] = [
   { id: 'address', label: 'ต้องมีที่อยู่จดทะเบียน', enabled: true },
 ];
 
+function parseVerifyRequirements(raw: string | undefined): VerificationRequirement[] {
+  if (!raw) return DEFAULT_REQUIREMENTS;
+  try {
+    const parsed = JSON.parse(raw) as VerificationRequirement[];
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  } catch {
+    // ignore
+  }
+  return DEFAULT_REQUIREMENTS;
+}
+
 function configLabel(cfg: IPlatformConfigItemResponse): string {
   if (cfg.label && cfg.label.trim()) return cfg.label;
   return `Commission ${cfg.default_commission_rate}% / VAT ${cfg.vat_rate}%`;
@@ -116,22 +127,28 @@ export function AdminConfigPage() {
   const generalForm = useForm<AdminGeneralConfigFormValues>({
     resolver: zodResolver(adminGeneralConfigSchema),
     defaultValues: {
-      platform_name: 'baowu Manufacturing',
-      contact_email: 'support@baowu.co.th',
-      support_phone: '-',
+      platform_name: '',
+      contact_email: '',
+      support_phone: '',
+      rfq_expired: '',
+      shipping_days: '',
     },
   });
   const [savingGeneral, setSavingGeneral] = useState(false);
   const [savedGeneral, setSavedGeneral] = useState(false);
 
-  const [configs, setConfigs] = useState<IPlatformConfigItemResponse[]>([]);
+  // Commission tab: dedicated state from platform_config WHERE label = 'default_comm'
+  const [defaultCommConfig, setDefaultCommConfig] = useState<IPlatformConfigItemResponse | null>(null);
+  const [isEditingCommission, setIsEditingCommission] = useState(false);
   const defaultCommissionForm = useForm<AdminDefaultCommissionFormValues>({
     resolver: zodResolver(adminDefaultCommissionSchema),
-    defaultValues: { label: '', commission: '', vat: '' },
+    defaultValues: { commission: '', vat: '' },
   });
   const [savingDefault, setSavingDefault] = useState(false);
   const [savedDefault, setSavedDefault] = useState(false);
 
+  // Config Packages tab: all platform_config rows
+  const [configs, setConfigs] = useState<IPlatformConfigItemResponse[]>([]);
   const newConfigForm = useForm<AdminNewConfigFormValues>({
     resolver: zodResolver(adminNewConfigSchema),
     defaultValues: {
@@ -151,26 +168,40 @@ export function AdminConfigPage() {
     () => [...configs].sort((a, b) => a.config_id - b.config_id),
     [configs],
   );
-  const defaultConfig = sortedConfigs[0] ?? null;
-  const specialConfigs = sortedConfigs.slice(1);
 
+  // Seed commission form whenever the dedicated default_comm config changes
   useEffect(() => {
-    if (!defaultConfig) return;
+    if (!defaultCommConfig) return;
     defaultCommissionForm.reset({
-      label: defaultConfig.label ?? 'มาตรฐาน (Default)',
-      commission: pickScalarString(defaultConfig.default_commission_rate),
-      vat: pickScalarString(defaultConfig.vat_rate),
+      commission: pickScalarString(defaultCommConfig.default_commission_rate),
+      vat: pickScalarString(defaultCommConfig.vat_rate),
     });
-  }, [defaultConfig, defaultCommissionForm]);
+  }, [defaultCommConfig, defaultCommissionForm]);
 
   const loadData = async () => {
     setLoading(true);
     setError('');
     try {
-      const res = await adminConfigApi.listConfigs();
-      setConfigs(Array.isArray(res.configs) ? res.configs : []);
+      const [defaultCommRes, configsRes, tconfigRes] = await Promise.all([
+        adminConfigApi.getDefaultComm(),   // platform_config WHERE label = 'default_comm'
+        adminConfigApi.listConfigs(),       // all platform_config rows for Packages tab
+        adminTConfigApi.getAll(),           // tconfig key-value pairs
+      ]);
+
+      setDefaultCommConfig(defaultCommRes);
+      setConfigs(Array.isArray(configsRes.configs) ? configsRes.configs : []);
+
+      const tc = tconfigRes.configs ?? {};
+      generalForm.reset({
+        platform_name: tc['platform_name'] ?? '',
+        contact_email: tc['contact_email'] ?? '',
+        support_phone: tc['support_phone'] ?? '',
+        rfq_expired: tc['rfq_expired'] ?? '',
+        shipping_days: tc['shipping_days'] ?? '',
+      });
+      setRequirements(parseVerifyRequirements(tc['verify_requirements']));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'โหลด config packages ไม่สำเร็จ');
+      setError(e instanceof Error ? e.message : 'โหลดการตั้งค่าไม่สำเร็จ');
     } finally {
       setLoading(false);
     }
@@ -178,30 +209,51 @@ export function AdminConfigPage() {
 
   useEffect(() => {
     void loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onSaveGeneral = generalForm.handleSubmit(async () => {
+  const onSaveGeneral = generalForm.handleSubmit(async (values) => {
     if (!isSA) return;
     setSavingGeneral(true);
-    setTimeout(() => {
-      setSavingGeneral(false);
+    setError('');
+    try {
+      const payload: Record<string, string> = {
+        platform_name: values.platform_name,
+        contact_email: values.contact_email,
+        support_phone: values.support_phone,
+      };
+      if (values.rfq_expired) payload['rfq_expired'] = values.rfq_expired;
+      if (values.shipping_days) payload['shipping_days'] = values.shipping_days;
+      await adminTConfigApi.patchBulk(payload);
       setSavedGeneral(true);
       setTimeout(() => setSavedGeneral(false), 2200);
-    }, 400);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'บันทึกการตั้งค่าทั่วไปไม่สำเร็จ');
+    } finally {
+      setSavingGeneral(false);
+    }
   });
 
   const handleSaveDefault = defaultCommissionForm.handleSubmit(async (values) => {
-    if (!isSA || !defaultConfig) return;
+    if (!isSA || !defaultCommConfig) return;
     setSavingDefault(true);
     setError('');
     try {
       const payload: IUpdatePlatformConfigRequest = {
-        label: values.label.trim(),
+        label: String(defaultCommConfig.label ?? 'default_comm'), // label is locked — never changed
         default_commission_rate: pickScalarNumber(values.commission) ?? 0,
         vat_rate: pickScalarNumber(values.vat) ?? 0,
       };
-      const updated = await adminConfigApi.updateConfig(defaultConfig.config_id, payload);
-      setConfigs((prev) => prev.map((c) => (c.config_id === updated.config_id ? updated : c)));
+      // PATCH platform_config WHERE config_id = defaultCommConfig.config_id
+      await adminConfigApi.updateConfig(defaultCommConfig.config_id, payload);
+      // Re-fetch from the dedicated endpoint to confirm the saved state
+      const refreshed = await adminConfigApi.getDefaultComm();
+      setDefaultCommConfig(refreshed);
+      // Also sync configs list so Config Packages tab stays consistent
+      setConfigs((prev) =>
+        prev.map((c) => (c.config_id === refreshed.config_id ? refreshed : c)),
+      );
+      setIsEditingCommission(false);
       setSavedDefault(true);
       setTimeout(() => setSavedDefault(false), 2200);
     } catch (e) {
@@ -241,7 +293,7 @@ export function AdminConfigPage() {
   });
 
   const handleDeleteConfig = async (configId: number) => {
-    if (!isSA || configId === defaultConfig?.config_id) return;
+    if (!isSA || configId === defaultCommConfig?.config_id) return;
     setError('');
     try {
       await adminConfigApi.deleteConfig(configId);
@@ -252,12 +304,20 @@ export function AdminConfigPage() {
   };
 
   const handleSaveVerification = async () => {
+    if (!isSA) return;
     setSavingVerification(true);
-    setTimeout(() => {
-      setSavingVerification(false);
+    setError('');
+    try {
+      await adminTConfigApi.patchBulk({
+        verify_requirements: JSON.stringify(requirements),
+      });
       setSavedVerification(true);
       setTimeout(() => setSavedVerification(false), 2200);
-    }, 400);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'บันทึกเงื่อนไขการยืนยันไม่สำเร็จ');
+    } finally {
+      setSavingVerification(false);
+    }
   };
 
   return (
@@ -304,6 +364,9 @@ export function AdminConfigPage() {
                     เฉพาะ Super Admin เท่านั้นที่แก้ไขการตั้งค่าทั่วไปได้
                   </div>
                 ) : null}
+
+                <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>ข้อมูลแพลตฟอร์ม</p>
+
                 <FormField
                   control={generalForm.control}
                   name='platform_name'
@@ -362,6 +425,59 @@ export function AdminConfigPage() {
                     </FormItem>
                   )}
                 />
+
+                <div className='border-t border-slate-100 pt-4'>
+                  <p className='text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4'>การตั้งค่าระบบ</p>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    <FormField
+                      control={generalForm.control}
+                      name='rfq_expired'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>
+                            อายุ RFQ (วัน)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type='number'
+                              min={1}
+                              step={1}
+                              disabled={!isSA}
+                              placeholder='30'
+                              className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={generalForm.control}
+                      name='shipping_days'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>
+                            เวลาจัดส่ง Default (วัน)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type='number'
+                              min={1}
+                              step={1}
+                              disabled={!isSA}
+                              placeholder='7'
+                              className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
                 {isSA ? (
                   <SaveButton
                     saving={savingGeneral}
@@ -375,8 +491,9 @@ export function AdminConfigPage() {
           ) : null}
 
           {!loading && activeTab === 'commission' ? (
-            <Form {...defaultCommissionForm}>
-              <div className='space-y-5 max-w-xl'>
+            <div className='max-w-xl space-y-5'>
+              {/* Header row: title + Edit / Cancel+Save buttons */}
+              <div className='flex items-start justify-between gap-4'>
                 <div>
                   <h4 className='text-sm font-bold text-slate-900'>
                     ค่าคอม & VAT — Config มาตรฐาน
@@ -385,102 +502,151 @@ export function AdminConfigPage() {
                     อัตรานี้ใช้กับโรงงานที่ไม่ได้รับ Config พิเศษ
                   </p>
                 </div>
-                {!isSA ? (
-                  <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5'>
-                    เฉพาะ Super Admin เท่านั้นที่แก้ไขค่ามาตรฐานได้
-                  </div>
-                ) : null}
-
-                <FormField
-                  control={defaultCommissionForm.control}
-                  name='label'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-xs font-semibold text-slate-700'>
-                        ชื่อ Config
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          disabled={!isSA}
-                          className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-50'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                  <FormField
-                    control={defaultCommissionForm.control}
-                    name='commission'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className='text-xs font-semibold text-slate-700'>
-                          ค่าคอมมิชชัน (%)
-                        </FormLabel>
-                        <FormControl>
-                          <div className='relative'>
-                            <Input
-                              {...field}
-                              type='number'
-                              min={0}
-                              max={100}
-                              step={0.1}
-                              disabled={!isSA}
-                              className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50'
-                            />
-                            <Percent
-                              size={12}
-                              className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400'
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={defaultCommissionForm.control}
-                    name='vat'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className='text-xs font-semibold text-slate-700'>
-                          VAT (%)
-                        </FormLabel>
-                        <FormControl>
-                          <div className='relative'>
-                            <Input
-                              {...field}
-                              type='number'
-                              min={0}
-                              max={100}
-                              step={0.1}
-                              disabled={!isSA}
-                              className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm disabled:bg-slate-50'
-                            />
-                            <Percent
-                              size={12}
-                              className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400'
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
                 {isSA ? (
-                  <SaveButton
-                    saving={savingDefault}
-                    saved={savedDefault}
-                    onClick={() => void handleSaveDefault()}
-                    disabled={!defaultConfig}
-                    text='บันทึก Config มาตรฐาน'
-                  />
-                ) : null}
+                  isEditingCommission ? (
+                    <div className='flex items-center gap-2 shrink-0'>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        disabled={savingDefault}
+                        onClick={() => {
+                          defaultCommissionForm.reset({
+                            commission: pickScalarString(defaultCommConfig?.default_commission_rate),
+                            vat: pickScalarString(defaultCommConfig?.vat_rate),
+                          });
+                          setIsEditingCommission(false);
+                          setError('');
+                        }}
+                        className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors'
+                      >
+                        <X size={12} />
+                        ยกเลิก
+                      </Button>
+                      <Button
+                        variant='unstyled'
+                        type='button'
+                        disabled={savingDefault || !defaultCommConfig}
+                        onClick={() => void handleSaveDefault()}
+                        className='inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-50'
+                      >
+                        {savingDefault ? (
+                          <><Loader2 size={12} className='animate-spin' /> กำลังบันทึก…</>
+                        ) : savedDefault ? (
+                          <><CheckCircle size={12} /> บันทึกแล้ว ✓</>
+                        ) : (
+                          <><CheckCircle size={12} /> บันทึก</>
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant='unstyled'
+                      type='button'
+                      onClick={() => { setIsEditingCommission(true); setError(''); }}
+                      className='inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shrink-0'
+                    >
+                      <Pencil size={12} />
+                      Edit
+                    </Button>
+                  )
+                ) : (
+                  <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5'>
+                    เฉพาะ SA เท่านั้น
+                  </div>
+                )}
               </div>
-            </Form>
+
+              {/* Config name row — always read-only (locked) */}
+              <div className='flex items-center justify-between py-2.5 border-b border-slate-100'>
+                <span className='text-xs font-semibold text-slate-500'>ชื่อ Config</span>
+                <div className='flex items-center gap-1.5 text-sm font-medium text-slate-700'>
+                  <span className='font-mono text-xs bg-slate-100 px-2 py-0.5 rounded'>
+                    {String(defaultCommConfig?.label ?? 'default_comm')}
+                  </span>
+                  <Lock size={12} className='text-slate-400' />
+                </div>
+              </div>
+
+              {/* View mode */}
+              {!isEditingCommission ? (
+                <div className='space-y-3'>
+                  <div className='flex items-center justify-between py-2 border-b border-slate-100'>
+                    <span className='text-xs font-semibold text-slate-500'>ค่าคอมมิชชัน</span>
+                    <span className='text-sm font-bold text-indigo-700 tabular-nums'>
+                      {pickScalarString(defaultCommConfig?.default_commission_rate) || '—'}%
+                    </span>
+                  </div>
+                  <div className='flex items-center justify-between py-2 border-b border-slate-100'>
+                    <span className='text-xs font-semibold text-slate-500'>VAT</span>
+                    <span className='text-sm font-semibold text-slate-700 tabular-nums'>
+                      {pickScalarString(defaultCommConfig?.vat_rate) || '—'}%
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                /* Edit mode */
+                <Form {...defaultCommissionForm}>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    <FormField
+                      control={defaultCommissionForm.control}
+                      name='commission'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>
+                            ค่าคอมมิชชัน (%)
+                          </FormLabel>
+                          <FormControl>
+                            <div className='relative'>
+                              <Input
+                                {...field}
+                                type='number'
+                                min={0}
+                                max={100}
+                                step={0.1}
+                                className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm'
+                              />
+                              <Percent
+                                size={12}
+                                className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400'
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={defaultCommissionForm.control}
+                      name='vat'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className='text-xs font-semibold text-slate-700'>
+                            VAT (%)
+                          </FormLabel>
+                          <FormControl>
+                            <div className='relative'>
+                              <Input
+                                {...field}
+                                type='number'
+                                min={0}
+                                max={100}
+                                step={0.1}
+                                className='w-full border border-slate-200 rounded-lg pl-3 pr-8 py-2 text-sm'
+                              />
+                              <Percent
+                                size={12}
+                                className='absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400'
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </Form>
+              )}
+            </div>
           ) : null}
 
           {!loading && activeTab === 'configpackages' ? (
@@ -517,8 +683,8 @@ export function AdminConfigPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody className='divide-y divide-slate-100'>
-                    {sortedConfigs.map((cfg, idx) => {
-                      const isDefault = idx === 0;
+                    {sortedConfigs.map((cfg) => {
+                      const isDefault = cfg.config_id === defaultCommConfig?.config_id;
                       return (
                         <TableRow key={cfg.config_id} className='hover:bg-slate-50'>
                           <TableCell className='px-4 py-3 text-xs text-slate-500'>
@@ -673,16 +839,22 @@ export function AdminConfigPage() {
                 <p className='text-xs text-slate-400 mb-5'>
                   เปิด/ปิดข้อกำหนดที่โรงงานต้องผ่านก่อนได้รับการอนุมัติ
                 </p>
+                {!isSA ? (
+                  <div className='text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 mb-4'>
+                    เฉพาะ Super Admin เท่านั้นที่แก้ไขเงื่อนไขได้
+                  </div>
+                ) : null}
                 <div className='bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden'>
                   {requirements.map((req) => (
                     <div
                       key={req.id}
-                      className='flex items-center justify-between px-5 py-3.5 cursor-pointer hover:bg-slate-50 transition-colors'
-                      onClick={() =>
+                      className={`flex items-center justify-between px-5 py-3.5 transition-colors ${isSA ? 'cursor-pointer hover:bg-slate-50' : 'opacity-60'}`}
+                      onClick={() => {
+                        if (!isSA) return;
                         setRequirements((prev) =>
                           prev.map((r) => (r.id === req.id ? { ...r, enabled: !r.enabled } : r)),
-                        )
-                      }
+                        );
+                      }}
                     >
                       <div className='flex items-center gap-3'>
                         {req.enabled ? (
@@ -700,20 +872,18 @@ export function AdminConfigPage() {
                   ))}
                 </div>
                 <div className='mt-4 flex items-center gap-3'>
-                  <SaveButton
-                    saving={savingVerification}
-                    saved={savedVerification}
-                    onClick={handleSaveVerification}
-                  />
+                  {isSA ? (
+                    <SaveButton
+                      saving={savingVerification}
+                      saved={savedVerification}
+                      onClick={() => void handleSaveVerification()}
+                    />
+                  ) : null}
                   <p className='text-xs text-slate-400'>
                     เปิดใช้งาน {requirements.filter((r) => r.enabled).length} /{' '}
                     {requirements.length} เงื่อนไข
                   </p>
                 </div>
-                <p className='mt-2 text-xs text-slate-400'>
-                  หมายเหตุ: backend ปัจจุบันยังไม่มี endpoint checklist กลางสำหรับ tab นี้
-                  จึงบันทึกแบบ local ชั่วคราว
-                </p>
               </div>
             </div>
           ) : null}

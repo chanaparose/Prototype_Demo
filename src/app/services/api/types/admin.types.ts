@@ -16,14 +16,29 @@ export interface IPlatformConfigResponse {
 }
 
 export interface IPlatformConfigItemResponse {
+  config_id: number;
+  label?: string | null;
+  default_commission_rate: number;
+  vat_rate: number;
+  effective_from?: string | null;
+  effective_to?: string | null;
+  created_at?: string;
   [key: string]: unknown;
 }
 
 export interface ICreatePlatformConfigRequest {
+  label?: string | null;
+  default_commission_rate: number;
+  vat_rate: number;
+  currency_code?: string;
+  effective_to?: string | null;
   [key: string]: unknown;
 }
 
 export interface IUpdatePlatformConfigRequest {
+  label?: string;
+  default_commission_rate?: number;
+  vat_rate?: number;
   [key: string]: unknown;
 }
 
