@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Search, CheckCircle, XCircle, Eye, AlertTriangle, Loader2 } from 'lucide-react';
+import { Search, Eye, AlertTriangle, Loader2 } from 'lucide-react';
 import { adminApi } from '@/services/api/adminApi';
 import { extractAdminFactoryRows, mapAdminFactory } from '@/domain/admin/mappers/mapAdminFactory';
 import type { AdminFactory, FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -19,8 +17,6 @@ import {
 } from '@/components/ui/table';
 
 export type { FactoryApprovalStatus } from '@/domain/admin/types/adminFactory.model';
-
-type FactoryActionType = 'approve' | 'reject';
 
 const STATUS_META: Record<FactoryApprovalStatus, { label: string; cls: string }> = {
   pending: { label: 'รอ Approve', cls: 'bg-amber-100 text-amber-700' },
@@ -48,85 +44,13 @@ function formatThaiDate(input: string): string {
   });
 }
 
-interface ConfirmDialogProps {
-  type: FactoryActionType;
-  factory: AdminFactory;
-  onConfirm: (reason: string) => void;
-  onCancel: () => void;
-  submitting?: boolean;
-}
-
-function ConfirmDialog({ type, factory, onConfirm, onCancel, submitting }: ConfirmDialogProps) {
-  const [reason, setReason] = useState('');
-
-  return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
-      <div className='absolute inset-0 bg-black/40' onClick={onCancel} />
-      <div className='relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6'>
-        <h3 className='text-base font-bold text-slate-900 mb-1'>
-          {type === 'approve' ? 'ยืนยันการอนุมัติโรงงาน' : 'ยืนยันการปฏิเสธโรงงาน'}
-        </h3>
-        <p className='text-sm text-slate-500 mb-4'>
-          {type === 'approve'
-            ? `อนุมัติโรงงาน "${factory.factory_name}" ให้ใช้งานได้?`
-            : `ปฏิเสธโรงงาน "${factory.factory_name}"?`}
-        </p>
-
-        {type === 'reject' && (
-          <div className='mb-4'>
-            <Label className='block text-xs font-semibold text-slate-700 mb-1.5'>
-              เหตุผล <span className='text-red-500'>*</span>
-            </Label>
-            <Textarea
-              rows={3}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder='ระบุเหตุผลอย่างน้อย 10 ตัวอักษร'
-              className='w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none'
-            />
-          </div>
-        )}
-
-        <div className='flex gap-3 justify-end'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={onCancel}
-            disabled={submitting}
-            className='px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors'
-          >
-            ยกเลิก
-          </Button>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={() => onConfirm(reason)}
-            disabled={submitting || (type === 'reject' && reason.trim().length < 10)}
-            className={`px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-40 ${
-              type === 'approve'
-                ? 'bg-emerald-600 hover:bg-emerald-700'
-                : 'bg-red-600 hover:bg-red-700'
-            }`}
-          >
-            {submitting ? 'กำลังบันทึก...' : type === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function AdminFactoriesPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusTab, setStatusTab] = useState<'all' | FactoryApprovalStatus>('all');
   const [factories, setFactories] = useState<AdminFactory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [dialog, setDialog] = useState<{ type: FactoryActionType; factory: AdminFactory } | null>(
-    null,
-  );
 
   const loadFactories = async () => {
     setLoading(true);
@@ -168,24 +92,6 @@ export function AdminFactoriesPage() {
     });
     return next;
   }, [factories]);
-
-  const handleConfirm = async (reason: string) => {
-    if (!dialog) return;
-    setSubmitting(true);
-    try {
-      if (dialog.type === 'approve') {
-        await adminApi.approveFactory(dialog.factory.factory_id);
-      } else {
-        await adminApi.rejectFactory(dialog.factory.factory_id, reason.trim());
-      }
-      setDialog(null);
-      await loadFactories();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'อัปเดตสถานะโรงงานไม่สำเร็จ');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className='space-y-6'>
@@ -326,28 +232,6 @@ export function AdminFactoriesPage() {
                       </TableCell>
                       <TableCell className='px-4 py-3'>
                         <div className='flex items-center justify-end gap-1.5'>
-                          {factory.approval_status === 'pending' && (
-                            <>
-                              <Button
-                                variant='unstyled'
-                                type='button'
-                                onClick={() => setDialog({ type: 'approve', factory })}
-                                className='flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition-colors'
-                              >
-                                <CheckCircle size={13} />
-                                อนุมัติ
-                              </Button>
-                              <Button
-                                variant='unstyled'
-                                type='button'
-                                onClick={() => setDialog({ type: 'reject', factory })}
-                                className='flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors'
-                              >
-                                <XCircle size={13} />
-                                ปฏิเสธ
-                              </Button>
-                            </>
-                          )}
                           <Button
                             variant='unstyled'
                             type='button'
@@ -367,16 +251,6 @@ export function AdminFactoriesPage() {
           </Table>
         </div>
       </div>
-
-      {dialog && (
-        <ConfirmDialog
-          type={dialog.type}
-          factory={dialog.factory}
-          onConfirm={handleConfirm}
-          onCancel={() => setDialog(null)}
-          submitting={submitting}
-        />
-      )}
 
       {loading && (
         <div className='fixed bottom-6 right-6 flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow-sm'>
