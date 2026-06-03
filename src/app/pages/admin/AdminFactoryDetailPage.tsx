@@ -293,7 +293,7 @@ export function AdminFactoryDetailPage() {
       ]);
       setCurrentConfig(configRes);
       setSelectedConfigId(configRes.config_id as number);
-      setConfigList((listRes.configs ?? []).slice().sort((a, b) => a.config_id - b.config_id));
+      setConfigList(listRes.configs ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'โหลด config ของโรงงานไม่สำเร็จ');
     }
@@ -576,7 +576,6 @@ export function AdminFactoryDetailPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='__empty'>เลือก Config Package</SelectItem>
-                      <SelectItem value='0'>กลับเป็นมาตรฐาน (ใช้ default จากระบบ)</SelectItem>
                       {configList.map((cfg) => (
                         <SelectItem key={cfg.config_id} value={String(cfg.config_id)}>
                           [{cfg.config_id}]{' '}
