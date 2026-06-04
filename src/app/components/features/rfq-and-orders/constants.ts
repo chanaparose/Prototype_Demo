@@ -100,6 +100,18 @@ export const ORDER_STATUS_CONFIG: Record<
   string,
   { label: string; color: string; bg: string; dot: string }
 > = {
+  waiting_slip: {
+    label: 'รอแนบสลีป',
+    color: ACCENT_ORANGE_DEEP,
+    bg: PEACH_MIST,
+    dot: ACCENT_ORANGE,
+  },
+  waiting_approval: {
+    label: 'รอยืนยันสลีป',
+    color: '#C2410C',
+    bg: PEACH_SOFT,
+    dot: ACCENT_ORANGE,
+  },
   pending_payment: {
     label: 'รอชำระมัดจำ',
     color: ACCENT_ORANGE_DEEP,

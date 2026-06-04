@@ -17,7 +17,7 @@ import {
   ORDER_MOBILE_TAB_THEME,
   type OrderFilterId,
 } from '@/components/features/rfq-and-orders/constants';
-import { isPendingPaymentStatus } from '@/domain/order/status';
+import { isPendingPaymentStatus, mapOrderStatusFromApi } from '@/domain/order/status';
 import {
   formatBudget,
   getOrderProgressBg,
@@ -140,7 +140,9 @@ export function OrderPanel({
         <div className='space-y-3'>
           {filteredOrders.map((order) => {
             const isPendingPayment = isPendingPaymentStatus(order.status);
-            const statusCfg = ORDER_STATUS_CONFIG[order.status] ?? ORDER_STATUS_CONFIG.pending;
+            const mappedStatus = mapOrderStatusFromApi(order.status);
+            const statusCfg =
+              ORDER_STATUS_CONFIG[mappedStatus] ?? ORDER_STATUS_CONFIG.pending_payment;
             const cardCfg = isPendingPayment ? ORDER_STATUS_CONFIG.in_production : statusCfg;
 
             return (

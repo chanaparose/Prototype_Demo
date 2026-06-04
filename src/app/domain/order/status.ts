@@ -1,13 +1,23 @@
+/** UI status ที่อยู่ใน tab รอชำระ (rfq-and-orders) */
+export const PENDING_PAYMENT_UI_STATUSES = [
+  'waiting_slip',
+  'waiting_approval',
+  'pending_payment',
+] as const;
+
 /** สถานะก่อนชำระมัดจำ/ยืนยันสลีป — แสดงใน tab รอชำระ (rfq-and-orders) */
 export function isPendingPaymentStatus(status: string): boolean {
-  return mapOrderStatusFromApi(status) === 'pending_payment';
+  const mapped = mapOrderStatusFromApi(status);
+  return (PENDING_PAYMENT_UI_STATUSES as readonly string[]).includes(mapped);
 }
 
 export function mapOrderStatusFromApi(code: string): string {
   const raw = String(code ?? '').trim();
   const u = raw.toUpperCase();
-  // Raw DB codes
-  if (u === 'WS' || u === 'WA' || u === 'PP') return 'pending_payment';
+  // Raw DB codes — แยก wording WS / WA / PP
+  if (u === 'WS') return 'waiting_slip';
+  if (u === 'WA') return 'waiting_approval';
+  if (u === 'PP') return 'pending_payment';
   if (u === 'PD' || u === 'PR' || u === 'QC' || u === 'WF') return 'in_production';
   if (u === 'SH') return 'shipped';
   if (u === 'CP') return 'completed';
@@ -16,14 +26,8 @@ export function mapOrderStatusFromApi(code: string): string {
   // Already-mapped strings from bootstrap (pass-through)
   const lower = raw.toLowerCase();
   if (lower === 'pending_payment' || lower === 'pp') return 'pending_payment';
-  if (
-    lower === 'waiting_approval' ||
-    lower === 'waiting_slip' ||
-    lower === 'waiting_for_slip' ||
-    lower === 'waiting_for_approval'
-  ) {
-    return 'pending_payment';
-  }
+  if (lower === 'waiting_approval' || lower === 'waiting_for_approval') return 'waiting_approval';
+  if (lower === 'waiting_slip' || lower === 'waiting_for_slip') return 'waiting_slip';
   if (lower === 'in_production') return 'in_production';
   if (lower === 'shipped') return 'shipped';
   if (lower === 'completed') return 'completed';
@@ -32,7 +36,9 @@ export function mapOrderStatusFromApi(code: string): string {
 }
 
 export function guessOrderProgress(status: string): number {
-  switch (status) {
+  switch (mapOrderStatusFromApi(status)) {
+    case 'waiting_slip':
+    case 'waiting_approval':
     case 'pending_payment':
       return 10;
     case 'in_production':

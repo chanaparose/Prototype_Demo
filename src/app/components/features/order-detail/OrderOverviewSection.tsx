@@ -6,6 +6,7 @@ import { formatCompactNumber, formatCurrency } from '@/utils/formatting/formatCu
 import { formatDateTh } from '@/components/features/order-detail/utils';
 import { OrderPaymentScheduleCard } from '@/components/features/order-detail/OrderPaymentScheduleCard';
 import { OrderPendingPaymentSection } from '@/components/features/order-detail/OrderPendingPaymentSection';
+import { isPendingPaymentStatus } from '@/domain/order/status';
 import { useOrderDetail } from '@/pages/order-detail/OrderDetailContext';
 import { CategoryIcon } from '@/components/ui/category-icon';
 
@@ -47,7 +48,7 @@ type OrderOverviewSectionProps = {
 
 export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOverviewSectionProps) {
   const { paymentSchedule, mappedOrder, refetchAll } = useOrderDetail();
-  const showDepositPayment = mappedOrder.status === 'pending_payment';
+  const showDepositPayment = isPendingPaymentStatus(mappedOrder.status);
   const payableAmount = React.useMemo(() => {
     const stagedAmount = paymentSchedule.find(
       (s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT',

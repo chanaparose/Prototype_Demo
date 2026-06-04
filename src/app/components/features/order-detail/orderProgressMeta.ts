@@ -2,7 +2,6 @@ import {
   Boxes,
   CheckCircle2,
   ClipboardList,
-  CreditCard,
   Factory,
   Handshake,
   PackageCheck,
@@ -11,6 +10,8 @@ import {
   XCircle,
   type LucideIcon,
 } from 'lucide-react';
+import { getOrderStatusDisplayMeta } from '@/domain/order/orderStatusDisplay';
+import { isPendingPaymentStatus, mapOrderStatusFromApi } from '@/domain/order/status';
 
 type OrderProgressMeta = {
   icon: LucideIcon;
@@ -37,8 +38,24 @@ export function getOrderProgressMeta(order: {
   if (order.status === 'cancelled' || order.status === 'expired') {
     return { icon: XCircle, label: 'ยกเลิก' };
   }
-  if (order.status === 'pending_payment') {
-    return { icon: CreditCard, label: 'รอชำระมัดจำ' };
+  const mapped = mapOrderStatusFromApi(order.status);
+  if (order.status === 'cancelled_expired' || mapped === 'cancelled_expired') {
+    return { icon: XCircle, label: 'ยกเลิก' };
   }
-  return STEP_META[order.currentStepId ?? -1] ?? { icon: ClipboardList, label: 'รอดำเนินการ' };
+  if (mapped === 'shipped') {
+    return { icon: PackageCheck, label: 'จัดส่งแล้ว' };
+  }
+  if (isPendingPaymentStatus(order.status)) {
+    return (
+      getOrderStatusDisplayMeta(order.status) ?? {
+        icon: ClipboardList,
+        label: 'รอชำระมัดจำ',
+      }
+    );
+  }
+  const stepMeta = STEP_META[order.currentStepId ?? -1];
+  if (stepMeta) return stepMeta;
+  return (
+    getOrderStatusDisplayMeta(order.status) ?? { icon: ClipboardList, label: 'รอดำเนินการ' }
+  );
 }

@@ -8,6 +8,7 @@ import {
   type OrderFilterId,
   type RfqFilterId,
 } from '@/components/features/rfq-and-orders/constants';
+import { isPendingPaymentStatus } from '@/domain/order/status';
 
 export type OrderTagCounts = {
   pendingPayment: number;
@@ -53,7 +54,7 @@ export function getOrderTabCount(id: OrderFilterId, counts: OrderTagCounts): num
 export function getOrderProgressBg(status: string): string {
   if (status === 'completed') return PROGRESS_COMPLETED;
   if (status === 'shipped') return ACCENT_ORANGE;
-  if (status === 'pending_payment') return ACCENT_ORANGE_DEEP;
+  if (isPendingPaymentStatus(status)) return ACCENT_ORANGE_DEEP;
   return PROGRESS_GRADIENT_ACTIVE;
 }
 
