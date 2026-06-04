@@ -5,7 +5,6 @@ import {
   Calendar,
   ChevronRight,
   CheckCircle2,
-  AlertTriangle,
   Banknote,
   Truck,
   OctagonX,
@@ -57,24 +56,9 @@ export function OrderPanel({
   isDesktop,
 }: OrderPanelProps) {
   const navigate = useNavigate();
-  const hasPendingPayment = orderTagCounts.pendingPayment > 0;
 
   return (
     <div className={isDesktop ? 'px-4 pb-4 pt-2' : ''}>
-      {hasPendingPayment && orderFilter !== 'pending_payment' && (
-        <Button
-          variant='unstyled'
-          onClick={() => setOrderFilter('pending_payment')}
-          className='mb-3 flex w-full items-center gap-2 rounded-xl border border-[var(--brand-orange)] bg-[var(--surface-orange-pale)] px-3 py-2.5 text-left text-[var(--brand-orange-vivid)]'
-        >
-          <AlertTriangle size={14} className='shrink-0 text-[var(--brand-orange)]' />
-          <span className='text-xs font-semibold flex-1'>
-            มี {orderTagCounts.pendingPayment} คำสั่งซื้อรอชำระมัดจำ
-          </span>
-          <ChevronRight size={13} />
-        </Button>
-      )}
-
       <div className='mb-3 grid w-full grid-cols-5 gap-0.5 rounded-xl border border-gray-200 bg-white px-1 py-[5px]'>
         {ORDER_TABS.map((tab) => {
           const Icon = tab.icon;
