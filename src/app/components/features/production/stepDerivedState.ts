@@ -2,9 +2,10 @@ import type { MergedProductionStep } from '@/components/features/production/type
 
 export type StepDerivedState = 'completed' | 'active' | 'upcoming' | 'blocked' | 'rejected';
 
-// PD = ชำระแล้ว รอโรงงานยืนยันรับงาน (step_id=0 จะเป็น active)
-const ACTIVE_ORDER_STATUSES = new Set(['PD', 'PR', 'QC', 'SH']);
-const BLOCKING_ORDER_STATUSES = new Set(['PP', 'PE', 'WF']);
+// PR/QC/SH = production กำลังดำเนินการ
+const ACTIVE_ORDER_STATUSES = new Set(['PR', 'QC', 'SH']);
+// WS/WA/PP/PE/WF = ยังไม่เริ่ม production
+const BLOCKING_ORDER_STATUSES = new Set(['WS', 'WA', 'PP', 'PE', 'WF']);
 
 export function deriveStepStates(
   merged: MergedProductionStep[],
@@ -26,10 +27,10 @@ export function deriveStepStates(
       return 'completed';
     }
     if (st === 'IP') return 'active';
-    // PD order status = ชำระแล้ว รอโรงงานยืนยันรับงาน (step_id=0)
-    // เฉพาะ step_id=0 เท่านั้นที่ active — step อื่นยัง upcoming
+    // PD = ชำระแล้ว รอโรงงานกดยืนยันรับงาน
+    // step_id=0 = "รอยืนยันรับงาน" (blocked) ไม่ใช่ "กำลังดำเนินการ"
     if (ostatus === 'PD') {
-      return m.template.step_id === 0 ? 'active' : 'upcoming';
+      return m.template.step_id === 0 ? 'blocked' : 'upcoming';
     }
     // PR/QC/SH: promote first PD step to active/blocked
     const isFirstPd = i === firstPdIdx;

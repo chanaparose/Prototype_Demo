@@ -8,6 +8,7 @@ import {
   type OrderFilterId,
 } from '@/components/features/rfq-and-orders/constants';
 import { useRfqListQuery } from '@/domain/rfq/queries/useRfqListQuery';
+import { isPendingPaymentStatus } from '@/domain/order/status';
 import { rfqKeys } from '@/lib/queryKeys';
 
 type PrimaryTab = 'rfq' | 'orders';
@@ -64,6 +65,8 @@ export function useRfqAndOrdersState(initial?: InitialState) {
     if (orderFilter === 'shipped') return orders.filter(isShippingOrder);
     if (orderFilter === 'in_production')
       return orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o));
+    if (orderFilter === 'pending_payment')
+      return orders.filter((o) => isPendingPaymentStatus(o.status));
     return orders.filter((o) => o.status === orderFilter);
   }, [orderFilter, orders, isShippingOrder]);
 
@@ -80,7 +83,7 @@ export function useRfqAndOrdersState(initial?: InitialState) {
 
   const orderTagCounts = React.useMemo(
     () => ({
-      pendingPayment: orders.filter((o) => o.status === 'pending_payment').length,
+      pendingPayment: orders.filter((o) => isPendingPaymentStatus(o.status)).length,
       inProduction: orders.filter((o) => o.status === 'in_production' && !isShippingOrder(o))
         .length,
       shipped: orders.filter(isShippingOrder).length,

@@ -212,11 +212,11 @@ export function StepRow({
         </div>
       </div>
 
-      {isBlocked ? (
+      {/*isBlocked ? (
         <div className='px-4 pb-3 -mt-1 lg:px-6 lg:pb-4'>
-          <p className='text-[11px] text-amber-800'>รอลูกค้าดำเนินการก่อนจึงจะเริ่มขั้นตอนนี้ได้</p>
+          <p className='text-[11px] text-amber-800'>รอโรงงานเริ่มงาน</p>
         </div>
-      ) : null}
+      ) : null*/}
 
       {expanded ? (
         <div className='px-4 pb-4 pt-0 border-t border-gray-100/80 space-y-3 text-sm lg:px-6 lg:pb-5 lg:space-y-4'>

@@ -1,15 +1,29 @@
+/** สถานะก่อนชำระมัดจำ/ยืนยันสลีป — แสดงใน tab รอชำระ (rfq-and-orders) */
+export function isPendingPaymentStatus(status: string): boolean {
+  return mapOrderStatusFromApi(status) === 'pending_payment';
+}
+
 export function mapOrderStatusFromApi(code: string): string {
-  const u = String(code ?? '').toUpperCase();
+  const raw = String(code ?? '').trim();
+  const u = raw.toUpperCase();
   // Raw DB codes
-  if (u === 'PP') return 'pending_payment';
+  if (u === 'WS' || u === 'WA' || u === 'PP') return 'pending_payment';
   if (u === 'PD' || u === 'PR' || u === 'QC' || u === 'WF') return 'in_production';
   if (u === 'SH') return 'shipped';
   if (u === 'CP') return 'completed';
   if (u === 'CC' || u === 'CN' || u === 'CL' || u === 'PE' || u === 'EX')
     return 'cancelled_expired';
   // Already-mapped strings from bootstrap (pass-through)
-  const lower = u.toLowerCase();
-  if (lower === 'pending_payment') return 'pending_payment';
+  const lower = raw.toLowerCase();
+  if (lower === 'pending_payment' || lower === 'pp') return 'pending_payment';
+  if (
+    lower === 'waiting_approval' ||
+    lower === 'waiting_slip' ||
+    lower === 'waiting_for_slip' ||
+    lower === 'waiting_for_approval'
+  ) {
+    return 'pending_payment';
+  }
   if (lower === 'in_production') return 'in_production';
   if (lower === 'shipped') return 'shipped';
   if (lower === 'completed') return 'completed';
