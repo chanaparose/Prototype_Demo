@@ -21,9 +21,10 @@ export function countByTab(
 ): Record<TabId, number> {
   const tabs: TabId[] = [
     'all',
+    'awaiting_customer',
+    'verify_slip',
     'needs_action',
     'in_production',
-    'awaiting_customer',
     'shipped',
     'completed',
     'cancelled',
@@ -36,9 +37,10 @@ export function countByTab(
     }),
     {
       all: 0,
+      awaiting_customer: 0,
+      verify_slip: 0,
       needs_action: 0,
       in_production: 0,
-      awaiting_customer: 0,
       shipped: 0,
       completed: 0,
       cancelled: 0,

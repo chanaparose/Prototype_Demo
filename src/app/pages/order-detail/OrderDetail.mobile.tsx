@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronLeft, MessageCircle, Star, X, AlertTriangle, PackageCheck } from 'lucide-react';
+import { ChevronLeft, MessageCircle, Star, X, AlertTriangle, PackageCheck, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useData } from '@/stores/useDataStore';
 import { useAuth } from '@/stores/useAuthStore';
@@ -58,7 +58,7 @@ function OrderDetailMobileBody() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancellingOrder, setCancellingOrder] = useState(false);
 
-  const canShowCancelButton = apiStatus === 'PP';
+  const canShowCancelButton = ['WS', 'WA', 'PP'].includes(apiStatus);
 
   // Show acceptance banner when production step 5 = IP (step 4 CD → awaiting customer confirmation)
   const step5IsIP = React.useMemo(
@@ -296,7 +296,29 @@ function OrderDetailMobileBody() {
             statusLabelTh={statusLabelTh}
           />
 
-          {/* PP — รอชำระเงิน */}
+          {/* WS — รอแนบสลีป */}
+          {uiMode.lockReason === 'WAITING_SLIP' && uiMode.showActionBanner ? (
+            <OrderActionBanner
+              nextAction={nextAction}
+              paymentSchedule={paymentSchedule}
+              variant='pending_deposit'
+              fallbackCtaUrl={lockContextMerged.payment_url}
+              onPayDeposit={openDepositModal}
+            />
+          ) : null}
+
+          {/* WA — รอโรงงานตรวจสอบสลีป */}
+          {uiMode.lockReason === 'WAITING_SLIP_APPROVAL' ? (
+            <div className='rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 space-y-1'>
+              <div className='flex items-center gap-2'>
+                <Clock size={16} className='text-blue-500 shrink-0' />
+                <span className='text-sm font-bold text-blue-700'>รอโรงงานตรวจสอบสลีป</span>
+              </div>
+              <p className='text-xs text-blue-600 ml-6'>โรงงานจะตรวจสอบสลีปของคุณและยืนยันรับเงิน จากนั้นจะเริ่มผลิตสินค้า</p>
+            </div>
+          ) : null}
+
+          {/* PP — รอชำระเงิน (legacy) */}
           {uiMode.lockReason === 'PENDING_DEPOSIT' &&
           uiMode.showActionBanner &&
           (nextAction != null || paymentSchedule.length > 0) ? (
@@ -509,6 +531,7 @@ function OrderDetailMobileBody() {
         open={depositModalOpen}
         onClose={() => setDepositModalOpen(false)}
         orderId={order.id}
+        factoryId={Number(order.factoryId) || 0}
         amount={depositAmount}
         onSuccess={refetchAll}
       />

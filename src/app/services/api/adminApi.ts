@@ -24,6 +24,10 @@ import type {
   IPlatformConfigItemResponse,
   IPlatformConfigResponse,
   IUpdatePlatformConfigRequest,
+  ISlipInfoResponse,
+  ICommissionInvoiceResponse,
+  ICommissionInvoiceItemResponse,
+  ICommissionSummaryResponse,
 } from '@/services/api/types/admin.types';
 
 export type { IPlatformConfigResponse } from '@/services/api/types/admin.types';
@@ -90,6 +94,50 @@ export const adminFactoryCertApi = {
     httpClient.patch<{ factory_id: number; map_id: number; verify_status: string }>(
       `/admin/factories/${factoryId}/certificates/${mapId}`,
       { verify_status: verifyStatus },
+    ),
+};
+
+// ─── Slip API (F1, F2, F3) ──────────────────────────────────────────────────
+
+export const slipApi = {
+  getInfo: (orderId: number) =>
+    httpClient.get<ISlipInfoResponse>(`/orders/${orderId}/slip`),
+
+  attach: (orderId: number, formData: FormData) =>
+    httpClient.postForm<ISlipInfoResponse>(`/orders/${orderId}/slip`, formData),
+
+  verify: (orderId: number, action: 'approve' | 'reject', reason?: string) =>
+    httpClient.patch<ISlipInfoResponse>(`/factory/orders/${orderId}/verify-slip`, { action, reason }),
+};
+
+// ─── Commission Invoice Admin API (F5) ──────────────────────────────────────
+
+export const adminCommissionApi = {
+  generate: (month: number, year: number) =>
+    httpClient.post<{ created: number; period_month: number; period_year: number }>(
+      '/admin/invoices/generate',
+      { month, year },
+    ),
+
+  list: (params?: { month?: number; year?: number }) =>
+    httpClient.get<{ invoices: ICommissionInvoiceResponse[]; total: number }>(
+      `/admin/invoices${params ? `?month=${params.month ?? 0}&year=${params.year ?? 0}` : ''}`,
+    ),
+
+  get: (invoiceId: number) =>
+    httpClient.get<{ invoice: ICommissionInvoiceResponse; items: ICommissionInvoiceItemResponse[] }>(
+      `/admin/invoices/${invoiceId}`,
+    ),
+
+  send: (invoiceId: number) =>
+    httpClient.post<ICommissionInvoiceResponse>(`/admin/invoices/${invoiceId}/send`, {}),
+
+  verify: (invoiceId: number, action: 'approve' | 'reject') =>
+    httpClient.patch<ICommissionInvoiceResponse>(`/admin/invoices/${invoiceId}/verify`, { action }),
+
+  summary: (params?: { month?: number; year?: number }) =>
+    httpClient.get<ICommissionSummaryResponse>(
+      `/admin/commission/summary${params ? `?month=${params.month ?? 0}&year=${params.year ?? 0}` : ''}`,
     ),
 };
 

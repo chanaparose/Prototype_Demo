@@ -1,4 +1,4 @@
-export type OrderStatusCode = 'PP' | 'PE' | 'PD' | 'PR' | 'QC' | 'SH' | 'CP' | 'CN' | 'CC' | 'CL';
+export type OrderStatusCode = 'WS' | 'WA' | 'PP' | 'PE' | 'PD' | 'PR' | 'QC' | 'SH' | 'CP' | 'CN' | 'CC' | 'CL';
 
 export interface ProductionSummaryRow {
   current_step_code: string | null;
@@ -28,9 +28,10 @@ export interface FactoryOrderRow {
 
 export type TabId =
   | 'all'
+  | 'awaiting_customer'
+  | 'verify_slip'
   | 'needs_action'
   | 'in_production'
-  | 'awaiting_customer'
   | 'shipped'
   | 'completed'
   | 'cancelled';

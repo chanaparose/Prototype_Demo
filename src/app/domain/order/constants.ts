@@ -1,4 +1,6 @@
 const ORDER_API_STATUS_LABEL_TH: Record<string, string> = {
+  WS: 'รอแนบสลีป',
+  WA: 'รอยืนยันสลีป',
   PP: 'รอชำระเงิน',
   PE: 'หมดกำหนดชำระ',
   PD: 'ชำระเงินแล้ว รอเริ่มผลิต',

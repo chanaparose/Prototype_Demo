@@ -26,7 +26,15 @@ export const REQUEST_KIND_LABEL: Record<string, { label: string; cls: string }> 
   MS: { label: 'ตัวอย่างวัตถุดิบ', cls: 'bg-teal-50 text-teal-700' },
 };
 
+const DEFAULT_STATUS_CONFIG = {
+  label: 'ไม่ทราบสถานะ',
+  badgeClass: 'bg-gray-100 text-gray-700',
+  icon: Clock3,
+} as const;
+
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string; icon: LucideIcon }> = {
+  WS: { label: 'รอแนบสลีป', badgeClass: 'bg-amber-100 text-amber-800', icon: Clock3 },
+  WA: { label: 'รอยืนยันสลีป', badgeClass: 'bg-orange-100 text-orange-800', icon: ScanSearch },
   PP: { label: 'รอชำระมัดจำ', badgeClass: 'bg-amber-100 text-amber-800', icon: Clock3 },
   PE: { label: 'หมดกำหนดชำระ', badgeClass: 'bg-red-100 text-red-800', icon: Ban },
   PD: { label: 'ชำระมัดจำแล้ว', badgeClass: 'bg-teal-100 text-teal-800', icon: CircleDollarSign },
@@ -48,7 +56,8 @@ export function FactoryOrderCard({
   derived: DerivedCardState;
   onPrimaryCta: (row: FactoryOrderRow, cta: DerivedCardState['primaryCta']) => void;
 }) {
-  const StatusIcon = STATUS_CONFIG[row.status].icon;
+  const statusCfg = STATUS_CONFIG[row.status] ?? DEFAULT_STATUS_CONFIG;
+  const StatusIcon = statusCfg.icon;
   return (
     <article className='bg-white rounded-2xl border border-gray-100 p-3.5 sm:p-4 hover:shadow-sm min-w-0'>
       <div className='flex items-start justify-between gap-2'>
@@ -67,10 +76,10 @@ export function FactoryOrderCard({
         </div>
         <div className='flex flex-wrap justify-end gap-1'>
           <span
-            className={`text-[10px] px-2 py-1 rounded-full font-semibold ${STATUS_CONFIG[row.status].badgeClass}`}
+            className={`text-[10px] px-2 py-1 rounded-full font-semibold ${statusCfg.badgeClass}`}
           >
             <StatusIcon size={11} className='mr-1 inline-block align-[-2px]' />
-            {STATUS_CONFIG[row.status].label}
+            {statusCfg.label}
           </span>
           {derived.flags.isOverdue ? (
             <span className='text-[10px] px-2 py-1 rounded-full font-semibold bg-red-100 text-red-800'>

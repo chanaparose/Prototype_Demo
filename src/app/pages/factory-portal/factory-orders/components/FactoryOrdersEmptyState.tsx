@@ -5,9 +5,10 @@ import type { TabId } from '@/pages/factory-portal/factory-orders/types';
 
 const TAB_LABEL: Record<TabId, string> = {
   all: 'ทั้งหมด',
+  awaiting_customer: 'รอลูกค้า',
+  verify_slip: 'ยืนยันสลีป',
   needs_action: 'ต้องดำเนินการ',
   in_production: 'กำลังผลิต',
-  awaiting_customer: 'รอลูกค้า',
   shipped: 'จัดส่งแล้ว',
   completed: 'เสร็จสิ้น',
   cancelled: 'ยกเลิก',

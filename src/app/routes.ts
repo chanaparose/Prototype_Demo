@@ -35,6 +35,7 @@ import {
   AdminConfigPage,
   AdminCustomersPage,
   AdminCustomerDetailPage,
+  AdminCommissionPage,
 } from '@/pages/admin';
 import { AuthGuard } from '@/components/AuthGuard';
 import { RoleRedirectIndex } from '@/components/RoleRedirectIndex';
@@ -52,6 +53,8 @@ import { FactoryRfqDetailPage } from '@/pages/factory-portal/FactoryRfqDetailPag
 import { FactoryOrdersPage } from '@/pages/factory-portal/FactoryOrdersPage';
 import { FactoryOrderDetailPage } from '@/pages/factory-portal/FactoryOrderDetailPage';
 import { FactoryWalletPage } from '@/pages/factory-portal/FactoryWalletPage';
+import { FactoryBankSettingsPage } from '@/pages/factory-portal/FactoryBankSettingsPage';
+import { FactoryInvoicePage } from '@/pages/factory-portal/FactoryInvoicePage';
 import { FactoryEditQuotationPage } from '@/pages/factory-portal/FactoryEditQuotationPage';
 import { FactoryQuotationsPage } from '@/pages/factory-portal/FactoryQuotationsPage';
 import { FactoryShowcaseEditPage } from '@/pages/factory-portal/FactoryShowcaseEditPage';
@@ -124,6 +127,8 @@ export const router = createBrowserRouter([
                       { index: true, Component: FactoryDashboardPage },
 
                       { path: 'info', Component: FactoryInfoPage },
+                      { path: 'bank-settings', Component: FactoryBankSettingsPage },
+                      { path: 'invoices', Component: FactoryInvoicePage },
                       { path: 'wallet', Component: FactoryWalletPage },
                       {
                         Component: FactoryVerifiedGuard,
@@ -165,6 +170,7 @@ export const router = createBrowserRouter([
               { path: 'rfqs', Component: AdminRFQsPage },
               { path: 'orders', Component: AdminOrdersPage },
               { path: 'config', Component: AdminConfigPage },
+              { path: 'commission', Component: AdminCommissionPage },
               { path: 'commission-config', Component: CommissionConfig },
             ],
           },

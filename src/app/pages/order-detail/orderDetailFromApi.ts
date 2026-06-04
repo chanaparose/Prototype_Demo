@@ -47,7 +47,7 @@ export function parsePaymentSchedule(row: Record<string, unknown>): PaymentSched
   if (!Number.isFinite(total) || total <= 0) return [];
 
   const apiSt = pickScalarString(row.status).toUpperCase();
-  const paid = apiSt !== 'PP' && apiSt !== 'PE';
+  const paid = !['WS', 'WA', 'PP', 'PE'].includes(apiSt);
   const overdue = apiSt === 'PE';
   const due = row.deposit_due_date != null ? pickScalarString(row.deposit_due_date) : null;
 
@@ -86,7 +86,7 @@ export function parseNextAction(
   }
 
   const u = pickScalarString(apiStatus).toUpperCase();
-  if (u !== 'PP' && u !== 'PE') return null;
+  if (!['WS', 'WA', 'PP', 'PE'].includes(u)) return null;
   const sched = parsePaymentSchedule(row);
   const fullPay = sched.find((s) => s.stage === 'FULL_PAYMENT' || s.stage === 'DEPOSIT');
   if (!fullPay) return null;

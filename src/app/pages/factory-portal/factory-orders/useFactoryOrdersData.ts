@@ -14,6 +14,8 @@ function isObj(v: unknown): v is Record<string, unknown> {
 }
 
 const VALID_STATUS: OrderStatusCode[] = [
+  'WS',
+  'WA',
   'PP',
   'PE',
   'PD',

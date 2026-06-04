@@ -21,10 +21,13 @@ export function matchTab(row: FactoryOrderRow, derived: DerivedCardState, tabId:
     (row.status === 'QC' &&
       [null, 'PD'].includes(row.production_summary?.current_update_status ?? null));
 
-  if (tabId === 'needs_action') return needsAction && !isShipping;
+  // WS = รอลูกค้าแนบสลีป, PP = รอลูกค้าชำระเงิน (legacy)
+  if (tabId === 'awaiting_customer') return row.status === 'WS' || row.status === 'PP';
+  // WA = รอโรงงานยืนยันสลีป → tab เฉพาะ
+  if (tabId === 'verify_slip') return row.status === 'WA';
+  if (tabId === 'needs_action') return needsAction && !isShipping && row.status !== 'WA';
   if (tabId === 'in_production')
     return ['PR', 'QC'].includes(row.status) && !needsAction && !isShipping;
-  if (tabId === 'awaiting_customer') return row.status === 'PP';
   if (tabId === 'shipped') return isShipping;
   if (tabId === 'completed') return row.status === 'CP';
   return ['CN', 'CC', 'CL', 'PE'].includes(row.status);

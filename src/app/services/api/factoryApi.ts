@@ -7,6 +7,11 @@ import {
   type IFactoryPublicDetailResponse,
   type IFactoryWithDetailsResponse,
 } from '@/services/api/types/factory.types';
+import type {
+  IBankAccountResponse,
+  ICommissionInvoiceResponse,
+  ICommissionInvoiceItemResponse,
+} from '@/services/api/types/admin.types';
 
 export const factoriesApi = {
   list: (scope?: 'PD' | 'MT') => {
@@ -159,6 +164,45 @@ export const showcasesApi = {
 
   incrementView: (id: string | number) =>
     httpClient.post<void>(`/showcases/${id}/view`, {}).catch(() => {}),
+};
+
+// ─── Bank Account API (F4) ──────────────────────────────────────────────────
+
+export const bankAccountApi = {
+  list: () =>
+    httpClient.get<{ accounts: IBankAccountResponse[] }>('/factories/me/bank-accounts'),
+
+  create: (data: { bank_name: string; account_number: string; account_name: string; is_default?: boolean }) =>
+    httpClient.post<IBankAccountResponse>('/factories/me/bank-accounts', data),
+
+  update: (accountId: number, data: Partial<{ bank_name: string; account_number: string; account_name: string; is_default: boolean }>) =>
+    httpClient.patch<IBankAccountResponse>(`/factories/me/bank-accounts/${accountId}`, data),
+
+  delete: (accountId: number) =>
+    httpClient.delete<void>(`/factories/me/bank-accounts/${accountId}`),
+
+  getPublicDefault: (factoryId: number) =>
+    httpClient.get<IBankAccountResponse>(`/factories/${factoryId}/bank-account`),
+};
+
+// ─── Factory Invoice API (F6) ───────────────────────────────────────────────
+
+export const factoryInvoiceApi = {
+  list: () =>
+    httpClient.get<{ invoices: ICommissionInvoiceResponse[]; total: number }>(
+      '/factories/me/invoices',
+    ),
+
+  get: (invoiceId: number) =>
+    httpClient.get<{ invoice: ICommissionInvoiceResponse; items: ICommissionInvoiceItemResponse[] }>(
+      `/factories/me/invoices/${invoiceId}`,
+    ),
+
+  attachSlip: (invoiceId: number, formData: FormData) =>
+    httpClient.postForm<ICommissionInvoiceResponse>(
+      `/factories/me/invoices/${invoiceId}/slip`,
+      formData,
+    ),
 };
 
 export const mediaApi = {

@@ -225,3 +225,70 @@ export interface IAdminCustomerOrderItemResponse {
   status: string;
   created_at: string;
 }
+
+// ─── Bank Account ─────────────────────────────────────────────────────────────
+
+export interface IBankAccountResponse {
+  account_id: number;
+  factory_id: number;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── Slip ─────────────────────────────────────────────────────────────────────
+
+export interface ISlipInfoResponse {
+  order_id: number;
+  slip_status: string; // PE | ST | AP | RJ
+  slip_url?: string | null;
+  slip_note?: string | null;
+  verified_by?: number | null;
+  verified_at?: string | null;
+  uploaded_at?: string | null;
+}
+
+// ─── Commission Invoice ───────────────────────────────────────────────────────
+
+export interface ICommissionInvoiceResponse {
+  invoice_id: number;
+  factory_id: number;
+  factory_name: string;
+  period_month: number;
+  period_year: number;
+  total_orders: number;
+  total_amount: number;
+  commission_amount: number;
+  vat_amount: number;
+  grand_total: number;
+  status: string; // DR | ST | PA | VR
+  slip_url?: string | null;
+  slip_note?: string | null;
+  verified_by?: number | null;
+  verified_at?: string | null;
+  email_sent_at?: string | null;
+  created_at: string;
+}
+
+export interface ICommissionInvoiceItemResponse {
+  item_id: number;
+  invoice_id: number;
+  order_id: number;
+  order_amount: number;
+  commission_rate: number;
+  commission_amount: number;
+}
+
+export interface ICommissionSummaryResponse {
+  total_invoices: number;
+  total_commission: number;
+  total_vat: number;
+  total_grand: number;
+  draft_count: number;
+  sent_count: number;
+  paid_count: number;
+  verified_count: number;
+}

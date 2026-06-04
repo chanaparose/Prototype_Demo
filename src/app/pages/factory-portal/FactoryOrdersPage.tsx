@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   XCircle,
   ArrowUpDown,
+  FileCheck2,
 } from 'lucide-react';
 import { ordersApi } from '@/services/api/ordersApi';
 import { useFactoryOrdersData } from '@/pages/factory-portal/factory-orders/useFactoryOrdersData';
@@ -42,8 +43,10 @@ import {
 import { formatCurrency } from '@/utils/formatting/formatCurrency';
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  PP: { label: 'รอยืนยัน', cls: 'bg-amber-100 text-amber-700' },
-  PE: { label: 'ยกเลิก', cls: 'bg-red-100 text-red-600' },
+  WS: { label: 'รอแนบสลีป', cls: 'bg-yellow-100 text-yellow-700' },
+  WA: { label: 'รอยืนยันสลีป', cls: 'bg-amber-100 text-amber-700' },
+  PP: { label: 'รอชำระเงิน', cls: 'bg-amber-100 text-amber-700' },
+  PE: { label: 'หมดกำหนด', cls: 'bg-red-100 text-red-600' },
   PD: { label: 'ต้องดำเนินการ', cls: 'bg-orange-100 text-orange-700' },
   PR: { label: 'กำลังผลิต', cls: 'bg-blue-100 text-blue-700' },
   QC: { label: 'ตรวจสอบ', cls: 'bg-indigo-100 text-indigo-700' },
@@ -150,6 +153,12 @@ const TAB_DEFS: {
     label: 'รอลูกค้า',
     shortLabel: 'รอลูกค้า',
     icon: <HelpCircle size={14} className='shrink-0' />,
+  },
+  {
+    id: 'verify_slip',
+    label: 'ยืนยันสลีป',
+    shortLabel: 'สลีป',
+    icon: <FileCheck2 size={14} className='shrink-0' />,
   },
   {
     id: 'needs_action',

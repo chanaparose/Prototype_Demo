@@ -92,7 +92,9 @@ function unwrapOrder(raw: unknown): Record<string, unknown> {
 
 function statusLabel(code: string): string {
   const s = code.toUpperCase();
-  if (s === 'PP') return 'รอชำระมัดจำ';
+  if (s === 'WS') return 'รอแนบสลีป';
+  if (s === 'WA') return 'รอยืนยันสลีป';
+  if (s === 'PP') return 'รอชำระเงิน';
   if (s === 'PE') return 'หมดกำหนดชำระ';
   if (s === 'PD') return 'ต้องดำเนินการ';
   if (s === 'PR') return 'กำลังผลิต';
@@ -620,6 +622,9 @@ export function FactoryOrderDetailPage() {
                 </div>
               </div>
 
+              {/* ── Slip verification card (new payment flow) ── */}
+              <SlipVerificationCard orderId={String(order.order_id ?? id)} orderStatus={status} onStatusChange={() => { setError(''); loadOrder(); }} />
+
               {/* ── Tabbed detail card ── */}
               <div className='rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden'>
                 {/* Tab row */}
@@ -888,6 +893,171 @@ export function FactoryOrderDetailPage() {
         onSubmit={handleStepSubmit}
         customerShipping={customerShipping}
       />
+    </div>
+  );
+}
+
+/* ── Slip Verification Card (Factory approves/rejects customer slip) ── */
+
+function SlipVerificationCard({
+  orderId,
+  orderStatus,
+  onStatusChange,
+}: {
+  orderId: string | number;
+  orderStatus: string;
+  onStatusChange: () => void;
+}) {
+  const [slipData, setSlipData] = React.useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [acting, setActing] = React.useState(false);
+  const [rejectReason, setRejectReason] = React.useState('');
+  const [showRejectInput, setShowRejectInput] = React.useState(false);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+
+  const fetchSlip = React.useCallback(async () => {
+    try {
+      const { slipApi } = await import('@/services/api/adminApi');
+      const res = await slipApi.getInfo(Number(orderId));
+      setSlipData(res as unknown as Record<string, unknown>);
+    } catch {
+      setSlipData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
+
+  React.useEffect(() => {
+    void fetchSlip();
+  }, [fetchSlip]);
+
+  const slipStatus = String(slipData?.slip_status ?? '').trim();
+
+  if (loading || !slipData || slipStatus !== 'ST') return null;
+
+  const handleApprove = async () => {
+    if (acting) return;
+    setActing(true);
+    try {
+      const { slipApi } = await import('@/services/api/adminApi');
+      await slipApi.verify(Number(orderId), 'approve');
+      onStatusChange();
+      void fetchSlip();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'approve ไม่สำเร็จ';
+      alert(msg);
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (acting || rejectReason.trim().length < 5) return;
+    setActing(true);
+    try {
+      const { slipApi } = await import('@/services/api/adminApi');
+      await slipApi.verify(Number(orderId), 'reject', rejectReason.trim());
+      setShowRejectInput(false);
+      setRejectReason('');
+      onStatusChange();
+      void fetchSlip();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'reject ไม่สำเร็จ';
+      alert(msg);
+    } finally {
+      setActing(false);
+    }
+  };
+
+  return (
+    <div className='rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 space-y-3 mb-4'>
+      <div className='flex items-center gap-2'>
+        <AlertCircle size={16} className='text-amber-600' />
+        <p className='text-sm font-bold text-amber-800'>ลูกค้าแนบสลีปการโอนเงิน — รอตรวจสอบ</p>
+      </div>
+
+      {slipData.slip_url ? (
+        <button type='button' onClick={() => setPreviewUrl(String(slipData.slip_url))}>
+          <img
+            src={String(slipData.slip_url)}
+            alt='สลีปการโอนเงิน'
+            className='rounded-xl border border-amber-200 max-h-52 object-contain cursor-pointer hover:opacity-80 transition-opacity'
+          />
+        </button>
+      ) : null}
+
+      {slipData.slip_note ? (
+        <p className='text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-1.5'>
+          หมายเหตุจากลูกค้า: {String(slipData.slip_note)}
+        </p>
+      ) : null}
+
+      {!showRejectInput ? (
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='unstyled'
+            type='button'
+            disabled={acting}
+            onClick={handleApprove}
+            className='flex-1 rounded-xl py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60'
+          >
+            {acting ? 'กำลังดำเนินการ…' : 'ยืนยันรับเงิน'}
+          </Button>
+          <Button
+            variant='unstyled'
+            type='button'
+            disabled={acting}
+            onClick={() => setShowRejectInput(true)}
+            className='rounded-xl py-2.5 px-4 text-sm font-semibold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors disabled:opacity-60'
+          >
+            ปฏิเสธ
+          </Button>
+        </div>
+      ) : (
+        <div className='space-y-2'>
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder='ระบุเหตุผลในการปฏิเสธ (อย่างน้อย 5 ตัวอักษร)'
+            className='w-full rounded-xl border border-red-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none'
+            rows={2}
+          />
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='unstyled'
+              type='button'
+              disabled={acting || rejectReason.trim().length < 5}
+              onClick={handleReject}
+              className='flex-1 rounded-xl py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-60'
+            >
+              {acting ? 'กำลังดำเนินการ…' : 'ยืนยันปฏิเสธสลีป'}
+            </Button>
+            <Button
+              variant='unstyled'
+              type='button'
+              onClick={() => { setShowRejectInput(false); setRejectReason(''); }}
+              className='rounded-xl py-2 px-4 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors'
+            >
+              ยกเลิก
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {previewUrl ? (
+        <div className='fixed inset-0 z-[99999] bg-black/70 flex items-center justify-center p-4' onClick={() => setPreviewUrl(null)}>
+          <div className='relative max-w-3xl max-h-[90vh]' onClick={(e) => e.stopPropagation()}>
+            <button
+              type='button'
+              onClick={() => setPreviewUrl(null)}
+              className='absolute -top-3 -right-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 z-10'
+            >
+              ✕
+            </button>
+            <img src={previewUrl} alt='สลีปเต็ม' className='max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl' />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

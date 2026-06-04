@@ -2,7 +2,7 @@
  * ORDER_DETAIL_PP_STATE_FE §2 — derive UI from API `order.status` only (never from production_updates.length).
  */
 
-export type LockReason = 'PENDING_DEPOSIT' | 'DEPOSIT_EXPIRED' | 'ORDER_CANCELLED' | 'UNKNOWN';
+export type LockReason = 'WAITING_SLIP' | 'WAITING_SLIP_APPROVAL' | 'PENDING_DEPOSIT' | 'DEPOSIT_EXPIRED' | 'ORDER_CANCELLED' | 'UNKNOWN';
 
 export type OrderUiMode = {
   productionLocked: boolean;
@@ -15,6 +15,22 @@ export type OrderUiMode = {
 export function getOrderUiMode(status: string): OrderUiMode {
   const s = String(status ?? '').toUpperCase();
   switch (s) {
+    case 'WS':
+      return {
+        productionLocked: true,
+        lockReason: 'WAITING_SLIP',
+        payableNow: true,
+        readOnly: false,
+        showActionBanner: true,
+      };
+    case 'WA':
+      return {
+        productionLocked: true,
+        lockReason: 'WAITING_SLIP_APPROVAL',
+        payableNow: false,
+        readOnly: false,
+        showActionBanner: true,
+      };
     case 'PP':
       return {
         productionLocked: true,
