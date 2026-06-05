@@ -22,6 +22,10 @@ import { useAuth } from '@/stores/useAuthStore';
 import { useAuthModalStore } from '@/stores/useAuthModalStore';
 import { AlertCircle, LogIn } from 'lucide-react';
 import {
+  mobileActionBarBottomOffset,
+  useMobileBottomNavHide,
+} from '@/hooks/useMobileBottomNavHide';
+import {
   RFQ_BORDER,
   RFQ_RADIUS,
   RfqCollapsibleSection,
@@ -72,6 +76,7 @@ export function RFQCreateWizard() {
   const [shippingMap, setShippingMap] = React.useState<Record<number, string>>({});
   const [allFactories, setAllFactories] = React.useState<TargetFactory[]>([]);
   const { data: allCategories = [] } = useLbiCategoriesByScope('ALL');
+  const bottomNavHidden = useMobileBottomNavHide();
 
   React.useEffect(() => {
     const mode = (searchParams.get('mode') || '').trim();
@@ -345,7 +350,7 @@ export function RFQCreateWizard() {
   const showMatchStrip = Boolean(draft.category_id) && Number(draft.category_id) > 0;
 
   return (
-    <div className='min-h-screen bg-[var(--brand-page)] pb-32'>
+    <div className='min-h-screen bg-[var(--brand-page)] pb-32 max-lg:pb-[calc(4.5rem+4.5rem+env(safe-area-inset-bottom))]'>
       <header className='sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md'>
         <div className='mx-auto max-w-6xl px-4 py-3 lg:px-8'>
           <p className='text-[10px] font-semibold uppercase tracking-wider text-[#C4A484]'>
@@ -566,7 +571,12 @@ export function RFQCreateWizard() {
         )}
       </main>
 
-      <div className='fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200/90 bg-white/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:left-64'>
+      <div
+        className='fixed left-0 right-0 z-40 border-t border-gray-200/90 bg-white/95 backdrop-blur-md px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-[bottom] duration-300 ease-in-out max-lg:[bottom:var(--rfq-action-bar-bottom)] lg:bottom-0 lg:left-64'
+        style={
+          { '--rfq-action-bar-bottom': mobileActionBarBottomOffset(bottomNavHidden) } as React.CSSProperties
+        }
+      >
         <div className='mx-auto flex max-w-6xl items-center justify-between gap-3 lg:px-4'>
           <Button
             variant='unstyled'
