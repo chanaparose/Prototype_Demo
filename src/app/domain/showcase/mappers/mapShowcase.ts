@@ -71,6 +71,10 @@ export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase 
     fr != null && String(fr).trim() !== '' && Number.isFinite(Number(fr)) ? Number(fr) : undefined;
   const factoryVerified = Boolean(r.factory_verified ?? r.factoryVerified);
 
+  const unitId = pickScalarNumber(r.unit_id, r.unitId);
+  const moqUnit =
+    pickScalarString(r.unit_name_th, r.unit_name, r.moq_unit, r.moqUnit, r.unitName) || undefined;
+
   return {
     id: pickScalarString(r.showcase_id, r.id, r.showcaseId),
     factoryId: pickScalarString(r.factory_id, r.factoryId),
@@ -87,6 +91,8 @@ export function mapShowcaseFromApi(r: Record<string, unknown>): FactoryShowcase 
     postedAt: pickScalarString(r.published_at, r.created_at, r.postedAt),
     likes: Number(r.likes_count ?? r.likes ?? 0),
     minOrder: Number(r.moq ?? r.min_order ?? r.minOrder ?? 0),
+    ...(unitId != null && unitId > 0 ? { unitId } : {}),
+    ...(moqUnit ? { moqUnit } : {}),
     leadTime,
     ...(pickScalarString(r.content) !== '' ? { content: pickScalarString(r.content) } : {}),
     ...(r.base_price != null && Number.isFinite(Number(r.base_price))

@@ -65,7 +65,7 @@ export function PromotionDetailMobile() {
   const { user } = useAuth();
   const { startChat, starting } = useStartChatWithFactory();
   const data = useData();
-  const { item, loading, error, factory, resolvedId, relatedShowcases } =
+  const { item, moqUnit, loading, error, factory, resolvedId, relatedShowcases } =
     usePromotionDetailShowcase();
   const reviewSummaryQ = useFactoryReviewSummary(item?.factoryId ?? null);
   const reviewListQ = useFactoryReviewList(item?.factoryId ?? null);
@@ -153,7 +153,7 @@ export function PromotionDetailMobile() {
   });
   if (item.category) specRows.push({ label: 'หมวดหมู่', value: item.category });
   if (subName) specRows.push({ label: 'ประเภทย่อย', value: subName });
-  specRows.push({ label: 'ขั้นต่ำผลิต (MOQ)', value: `${item.minOrder} ${(item as Record<string, unknown>).moq_unit || 'ชิ้น'}` });
+  specRows.push({ label: 'ขั้นต่ำผลิต (MOQ)', value: `${item.minOrder} ${moqUnit}` });
   if (item.leadTime) specRows.push({ label: 'ระยะเวลาผลิต', value: item.leadTime });
   if (factory?.location) specRows.push({ label: 'สถานที่ผลิต', value: factory.location });
   if (Array.isArray(item.specs) && item.specs.length > 0) {

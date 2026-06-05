@@ -3,7 +3,9 @@ import { useParams, useSearchParams } from 'react-router';
 import { useData } from '@/stores/useDataStore';
 import { type Factory, type FactoryShowcase } from '@/stores/types';
 import { useQuery } from '@tanstack/react-query';
+import { resolveUnitLabel } from '@/domain/master/mappers/mapMasterUnits';
 import { mapShowcaseFromApi } from '@/domain/showcase/mappers/mapShowcase';
+import { useMasterUnitMap } from '@/hooks/master/useMasterUnitMap';
 import { showcaseKeys } from '@/lib/queryKeys';
 import { showcasesApi } from '@/services/api/factoryApi';
 import { pickScalarString } from '@/utils/pickScalarString';
@@ -218,6 +220,11 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   }, [resolvedId]);
 
   const item = apiItem ?? fromContext;
+  const unitMapQ = useMasterUnitMap();
+  const moqUnit = useMemo(
+    () => resolveUnitLabel(item?.unitId, item?.moqUnit, unitMapQ.data),
+    [item?.unitId, item?.moqUnit, unitMapQ.data],
+  );
 
   const shouldFetchRelated = kind !== 'idea' && Boolean(resolvedId);
 
@@ -304,6 +311,7 @@ function useShowcaseDetailPage(kind: 'product' | 'promotion' | 'idea') {
   return {
     resolvedId,
     item,
+    moqUnit,
     loading,
     error,
     factory,

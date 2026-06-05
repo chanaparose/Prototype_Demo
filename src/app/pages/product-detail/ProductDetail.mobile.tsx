@@ -47,6 +47,7 @@ export function ProductDetailMobile() {
   const data = useData();
   const {
     item,
+    moqUnit,
     loading,
     error,
     factory,
@@ -349,6 +350,7 @@ export function ProductDetailMobile() {
           <StrictSpecsBlock
             showcase={{
               moq: Number.isFinite(Number(item.minOrder)) ? Number(item.minOrder) : null,
+              moq_unit: moqUnit,
               lead_time_days:
                 Number.isFinite(leadTimeDays) && leadTimeDays > 0 ? leadTimeDays : null,
             }}

@@ -21,6 +21,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
   // Use enriched data from GET /orders/:id — no extra API calls needed.
   const data = rfq as unknown as Record<string, unknown>;
   const quantity = Math.max(0, pickScalarNumber(data.quantity, rfq.quantity) ?? 0);
+  const unitName = pickScalarString(data.unit_name, rfq.unit_name) || 'ชิ้น';
   const categoryName = pickScalarString(data.category_name, rfq.category_name) || '-';
   const subCategoryName = pickScalarString(data.sub_category_name, data.subCategoryName);
   const subCategoryId = pickScalarNumber(data.sub_category_id, data.subCategoryId) ?? 0;
@@ -118,7 +119,7 @@ export function RfqReferenceCard({ rfq, defaultOpen = true, collapsible = true }
       ? [{ label: 'ประเภทย่อย', value: subCategoryName || '—' }]
       : []),
     ...(shippingMethodName ? [{ label: 'วิธีส่งของ', value: shippingMethodName }] : []),
-    { label: 'จำนวน', value: `${formatCompactNumber(quantity)} ชิ้น` },
+    { label: 'จำนวน', value: `${formatCompactNumber(quantity)} ${unitName}` },
     ...(materialGrade ? [{ label: 'Material grade', value: materialGrade }] : []),
     ...(tolerance ? [{ label: 'Tolerance', value: tolerance }] : []),
     ...(colorFinish ? [{ label: 'Color / Finish', value: colorFinish }] : []),

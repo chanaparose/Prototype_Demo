@@ -104,6 +104,10 @@ export type BootstrapFactoryShowcaseModel = {
   postedAt: string;
   likes: number;
   minOrder: number;
+  /** lbi_units.unit_id for MOQ display */
+  unitId?: number;
+  /** Pre-resolved unit label from API (unit_name_th / moq_unit) */
+  moqUnit?: string;
   leadTime: string;
   basePrice?: number;
   promoPrice?: number;

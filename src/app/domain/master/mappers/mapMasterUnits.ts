@@ -61,3 +61,30 @@ export function flattenUnitGroups(groups: UnitGroup[]): { id: number; name: stri
     })),
   );
 }
+
+export function buildMasterUnitMap(raw: unknown[]): Map<number, string> {
+  const map = new Map<number, string>();
+  for (const unit of parseMasterUnits(raw)) {
+    map.set(unit.id, unit.name);
+  }
+  return map;
+}
+
+const DEFAULT_UNIT_LABEL = 'ชิ้น';
+
+/** Resolve display label from API name and/or unit_id + master map */
+export function resolveUnitLabel(
+  unitId: number | null | undefined,
+  unitName?: string | null,
+  unitMap?: Map<number, string> | null,
+  fallback = DEFAULT_UNIT_LABEL,
+): string {
+  const fromApi = String(unitName ?? '').trim();
+  if (fromApi) return fromApi;
+  const id = Number(unitId);
+  if (Number.isFinite(id) && id > 0) {
+    const fromMap = unitMap?.get(id);
+    if (fromMap) return fromMap;
+  }
+  return fallback;
+}
