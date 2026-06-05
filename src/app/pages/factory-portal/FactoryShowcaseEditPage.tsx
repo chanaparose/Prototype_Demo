@@ -711,18 +711,7 @@ export function FactoryShowcaseEditPage() {
                 <p className='text-sm font-bold text-gray-800'>ราคา & การผลิต</p>
               </div>
               <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
-                <Label className='block'>
-                  <span className='text-xs text-gray-500'>หน่วยนับ</span>
-                  <div className='mt-1'>
-                    <UnitPicker
-                      units={units}
-                      value={form.watch('unit_id') ?? undefined}
-                      onChange={(unitId) =>
-                        form.setValue('unit_id', unitId ?? null, { shouldDirty: true })
-                      }
-                    />
-                  </div>
-                </Label>
+                
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
                   <Input
@@ -741,6 +730,18 @@ export function FactoryShowcaseEditPage() {
                     value={form.watch('moq') ?? ''}
                     onChange={(e) => form.setValue('moq', e.target.value === '' ? null : Number(e.target.value), { shouldDirty: true })}
                   />
+                </Label>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>หน่วยนับ</span>
+                  <div className='mt-1'>
+                    <UnitPicker
+                      units={units}
+                      value={form.watch('unit_id') ?? undefined}
+                      onChange={(unitId) =>
+                        form.setValue('unit_id', unitId ?? null, { shouldDirty: true })
+                      }
+                    />
+                  </div>
                 </Label>
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>Lead time (วัน)</span>
