@@ -144,7 +144,7 @@ function OrderDetailMobileBody() {
     if (cancellingOrder) return;
     setCancellingOrder(true);
     try {
-      await ordersApi.cancel(order.id);
+      await ordersApi.cancel(order.id, { reason: 'ยกเลิกโดยลูกค้า' });
       toast.success('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
       setCancelModalOpen(false);
       await refetchAll();

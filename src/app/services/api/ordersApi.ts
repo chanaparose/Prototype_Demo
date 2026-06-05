@@ -74,9 +74,11 @@ export const ordersApi = {
   confirmReceipt: (orderId: string | number, data: { note?: string; received_at?: string }) =>
     httpClient.post<Record<string, unknown>>(`/orders/${orderId}/confirm-receipt`, data),
 
-  /** DELETE /orders/:id — cancel an order */
-  cancel: (orderId: string | number) =>
-    httpClient.delete<{ message: string }>(`/orders/${orderId}`),
+  /** PATCH /orders/:id/cancel — cancel an order */
+  cancel: (
+    orderId: string | number,
+    data: { reason: string } = { reason: 'ยกเลิกโดยลูกค้า' },
+  ) => httpClient.patch<{ message: string }>(`/orders/${orderId}/cancel`, data),
 
   /** GET /orders/:id/review — check if review is eligible */
   getReviewState: (orderId: string | number) =>
