@@ -67,14 +67,14 @@ export function AppDialog({
         showCloseButton={false}
         overlayClassName={overlayClassName}
         className={cn(
-          'gap-0 border-gray-100 p-0 overflow-hidden',
+          'flex flex-col gap-0 border-gray-100 p-0 overflow-hidden max-h-[90vh]',
           isSheet
             ? cn(
-                'fixed bottom-0 left-0 right-0 top-auto max-h-[90vh] w-full translate-x-0 translate-y-0 rounded-t-2xl',
-                'sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:max-h-[90vh] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl',
+                'fixed bottom-0 left-0 right-0 top-auto w-full translate-x-0 translate-y-0 rounded-t-2xl',
+                'sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-2xl',
                 sizeClass[size],
               )
-            : cn('sm:rounded-2xl max-h-[90vh]', sizeClass[size]),
+            : cn('sm:rounded-2xl', sizeClass[size]),
           className,
         )}
         onInteractOutside={(e) => {
@@ -111,11 +111,24 @@ export function AppDialog({
           </DialogHeader>
         ) : null}
 
-        <div className={cn('overflow-y-auto', bodyClassName ?? 'p-4 sm:p-5')}>{children}</div>
+        <div
+          className={cn(
+            'min-h-0 flex-1 overflow-y-auto overscroll-contain',
+            bodyClassName ?? 'p-4 sm:p-5',
+          )}
+        >
+          {children}
+        </div>
 
         {footer ? (
           <DialogFooter
-            className={cn('border-t border-gray-100 px-4 py-3 sm:justify-stretch', footerClassName)}
+            className={cn(
+              'shrink-0 border-t border-gray-100 bg-white px-4 pt-3 sm:justify-stretch',
+              isSheet
+                ? 'max-sm:pb-[calc(4rem+env(safe-area-inset-bottom,0px))] sm:pb-3'
+                : 'pb-3',
+              footerClassName,
+            )}
           >
             {footer}
           </DialogFooter>

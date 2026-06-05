@@ -116,6 +116,7 @@ export function DepositPaymentModal({ open, onClose, orderId, factoryId, amount,
       onOpenChange={(v) => { if (!v) onClose(); }}
       title='ชำระเงิน — โอนผ่านธนาคาร'
       variant='sheet'
+      bodyClassName='p-4 sm:p-5 pb-2'
       footer={
         canUpload ? (
           <ModalFooter
