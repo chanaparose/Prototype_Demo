@@ -162,16 +162,16 @@ export function UnitPicker({ units, value, onChange }: Props) {
           </div>
         </div>
 
-        {/* category tabs — horizontal scroll chips */}
-        <div className='px-4 pb-3'>
-          <div className='flex gap-2 overflow-x-auto no-scrollbar pb-1'>
+        {/* category tabs */}
+        <div className='px-4 border-b border-gray-200'>
+          <div className='flex overflow-x-auto no-scrollbar -mb-px'>
             <button
               type='button'
               onClick={() => setActiveGroup(null)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+              className={`shrink-0 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
                 activeGroup === null
-                  ? 'bg-gray-900 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'border-brand-royal text-brand-royal'
+                  : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
               ทั้งหมด
@@ -183,18 +183,14 @@ export function UnitPicker({ units, value, onChange }: Props) {
                 <button
                   key={g.key}
                   type='button'
-                  onClick={() => setActiveGroup(isActive ? null : g.key)}
-                  className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  onClick={() => setActiveGroup(g.key)}
+                  className={`shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold border-b-2 transition-colors ${
                     isActive
-                      ? 'shadow-sm'
-                      : 'hover:opacity-80'
+                      ? 'border-brand-royal text-brand-royal'
+                      : 'border-transparent text-gray-400 hover:text-gray-600'
                   }`}
-                  style={{
-                    backgroundColor: isActive ? g.color : g.bg,
-                    color: isActive ? '#fff' : g.color,
-                  }}
                 >
-                  <Icon size={13} />
+                  <Icon size={13} style={{ color: isActive ? g.color : '#9CA3AF' }} />
                   {g.label_th}
                 </button>
               );
@@ -203,7 +199,7 @@ export function UnitPicker({ units, value, onChange }: Props) {
         </div>
 
         {/* unit grid */}
-        <div className='px-4 pb-4 max-h-[50vh] overflow-y-auto'>
+        <div className='px-4 pt-3 pb-4 max-h-[50vh] overflow-y-auto'>
           {/* if showing all, render grouped */}
           {activeGroup === null && !search ? (
             <div className='space-y-4'>
