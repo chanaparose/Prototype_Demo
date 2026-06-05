@@ -23,6 +23,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { masterApi } from '@/services/api/masterApi';
+import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
 import {
   showcaseFormEmptyValues,
   showcaseFormSchema,
@@ -57,6 +59,7 @@ export function FactoryShowcaseNewPage() {
   const [linkedShowcaseError, setLinkedShowcaseError] = useState('');
   const [idScope, setIdScope] = useState<'PD' | 'MT'>('PD');
   const [pmScope, setPmScope] = useState<'PD' | 'MT'>('PD');
+  const [units, setUnits] = useState<UnitOption[]>([]);
 
   const categoryScope: 'PD' | 'MT' =
     contentType === 'MT'
@@ -80,6 +83,38 @@ export function FactoryShowcaseNewPage() {
     Number.isFinite(selectedCategoryId) && selectedCategoryId > 0
       ? (subsResult.byCategory.get(selectedCategoryId) ?? [])
       : [];
+
+  React.useEffect(() => {
+    let active = true;
+    void masterApi
+      .getUnits()
+      .then((raw) => {
+        if (!active) return;
+        const list: unknown[] = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as Record<string, unknown>)?.data)
+            ? ((raw as Record<string, unknown>).data as unknown[])
+            : [];
+        setUnits(
+          (list as Record<string, unknown>[])
+            .map((u) => ({
+              unit_id: Number(u.unit_id ?? u.id ?? 0),
+              name_th: String(u.name_th ?? u.unit_name_th ?? u.unit_name ?? u.name ?? ''),
+              name_en: String(u.name_en ?? u.unit_name ?? u.name ?? ''),
+              code: String(u.code ?? u.abbreviation ?? ''),
+              group_th: String(u.group_th ?? 'อื่นๆ'),
+              group_en: String(u.group_en ?? 'Other'),
+            }))
+            .filter((u) => u.unit_id > 0),
+        );
+      })
+      .catch(() => {
+        if (active) setUnits([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const setField = <K extends Path<ShowcaseFormValues>>(
     key: K,
@@ -106,6 +141,7 @@ export function FactoryShowcaseNewPage() {
       image_url: imageUrls[0] ?? undefined,
       category_id: values.category_id ? Number(values.category_id) : undefined,
       sub_category_id: values.sub_category_id ? Number(values.sub_category_id) : undefined,
+      unit_id: values.unit_id ? Number(values.unit_id) : undefined,
       lead_time_days: values.lead_time_days ? Number(values.lead_time_days) : undefined,
       linked_showcases: [...imageUrls, ...selectedShowcaseIds],
     };
@@ -325,7 +361,17 @@ export function FactoryShowcaseNewPage() {
               <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
                 <p className='text-sm font-bold text-gray-800'>ราคา & การผลิต</p>
               </div>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+              <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>หน่วยนับ</span>
+                  <div className='mt-1'>
+                    <UnitPicker
+                      units={units}
+                      value={form.unit_id ? Number(form.unit_id) : undefined}
+                      onChange={(unitId) => setField('unit_id', unitId != null ? String(unitId) : '')}
+                    />
+                  </div>
+                </Label>
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
                   <Input
@@ -360,7 +406,7 @@ export function FactoryShowcaseNewPage() {
               </div>
 
               {contentType === 'PM' ? (
-                <div className='grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-dashed border-purple-100'>
+                <div className='grid grid-cols-1 gap-3 pt-3 border-t border-dashed border-purple-100 sm:grid-cols-2 xl:grid-cols-3'>
                   <Label className='block'>
                     <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
                     <Input

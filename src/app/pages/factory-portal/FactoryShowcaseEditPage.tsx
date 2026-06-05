@@ -27,6 +27,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { masterApi } from '@/services/api/masterApi';
+import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
 
 interface ShowcaseFormValues {
   content_type: ShowcaseType;
@@ -44,6 +46,7 @@ interface ShowcaseFormValues {
   start_date: string;
   end_date: string;
   status: 'DR' | 'AC' | 'HI' | 'AR';
+  unit_id: number | null;
   related_showcase_ids: number[];
 }
 
@@ -63,6 +66,7 @@ const DEFAULTS: ShowcaseFormValues = {
   start_date: '',
   end_date: '',
   status: 'DR',
+  unit_id: null,
   related_showcase_ids: [],
 };
 
@@ -145,6 +149,7 @@ function mapShowcaseToForm(raw: Raw): ShowcaseFormValues {
     image_urls: mergedImageUrls,
     category_id: numOrNull(r.category_id),
     sub_category_id: numOrNull(r.sub_category_id),
+    unit_id: numOrNull(r.unit_id),
     moq: numOrNull(r.moq ?? r.min_order),
     lead_time_days: numOrNull(r.lead_time_days),
     base_price: numOrNull(r.base_price ?? r.price),
@@ -175,6 +180,7 @@ export function FactoryShowcaseEditPage() {
   );
   const [selectedShowcaseIds, setSelectedShowcaseIds] = React.useState<number[]>([]);
   const [linkedShowcaseError, setLinkedShowcaseError] = React.useState('');
+  const [units, setUnits] = React.useState<UnitOption[]>([]);
   const didHydrateFromServerRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -313,6 +319,38 @@ export function FactoryShowcaseEditPage() {
     };
   }, [id]);
 
+  React.useEffect(() => {
+    let active = true;
+    void masterApi
+      .getUnits()
+      .then((raw) => {
+        if (!active) return;
+        const list: unknown[] = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as Record<string, unknown>)?.data)
+            ? ((raw as Record<string, unknown>).data as unknown[])
+            : [];
+        setUnits(
+          (list as Record<string, unknown>[])
+            .map((u) => ({
+              unit_id: Number(u.unit_id ?? u.id ?? 0),
+              name_th: String(u.name_th ?? u.unit_name_th ?? u.unit_name ?? u.name ?? ''),
+              name_en: String(u.name_en ?? u.unit_name ?? u.name ?? ''),
+              code: String(u.code ?? u.abbreviation ?? ''),
+              group_th: String(u.group_th ?? 'อื่นๆ'),
+              group_en: String(u.group_en ?? 'Other'),
+            }))
+            .filter((u) => u.unit_id > 0),
+        );
+      })
+      .catch(() => {
+        if (active) setUnits([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const save = useCallback(
     async (submitStatus: 'DR' | 'AC') => {
     if (!id) return;
@@ -364,6 +402,7 @@ export function FactoryShowcaseEditPage() {
         image_url: coverUrl || undefined,
       category_id: v.category_id ?? undefined,
       sub_category_id: v.sub_category_id ?? undefined,
+        unit_id: v.unit_id ?? undefined,
         lead_time_days: v.lead_time_days ?? undefined,
         linked_showcases: [...imageUrls, ...selectedShowcaseIds],
       };
@@ -671,7 +710,19 @@ export function FactoryShowcaseEditPage() {
               <div className='flex items-center justify-between gap-3 pb-3 border-b border-gray-100'>
                 <p className='text-sm font-bold text-gray-800'>ราคา & การผลิต</p>
               </div>
-              <div className='grid gap-3 sm:grid-cols-3'>
+              <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+                <Label className='block'>
+                  <span className='text-xs text-gray-500'>หน่วยนับ</span>
+                  <div className='mt-1'>
+                    <UnitPicker
+                      units={units}
+                      value={form.watch('unit_id') ?? undefined}
+                      onChange={(unitId) =>
+                        form.setValue('unit_id', unitId ?? null, { shouldDirty: true })
+                      }
+                    />
+                  </div>
+                </Label>
                 <Label className='block'>
                   <span className='text-xs text-gray-500'>ราคาเริ่มต้น (฿)</span>
                   <Input
@@ -703,7 +754,7 @@ export function FactoryShowcaseEditPage() {
               </div>
 
               {contentType === 'PM' && (
-                <div className='grid gap-3 sm:grid-cols-3 pt-3 border-t border-dashed border-purple-100'>
+                <div className='grid gap-3 pt-3 border-t border-dashed border-purple-100 sm:grid-cols-2 xl:grid-cols-3'>
                   <Label className='block'>
                     <span className='text-xs font-medium text-indigo-600'>ราคาโปรโมชัน (฿) *</span>
                     <Input
