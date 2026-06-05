@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { useAuth } from '@/stores/useAuthStore';
@@ -40,6 +40,7 @@ export function RFQDetailMobile() {
   const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
   const [activeTab, setActiveTab] = useState<'specs' | 'offers'>('specs');
+  const userChangedTabRef = useRef(false);
   const requestedQuoteId = String(searchParams.get('quote_id') || '').trim();
   const requestedFactoryId = String(searchParams.get('factory_id') || '').trim();
 
@@ -48,6 +49,15 @@ export function RFQDetailMobile() {
       setActiveTab('offers');
     }
   }, [requestedQuoteId, requestedFactoryId]);
+
+  // Default to "compare quotations" when there are offers (unless user already switched tabs).
+  React.useEffect(() => {
+    if (!rfq) return;
+    if (requestedQuoteId || requestedFactoryId) return; // already forced to offers
+    if (userChangedTabRef.current) return;
+    const hasOffers = (rfq.offers?.length ?? 0) > 0 || (rfq.offerCount ?? 0) > 0;
+    setActiveTab(hasOffers ? 'offers' : 'specs');
+  }, [rfq, requestedQuoteId, requestedFactoryId]);
 
   React.useEffect(() => {
     if (!rfq?.offers?.length) return;
@@ -241,7 +251,10 @@ export function RFQDetailMobile() {
               <button
                 key={tab.id}
                 type='button'
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  userChangedTabRef.current = true;
+                  setActiveTab(tab.id);
+                }}
                 {...('dataTour' in tab && tab.dataTour ? { 'data-tour': tab.dataTour } : {})}
                 className={`flex-1 py-3 text-xs font-semibold text-center transition-colors ${
                   activeTab === tab.id ? 'border-b-2' : 'text-gray-400 hover:text-gray-600'
