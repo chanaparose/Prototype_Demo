@@ -3,17 +3,14 @@ import { useNavigate } from 'react-router';
 import {
   ChevronRight,
   Bell,
-  Wallet,
   Shield,
   HelpCircle,
   LogOut,
   Star,
   Heart,
-  Package,
   FileText,
   Settings,
   User,
-  TrendingUp,
   ArrowUpRight,
   ArrowDownLeft,
   MapPin,
@@ -23,6 +20,7 @@ import {
   Factory,
   Loader2,
   CheckCircle2,
+  ReceiptText,
 } from 'lucide-react';
 import { useData } from '@/stores/useDataStore';
 import { useAuth, useAuthStore } from '@/stores/useAuthStore';
@@ -399,92 +397,62 @@ export function ProfileMobile() {
             </div>
           </div>
         </div>
-        <div className='bg-white rounded-2xl p-5 border border-gray-200'>
-          <div className='flex items-center justify-between mb-5'>
+        {/* Transaction Section */}
+        <div className='bg-white rounded-2xl border border-gray-200 overflow-hidden'>
+          <div className='flex items-center justify-between px-5 pt-5 pb-4'>
             <div className='flex items-center gap-3'>
-              <Wallet size={24} className='text-brand-royal' />
-              <p className='text-base text-gray-900 font-bold'>
-                กระเป๋าเงิน
-              </p>
+              <div className='w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center'>
+                <ReceiptText size={18} className='text-brand-royal' />
+              </div>
+              <p className='text-base font-bold text-gray-900'>ประวัติธุรกรรม</p>
             </div>
-          </div>
-
-          <div className='mb-6'>
-            <p className='text-xs text-gray-500 font-medium mb-2'>ยอดคงเหลือ</p>
-            <p className='text-3xl text-gray-900 font-bold'>
-              {formatCurrencyNoDecimals(currentUser.walletBalance)}
-            </p>
-            <div className='flex items-center gap-1 mt-2'>
-              <span className='text-xs text-amber-600 font-medium'>
-                รอดำเนินการ: {formatCurrencyNoDecimals(currentUser.pendingBalance)}
-              </span>
-            </div>
-          </div>
-
-          <div className='flex gap-3 mb-6'>
             <Button
               variant='unstyled'
-              className='flex-1 py-3 rounded-xl text-sm text-white font-semibold bg-brand-purple hover:bg-brand-violet-deep transition-colors'
+              type='button'
+              className='inline-flex items-center gap-0.5 text-xs font-semibold text-brand-royal hover:text-brand-royal/80 transition-colors'
+              onClick={() => navigate('/profile/transactions')}
             >
-              + เติมเงิน
-            </Button>
-            <Button
-              variant='unstyled'
-              className='flex-1 py-3 rounded-xl text-sm font-semibold border border-brand-purple text-brand-purple hover:bg-brand-purple/5 transition-colors'
-            >
-              ถอนเงิน
+              ดูทั้งหมด <ChevronRight size={16} strokeWidth={2.5} />
             </Button>
           </div>
 
-          <div className='space-y-3'>
-            <div className='flex justify-between items-center mb-4'>
-              <h3 className='text-base font-bold text-gray-900'>รายการล่าสุด</h3>
-              <Button
-                variant='unstyled'
-                type='button'
-                className='inline-flex items-center gap-0.5 text-xs font-semibold text-brand-royal hover:text-brand-royal/80 transition-colors'
-                onClick={() => navigate('/profile/transactions')}
-              >
-                ดูทั้งหมด <ChevronRight size={16} strokeWidth={2.5} />
-              </Button>
-            </div>
+          <div className='px-5 pb-5 space-y-1'>
             {txLoading ? (
-              <p className='text-xs text-gray-400 text-center py-3'>กำลังโหลด...</p>
+              <p className='text-xs text-gray-400 text-center py-6'>กำลังโหลด...</p>
             ) : walletTransactions.length === 0 ? (
-              <p className='text-xs text-gray-400 text-center py-3'>ยังไม่มีรายการ</p>
+              <div className='flex flex-col items-center gap-2 py-8'>
+                <ReceiptText size={32} className='text-gray-200' />
+                <p className='text-xs text-gray-400'>ยังไม่มีรายการธุรกรรม</p>
+              </div>
             ) : (
-              walletTransactions.map((tx) => (
-                <div key={tx.id} className='flex items-center justify-between'>
-                  <div className='flex items-center gap-2.5'>
-                    <div>
+              walletTransactions.map((tx, idx) => (
+                <div
+                  key={tx.id}
+                  className={`flex items-center justify-between py-3 ${idx < walletTransactions.length - 1 ? 'border-b border-gray-100' : ''}`}
+                >
+                  <div className='flex items-center gap-3'>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                        tx.type === 'credit' ? 'bg-green-50' : 'bg-red-50'
+                      }`}
+                    >
                       {tx.type === 'credit' ? (
-                        <ArrowDownLeft
-                          size={18}
-                          className='text-green-600'
-                        />
+                        <ArrowDownLeft size={15} className='text-green-600' />
                       ) : (
-                        <ArrowUpRight size={18} className='text-red-600' />
+                        <ArrowUpRight size={15} className='text-red-500' />
                       )}
                     </div>
                     <div>
-                      <p
-                        className='text-xs text-gray-700 truncate max-w-[160px]'
-                        style={{ fontWeight: 500 }}
-                      >
+                      <p className='text-sm font-medium text-gray-800 truncate max-w-[180px]'>
                         {tx.label}
                       </p>
-                      <p className='text-[10px] text-gray-400'>{tx.date}</p>
+                      <p className='text-[11px] text-gray-400 mt-0.5'>{tx.date}</p>
                     </div>
                   </div>
                   <p
-                    className='text-xs shrink-0'
-                    style={{
-                      fontWeight: 700,
-                      color:
-                        tx.type === 'credit'
-                          ? 'var(--status-success-bright)'
-                          : 'var(--status-danger)',
-                    }}
+                    className={`text-sm font-bold shrink-0 ${
+                      tx.type === 'credit' ? 'text-green-600' : 'text-red-500'
+                    }`}
                   >
                     {tx.type === 'credit' ? '+' : '-'}
                     {formatCurrencyNoDecimals(tx.amount)}
