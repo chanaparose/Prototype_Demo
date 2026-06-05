@@ -113,7 +113,7 @@ function RfqDetailPanel({ rfqId }: { rfqId: string }) {
                     {pickScalarString(rfq.title, '-')}
                   </p>
                   <p className='text-xs text-slate-500 mt-0.5'>
-                    จำนวน: {formatCompactNumber(pickScalarNumber(rfq.quantity) ?? 0)} ชิ้น
+                    จำนวน: {formatCompactNumber(pickScalarNumber(rfq.quantity) ?? 0)} {pickScalarString(rfq.unit_name) || 'ชิ้น'}
                   </p>
                   <p className='text-xs text-slate-500'>
                     หมวดหมู่: {pickScalarString(rfq.category_name, '-')} /{' '}

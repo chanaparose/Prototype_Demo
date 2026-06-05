@@ -510,7 +510,7 @@ export function FactoryRfqDetailPage() {
                   <div className='grid grid-cols-2 sm:grid-cols-3 gap-3'>
                     {budgetPerPiece != null ? (
                       <div className='rounded-xl bg-indigo-50 border border-indigo-100 px-4 py-3'>
-                        <p className='text-[10px] font-semibold uppercase tracking-wide text-indigo-500 mb-1'>งบ / ชิ้น</p>
+                        <p className='text-[10px] font-semibold uppercase tracking-wide text-indigo-500 mb-1'>งบ / {unitName}</p>
                         <p className='text-base font-bold text-indigo-800'>{formatCurrency(budgetPerPiece)}</p>
                       </div>
                     ) : null}

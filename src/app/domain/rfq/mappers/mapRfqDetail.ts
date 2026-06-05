@@ -333,6 +333,7 @@ export async function fetchAndMapRfqDetail(
       ? requiredDeliveryDate.split('T')[0]
       : requiredDeliveryDate;
   const description = firstNonEmptyString(rExtra.details, rExtra.description);
+  const unitName = firstNonEmptyString(rExtra.unit_name, rExtra.unitName);
   const certificationsRequired = Array.from(
     new Set(
       collectStringArrayFromUnknown(
@@ -477,6 +478,7 @@ export async function fetchAndMapRfqDetail(
     targetLeadTimeDays,
     requiredDeliveryDate: normalizedRequiredDeliveryDate || undefined,
     certificationsRequired: certificationsRequired.length > 0 ? certificationsRequired : undefined,
+    unitName: unitName || undefined,
   };
 
   const shipIdNum = pickScalarNumber(shipIdRaw) ?? 0;

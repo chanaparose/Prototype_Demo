@@ -64,8 +64,9 @@ type RfqDetailOffersSectionProps = {
   onChatWithOffer?: (offer: OfferItem) => void;
   /** หลัง POST /orders (BE accept quote + สร้าง order PP) — ไม่ PATCH quotation ก่อน */
   onOfferFlowComplete?: (result: { quoteId: string; orderId?: string }) => void;
-  /** จำนวนชิ้นจาก RFQ — ใช้ประมาณราคา/ชิ้นใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
+  /** จำนวนจาก RFQ — ใช้ประมาณราคาต่อหน่วยใน BOQ เมื่อ API ไม่ส่ง price_per_piece */
   rfqQuantity?: number;
+  rfqUnitName?: string;
   /** quoteId → history entries pre-fetched from bundle endpoint */
   quoteHistories?: Record<
     string,
@@ -92,6 +93,7 @@ export function RfqDetailOffersSection({
   onChatWithOffer,
   onOfferFlowComplete,
   rfqQuantity = 0,
+  rfqUnitName,
   quoteHistories,
 }: RfqDetailOffersSectionProps) {
   const isRequestClosed =
@@ -226,7 +228,7 @@ export function RfqDetailOffersSection({
                 <p className='text-sm font-bold text-brand-navy'>{orderForRfq.factoryName}</p>
                 <p className='text-xs text-gray-500'>
                   {formatCurrency(orderForRfq.totalAmount)} •{' '}
-                  {formatCompactNumber(orderForRfq.quantity)} ชิ้น
+                  {formatCompactNumber(orderForRfq.quantity)} {rfqUnitName || 'ชิ้น'}
                 </p>
               </div>
               <Link
@@ -560,7 +562,7 @@ export function RfqDetailOffersSection({
                       >
                         {formatTHB(boq.price_per_piece)}
                       </p>
-                      <p className='text-[9px] text-gray-500'>ราคาต่อชิ้น</p>
+                      <p className='text-[9px] text-gray-500'>ราคาต่อ{rfqUnitName || 'ชิ้น'}</p>
                     </div>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                       <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>

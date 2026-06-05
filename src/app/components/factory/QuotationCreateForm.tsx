@@ -135,7 +135,7 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       const p = Number(priceWatch);
       const ld = Number(leadWatch);
       if (budgetPerPiece != null && Number.isFinite(p) && p > budgetPerPiece) {
-        w.push('ราคาต่อชิ้นสูงกว่างบลูกค้า — อาจถูกปฏิเสธ');
+        w.push('ราคาต่อหน่วยสูงกว่างบลูกค้า — อาจถูกปฏิเสธ');
       }
       if (targetDaysCustomer != null && Number.isFinite(ld) && ld > targetDaysCustomer) {
         w.push(`Lead time ช้ากว่าที่ลูกค้าต้องการ (${targetDaysCustomer} วัน)`);
@@ -297,12 +297,12 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
         {showHeading ? <h3 className='text-sm font-bold text-gray-900'>ยื่นใบเสนอราคา</h3> : null}
 
         <FormField
-          label='ราคาต่อชิ้น (บาท)'
+          label='ราคาต่อหน่วย (บาท)'
           required
           error={form.formState.errors.price_per_piece?.message}
           helperText={
             budgetPerPiece != null
-              ? `งบลูกค้า ${formatCurrency(budgetPerPiece)} ต่อชิ้น`
+              ? `งบลูกค้า ${formatCurrency(budgetPerPiece)} ต่อหน่วย`
               : undefined
           }
         >

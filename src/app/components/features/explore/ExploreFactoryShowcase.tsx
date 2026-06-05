@@ -214,7 +214,7 @@ export function ExploreFactoryShowcase({
                       <span className='font-semibold text-gray-800'>
                         {formatCompactNumber(factory.minOrder)}
                       </span>{' '}
-                      ชิ้น
+                      {factory.minOrderUnit || 'ชิ้น'}
                     </p>
                   </div>
 

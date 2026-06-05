@@ -66,13 +66,14 @@ function priceLabel(row: RfqCardModel): string {
   if (row.revenueApprox != null && Number.isFinite(row.revenueApprox)) {
     return formatBaht(row.revenueApprox);
   }
+  const unit = row.unitName || 'ชิ้น';
   const budget =
     row.budgetPerPiece != null && Number.isFinite(row.budgetPerPiece)
-      ? `${formatCompactNumber(row.budgetPerPiece)} บ./ชิ้น`
+      ? `${formatCompactNumber(row.budgetPerPiece)} บ./${unit}`
       : null;
   const qty =
     row.quantity != null && Number.isFinite(row.quantity)
-      ? `${formatCompactNumber(row.quantity)} ชิ้น`
+      ? `${formatCompactNumber(row.quantity)} ${unit}`
       : null;
   if (budget && qty) return `${budget} × ${qty}`;
   if (budget) return budget;

@@ -39,6 +39,7 @@ export function useExploreData(options?: UseExploreDataOptions) {
         rating: f.rating,
         reviews: f.reviews,
         minOrder: f.minOrder,
+        minOrderUnit: f.minOrderUnit,
         verified: f.verified,
       })),
     [exploreData?.factories],

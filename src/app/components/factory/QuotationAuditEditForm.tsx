@@ -175,7 +175,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
 
           <div className='px-4 py-3 border-t border-gray-50 hover:bg-brand-page flex items-center gap-4'>
             <Label className='flex-1 min-w-0'>
-              <span className='text-xs text-gray-500 block mb-1'>ราคาต่อชิ้น *</span>
+              <span className='text-xs text-gray-500 block mb-1'>ราคาต่อหน่วย *</span>
               <Input
                 type='number'
                 step='0.01'
@@ -238,7 +238,7 @@ export const QuotationAuditEditForm = forwardRef<QuotationAuditEditFormHandle, P
             สรุปใบเสนอราคา
           </p>
           <div className='flex justify-between text-sm'>
-            <span className='opacity-80'>ราคาต่อชิ้น</span>
+            <span className='opacity-80'>ราคาต่อหน่วย</span>
             <span className='font-semibold'>
               {formatCurrency(Number(form.watch('price_per_piece') || 0))}
             </span>

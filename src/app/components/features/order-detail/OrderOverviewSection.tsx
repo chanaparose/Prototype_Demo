@@ -24,6 +24,7 @@ export type RfqForOverview = {
   description?: string;
   budget: number;
   quantity: number;
+  unitName?: string;
   material: string;
   deadline: string;
 };
@@ -112,7 +113,7 @@ export function OrderOverviewSection({ order, relatedRfq, rfqOffers }: OrderOver
               <div className='rounded-lg bg-white border border-gray-100 px-2.5 py-2'>
                 <p className='text-[10px] text-gray-500'>จำนวน</p>
                 <p className='text-xs text-gray-900' style={{ fontWeight: 600 }}>
-                  {formatCompactNumber(relatedRfq.quantity)} ชิ้น
+                  {formatCompactNumber(relatedRfq.quantity)} {relatedRfq.unitName || 'ชิ้น'}
                 </p>
               </div>
               <div className='rounded-lg bg-white border border-gray-100 px-2.5 py-2'>

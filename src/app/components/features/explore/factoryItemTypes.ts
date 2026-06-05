@@ -6,5 +6,6 @@ export type FactoryItem = {
   rating: number;
   reviews: number;
   minOrder: number;
+  minOrderUnit?: string;
   verified?: boolean;
 };

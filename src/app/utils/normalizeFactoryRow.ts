@@ -32,6 +32,7 @@ export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = '
     specialization: pickScalarString(row.specialization, row.description),
     tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
     minOrder: pickScalarNumber(row.min_order, row.minOrder) ?? 0,
+    minOrderUnit: pickScalarString(row.min_order_unit, row.minOrderUnit) || undefined,
     leadTime: pickScalarString(row.lead_time, row.leadTime),
     image,
     ...(coverImageUrl ? { coverImageUrl } : {}),

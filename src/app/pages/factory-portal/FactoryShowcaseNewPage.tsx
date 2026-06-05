@@ -338,7 +338,7 @@ export function FactoryShowcaseNewPage() {
                   />
                 </Label>
                 <Label className='block'>
-                  <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
+                  <span className='text-xs text-gray-500'>MOQ (จำนวนขั้นต่ำ)</span>
                   <Input
                     type='number'
                     placeholder='500'

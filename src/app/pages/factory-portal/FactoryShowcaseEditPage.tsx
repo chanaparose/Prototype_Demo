@@ -683,7 +683,7 @@ export function FactoryShowcaseEditPage() {
                   />
                 </Label>
                 <Label className='block'>
-                  <span className='text-xs text-gray-500'>MOQ (ชิ้น)</span>
+                  <span className='text-xs text-gray-500'>MOQ (จำนวนขั้นต่ำ)</span>
                   <Input
                     type='number'
                     className='mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm'

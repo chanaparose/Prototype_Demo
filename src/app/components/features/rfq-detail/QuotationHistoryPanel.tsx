@@ -155,7 +155,7 @@ function HistoryItem({ entry }: { entry: IQuotationHistoryEntry }) {
       <div className='grid grid-cols-1 sm:grid-cols-3 gap-x-3 text-xs text-gray-600 mb-1'>
         {entry.price_per_piece != null ? (
           <div>
-            <span className='text-gray-400'>ราคา/ชิ้น </span>
+            <span className='text-gray-400'>ราคาต่อหน่วย </span>
             <span className='font-medium'>{formatCurrency(entry.price_per_piece)}</span>
           </div>
         ) : null}

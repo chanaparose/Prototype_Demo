@@ -6,6 +6,7 @@ import { formatCompactNumber } from '@/utils/formatting/formatCurrency';
 
 type Spec = {
   moq: number | null;
+  moq_unit?: string | null;
   lead_time_days: number | null;
 };
 
@@ -48,7 +49,7 @@ function Row({
 
 export function StrictSpecsBlock({ showcase }: Readonly<Props>) {
   const moq =
-    showcase.moq != null && showcase.moq > 0 ? `${formatCompactNumber(showcase.moq)} ชิ้น` : '—';
+    showcase.moq != null && showcase.moq > 0 ? `${formatCompactNumber(showcase.moq)} ${showcase.moq_unit || 'ชิ้น'}` : '—';
   const lead =
     showcase.lead_time_days != null && showcase.lead_time_days > 0
       ? `${showcase.lead_time_days} วัน`

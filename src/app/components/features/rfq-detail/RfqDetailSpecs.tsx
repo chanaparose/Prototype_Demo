@@ -26,6 +26,7 @@ export type RfqForSpecs = {
   targetLeadTimeDays?: number;
   requiredDeliveryDate?: string;
   certificationsRequired?: string[];
+  unitName?: string;
 };
 
 type RfqDetailSpecsProps = {
@@ -42,7 +43,7 @@ export function RfqDetailSpecs({ rfq, bare = false }: RfqDetailSpecsProps) {
     ...(hasSubFromApi ? [{ label: 'ประเภทย่อย', value: subLabel || '—' }] : []),
     ...(rfq.shippingMethodName ? [{ label: 'วิธีส่งของ', value: rfq.shippingMethodName }] : []),
     ...(rfq.deliveryAddress ? [{ label: 'ที่อยู่จัดส่ง', value: rfq.deliveryAddress }] : []),
-    { label: 'จำนวน', value: `${formatCompactNumber(rfq.quantity)} ชิ้น` },
+    { label: 'จำนวน', value: `${formatCompactNumber(rfq.quantity)} ${rfq.unitName || 'ชิ้น'}` },
     ...(rfq.materialGrade || rfq.material
       ? [{ label: 'Material grade', value: rfq.materialGrade || rfq.material }]
       : []),

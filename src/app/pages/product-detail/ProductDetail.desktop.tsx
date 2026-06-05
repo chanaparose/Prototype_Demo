@@ -306,7 +306,7 @@ export function ProductDetailDesktop() {
                 <span className='text-gray-400'>ขั้นต่ำผลิต</span>
                 <span className='text-[var(--brand-ink)]'>
                   <span className='font-semibold'>{item.minOrder}</span>{' '}
-                  <span className='text-gray-500'>ชิ้น (MOQ)</span>
+                  <span className='text-gray-500'>{(item as Record<string, unknown>).moq_unit || 'ชิ้น'} (MOQ)</span>
                 </span>
 
                 {item.leadTime ? (

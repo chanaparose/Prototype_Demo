@@ -8,6 +8,7 @@ export type RfqForStatusCard = {
   projectName: string;
   budget: number;
   quantity: number;
+  unitName?: string;
   material: string;
   status: string;
   offerCount: number;
@@ -55,7 +56,7 @@ export function RfqDetailStatusCard({
       <div className='flex items-center gap-3 text-xs text-slate-600'>
         <span className='font-semibold text-slate-700'>{formatCurrency(rfq.budget)}</span>
         <span className='text-violet-300'>•</span>
-        <span className='font-semibold text-slate-700'>{formatCompactNumber(rfq.quantity)} ชิ้น</span>
+        <span className='font-semibold text-slate-700'>{formatCompactNumber(rfq.quantity)} {rfq.unitName || 'ชิ้น'}</span>
       </div>
       {footer ? <div className='mt-3 pt-3 border-t border-violet-100'>{footer}</div> : null}
     </div>

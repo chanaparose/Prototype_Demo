@@ -10,9 +10,9 @@ const optionalMoney = z
 const requiredPositive = z
   .string()
   .trim()
-  .min(1, 'กรุณากรอกราคาต่อชิ้น')
+  .min(1, 'กรุณากรอกราคาต่อหน่วย')
   .refine((v) => Number.isFinite(Number(v)) && Number(v) > 0, {
-    message: 'กรุณากรอกราคาต่อชิ้นที่ถูกต้อง',
+    message: 'กรุณากรอกราคาต่อหน่วยที่ถูกต้อง',
   });
 
 const requiredPositiveInt = z

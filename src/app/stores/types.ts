@@ -19,6 +19,7 @@ export type BootstrapFactoryModel = {
   specialization: string;
   tags: string[];
   minOrder: number;
+  minOrderUnit?: string;
   leadTime: string;
   image: string;
   coverImageUrl?: string;
@@ -168,6 +169,7 @@ export type BootstrapRfqModel = {
   targetLeadTimeDays?: number;
   requiredDeliveryDate?: string;
   certificationsRequired?: string[];
+  unitName?: string;
 };
 
 export type OrderTimeline = {
