@@ -25,13 +25,18 @@ export interface ISubCategoryResponse {
 export interface IUnitResponse {
   id?: number;
   unit_id?: number;
+  code?: string;
   name?: string;
   name_th?: string;
+  name_en?: string;
   unit_name?: string;
   unit_name_th?: string;
   abbreviation?: string;
   /** กลุ่มหน่วยจาก lbi_units.group_th */
   group_th?: string;
+  /** กลุ่มหน่วยจาก lbi_units.group_en */
+  group_en?: string;
+  sort_order?: number;
 }
 
 export interface ICertificationResponse {

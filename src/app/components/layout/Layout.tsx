@@ -139,12 +139,12 @@ const factoryBottomLinks = [
     activePath: '/messages',
   },
   {
-    key: 'factory-wallet',
-    label: 'กระเป๋าเงิน',
-    icon: Wallet,
-    href: '/factory/wallet',
+    key: 'factory-profile',
+    label: 'โปรไฟล์',
+    icon: User,
+    href: '/factory/profile',
     activeMatch: 'prefix' as const,
-    activePath: '/factory/wallet',
+    activePath: '/factory/profile',
   },
 ];
 

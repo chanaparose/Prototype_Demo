@@ -14,8 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { RFQ_BORDER, RFQ_FIELD_CLASS, RFQ_RADIUS } from '@/pages/rfq/rfqCreateWizardUi';
-
-type UnitOption = { unit_id: number; unit_name: string; abbreviation?: string };
+import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
 
 type SubCategory = {
   id: number;
@@ -44,16 +43,27 @@ export function Step1Basic({
   const [units, setUnits] = useState<UnitOption[]>([]);
   React.useEffect(() => {
     masterApi.getUnits().then((raw) => {
-      if (!Array.isArray(raw)) return;
+      // API may return array directly or wrapped as { data: [...], total: n }
+      const list: unknown[] = Array.isArray(raw)
+        ? raw
+        : Array.isArray((raw as Record<string, unknown>)?.data)
+          ? ((raw as Record<string, unknown>).data as unknown[])
+          : [];
       setUnits(
-        (raw as unknown as Record<string, unknown>[]).map((u) => ({
-          unit_id: Number(u.unit_id ?? u.id ?? 0),
-          unit_name: String(u.unit_name ?? u.name ?? ''),
-          abbreviation: u.abbreviation ? String(u.abbreviation) : undefined,
-        })).filter((u) => u.unit_id > 0)
+        (list as Record<string, unknown>[])
+          .map((u) => ({
+            unit_id: Number(u.unit_id ?? u.id ?? 0),
+            name_th: String(u.name_th ?? u.unit_name_th ?? u.unit_name ?? u.name ?? ''),
+            name_en: String(u.name_en ?? u.unit_name ?? u.name ?? ''),
+            code: String(u.code ?? u.abbreviation ?? ''),
+            group_th: String(u.group_th ?? 'อื่นๆ'),
+            group_en: String(u.group_en ?? 'Other'),
+          }))
+          .filter((u) => u.unit_id > 0)
       );
     }).catch(() => {});
   }, []);
+
   const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -250,22 +260,11 @@ export function Step1Basic({
               placeholder={mode === 'PS' ? '1–10' : mode === 'MS' ? '1–5' : '0'}
               className={fieldClass}
             />
-            <Select
-              value={draft.unit_id ? String(draft.unit_id) : '__default'}
-              onValueChange={(v) => setDraft({ unit_id: v === '__default' ? undefined : Number(v) })}
-            >
-              <SelectTrigger className='w-[110px] shrink-0 rounded-xl border border-gray-200 bg-[var(--neutral-warm-surface)]/50 text-sm text-brand-navy-deep focus:border-brand-violet-deep focus:ring-2 focus:ring-[rgba(109,40,217,0.12)]'>
-                <SelectValue placeholder='หน่วย' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='__default'>ชิ้น (default)</SelectItem>
-                {units.map((u) => (
-                  <SelectItem key={u.unit_id} value={String(u.unit_id)}>
-                    {u.unit_name}{u.abbreviation ? ` (${u.abbreviation})` : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <UnitPicker
+              units={units}
+              value={draft.unit_id}
+              onChange={(unitId) => setDraft({ unit_id: unitId })}
+            />
           </div>
         </label>
       </div>

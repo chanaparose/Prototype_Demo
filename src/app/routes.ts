@@ -130,6 +130,7 @@ export const router = createBrowserRouter([
                       { path: 'bank-settings', Component: FactoryBankSettingsPage },
                       { path: 'invoices', Component: FactoryInvoicePage },
                       { path: 'wallet', Component: FactoryWalletPage },
+                      { path: 'profile', Component: Profile },
                       {
                         Component: FactoryVerifiedGuard,
                         children: [
