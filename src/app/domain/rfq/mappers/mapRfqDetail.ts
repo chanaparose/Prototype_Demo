@@ -401,7 +401,9 @@ export async function fetchAndMapRfqDetail(
           factory_name: pickScalarString(q.factory_name) || factoryMap.get(pickScalarString(q.factory_id)) || `โรงงาน #${q.factory_id}`,
           price_per_piece: q.price_per_piece,
           mold_cost: toolingMoldCost,
-          moq: qty > 0 ? qty : undefined,
+          moq: (q.factory_qty != null && Number(q.factory_qty) > 0)
+            ? Number(q.factory_qty)
+            : qty > 0 ? qty : undefined,
           lead_time_days: q.lead_time_days,
           shipping_method:
             shippingMethodName || `วิธีจัดส่ง #${pickScalarString(q.shipping_method_id, '-')}`,
@@ -432,6 +434,9 @@ export async function fetchAndMapRfqDetail(
           platform_commission_amount: platformCommissionAmount,
           factory_net_receivable: factoryNet,
           certifications: [],
+          factory_qty: q.factory_qty != null ? Number(q.factory_qty) : null,
+          factory_unit_id: q.factory_unit_id != null ? Number(q.factory_unit_id) : null,
+          factory_unit_name: pickScalarString(q.factory_unit_name) || null,
         },
       };
     })(),

@@ -66,7 +66,10 @@ export function quotationFromOfferSource(
 ): Quotation {
   const detail = offer.quotationDetail;
   const qtyBase = rfqQuantity > 0 ? rfqQuantity : 1000;
-  const moq = detail?.moq ?? qtyBase;
+  const moq =
+    (detail?.factory_qty != null && detail.factory_qty > 0)
+      ? detail.factory_qty
+      : detail?.moq ?? qtyBase;
   const numericId = parseInt(String(offer.id).replace(/\D/g, ''), 10);
   const quote_id =
     detail?.quote_id ??
@@ -112,16 +115,21 @@ export function quotationFromOfferSource(
     image_urls: Array.isArray(detail?.image_urls)
       ? detail.image_urls.filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
       : [],
+    factory_qty: detail?.factory_qty ?? null,
+    factory_unit_id: detail?.factory_unit_id ?? null,
+    factory_unit_name: detail?.factory_unit_name ?? null,
   };
 }
 
 export type QuotationBOQDetailsPanelProps = {
   quotation: Quotation;
+  rfqUnitName?: string;
   className?: string;
 };
 
 export function QuotationBOQDetailsPanel({
   quotation: q,
+  rfqUnitName,
   className = '',
 }: QuotationBOQDetailsPanelProps) {
   return (
@@ -141,7 +149,10 @@ export function QuotationBOQDetailsPanel({
 
       <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
         <MetricTile label='ค่าแม่พิมพ์' value={formatCurrency(q.mold_cost)} />
-        <MetricTile label='MOQ' value={`${formatCompactNumber(q.moq)} ชิ้น`} />
+        <MetricTile
+          label='MOQ'
+          value={`${formatCompactNumber(q.moq)} ${q.factory_unit_name || rfqUnitName || 'หน่วย'}`}
+        />
         <MetricTile label='Lead time' value={`${q.lead_time_days} วัน`} />
       </div>
 

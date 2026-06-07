@@ -228,7 +228,7 @@ export function RfqDetailOffersSection({
                 <p className='text-sm font-bold text-brand-navy'>{orderForRfq.factoryName}</p>
                 <p className='text-xs text-gray-500'>
                   {formatCurrency(orderForRfq.totalAmount)} •{' '}
-                  {formatCompactNumber(orderForRfq.quantity)} {rfqUnitName || 'ชิ้น'}
+                  {formatCompactNumber(orderForRfq.quantity)} {rfqUnitName || 'หน่วย'}
                 </p>
               </div>
               <Link
@@ -568,7 +568,7 @@ export function RfqDetailOffersSection({
                       >
                         {formatTHB(boq.price_per_piece)}
                       </p>
-                      <p className='text-[9px] text-gray-500'>ราคาต่อ{rfqUnitName || 'ชิ้น'}</p>
+                      <p className='text-[9px] text-gray-500'>ราคาต่อ{qd.factory_unit_name || rfqUnitName || 'หน่วย'}</p>
                     </div>
                     <div className='bg-gray-50 rounded-xl p-2.5 text-center'>
                       <p className='text-sm text-brand-navy' style={{ fontWeight: 700 }}>
@@ -686,6 +686,7 @@ export function RfqDetailOffersSection({
                     <div className='overflow-hidden min-h-0'>
                       <QuotationBOQDetailsPanel
                         quotation={boq}
+                        rfqUnitName={rfqUnitName}
                         className='-mx-4 border-gray-100 px-4 pb-3 pt-2'
                       />
                     </div>
