@@ -58,7 +58,6 @@ function mapEmbeddedFactory(fRaw: Record<string, unknown>): Factory {
     verified: Boolean(fRaw.verified),
     completedOrders: Number(fRaw.completed_orders ?? 0),
     priceRange: '',
-    factoryTypeName: pickScalarString(fRaw.factory_type),
   };
 }
 

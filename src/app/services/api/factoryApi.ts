@@ -63,7 +63,6 @@ export const factoriesApi = {
       factory_name: string;
       tax_id?: string;
       description?: string;
-      factory_type_id?: number;
       lead_time_desc?: string;
       image_url?: string;
       background_image_url?: string;

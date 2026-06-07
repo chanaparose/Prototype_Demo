@@ -231,11 +231,6 @@ export function FactoriesListMobile({ state }: FactoriesListMobileProps) {
                     <p className='text-[11px] text-gray-500 truncate mt-0.5'>
                       {factory.specialization}
                     </p>
-                    {factory.factoryTypeName ? (
-                      <p className='text-[10px] text-violet-600 font-medium truncate mt-0.5'>
-                        {factory.factoryTypeName}
-                      </p>
-                    ) : null}
                   </div>
 
                   <div className='mt-2 space-y-1'>

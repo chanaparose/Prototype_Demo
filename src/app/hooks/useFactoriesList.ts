@@ -73,9 +73,8 @@ export function useFactoriesList() {
         const q = filters.searchText.toLowerCase();
         const matchName = f.name.toLowerCase().includes(q);
         const matchSpec = f.specialization.toLowerCase().includes(q);
-        const matchType = (f.factoryTypeName ?? '').toLowerCase().includes(q);
         const matchTags = f.tags.some((t) => t.toLowerCase().includes(q));
-        if (!matchName && !matchSpec && !matchType && !matchTags) return false;
+        if (!matchName && !matchSpec && !matchTags) return false;
       }
       return true;
     });

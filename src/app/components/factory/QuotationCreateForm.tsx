@@ -26,11 +26,13 @@ import { ShippingMethodLockedField } from '@/components/factory/ShippingMethodLo
 import { hoursUntilDeadline } from '@/utils/rfqDeadline';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { FactoryHighlightField } from '@/components/features/factory-rfq/FactoryHighlightField';
-import { formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
+import { formatCompactNumber, formatCurrency, formatCurrencyNoDecimals } from '@/utils/formatting/formatCurrency';
 import { FormField } from '@/shared/ui/forms/FormField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Image } from '@/components/ui/image';
+import { UnitPicker, type UnitOption } from '@/pages/rfq/steps/UnitPicker';
+import { masterApi } from '@/services/api/masterApi';
 
 const LOCKED_PAYMENT_TERMS = 'lc_at_sight';
 
@@ -55,7 +57,10 @@ interface Props {
   lockedShippingMethodId?: number; // optional — 0 or undefined = ไม่มีวิธีจัดส่งจาก RFQ
   lockedShippingMethodName?: string;
   rfqQuantity?: number | null; // จำนวนที่ลูกค้าขอ — ใช้คำนวณ preview
+  rfqUnitName?: string | null; // หน่วยที่ลูกค้าขอ — แสดง hint
   initial?: Partial<QuotationCreateFormValues>;
+  initialFactoryQty?: number | null;
+  initialFactoryUnitId?: number | null;
   initialImageUrls?: string[]; // รูปภาพที่บันทึกไว้แล้ว (pre-fill)
   initialFactoryHighlight?: string;
   initialFactoryNote?: string;
@@ -83,10 +88,13 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
       lockedShippingMethodId,
       lockedShippingMethodName,
       rfqQuantity = null,
+      rfqUnitName = null,
       initial,
       initialImageUrls,
       initialFactoryHighlight,
       initialFactoryNote,
+      initialFactoryQty = null,
+      initialFactoryUnitId = null,
       patchQuotationId,
       submitLabel = 'ส่งใบเสนอราคา',
       pageError,
@@ -101,12 +109,51 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
     ref,
   ) {
     const qc = useQueryClient();
+    const [units, setUnits] = useState<UnitOption[]>([]);
+    const [factoryQty, setFactoryQty] = useState<number | null>(initialFactoryQty ?? null);
+    const [factoryUnitId, setFactoryUnitId] = useState<number | undefined>(
+      initialFactoryUnitId ?? undefined,
+    );
+    useEffect(() => {
+      masterApi.getUnits().then((raw) => {
+        const list: unknown[] = Array.isArray(raw)
+          ? raw
+          : Array.isArray((raw as Record<string, unknown>)?.data)
+            ? ((raw as Record<string, unknown>).data as unknown[])
+            : [];
+        setUnits(
+          (list as Record<string, unknown>[])
+            .map((u) => ({
+              unit_id: Number(u.unit_id ?? u.id ?? 0),
+              name_th: String(u.name_th ?? u.unit_name ?? ''),
+              name_en: String(u.name_en ?? ''),
+              code: String(u.code ?? ''),
+              group_th: String(u.group_th ?? 'อื่นๆ'),
+              group_en: String(u.group_en ?? 'Other'),
+            }))
+            .filter((u) => u.unit_id > 0),
+        );
+      }).catch(() => {});
+    }, []);
     const shippingMethodsQ = useShippingMethods(!lockedShippingMethodName);
     const shipId = lockedShippingMethodId ?? 0;
     const shipLabel =
       String(lockedShippingMethodName ?? '').trim() ||
       shippingMethodsQ.data?.find((m) => m.id === shipId)?.label ||
       (shipId > 0 ? `#${shipId}` : '—');
+
+    const rfqUnitLabel = useMemo(() => {
+      const name = String(rfqUnitName ?? '').trim();
+      return name || 'ชิ้น';
+    }, [rfqUnitName]);
+
+    const factoryUnitLabel = useMemo(() => {
+      if (factoryUnitId != null && factoryUnitId > 0) {
+        const picked = units.find((u) => u.unit_id === factoryUnitId);
+        if (picked?.name_th?.trim()) return picked.name_th.trim();
+      }
+      return rfqUnitLabel;
+    }, [factoryUnitId, units, rfqUnitLabel]);
 
     const form = useForm<QuotationCreateFormValues>({
       resolver: zodResolver(quotationFormSchema),
@@ -253,6 +300,9 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
           factory_highlight: factoryHighlight.trim() || undefined,
           factory_note: factoryNote.trim() || undefined,
           reason: 'อัปเดตใบเสนอราคา',
+          // factory counter-proposal qty/unit (null = accept RFQ qty)
+          factory_qty: factoryQty ?? undefined,
+          factory_unit_id: factoryUnitId ?? undefined,
         };
 
         if (shipId > 0) body.shipping_method_id = shipId;
@@ -316,6 +366,40 @@ export const QuotationCreateForm = forwardRef<QuotationCreateFormHandle, Props>(
             {...form.register('price_per_piece')}
           />
         </FormField>
+
+        {/* Factory counter-proposal qty/unit */}
+        <div className='rounded-xl border border-amber-100 bg-amber-50 p-3 space-y-2'>
+          <p className='text-xs font-semibold text-amber-800'>
+            จำนวนที่โรงงานเสนอ
+            <span className='ml-1 font-normal text-amber-600'>(ไม่บังคับ — ถ้าไม่กรอก = รับตามจำนวน RFQ)</span>
+          </p>
+          {rfqQuantity != null && (
+            <p className='text-[11px] text-amber-700'>
+              ลูกค้าขอ: <strong>{formatCompactNumber(rfqQuantity)}</strong> {rfqUnitLabel}
+            </p>
+          )}
+          <div className='flex items-center gap-2'>
+            <Input
+              type='number'
+              min={1}
+              disabled={readOnly}
+              value={factoryQty ?? ''}
+              onChange={(e) => setFactoryQty(e.target.value ? Number(e.target.value) : null)}
+              placeholder='จำนวนที่เสนอ'
+              className='flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm disabled:bg-gray-50'
+            />
+            <UnitPicker
+              units={units}
+              value={factoryUnitId}
+              onChange={setFactoryUnitId}
+            />
+          </div>
+          {factoryQty != null && factoryQty > 0 && rfqQuantity != null && factoryQty !== rfqQuantity && (
+            <p className='text-[11px] text-amber-700'>
+              ⚠️ จำนวนต่างจาก RFQ — ลูกค้าจะเห็น badge &ldquo;โรงงานเสนอ {formatCompactNumber(factoryQty)} {factoryUnitLabel}&rdquo;
+            </p>
+          )}
+        </div>
 
         <div>
           <p className='text-xs font-semibold text-gray-600 mb-2'>ค่าใช้จ่ายเพิ่มเติม</p>

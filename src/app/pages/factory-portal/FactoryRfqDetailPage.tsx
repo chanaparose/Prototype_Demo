@@ -658,6 +658,7 @@ export function FactoryRfqDetailPage() {
                     lockedShippingMethodId={rfqShipId ?? 0}
                     lockedShippingMethodName={customerShipLabel || undefined}
                     rfqQuantity={quantity}
+                    rfqUnitName={unitName}
                     patchQuotationId={
                       myQuote && canEdit && quoteIdOf(myQuote) ? quoteIdOf(myQuote) : undefined
                     }

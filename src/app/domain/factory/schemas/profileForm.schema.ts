@@ -6,7 +6,6 @@ export const profileFormSchema = z.object({
   factory_name: z.string().trim().min(1, 'กรุณากรอกชื่อโรงงาน'),
   tax_id: z.string(),
   description: z.string(),
-  factory_type_id: z.number().int().positive().nullable(),
   category_ids: z.array(z.number().int().positive()),
   sub_category_ids: z.array(z.number().int().positive()),
   lead_time_desc: z.string(),

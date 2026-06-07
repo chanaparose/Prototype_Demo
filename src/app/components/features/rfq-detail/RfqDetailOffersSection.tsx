@@ -525,6 +525,12 @@ export function RfqDetailOffersSection({
                             <CheckCircle size={13} style={{ color: 'var(--brand-mauve)' }} />
                           )}
                         </div>
+                        {/* factory counter-proposal badge */}
+                        {qd.factory_qty != null && qd.factory_qty > 0 && (
+                          <div className='mt-0.5 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700'>
+                            📦 โรงงานเสนอ {Number(qd.factory_qty).toLocaleString()} {qd.factory_unit_name || rfqUnitName || 'หน่วย'}
+                          </div>
+                        )}
                         <div className='flex items-center gap-1'>
                           <Star size={10} className='text-yellow-400 fill-yellow-400' />
                           <span className='text-[10px] text-gray-500'>{offer.rating}</span>

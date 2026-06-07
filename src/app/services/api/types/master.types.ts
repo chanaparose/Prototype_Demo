@@ -56,13 +56,6 @@ export interface IShippingMethodResponse {
   description?: string;
 }
 
-export interface IFactoryTypeResponse {
-  id?: number;
-  factory_type_id?: number;
-  name: string;
-  description?: string;
-}
-
 export interface IMaterialResponse {
   id?: number;
   material_id?: number;
@@ -76,6 +69,5 @@ export interface IMasterDataResponse {
   units?: IUnitResponse[];
   certifications?: ICertificationResponse[];
   shipping_methods?: IShippingMethodResponse[];
-  factory_types?: IFactoryTypeResponse[];
   materials?: IMaterialResponse[];
 }

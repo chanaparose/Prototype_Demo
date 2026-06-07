@@ -1,7 +1,5 @@
 import React from 'react';
-import { Controller, type UseFormReturn } from 'react-hook-form';
-import { LookupSelect } from '@/components/common/LookupSelect';
-import { useFactoryTypes } from '@/hooks/master/useFactoryTypes';
+import { type UseFormReturn } from 'react-hook-form';
 import type { ProfileFormValues } from '@/components/factory/profile/ProfileFormTypes';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -14,10 +12,8 @@ interface Props {
 export function BusinessInfoSection({ form }: Props) {
   const {
     register,
-    control,
     formState: { errors },
   } = form;
-  const factoryTypesQ = useFactoryTypes();
 
   return (
     <div className='grid gap-4 sm:grid-cols-2'>
@@ -31,22 +27,6 @@ export function BusinessInfoSection({ form }: Props) {
           <p className='text-xs text-red-600 mt-1'>{errors.factory_name.message}</p>
         ) : null}
       </Label>
-
-      <Controller
-        control={control}
-        name='factory_type_id'
-        render={({ field }) => (
-          <LookupSelect
-            label='ประเภทโรงงาน'
-            value={field.value}
-            onChange={(v) => field.onChange(v)}
-            queryResult={factoryTypesQ}
-            getId={(o) => o.id}
-            getLabel={(o) => o.label}
-            placeholder='เลือกประเภทโรงงาน'
-          />
-        )}
-      />
 
       <Label className='block'>
         <span className='text-xs text-gray-500'>เลขประจำตัวผู้เสียภาษี</span>

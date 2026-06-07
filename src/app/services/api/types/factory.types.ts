@@ -61,8 +61,6 @@ export interface IFactorySubCategoriesRequest {
 export interface IFactoryPublicDetailResponse {
   factory_id: number;
   factory_name: string;
-  factory_type_id: number;
-  factory_type_name?: string;
   tax_id?: string;
   specialization?: string;
   min_order?: number;

@@ -78,7 +78,6 @@ export function RegisterFactoryPage() {
   const {
     form,
     errors,
-    factoryTypes,
     provinces,
     lbiCategories,
     lbiSubCategories,
@@ -198,37 +197,6 @@ export function RegisterFactoryPage() {
                     className={inClass(errors.factory_name)}
                     placeholder='เช่น บริษัท เอบีซี แมนูแฟคเจอริ่ง จำกัด'
                   />
-                </FieldBlock>
-
-                <FieldBlock
-                  label='ประเภทโรงงาน'
-                  error={errors.factory_type_id}
-                  fieldKey='factory_type_id'
-                  setFieldRef={setFieldRef}
-                  required
-                >
-                  <Select
-                    value={form.factory_type_id ? String(form.factory_type_id) : ''}
-                    onValueChange={(v) => {
-                      const id = v === '__empty' ? 0 : Number(v);
-                      setField('factory_type_id', id, { validate: true });
-                    }}
-                    disabled={masterLoading}
-                  >
-                    <SelectTrigger className={inClass(errors.factory_type_id)}>
-                      <SelectValue
-                        placeholder={masterLoading ? 'กำลังโหลด...' : '— เลือกประเภท —'}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='__empty'>— เลือกประเภท —</SelectItem>
-                      {factoryTypes.map((t) => (
-                        <SelectItem key={t.factory_type_id} value={String(t.factory_type_id)}>
-                          {t.name_th}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </FieldBlock>
 
                 <FieldBlock

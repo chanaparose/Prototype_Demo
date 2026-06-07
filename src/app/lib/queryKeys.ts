@@ -11,7 +11,6 @@ export const masterKeys = {
     [...masterKeys.all, 'sub-categories', String(categoryId)] as const,
   productCategories: () => [...masterKeys.all, 'product-categories'] as const,
   certificates: () => [...masterKeys.all, 'certificates'] as const,
-  factoryTypes: () => [...masterKeys.all, 'factory-types'] as const,
   lbiCategories: (scope: string) => [...masterKeys.all, 'lbi-categories', scope] as const,
 };
 

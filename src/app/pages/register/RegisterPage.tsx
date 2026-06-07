@@ -602,7 +602,6 @@ function FactoryTab() {
   const {
     form,
     errors,
-    factoryTypes,
     provinces,
     lbiCategories,
     lbiSubCategories,
@@ -689,7 +688,6 @@ function FactoryTab() {
       certUrl = form.cert_file ? (await mediaApi.upload(form.cert_file)).url : '';
       const factoryPayload = {
         factory_name: form.factory_name.trim(),
-        factory_type_id: form.factory_type_id,
         tax_id: form.tax_id.replace(/\D/g, ''),
         province_id: form.province_id || undefined,
         category_ids: form.category_ids,
@@ -737,7 +735,6 @@ function FactoryTab() {
           phone: digitsOnlyPhone(form.phone),
           password: form.password,
           factory_name: form.factory_name.trim(),
-          factory_type_id: form.factory_type_id,
           tax_id: form.tax_id.replace(/\D/g, ''),
           province_id: form.province_id || undefined,
           category_ids: form.category_ids,
@@ -820,31 +817,6 @@ function FactoryTab() {
               placeholder='เช่น บริษัท เอบีซี แมนูแฟคเจอริ่ง จำกัด'
             />
             {errors.factory_name && <p className='text-xs text-red-600'>{errors.factory_name}</p>}
-          </div>
-
-          <div ref={setFieldRef('factory_type_id')} className='space-y-1.5'>
-            <Label className='text-xs font-medium text-[var(--brand-navy)]/80'>
-              ประเภทโรงงาน <span className='text-red-500'>*</span>
-            </Label>
-            <SearchableSelect
-              value={form.factory_type_id ? String(form.factory_type_id) : ''}
-              options={factoryTypes.map((t) => ({
-                value: String(t.factory_type_id),
-                label: t.name_th,
-              }))}
-              placeholder='— เลือกประเภท —'
-              searchPlaceholder='ค้นหาประเภทโรงงาน…'
-              loading={masterLoading}
-              disabled={masterLoading}
-              onValueChange={(v) => {
-                const id = v ? Number(v) : 0;
-                setField('factory_type_id', id, { validate: true });
-              }}
-              onBlur={() => blurField('factory_type_id')}
-              className={inClass(errors.factory_type_id)}
-              aria-invalid={Boolean(errors.factory_type_id)}
-            />
-            {errors.factory_type_id && <p className='text-xs text-red-600'>{errors.factory_type_id}</p>}
           </div>
 
           <div ref={setFieldRef('tax_id')} className='space-y-1.5'>

@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { httpClient } from '@/services/api/httpClient';
 import { masterKeys } from '@/lib/queryKeys';
-import type { FactoryTypeOption } from '@/hooks/master/useFactoryTypes';
 import type { CategoryOption } from '@/hooks/master/useLbiCategoriesByScope';
 import type { CertTypeOption } from '@/hooks/master/useMasterCerts';
 import type { SubCategoryOption } from '@/hooks/master/useSubCategoriesByCategory';
@@ -10,7 +9,6 @@ type Row = Record<string, unknown>;
 
 interface ProfileInitData {
   factory: Row;
-  factory_types: Row[];
   lbi_categories: Row[];
   addresses: Row[];
   certificate_types: Row[];
@@ -26,19 +24,6 @@ export function useProfileInit() {
     queryKey: profileInitKey,
     queryFn: async (): Promise<ProfileInitData> => {
       const data = await httpClient.get<ProfileInitData>('/factories/me/profile-init');
-
-      // factory_types → FactoryTypeOption[]
-      const factoryTypes: FactoryTypeOption[] = (data.factory_types ?? [])
-        .map((r): FactoryTypeOption | null => {
-          const id = Number(r.factory_type_id ?? r.row_id ?? r.id);
-          const label = String(
-            r.type_name ?? r.factory_type_name ?? r.name_th ?? r.name ?? '',
-          ).trim();
-          if (!Number.isFinite(id) || id <= 0 || !label) return null;
-          return { id, label };
-        })
-        .filter((x): x is FactoryTypeOption => x != null);
-      qc.setQueryData(masterKeys.factoryTypes(), factoryTypes);
 
       // lbi_categories → split into ALL (with scope), PD, MT, productCategories
       type CategoryWithScope = CategoryOption & { scope: string };

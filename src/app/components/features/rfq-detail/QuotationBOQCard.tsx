@@ -41,6 +41,9 @@ export interface Quotation {
   platform_commission_amount?: number;
   factory_net_receivable?: number;
   image_urls?: string[];
+  factory_qty?: number | null;
+  factory_unit_id?: number | null;
+  factory_unit_name?: string | null;
 }
 
 const MIDNIGHT = 'var(--brand-navy)';

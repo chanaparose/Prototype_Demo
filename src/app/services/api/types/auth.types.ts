@@ -18,7 +18,6 @@ export interface IRegisterFactoryRequest {
   phone: string;
   password: string;
   factory_name: string;
-  factory_type_id: number;
   tax_id: string;
   province_id?: number;
   category_ids?: number[];

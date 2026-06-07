@@ -3,11 +3,11 @@ import { mapStepTemplatesFromApi } from '@/domain/production/mappers/mapProducti
 import type { IProductionStepTemplate } from '@/domain/production/types/production.model';
 import { masterApi } from '@/services/api/masterApi';
 
-export function useProductionTemplate(factoryTypeId?: string | number) {
+export function useProductionTemplate() {
   return useQuery({
-    queryKey: ['production', 'template', factoryTypeId ?? 'all'] as const,
+    queryKey: ['production', 'template'] as const,
     queryFn: async (): Promise<IProductionStepTemplate[]> => {
-      const raw = await masterApi.getProductionSteps(factoryTypeId);
+      const raw = await masterApi.getProductionSteps();
       return mapStepTemplatesFromApi(raw);
     },
     staleTime: Infinity,

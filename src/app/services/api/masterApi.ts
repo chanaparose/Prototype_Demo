@@ -2,7 +2,6 @@ import { httpClient } from '@/services/api/httpClient';
 import type {
   ICategoryResponse,
   ICertificationResponse,
-  IFactoryTypeResponse,
   IMaterialResponse,
   IShippingMethodResponse,
   ISubCategoryResponse,
@@ -52,7 +51,6 @@ export const masterApi = {
       units?: IUnitResponse[];
       certifications?: ICertificationResponse[];
       shipping_methods?: IShippingMethodResponse[];
-      factory_types?: IFactoryTypeResponse[];
     }>('/master'),
 
   getCategories: () => httpClient.get<ICategoryResponse[]>('/master/categories'),
@@ -73,16 +71,7 @@ export const masterApi = {
   certificates: () => httpClient.get<ICertificationResponse[]>('/master/certificates'),
   getShippingMethods: () => httpClient.get<IShippingMethodResponse[]>('/master/shipping-methods'),
 
-  getFactoryTypes: () => httpClient.get<IFactoryTypeResponse[]>('/master/factory-types'),
-  factoryTypes: () => httpClient.get<IFactoryTypeResponse[]>('/master/factory-types'),
-
-  getProductionSteps: (factoryTypeId?: string | number) => {
-    const endpoint =
-      factoryTypeId != null
-        ? `/master/production-steps?factory_type_id=${factoryTypeId}`
-        : '/master/production-steps';
-    return httpClient.get<IProductionStepTemplateResponse[]>(endpoint);
-  },
+  getProductionSteps: () => httpClient.get<IProductionStepTemplateResponse[]>('/master/production-steps'),
 
   getMaterials: (categoryId?: string | number) => {
     const endpoint = categoryId

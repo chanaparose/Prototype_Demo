@@ -8,7 +8,6 @@ import { digitsOnlyPhone, isValidThaiPhone } from '@/utils/formatting/formatPhon
 
 export interface FormState {
   factory_name: string;
-  factory_type_id: number;
   tax_id: string;
   province_id: number;
   district_id: number;
@@ -30,7 +29,6 @@ export interface FormState {
 
 const initial: FormState = {
   factory_name: '',
-  factory_type_id: 0,
   tax_id: '',
   province_id: 0,
   district_id: 0,
@@ -50,7 +48,6 @@ const initial: FormState = {
   acceptTerms: false,
 };
 
-export type FactoryTypeOption = { factory_type_id: number; name_th: string };
 export type ProvinceOption = { id: number; name: string };
 export type CategoryOption = { id: number; name: string; scope?: string };
 export type SubCategoryOption = { id: number; name: string; sort_order?: number };
@@ -71,19 +68,6 @@ function unwrap(raw: unknown): unknown[] {
   return [];
 }
 
-function mapFactoryTypes(raw: unknown): FactoryTypeOption[] {
-  const out: FactoryTypeOption[] = [];
-  for (const r of unwrap(raw)) {
-    if (!r || typeof r !== 'object') continue;
-    const o = r as Record<string, unknown>;
-    const id = Number(o.factory_type_id ?? o.id);
-    const name_th = String(o.name_th ?? o.type_name ?? o.name ?? '').trim();
-    if (!Number.isFinite(id) || id <= 0 || !name_th) continue;
-    out.push({ factory_type_id: id, name_th });
-  }
-  return out.sort((a, b) => a.name_th.localeCompare(b.name_th, 'th'));
-}
-
 function mapRow(
   raw: unknown,
   idKeys: string[],
@@ -101,7 +85,6 @@ export type FormErrors = Partial<Record<keyof FormState, string>>;
 
 const FIELD_ORDER_FULL: (keyof FormState)[] = [
   'factory_name',
-  'factory_type_id',
   'tax_id',
   'province_id',
   'district_id',
@@ -134,7 +117,6 @@ export function useRegisterFactory() {
   const [form, setForm] = useState<FormState>(initial);
   const formRef = useRef<FormState>(initial);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [factoryTypes, setFactoryTypes] = useState<FactoryTypeOption[]>([]);
   const [provinces, setProvinces] = useState<ProvinceOption[]>([]);
   const [lbiCategories, setLbiCategories] = useState<CategoryOption[]>([]);
   const [lbiSubCategories, setLbiSubCategories] = useState<Record<number, SubCategoryOption[]>>({});
@@ -157,14 +139,11 @@ export function useRegisterFactory() {
     setMasterFailed(false);
 
     Promise.all([
-      masterApi.factoryTypes(),
       masterApi.provinces(),
       masterApi.lbiCategories('ALL'),
       masterApi.certificates(),
     ])
-      .then(([types, provs, cats, certs]) => {
-        setFactoryTypes(mapFactoryTypes(types));
-
+      .then(([provs, cats, certs]) => {
         setProvinces(
           unwrap(provs)
             .map((r) => mapRow(r, ['province_id', 'row_id', 'id'], ['name_th', 'name']))
@@ -236,8 +215,6 @@ export function useRegisterFactory() {
           if (t.length > 150) return 'ชื่อโรงงานยาวเกิน 150 ตัวอักษร';
           return undefined;
         }
-        case 'factory_type_id':
-          return !values.factory_type_id ? 'กรุณาเลือกประเภทโรงงาน' : undefined;
         case 'tax_id': {
           const id = values.tax_id.replace(/\D/g, '');
           return !/^\d{13}$/.test(id) ? 'เลขภาษีต้องเป็นตัวเลข 13 หลัก' : undefined;
@@ -373,7 +350,6 @@ export function useRegisterFactory() {
         phone: digitsOnlyPhone(snapshot.phone),
         password: snapshot.password,
         factory_name: snapshot.factory_name.trim(),
-        factory_type_id: snapshot.factory_type_id,
         tax_id: taxDigits,
         province_id: snapshot.province_id || undefined,
         category_ids: snapshot.category_ids,
@@ -412,7 +388,6 @@ export function useRegisterFactory() {
   return {
     form,
     errors,
-    factoryTypes,
     provinces,
     lbiCategories,
     lbiSubCategories,

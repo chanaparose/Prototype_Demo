@@ -107,7 +107,6 @@ const TOUR_FACTORY = {
   province: 'กรุงเทพมหานคร',
   province_name: 'กรุงเทพมหานคร',
   specialization: 'ของเล่นและอุปกรณ์สัตว์เลี้ยง',
-  factory_type_name: 'สินค้าสัตว์เลี้ยง',
   min_order: 100,
   lead_time_desc: '7-14 วัน',
   completed_orders: 48,
@@ -282,8 +281,6 @@ const TOUR_FACTORIES_LIST = [
   {
     factory_id: TOUR_FACTORY.factory_id,
     factory_name: TOUR_FACTORY.factory_name,
-    factory_type_id: 1,
-    factory_type_name: TOUR_FACTORY.factory_type_name,
     specialization: TOUR_FACTORY.specialization,
     rating: TOUR_FACTORY.rating,
     review_count: TOUR_FACTORY.review_count,
@@ -298,8 +295,6 @@ const TOUR_FACTORIES_LIST = [
   {
     factory_id: 9998,
     factory_name: 'แพ็กเกจจิ้งสัตว์เลี้ยง โปร',
-    factory_type_id: 1,
-    factory_type_name: 'สินค้าสัตว์เลี้ยง',
     specialization: 'บรรจุภัณฑ์สำหรับสัตว์เลี้ยง',
     rating: 4.6,
     review_count: 56,

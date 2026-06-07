@@ -22,7 +22,6 @@ import {
 import { useAuth } from '@/stores/useAuthStore';
 import { getFactoryEntityId } from '@/utils/factoryUser';
 import { factoriesApi, mediaApi } from '@/services/api/factoryApi';
-import { useFactoryTypes } from '@/hooks/master/useFactoryTypes';
 import { useProfileInit, profileInitKey } from '@/hooks/factory/useProfileInit';
 import { useBeforeUnload } from '@/hooks/forms/useBeforeUnload';
 import { FormSkeleton } from '@/components/common/FormSkeleton';
@@ -261,7 +260,6 @@ export function FactoryInfoPage() {
   const fid = getFactoryEntityId(user);
   const qc = useQueryClient();
   const initQ = useProfileInit();
-  const factoryTypesQ = useFactoryTypes();
 
   const factoryQ = {
     ...initQ,
@@ -284,7 +282,6 @@ export function FactoryInfoPage() {
     factory_name: String(factoryQ.data?.factory_name ?? '').trim(),
     tax_id: String(factoryQ.data?.tax_id ?? '').trim(),
     description: String(factoryQ.data?.description ?? '').trim(),
-    factory_type_id: (() => { const v = Number(factoryQ.data?.factory_type_id); return Number.isFinite(v) && v > 0 ? v : null; })(),
     category_ids: normalizeIds(factoryQ.categoryIds),
     sub_category_ids: normalizeIds(factoryQ.subCategoryIds),
     lead_time_desc: String(factoryQ.data?.lead_time_desc ?? '').trim(),
@@ -317,7 +314,7 @@ export function FactoryInfoPage() {
   // ── Save info section ──────────────────────────────────────────────────────
   const handleSaveInfo = useCallback(async () => {
     if (!fid) return;
-    const valid = await form.trigger(['factory_name', 'factory_type_id', 'tax_id', 'lead_time_desc', 'description']);
+    const valid = await form.trigger(['factory_name', 'tax_id', 'lead_time_desc', 'description']);
     if (!valid) { setError('กรุณาตรวจสอบข้อมูลในฟอร์ม'); return; }
     // ตรวจสอบว่า PD categories ทุกอันมี sub-category เลือกไว้
     if (pdSubErrorsRef.current.size > 0) {
@@ -333,7 +330,6 @@ export function FactoryInfoPage() {
         factory_name: v.factory_name.trim(),
         tax_id: v.tax_id.trim() || undefined,
         description: v.description.trim() || undefined,
-        factory_type_id: v.factory_type_id ?? undefined,
         lead_time_desc: v.lead_time_desc.trim() || undefined,
         image_url: String(v.image_url ?? ''),
         background_image_url: String(v.cover_image_url ?? ''),
@@ -388,7 +384,6 @@ export function FactoryInfoPage() {
   const busy = uploadingImage || saving;
 
   // ── View-mode labels ───────────────────────────────────────────────────────
-  const factoryTypeName = factoryTypesQ.data?.find((t) => t.id === initialValues.factory_type_id)?.label;
   const rawCats = (factoryQ.data?.categories as Array<Record<string, unknown>> | undefined) ?? [];
   const rawSubs = (factoryQ.data?.sub_categories as Array<Record<string, unknown>> | undefined) ?? [];
   const lbiCategories = (initQ.data?.lbi_categories as Array<Record<string, unknown>> | undefined) ?? [];
@@ -489,7 +484,6 @@ export function FactoryInfoPage() {
             <p className='text-lg font-bold text-gray-900 leading-tight truncate'>
               {initialValues.factory_name || 'โรงงานของคุณ'}
             </p>
-            <p className='text-sm text-gray-400 mt-0.5'>{factoryTypeName ?? '—'}</p>
             <div className='mt-2 flex flex-wrap gap-2'>
               {isVerified && (
                 <span className='inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200'>
@@ -545,7 +539,6 @@ export function FactoryInfoPage() {
           <div className='space-y-6'>
             <div className='grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6'>
               <Field label='ชื่อโรงงาน' value={initialValues.factory_name} className='col-span-2' />
-              <Field label='ประเภทโรงงาน' value={factoryTypeName} />
               <Field label='เลขประจำตัวผู้เสียภาษี' value={initialValues.tax_id} />
               <Field label='Lead Time' value={initialValues.lead_time_desc} />
               <Field label='รายละเอียด' value={initialValues.description} className='col-span-2 sm:col-span-4' />

@@ -221,11 +221,6 @@ export function FactoriesListDesktop({ state }: FactoriesListDesktopProps) {
                     <p className='text-[11px] text-gray-400 truncate mt-0.5'>
                       {factory.specialization}
                     </p>
-                    {factory.factoryTypeName ? (
-                      <p className='text-[10px] text-violet-600 font-medium truncate mt-0.5'>
-                        {factory.factoryTypeName}
-                      </p>
-                    ) : null}
                   </div>
 
                   <div className='flex items-center justify-between text-[11px]'>

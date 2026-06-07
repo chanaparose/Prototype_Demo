@@ -207,7 +207,6 @@ function mapDetail(raw: unknown): AdminFactoryDetailState {
     registered_at: registeredAt,
     approval_status: approvalStatus,
     business_type: pickScalarString(
-      factory.factory_type_name,
       factory.business_type_name,
       factory.business_type,
       '-',

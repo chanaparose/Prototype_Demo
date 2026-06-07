@@ -18,7 +18,6 @@ function pickFactoryAvatarUrl(row: Record<string, unknown>): string {
 /** แปลงแถวโรงงานจาก API (bootstrap / frontend/factories ฯลฯ) → รูปแบบ Factory ของแอป */
 export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = ''): Factory {
   const id = pickScalarString(row.id, row.factory_id, idFallback);
-  const ftn = pickScalarString(row.factory_type_name, row.factoryTypeName);
   const coverImageUrl = pickFactoryCoverUrl(row);
   let image = pickFactoryAvatarUrl(row);
   if (!image && coverImageUrl) image = coverImageUrl;
@@ -39,7 +38,6 @@ export function normalizeFactoryRow(row: Record<string, unknown>, idFallback = '
     verified: Boolean(row.is_verified ?? row.verified ?? false),
     completedOrders: pickScalarNumber(row.completed_orders, row.completedOrders) ?? 0,
     priceRange: pickScalarString(row.price_range, row.priceRange),
-    ...(ftn ? { factoryTypeName: ftn } : {}),
     ...(provinceName ? { provinceName } : {}),
   };
 }

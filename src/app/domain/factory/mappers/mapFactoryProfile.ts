@@ -62,7 +62,6 @@ function mapFactoryFromApi(
   fallback?: Factory | null,
 ): Factory {
   const b = fallback ?? undefined;
-  const ftn = pickScalarString(row.factory_type_name, row.factoryTypeName);
   const coverImageUrl = pickFactoryCoverUrl(row) || pickScalarString(b?.coverImageUrl);
   let image = pickScalarString(row.image_url, row.image, row.logo_url);
   if (!image) image = pickScalarString(b?.image);
@@ -83,7 +82,6 @@ function mapFactoryFromApi(
     completedOrders:
       pickScalarNumber(row.completed_orders, row.completedOrders, b?.completedOrders) ?? 0,
     priceRange: pickScalarString(row.price_range, row.priceRange, b?.priceRange),
-    ...(ftn ? { factoryTypeName: ftn } : {}),
   };
 }
 
