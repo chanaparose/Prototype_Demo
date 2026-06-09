@@ -7,11 +7,14 @@ import { Image } from '@/components/ui/image';
 interface RelatedShowcasesSectionProps {
   linkedShowcases: unknown;
   onItemClick?: (item: FactoryShowcase) => void;
+  /** `inline` — ฝังในเนื้อหาบทความ (mobile), `card` — section แยก (desktop) */
+  variant?: 'card' | 'inline';
 }
 
 export function RelatedShowcasesSection({
   linkedShowcases,
   onItemClick,
+  variant = 'card',
 }: RelatedShowcasesSectionProps) {
   const { showcaseIds } = React.useMemo(
     () => partitionLinkedShowcases(linkedShowcases),
@@ -22,6 +25,53 @@ export function RelatedShowcasesSection({
   if (!showcaseIds.length) return null;
   if (loading) return null;
   if (!items.length) return null;
+
+  if (variant === 'inline') {
+    return (
+      <aside className='mt-5 border-t border-gray-100 pt-4' aria-label='อ้างอิงในไอเดียนี้'>
+        <h2 className='text-[13px] font-bold text-[var(--brand-navy)] mb-2.5'>
+          อ้างอิงในไอเดียนี้
+        </h2>
+        <div className='-mx-1 flex gap-2.5 overflow-x-auto px-1 pb-0.5 snap-x snap-mandatory'>
+          {items.map((item) => (
+            <article
+              key={item.id}
+              role='button'
+              tabIndex={0}
+              onClick={() => onItemClick?.(item)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onItemClick?.(item);
+                }
+              }}
+              className='w-[9.5rem] shrink-0 snap-start overflow-hidden rounded-xl border border-gray-100 bg-gray-50/60 active:scale-[0.98] transition-transform'
+            >
+              <div className='aspect-[4/3] bg-gray-100'>
+                {item.image ? (
+                  <Image src={item.image} alt={item.title} className='h-full w-full object-cover' />
+                ) : null}
+              </div>
+              <div className='p-2'>
+                <span
+                  className={`inline-flex rounded-full px-1.5 py-px text-[9px] font-semibold ${
+                    item.contentType === 'promotion'
+                      ? 'bg-orange-100 text-orange-700'
+                      : 'bg-violet-100 text-violet-700'
+                  }`}
+                >
+                  {item.contentType === 'promotion' ? 'โปรโมชัน' : 'สินค้า'}
+                </span>
+                <p className='mt-1 text-[11px] font-semibold leading-snug text-gray-800 line-clamp-2'>
+                  {item.title}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <section className='bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6'>

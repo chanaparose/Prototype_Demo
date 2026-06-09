@@ -8,7 +8,7 @@ import {
   ArrowLeft,
   BadgeCheck,
   CalendarDays,
-  Heart,
+  ChevronRight,
   Share2,
   MapPin,
 } from 'lucide-react';
@@ -16,7 +16,6 @@ import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useIdeaDetailShowcase } from '@/hooks/useShowcaseDetailPage';
 import { useStartChatWithFactory } from '@/hooks/useStartChatWithFactory';
 import { useAuth } from '@/stores/useAuthStore';
-import { useData } from '@/stores/useDataStore';
 import { type FactoryShowcase } from '@/stores/types';
 import { MarkdownBody } from '@/shared/markdown/MarkdownBody';
 import { showcasesApi } from '@/services/api/factoryApi';
@@ -27,28 +26,22 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { ProductDetailSkeleton } from '@/components/skeletons/PageSkeletons';
 import { mobileShowcaseDetailPaddingBottom } from '@/hooks/useMobileBottomNavHide';
 import { ShowcaseDetailMobileActionBar } from '@/components/features/showcase-detail/ShowcaseDetailMobileActionBar';
-
-const CARD = {
-  purple: 'var(--brand-mauve)',
-  blue: 'var(--brand-navy)',
-} as const;
+import { Image } from '@/components/ui/image';
 
 export function IdeaDetailMobile() {
   const navigate = useNavigate();
   const { isLiked, toggleFavorite } = useFavorites();
   const { user } = useAuth();
-  const data = useData();
   const { startChat, starting } = useStartChatWithFactory();
   const { item, loading, error, factory, resolvedId } = useIdeaDetailShowcase();
   const [relatedIdeas, setRelatedIdeas] = useState<FactoryShowcase[]>([]);
-  const gallery = useMemo(() => {
+  const coverImage = useMemo(() => {
     const urls = Array.isArray(item?.imageUrls)
       ? item.imageUrls.filter((u) => String(u).trim() !== '')
       : [];
-    if (urls.length > 0) return urls.slice(0, 8);
-    return item?.image ? [item.image] : [];
+    if (urls.length > 0) return urls[0];
+    return item?.image?.trim() || null;
   }, [item?.image, item?.imageUrls]);
-  const [activeImage, setActiveImage] = useState(0);
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -67,7 +60,7 @@ export function IdeaDetailMobile() {
         const list = (Array.isArray(rows) ? rows : [])
           .map((r) => mapShowcaseFromApi((r ?? {}) as Record<string, unknown>))
           .filter((s) => s.contentType === 'idea' && s.id !== item.id)
-          .slice(0, 5);
+          .slice(0, 6);
         setRelatedIdeas(list);
       } catch {
         if (!cancelled) setRelatedIdeas([]);
@@ -76,10 +69,6 @@ export function IdeaDetailMobile() {
     return () => {
       cancelled = true;
     };
-  }, [item?.id]);
-
-  useEffect(() => {
-    setActiveImage(0);
   }, [item?.id]);
 
   if (loading) {
@@ -120,189 +109,151 @@ export function IdeaDetailMobile() {
 
   return (
     <div
-      className='min-h-screen bg-white'
+      className='min-h-screen bg-[var(--brand-page)]'
       style={{ paddingBottom: mobileShowcaseDetailPaddingBottom() }}
     >
-      <div className='bg-white px-4 pt-4 pb-3 border-b' style={{ borderColor: BRAND.divider }}>
-        <div className='flex items-start'>
-          <Button
-            variant='unstyled'
-            type='button'
-            onClick={handleBack}
-            className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shrink-0'
-            aria-label='กลับ'
-          >
-            <ArrowLeft className='w-4 h-4 text-gray-700' />
-          </Button>
+      <header
+        className='sticky top-0 z-30 flex items-center gap-2 border-b border-gray-100 bg-white/95 px-3 py-2.5 backdrop-blur-md'
+      >
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={handleBack}
+          className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white'
+          aria-label='กลับ'
+        >
+          <ArrowLeft className='h-4 w-4 text-gray-700' />
+        </Button>
+        <span className='min-w-0 flex-1 truncate text-[13px] font-semibold text-gray-800'>
+          บทความไอเดีย
+        </span>
+        <Button
+          variant='unstyled'
+          type='button'
+          className='inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white'
+          aria-label='แชร์'
+          onClick={() => {
+            if (typeof navigator !== 'undefined' && navigator.share) {
+              void navigator.share({ title: item.title, url: window.location.href });
+            } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+              void navigator.clipboard.writeText(window.location.href);
+            }
+          }}
+        >
+          <Share2 className='h-4 w-4 text-gray-700' />
+        </Button>
+      </header>
+ 
 
-          <div className='ml-[15px] min-w-0 flex-1'>
-            <h1 className='text-[16px] font-semibold leading-snug' style={{ color: BRAND.ink }}>
-              {item.title}
-            </h1>
-            <div className='mt-1.5 text-[11px] text-gray-500 inline-flex items-center gap-1.5'>
-              <CalendarDays className='w-3 h-3' /> เผยแพร่ {formatThaiDate(item.postedAt)}
-            </div>
-            <div className='mt-1 flex flex-wrap items-center gap-1.5'>
-              <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-1.5 py-0.5 text-[9px] font-semibold text-brand-magenta'>
-                บทความไอเดีย
-              </span>
-              {item.category ? (
-                <span className='text-[10px] text-gray-500'>{item.category}</span>
+      <main className='mx-auto max-w-lg px-4 pt-4'>
+        <div className='mb-3 flex flex-wrap items-center gap-1.5'>
+          <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[10px] font-semibold text-brand-magenta'>
+            ไอเดีย
+          </span>
+          {item.category ? (
+            <span className='text-[11px] text-gray-500'>{item.category}</span>
+          ) : null}
+          <span className='text-[11px] text-gray-400 inline-flex items-center gap-1'>
+            <CalendarDays className='h-3 w-3' />
+            {formatThaiDate(item.postedAt)}
+          </span>
+        </div>
+
+        <h1
+          className='text-[20px] font-bold leading-snug tracking-tight'
+          style={{ color: BRAND.ink }}
+        >
+          {item.title}
+        </h1>
+
+        <Button
+          variant='unstyled'
+          type='button'
+          onClick={() => navigate(`/factories/${item.factoryId}`)}
+          className='mt-3 flex w-full items-center gap-2.5 rounded-xl border border-gray-100 bg-white px-3 py-2.5 text-left active:bg-gray-50'
+        >
+          <div className='h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-gray-100'>
+            <ImageWithFallback
+              src={factory?.image ?? ''}
+              fallbackSrc={item.factoryImageUrl ?? ''}
+              alt={item.factoryName}
+              className='h-full w-full object-cover'
+            />
+          </div>
+          <div className='min-w-0 flex-1'>
+            <div className='flex items-center gap-1'>
+              <p className='truncate text-[13px] font-semibold' style={{ color: BRAND.ink }}>
+                {item.factoryName}
+              </p>
+              {factory?.verified ? (
+                <BadgeCheck className='h-3.5 w-3.5 shrink-0' style={{ color: BRAND.purple }} />
               ) : null}
             </div>
+            <p className='mt-0.5 inline-flex items-center gap-1 text-[11px] text-gray-500'>
+              <MapPin className='h-3 w-3 shrink-0' />
+              <span className='truncate'>{factory?.location ?? 'โรงงานผู้ผลิต'}</span>
+            </p>
           </div>
+          <ChevronRight className='h-4 w-4 shrink-0 text-gray-300' />
+        </Button>
 
-          <Button
-            variant='unstyled'
-            type='button'
-            className='ml-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white shrink-0'
-            aria-label='แชร์'
-            onClick={() => {
-              if (typeof navigator !== 'undefined' && navigator.share) {
-                void navigator.share({
-                  title: item.title,
-                  url: window.location.href,
-                });
-              } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                void navigator.clipboard.writeText(window.location.href);
-              }
-            }}
-          >
-            <Share2 className='w-4 h-4 text-gray-700' />
-          </Button>
-        </div>
-      </div>
+        <article className='mt-4 rounded-2xl border border-gray-100/90 bg-white px-4 py-4 shadow-sm'>
+          {markdown ? (
+            <MarkdownBody source={markdown} typography='showcase-detail' />
+          ) : (
+            <p className='text-[14px] text-gray-400'>ยังไม่มีเนื้อหาบทความ</p>
+          )}
 
-      <div className='bg-white px-4 py-3 border border-slate-100 rounded-xl'>
-          <div className='flex items-center gap-3 min-w-0'>
-            <div className='w-10 h-10 rounded-xl overflow-hidden border border-gray-100 shrink-0'>
-              <ImageWithFallback
-                src={factory?.image ?? ''}
-                fallbackSrc={item.factoryImageUrl ?? ''}
-                alt={item.factoryName}
-                className='w-full h-full object-cover'
-              />
-            </div>
-            <div className='min-w-0 flex-1'>
-              <div className='flex items-center gap-1.5'>
-                <p className='text-[13px] font-bold truncate' style={{ color: BRAND.ink }}>
-                  {item.factoryName}
-                </p>
-                {factory?.verified && (
-                  <BadgeCheck className='w-4 h-4 shrink-0' style={{ color: BRAND.purple }} />
-                )}
-              </div>
-              <p className='text-[11px] text-gray-500 mt-0.5 inline-flex items-center gap-1'>
-                <MapPin className='w-3 h-3' /> {factory?.location ?? '-'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-
-      <div className='px-4 pt-4 space-y-3'>
-        <article className='bg-white rounded-xl p-4 border border-slate-100'>
-          <MarkdownBody
-            source={markdown}
-            className='max-w-none !text-[14px] md:!text-[14px] text-gray-700 leading-relaxed [&_p]:!text-[14px] [&_li]:!text-[14px] [&_a]:!text-[14px] [&_blockquote]:!text-[14px] [&_h1]:!text-[14px] [&_h2]:!text-[14px] [&_h3]:!text-[14px]'
+          <RelatedShowcasesSection
+            variant='inline'
+            linkedShowcases={item.linkedShowcases}
+            onItemClick={(s) =>
+              navigate(
+                s.contentType === 'promotion'
+                  ? `/factory-ideas/promotions/${s.id}`
+                  : `/factory-ideas/products/${s.id}`,
+              )
+            }
           />
         </article>
 
-        <RelatedShowcasesSection
-          linkedShowcases={item.linkedShowcases}
-          onItemClick={(s) =>
-            navigate(
-              s.contentType === 'promotion'
-                ? `/factory-ideas/promotions/${s.id}`
-                : `/factory-ideas/products/${s.id}`,
-            )
-          }
-        />
-
-        <section className='bg-white rounded-xl border border-slate-100 p-4'>
-          <h2 className='text-[14px] font-bold mb-3' style={{ color: 'var(--brand-navy)' }}>
-            บทความที่น่าสนใจให้อ่านต่อ
-          </h2>
-          <div className='space-y-3'>
-            {relatedIdeas.map((next) => {
-              const relFactory = data.factories.find((f) => f.id === next.factoryId);
-              const excerpt = next.excerpt || next.description || '';
-              return (
-                <article
-                  key={next.id}
-                  className='bg-white rounded-xl border border-slate-100 active:scale-[0.98] transition-transform cursor-pointer p-3'
-                  onClick={() =>
-                    navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
-                  }
-                >
-                  <div className='flex items-center gap-2 mb-2'>
-                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-2 py-0.5 text-[9px] font-bold text-brand-magenta'>
+        {relatedIdeas.length > 0 ? (
+          <section className='mt-4 pb-2' aria-label='อ่านต่อ'>
+            <h2 className='mb-2.5 text-[13px] font-bold text-[var(--brand-navy)]'>
+              อ่านต่อ
+            </h2>
+            <div className='-mx-1 flex gap-2.5 overflow-x-auto px-1 pb-0.5 snap-x snap-mandatory'>
+              {relatedIdeas.map((next) => {
+                const excerpt = (next.excerpt || next.description || '').trim();
+                return (
+                  <article
+                    key={next.id}
+                    className='w-[11.5rem] shrink-0 snap-start cursor-pointer rounded-xl border border-gray-100 bg-white p-3 active:scale-[0.98] transition-transform'
+                    onClick={() =>
+                      navigate(`/idea-detail?showcase_id=${encodeURIComponent(next.id)}`)
+                    }
+                  >
+                    <span className='inline-flex items-center rounded-full bg-brand-lavender-chip px-1.5 py-px text-[9px] font-bold text-brand-magenta'>
                       ไอเดีย
                     </span>
-                    <span className='text-[10px] text-gray-400 truncate'>{next.factoryName}</span>
-                  </div>
-                  <h3
-                    className='text-[13px] font-bold leading-[19px] line-clamp-2'
-                    style={{ color: CARD.blue }}
-                  >
-                    {next.title}
-                  </h3>
-                  <p className='text-[11px] leading-[16px] text-gray-500 mt-1 line-clamp-3'>
-                    {excerpt || ' '}
-                  </p>
-                  <div className='pt-2 mt-2 border-t border-gray-100'>
-                    <div className='h-[18px] mb-1 min-w-0'>
-                      {next.factoryName ? (
-                        <Button
-                          variant='unstyled'
-                          type='button'
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/factories/${next.factoryId}`);
-                          }}
-                          className='flex items-center gap-1 w-full text-left text-[10px] font-semibold active:opacity-80 min-w-0'
-                          style={{ color: CARD.blue }}
-                        >
-                          <span className='truncate'>{next.factoryName}</span>
-                          {relFactory?.verified && (
-                            <BadgeCheck
-                              className='w-3 h-3 shrink-0'
-                              style={{ color: CARD.purple }}
-                            />
-                          )}
-                        </Button>
-                      ) : null}
-                    </div>
-                    <div className='flex items-center justify-between min-w-0'>
-                      <span className='text-[10px] text-gray-400 shrink-0'>
-                        MOQ{' '}
-                        <span className='font-semibold tabular-nums' style={{ color: CARD.blue }}>
-                          {next.minOrder}
-                        </span>
-                      </span>
-                      <button
-                        type='button'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void toggleFavorite(next.id);
-                        }}
-                        className='flex items-center gap-1 shrink-0 text-[10px] text-gray-400'
-                      >
-                        <Heart
-                          className={`w-3 h-3 shrink-0 ${isLiked(next.id) ? 'text-red-500 fill-red-500' : ''}`}
-                        />
-                        <span className='tabular-nums font-medium text-gray-500'>
-                          {next.likes + (isLiked(next.id) ? 1 : 0)}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-      </div>
+                    <h3
+                      className='mt-1.5 text-[12px] font-bold leading-snug line-clamp-3 text-[var(--brand-navy)]'
+                    >
+                      {next.title}
+                    </h3>
+                    {excerpt ? (
+                      <p className='mt-1 text-[10px] leading-relaxed text-gray-500 line-clamp-2'>
+                        {excerpt}
+                      </p>
+                    ) : null}
+                    <p className='mt-2 truncate text-[10px] text-gray-400'>{next.factoryName}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+      </main>
 
       <ShowcaseDetailMobileActionBar
         factoryId={item.factoryId}
